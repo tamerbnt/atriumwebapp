@@ -348,7 +348,7 @@ export const SkeletonPageHeader: React.FC<SkeletonPageHeaderProps> = ({
             width={actionBtnWidth}
             height={40}
             rounded="rounded-xl"
-            className="!bg-[#C4785A]/25"
+            className="!bg-[#d4522f]/25"
           />
         )}
       </div>
@@ -434,7 +434,7 @@ export const SkeletonSchedulerView: React.FC<SkeletonSchedulerViewProps> = ({
               <SkeletonBox width={75} height={18} rounded="rounded-md" />
             </div>
             <div className="space-y-1">
-              <SkeletonText size="2xl" width="120px" className="!bg-[#C4785A]/30" />
+              <SkeletonText size="2xl" width="120px" className="!bg-[#d4522f]/30" />
               <SkeletonText size="xs" width="110px" />
             </div>
           </div>
@@ -491,7 +491,7 @@ export const SkeletonDashboardGym: React.FC<SkeletonDashboardGymProps> = ({
         </div>
         <div className="flex items-center gap-2">
           <SkeletonBox width={140} height={40} rounded="rounded-xl" />
-          <SkeletonBox width={130} height={40} rounded="rounded-xl" className="!bg-[#C4785A]/25" />
+          <SkeletonBox width={130} height={40} rounded="rounded-xl" className="!bg-[#d4522f]/25" />
         </div>
       </div>
 
@@ -518,7 +518,7 @@ export const SkeletonDashboardGym: React.FC<SkeletonDashboardGymProps> = ({
               <SkeletonText size="xs" width="60px" />
               <SkeletonText size="base" width="40px" />
             </div>
-            <SkeletonBox width={110} height={36} rounded="rounded-xl" className="!bg-[#C4785A]/30" />
+            <SkeletonBox width={110} height={36} rounded="rounded-xl" className="!bg-[#d4522f]/30" />
           </div>
         </div>
 
@@ -634,7 +634,7 @@ export const SkeletonPosRegister: React.FC<SkeletonPosRegisterProps> = ({
         </div>
         <div className="flex items-center gap-2">
           <SkeletonBox width={120} height={38} rounded="rounded-xl" />
-          <SkeletonBox width={140} height={38} rounded="rounded-xl" className="!bg-[#C4785A]/25" />
+          <SkeletonBox width={140} height={38} rounded="rounded-xl" className="!bg-[#d4522f]/25" />
         </div>
       </div>
 
@@ -664,7 +664,7 @@ export const SkeletonPosRegister: React.FC<SkeletonPosRegisterProps> = ({
                   </div>
                 </div>
                 <div className="pt-2 border-t border-[#EDF1F3] dark:border-neutral-800 flex items-center justify-between">
-                  <SkeletonText size="base" width="70px" className="!bg-[#C4785A]/25" />
+                  <SkeletonText size="base" width="70px" className="!bg-[#d4522f]/25" />
                   <SkeletonCircle size={28} />
                 </div>
               </div>
@@ -707,7 +707,7 @@ export const SkeletonPosRegister: React.FC<SkeletonPosRegisterProps> = ({
               </div>
               <div className="flex justify-between pt-1 font-bold">
                 <SkeletonText size="base" width="80px" />
-                <SkeletonText size="lg" width="90px" className="!bg-[#C4785A]/30" />
+                <SkeletonText size="lg" width="90px" className="!bg-[#d4522f]/30" />
               </div>
             </div>
 
@@ -717,7 +717,7 @@ export const SkeletonPosRegister: React.FC<SkeletonPosRegisterProps> = ({
               <SkeletonBox height={36} rounded="rounded-xl" />
             </div>
 
-            <SkeletonButton height={46} className="w-full !bg-[#C4785A]/35" />
+            <SkeletonButton height={46} className="w-full !bg-[#d4522f]/35" />
           </div>
         </div>
       </div>
@@ -1046,7 +1046,7 @@ export const SkeletonDashboardSalon: React.FC<{
               </div>
               <div className="p-2.5 rounded-xl bg-[#F8F9FA] dark:bg-neutral-700/40 flex items-center justify-between">
                 <SkeletonText size="xs" width="110px" />
-                <SkeletonBox width={70} height={26} rounded="rounded-lg" className="!bg-[#C4785A]/25" />
+                <SkeletonBox width={70} height={26} rounded="rounded-lg" className="!bg-[#d4522f]/25" />
               </div>
             </div>
           ))}
@@ -1138,7 +1138,7 @@ export const SkeletonDashboardPos: React.FC<{
         <div className="flex items-center gap-2.5 flex-wrap">
           <SkeletonBox width={140} height={40} rounded="rounded-xl" />
           <SkeletonBox width={130} height={40} rounded="rounded-xl" />
-          <SkeletonBox width={140} height={40} rounded="rounded-xl" className="!bg-[#C4785A]/25" />
+          <SkeletonBox width={140} height={40} rounded="rounded-xl" className="!bg-[#d4522f]/25" />
         </div>
       </div>
 
@@ -1281,7 +1281,7 @@ export const SkeletonDashboardEducation: React.FC<{
           </div>
           <div className="pt-3 border-t border-neutral-800 flex items-center justify-between">
             <SkeletonText size="xs" width="90px" />
-            <SkeletonBox width={100} height={32} rounded="rounded-xl" className="!bg-[#C4785A]/30" />
+            <SkeletonBox width={100} height={32} rounded="rounded-xl" className="!bg-[#d4522f]/30" />
           </div>
         </div>
 
@@ -1827,7 +1827,7 @@ export const SkeletonDashboardFreelance: React.FC<{
               <SkeletonText size="xs" width="90px" />
             </div>
           </div>
-          <SkeletonBox height={40} className="w-full !bg-[#C4785A]/30" rounded="rounded-xl" />
+          <SkeletonBox height={40} className="w-full !bg-[#d4522f]/30" rounded="rounded-xl" />
         </div>
 
         <div className="lg:col-span-2 space-y-4">

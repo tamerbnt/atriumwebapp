@@ -33,7 +33,7 @@ export const RealEstateStaffView: React.FC = () => {
               {member.carteProfessionnelleNumber && (
                 <>
                   <span>·</span>
-                  <span className="font-mono text-[#C4785A]">{member.carteProfessionnelleNumber}</span>
+                  <span className="font-mono text-[#d4522f]">{member.carteProfessionnelleNumber}</span>
                 </>
               )}
             </div>

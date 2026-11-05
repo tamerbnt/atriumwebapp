@@ -407,14 +407,14 @@ export const AgricultureHarvestView: React.FC = () => {
       minWidth: '130px',
       cell: (t) => (
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-mono font-bold text-xs shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0">
             <Scale size={16} />
           </div>
           <div>
             <div className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
               {t.ticketNumber}
               {pinnedIds.has(t.id) && (
-                <Pin size={10} className="fill-[#C4785A] text-[#C4785A]" />
+                <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />
               )}
             </div>
             <div className="text-[10px] text-neutral-400">
@@ -524,7 +524,7 @@ export const AgricultureHarvestView: React.FC = () => {
       {/* Top Header Strip with Action Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             {activeMode === 'tickets' ? <Scale size={22} /> : <Users size={22} />}
           </div>
           <div>
@@ -534,7 +534,7 @@ export const AgricultureHarvestView: React.FC = () => {
                   ? (isAr ? 'وصولات الوزن وجني المحاصيل' : 'Pont-Bascule & Bons de Récolte')
                   : (isAr ? 'دفتر حضور وجني التاشرون (Muster Roll)' : 'Pointage Journalier des Tâcherons')}
               </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
                 {activeMode === 'tickets' ? `${filteredTickets.length} tickets` : `${pointages.length} ouvriers`}
               </span>
             </div>
@@ -750,7 +750,7 @@ export const AgricultureHarvestView: React.FC = () => {
             renderGridCard={(t) => (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2.5 py-1 rounded-lg border border-[#C4785A]/20">
+                  <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg border border-[#d4522f]/20">
                     {t.ticketNumber}
                   </span>
                   <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
@@ -792,7 +792,7 @@ export const AgricultureHarvestView: React.FC = () => {
             {/* Drawer Header */}
             <div className="flex items-start justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-bold">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold">
                   <Scale size={18} />
                 </div>
                 <div>
@@ -821,7 +821,7 @@ export const AgricultureHarvestView: React.FC = () => {
             <div className="flex items-center gap-1.5 flex-wrap">
               <button
                 onClick={() => handlePrintTicket(selectedTicket)}
-                className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-orange-50 text-[#C4785A] hover:bg-orange-100 dark:bg-orange-950/40 dark:hover:bg-orange-900/60 transition-colors"
+                className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-orange-50 text-[#d4522f] hover:bg-orange-100 dark:bg-orange-950/40 dark:hover:bg-orange-900/60 transition-colors"
               >
                 <Printer size={12} />
                 {isAr ? 'طباعة الوصل' : 'Imprimer'}
@@ -847,7 +847,7 @@ export const AgricultureHarvestView: React.FC = () => {
                 onClick={() => setActiveTab('ticket')}
                 className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
                   activeTab === 'ticket'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                    ? 'border-[#d4522f] text-[#d4522f] font-bold'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -857,7 +857,7 @@ export const AgricultureHarvestView: React.FC = () => {
                 onClick={() => setActiveTab('pesee')}
                 className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
                   activeTab === 'pesee'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                    ? 'border-[#d4522f] text-[#d4522f] font-bold'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -867,7 +867,7 @@ export const AgricultureHarvestView: React.FC = () => {
                 onClick={() => setActiveTab('finance')}
                 className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
                   activeTab === 'finance'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                    ? 'border-[#d4522f] text-[#d4522f] font-bold'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -877,7 +877,7 @@ export const AgricultureHarvestView: React.FC = () => {
                 onClick={() => setActiveTab('notes')}
                 className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
                   activeTab === 'notes'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                    ? 'border-[#d4522f] text-[#d4522f] font-bold'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -897,7 +897,7 @@ export const AgricultureHarvestView: React.FC = () => {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-neutral-500">Véhicule:</span>
-                    <span className="font-mono font-bold text-[#C4785A]">
+                    <span className="font-mono font-bold text-[#d4522f]">
                       {selectedTicket.vehiclePlate}
                     </span>
                   </div>
@@ -976,7 +976,7 @@ export const AgricultureHarvestView: React.FC = () => {
                   </div>
                   <div className="flex justify-between items-center pt-1 border-t border-neutral-200 dark:border-neutral-700">
                     <span className="text-neutral-700 font-bold">Net à Payer Domaine:</span>
-                    <span className="font-mono font-bold text-[#C4785A] text-sm">
+                    <span className="font-mono font-bold text-[#d4522f] text-sm">
                       {formatMoney(selectedTicket.netFarmPayoutDzd ?? selectedTicket.paidAmountDzd ?? 0)}
                     </span>
                   </div>
@@ -995,11 +995,11 @@ export const AgricultureHarvestView: React.FC = () => {
                   value={inspectorNotes}
                   onChange={(e) => setInspectorNotes(e.target.value)}
                   placeholder="Noter le calibre des fruits, l'heure de départ du domaine..."
-                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#C4785A] outline-hidden resize-none"
+                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none"
                 />
                 <button
                   onClick={handleSaveNotes}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#C4785A] text-white hover:bg-[#a86246] transition-colors font-medium text-xs shadow-xs"
+                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#d4522f] text-white hover:bg-[#a86246] transition-colors font-medium text-xs shadow-xs"
                 >
                   {noteSaved ? (
                     <>
@@ -1129,7 +1129,7 @@ export const AgricultureHarvestView: React.FC = () => {
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <div className="font-bold text-sm text-neutral-900 dark:text-white flex items-center gap-1.5">
-                          <Users size={14} className="text-[#C4785A]" />
+                          <Users size={14} className="text-[#d4522f]" />
                           {p.workerName}
                         </div>
                         <div className="text-[11px] text-neutral-400 font-mono mt-0.5">
@@ -1167,13 +1167,13 @@ export const AgricultureHarvestView: React.FC = () => {
                         </button>
                         <button
                           onClick={() => handleIncrementCrates(p, 1)}
-                          className="py-1.5 px-2 bg-[#C4785A]/10 border border-[#C4785A]/30 text-[#C4785A] rounded-lg text-xs font-bold hover:bg-[#C4785A]/20 flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                          className="py-1.5 px-2 bg-[#d4522f]/10 border border-[#d4522f]/30 text-[#d4522f] rounded-lg text-xs font-bold hover:bg-[#d4522f]/20 flex items-center justify-center gap-1 transition-colors cursor-pointer"
                         >
                           +1
                         </button>
                         <button
                           onClick={() => handleIncrementCrates(p, 5)}
-                          className="py-1.5 px-2 bg-[#C4785A] text-white rounded-lg text-xs font-bold hover:bg-[#b06a4e] flex items-center justify-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                          className="py-1.5 px-2 bg-[#d4522f] text-white rounded-lg text-xs font-bold hover:bg-[#b06a4e] flex items-center justify-center gap-1 shadow-2xs transition-colors cursor-pointer"
                         >
                           +5
                         </button>
@@ -1200,7 +1200,7 @@ export const AgricultureHarvestView: React.FC = () => {
                       </div>
                       <div className="flex justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800 font-bold text-neutral-900 dark:text-white">
                         <span>Net à verser:</span>
-                        <span className="font-mono text-sm text-[#C4785A]">{formatMoney(p.netDueDzd)}</span>
+                        <span className="font-mono text-sm text-[#d4522f]">{formatMoney(p.netDueDzd)}</span>
                       </div>
                     </div>
 
@@ -1236,7 +1236,7 @@ export const AgricultureHarvestView: React.FC = () => {
           <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-bold">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold">
                   <Scale size={20} />
                 </div>
                 <div>
@@ -1349,7 +1349,7 @@ export const AgricultureHarvestView: React.FC = () => {
           <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5">
             <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                <div className="w-9 h-9 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                   <Users size={20} />
                 </div>
                 <div>
@@ -1411,7 +1411,7 @@ export const AgricultureHarvestView: React.FC = () => {
                   <span>Acompte déduit :</span>
                   <span className="font-mono font-semibold">-{formatMoney(parseFloat(pointageAdvance) || 0)}</span>
                 </div>
-                <div className="flex justify-between font-bold text-[#C4785A] pt-1 border-t border-neutral-200 dark:border-neutral-700">
+                <div className="flex justify-between font-bold text-[#d4522f] pt-1 border-t border-neutral-200 dark:border-neutral-700">
                   <span>Solde net dû :</span>
                   <span className="font-mono">{formatMoney(Math.max(0, ((parseInt(pointageCrates) || 0) * 40) - (parseFloat(pointageAdvance) || 0)))}</span>
                 </div>

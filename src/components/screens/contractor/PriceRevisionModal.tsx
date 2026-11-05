@@ -80,7 +80,7 @@ export const PriceRevisionModal: React.FC<PriceRevisionModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
               <Calculator size={20} />
             </div>
             <div>
@@ -103,7 +103,7 @@ export const PriceRevisionModal: React.FC<PriceRevisionModalProps> = ({
         {/* Regulatory Banner */}
         <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 space-y-1">
           <div className="flex items-center gap-2 text-xs font-bold text-neutral-800 dark:text-neutral-200">
-            <Info size={14} className="text-[#C4785A]" />
+            <Info size={14} className="text-[#d4522f]" />
             <span>Formule Paramétrique Réglementaire Algérienne</span>
           </div>
           <p className="text-[11px] text-neutral-500 font-mono">

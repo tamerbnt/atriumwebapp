@@ -133,12 +133,12 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
     });
     if (map.size === 0) {
       return [
-        { label: language === 'ar' ? 'مأكولات ومشروبات' : 'Boissons & Snacks', value: 48, color: '#C4785A' },
+        { label: language === 'ar' ? 'مأكولات ومشروبات' : 'Boissons & Snacks', value: 48, color: '#d4522f' },
         { label: language === 'ar' ? 'إلكترونيات واكسسوار' : 'Accessoires', value: 32, color: '#3B82F6' },
         { label: language === 'ar' ? 'مواد استهلاكية' : 'Consommables', value: 20, color: '#10B981' },
       ];
     }
-    const colors = ['#C4785A', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'];
+    const colors = ['#d4522f', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'];
     let idx = 0;
     return Array.from(map.entries()).map(([label, value]) => ({
       label,
@@ -207,7 +207,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'حركة الصناديق والمبيعات' : language === 'fr' ? 'Activité des Caisses' : 'Register & Checkout Velocity'}
-            icon={<ShoppingBag size={18} className="text-[#C4785A]" />}
+            icon={<ShoppingBag size={18} className="text-[#d4522f]" />}
             badge={
               <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                 {activeTicketsCount} {language === 'ar' ? 'تذكرة اليوم' : 'Tickets'}
@@ -275,7 +275,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
                   <span className="text-[11px] text-gray-400 block mb-2">
                     {language === 'ar' ? 'كثافة المبيعات على مدار 24 ساعة' : 'Flux horaire des encaissements (24h)'}
                   </span>
-                  <HourlyCurveChart data={hourlyData} color="#C4785A" />
+                  <HourlyCurveChart data={hourlyData} color="#d4522f" />
                 </div>
               </div>
 
@@ -290,7 +290,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
                 </div>
                 <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-1">
                   <div
-                    className="bg-[#C4785A] h-full rounded-full transition-all duration-500"
+                    className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
                     style={{ width: `${targetPct}%` }}
                   />
                 </div>
@@ -307,7 +307,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'تطور التذاكر وحجم المبيعات' : language === 'fr' ? 'Développement Tickets & Ventes' : 'Sales & Product Asset Development'}
-            icon={<TrendingUp size={18} className="text-[#C4785A]" />}
+            icon={<TrendingUp size={18} className="text-[#d4522f]" />}
             rightControls={
               <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
                 <button
@@ -368,7 +368,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
                 <PillBarHistogram
                   data={weeklyRevenueTrend}
                   maxScale={Math.max(...weeklyRevenueTrend.map((w) => w.value)) * 1.2}
-                  barColor="#C4785A"
+                  barColor="#d4522f"
                 />
               </div>
             </div>
@@ -382,7 +382,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'مسار الإيرادات وهوامش الربح' : language === 'fr' ? 'Trajectoire Financière & Marges' : 'Financial Trajectory & P&L'}
-            icon={<Receipt size={18} className="text-[#C4785A]" />}
+            icon={<Receipt size={18} className="text-[#d4522f]" />}
             rightControls={
               <span className="text-xs font-semibold text-gray-500 uppercase">
                 {months[currentMonthIndex]} 2026
@@ -492,7 +492,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'ذكاء المنتجات وحارس المخزون' : language === 'fr' ? 'Intelligence Produits & Stock Sentinel' : 'Inventory Intelligence & Sentinel Guardian'}
-            icon={<Package size={18} className="text-[#C4785A]" />}
+            icon={<Package size={18} className="text-[#d4522f]" />}
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
@@ -551,7 +551,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setScreen('shop')}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#C4785A] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d4522f] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
                   >
                     <ShoppingBag size={14} />
                     {language === 'ar' ? 'فتح واجهة الكاشير' : 'Ouvrir la Caisse'}

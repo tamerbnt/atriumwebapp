@@ -170,7 +170,7 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#E2E8EC] dark:border-[#27272A] mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
               <Shield className="w-5 h-5" />
             </div>
             <div>
@@ -198,7 +198,7 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({
           </div>
           <div className="text-right">
             <div className="text-xs text-[#64748B] dark:text-[#A1A1AA]">Prix Annoncé</div>
-            <div className="text-sm font-bold font-mono text-[#C4785A]">
+            <div className="text-sm font-bold font-mono text-[#d4522f]">
               {activeProp?.priceDzd.toLocaleString()} DZD
             </div>
           </div>
@@ -231,13 +231,13 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({
           </div>
 
           {/* GPS Telemetry Bar */}
-          <div className="p-3 rounded-2xl bg-[#FDF4F0] dark:bg-[#1C1816] border border-[#C4785A]/30 flex items-center justify-between">
+          <div className="p-3 rounded-2xl bg-[#FDF4F0] dark:bg-[#1C1816] border border-[#d4522f]/30 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <MapPin className="w-4 h-4 text-[#C4785A]" />
+              <MapPin className="w-4 h-4 text-[#d4522f]" />
               <div className="text-xs">
                 <span className="font-semibold text-[#18181B] dark:text-white">Géolocalisation d'Intervention:</span>{' '}
                 {isGpsLoading ? (
-                  <span className="text-[#C4785A] animate-pulse">Recherche signal satellite GPS...</span>
+                  <span className="text-[#d4522f] animate-pulse">Recherche signal satellite GPS...</span>
                 ) : gpsLatitude ? (
                   <span className="font-mono text-[#64748B] dark:text-[#A1A1AA]">
                     {gpsLatitude}° N, {gpsLongitude}° E (Précision ±{gpsAccuracy}m)
@@ -251,7 +251,7 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({
             <button
               type="button"
               onClick={handleCaptureGps}
-              className="text-xs text-[#C4785A] hover:underline font-semibold"
+              className="text-xs text-[#d4522f] hover:underline font-semibold"
             >
               Actualiser GPS
             </button>
@@ -266,7 +266,7 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({
               <button
                 type="button"
                 onClick={clearSignature}
-                className="flex items-center gap-1 text-[#64748B] hover:text-[#C4785A] transition-colors"
+                className="flex items-center gap-1 text-[#64748B] hover:text-[#d4522f] transition-colors"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Effacer</span>
@@ -308,7 +308,7 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({
               <select
                 value={clientImpression}
                 onChange={(e) => setClientImpression(e.target.value as any)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8EC] dark:border-[#27272A] bg-white dark:bg-[#141416] text-xs font-medium focus:ring-2 focus:ring-[#C4785A]"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8EC] dark:border-[#27272A] bg-white dark:bg-[#141416] text-xs font-medium focus:ring-2 focus:ring-[#d4522f]"
               >
                 <option value="Interested">Très Intéressé (Candidat Solide)</option>
                 <option value="NeedsNegotiation">Intéressé sous réserve de négociation</option>

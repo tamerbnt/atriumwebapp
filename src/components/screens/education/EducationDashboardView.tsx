@@ -116,12 +116,12 @@ export const EducationDashboardView: React.FC = () => {
     });
     if (map.size === 0) {
       return [
-        { label: language === 'ar' ? 'لغات حية' : 'Langues Vivantes', value: 40, color: '#C4785A' },
+        { label: language === 'ar' ? 'لغات حية' : 'Langues Vivantes', value: 40, color: '#d4522f' },
         { label: language === 'ar' ? 'علوم وتكنولوجيا' : 'Sciences & IT', value: 35, color: '#3B82F6' },
         { label: language === 'ar' ? 'دعم مدرسي' : 'Soutien Scolaire', value: 25, color: '#10B981' },
       ];
     }
-    const colors = ['#C4785A', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'];
+    const colors = ['#d4522f', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'];
     let idx = 0;
     return Array.from(map.entries()).map(([label, value]) => ({
       label,
@@ -181,7 +181,7 @@ export const EducationDashboardView: React.FC = () => {
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'حركة الحضور وحصص اليوم' : language === 'fr' ? 'Présences & Séances du Jour' : 'Classroom Attendance & Flow'}
-            icon={<GraduationCap size={18} className="text-[#C4785A]" />}
+            icon={<GraduationCap size={18} className="text-[#d4522f]" />}
             badge={
               <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                 {presentToday} {language === 'ar' ? 'طالب حاضر' : 'Présents'}
@@ -249,7 +249,7 @@ export const EducationDashboardView: React.FC = () => {
                   <span className="text-[11px] text-gray-400 block mb-2">
                     {language === 'ar' ? 'كثافة الدخول الصفي على مدار 24 ساعة' : 'Arrivées horaires des élèves (24h)'}
                   </span>
-                  <HourlyCurveChart data={hourlyData} color="#C4785A" />
+                  <HourlyCurveChart data={hourlyData} color="#d4522f" />
                 </div>
               </div>
 
@@ -264,7 +264,7 @@ export const EducationDashboardView: React.FC = () => {
                 </div>
                 <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-1">
                   <div
-                    className="bg-[#C4785A] h-full rounded-full transition-all duration-500"
+                    className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
                     style={{ width: `${targetPct}%` }}
                   />
                 </div>
@@ -281,7 +281,7 @@ export const EducationDashboardView: React.FC = () => {
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'تطور الأفواج والطلاب المسجلين' : language === 'fr' ? 'Développement Étudiants & Promotions' : 'Cohort & Student Asset Development'}
-            icon={<Users size={18} className="text-[#C4785A]" />}
+            icon={<Users size={18} className="text-[#d4522f]" />}
             rightControls={
               <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
                 <button
@@ -342,7 +342,7 @@ export const EducationDashboardView: React.FC = () => {
                 <PillBarHistogram
                   data={weeklyAttendanceTrend}
                   maxScale={100}
-                  barColor="#C4785A"
+                  barColor="#d4522f"
                 />
               </div>
             </div>
@@ -356,7 +356,7 @@ export const EducationDashboardView: React.FC = () => {
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'تحصيل الرسوم والمصاريف' : language === 'fr' ? 'Trajectoire Financière & Recouvrement' : 'Financial Trajectory & Tuition'}
-            icon={<TrendingUp size={18} className="text-[#C4785A]" />}
+            icon={<TrendingUp size={18} className="text-[#d4522f]" />}
             rightControls={
               <span className="text-xs font-semibold text-gray-500 uppercase">
                 {months[currentMonthIndex]} 2026
@@ -464,7 +464,7 @@ export const EducationDashboardView: React.FC = () => {
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'ذكاء التدريس وحارس التسرب' : language === 'fr' ? 'Intelligence Pédagogique & Drop-Out Guardian' : 'Academic Intelligence & Guardian'}
-            icon={<Award size={18} className="text-[#C4785A]" />}
+            icon={<Award size={18} className="text-[#d4522f]" />}
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
@@ -523,7 +523,7 @@ export const EducationDashboardView: React.FC = () => {
                         setSelectedSessionForRollCall(eduSessions[0].id);
                       }
                     }}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#C4785A] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d4522f] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
                   >
                     <Award size={14} />
                     {language === 'ar' ? 'تسجيل الحضور (Appel)' : 'Faire l’Appel'}

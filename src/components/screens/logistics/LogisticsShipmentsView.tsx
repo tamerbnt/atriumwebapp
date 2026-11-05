@@ -200,7 +200,7 @@ export const LogisticsShipmentsView: React.FC = () => {
           const isPinned = pinnedIds.has(s.id);
           return (
             <div className="flex items-center gap-3 min-w-0 pr-2">
-              <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
+              <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
                 <Package size={18} />
               </div>
               <div className="min-w-0">
@@ -211,7 +211,7 @@ export const LogisticsShipmentsView: React.FC = () => {
                   {isPinned && <span className="text-[10px] text-amber-500 font-bold">📌 VIP</span>}
                 </div>
                 <div className="flex items-center gap-2 mt-0.5 text-[11px] text-neutral-400 font-mono">
-                  <span className="font-bold text-[#C4785A]">{s.trackingCode}</span>
+                  <span className="font-bold text-[#d4522f]">{s.trackingCode}</span>
                   <span>·</span>
                   <span>{s.destinationWilaya.split('-')[0].trim()}</span>
                 </div>
@@ -317,7 +317,7 @@ export const LogisticsShipmentsView: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <Truck size={22} />
           </div>
           <div>
@@ -325,7 +325,7 @@ export const LogisticsShipmentsView: React.FC = () => {
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
                 {language === 'ar' ? 'سجل الشحنات والطرود البريدية' : 'Expéditions & Colis COD'}
               </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
                 {shipments.length} {language === 'ar' ? 'طرد' : 'colis'}
               </span>
             </div>
@@ -518,7 +518,7 @@ export const LogisticsShipmentsView: React.FC = () => {
                 const isDelivered = s.status === 'Delivered';
                 return (
                   <div className="flex flex-col items-center justify-center w-full">
-                    <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
+                    <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
                       <Package size={32} />
                     </div>
                     <div className="flex items-center gap-1.5 max-w-[210px] mb-0.5">
@@ -565,7 +565,7 @@ export const LogisticsShipmentsView: React.FC = () => {
               {/* Drawer Header */}
               <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-800/60 flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] text-[#C4785A] font-bold text-sm flex items-center justify-center shrink-0 border border-[#F5E2D8]">
+                  <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] text-[#d4522f] font-bold text-sm flex items-center justify-center shrink-0 border border-[#F5E2D8]">
                     <Package size={20} />
                   </div>
                   <div className="min-w-0">
@@ -575,7 +575,7 @@ export const LogisticsShipmentsView: React.FC = () => {
                     <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-mono truncate">
                       <span>{selectedShipment.recipientName}</span>
                       <span>·</span>
-                      <span className="text-[#C4785A] font-bold">{formatMoney(selectedShipment.codAmountDzd)}</span>
+                      <span className="text-[#d4522f] font-bold">{formatMoney(selectedShipment.codAmountDzd)}</span>
                     </div>
                   </div>
                 </div>
@@ -594,7 +594,7 @@ export const LogisticsShipmentsView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => handleToggleDeliveryStatus(selectedShipment)}
-                  className="flex-1 py-1.5 px-2 rounded-lg bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
+                  className="flex-1 py-1.5 px-2 rounded-lg bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
                 >
                   <Send size={13} />
                   <span>{language === 'ar' ? 'تحديث التوصيل' : 'Changer Statut'}</span>
@@ -626,7 +626,7 @@ export const LogisticsShipmentsView: React.FC = () => {
                   onClick={() => setActiveTab('fiche')}
                   className={`py-2 px-3 border-b-2 transition-colors ${
                     activeTab === 'fiche'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -637,7 +637,7 @@ export const LogisticsShipmentsView: React.FC = () => {
                   onClick={() => setActiveTab('cod')}
                   className={`py-2 px-3 border-b-2 transition-colors ${
                     activeTab === 'cod'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -648,7 +648,7 @@ export const LogisticsShipmentsView: React.FC = () => {
                   onClick={() => setActiveTab('dispatch')}
                   className={`py-2 px-3 border-b-2 transition-colors ${
                     activeTab === 'dispatch'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -659,7 +659,7 @@ export const LogisticsShipmentsView: React.FC = () => {
                   onClick={() => setActiveTab('notes')}
                   className={`py-2 px-3 border-b-2 transition-colors ${
                     activeTab === 'notes'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -715,7 +715,7 @@ export const LogisticsShipmentsView: React.FC = () => {
                       </div>
                       <div className="flex justify-between py-1.5 font-bold text-neutral-900 dark:text-white text-[13px]">
                         <span>{language === 'ar' ? 'المبلغ الإجمالي للتحصيل' : 'Total Cash à Récupérer'}</span>
-                        <span className="font-mono text-[#C4785A]">{formatMoney(selectedShipment.codAmountDzd + selectedShipment.shippingFeeDzd)}</span>
+                        <span className="font-mono text-[#d4522f]">{formatMoney(selectedShipment.codAmountDzd + selectedShipment.shippingFeeDzd)}</span>
                       </div>
                     </div>
                   </div>
@@ -749,7 +749,7 @@ export const LogisticsShipmentsView: React.FC = () => {
                       onChange={(e) => setInspectorNotes(e.target.value)}
                       rows={8}
                       placeholder={language === 'ar' ? 'أدخل تعليمات التوصيل...' : 'Précisions d\'accès, créneau de livraison, consignes spéciales...'}
-                      className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-2 focus:ring-[#C4785A] outline-none"
+                      className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-2 focus:ring-[#d4522f] outline-none"
                     />
                     <div className="flex items-center justify-between pt-1">
                       <span className="text-[11px] text-neutral-400">

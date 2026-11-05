@@ -157,7 +157,7 @@ export const LogisticsCodView: React.FC = () => {
       {/* Top Header Strip with Action Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <CreditCard size={22} />
           </div>
           <div>
@@ -226,7 +226,7 @@ export const LogisticsCodView: React.FC = () => {
               {isAr ? 'رسوم التوصيل المستحقة للشركة' : 'Commissions & Frais Livraison'}
             </span>
             <div>
-              <div className="text-2xl font-bold tracking-tight text-[#C4785A] font-mono tabular-nums">
+              <div className="text-2xl font-bold tracking-tight text-[#d4522f] font-mono tabular-nums">
                 {formatMoney(totalShippingFees)}
               </div>
               <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
@@ -295,7 +295,7 @@ export const LogisticsCodView: React.FC = () => {
                 {isAr ? 'طرود جاهزة لتسوية المستحقات' : 'Colis Livrés & Encaissements'}
               </h2>
             </div>
-            <div className="text-xs font-mono font-bold text-[#C4785A]">
+            <div className="text-xs font-mono font-bold text-[#d4522f]">
               {deliveredShipments.length} {isAr ? 'طرد' : 'colis'}
             </div>
           </div>
@@ -314,7 +314,7 @@ export const LogisticsCodView: React.FC = () => {
                 header: 'AWB',
                 width: '130px',
                 renderCell: (s: LogisticsShipment) => (
-                  <span className="font-mono font-bold text-xs text-[#C4785A]">
+                  <span className="font-mono font-bold text-xs text-[#d4522f]">
                     {s.trackingCode}
                   </span>
                 ),
@@ -418,7 +418,7 @@ export const LogisticsCodView: React.FC = () => {
               <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 font-mono">
                 {discharges.map((d) => (
                   <tr key={d.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40">
-                    <td className="py-2.5 px-3 font-bold text-[#C4785A]">{d.dischargeNumber}</td>
+                    <td className="py-2.5 px-3 font-bold text-[#d4522f]">{d.dischargeNumber}</td>
                     <td className="py-2.5 px-3 font-sans font-semibold text-neutral-900 dark:text-white">
                       {d.courierStaffId}
                     </td>
@@ -505,12 +505,12 @@ export const LogisticsCodView: React.FC = () => {
               <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 font-mono">
                 {remittances.map((r) => (
                   <tr key={r.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40">
-                    <td className="py-2.5 px-3 font-bold text-[#C4785A]">{r.batchNumber}</td>
+                    <td className="py-2.5 px-3 font-bold text-[#d4522f]">{r.batchNumber}</td>
                     <td className="py-2.5 px-3 font-sans font-semibold text-neutral-900 dark:text-white">
                       {r.merchantName}
                     </td>
                     <td className="py-2.5 px-3 text-neutral-600 dark:text-neutral-400">
-                      {r.ccpAccount} <span className="text-[#C4785A] font-bold">Clé {r.ccpKey}</span>
+                      {r.ccpAccount} <span className="text-[#d4522f] font-bold">Clé {r.ccpKey}</span>
                     </td>
                     <td className="py-2.5 px-3 font-sans">
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
@@ -590,7 +590,7 @@ export const LogisticsCodView: React.FC = () => {
               </div>
               <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex justify-between font-bold text-sm">
                 <span>Net Journalier à Payer:</span>
-                <span className="font-mono text-[#C4785A]">{formatMoney(salariedDriverPay.netPayoutDzd)}</span>
+                <span className="font-mono text-[#d4522f]">{formatMoney(salariedDriverPay.netPayoutDzd)}</span>
               </div>
             </div>
           </div>

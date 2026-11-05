@@ -176,7 +176,7 @@ export const EducationTimetableView: React.FC = () => {
     if (dates.length === 0) {
       return (
         <div className="py-16 text-center text-neutral-400">
-          <CalendarIcon size={32} className="mx-auto mb-2 opacity-40 text-[#C4785A]" />
+          <CalendarIcon size={32} className="mx-auto mb-2 opacity-40 text-[#d4522f]" />
           <p className="text-xs font-semibold">{isAr ? 'لا توجد حصص مجدولة حالياً' : 'Aucune séance programmée dans le planning'}</p>
         </div>
       );
@@ -196,7 +196,7 @@ export const EducationTimetableView: React.FC = () => {
             >
               <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-[#C4785A]" />
+                  <div className="w-2 h-2 rounded-full bg-[#d4522f]" />
                   <span className="font-mono text-xs font-bold text-neutral-800 dark:text-neutral-100">
                     {dateStr}
                   </span>
@@ -216,12 +216,12 @@ export const EducationTimetableView: React.FC = () => {
                       onClick={() => setSelectedSession(s)}
                       className={`p-3 rounded-xl border transition-all cursor-pointer ${
                         isSelected
-                          ? 'border-[#C4785A] bg-[#FCEEE8]/40 dark:bg-neutral-800 shadow-xs'
-                          : 'border-neutral-200/70 dark:border-neutral-700/60 hover:border-[#C4785A]/60 bg-neutral-50/50 dark:bg-neutral-800/40'
+                          ? 'border-[#d4522f] bg-[#FCEEE8]/40 dark:bg-neutral-800 shadow-xs'
+                          : 'border-neutral-200/70 dark:border-neutral-700/60 hover:border-[#d4522f]/60 bg-neutral-50/50 dark:bg-neutral-800/40'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-1 mb-1.5">
-                        <span className="font-mono text-[11px] font-bold text-[#C4785A] flex items-center gap-1">
+                        <span className="font-mono text-[11px] font-bold text-[#d4522f] flex items-center gap-1">
                           <Clock size={11} />
                           {s.startTime} - {s.endTime}
                         </span>
@@ -241,7 +241,7 @@ export const EducationTimetableView: React.FC = () => {
                       )}
                       <div className="mt-2 pt-2 border-t border-neutral-200/50 dark:border-neutral-700/50 flex items-center justify-between text-[10px] text-neutral-400">
                         <span className="flex items-center gap-1 truncate max-w-[110px]">
-                          <MapPin size={10} className="text-[#C4785A]" />
+                          <MapPin size={10} className="text-[#d4522f]" />
                           {s.classroomName || 'Salle'}
                         </span>
                         <span className="flex items-center gap-1 truncate max-w-[110px]">
@@ -281,7 +281,7 @@ export const EducationTimetableView: React.FC = () => {
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
               <CalendarIcon size={22} />
             </div>
             <div>
@@ -464,7 +464,7 @@ export const EducationTimetableView: React.FC = () => {
                   sortable: true,
                   renderCell: (s) => (
                     <div className="space-y-0.5 font-mono">
-                      <div className="font-bold text-xs text-[#C4785A] flex items-center gap-1.5">
+                      <div className="font-bold text-xs text-[#d4522f] flex items-center gap-1.5">
                         <CalendarIcon size={12} />
                         <span>{s.date}</span>
                       </div>
@@ -498,7 +498,7 @@ export const EducationTimetableView: React.FC = () => {
                   width: '140px',
                   renderCell: (s) => (
                     <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 flex items-center gap-1">
-                      <MapPin size={12} className="text-[#C4785A]" />
+                      <MapPin size={12} className="text-[#d4522f]" />
                       <span>{s.classroomName || 'Non assignée'}</span>
                     </span>
                   ),
@@ -539,7 +539,7 @@ export const EducationTimetableView: React.FC = () => {
                 return (
                   <div className="p-4 flex flex-col justify-between h-full space-y-3">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="font-mono text-xs font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded">
+                      <div className="font-mono text-xs font-bold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded">
                         {s.startTime} - {s.endTime}
                       </div>
                       {hasConflict ? (
@@ -580,7 +580,7 @@ export const EducationTimetableView: React.FC = () => {
               {/* Inspector Top Header */}
               <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                  <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                     <CalendarIcon size={16} />
                   </div>
                   <div>
@@ -606,7 +606,7 @@ export const EducationTimetableView: React.FC = () => {
                   onClick={() => setInspectorTab('seance')}
                   className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                     inspectorTab === 'seance'
-                      ? 'border-[#C4785A] text-[#C4785A]'
+                      ? 'border-[#d4522f] text-[#d4522f]'
                       : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                   }`}
                 >
@@ -616,7 +616,7 @@ export const EducationTimetableView: React.FC = () => {
                   onClick={() => setInspectorTab('salle')}
                   className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                     inspectorTab === 'salle'
-                      ? 'border-[#C4785A] text-[#C4785A]'
+                      ? 'border-[#d4522f] text-[#d4522f]'
                       : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                   }`}
                 >
@@ -626,7 +626,7 @@ export const EducationTimetableView: React.FC = () => {
                   onClick={() => setInspectorTab('emargement')}
                   className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                     inspectorTab === 'emargement'
-                      ? 'border-[#C4785A] text-[#C4785A]'
+                      ? 'border-[#d4522f] text-[#d4522f]'
                       : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                   }`}
                 >
@@ -699,7 +699,7 @@ export const EducationTimetableView: React.FC = () => {
                           setRollCallSession(selectedSession);
                           setIsRollCallOpen(true);
                         }}
-                        className="w-full py-2 rounded-lg text-xs font-bold bg-[#C4785A] hover:bg-[#b06a4e] text-white transition-colors"
+                        className="w-full py-2 rounded-lg text-xs font-bold bg-[#d4522f] hover:bg-[#b06a4e] text-white transition-colors"
                       >
                         Lancer l'Appel des Présences
                       </button>
@@ -736,7 +736,7 @@ export const EducationTimetableView: React.FC = () => {
           <div className="bg-white dark:bg-neutral-900 rounded-[28px] border border-neutral-200 dark:border-neutral-800 p-6 w-full max-w-md shadow-xl space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2">
-                <CalendarIcon size={20} className="text-[#C4785A]" />
+                <CalendarIcon size={20} className="text-[#d4522f]" />
                 <h3 className="font-bold text-base text-neutral-900 dark:text-white">
                   {t('edu_btn_add_session')}
                 </h3>

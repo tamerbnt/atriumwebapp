@@ -160,7 +160,7 @@ export const RealEstateMandatesView: React.FC = () => {
         {/* Header & Controls */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-sm">
+            <div className="w-11 h-11 rounded-2xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-sm">
               <FileText className="w-6 h-6" />
             </div>
             <div>
@@ -222,7 +222,7 @@ export const RealEstateMandatesView: React.FC = () => {
             <div className="text-xs text-neutral-500 dark:text-neutral-400 uppercase font-semibold">
               {isAr ? 'وكالات حصرية' : 'Mandats Exclusifs'}
             </div>
-            <div className="text-2xl font-bold text-[#C4785A] mt-1 font-mono">
+            <div className="text-2xl font-bold text-[#d4522f] mt-1 font-mono">
               {exclusiveCount}
             </div>
             <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
@@ -275,10 +275,10 @@ export const RealEstateMandatesView: React.FC = () => {
               header: isAr ? 'رقم الوكالة والعقار' : 'N° Mandat & Bien',
               renderCell: (m: RealEstateMandate) => (
                 <div>
-                  <div className="font-mono font-bold text-xs text-[#C4785A] flex items-center gap-1.5">
+                  <div className="font-mono font-bold text-xs text-[#d4522f] flex items-center gap-1.5">
                     <span>{m.mandateNumber}</span>
                     {m.isExclusive && (
-                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-sm bg-[#C4785A]/15 text-[#C4785A]">
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-sm bg-[#d4522f]/15 text-[#d4522f]">
                         Exclusif
                       </span>
                     )}
@@ -324,7 +324,7 @@ export const RealEstateMandatesView: React.FC = () => {
               sortable: true,
               renderCell: (m: RealEstateMandate) => (
                 <div className="text-xs">
-                  <div className="font-mono font-bold text-[#C4785A]">
+                  <div className="font-mono font-bold text-[#d4522f]">
                     {formatMoney(m.commissionEstimatedTtcDzd, language)}
                   </div>
                   <div className="text-[11px] text-neutral-500 dark:text-neutral-400">
@@ -371,7 +371,7 @@ export const RealEstateMandatesView: React.FC = () => {
           renderCard={(m: RealEstateMandate) => (
             <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-700/60 bg-white dark:bg-neutral-800 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="font-mono font-bold text-xs text-[#C4785A]">
+                <span className="font-mono font-bold text-xs text-[#d4522f]">
                   {m.mandateNumber}
                 </span>
                 <span
@@ -399,7 +399,7 @@ export const RealEstateMandatesView: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <span className="text-[10px] text-neutral-400 block">Com. TTC (09-18)</span>
-                  <span className="font-mono font-bold text-[#C4785A]">
+                  <span className="font-mono font-bold text-[#d4522f]">
                     {formatMoney(m.commissionEstimatedTtcDzd, language)}
                   </span>
                 </div>
@@ -415,7 +415,7 @@ export const RealEstateMandatesView: React.FC = () => {
           <div className="space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800">
               <div>
-                <span className="text-[11px] font-mono font-bold text-[#C4785A]">
+                <span className="text-[11px] font-mono font-bold text-[#d4522f]">
                   {selectedMandate.mandateNumber}
                 </span>
                 <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
@@ -452,7 +452,7 @@ export const RealEstateMandatesView: React.FC = () => {
 
             {/* Property Specs */}
             <div className="space-y-2">
-              <span className="text-xs font-semibold uppercase text-[#C4785A]">Bien Sous Contrat</span>
+              <span className="text-xs font-semibold uppercase text-[#d4522f]">Bien Sous Contrat</span>
               <div className="p-3.5 rounded-xl border border-[#E9EEF0] dark:border-neutral-700/60 text-xs space-y-1">
                 <div className="font-bold text-neutral-900 dark:text-white">{selectedMandate.propertyTitle}</div>
                 <div className="text-neutral-500 dark:text-neutral-400">{selectedMandate.propertyAddress}</div>
@@ -469,7 +469,7 @@ export const RealEstateMandatesView: React.FC = () => {
 
             {/* Owner Identity */}
             <div className="space-y-2">
-              <span className="text-xs font-semibold uppercase text-[#C4785A]">Identité du Mandant</span>
+              <span className="text-xs font-semibold uppercase text-[#d4522f]">Identité du Mandant</span>
               <div className="p-3.5 rounded-xl border border-[#E9EEF0] dark:border-neutral-700/60 text-xs space-y-1.5">
                 <div className="font-semibold text-neutral-900 dark:text-white">{selectedMandate.ownerFullName}</div>
                 <div className="text-neutral-500 font-mono">{selectedMandate.ownerPhone}</div>
@@ -482,8 +482,8 @@ export const RealEstateMandatesView: React.FC = () => {
 
             {/* Commission Breakdown */}
             <div className="space-y-2">
-              <span className="text-xs font-semibold uppercase text-[#C4785A]">Honoraires Réglementés</span>
-              <div className="p-3.5 rounded-xl bg-[#FDF4F0] dark:bg-neutral-800 border border-[#C4785A]/30 text-xs space-y-1.5">
+              <span className="text-xs font-semibold uppercase text-[#d4522f]">Honoraires Réglementés</span>
+              <div className="p-3.5 rounded-xl bg-[#FDF4F0] dark:bg-neutral-800 border border-[#d4522f]/30 text-xs space-y-1.5">
                 <div className="flex justify-between">
                   <span>Base HT:</span>
                   <span className="font-mono font-semibold">{formatMoney(selectedMandate.commissionEstimatedHtDzd, language)}</span>
@@ -492,7 +492,7 @@ export const RealEstateMandatesView: React.FC = () => {
                   <span>TVA Légale (19%):</span>
                   <span className="font-mono font-semibold">{formatMoney(Math.round(selectedMandate.commissionEstimatedHtDzd * 0.19), language)}</span>
                 </div>
-                <div className="flex justify-between pt-1 border-t border-[#C4785A]/30 font-bold text-sm text-[#C4785A]">
+                <div className="flex justify-between pt-1 border-t border-[#d4522f]/30 font-bold text-sm text-[#d4522f]">
                   <span>Total TTC Estimé:</span>
                   <span className="font-mono">{formatMoney(selectedMandate.commissionEstimatedTtcDzd, language)}</span>
                 </div>

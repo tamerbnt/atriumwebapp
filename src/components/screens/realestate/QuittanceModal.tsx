@@ -106,7 +106,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#E2E8EC] dark:border-[#27272A] mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
               <Receipt className="w-5 h-5" />
             </div>
             <div>
@@ -188,7 +188,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
           <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-[#141416] border border-[#EDF1F3] dark:border-[#232328] space-y-3">
             <div className="flex items-center justify-between text-xs font-semibold text-[#64748B] dark:text-[#A1A1AA] uppercase">
               <span>Décompte Légal de la Quittance</span>
-              <span className="flex items-center gap-1 text-[#C4785A]">
+              <span className="flex items-center gap-1 text-[#d4522f]">
                 <Stamp className="w-3.5 h-3.5" />
                 <span>Code du Timbre Art. 317</span>
               </span>
@@ -204,14 +204,14 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
                 <span className="flex items-center gap-1">
                   <span>Droit de Timbre Fiscal ({paymentMethod === 'Cash' ? '1% progressif' : 'Exonéré'})</span>
                 </span>
-                <span className="font-mono font-bold text-[#C4785A]">
+                <span className="font-mono font-bold text-[#d4522f]">
                   {timbreFiscalDzd > 0 ? `+ ${timbreFiscalDzd.toLocaleString()} DZD` : '0 DZD (Exonéré)'}
                 </span>
               </div>
 
               <div className="flex justify-between py-1.5 text-sm font-bold text-[#18181B] dark:text-white">
                 <span>Total Net Encaissé du Locataire</span>
-                <span className="font-mono text-base text-[#C4785A]">
+                <span className="font-mono text-base text-[#d4522f]">
                   {totalCollectedDzd.toLocaleString()} DZD
                 </span>
               </div>

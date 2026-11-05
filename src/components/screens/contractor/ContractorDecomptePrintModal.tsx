@@ -36,7 +36,7 @@ export const ContractorDecomptePrintModal: React.FC<ContractorDecomptePrintModal
         {/* Modal Action Header (Hidden during print) */}
         <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3 print:hidden">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
               <FileText size={18} />
             </div>
             <div>
@@ -95,7 +95,7 @@ export const ContractorDecomptePrintModal: React.FC<ContractorDecomptePrintModal
               </p>
             </div>
             <div className="text-right">
-              <span className="inline-flex items-center gap-1 bg-[#C4785A]/10 text-[#C4785A] px-2.5 py-1 rounded-md text-[11px] font-bold">
+              <span className="inline-flex items-center gap-1 bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-md text-[11px] font-bold">
                 <ShieldCheck size={13} />
                 Décret Présidentiel 15-247
               </span>

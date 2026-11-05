@@ -135,7 +135,7 @@ export const RealEstateInspectionsView: React.FC = () => {
       {/* Top Header Strip with Action Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <FileCheck size={22} />
           </div>
           <div>
@@ -143,7 +143,7 @@ export const RealEstateInspectionsView: React.FC = () => {
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
                 {isAr ? 'معاينة الأماكن (États des Lieux)' : 'États des Lieux d\'Entrée & Sortie'}
               </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
                 Conforme Juridique
               </span>
             </div>
@@ -175,7 +175,7 @@ export const RealEstateInspectionsView: React.FC = () => {
           onClick={() => setMainTab('inspections')}
           className={`px-4 py-2 text-xs font-semibold rounded-xl transition-colors ${
             mainTab === 'inspections'
-              ? 'bg-[#C4785A] text-white shadow-xs'
+              ? 'bg-[#d4522f] text-white shadow-xs'
               : 'text-[#64748B] hover:text-[#18181B] dark:hover:text-white'
           }`}
         >
@@ -185,7 +185,7 @@ export const RealEstateInspectionsView: React.FC = () => {
           onClick={() => setMainTab('visits')}
           className={`px-4 py-2 text-xs font-semibold rounded-xl transition-colors ${
             mainTab === 'visits'
-              ? 'bg-[#C4785A] text-white shadow-xs'
+              ? 'bg-[#d4522f] text-white shadow-xs'
               : 'text-[#64748B] hover:text-[#18181B] dark:hover:text-white'
           }`}
         >
@@ -433,7 +433,7 @@ export const RealEstateInspectionsView: React.FC = () => {
             {/* Inspector Top Header */}
             <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                   <ClipboardCheck size={16} />
                 </div>
                 <div>
@@ -459,7 +459,7 @@ export const RealEstateInspectionsView: React.FC = () => {
                 onClick={() => setInspectorTab('constat')}
                 className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                   inspectorTab === 'constat'
-                    ? 'border-[#C4785A] text-[#C4785A]'
+                    ? 'border-[#d4522f] text-[#d4522f]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                 }`}
               >
@@ -469,7 +469,7 @@ export const RealEstateInspectionsView: React.FC = () => {
                 onClick={() => setInspectorTab('compteurs')}
                 className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                   inspectorTab === 'compteurs'
-                    ? 'border-[#C4785A] text-[#C4785A]'
+                    ? 'border-[#d4522f] text-[#d4522f]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                 }`}
               >
@@ -479,7 +479,7 @@ export const RealEstateInspectionsView: React.FC = () => {
                 onClick={() => setInspectorTab('pieces')}
                 className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                   inspectorTab === 'pieces'
-                    ? 'border-[#C4785A] text-[#C4785A]'
+                    ? 'border-[#d4522f] text-[#d4522f]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                 }`}
               >

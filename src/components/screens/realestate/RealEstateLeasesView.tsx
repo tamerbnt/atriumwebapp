@@ -193,14 +193,14 @@ export const RealEstateLeasesView: React.FC = () => {
       minWidth: '220px',
       cell: (l) => (
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-bold text-xs shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0">
             <Key size={16} />
           </div>
           <div>
             <div className="font-semibold text-xs text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5 line-clamp-1">
               {l.propertyTitle}
               {pinnedIds.has(l.id) && (
-                <Pin size={10} className="fill-[#C4785A] text-[#C4785A]" />
+                <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />
               )}
             </div>
             <div className="text-[10px] text-neutral-400">
@@ -303,7 +303,7 @@ export const RealEstateLeasesView: React.FC = () => {
       {/* Top Header Strip with Action Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <Key size={22} />
           </div>
           <div>
@@ -311,7 +311,7 @@ export const RealEstateLeasesView: React.FC = () => {
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
                 {isAr ? 'عقود الكراء والاتفاقيات' : 'Baux & Contrats de Location'}
               </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
                 {leases.length} {isAr ? 'عقد' : 'baux'}
               </span>
             </div>
@@ -483,7 +483,7 @@ export const RealEstateLeasesView: React.FC = () => {
             renderGridCard={(l) => (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2.5 py-1 rounded-lg border border-[#C4785A]/20">
+                  <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg border border-[#d4522f]/20">
                     {formatMoney(l.monthlyRentDzd)} /mois
                   </span>
                   <span
@@ -521,7 +521,7 @@ export const RealEstateLeasesView: React.FC = () => {
             {/* Drawer Header */}
             <div className="flex items-start justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-bold">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold">
                   <Key size={18} />
                 </div>
                 <div>
@@ -556,7 +556,7 @@ export const RealEstateLeasesView: React.FC = () => {
             <div className="flex items-center gap-1.5 flex-wrap">
               <button
                 onClick={() => handleEmitReceipt(selectedLease)}
-                className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-orange-50 text-[#C4785A] hover:bg-orange-100 dark:bg-orange-950/40 dark:hover:bg-orange-900/60 transition-colors"
+                className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-orange-50 text-[#d4522f] hover:bg-orange-100 dark:bg-orange-950/40 dark:hover:bg-orange-900/60 transition-colors"
               >
                 <FileText size={12} />
                 {isAr ? 'مخالصة' : 'Quittance'}
@@ -582,7 +582,7 @@ export const RealEstateLeasesView: React.FC = () => {
                 onClick={() => setActiveTab('bail')}
                 className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
                   activeTab === 'bail'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                    ? 'border-[#d4522f] text-[#d4522f] font-bold'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -592,7 +592,7 @@ export const RealEstateLeasesView: React.FC = () => {
                 onClick={() => setActiveTab('finance')}
                 className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
                   activeTab === 'finance'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                    ? 'border-[#d4522f] text-[#d4522f] font-bold'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -602,7 +602,7 @@ export const RealEstateLeasesView: React.FC = () => {
                 onClick={() => setActiveTab('quittances')}
                 className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
                   activeTab === 'quittances'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                    ? 'border-[#d4522f] text-[#d4522f] font-bold'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -612,7 +612,7 @@ export const RealEstateLeasesView: React.FC = () => {
                 onClick={() => setActiveTab('notes')}
                 className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
                   activeTab === 'notes'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                    ? 'border-[#d4522f] text-[#d4522f] font-bold'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -659,7 +659,7 @@ export const RealEstateLeasesView: React.FC = () => {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-neutral-500">Périodicité:</span>
-                    <span className="font-semibold text-[#C4785A]">
+                    <span className="font-semibold text-[#d4522f]">
                       {selectedLease.paymentFrequency}
                     </span>
                   </div>
@@ -704,7 +704,7 @@ export const RealEstateLeasesView: React.FC = () => {
                       className="p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1.5"
                     >
                       <div className="flex items-center justify-between font-semibold text-[11px]">
-                        <span className="font-mono text-[#C4785A] font-bold">{q.quittanceNumber}</span>
+                        <span className="font-mono text-[#d4522f] font-bold">{q.quittanceNumber}</span>
                         <span className="text-emerald-600 font-mono text-[10px]">Paiement {q.paymentMethod}</span>
                       </div>
                       <div className="flex justify-between items-center text-neutral-600 dark:text-neutral-300">
@@ -728,7 +728,7 @@ export const RealEstateLeasesView: React.FC = () => {
 
                 <button
                   onClick={() => handleEmitReceipt(selectedLease)}
-                  className="w-full py-2.5 rounded-xl bg-[#C4785A] text-white hover:bg-[#a86246] font-semibold text-xs shadow-xs transition-colors"
+                  className="w-full py-2.5 rounded-xl bg-[#d4522f] text-white hover:bg-[#a86246] font-semibold text-xs shadow-xs transition-colors"
                 >
                   + Encaisser Loyer & Émettre Quittance
                 </button>
@@ -746,11 +746,11 @@ export const RealEstateLeasesView: React.FC = () => {
                   value={inspectorNotes}
                   onChange={(e) => setInspectorNotes(e.target.value)}
                   placeholder="Noter les conditions spécifiques d'entretien chaudière, taxe d'habitation..."
-                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#C4785A] outline-hidden resize-none"
+                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none"
                 />
                 <button
                   onClick={handleSaveNotes}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#C4785A] text-white hover:bg-[#a86246] transition-colors font-medium text-xs shadow-xs"
+                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#d4522f] text-white hover:bg-[#a86246] transition-colors font-medium text-xs shadow-xs"
                 >
                   {noteSaved ? (
                     <>

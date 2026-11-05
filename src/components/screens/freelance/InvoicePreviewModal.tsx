@@ -111,7 +111,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 pb-6 border-b border-neutral-100 dark:border-neutral-800">
             <div>
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-[#C4785A] text-white flex items-center justify-center font-black text-sm shadow-xs">
+                <div className="w-8 h-8 rounded-xl bg-[#d4522f] text-white flex items-center justify-center font-black text-sm shadow-xs">
                   {businessName.charAt(0).toUpperCase()}
                 </div>
                 <span className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
@@ -130,7 +130,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
               <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">
                 {t('free_invoice_total', language)}
               </span>
-              <span className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums block text-[#C4785A]">
+              <span className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums block text-[#d4522f]">
                 {formatCurrencyAmount(invoice.totalAmount, invoice.currency)}
               </span>
               <div className={`text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-2 pt-1 ${isRtl ? 'sm:justify-start' : 'sm:justify-end'}`}>
@@ -232,7 +232,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
                 )}
                 <div className="flex justify-between pt-2 border-t border-neutral-200 dark:border-neutral-800 text-sm font-black text-neutral-900 dark:text-white">
                   <span>{t('free_inv_doc_grand_total', language)}</span>
-                  <span className="text-[#C4785A] tabular-nums">
+                  <span className="text-[#d4522f] tabular-nums">
                     {formatCurrencyAmount(invoice.totalAmount, invoice.currency)}
                   </span>
                 </div>
@@ -245,13 +245,13 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
             <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/60 border border-[#EDF1F3] dark:border-neutral-800 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
-                  <CreditCard size={14} className="text-[#C4785A]" />
+                  <CreditCard size={14} className="text-[#d4522f]" />
                   {t('free_inv_doc_rib_label', language)}
                 </span>
                 <button
                   type="button"
                   onClick={handleCopyRib}
-                  className="text-[11px] font-semibold text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer"
+                  className="text-[11px] font-semibold text-[#d4522f] hover:underline flex items-center gap-1 cursor-pointer"
                 >
                   {copied ? <Check size={12} /> : <Copy size={12} />}
                   <span>{copied ? t('free_inv_doc_rib_copied', language) : t('free_inv_doc_copy_rib', language)}</span>

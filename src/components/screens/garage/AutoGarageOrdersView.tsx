@@ -207,7 +207,7 @@ export const AutoGarageOrdersView: React.FC = () => {
       sortable: true,
       width: '140px',
       cell: (o) => (
-        <div className="flex items-center gap-1.5 font-mono font-bold text-[#C4785A]">
+        <div className="flex items-center gap-1.5 font-mono font-bold text-[#d4522f]">
           <span>{o.orderNumber}</span>
         </div>
       ),
@@ -302,7 +302,7 @@ export const AutoGarageOrdersView: React.FC = () => {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
-              <Wrench className="text-[#C4785A]" size={24} />
+              <Wrench className="text-[#d4522f]" size={24} />
               <span>
                 {isAr
                   ? 'سير العمل وأوامر التصليح (OR)'
@@ -351,7 +351,7 @@ export const AutoGarageOrdersView: React.FC = () => {
             <span className="text-[11px] font-semibold text-neutral-400 block">
               {isAr ? 'جسور الرفع المشغولة' : 'Ponts Occupés'}
             </span>
-            <span className="text-xl font-black text-[#C4785A] font-mono mt-0.5 block">
+            <span className="text-xl font-black text-[#d4522f] font-mono mt-0.5 block">
               {occupiedBaysCount} / {bays.length}
             </span>
           </div>
@@ -381,7 +381,7 @@ export const AutoGarageOrdersView: React.FC = () => {
         <div className="p-4 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
-              <Wrench size={14} className="text-[#C4785A]" />
+              <Wrench size={14} className="text-[#d4522f]" />
               {isAr ? 'حالة جسور الرفع والورشة في الوقت الفعلي' : 'Occupation Temps Réel des Ponts & Postes Atelier'}
             </span>
             <span className="text-[11px] text-neutral-400">
@@ -468,12 +468,12 @@ export const AutoGarageOrdersView: React.FC = () => {
                           onClick={() => setSelectedOrder(order)}
                           className={`p-3 rounded-2xl border transition-all cursor-pointer space-y-2 ${
                             selectedOrder?.id === order.id
-                              ? 'bg-[#FDF4F0] dark:bg-neutral-800 border-[#C4785A] shadow-xs'
+                              ? 'bg-[#FDF4F0] dark:bg-neutral-800 border-[#d4522f] shadow-xs'
                               : 'bg-[#F8F9FA] dark:bg-neutral-800/40 border-neutral-200/60 dark:border-neutral-700/60 hover:border-neutral-400'
                           }`}
                         >
                           <div className="flex items-center justify-between">
-                            <span className="font-mono text-xs font-bold text-[#C4785A]">
+                            <span className="font-mono text-xs font-bold text-[#d4522f]">
                               {order.orderNumber}
                             </span>
                             <span className="text-[10px] text-neutral-400 font-mono">
@@ -506,7 +506,7 @@ export const AutoGarageOrdersView: React.FC = () => {
                               e.stopPropagation();
                               handleNextStatus(order);
                             }}
-                            className="w-full mt-1 py-1 rounded-xl bg-white dark:bg-neutral-700 hover:bg-[#C4785A] hover:text-white text-neutral-700 dark:text-neutral-200 text-[10px] font-bold flex items-center justify-center gap-1 border border-neutral-200 dark:border-neutral-600 transition-colors"
+                            className="w-full mt-1 py-1 rounded-xl bg-white dark:bg-neutral-700 hover:bg-[#d4522f] hover:text-white text-neutral-700 dark:text-neutral-200 text-[10px] font-bold flex items-center justify-center gap-1 border border-neutral-200 dark:border-neutral-600 transition-colors"
                           >
                             <span>{isAr ? 'تقديم المرحلة' : 'Avancer étape'}</span>
                             <ArrowRight size={10} />
@@ -589,7 +589,7 @@ export const AutoGarageOrdersView: React.FC = () => {
           {/* Drawer Header */}
           <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between bg-neutral-50/50 dark:bg-neutral-800/40">
             <div>
-              <span className="font-mono text-xs font-bold text-[#C4785A] block">
+              <span className="font-mono text-xs font-bold text-[#d4522f] block">
                 {selectedOrder.orderNumber}
               </span>
               <h2 className="font-bold text-sm text-neutral-900 dark:text-white truncate">
@@ -617,7 +617,7 @@ export const AutoGarageOrdersView: React.FC = () => {
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`px-3 py-2 font-bold border-b-2 transition-all cursor-pointer ${
                   activeTab === tab.id
-                    ? 'border-[#C4785A] text-[#C4785A]'
+                    ? 'border-[#d4522f] text-[#d4522f]'
                     : 'border-transparent text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200'
                 }`}
               >
@@ -639,7 +639,7 @@ export const AutoGarageOrdersView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleNextStatus(selectedOrder)}
-                    className="w-full py-2 bg-[#C4785A] hover:bg-[#b3684a] text-white font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                    className="w-full py-2 bg-[#d4522f] hover:bg-[#b03b1b] text-white font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
                   >
                     <span>{isAr ? 'نقل للمرحلة التالية' : 'Passer à l\'étape suivante'}</span>
                     <ArrowRight size={13} />
@@ -671,7 +671,7 @@ export const AutoGarageOrdersView: React.FC = () => {
                 <div className="grid grid-cols-2 gap-2">
                   <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-2xl border border-neutral-200/60 dark:border-neutral-700">
                     <span className="text-[10px] text-neutral-400 flex items-center gap-1">
-                      <Gauge size={12} className="text-[#C4785A]" />
+                      <Gauge size={12} className="text-[#d4522f]" />
                       Kilométrage
                     </span>
                     <span className="font-mono font-bold text-sm text-neutral-900 dark:text-white mt-1 block">
@@ -681,7 +681,7 @@ export const AutoGarageOrdersView: React.FC = () => {
 
                   <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-2xl border border-neutral-200/60 dark:border-neutral-700">
                     <span className="text-[10px] text-neutral-400 flex items-center gap-1">
-                      <Fuel size={12} className="text-[#C4785A]" />
+                      <Fuel size={12} className="text-[#d4522f]" />
                       Carburant
                     </span>
                     <span className="font-mono font-bold text-sm text-neutral-900 dark:text-white mt-1 block">
@@ -693,7 +693,7 @@ export const AutoGarageOrdersView: React.FC = () => {
                 {/* Damage Summary */}
                 <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/60 dark:border-neutral-700/60 space-y-1.5">
                   <span className="font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5">
-                    <Camera size={13} className="text-[#C4785A]" />
+                    <Camera size={13} className="text-[#d4522f]" />
                     {isAr ? 'أضرار الهيكل المسجلة عند الدخول' : 'Dommages notifiés lors du walkaround'} ({(selectedOrder.damageMarkers || []).length})
                   </span>
                   {(selectedOrder.damageMarkers || []).length === 0 ? (
@@ -702,7 +702,7 @@ export const AutoGarageOrdersView: React.FC = () => {
                     <ul className="space-y-1">
                       {selectedOrder.damageMarkers?.map((dm, i) => (
                         <li key={dm.id} className="text-[11px] text-neutral-600 dark:text-neutral-300 flex items-center gap-1.5">
-                          <span className="w-4 h-4 rounded-full bg-[#C4785A] text-white flex items-center justify-center text-[9px] font-bold">
+                          <span className="w-4 h-4 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-[9px] font-bold">
                             {i + 1}
                           </span>
                           <span className="capitalize font-semibold">{dm.damageType}</span>
@@ -750,7 +750,7 @@ export const AutoGarageOrdersView: React.FC = () => {
                         <div className="flex items-center justify-between text-[11px] text-neutral-400 font-mono">
                           <span>{p.sku}</span>
                           {!isMechanicRole && (
-                            <span className="font-bold text-[#C4785A]">
+                            <span className="font-bold text-[#d4522f]">
                               {formatMoney(p.totalPriceDzd, language)}
                             </span>
                           )}
@@ -797,7 +797,7 @@ export const AutoGarageOrdersView: React.FC = () => {
                           );
                           updateOrder({ ...selectedOrder, technicianChecklist: updated });
                         }}
-                        className="rounded text-[#C4785A] focus:ring-[#C4785A]"
+                        className="rounded text-[#d4522f] focus:ring-[#d4522f]"
                       />
                       <span className={`text-xs ${item.done ? 'line-through text-neutral-400' : 'text-neutral-800 dark:text-neutral-200'}`}>
                         {item.label}
@@ -820,7 +820,7 @@ export const AutoGarageOrdersView: React.FC = () => {
                     <span className="text-neutral-500">Pièces détachées HT :</span>
                     <span className="font-bold">{formatMoney(selectedOrder.partsCostDzd || 15500, language)}</span>
                   </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-neutral-200 dark:border-neutral-700 text-sm font-black text-[#C4785A]">
+                  <div className="flex items-center justify-between pt-2 border-t border-neutral-200 dark:border-neutral-700 text-sm font-black text-[#d4522f]">
                     <span>Total Facturable :</span>
                     <span>{formatMoney(selectedOrder.finalCostDzd || selectedOrder.estimatedCostDzd, language)}</span>
                   </div>
@@ -849,7 +849,7 @@ export const AutoGarageOrdersView: React.FC = () => {
           <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4">
             <div className="flex items-center justify-between border-b pb-3 border-neutral-100 dark:border-neutral-800">
               <h3 className="font-bold text-sm text-neutral-900 dark:text-white flex items-center gap-2">
-                <Boxes size={16} className="text-[#C4785A]" />
+                <Boxes size={16} className="text-[#d4522f]" />
                 <span>{isAr ? 'صرف قطعة غيار لأمر التصليح' : 'Sortie Pièce Magasin (Réquisition)'}</span>
               </h3>
               <button

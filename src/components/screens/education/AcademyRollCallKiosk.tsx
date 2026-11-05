@@ -277,7 +277,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-5 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center shrink-0">
               <GraduationCap size={24} />
             </div>
             <div>
@@ -328,7 +328,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
               <button
                 type="button"
                 onClick={handleSubmitRollCall}
-                className="h-10 px-4 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                className="h-10 px-4 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
               >
                 <CheckCircle2 size={16} />
                 <span>{isRtl ? 'تأكيد وقفل ورقة الحضور' : 'Valider & Verrouiller l\'Appel'}</span>
@@ -341,7 +341,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
         {activeSession && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800 text-xs">
             <div className="flex items-center gap-2">
-              <BookOpen size={16} className="text-[#C4785A] shrink-0" />
+              <BookOpen size={16} className="text-[#d4522f] shrink-0" />
               <div>
                 <span className="text-2xs text-neutral-400 block">{isRtl ? 'الفوج / الدورة' : 'Promotion'}</span>
                 <span className="font-bold text-neutral-800 dark:text-neutral-200 truncate block">
@@ -421,11 +421,11 @@ export const AcademyRollCallKiosk: React.FC = () => {
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#C4785A]/10 border border-[#C4785A]/25 shadow-2xs col-span-2 sm:col-span-1">
-          <span className="text-2xs text-[#C4785A] font-bold uppercase tracking-wider block">
+        <div className="p-4 rounded-2xl bg-[#d4522f]/10 border border-[#d4522f]/25 shadow-2xs col-span-2 sm:col-span-1">
+          <span className="text-2xs text-[#d4522f] font-bold uppercase tracking-wider block">
             {isRtl ? 'نسبة الحضور' : 'Taux de Présence'}
           </span>
-          <div className="text-xl font-black font-mono text-[#C4785A] mt-1">
+          <div className="text-xl font-black font-mono text-[#d4522f] mt-1">
             {stats.ratePercent}%
           </div>
         </div>
@@ -457,7 +457,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={isRtl ? 'بحث باسم الطالب أو الهاتف...' : 'Filtrer par nom ou tél...'}
-              className="w-full h-10 pl-9 pr-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#C4785A]/30"
+              className="w-full h-10 pl-9 pr-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
             />
           </div>
         </div>

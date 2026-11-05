@@ -222,7 +222,7 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
             </div>
             <div className="flex justify-between items-center">
               <span className="font-medium">Subvention de l’État ONIL (12 DA/L) :</span>
-              <span className="font-mono font-bold text-sm text-[#C4785A]">
+              <span className="font-mono font-bold text-sm text-[#d4522f]">
                 + {formatMoney(subsidy.subsidyAmountDzd)}
               </span>
             </div>

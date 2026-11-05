@@ -341,7 +341,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   onClick={() => setBookingMode('registered')}
                   className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
                     bookingMode === 'registered'
-                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-xs'
+                      ? 'bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-xs'
                       : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
                   }`}
                 >
@@ -352,7 +352,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   onClick={() => setBookingMode('walkin')}
                   className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
                     bookingMode === 'walkin'
-                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-xs'
+                      ? 'bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-xs'
                       : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
                   }`}
                 >
@@ -547,7 +547,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
             placeholder={t('apt_ph_notes', language)}
-            className="w-full p-2.5 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-[#C4785A]"
+            className="w-full p-2.5 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-[#d4522f]"
           />
         </div>
 

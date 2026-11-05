@@ -155,7 +155,7 @@ export const AgricultureWholesaleView: React.FC = () => {
       {/* Top Header Strip with Action Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <Wallet size={22} />
           </div>
           <div>
@@ -163,7 +163,7 @@ export const AgricultureWholesaleView: React.FC = () => {
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
                 {isAr ? 'مبيعات سوق الجملة والسيولة الفلاحية' : 'Comptabilité Mandataires & Ventes Gros'}
               </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
                 Commission 6%
               </span>
             </div>
@@ -310,7 +310,7 @@ export const AgricultureWholesaleView: React.FC = () => {
                 sortable: true,
                 renderCell: (t) => (
                   <div className="flex items-center gap-1.5 font-mono font-bold text-xs">
-                    <span className="bg-[#C4785A]/10 text-[#C4785A] px-2 py-0.5 rounded border border-[#C4785A]/20">
+                    <span className="bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded border border-[#d4522f]/20">
                       {t.ticketNumber}
                     </span>
                   </div>
@@ -403,7 +403,7 @@ export const AgricultureWholesaleView: React.FC = () => {
               return (
                 <div className="p-4 flex flex-col justify-between h-full space-y-3">
                   <div className="flex items-start justify-between gap-2">
-                    <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2 py-0.5 rounded border border-[#C4785A]/20">
+                    <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded border border-[#d4522f]/20">
                       {t.ticketNumber}
                     </span>
                     <span
@@ -435,7 +435,7 @@ export const AgricultureWholesaleView: React.FC = () => {
                     </div>
                     <div className="text-right">
                       <span className="text-[10px] text-neutral-400 block">Net Domaine</span>
-                      <span className="font-mono font-bold text-[#C4785A] text-sm">
+                      <span className="font-mono font-bold text-[#d4522f] text-sm">
                         {formatMoney(getTicketNet(t))}
                       </span>
                     </div>
@@ -452,7 +452,7 @@ export const AgricultureWholesaleView: React.FC = () => {
             {/* Inspector Top Header */}
             <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                   <Receipt size={16} />
                 </div>
                 <div>
@@ -478,7 +478,7 @@ export const AgricultureWholesaleView: React.FC = () => {
                 onClick={() => setInspectorTab('decompte')}
                 className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                   inspectorTab === 'decompte'
-                    ? 'border-[#C4785A] text-[#C4785A]'
+                    ? 'border-[#d4522f] text-[#d4522f]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                 }`}
               >
@@ -488,7 +488,7 @@ export const AgricultureWholesaleView: React.FC = () => {
                 onClick={() => setInspectorTab('pesee')}
                 className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                   inspectorTab === 'pesee'
-                    ? 'border-[#C4785A] text-[#C4785A]'
+                    ? 'border-[#d4522f] text-[#d4522f]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                 }`}
               >
@@ -498,7 +498,7 @@ export const AgricultureWholesaleView: React.FC = () => {
                 onClick={() => setInspectorTab('tracabilite')}
                 className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                   inspectorTab === 'tracabilite'
-                    ? 'border-[#C4785A] text-[#C4785A]'
+                    ? 'border-[#d4522f] text-[#d4522f]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                 }`}
               >
@@ -567,7 +567,7 @@ export const AgricultureWholesaleView: React.FC = () => {
                       className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                         settledTickets.includes(selectedTicket.id)
                           ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 cursor-default'
-                          : 'bg-[#C4785A] hover:bg-[#b06a4e] text-white'
+                          : 'bg-[#d4522f] hover:bg-[#b06a4e] text-white'
                       }`}
                     >
                       {settledTickets.includes(selectedTicket.id) ? 'Encaissé ✓' : 'Marquer Encaissé'}
@@ -580,7 +580,7 @@ export const AgricultureWholesaleView: React.FC = () => {
                 <div className="space-y-4">
                   <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2.5">
                     <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block flex items-center gap-1.5">
-                      <Scale size={13} className="text-[#C4785A]" />
+                      <Scale size={13} className="text-[#d4522f]" />
                       Ticket Pont-Bascule Électronique
                     </span>
 

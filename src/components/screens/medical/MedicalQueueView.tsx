@@ -170,7 +170,7 @@ export const MedicalQueueView: React.FC = () => {
         const isPinned = pinnedIds.has(c.id);
         return (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800">
+            <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800">
               {c.patientName.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
@@ -273,7 +273,7 @@ export const MedicalQueueView: React.FC = () => {
       {/* Header Strip */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <Clock size={20} />
           </div>
           <div>
@@ -333,7 +333,7 @@ export const MedicalQueueView: React.FC = () => {
                 onClick={() => setDisplayLayout('collection')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   displayLayout === 'collection'
-                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                    ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs'
                     : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100'
                 }`}
               >
@@ -344,7 +344,7 @@ export const MedicalQueueView: React.FC = () => {
                 onClick={() => setDisplayLayout('visual_queue')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   displayLayout === 'visual_queue'
-                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                    ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs'
                     : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100'
                 }`}
               >
@@ -550,7 +550,7 @@ export const MedicalQueueView: React.FC = () => {
                       </div>
 
                       <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
-                        <span className="font-mono font-bold text-xs text-[#C4785A]">
+                        <span className="font-mono font-bold text-xs text-[#d4522f]">
                           {formatMoney(c.consultationFeeDzd, 'DZD')}
                         </span>
                         <span className="text-[11px] text-neutral-400">
@@ -574,7 +574,7 @@ export const MedicalQueueView: React.FC = () => {
                   onClick={() => setSelectedConsultation(cons)}
                   className={`bg-white dark:bg-neutral-800 rounded-2xl border p-5 shadow-2xs space-y-3.5 transition-all cursor-pointer ${
                     selectedConsultation?.id === cons.id
-                      ? 'border-[#C4785A] ring-2 ring-[#C4785A]/30'
+                      ? 'border-[#d4522f] ring-2 ring-[#d4522f]/30'
                       : cons.status === 'InConsultation'
                       ? 'border-blue-400 ring-1 ring-blue-400/30'
                       : 'border-[#E9EEF0] dark:border-neutral-700/60 hover:border-neutral-300'
@@ -623,7 +623,7 @@ export const MedicalQueueView: React.FC = () => {
                   </div>
 
                   <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-[#C4785A]">
+                    <span className="text-xs font-mono font-bold text-[#d4522f]">
                       {formatMoney(cons.consultationFeeDzd, 'DZD')}
                     </span>
                     <button
@@ -633,7 +633,7 @@ export const MedicalQueueView: React.FC = () => {
                         if (cons.status === 'InWaitingQueue') handleStartExam(cons);
                         else handleFinishExam(cons);
                       }}
-                      className="px-2.5 py-1 rounded-lg bg-[#C4785A] text-white text-[11px] font-semibold hover:bg-[#b0674b] transition-colors cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-[#d4522f] text-white text-[11px] font-semibold hover:bg-[#b0674b] transition-colors cursor-pointer"
                     >
                       {cons.status === 'InWaitingQueue' ? 'Appeler' : cons.status === 'InConsultation' ? 'Clôturer' : 'Revoir'}
                     </button>
@@ -650,7 +650,7 @@ export const MedicalQueueView: React.FC = () => {
             {/* Header */}
             <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-800/60 flex items-center justify-between">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-950/60 text-[#C4785A] font-bold text-sm flex items-center justify-center shrink-0 border border-orange-200/60">
+                <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-950/60 text-[#d4522f] font-bold text-sm flex items-center justify-center shrink-0 border border-orange-200/60">
                   <Stethoscope size={18} />
                 </div>
                 <div className="min-w-0">
@@ -679,7 +679,7 @@ export const MedicalQueueView: React.FC = () => {
                 onClick={() => setActiveInspectorTab('fiche')}
                 className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${
                   activeInspectorTab === 'fiche'
-                    ? 'border-[#C4785A] text-[#C4785A]'
+                    ? 'border-[#d4522f] text-[#d4522f]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
                 }`}
               >
@@ -690,7 +690,7 @@ export const MedicalQueueView: React.FC = () => {
                 onClick={() => setActiveInspectorTab('vitals')}
                 className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${
                   activeInspectorTab === 'vitals'
-                    ? 'border-[#C4785A] text-[#C4785A]'
+                    ? 'border-[#d4522f] text-[#d4522f]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
                 }`}
               >
@@ -701,7 +701,7 @@ export const MedicalQueueView: React.FC = () => {
                 onClick={() => setActiveInspectorTab('finance')}
                 className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${
                   activeInspectorTab === 'finance'
-                    ? 'border-[#C4785A] text-[#C4785A]'
+                    ? 'border-[#d4522f] text-[#d4522f]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
                 }`}
               >
@@ -712,7 +712,7 @@ export const MedicalQueueView: React.FC = () => {
                 onClick={() => setActiveInspectorTab('actions')}
                 className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${
                   activeInspectorTab === 'actions'
-                    ? 'border-[#C4785A] text-[#C4785A]'
+                    ? 'border-[#d4522f] text-[#d4522f]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
                 }`}
               >
@@ -748,7 +748,7 @@ export const MedicalQueueView: React.FC = () => {
                       value={quickNote}
                       onChange={(e) => setQuickNote(e.target.value)}
                       placeholder="Ajouter une consigne ou observation..."
-                      className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
+                      className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#d4522f]"
                     />
                     <div className="flex justify-end">
                       <AtriumButton size="xs" variant="primary" onClick={handleSaveNote}>
@@ -804,7 +804,7 @@ export const MedicalQueueView: React.FC = () => {
                   <div className="p-4 rounded-xl bg-orange-50/60 dark:bg-neutral-800 border border-orange-100 dark:border-neutral-700 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-neutral-500">Honoraires conventionnés:</span>
-                      <span className="font-mono font-bold text-sm text-[#C4785A]">
+                      <span className="font-mono font-bold text-sm text-[#d4522f]">
                         {formatMoney(selectedConsultation.consultationFeeDzd, 'DZD')}
                       </span>
                     </div>
@@ -852,7 +852,7 @@ export const MedicalQueueView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleStartExam(selectedConsultation)}
-                      className="w-full p-3 rounded-xl bg-[#C4785A] text-white font-semibold flex items-center justify-between hover:bg-[#b0674b] transition-colors cursor-pointer"
+                      className="w-full p-3 rounded-xl bg-[#d4522f] text-white font-semibold flex items-center justify-between hover:bg-[#b0674b] transition-colors cursor-pointer"
                     >
                       <span className="flex items-center gap-2">
                         <Stethoscope size={16} />

@@ -228,7 +228,7 @@ export const MembershipShopView: React.FC = () => {
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
               <Zap size={22} />
             </div>
             <div>
@@ -382,7 +382,7 @@ export const MembershipShopView: React.FC = () => {
                   width: '120px',
                   sortable: true,
                   renderCell: (p) => (
-                    <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2 py-0.5 rounded border border-[#C4785A]/20">
+                    <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded border border-[#d4522f]/20">
                       {p.sku}
                     </span>
                   ),
@@ -455,7 +455,7 @@ export const MembershipShopView: React.FC = () => {
                 return (
                   <div className="p-4 flex flex-col justify-between h-full space-y-3">
                     <div className="flex items-start justify-between gap-2">
-                      <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2 py-0.5 rounded">
+                      <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded">
                         {p.sku}
                       </span>
                       <span
@@ -481,7 +481,7 @@ export const MembershipShopView: React.FC = () => {
                     </div>
 
                     <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
-                      <span className="font-mono font-bold text-sm text-[#C4785A]">
+                      <span className="font-mono font-bold text-sm text-[#d4522f]">
                         {formatMoney(p.price.amount)}
                       </span>
                       <AtriumButton
@@ -508,7 +508,7 @@ export const MembershipShopView: React.FC = () => {
                   onClick={() => setSidePanelMode('cart')}
                   className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                     sidePanelMode === 'cart'
-                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                      ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs'
                       : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
                   }`}
                 >
@@ -519,7 +519,7 @@ export const MembershipShopView: React.FC = () => {
                   disabled={!selectedProduct}
                   className={`px-3 py-1 rounded-lg text-xs font-bold transition-all disabled:opacity-40 ${
                     sidePanelMode === 'inspector'
-                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                      ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs'
                       : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
                   }`}
                 >
@@ -545,7 +545,7 @@ export const MembershipShopView: React.FC = () => {
                     onClick={() => setInspectorTab('fiche')}
                     className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                       inspectorTab === 'fiche'
-                        ? 'border-[#C4785A] text-[#C4785A]'
+                        ? 'border-[#d4522f] text-[#d4522f]'
                         : 'border-transparent text-neutral-500'
                     }`}
                   >
@@ -555,7 +555,7 @@ export const MembershipShopView: React.FC = () => {
                     onClick={() => setInspectorTab('stock')}
                     className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                       inspectorTab === 'stock'
-                        ? 'border-[#C4785A] text-[#C4785A]'
+                        ? 'border-[#d4522f] text-[#d4522f]'
                         : 'border-transparent text-neutral-500'
                     }`}
                   >
@@ -632,7 +632,7 @@ export const MembershipShopView: React.FC = () => {
                             <span className="font-bold text-xs text-neutral-900 dark:text-white truncate block">
                               {item.product.name}
                             </span>
-                            <span className="font-mono text-[11px] text-[#C4785A]">
+                            <span className="font-mono text-[11px] text-[#d4522f]">
                               {formatMoney(item.product.price.amount)}
                             </span>
                           </div>
@@ -680,7 +680,7 @@ export const MembershipShopView: React.FC = () => {
                       onClick={() => setPaymentMethod('Cash')}
                       className={`p-2 rounded-lg text-xs font-semibold border flex items-center justify-center gap-1.5 ${
                         paymentMethod === 'Cash'
-                          ? 'border-[#C4785A] bg-[#C4785A]/10 text-[#C4785A]'
+                          ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
                           : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300'
                       }`}
                     >
@@ -691,7 +691,7 @@ export const MembershipShopView: React.FC = () => {
                       onClick={() => setPaymentMethod('Card')}
                       className={`p-2 rounded-lg text-xs font-semibold border flex items-center justify-center gap-1.5 ${
                         paymentMethod === 'Card'
-                          ? 'border-[#C4785A] bg-[#C4785A]/10 text-[#C4785A]'
+                          ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
                           : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300'
                       }`}
                     >

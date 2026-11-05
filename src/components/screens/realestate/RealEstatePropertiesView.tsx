@@ -199,7 +199,7 @@ export const RealEstatePropertiesView: React.FC = () => {
           const isPinned = pinnedIds.has(p.id);
           return (
             <div className="flex items-center gap-3 min-w-0 pr-2">
-              <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
+              <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
                 <Building2 size={18} />
               </div>
               <div className="min-w-0">
@@ -243,7 +243,7 @@ export const RealEstatePropertiesView: React.FC = () => {
         sortable: true,
         renderCell: (p) => (
           <div>
-            <span className="text-xs font-mono font-bold text-[#C4785A]">
+            <span className="text-xs font-mono font-bold text-[#d4522f]">
               {formatMoney(p.priceDzd)}
             </span>
             <div className="text-[10px] text-neutral-400">
@@ -314,7 +314,7 @@ export const RealEstatePropertiesView: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <Building2 size={22} />
           </div>
           <div>
@@ -322,7 +322,7 @@ export const RealEstatePropertiesView: React.FC = () => {
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
                 {language === 'ar' ? 'محفظة العقارات والوحدات المؤجرة' : 'Portefeuille Immobilier & Lots'}
               </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
                 {properties.length} {language === 'ar' ? 'عقار' : 'lots'}
               </span>
             </div>
@@ -437,7 +437,7 @@ export const RealEstatePropertiesView: React.FC = () => {
                 onClick={() => setFilterType('All')}
                 className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   filterType === 'All'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                     : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
@@ -448,7 +448,7 @@ export const RealEstatePropertiesView: React.FC = () => {
                 onClick={() => setFilterType('Apartment')}
                 className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   filterType === 'Apartment'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                     : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
@@ -459,7 +459,7 @@ export const RealEstatePropertiesView: React.FC = () => {
                 onClick={() => setFilterType('Office')}
                 className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   filterType === 'Office'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                     : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
@@ -470,7 +470,7 @@ export const RealEstatePropertiesView: React.FC = () => {
                 onClick={() => setFilterType('Villa')}
                 className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   filterType === 'Villa'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                     : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
@@ -484,7 +484,7 @@ export const RealEstatePropertiesView: React.FC = () => {
         {selectedIds.size > 0 && (
           <div className="flex items-center justify-between p-3 px-4 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in">
             <div className="flex items-center gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
               <span className="text-xs font-bold text-neutral-900 dark:text-white">
                 {selectedIds.size} {language === 'ar' ? 'عقارات محددة' : 'biens sélectionnés'}
               </span>
@@ -553,7 +553,7 @@ export const RealEstatePropertiesView: React.FC = () => {
                 const isRented = p.status === 'Rented';
                 return (
                   <div className="flex flex-col items-center justify-center w-full">
-                    <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
+                    <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
                       <Building2 size={32} />
                     </div>
                     <div className="flex items-center gap-1.5 max-w-[210px] mb-0.5">
@@ -567,7 +567,7 @@ export const RealEstatePropertiesView: React.FC = () => {
                     </span>
 
                     <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1 text-center">
-                      <div className="text-[#C4785A] font-mono font-bold text-[13px]">
+                      <div className="text-[#d4522f] font-mono font-bold text-[13px]">
                         {formatMoney(p.priceDzd)} <span className="text-[10px] text-neutral-400 font-normal">/ mois</span>
                       </div>
                       <div className="flex items-center justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800 text-[10px]">
@@ -600,7 +600,7 @@ export const RealEstatePropertiesView: React.FC = () => {
               {/* Drawer Header */}
               <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-800/60 flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] text-[#C4785A] font-bold text-sm flex items-center justify-center shrink-0 border border-[#F5E2D8]">
+                  <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] text-[#d4522f] font-bold text-sm flex items-center justify-center shrink-0 border border-[#F5E2D8]">
                     <Building2 size={20} />
                   </div>
                   <div className="min-w-0">
@@ -610,7 +610,7 @@ export const RealEstatePropertiesView: React.FC = () => {
                     <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-mono">
                       <span>{selectedProperty.propertyType}</span>
                       <span>·</span>
-                      <span className="text-[#C4785A] font-bold">{formatMoney(selectedProperty.priceDzd)}</span>
+                      <span className="text-[#d4522f] font-bold">{formatMoney(selectedProperty.priceDzd)}</span>
                     </div>
                   </div>
                 </div>
@@ -629,7 +629,7 @@ export const RealEstatePropertiesView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => handleOpenNewLease(selectedProperty)}
-                  className="flex-1 py-1.5 px-2 rounded-lg bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
+                  className="flex-1 py-1.5 px-2 rounded-lg bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
                 >
                   <Key size={13} />
                   <span>{language === 'ar' ? 'عقد إيجار' : 'Nouveau Bail'}</span>
@@ -661,7 +661,7 @@ export const RealEstatePropertiesView: React.FC = () => {
                   onClick={() => setActiveTab('fiche')}
                   className={`py-2 px-3 border-b-2 transition-colors ${
                     activeTab === 'fiche'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -672,7 +672,7 @@ export const RealEstatePropertiesView: React.FC = () => {
                   onClick={() => setActiveTab('owner')}
                   className={`py-2 px-3 border-b-2 transition-colors ${
                     activeTab === 'owner'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -683,7 +683,7 @@ export const RealEstatePropertiesView: React.FC = () => {
                   onClick={() => setActiveTab('leases')}
                   className={`py-2 px-3 border-b-2 transition-colors ${
                     activeTab === 'leases'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -694,7 +694,7 @@ export const RealEstatePropertiesView: React.FC = () => {
                   onClick={() => setActiveTab('notes')}
                   className={`py-2 px-3 border-b-2 transition-colors ${
                     activeTab === 'notes'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -787,7 +787,7 @@ export const RealEstatePropertiesView: React.FC = () => {
                             </div>
                             <div className="flex justify-between pt-1 border-t border-neutral-200/50 dark:border-neutral-700/50">
                               <span className="text-neutral-500">{language === 'ar' ? 'الإيجار' : 'Loyer'}:</span>
-                              <span className="font-mono font-bold text-[#C4785A]">{formatMoney(l.monthlyRentDzd)}</span>
+                              <span className="font-mono font-bold text-[#d4522f]">{formatMoney(l.monthlyRentDzd)}</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-neutral-500">{language === 'ar' ? 'الضمان' : 'Dépôt de garantie'}:</span>
@@ -815,7 +815,7 @@ export const RealEstatePropertiesView: React.FC = () => {
                       onChange={(e) => setInspectorNotes(e.target.value)}
                       rows={8}
                       placeholder={language === 'ar' ? 'أدخل ملاحظات الوكالة...' : 'Disponibilité des clés, travaux à prévoir, profil locataire souhaité...'}
-                      className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-2 focus:ring-[#C4785A] outline-none"
+                      className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-2 focus:ring-[#d4522f] outline-none"
                     />
                     <div className="flex items-center justify-between pt-1">
                       <span className="text-[11px] text-neutral-400">

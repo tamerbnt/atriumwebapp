@@ -388,7 +388,7 @@ export const LegalTrustView: React.FC = () => {
         {/* Header Strip */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
               <Lock size={22} />
             </div>
             <div>
@@ -396,7 +396,7 @@ export const LegalTrustView: React.FC = () => {
                 <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
                   {isAr ? 'حساب الحراسة والودائع العقارية (Séquestre Notarial)' : 'Compte Séquestre Notarial & Consignations'}
                 </h1>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
                   Double-Verrou Obligatoire
                 </span>
               </div>
@@ -517,7 +517,7 @@ export const LegalTrustView: React.FC = () => {
                     width: '130px',
                     sortable: true,
                     renderCell: (a) => (
-                      <div className="font-mono font-bold text-xs text-[#C4785A]">
+                      <div className="font-mono font-bold text-xs text-[#d4522f]">
                         {a.matterReference}
                       </div>
                     ),
@@ -542,7 +542,7 @@ export const LegalTrustView: React.FC = () => {
                     width: '150px',
                     sortable: true,
                     renderCell: (a) => (
-                      <div className="font-mono text-xs font-bold text-[#C4785A]">
+                      <div className="font-mono text-xs font-bold text-[#d4522f]">
                         {formatMoney(a.currentBalanceDzd, language)}
                       </div>
                     ),
@@ -590,7 +590,7 @@ export const LegalTrustView: React.FC = () => {
               <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#EDF1F3] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
                 <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                    <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                       <Lock size={16} />
                     </div>
                     <div>
@@ -616,7 +616,7 @@ export const LegalTrustView: React.FC = () => {
                     onClick={() => setEscrowTab('double_lock')}
                     className={`pb-2 font-semibold border-b-2 transition-colors px-2 ${
                       escrowTab === 'double_lock'
-                        ? 'border-[#C4785A] text-[#C4785A]'
+                        ? 'border-[#d4522f] text-[#d4522f]'
                         : 'border-transparent text-neutral-500 hover:text-neutral-700'
                     }`}
                   >
@@ -626,7 +626,7 @@ export const LegalTrustView: React.FC = () => {
                     onClick={() => setEscrowTab('transactions')}
                     className={`pb-2 font-semibold border-b-2 transition-colors px-2 ${
                       escrowTab === 'transactions'
-                        ? 'border-[#C4785A] text-[#C4785A]'
+                        ? 'border-[#d4522f] text-[#d4522f]'
                         : 'border-transparent text-neutral-500 hover:text-neutral-700'
                     }`}
                   >
@@ -636,7 +636,7 @@ export const LegalTrustView: React.FC = () => {
                     onClick={() => setEscrowTab('virement')}
                     className={`pb-2 font-semibold border-b-2 transition-colors px-2 ${
                       escrowTab === 'virement'
-                        ? 'border-[#C4785A] text-[#C4785A]'
+                        ? 'border-[#d4522f] text-[#d4522f]'
                         : 'border-transparent text-neutral-500 hover:text-neutral-700'
                     }`}
                   >
@@ -667,7 +667,7 @@ export const LegalTrustView: React.FC = () => {
                       <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-200 dark:border-neutral-800 space-y-3">
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
-                            <Building2 size={14} className="text-[#C4785A]" />
+                            <Building2 size={14} className="text-[#d4522f]" />
                             {isAr ? 'الشرط الأول: الإشهار بالمحافظة العقارية' : 'Verrou 1 : Publicité Foncière'}
                           </span>
                           {selectedEscrow.cadastralClearanceProof?.volume ? (
@@ -707,7 +707,7 @@ export const LegalTrustView: React.FC = () => {
                             </div>
                             <button
                               onClick={handleVerifyCadastre}
-                              className="w-full py-1.5 rounded-lg bg-[#C4785A] text-white font-bold text-xs hover:bg-[#b06a4e] transition-colors"
+                              className="w-full py-1.5 rounded-lg bg-[#d4522f] text-white font-bold text-xs hover:bg-[#b06a4e] transition-colors"
                             >
                               {isAr ? 'تأكيد الإشهار العقاري' : 'Valider la Publicité'}
                             </button>
@@ -718,7 +718,7 @@ export const LegalTrustView: React.FC = () => {
                       {/* Lock 2: Master PIN Code & Execution */}
                       <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-200 dark:border-neutral-800 space-y-3">
                         <span className="text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
-                          <Key size={14} className="text-[#C4785A]" />
+                          <Key size={14} className="text-[#d4522f]" />
                           {isAr ? 'الشرط الثاني: رمز الأمان للموثق Titulaire' : 'Verrou 2 : Code PIN Notaire Titulaire'}
                         </span>
                         <div className="space-y-2">
@@ -785,7 +785,7 @@ export const LegalTrustView: React.FC = () => {
                   {escrowTab === 'virement' && (
                     <div className="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl space-y-3 text-xs">
                       <div className="text-center pb-2 border-b border-neutral-200 dark:border-neutral-800">
-                        <span className="font-bold uppercase tracking-wider text-[#C4785A] block">
+                        <span className="font-bold uppercase tracking-wider text-[#d4522f] block">
                           Étude Notariale · Ordre de Virement Séquestre
                         </span>
                         <span className="text-[10px] text-neutral-400">
@@ -817,7 +817,7 @@ export const LegalTrustView: React.FC = () => {
                           showToast(isAr ? 'جاري طباعة أمر التحويل الرسمي' : 'Ordre de virement officiel imprimé', 'info');
                           window.print();
                         }}
-                        className="w-full mt-2 py-2 rounded-lg bg-[#C4785A] text-white font-bold text-xs flex items-center justify-center gap-1.5"
+                        className="w-full mt-2 py-2 rounded-lg bg-[#d4522f] text-white font-bold text-xs flex items-center justify-center gap-1.5"
                       >
                         <Printer size={13} />
                         {isAr ? 'طباعة أمر التحويل' : 'Imprimer le Virement'}
@@ -848,7 +848,7 @@ export const LegalTrustView: React.FC = () => {
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
               <Scale size={22} />
             </div>
             <div>
@@ -977,7 +977,7 @@ export const LegalTrustView: React.FC = () => {
                     width: '130px',
                     sortable: true,
                     renderCell: (e) => (
-                      <div className="font-mono font-bold text-xs text-[#C4785A]">
+                      <div className="font-mono font-bold text-xs text-[#d4522f]">
                         {e.entryNumber}
                       </div>
                     ),
@@ -1048,7 +1048,7 @@ export const LegalTrustView: React.FC = () => {
               <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#EDF1F3] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
                 <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                    <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                       <Scale size={16} />
                     </div>
                     <div>
@@ -1091,7 +1091,7 @@ export const LegalTrustView: React.FC = () => {
                         className="p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 space-y-1"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-mono font-bold text-xs text-[#C4785A]">
+                          <span className="font-mono font-bold text-xs text-[#d4522f]">
                             {l.accountNumber}
                           </span>
                           <div className="font-mono text-xs font-bold">
@@ -1128,7 +1128,7 @@ export const LegalTrustView: React.FC = () => {
             <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4">
               <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
                 <div className="flex items-center gap-2">
-                  <Scale size={20} className="text-[#C4785A]" />
+                  <Scale size={20} className="text-[#d4522f]" />
                   <h2 className="text-base font-bold text-neutral-900 dark:text-white">
                     {isAr ? 'تسجيل قيد محاسبي مزدوج (SCF)' : 'Saisie d\'une Écriture Comptable SCF'}
                   </h2>
@@ -1199,7 +1199,7 @@ export const LegalTrustView: React.FC = () => {
                     <span>Compte 445700 (TVA {scfTvaRate}%):</span>
                     <span className="font-bold">{formatMoney(Math.round(scfDebitAmount * (scfTvaRate / 100)), language)}</span>
                   </div>
-                  <div className="flex justify-between border-t border-neutral-200 dark:border-neutral-700 pt-1 font-bold text-[#C4785A]">
+                  <div className="flex justify-between border-t border-neutral-200 dark:border-neutral-700 pt-1 font-bold text-[#d4522f]">
                     <span>Compte 411000 (Débit TTC):</span>
                     <span>{formatMoney(scfDebitAmount + Math.round(scfDebitAmount * (scfTvaRate / 100)), language)}</span>
                   </div>
@@ -1228,7 +1228,7 @@ export const LegalTrustView: React.FC = () => {
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
               <CreditCard size={22} />
             </div>
             <div>
@@ -1343,7 +1343,7 @@ export const LegalTrustView: React.FC = () => {
                     width: '130px',
                     sortable: true,
                     renderCell: (r) => (
-                      <div className="font-mono font-bold text-xs text-[#C4785A]">
+                      <div className="font-mono font-bold text-xs text-[#d4522f]">
                         {r.receiptNumber}
                       </div>
                     ),
@@ -1402,7 +1402,7 @@ export const LegalTrustView: React.FC = () => {
               <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#EDF1F3] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
                 <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                    <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                       <Receipt size={16} />
                     </div>
                     <div>
@@ -1425,7 +1425,7 @@ export const LegalTrustView: React.FC = () => {
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
                   <div className="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl space-y-3">
                     <div className="text-center pb-2 border-b border-neutral-200 dark:border-neutral-800">
-                      <span className="font-bold text-sm text-[#C4785A] block">
+                      <span className="font-bold text-sm text-[#d4522f] block">
                         وصل تسليم نقدية رسمي
                       </span>
                       <span className="text-[10px] text-neutral-400">
@@ -1471,7 +1471,7 @@ export const LegalTrustView: React.FC = () => {
                       showToast(isAr ? 'طباعة الوصل الرسمي للزبون' : 'Quittance officielle imprimée', 'success');
                       window.print();
                     }}
-                    className="w-full py-2.5 rounded-xl bg-[#C4785A] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm"
+                    className="w-full py-2.5 rounded-xl bg-[#d4522f] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm"
                   >
                     <Printer size={14} />
                     {isAr ? 'طباعة وصل الموكل' : 'Imprimer Quittance Client'}
@@ -1488,7 +1488,7 @@ export const LegalTrustView: React.FC = () => {
             <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4">
               <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
                 <div className="flex items-center gap-2">
-                  <CreditCard size={20} className="text-[#C4785A]" />
+                  <CreditCard size={20} className="text-[#d4522f]" />
                   <h2 className="text-base font-bold text-neutral-900 dark:text-white">
                     {isAr ? 'قبض مبلغ نقدي مع طابع المادة 317' : 'Encaissement Espèces & Timbre Art. 317'}
                   </h2>
@@ -1591,7 +1591,7 @@ export const LegalTrustView: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <CreditCard size={22} />
           </div>
           <div>
@@ -1704,7 +1704,7 @@ export const LegalTrustView: React.FC = () => {
                   width: '130px',
                   sortable: true,
                   renderCell: (m) => (
-                    <div className="font-mono font-bold text-xs text-[#C4785A]">
+                    <div className="font-mono font-bold text-xs text-[#d4522f]">
                       {m.matterNumber}
                     </div>
                   ),
@@ -1780,7 +1780,7 @@ export const LegalTrustView: React.FC = () => {
             <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#EDF1F3] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
               <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                  <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                     <CreditCard size={16} />
                   </div>
                   <div>
@@ -1805,7 +1805,7 @@ export const LegalTrustView: React.FC = () => {
                   onClick={() => setCarpaTab('sequestre')}
                   className={`pb-2 font-semibold border-b-2 transition-colors px-2 ${
                     carpaTab === 'sequestre'
-                      ? 'border-[#C4785A] text-[#C4785A]'
+                      ? 'border-[#d4522f] text-[#d4522f]'
                       : 'border-transparent text-neutral-500 hover:text-neutral-700'
                   }`}
                 >
@@ -1815,7 +1815,7 @@ export const LegalTrustView: React.FC = () => {
                   onClick={() => setCarpaTab('honoraires')}
                   className={`pb-2 font-semibold border-b-2 transition-colors px-2 ${
                     carpaTab === 'honoraires'
-                      ? 'border-[#C4785A] text-[#C4785A]'
+                      ? 'border-[#d4522f] text-[#d4522f]'
                       : 'border-transparent text-neutral-500 hover:text-neutral-700'
                   }`}
                 >
@@ -1825,7 +1825,7 @@ export const LegalTrustView: React.FC = () => {
                   onClick={() => setCarpaTab('deontologie')}
                   className={`pb-2 font-semibold border-b-2 transition-colors px-2 ${
                     carpaTab === 'deontologie'
-                      ? 'border-[#C4785A] text-[#C4785A]'
+                      ? 'border-[#d4522f] text-[#d4522f]'
                       : 'border-transparent text-neutral-500 hover:text-neutral-700'
                   }`}
                 >
@@ -1859,7 +1859,7 @@ export const LegalTrustView: React.FC = () => {
                       <button
                         onClick={() => handleReleaseTrustFunds(selectedMatter)}
                         disabled={!selectedMatter.trustEscrowBalanceDzd || selectedMatter.trustEscrowBalanceDzd === 0}
-                        className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#C4785A] hover:bg-[#b06a4e] text-white disabled:opacity-50 transition-colors"
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#d4522f] hover:bg-[#b06a4e] text-white disabled:opacity-50 transition-colors"
                       >
                         Débloquer
                       </button>

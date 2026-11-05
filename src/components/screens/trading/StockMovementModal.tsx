@@ -169,7 +169,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/70 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C4785A]/10 text-[#C4785A] flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold">
               <Boxes size={20} />
             </div>
             <div>
@@ -234,7 +234,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                 }}
                 className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-semibold transition-all ${
                   type === 'transfert'
-                    ? 'border-[#C4785A] bg-[#C4785A]/10 text-[#C4785A] font-bold'
+                    ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f] font-bold'
                     : 'border-stone-200 dark:border-stone-800 hover:border-stone-300 text-stone-600 dark:text-stone-400'
                 }`}
               >
@@ -323,7 +323,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
               <button
                 type="button"
                 onClick={addItemRow}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-[#C4785A]/10 text-[#C4785A] hover:bg-[#C4785A]/20 transition-colors"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-[#d4522f]/10 text-[#d4522f] hover:bg-[#d4522f]/20 transition-colors"
               >
                 <Plus size={13} />
                 <span>{t('trading_stock_add_item')}</span>

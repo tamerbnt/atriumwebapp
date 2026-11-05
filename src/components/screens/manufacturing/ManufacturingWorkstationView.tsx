@@ -214,7 +214,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
       {/* Kiosk Top Bar Banner */}
       <div className="bg-[#1F1D1B] text-white rounded-[24px] p-5 sm:p-6 shadow-md border border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-[#C4785A] text-white flex items-center justify-center font-black text-xl shadow-inner shrink-0">
+          <div className="w-14 h-14 rounded-2xl bg-[#d4522f] text-white flex items-center justify-center font-black text-xl shadow-inner shrink-0">
             <Wrench size={28} />
           </div>
           <div>
@@ -269,7 +269,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
               <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
                 {isAr ? 'أمر التصنيع المخصص' : 'Sélection Ordre de Fabrication'}
               </span>
-              <span className="text-xs font-mono font-bold text-[#C4785A]">
+              <span className="text-xs font-mono font-bold text-[#d4522f]">
                 {orders.length} {isAr ? 'أوامر متاحة' : 'OFs disponibles'}
               </span>
             </div>
@@ -281,7 +281,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                 setElapsedSeconds(0);
                 setIsRunning(false);
               }}
-              className="w-full p-3.5 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 text-sm font-bold text-neutral-900 dark:text-white shadow-2xs outline-none focus:ring-2 focus:ring-[#C4785A]"
+              className="w-full p-3.5 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 text-sm font-bold text-neutral-900 dark:text-white shadow-2xs outline-none focus:ring-2 focus:ring-[#d4522f]"
             >
               {orders.map((o) => (
                 <option key={o.id} value={o.id}>
@@ -335,7 +335,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
           <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ShieldCheck size={18} className="text-[#C4785A]" />
+                <ShieldCheck size={18} className="text-[#d4522f]" />
                 <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
                   {isAr ? 'إجراءات السلامة والوقاية (قانون 88-07)' : 'Contrôle Sécurité EPI (Loi 88-07)'}
                 </h3>
@@ -442,7 +442,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
           {/* Main Giant Stopwatch Display Card */}
           <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[28px] p-6 sm:p-8 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs flex flex-col items-center justify-center text-center space-y-6">
             <div className="flex items-center gap-2 text-xs font-semibold text-neutral-500 uppercase tracking-widest">
-              <Clock size={16} className="text-[#C4785A]" />
+              <Clock size={16} className="text-[#d4522f]" />
               <span>{isAr ? 'عداد وقت التشغيل النشط' : 'Temps de Cycle Machine'}</span>
             </div>
 
@@ -470,7 +470,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleStartTimer}
-                  className="w-full h-18 rounded-2xl bg-[#C4785A] hover:bg-[#b0674b] active:scale-98 text-white font-bold text-lg flex items-center justify-center gap-3 shadow-md transition-all cursor-pointer"
+                  className="w-full h-18 rounded-2xl bg-[#d4522f] hover:bg-[#b0674b] active:scale-98 text-white font-bold text-lg flex items-center justify-center gap-3 shadow-md transition-all cursor-pointer"
                 >
                   <Play size={24} fill="currentColor" />
                   <span>{isAr ? 'بدء تشغيل الدورة' : 'Démarrer Cycle'}</span>
@@ -558,7 +558,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                 onClick={() => setActiveNumpadField('good')}
                 className={`p-4 rounded-2xl border text-center transition-all cursor-pointer ${
                   activeNumpadField === 'good'
-                    ? 'border-[#C4785A] bg-[#FCEEE8] dark:bg-neutral-800 ring-2 ring-[#C4785A]'
+                    ? 'border-[#d4522f] bg-[#FCEEE8] dark:bg-neutral-800 ring-2 ring-[#d4522f]'
                     : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/40'
                 }`}
               >
@@ -643,7 +643,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
               <button
                 type="button"
                 onClick={handleConfirmFinish}
-                className="flex-2 py-3.5 rounded-xl bg-[#C4785A] hover:bg-[#b0674b] text-white font-bold text-sm shadow-md cursor-pointer transition-all"
+                className="flex-2 py-3.5 rounded-xl bg-[#d4522f] hover:bg-[#b0674b] text-white font-bold text-sm shadow-md cursor-pointer transition-all"
               >
                 {isAr ? 'تأكيد التسجيل وتحديث أمر التصنيع' : 'Valider la Déclaration'}
               </button>

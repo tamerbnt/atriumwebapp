@@ -213,7 +213,7 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
               </div>
               <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/40 col-span-2">
                 <span className="text-[10px] text-neutral-400 block">{isAr ? 'تاريخ ووقت السقوط النهائي' : 'Expiration Finale au Greffe'}</span>
-                <span className="font-bold text-[#C4785A] font-mono text-xs">
+                <span className="font-bold text-[#d4522f] font-mono text-xs">
                   {new Date(preview.terminalExpiryDate).toLocaleDateString('fr-DZ', {
                     weekday: 'long',
                     year: 'numeric',

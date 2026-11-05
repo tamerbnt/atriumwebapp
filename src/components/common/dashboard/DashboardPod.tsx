@@ -29,7 +29,7 @@ export const DashboardPod: React.FC<DashboardPodProps> = ({
     >
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
-          {icon && <div className="text-[#C4785A]">{icon}</div>}
+          {icon && <div className="text-[#d4522f]">{icon}</div>}
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-[13.5px] font-bold text-neutral-900 dark:text-white">

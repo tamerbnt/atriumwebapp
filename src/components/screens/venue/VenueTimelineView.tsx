@@ -173,7 +173,7 @@ export const VenueTimelineView: React.FC = () => {
                 onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
                 className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
               >
-                <Home size={15} className="text-[#C4785A]" />
+                <Home size={15} className="text-[#d4522f]" />
                 <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                   {currentBranch?.name || 'Atrium 1'}
                 </span>
@@ -205,12 +205,12 @@ export const VenueTimelineView: React.FC = () => {
                         }}
                         className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
                           isCurrent
-                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold'
                             : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
                         }`}
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                          <Building2 size={14} className={isCurrent ? 'text-[#d4522f]' : 'text-neutral-400'} />
                           <span className="truncate">{biz.name}</span>
                         </div>
                         {isCurrent && <Check size={14} />}
@@ -273,7 +273,7 @@ export const VenueTimelineView: React.FC = () => {
                   {language === 'ar' ? 'حجوزات التاريخ المحدد' : language === 'fr' ? 'Sessions Programmées' : 'Booked Sessions on Date'}
                 </span>
                 <div className="mt-1">
-                  <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] font-bold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded-full">
                     {selectedDate}
                   </span>
                 </div>
@@ -364,7 +364,7 @@ export const VenueTimelineView: React.FC = () => {
                       onClick={() => setSelectedTypeFilter(item.id)}
                       className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
                         selectedTypeFilter === item.id
-                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                           : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                       }`}
                     >
@@ -394,7 +394,7 @@ export const VenueTimelineView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setViewMode('calendar')}
-                    className="p-1.5 rounded-lg bg-[#C4785A] text-white shadow-2xs transition-all cursor-pointer"
+                    className="p-1.5 rounded-lg bg-[#d4522f] text-white shadow-2xs transition-all cursor-pointer"
                     title="Timeline Matrix View"
                   >
                     <CalendarIcon size={14} />
@@ -512,7 +512,7 @@ export const VenueTimelineView: React.FC = () => {
                                     isCheckedIn
                                       ? 'bg-purple-600/95 hover:bg-purple-600 text-white border-purple-500'
                                       : isConfirmed
-                                      ? 'bg-[#C4785A]/95 hover:bg-[#C4785A] text-white border-[#b3684a]'
+                                      ? 'bg-[#d4522f]/95 hover:bg-[#d4522f] text-white border-[#b03b1b]'
                                       : isTentative
                                       ? 'bg-amber-500/95 hover:bg-amber-500 text-white border-amber-400'
                                       : 'bg-neutral-700 hover:bg-neutral-800 text-white border-neutral-600'

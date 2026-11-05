@@ -360,7 +360,7 @@ export const TradingSalesView: React.FC = () => {
         {/* Header Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
               <FileText size={22} />
             </div>
             <div>
@@ -368,7 +368,7 @@ export const TradingSalesView: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
                   {t('trading_sales_title', 'Cycle des Ventes & Facturation B2B')}
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#C4785A]/15 text-[#C4785A] border border-[#C4785A]/30">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4522f]/15 text-[#d4522f] border border-[#d4522f]/30">
                   {commercialDocs.length} {language === 'ar' ? 'معاملة' : 'pièces'}
                 </span>
               </div>
@@ -383,7 +383,7 @@ export const TradingSalesView: React.FC = () => {
                 onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
                 className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
               >
-                <Home size={15} className="text-[#C4785A]" />
+                <Home size={15} className="text-[#d4522f]" />
                 <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                   {currentBranch?.name || 'Dépôt Central'}
                 </span>
@@ -410,7 +410,7 @@ export const TradingSalesView: React.FC = () => {
                       className="w-full px-3 py-2 text-left rtl:text-right text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-between"
                     >
                       <span className="font-semibold text-neutral-800 dark:text-neutral-200">{b.name}</span>
-                      {b.id === currentBranch?.id && <span className="text-[#C4785A] text-xs">✓</span>}
+                      {b.id === currentBranch?.id && <span className="text-[#d4522f] text-xs">✓</span>}
                     </button>
                   ))}
                 </div>
@@ -424,7 +424,7 @@ export const TradingSalesView: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={() => handleCreateNew('devis')}
-              icon={<Plus size={14} className="text-[#C4785A]" />}
+              icon={<Plus size={14} className="text-[#d4522f]" />}
             >
               {t('trading_sales_new_devis', 'Nouveau Devis')}
             </AtriumButton>
@@ -433,7 +433,7 @@ export const TradingSalesView: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={() => handleCreateNew('bl')}
-              icon={<Truck size={14} className="text-[#C4785A]" />}
+              icon={<Truck size={14} className="text-[#d4522f]" />}
             >
               {t('trading_sales_new_bl', 'Nouveau BL')}
             </AtriumButton>
@@ -459,7 +459,7 @@ export const TradingSalesView: React.FC = () => {
                 <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   {language === 'ar' ? 'إجمالي المبيعات المفوترة HT' : 'Facturation Nette H.T.'}
                 </span>
-                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#d4522f]/10 text-[#d4522f]">
                   {metrics.invoicesCount} factures
                 </span>
               </div>
@@ -532,14 +532,14 @@ export const TradingSalesView: React.FC = () => {
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
             {/* Left Title / Icon / Count Anchor */}
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
                 <FileText size={18} />
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-neutral-900 dark:text-white">
                   {t('trading_sales_docs_register', 'Registre des Ventes')}
                 </span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-[#C4785A]/10 text-[#C4785A] font-semibold font-mono">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f] font-semibold font-mono">
                   {filteredDocs.length}
                 </span>
               </div>
@@ -614,7 +614,7 @@ export const TradingSalesView: React.FC = () => {
                     <span className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100">
                       {doc.docNumber}
                     </span>
-                    <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                    <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-[#d4522f]/10 text-[#d4522f]">
                       {doc.type.toUpperCase()}
                     </span>
                   </div>
@@ -623,7 +623,7 @@ export const TradingSalesView: React.FC = () => {
                   </p>
                   <div className="flex justify-between text-xs font-mono pt-2 border-t border-neutral-100 dark:border-neutral-700">
                     <span className="text-neutral-500">{t('trading_sales_col_net_to_pay', 'Net')} :</span>
-                    <span className="font-bold text-[#C4785A]">{formatMoney(doc.netToPay)}</span>
+                    <span className="font-bold text-[#d4522f]">{formatMoney(doc.netToPay)}</span>
                   </div>
                 </div>
               )}

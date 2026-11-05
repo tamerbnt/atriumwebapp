@@ -49,7 +49,7 @@ export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = ({
           <span className="text-[11px] font-semibold tracking-wider uppercase text-neutral-400">
             {categoryTitle || (isAr ? 'فريق العمل' : isEn ? 'Workforce Hub' : 'Effectif Total')}
           </span>
-          <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-[#C4785A]">
+          <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-[#d4522f]">
             <Users size={16} />
           </div>
         </div>
@@ -127,7 +127,7 @@ export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = ({
           </div>
           <div className="w-full bg-neutral-200 dark:bg-neutral-800 h-1.5 rounded-full mt-2 overflow-hidden">
             <div
-              className="bg-[#C4785A] h-full rounded-full transition-all duration-500"
+              className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
               style={{ width: `${Math.min(100, Math.max(0, presentPercentage))}%` }}
             />
           </div>

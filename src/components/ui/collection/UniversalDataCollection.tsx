@@ -461,7 +461,7 @@ export function UniversalDataCollection<T>({
                   {actualItems.length}
                 </span>
                 {effectiveIsLoading && (
-                  <span className="text-[11px] text-[#C4785A] dark:text-[#E09070] font-medium animate-pulse">
+                  <span className="text-[11px] text-[#d4522f] dark:text-[#E09070] font-medium animate-pulse">
                     Syncing...
                   </span>
                 )}
@@ -486,7 +486,7 @@ export function UniversalDataCollection<T>({
                 />
               )}
               {effectiveIsLoading && (
-                <span className="text-[11px] text-[#C4785A] dark:text-[#E09070] font-medium animate-pulse ml-2">
+                <span className="text-[11px] text-[#d4522f] dark:text-[#E09070] font-medium animate-pulse ml-2">
                   Syncing...
                 </span>
               )}
@@ -504,7 +504,7 @@ export function UniversalDataCollection<T>({
                     setInternalSearchQuery(e.target.value);
                     onSearchChange?.(e.target.value);
                   }}
-                  className="w-full h-8 px-3 rounded-xl text-xs bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
+                  className="w-full h-8 px-3 rounded-xl text-xs bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#d4522f]"
                 />
               </div>
             )}
@@ -540,9 +540,9 @@ export function UniversalDataCollection<T>({
                 onClick={handleToggleSelectAll}
                 className={`w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer ${
                   isAllSelected
-                    ? 'bg-[#C4785A] border-[#C4785A] text-white'
+                    ? 'bg-[#d4522f] border-[#d4522f] text-white'
                     : isPartiallySelected
-                    ? 'bg-[#C4785A]/30 border-[#C4785A] text-white'
+                    ? 'bg-[#d4522f]/30 border-[#d4522f] text-white'
                     : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-400'
                 }`}
                 title="Tout sélectionner"
@@ -583,15 +583,15 @@ export function UniversalDataCollection<T>({
                         <span
                           className={`inline-flex items-center px-1.5 py-0.5 rounded-[5px] transition-colors ${
                             isCurrentSort
-                              ? 'bg-[#C4785A]/15 text-[#C4785A]'
+                              ? 'bg-[#d4522f]/15 text-[#d4522f]'
                               : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 group-hover:text-neutral-700 dark:group-hover:text-neutral-200'
                           }`}
                         >
                           {isCurrentSort ? (
                             effectiveSortDir === 'asc' ? (
-                              <ArrowUp className="w-2.5 h-3 text-[#C4785A] stroke-[2.5]" />
+                              <ArrowUp className="w-2.5 h-3 text-[#d4522f] stroke-[2.5]" />
                             ) : (
-                              <ArrowDown className="w-2.5 h-3 text-[#C4785A] stroke-[2.5]" />
+                              <ArrowDown className="w-2.5 h-3 text-[#d4522f] stroke-[2.5]" />
                             )
                           ) : (
                             <ArrowUpDown className="w-2.5 h-3" />
@@ -643,8 +643,8 @@ export function UniversalDataCollection<T>({
                       onClick={(e) => handleToggleSelectItem(id, e)}
                       className={`w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer ${
                         isSelected
-                          ? 'bg-[#C4785A] border-[#C4785A] text-white'
-                          : 'border-neutral-300 dark:border-neutral-600 hover:border-[#C4785A]'
+                          ? 'bg-[#d4522f] border-[#d4522f] text-white'
+                          : 'border-neutral-300 dark:border-neutral-600 hover:border-[#d4522f]'
                       }`}
                     >
                       {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
@@ -726,7 +726,7 @@ export function UniversalDataCollection<T>({
       {effectiveSelectedIds.size > 0 && (
         <div data-atrium-bulk-toolbar="true" className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-neutral-900/95 dark:bg-neutral-850/95 backdrop-blur-md text-white rounded-2xl px-5 py-3 shadow-2xl border border-neutral-700/60 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-200">
           <div className="flex items-center gap-2 pr-3 border-r border-neutral-700/80">
-            <span className="w-5 h-5 rounded-full bg-[#C4785A] text-white text-xs font-bold flex items-center justify-center font-mono">
+            <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white text-xs font-bold flex items-center justify-center font-mono">
               {effectiveSelectedIds.size}
             </span>
             <span className="text-xs font-medium text-neutral-200 whitespace-nowrap">
@@ -743,7 +743,7 @@ export function UniversalDataCollection<T>({
                 bulkSecondaryAction.variant === 'warning'
                   ? 'bg-amber-500 hover:bg-amber-600 text-neutral-950 border-amber-400 font-bold'
                   : bulkSecondaryAction.variant === 'primary'
-                  ? 'bg-[#C4785A] hover:bg-[#B3684A] text-white border-[#C4785A]'
+                  ? 'bg-[#d4522f] hover:bg-[#B3684A] text-white border-[#d4522f]'
                   : 'bg-neutral-800 hover:bg-neutral-700 text-neutral-100 border-neutral-700'
               }`}
             >

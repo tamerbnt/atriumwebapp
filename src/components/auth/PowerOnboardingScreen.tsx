@@ -65,6 +65,7 @@ import { AtriumMonolith, FiveCubesLogo } from './AtriumMonolith';
 import { LabelInput } from '../ui/LabelInput';
 import { OnboardingBackdrop } from './OnboardingBackdrop';
 import { LiquidContinueButton } from '../ui/liquid/LiquidContinueButton';
+import { AtriumButton } from '../ui/AtriumButton';
 
 interface PowerOnboardingScreenProps {
   onComplete: () => void;
@@ -200,8 +201,9 @@ const CATALOG_SECTORS: { id: BusinessCategory | 'all'; labelFr: string; labelAr:
 
 export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   onComplete,
+  onSkipToDashboard,
 }) => {
-  const { completeOnboarding, language } = useAtriumStore();
+  const { completeOnboarding, language, isAuthenticated, currentUser, logout } = useAtriumStore();
 
 
   const handleReplayIntro = () => {
@@ -917,6 +919,41 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         {currentStep === 9 && step9WideView ? (
           /* Step 9 Wide View: Full-Width 4-Column Layout */
           <div className="w-full flex-1 min-h-0 flex flex-col justify-between overflow-hidden max-w-6xl xl:max-w-7xl mx-auto">
+            {/* Authenticated Operator Quick Return & Switch Account Banner */}
+            {isAuthenticated && (
+              <div className="flex items-center justify-between gap-3 p-2.5 mb-2 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md shrink-0">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-[11px] font-medium text-neutral-300 truncate">
+                    {isAr ? 'أنت متصل حالياً:' : isFr ? 'Connecté en tant que :' : 'Signed in as:'}{' '}
+                    <strong className="text-white font-semibold">{currentUser?.fullName}</strong>
+                  </span>
+                  <span className="text-white/20">·</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      logout();
+                    }}
+                    className="text-[11px] text-[#FF8A4C] hover:text-[#FFA675] hover:underline cursor-pointer"
+                  >
+                    {isAr ? 'تسجيل الدخول بحساب آخر' : isFr ? 'Se connecter avec un autre compte' : 'Login with another account'}
+                  </button>
+                </div>
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    if (onSkipToDashboard) onSkipToDashboard();
+                    else onComplete();
+                  }}
+                  icon={<ArrowRight size={13} className={isAr ? 'rotate-180' : ''} />}
+                  iconPosition="right"
+                  className="shrink-0"
+                >
+                  {isAr ? 'العودة لمساحة العمل' : isFr ? "Retour à l'espace" : 'Return to Workspace'}
+                </AtriumButton>
+              </div>
+            )}
+
             {/* Step Tab / Swipe Indicators (10 Steps: 0 to 9) */}
             <div className="flex items-center gap-1.5 mb-2.5 shrink-0">
               {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((idx) => {
@@ -987,6 +1024,40 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               onTouchEnd={handleTouchEnd}
             >
               <div className="w-full my-auto flex flex-col max-h-full overflow-hidden py-3 sm:py-5 pr-1">
+                {/* Authenticated Operator Quick Return & Switch Account Banner */}
+                {isAuthenticated && (
+                  <div className="flex items-center justify-between gap-3 p-2.5 mb-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md shrink-0">
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-[11px] font-medium text-neutral-300 truncate">
+                        {isAr ? 'أنت متصل حالياً:' : isFr ? 'Connecté en tant que :' : 'Signed in as:'}{' '}
+                        <strong className="text-white font-semibold">{currentUser?.fullName}</strong>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          logout();
+                        }}
+                        className="text-[11px] text-[#FF8A4C] hover:text-[#FFA675] hover:underline text-left rtl:text-right cursor-pointer mt-0.5"
+                      >
+                        {isAr ? 'تسجيل الدخول بحساب آخر' : isFr ? 'Se connecter avec un autre compte' : 'Login with another account'}
+                      </button>
+                    </div>
+                    <AtriumButton
+                      variant="primary"
+                      size="sm"
+                      onClick={() => {
+                        if (onSkipToDashboard) onSkipToDashboard();
+                        else onComplete();
+                      }}
+                      icon={<ArrowRight size={13} className={isAr ? 'rotate-180' : ''} />}
+                      iconPosition="right"
+                      className="shrink-0"
+                    >
+                      {isAr ? 'العودة لمساحة العمل' : isFr ? "Retour à l'espace" : 'Return to Workspace'}
+                    </AtriumButton>
+                  </div>
+                )}
+
                 {/* Step Tab / Swipe Indicators (10 Steps: 0 to 9) - Aligned with Right Area Text Boxes */}
                 <div className="flex items-center gap-1.5 mb-3 shrink-0">
                   {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((idx) => {
@@ -1632,7 +1703,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           onClick={() => setSelectedCatalogCategoryFilter(cat.id)}
                           className={`px-2.5 py-1 rounded-full whitespace-nowrap transition-all duration-150 cursor-pointer font-medium shrink-0 ${
                             isFilterActive
-                              ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white shadow-xs scale-[1.02]'
+                              ? 'bg-gradient-to-r from-[#d4522f] to-[#E8622C] text-white shadow-xs scale-[1.02]'
                               : 'bg-white/5 border border-white/5 text-[#D9BEB0] hover:text-white hover:border-white/20 hover:bg-white/10'
                           }`}
                         >
@@ -1702,7 +1773,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                             };
                             handleSelectTrade(customTrade);
                           }}
-                          className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white text-xs font-semibold hover:opacity-95 transition-opacity cursor-pointer shadow-md"
+                          className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#d4522f] to-[#E8622C] text-white text-xs font-semibold hover:opacity-95 transition-opacity cursor-pointer shadow-md"
                         >
                           {isAr
                             ? `متابعة باستخدام "${catalogSearchQuery}" كنشاط رئيسي`
@@ -1797,7 +1868,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                             }}
                             className={`w-full flex items-center justify-between px-2 py-1 rounded-md text-left transition-colors cursor-pointer ${
                               isPicked
-                                ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white font-semibold'
+                                ? 'bg-gradient-to-r from-[#d4522f] to-[#E8622C] text-white font-semibold'
                                 : 'hover:bg-white/10 text-[#F0DACF]'
                             }`}
                           >
@@ -1880,7 +1951,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         <button
           type="button"
           onClick={handleReplayIntro}
-          className="text-[9.5px] text-[#C4785A]/70 hover:text-[#FF8A4C] transition-colors cursor-pointer flex items-center gap-1 font-mono tracking-wider uppercase px-2 py-0.5 rounded border border-[#C4785A]/20 hover:border-[#C4785A]/50 bg-black/30 hover:bg-black/50"
+          className="text-[9.5px] text-[#d4522f]/70 hover:text-[#FF8A4C] transition-colors cursor-pointer flex items-center gap-1 font-mono tracking-wider uppercase px-2 py-0.5 rounded border border-[#d4522f]/20 hover:border-[#d4522f]/50 bg-black/30 hover:bg-black/50"
         >
           <span>↺ Replay</span>
         </button>
@@ -1902,12 +1973,12 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       {/* Commercial License & Voucher Request Modal */}
       {showLicenseModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="relative w-full max-w-lg rounded-2xl bg-[#18181B] border border-[#C4785A]/40 shadow-2xl p-5 text-white animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-lg rounded-2xl bg-[#18181B] border border-[#d4522f]/40 shadow-2xl p-5 text-white animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
             <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#C4785A]/20 border border-[#C4785A]/30 flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-[#C4785A]" />
+                <div className="w-8 h-8 rounded-lg bg-[#d4522f]/20 border border-[#d4522f]/30 flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-[#d4522f]" />
                 </div>
                 <div>
                   <h3 className="font-extrabold text-sm sm:text-base text-white">
@@ -1929,9 +2000,9 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             </div>
 
             {/* Selected Plan Recap Banner */}
-            <div className="p-3 rounded-xl bg-gradient-to-r from-[#221F1C] to-[#171618] border border-[#C4785A]/30 mb-3.5 flex items-center justify-between">
+            <div className="p-3 rounded-xl bg-gradient-to-r from-[#221F1C] to-[#171618] border border-[#d4522f]/30 mb-3.5 flex items-center justify-between">
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#C4785A] tracking-wider">
+                <span className="text-[10px] uppercase font-bold text-[#d4522f] tracking-wider">
                   {isAr ? 'الخطة المطلوبة' : isFr ? 'Formule sélectionnée' : 'Selected Tier'}
                 </span>
                 <div className="text-base font-black text-white">
@@ -1952,7 +2023,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             <div className="space-y-2 mb-3.5 text-xs">
               <div className="p-2.5 rounded-xl bg-neutral-900 border border-white/5 space-y-1.5">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
-                  <CreditCard className="w-3.5 h-3.5 text-[#C4785A]" />
+                  <CreditCard className="w-3.5 h-3.5 text-[#d4522f]" />
                   <span>{isAr ? 'قنوات الدفع المعتمدة بالدينار' : isFr ? 'Canaux de règlement en Algérie' : 'Algerian Payment Options'}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-[11px] text-neutral-300">
@@ -1982,7 +2053,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   href="tel:+213550123456"
                   className="px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200 font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer text-xs"
                 >
-                  <Phone className="w-3.5 h-3.5 text-[#C4785A]" />
+                  <Phone className="w-3.5 h-3.5 text-[#d4522f]" />
                   <span>+213 (0) 550 12 34 56</span>
                 </a>
               </div>

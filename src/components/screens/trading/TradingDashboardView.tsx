@@ -108,7 +108,7 @@ export const TradingDashboardView: React.FC = () => {
   // Product Family Donut
   const productFamilies = useMemo(() => {
     return [
-      { label: language === 'ar' ? 'مواد أولية وتغليف' : 'Matières & Packaging', value: 42, color: '#C4785A' },
+      { label: language === 'ar' ? 'مواد أولية وتغليف' : 'Matières & Packaging', value: 42, color: '#d4522f' },
       { label: language === 'ar' ? 'قطع غيار صناعية' : 'Pièces Industrielles', value: 36, color: '#3B82F6' },
       { label: language === 'ar' ? 'كيماويات وزيوت' : 'Chimie & Fluides', value: 22, color: '#10B981' },
     ];
@@ -165,7 +165,7 @@ export const TradingDashboardView: React.FC = () => {
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'حركة الشحن والطلبيات' : language === 'fr' ? 'Expéditions & Commandes B2B' : 'Dispatch & Order Flow'}
-            icon={<Truck size={18} className="text-[#C4785A]" />}
+            icon={<Truck size={18} className="text-[#d4522f]" />}
             badge={
               <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                 {pendingShipments} {language === 'ar' ? 'شحنات قيد التحضير' : 'En Préparation'}
@@ -233,7 +233,7 @@ export const TradingDashboardView: React.FC = () => {
                   <span className="text-[11px] text-gray-400 block mb-2">
                     {language === 'ar' ? 'كثافة حركة الشحن على مدار 24 ساعة' : 'Courbe horaire des sorties palettes (24h)'}
                   </span>
-                  <HourlyCurveChart data={hourlyData} color="#C4785A" />
+                  <HourlyCurveChart data={hourlyData} color="#d4522f" />
                 </div>
               </div>
 
@@ -248,7 +248,7 @@ export const TradingDashboardView: React.FC = () => {
                 </div>
                 <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-1">
                   <div
-                    className="bg-[#C4785A] h-full rounded-full transition-all duration-500"
+                    className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
                     style={{ width: `${targetPct}%` }}
                   />
                 </div>
@@ -265,7 +265,7 @@ export const TradingDashboardView: React.FC = () => {
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'تطور محفظة الحسابات التجارية' : language === 'fr' ? 'Développement Comptes B2B & Grossistes' : 'Commercial Account Development'}
-            icon={<Building2 size={18} className="text-[#C4785A]" />}
+            icon={<Building2 size={18} className="text-[#d4522f]" />}
             rightControls={
               <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
                 <button
@@ -326,7 +326,7 @@ export const TradingDashboardView: React.FC = () => {
                 <PillBarHistogram
                   data={weeklyTradeVolume}
                   maxScale={Math.max(...weeklyTradeVolume.map((w) => w.value)) * 1.2}
-                  barColor="#C4785A"
+                  barColor="#d4522f"
                 />
               </div>
             </div>
@@ -340,7 +340,7 @@ export const TradingDashboardView: React.FC = () => {
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'المسار المالي وهوامش الجملة' : language === 'fr' ? 'Trajectoire Financière & Marges' : 'Financial Trajectory & P&L'}
-            icon={<TrendingUp size={18} className="text-[#C4785A]" />}
+            icon={<TrendingUp size={18} className="text-[#d4522f]" />}
             rightControls={
               <span className="text-xs font-semibold text-gray-500 uppercase">
                 {months[currentMonthIndex]} 2026
@@ -448,7 +448,7 @@ export const TradingDashboardView: React.FC = () => {
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'ذكاء التجارة وحارس رأس المال' : language === 'fr' ? 'Intelligence Marché & BFR Sentinel' : 'Trade Intelligence & Working Capital Guardian'}
-            icon={<Receipt size={18} className="text-[#C4785A]" />}
+            icon={<Receipt size={18} className="text-[#d4522f]" />}
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
@@ -503,7 +503,7 @@ export const TradingDashboardView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsComposerOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#C4785A] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d4522f] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
                   >
                     <Plus size={14} />
                     {language === 'ar' ? 'إنشاء وثيقة تجارية (BL/Facture)' : 'Nouvelle Vente B2B'}

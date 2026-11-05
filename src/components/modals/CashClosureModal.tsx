@@ -120,7 +120,7 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
             </div>
             <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/40">
               <span className="text-[10px] text-neutral-400 block">{isAr ? 'الرصيد النظري المطلوب' : 'Solde Théorique'}</span>
-              <span className="font-bold text-[#C4785A] font-mono">{formatMoney(closure.theoreticalCashDzd || 0, language)}</span>
+              <span className="font-bold text-[#d4522f] font-mono">{formatMoney(closure.theoreticalCashDzd || 0, language)}</span>
             </div>
           </div>
         </div>
@@ -129,7 +129,7 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
         <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-3 shadow-2xs">
           <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-700">
             <span className="text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-              <Coins size={16} className="text-[#C4785A]" />
+              <Coins size={16} className="text-[#d4522f]" />
               {isAr ? 'عد الأوراق النقدية الفعلية في الصندوق:' : 'Comptage Physique des Coupures (Dinar Algérien) :'}
             </span>
             <span className={`text-xs font-mono font-bold ${isBalanced ? 'text-emerald-600' : 'text-rose-600'}`}>

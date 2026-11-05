@@ -167,7 +167,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
         {/* Drawer Header */}
         <div className="p-5 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#C4785A]/10 text-[#C4785A] font-bold text-lg flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-[#d4522f]/10 text-[#d4522f] font-bold text-lg flex items-center justify-center">
               {staff.fullName.charAt(0)}
             </div>
             <div>
@@ -239,7 +239,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
               className={`px-3 py-1.5 rounded-xl font-semibold text-xs shadow-xs transition-colors ${
                 staff.isClockedInToday
                   ? 'bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-300'
-                  : 'bg-[#C4785A] text-white hover:bg-[#b0674b]'
+                  : 'bg-[#d4522f] text-white hover:bg-[#b0674b]'
               }`}
             >
               {staff.isClockedInToday
@@ -257,21 +257,21 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
           </div>
 
           {/* Performance Radar / KPI */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-[#C4785A]/5 to-transparent border border-[#C4785A]/20">
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-[#d4522f]/5 to-transparent border border-[#d4522f]/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-neutral-900 dark:text-neutral-100 font-semibold">
-                <TrendingUp className="w-4 h-4 text-[#C4785A]" />
+                <TrendingUp className="w-4 h-4 text-[#d4522f]" />
                 <span>
                   {isAr ? metricLabel.labelAr : isEn ? metricLabel.labelEn : metricLabel.labelFr}
                 </span>
               </div>
-              <span className="font-bold text-sm text-[#C4785A]">
+              <span className="font-bold text-sm text-[#d4522f]">
                 {staff.performance?.kpiValue ?? '92%'}
               </span>
             </div>
             <div className="w-full bg-neutral-200 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mt-2.5">
               <div
-                className="bg-[#C4785A] h-full rounded-full transition-all duration-500"
+                className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
                 style={{ width: `${staff.performance?.scorePercentage ?? 85}%` }}
               />
             </div>
@@ -340,7 +340,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
               <div className="space-y-2 rounded-2xl bg-neutral-50 dark:bg-neutral-800/30 p-3.5 border border-neutral-200 dark:border-neutral-800">
                 <div className="flex items-center justify-between">
                   <span className="text-neutral-500">{isAr ? 'نوع العقد' : 'Type de contrat'}</span>
-                  <span className="font-semibold uppercase text-[#C4785A]">
+                  <span className="font-semibold uppercase text-[#d4522f]">
                     {staff.recruitmentType || 'CDI'}
                   </span>
                 </div>

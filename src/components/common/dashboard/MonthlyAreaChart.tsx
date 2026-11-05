@@ -2,7 +2,7 @@ import React from 'react';
 
 export interface MonthlyAreaChartProps {
   data?: number[]; // typically 30 data points
-  color?: string; // e.g. '#8B5CF6' or '#C4785A'
+  color?: string; // e.g. '#8B5CF6' or '#d4522f'
   height?: number;
   className?: string;
   currency?: string;

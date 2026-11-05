@@ -266,7 +266,7 @@ export const TradingFinanceView: React.FC = () => {
         {/* Header Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
               <Wallet size={22} />
             </div>
             <div>
@@ -274,7 +274,7 @@ export const TradingFinanceView: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
                   {t('trading_finance_title', 'Règlements, Trésorerie & Balance Âgée')}
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#C4785A]/15 text-[#C4785A] border border-[#C4785A]/30">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4522f]/15 text-[#d4522f] border border-[#d4522f]/30">
                   {language === 'ar' ? 'تحصيل الشركات' : 'Recouvrement B2B'}
                 </span>
               </div>
@@ -289,7 +289,7 @@ export const TradingFinanceView: React.FC = () => {
                 onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
                 className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
               >
-                <Home size={15} className="text-[#C4785A]" />
+                <Home size={15} className="text-[#d4522f]" />
                 <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                   {currentBranch?.name || 'Dépôt Central'}
                 </span>
@@ -316,7 +316,7 @@ export const TradingFinanceView: React.FC = () => {
                       className="w-full px-3 py-2 text-left rtl:text-right text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-between"
                     >
                       <span className="font-semibold text-neutral-800 dark:text-neutral-200">{b.name}</span>
-                      {b.id === currentBranch?.id && <span className="text-[#C4785A] text-xs">✓</span>}
+                      {b.id === currentBranch?.id && <span className="text-[#d4522f] text-xs">✓</span>}
                     </button>
                   ))}
                 </div>
@@ -484,13 +484,13 @@ export const TradingFinanceView: React.FC = () => {
                 onClick={() => setFilterMode('unpaid')}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                   filterMode === 'unpaid'
-                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                    ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs'
                     : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
                 <span>{language === 'ar' ? 'غير مسددة' : 'En Attente d\'Encaissement'}</span>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                  filterMode === 'unpaid' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                  filterMode === 'unpaid' ? 'bg-[#d4522f]/15 text-[#d4522f]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
                 }`}>
                   {agingAnalysis.unpaidCount}
                 </span>
@@ -501,13 +501,13 @@ export const TradingFinanceView: React.FC = () => {
                 onClick={() => setFilterMode('paid')}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                   filterMode === 'paid'
-                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                    ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs'
                     : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
                 <span>{language === 'ar' ? 'المسددة' : 'Factures Soldées'}</span>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                  filterMode === 'paid' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                  filterMode === 'paid' ? 'bg-[#d4522f]/15 text-[#d4522f]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
                 }`}>
                   {agingAnalysis.paidCount}
                 </span>
@@ -518,13 +518,13 @@ export const TradingFinanceView: React.FC = () => {
                 onClick={() => setFilterMode('all')}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                   filterMode === 'all'
-                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                    ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs'
                     : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
                 <span>{language === 'ar' ? 'الكل' : 'Toutes les Factures'}</span>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                  filterMode === 'all' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                  filterMode === 'all' ? 'bg-[#d4522f]/15 text-[#d4522f]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
                 }`}>
                   {invoices.length}
                 </span>
@@ -555,7 +555,7 @@ export const TradingFinanceView: React.FC = () => {
                   <p className="font-bold text-xs">{inv.clientName}</p>
                   <div className="flex justify-between text-xs pt-1 border-t border-neutral-100 dark:border-neutral-700">
                     <span className="text-neutral-500">Net TTC:</span>
-                    <span className="font-bold text-[#C4785A]">{formatMoney(inv.netToPay)}</span>
+                    <span className="font-bold text-[#d4522f]">{formatMoney(inv.netToPay)}</span>
                   </div>
                 </div>
               )}

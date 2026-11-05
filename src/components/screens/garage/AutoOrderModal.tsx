@@ -191,7 +191,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/40">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-2xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center">
               <Car size={20} />
             </div>
             <div>
@@ -222,14 +222,14 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({
               onClick={() => setActiveTab(t.id as any)}
               className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold rounded-t-xl border-b-2 transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === t.id
-                  ? 'border-[#C4785A] text-[#C4785A] bg-[#C4785A]/5'
+                  ? 'border-[#d4522f] text-[#d4522f] bg-[#d4522f]/5'
                   : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-300'
               }`}
             >
               {t.icon}
               <span>{t.label}</span>
               {t.id === 'walkaround' && damageMarkers.length > 0 && (
-                <span className="w-5 h-5 rounded-full bg-[#C4785A] text-white text-[10px] flex items-center justify-center font-mono">
+                <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white text-[10px] flex items-center justify-center font-mono">
                   {damageMarkers.length}
                 </span>
               )}
@@ -266,7 +266,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({
                     </div>
                     <div>
                       <span className="text-neutral-400 block">{language === 'ar' ? 'الحساب' : 'Type Compte'}</span>
-                      <span className="font-semibold text-[#C4785A]">
+                      <span className="font-semibold text-[#d4522f]">
                         {activeVehicle.isFleet ? `Flotte: ${activeVehicle.fleetName}` : 'Particulier'}
                       </span>
                     </div>
@@ -288,7 +288,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({
                       type="checkbox"
                       checked={isOdometerReplaced}
                       onChange={(e) => setIsOdometerReplaced(e.target.checked)}
-                      className="rounded text-[#C4785A] focus:ring-[#C4785A]"
+                      className="rounded text-[#d4522f] focus:ring-[#d4522f]"
                     />
                     <span>{language === 'ar' ? 'العداد مستبدل أو معاد للصفر' : 'Compteur remplacé ou remis à zéro'}</span>
                   </label>
@@ -298,10 +298,10 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 flex items-center justify-between">
                     <span className="flex items-center gap-1.5">
-                      <Fuel size={14} className="text-[#C4785A]" />
+                      <Fuel size={14} className="text-[#d4522f]" />
                       {language === 'ar' ? 'مستوى الوقود' : 'Niveau de carburant'}
                     </span>
-                    <span className="font-mono text-[#C4785A] font-bold">{fuelLevel}%</span>
+                    <span className="font-mono text-[#d4522f] font-bold">{fuelLevel}%</span>
                   </label>
                   <div className="grid grid-cols-5 gap-1.5 pt-1">
                     {(['0', '25', '50', '75', '100'] as const).map((lvl) => (
@@ -311,7 +311,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({
                         onClick={() => setFuelLevel(lvl)}
                         className={`py-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer text-center ${
                           fuelLevel === lvl
-                            ? 'bg-[#C4785A] text-white border-[#C4785A] shadow-xs'
+                            ? 'bg-[#d4522f] text-white border-[#d4522f] shadow-xs'
                             : 'bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400'
                         }`}
                       >
@@ -354,7 +354,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({
                         onChange={(e) =>
                           setAccessories((prev) => ({ ...prev, [item.key]: e.target.checked }))
                         }
-                        className="rounded text-[#C4785A] focus:ring-[#C4785A]"
+                        className="rounded text-[#d4522f] focus:ring-[#d4522f]"
                       />
                       <span className="text-neutral-700 dark:text-neutral-300">{item.label}</span>
                     </label>
@@ -376,7 +376,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({
                       onClick={() => setActiveCarView(view)}
                       className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                         activeCarView === view
-                          ? 'bg-[#C4785A] text-white shadow-xs'
+                          ? 'bg-[#d4522f] text-white shadow-xs'
                           : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700'
                       }`}
                     >
@@ -425,7 +425,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({
                   {/* Clean SVG Car Wireframe */}
                   <svg viewBox="0 0 400 200" className="w-full max-w-md h-full opacity-70 group-hover:opacity-90 transition-opacity">
                     {activeCarView === 'front' && (
-                      <g stroke="#C4785A" strokeWidth="2.5" fill="none">
+                      <g stroke="#d4522f" strokeWidth="2.5" fill="none">
                         <rect x="70" y="60" width="260" height="90" rx="30" />
                         <path d="M100 60 L130 20 L270 20 L300 60" />
                         <circle cx="110" cy="100" r="18" />
@@ -435,7 +435,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({
                       </g>
                     )}
                     {activeCarView === 'rear' && (
-                      <g stroke="#C4785A" strokeWidth="2.5" fill="none">
+                      <g stroke="#d4522f" strokeWidth="2.5" fill="none">
                         <rect x="70" y="60" width="260" height="90" rx="25" />
                         <path d="M100 60 L120 25 L280 25 L300 60" />
                         <rect x="90" y="85" width="40" height="20" rx="4" fill="#EF4444" fillOpacity="0.4" />
@@ -445,7 +445,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({
                       </g>
                     )}
                     {(activeCarView === 'left' || activeCarView === 'right') && (
-                      <g stroke="#C4785A" strokeWidth="2.5" fill="none">
+                      <g stroke="#d4522f" strokeWidth="2.5" fill="none">
                         <path d="M40 120 L80 120 L110 70 L260 70 L320 100 L360 120 L360 140 L40 140 Z" />
                         <circle cx="100" cy="140" r="24" strokeWidth="3" />
                         <circle cx="300" cy="140" r="24" strokeWidth="3" />
@@ -463,7 +463,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({
                       <div
                         key={marker.id}
                         style={{ left: `${marker.xPercent}%`, top: `${marker.yPercent}%` }}
-                        className="absolute -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#C4785A] text-white text-xs font-bold font-mono flex items-center justify-center border-2 border-white shadow-lg animate-in zoom-in"
+                        className="absolute -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#d4522f] text-white text-xs font-bold font-mono flex items-center justify-center border-2 border-white shadow-lg animate-in zoom-in"
                         title={`${marker.damageType} (${marker.severity})`}
                       >
                         {idx + 1}
@@ -490,7 +490,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({
                     {damageMarkers.map((m, idx) => (
                       <div key={m.id} className="flex items-center justify-between p-2.5 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-neutral-200/60 dark:border-neutral-700 text-xs">
                         <div className="flex items-center gap-2">
-                          <span className="w-5 h-5 rounded-full bg-[#C4785A] text-white flex items-center justify-center text-[10px] font-bold">
+                          <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-[10px] font-bold">
                             {idx + 1}
                           </span>
                           <div>
@@ -563,8 +563,8 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({
           {/* TAB 4: SIGNATURE & BAILMENT LEGAL CONTRACT */}
           {activeTab === 'signature' && (
             <div className="space-y-4 animate-in fade-in">
-              <div className="p-4 rounded-2xl bg-[#FDF4F0] dark:bg-neutral-800 border border-[#C4785A]/30 space-y-2">
-                <div className="flex items-center gap-2 text-sm font-bold text-[#C4785A]">
+              <div className="p-4 rounded-2xl bg-[#FDF4F0] dark:bg-neutral-800 border border-[#d4522f]/30 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-bold text-[#d4522f]">
                   <ShieldCheck size={18} />
                   <span>
                     {language === 'ar' ? 'عقد استلام وحراسة قانونية (المادة 581 من القانون المدني)' : 'Conditions Contradictoires de Dépôt & Garde (Art. 581 Code Civil)'}
@@ -580,7 +580,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({
               <div className="p-5 rounded-2xl bg-white dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
-                    <PenTool size={14} className="text-[#C4785A]" />
+                    <PenTool size={14} className="text-[#d4522f]" />
                     {language === 'ar' ? 'توقيع الزبون على الشاشة أو إقرار الاستلام' : 'Signature client sur écran & accord contradictoire'}
                   </span>
                   {isClientSigned && (
@@ -596,7 +596,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({
                   className={`w-full h-28 rounded-2xl border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors ${
                     isClientSigned
                       ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-400'
-                      : 'bg-neutral-50 dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700 hover:border-[#C4785A]'
+                      : 'bg-neutral-50 dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700 hover:border-[#d4522f]'
                   }`}
                 >
                   {isClientSigned ? (

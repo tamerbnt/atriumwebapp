@@ -252,7 +252,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
           const inShop = orders.some((o) => o.vehiclePlate === v.plateNumber && o.status !== 'Delivered');
           return (
             <div className="flex items-center gap-3 min-w-0 pr-2">
-              <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
+              <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
                 <Car size={18} />
               </div>
               <div className="min-w-0">
@@ -297,7 +297,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
         renderCell: (v) => (
           <div>
             <div className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 truncate flex items-center gap-1.5">
-              {v.isFleet ? <Building2 size={12} className="text-[#C4785A] shrink-0" /> : null}
+              {v.isFleet ? <Building2 size={12} className="text-[#d4522f] shrink-0" /> : null}
               <span>{v.ownerName}</span>
             </div>
             <div className="text-[11px] font-mono text-neutral-400 mt-0.5">
@@ -319,7 +319,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
           return (
             <div className="space-y-0.5">
               <div className="text-xs font-mono font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5">
-                <Gauge size={13} className="text-[#C4785A]" />
+                <Gauge size={13} className="text-[#d4522f]" />
                 <span>{estKm.toLocaleString()} km</span>
                 <span className="text-[9px] text-neutral-400 font-normal">(est.)</span>
               </div>
@@ -390,7 +390,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <Car size={22} />
           </div>
           <div>
@@ -398,7 +398,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
                 {language === 'ar' ? 'سجل المركبات وحظيرة الزبائن' : 'Parc Véhicules & Immatriculations'}
               </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
                 {vehicles.length} {language === 'ar' ? 'مركبة' : 'véhicules'}
               </span>
             </div>
@@ -529,7 +529,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
         {selectedIds.size > 0 && (
           <div className="flex items-center justify-between p-3 px-4 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in">
             <div className="flex items-center gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
               <span className="text-xs font-bold text-neutral-900 dark:text-white">
                 {selectedIds.size} {isAr ? 'مركبات محددة' : 'véhicules sélectionnés'}
               </span>
@@ -601,7 +601,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
 
                 return (
                   <div className="flex flex-col items-center justify-center w-full">
-                    <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
+                    <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
                       <Car size={32} />
                     </div>
                     <div className="flex items-center gap-1.5 max-w-[210px] mb-0.5">
@@ -665,7 +665,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
               {/* Drawer Header */}
               <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-800/60 flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] text-[#C4785A] font-bold text-sm flex items-center justify-center shrink-0 border border-[#F5E2D8]">
+                  <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] text-[#d4522f] font-bold text-sm flex items-center justify-center shrink-0 border border-[#F5E2D8]">
                     <Car size={20} />
                   </div>
                   <div className="min-w-0">
@@ -694,7 +694,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => handleOpenNewOrder(selectedVehicle)}
-                  className="flex-1 py-1.5 px-2 rounded-lg bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
+                  className="flex-1 py-1.5 px-2 rounded-lg bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
                 >
                   <Wrench size={13} />
                   <span>{isAr ? 'فتح أمر إصلاح' : 'Nouvel OR'}</span>
@@ -726,7 +726,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
                   onClick={() => setActiveTab('fiche')}
                   className={`py-2 px-2.5 border-b-2 transition-colors ${
                     activeTab === 'fiche'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -737,7 +737,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
                   onClick={() => setActiveTab('owner')}
                   className={`py-2 px-2.5 border-b-2 transition-colors ${
                     activeTab === 'owner'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -748,7 +748,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
                   onClick={() => setActiveTab('orders')}
                   className={`py-2 px-2.5 border-b-2 transition-colors ${
                     activeTab === 'orders'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -759,7 +759,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
                   onClick={() => setActiveTab('maintenance')}
                   className={`py-2 px-2.5 border-b-2 transition-colors ${
                     activeTab === 'maintenance'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -781,7 +781,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
                       </div>
                       <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
                         <span className="text-neutral-500">{isAr ? 'الترقيم' : 'Immatriculation'}</span>
-                        <span className="font-bold text-[#C4785A] font-mono">{selectedVehicle.plateNumber}</span>
+                        <span className="font-bold text-[#d4522f] font-mono">{selectedVehicle.plateNumber}</span>
                       </div>
                       <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
                         <span className="text-neutral-500">{isAr ? 'نوع الوقود' : 'Motorisation / Carburant'}</span>
@@ -809,7 +809,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
                   <div className="space-y-3 text-xs">
                     {selectedVehicle.isFleet ? (
                       <div className="p-3.5 rounded-xl bg-orange-50/60 dark:bg-orange-950/30 border border-orange-200/70 space-y-2">
-                        <div className="flex items-center gap-2 font-bold text-[#C4785A]">
+                        <div className="flex items-center gap-2 font-bold text-[#d4522f]">
                           <Building2 size={16} />
                           <span>{selectedVehicle.fleetName || 'Compte Entreprise B2B'}</span>
                         </div>
@@ -872,7 +872,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
                             <span className="text-[10px] font-semibold text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded">
                               {o.status}
                             </span>
-                            <span className="font-mono font-bold text-[#C4785A]">
+                            <span className="font-mono font-bold text-[#d4522f]">
                               {formatMoney(o.finalCostDzd || o.estimatedCostDzd)}
                             </span>
                           </div>

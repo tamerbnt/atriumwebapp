@@ -85,7 +85,7 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-neutral-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#2A2420] border border-[#483B33] flex items-center justify-center text-[#C4785A]">
+            <div className="w-9 h-9 rounded-xl bg-[#2A2420] border border-[#483B33] flex items-center justify-center text-[#d4522f]">
               <Lock size={16} />
             </div>
             <div>
@@ -107,13 +107,13 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
         {/* Current Active Operator Banner */}
         <div className="p-3.5 rounded-2xl bg-neutral-900/90 border border-neutral-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#C4785A] text-white flex items-center justify-center font-bold text-sm shadow-xs">
+            <div className="w-10 h-10 rounded-full bg-[#d4522f] text-white flex items-center justify-center font-bold text-sm shadow-xs">
               {currentUser.fullName.charAt(0)}
             </div>
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="text-xs font-bold text-white">{currentUser.fullName}</span>
-                <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/15 px-2 py-0.5 rounded-full uppercase">
+                <span className="text-[10px] font-bold text-[#d4522f] bg-[#d4522f]/15 px-2 py-0.5 rounded-full uppercase">
                   {currentUser.role}
                 </span>
               </div>
@@ -140,7 +140,7 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
                   onClick={() => handleQuickSelectStaff(stf)}
                   className={`w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition-colors cursor-pointer ${
                     isCurrent
-                      ? 'bg-[#2A2420] border-[#C4785A] text-white font-bold'
+                      ? 'bg-[#2A2420] border-[#d4522f] text-white font-bold'
                       : 'bg-neutral-900/60 border-neutral-800 text-neutral-300 hover:bg-neutral-800/80 hover:text-white'
                   }`}
                 >
@@ -153,7 +153,7 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
                       <div className="text-[10px] text-neutral-400">{stf.role}</div>
                     </div>
                   </div>
-                  <div className="text-[10px] font-mono text-[#C4785A]">
+                  <div className="text-[10px] font-mono text-[#d4522f]">
                     PIN: {stf.pinCode || '1234'}
                   </div>
                 </button>
@@ -172,7 +172,7 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
                   key={idx}
                   className={`w-3.5 h-3.5 rounded-full transition-all ${
                     pinInput.length > idx
-                      ? 'bg-[#C4785A] scale-110'
+                      ? 'bg-[#d4522f] scale-110'
                       : 'bg-neutral-800 border border-neutral-700'
                   }`}
                 />
@@ -212,7 +212,7 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
               onClose();
               onOpenOnboarding();
             }}
-            className="text-xs text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer"
+            className="text-xs text-[#d4522f] hover:underline flex items-center gap-1 cursor-pointer"
           >
             <Sparkles size={13} />
             <span>{t('onboarding_title', language)}</span>

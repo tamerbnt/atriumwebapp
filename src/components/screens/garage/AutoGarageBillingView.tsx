@@ -250,7 +250,7 @@ export const AutoGarageBillingView: React.FC = () => {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
-              <CreditCard className="text-[#C4785A]" size={24} />
+              <CreditCard className="text-[#d4522f]" size={24} />
               <span>
                 {isAr
                   ? 'الصندوق والفوترة الجبائية (Facturation DGI)'
@@ -277,7 +277,7 @@ export const AutoGarageBillingView: React.FC = () => {
             onClick={() => setActiveScreenTab('orders')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeScreenTab === 'orders'
-                ? 'bg-[#C4785A] text-white shadow-xs'
+                ? 'bg-[#d4522f] text-white shadow-xs'
                 : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
             }`}
           >
@@ -288,7 +288,7 @@ export const AutoGarageBillingView: React.FC = () => {
             onClick={() => setActiveScreenTab('fleets')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeScreenTab === 'fleets'
-                ? 'bg-[#C4785A] text-white shadow-xs'
+                ? 'bg-[#d4522f] text-white shadow-xs'
                 : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
             }`}
           >
@@ -299,7 +299,7 @@ export const AutoGarageBillingView: React.FC = () => {
             onClick={() => setActiveScreenTab('invoices')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeScreenTab === 'invoices'
-                ? 'bg-[#C4785A] text-white shadow-xs'
+                ? 'bg-[#d4522f] text-white shadow-xs'
                 : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
             }`}
           >
@@ -331,7 +331,7 @@ export const AutoGarageBillingView: React.FC = () => {
             <span className="text-[11px] font-semibold text-neutral-400 block">
               {isAr ? 'ديون أساطيل B2B المؤجلة' : 'Créances Flottes (Encours)'}
             </span>
-            <span className="text-xl font-black text-[#C4785A] font-mono mt-0.5 block">
+            <span className="text-xl font-black text-[#d4522f] font-mono mt-0.5 block">
               {formatMoney(corporateFleetArTotal, language)}
             </span>
           </div>
@@ -361,7 +361,7 @@ export const AutoGarageBillingView: React.FC = () => {
                   id: 'orderNumber',
                   header: 'N° OR',
                   width: '130px',
-                  cell: (o: RepairOrder) => <span className="font-mono font-bold text-[#C4785A]">{o.orderNumber}</span>,
+                  cell: (o: RepairOrder) => <span className="font-mono font-bold text-[#d4522f]">{o.orderNumber}</span>,
                 },
                 {
                   id: 'vehicle',
@@ -379,7 +379,7 @@ export const AutoGarageBillingView: React.FC = () => {
                   cell: (o: RepairOrder) => (
                     <div>
                       <span className="font-medium text-neutral-800 dark:text-neutral-200 block">{o.clientName}</span>
-                      <span className="text-xs text-[#C4785A]">
+                      <span className="text-xs text-[#d4522f]">
                         {o.clientType === 'corporate_fleet' ? `Flotte: ${o.fleetName}` : 'Particulier'}
                       </span>
                     </div>
@@ -426,7 +426,7 @@ export const AutoGarageBillingView: React.FC = () => {
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <span className="text-xs font-bold text-[#C4785A] uppercase tracking-wider block">
+                        <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">
                           Contrat B2B Flotte
                         </span>
                         <h3 className="font-bold text-sm text-neutral-900 dark:text-white mt-0.5">
@@ -470,7 +470,7 @@ export const AutoGarageBillingView: React.FC = () => {
                               ? 'bg-rose-500'
                               : percentUsed > 75
                               ? 'bg-amber-500'
-                              : 'bg-[#C4785A]'
+                              : 'bg-[#d4522f]'
                           }`}
                         />
                       </div>
@@ -487,7 +487,7 @@ export const AutoGarageBillingView: React.FC = () => {
                         onClick={() => {
                           showToast(`Génération du relevé mensuel pour ${fleet.companyName}...`, 'info');
                         }}
-                        className="flex-1 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-[#C4785A] hover:text-white text-neutral-700 dark:text-neutral-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                        className="flex-1 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-neutral-700 dark:text-neutral-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                       >
                         <FileText size={13} />
                         <span>Relevé Mensuel</span>
@@ -537,7 +537,7 @@ export const AutoGarageBillingView: React.FC = () => {
                       <span className="text-neutral-400 block text-[10px]">
                         TVA 19%: {formatMoney(inv.tvaAmount, language)} · Timbre: {formatMoney(inv.timbreFiscal, language)}
                       </span>
-                      <span className="text-sm font-black text-[#C4785A] block">
+                      <span className="text-sm font-black text-[#d4522f] block">
                         {formatMoney(inv.netToPayDzd, language)}
                       </span>
                     </div>
@@ -566,7 +566,7 @@ export const AutoGarageBillingView: React.FC = () => {
           <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5">
             <div className="flex items-center justify-between border-b pb-3 border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center">
                   <CreditCard size={18} />
                 </div>
                 <div>
@@ -594,7 +594,7 @@ export const AutoGarageBillingView: React.FC = () => {
                   onClick={() => setBillingType('facture_dgi')}
                   className={`py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                     billingType === 'facture_dgi'
-                      ? 'bg-[#C4785A] text-white shadow-xs'
+                      ? 'bg-[#d4522f] text-white shadow-xs'
                       : 'text-neutral-500'
                   }`}
                 >
@@ -605,7 +605,7 @@ export const AutoGarageBillingView: React.FC = () => {
                   onClick={() => setBillingType('bon_caisse')}
                   className={`py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                     billingType === 'bon_caisse'
-                      ? 'bg-[#C4785A] text-white shadow-xs'
+                      ? 'bg-[#d4522f] text-white shadow-xs'
                       : 'text-neutral-500'
                   }`}
                 >
@@ -631,7 +631,7 @@ export const AutoGarageBillingView: React.FC = () => {
                       onClick={() => setPaymentMethod(pm.id as any)}
                       className={`p-2.5 rounded-xl border font-semibold text-center transition-all cursor-pointer ${
                         paymentMethod === pm.id
-                          ? 'border-[#C4785A] bg-[#C4785A]/10 text-[#C4785A]'
+                          ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
                           : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400'
                       }`}
                     >
@@ -654,7 +654,7 @@ export const AutoGarageBillingView: React.FC = () => {
                 {billingType === 'facture_dgi' && (
                   <div className="flex justify-between text-neutral-500">
                     <span>TVA Réglementaire (19%) :</span>
-                    <span className="text-[#C4785A] font-bold">
+                    <span className="text-[#d4522f] font-bold">
                       {formatMoney(((orderToSettle.finalCostDzd || 19250) * 0.19), language)}
                     </span>
                   </div>
@@ -669,7 +669,7 @@ export const AutoGarageBillingView: React.FC = () => {
                 )}
                 <div className="flex justify-between pt-2 border-t border-neutral-200 dark:border-neutral-700 text-sm font-black text-neutral-900 dark:text-white">
                   <span>Net à Payer Client :</span>
-                  <span className="text-[#C4785A]">
+                  <span className="text-[#d4522f]">
                     {formatMoney(
                       (orderToSettle.finalCostDzd || 19250) * (billingType === 'facture_dgi' ? 1.19 : 1.0) +
                         (paymentMethod === 'especes' ? computeAlgerianTimbreFiscal((orderToSettle.finalCostDzd || 19250) * (billingType === 'facture_dgi' ? 1.19 : 1.0), 'especes') : 0),
@@ -716,7 +716,7 @@ export const AutoGarageBillingView: React.FC = () => {
                 </div>
               </div>
               <div className="text-right">
-                <span className="font-mono text-base font-black text-[#C4785A] block">
+                <span className="font-mono text-base font-black text-[#d4522f] block">
                   {activePrintInvoice.invoiceNumber}
                 </span>
                 <span className="text-xs text-neutral-400 block font-mono">
@@ -790,7 +790,7 @@ export const AutoGarageBillingView: React.FC = () => {
                 )}
                 <div className="flex justify-between pt-2 border-t border-neutral-300 text-sm font-black text-neutral-900">
                   <span>Net à Payer :</span>
-                  <span className="text-[#C4785A]">{activePrintInvoice.netToPayDzd.toLocaleString()} DA</span>
+                  <span className="text-[#d4522f]">{activePrintInvoice.netToPayDzd.toLocaleString()} DA</span>
                 </div>
               </div>
             </div>
@@ -829,7 +829,7 @@ export const AutoGarageBillingView: React.FC = () => {
           <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4">
             <div className="flex items-center justify-between border-b pb-3 border-neutral-100 dark:border-neutral-800">
               <h3 className="font-bold text-sm text-neutral-900 dark:text-white flex items-center gap-2">
-                <Wallet size={16} className="text-[#C4785A]" />
+                <Wallet size={16} className="text-[#d4522f]" />
                 <span>Point de Caisse Journalier (Z de Caisse)</span>
               </h3>
               <button onClick={() => setIsTillModalOpen(false)} className="text-neutral-400">

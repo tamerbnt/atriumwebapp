@@ -3230,6 +3230,24 @@ export function useAtriumStore() {
     return newProduct;
   };
 
+  const resolveSubRolesForUser = (user: CurrentUser) => {
+    const isOwner = user.role === 'Owner' || (user.roleRank && user.roleRank >= 8);
+    const r = (user.role || '').toLowerCase();
+    return {
+      activeMembershipRole: (isOwner ? 'owner' : 'staff') as any,
+      activeAppointmentRole: (isOwner ? 'owner' : 'staff') as any,
+      activePosRole: (isOwner ? 'owner' : 'staff') as any,
+      activeEducationRole: (isOwner ? 'owner' : 'staff') as any,
+      activeGarageRole: (isOwner ? 'gerant' : (r.includes('mecanic') ? 'mecanicien' : r.includes('magasin') ? 'magasinier' : r.includes('caisse') ? 'caisse' : r.includes('recept') ? 'reception' : 'gerant')) as any,
+      activeRealEstateRole: (isOwner ? 'direction' : (r.includes('negoc') ? 'negociateur' : r.includes('gest') ? 'gestionnaire_locatif' : r.includes('compt') || r.includes('notair') ? 'notaire_compta' : 'direction')) as any,
+      activeManufacturingRole: (isOwner ? 'gerant' : (r.includes('atelier') ? 'chef_atelier' : r.includes('operat') ? 'operateur' : r.includes('magasin') ? 'magasinier' : r.includes('qualit') ? 'controleur' : 'gerant')) as any,
+      activeLegalRole: (isOwner ? 'avocat_associe' : (r.includes('avocat') ? 'avocat_collaborateur' : r.includes('clerc') ? 'clerc_notaire' : r.includes('compt') || r.includes('caisse') ? 'secretaire_caisse' : 'avocat_associe')) as any,
+      activeLogisticsRole: (isOwner ? 'gerant' : (r.includes('dispatch') ? 'dispatcher' : r.includes('tri') ? 'hub_sorter' : r.includes('stop') ? 'stop_desk_agent' : 'gerant')) as any,
+      activeContractorRole: (isOwner ? 'gerant' : (r.includes('conduct') ? 'conducteur' : r.includes('chantier') ? 'chef_chantier' : r.includes('metreur') ? 'metreur' : r.includes('compt') ? 'comptable' : 'gerant')) as any,
+      activeAgriRole: (isOwner ? 'gerant' : (r.includes('culture') ? 'chef_culture' : r.includes('zoo') ? 'zootechnicien' : r.includes('magasin') ? 'magasinier' : 'gerant')) as any,
+    };
+  };
+
   const login = (identifier: string, _password?: string) => {
     const cleanInput = identifier.trim().toLowerCase();
     const norm = normalizePhone(identifier);
@@ -3256,6 +3274,7 @@ export function useAtriumStore() {
         ...globalState,
         currentUser: user,
         isAuthenticated: true,
+        ...resolveSubRolesForUser(user),
       };
       notify();
       return { success: true, user };
@@ -3279,6 +3298,7 @@ export function useAtriumStore() {
         ...globalState,
         currentUser: ownerUser,
         isAuthenticated: true,
+        ...resolveSubRolesForUser(ownerUser),
       };
       notify();
       return { success: true, user: ownerUser };
@@ -3299,6 +3319,7 @@ export function useAtriumStore() {
       ...globalState,
       currentUser: fallbackUser,
       isAuthenticated: true,
+      ...resolveSubRolesForUser(fallbackUser),
     };
     notify();
     return { success: true, user: fallbackUser };
@@ -3325,6 +3346,7 @@ export function useAtriumStore() {
         currentUser: user,
         isAuthenticated: true,
         isFastSwitchOpen: false,
+        ...resolveSubRolesForUser(user),
       };
       notify();
       return { success: true, user };
@@ -3344,6 +3366,7 @@ export function useAtriumStore() {
         currentUser: ownerUser,
         isAuthenticated: true,
         isFastSwitchOpen: false,
+        ...resolveSubRolesForUser(ownerUser),
       };
       notify();
       return { success: true, user: ownerUser };

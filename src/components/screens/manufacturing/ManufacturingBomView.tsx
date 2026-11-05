@@ -231,14 +231,14 @@ export const ManufacturingBomView: React.FC = () => {
       minWidth: '130px',
       cell: (b) => (
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-mono font-bold text-xs shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0">
             <Layers size={16} />
           </div>
           <div>
             <div className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
               {b.bomCode}
               {pinnedIds.has(b.id) && (
-                <Pin size={10} className="fill-[#C4785A] text-[#C4785A]" />
+                <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />
               )}
             </div>
             <div className="text-[10px] text-neutral-400">
@@ -273,7 +273,7 @@ export const ManufacturingBomView: React.FC = () => {
       minWidth: '120px',
       cell: (b) => (
         <div className="flex items-center gap-1 text-xs text-neutral-700 dark:text-neutral-300">
-          <Clock size={13} className="text-[#C4785A] shrink-0" />
+          <Clock size={13} className="text-[#d4522f] shrink-0" />
           <span className="font-mono font-bold">{b.standardLaborHours} h</span>
         </div>
       ),
@@ -342,7 +342,7 @@ export const ManufacturingBomView: React.FC = () => {
       {/* Top Header Strip with Action Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <Layers size={22} />
           </div>
           <div>
@@ -350,7 +350,7 @@ export const ManufacturingBomView: React.FC = () => {
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
                 {isAr ? 'جداول المكونات والنومكلاتور (BOM)' : 'Nomenclatures Produits (Bill of Materials)'}
               </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
                 {boms.length} BOM
               </span>
             </div>
@@ -523,7 +523,7 @@ export const ManufacturingBomView: React.FC = () => {
             renderGridCard={(b) => (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2.5 py-1 rounded-lg border border-[#C4785A]/20">
+                  <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg border border-[#d4522f]/20">
                     {b.bomCode}
                   </span>
                   <span
@@ -571,7 +571,7 @@ export const ManufacturingBomView: React.FC = () => {
             {/* Drawer Header */}
             <div className="flex items-start justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-bold">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold">
                   <Layers size={18} />
                 </div>
                 <div>
@@ -632,7 +632,7 @@ export const ManufacturingBomView: React.FC = () => {
                 onClick={() => setActiveTab('fiche')}
                 className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
                   activeTab === 'fiche'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                    ? 'border-[#d4522f] text-[#d4522f] font-bold'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -642,7 +642,7 @@ export const ManufacturingBomView: React.FC = () => {
                 onClick={() => setActiveTab('composants')}
                 className={`pb-2 px-2 font-medium border-b-2 transition-colors flex items-center gap-1 ${
                   activeTab === 'composants'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                    ? 'border-[#d4522f] text-[#d4522f] font-bold'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -655,7 +655,7 @@ export const ManufacturingBomView: React.FC = () => {
                 onClick={() => setActiveTab('costs')}
                 className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
                   activeTab === 'costs'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                    ? 'border-[#d4522f] text-[#d4522f] font-bold'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -665,7 +665,7 @@ export const ManufacturingBomView: React.FC = () => {
                 onClick={() => setActiveTab('notes')}
                 className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
                   activeTab === 'notes'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                    ? 'border-[#d4522f] text-[#d4522f] font-bold'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -691,7 +691,7 @@ export const ManufacturingBomView: React.FC = () => {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-neutral-500">Rendement de lot:</span>
-                    <span className="font-mono font-bold text-[#C4785A]">
+                    <span className="font-mono font-bold text-[#d4522f]">
                       {selectedBom.batchYield} {selectedBom.unit}
                     </span>
                   </div>
@@ -770,11 +770,11 @@ export const ManufacturingBomView: React.FC = () => {
                   value={inspectorNotes}
                   onChange={(e) => setInspectorNotes(e.target.value)}
                   placeholder="Noter les étapes opératoires, réglages de coupe, temps de séchage..."
-                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#C4785A] outline-hidden resize-none"
+                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none"
                 />
                 <button
                   onClick={handleSaveNotes}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#C4785A] text-white hover:bg-[#a86246] transition-colors font-medium text-xs shadow-xs"
+                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#d4522f] text-white hover:bg-[#a86246] transition-colors font-medium text-xs shadow-xs"
                 >
                   {noteSaved ? (
                     <>
@@ -801,7 +801,7 @@ export const ManufacturingBomView: React.FC = () => {
           <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-bold">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold">
                   <Layers size={20} />
                 </div>
                 <div>

@@ -33,7 +33,7 @@ export const AutoGarageStaffView: React.FC = () => {
               {member.technicalSpecialty && (
                 <>
                   <span>·</span>
-                  <span className="text-[#C4785A] font-medium">{member.technicalSpecialty}</span>
+                  <span className="text-[#d4522f] font-medium">{member.technicalSpecialty}</span>
                 </>
               )}
             </div>

@@ -214,7 +214,7 @@ export const MedicalAgendaView: React.FC = () => {
               onClick={() => setSlotIntervalMinutes(interval)}
               className={`px-2.5 py-1 rounded-lg font-mono text-xs font-bold transition-all cursor-pointer ${
                 slotIntervalMinutes === interval
-                  ? 'bg-[#C4785A] text-white shadow-2xs'
+                  ? 'bg-[#d4522f] text-white shadow-2xs'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
               }`}
             >

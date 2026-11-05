@@ -247,7 +247,7 @@ export const MedicalPrescriptionsView: React.FC = () => {
         const isPinned = pinnedIds.has(rx.id);
         return (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800">
+            <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800">
               <Pill size={16} />
             </div>
             <div className="min-w-0">
@@ -328,7 +328,7 @@ export const MedicalPrescriptionsView: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <Pill size={20} />
           </div>
           <div>
@@ -362,7 +362,7 @@ export const MedicalPrescriptionsView: React.FC = () => {
               onClick={() => setActiveMainTab('ngap')}
               className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                 activeMainTab === 'ngap'
-                  ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs font-bold'
+                  ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-2xs font-bold'
                   : 'text-neutral-600 dark:text-neutral-400'
               }`}
             >
@@ -373,9 +373,9 @@ export const MedicalPrescriptionsView: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsPersonalizerOpen(true)}
-            className="px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:border-[#C4785A] text-xs font-semibold flex items-center gap-2 shadow-2xs transition-colors cursor-pointer"
+            className="px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:border-[#d4522f] text-xs font-semibold flex items-center gap-2 shadow-2xs transition-colors cursor-pointer"
           >
-            <Settings size={14} className="text-[#C4785A]" />
+            <Settings size={14} className="text-[#d4522f]" />
             <span>{isAr ? 'تخصيص الأوردونونس' : 'Studio Ordonnance'}</span>
           </button>
 
@@ -395,7 +395,7 @@ export const MedicalPrescriptionsView: React.FC = () => {
         <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs animate-in fade-in duration-150">
           <div>
             <h3 className="font-bold text-sm text-neutral-900 dark:text-white flex items-center gap-2">
-              <Stethoscope size={16} className="text-[#C4785A]" />
+              <Stethoscope size={16} className="text-[#d4522f]" />
               <span>{isAr ? 'دليل الفحوصات والأعمال الطبية (NGAP)' : 'Nomenclature Générale des Actes Professionnels (NGAP)'}</span>
             </h3>
             <p className="text-xs text-neutral-500">
@@ -422,8 +422,8 @@ export const MedicalPrescriptionsView: React.FC = () => {
               <tbody>
                 {NGAP_ACTS.map((act) => (
                   <tr key={act.code} className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs hover:bg-neutral-50/90 dark:hover:bg-neutral-700/60 transition-colors">
-                    <td className="p-3.5 font-mono font-bold text-[#C4785A]">
-                      <span className="px-2 py-0.5 rounded-md bg-[#C4785A]/10 border border-[#C4785A]/20">
+                    <td className="p-3.5 font-mono font-bold text-[#d4522f]">
+                      <span className="px-2 py-0.5 rounded-md bg-[#d4522f]/10 border border-[#d4522f]/20">
                         {act.code}
                       </span>
                     </td>
@@ -458,7 +458,7 @@ export const MedicalPrescriptionsView: React.FC = () => {
                           depleteForAct(act.code);
                           showToast(`Consommables déduits avec succès pour acte [${act.code}]`, 'success');
                         }}
-                        className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-neutral-100 dark:bg-neutral-700 hover:bg-[#C4785A] hover:text-white transition-colors cursor-pointer"
+                        className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-neutral-100 dark:bg-neutral-700 hover:bg-[#d4522f] hover:text-white transition-colors cursor-pointer"
                         title="Simuler la dépréciation des consommables pour cet acte"
                       >
                         Consommer
@@ -652,7 +652,7 @@ export const MedicalPrescriptionsView: React.FC = () => {
 
                     <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-neutral-400">
                       <span>{rx.prescriptionDate}</span>
-                      <span className="text-[#C4785A] font-medium">{rx.items.length} lignes</span>
+                      <span className="text-[#d4522f] font-medium">{rx.items.length} lignes</span>
                     </div>
                   </div>
                 );
@@ -668,7 +668,7 @@ export const MedicalPrescriptionsView: React.FC = () => {
               {/* Header */}
               <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-800/60 flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-950/60 text-[#C4785A] font-bold text-sm flex items-center justify-center shrink-0 border border-orange-200/60">
+                  <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-950/60 text-[#d4522f] font-bold text-sm flex items-center justify-center shrink-0 border border-orange-200/60">
                     <Pill size={18} />
                   </div>
                   <div className="min-w-0">
@@ -697,7 +697,7 @@ export const MedicalPrescriptionsView: React.FC = () => {
                   onClick={() => setActiveTab('posologie')}
                   className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${
                     activeTab === 'posologie'
-                      ? 'border-[#C4785A] text-[#C4785A]'
+                      ? 'border-[#d4522f] text-[#d4522f]'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
                   }`}
                 >
@@ -708,7 +708,7 @@ export const MedicalPrescriptionsView: React.FC = () => {
                   onClick={() => setActiveTab('apercu')}
                   className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${
                     activeTab === 'apercu'
-                      ? 'border-[#C4785A] text-[#C4785A]'
+                      ? 'border-[#d4522f] text-[#d4522f]'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
                   }`}
                 >
@@ -719,7 +719,7 @@ export const MedicalPrescriptionsView: React.FC = () => {
                   onClick={() => setActiveTab('securite')}
                   className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${
                     activeTab === 'securite'
-                      ? 'border-[#C4785A] text-[#C4785A]'
+                      ? 'border-[#d4522f] text-[#d4522f]'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
                   }`}
                 >
@@ -730,7 +730,7 @@ export const MedicalPrescriptionsView: React.FC = () => {
                   onClick={() => setActiveTab('actions')}
                   className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${
                     activeTab === 'actions'
-                      ? 'border-[#C4785A] text-[#C4785A]'
+                      ? 'border-[#d4522f] text-[#d4522f]'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
                   }`}
                 >
@@ -759,7 +759,7 @@ export const MedicalPrescriptionsView: React.FC = () => {
                             {item.durationDays}j
                           </span>
                         </div>
-                        <div className="text-[11px] text-[#C4785A] font-medium">
+                        <div className="text-[11px] text-[#d4522f] font-medium">
                           {item.dosage} · {item.frequency}
                         </div>
                         {item.instructions && (
@@ -792,7 +792,7 @@ export const MedicalPrescriptionsView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setIsPersonalizerOpen(true)}
-                        className="px-2.5 py-1 text-xs rounded bg-[#C4785A] text-white font-semibold shadow-2xs"
+                        className="px-2.5 py-1 text-xs rounded bg-[#d4522f] text-white font-semibold shadow-2xs"
                       >
                         Configurer
                       </button>
@@ -875,8 +875,8 @@ export const MedicalPrescriptionsView: React.FC = () => {
 
                 {activeTab === 'securite' && (
                   <div className="space-y-4 animate-in fade-in duration-150 text-center">
-                    <div className="p-6 rounded-2xl bg-white dark:bg-neutral-800 border-2 border-dashed border-[#C4785A]/40 flex flex-col items-center justify-center space-y-3">
-                      <QrCode size={80} className="text-[#C4785A]" />
+                    <div className="p-6 rounded-2xl bg-white dark:bg-neutral-800 border-2 border-dashed border-[#d4522f]/40 flex flex-col items-center justify-center space-y-3">
+                      <QrCode size={80} className="text-[#d4522f]" />
                       <div>
                         <div className="font-mono font-bold text-xs text-neutral-900 dark:text-white">
                           {selectedRx.qrCodeHash}
@@ -904,7 +904,7 @@ export const MedicalPrescriptionsView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handlePrint(selectedRx)}
-                      className="w-full p-3 rounded-xl bg-[#C4785A] text-white font-semibold flex items-center justify-between hover:bg-[#b0674b] transition-colors cursor-pointer"
+                      className="w-full p-3 rounded-xl bg-[#d4522f] text-white font-semibold flex items-center justify-between hover:bg-[#b0674b] transition-colors cursor-pointer"
                     >
                       <span className="flex items-center gap-2">
                         <Printer size={16} />
@@ -966,7 +966,7 @@ export const MedicalPrescriptionsView: React.FC = () => {
             {/* Modal Header */}
             <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-850">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center">
                   <Pill size={18} />
                 </div>
                 <div>
@@ -1102,7 +1102,7 @@ export const MedicalPrescriptionsView: React.FC = () => {
                         },
                       ])
                     }
-                    className="px-2 py-1 rounded bg-[#C4785A] text-white text-[11px] font-semibold flex items-center gap-1 shadow-2xs"
+                    className="px-2 py-1 rounded bg-[#d4522f] text-white text-[11px] font-semibold flex items-center gap-1 shadow-2xs"
                   >
                     <Plus size={11} />
                     <span>Ajouter Médicament</span>

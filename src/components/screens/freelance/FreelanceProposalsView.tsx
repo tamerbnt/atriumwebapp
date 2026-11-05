@@ -261,7 +261,7 @@ export const FreelanceProposalsView: React.FC = () => {
             <FileText size={16} />
           </div>
           <div className="min-w-0">
-            <div className="font-semibold text-neutral-900 dark:text-white truncate hover:text-[#C4785A] transition-colors">
+            <div className="font-semibold text-neutral-900 dark:text-white truncate hover:text-[#d4522f] transition-colors">
               {proposal.title}
             </div>
             <div className="text-[11px] text-neutral-400 truncate flex items-center gap-1.5">
@@ -269,7 +269,7 @@ export const FreelanceProposalsView: React.FC = () => {
               {proposal.clientCompany && (
                 <>
                   <span>·</span>
-                  <span className="text-[#C4785A] font-medium">{proposal.clientCompany}</span>
+                  <span className="text-[#d4522f] font-medium">{proposal.clientCompany}</span>
                 </>
               )}
             </div>
@@ -473,7 +473,7 @@ export const FreelanceProposalsView: React.FC = () => {
               onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
               className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
             >
-              <Home size={15} className="text-[#C4785A]" />
+              <Home size={15} className="text-[#d4522f]" />
               <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                 {currentBranch?.name || 'Studio Main'}
               </span>
@@ -505,12 +505,12 @@ export const FreelanceProposalsView: React.FC = () => {
                       }}
                       className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
                         isCurrent
-                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold'
                           : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                        <Building2 size={14} className={isCurrent ? 'text-[#d4522f]' : 'text-neutral-400'} />
                         <span className="truncate">{biz.name}</span>
                       </div>
                       {isCurrent && <Check size={14} />}
@@ -624,7 +624,7 @@ export const FreelanceProposalsView: React.FC = () => {
         {selectedProposalIds.size > 0 && (
           <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
             <div className="flex items-center gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
               <span className="text-xs font-bold text-neutral-900 dark:text-white">
                 {selectedProposalIds.size} {language === 'ar' ? 'عروض محددة' : language === 'fr' ? 'devis sélectionnés' : 'proposals selected'}
               </span>
@@ -733,7 +733,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 </span>
                 {proposal.scopeItems.slice(0, 3).map((item, idx) => (
                   <div key={idx} className="flex items-start gap-1.5 text-neutral-700 dark:text-neutral-300 truncate">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#C4785A] mt-1 shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] mt-1 shrink-0" />
                     <span className="truncate">{item}</span>
                   </div>
                 ))}
@@ -746,7 +746,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 <span className="text-[10px] text-neutral-400 uppercase tracking-wider block">
                   {t('free_prop_total_quote')}
                 </span>
-                <span className="text-base font-black text-[#C4785A] tabular-nums block">
+                <span className="text-base font-black text-[#d4522f] tabular-nums block">
                   {formatCurrencyAmount(proposal.proposedBudget, proposal.currency)}
                 </span>
                 <span className="text-[10px] text-neutral-500">
@@ -898,7 +898,7 @@ export const FreelanceProposalsView: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleAddScopeItem}
-                    className="text-[#C4785A] hover:underline font-semibold cursor-pointer"
+                    className="text-[#d4522f] hover:underline font-semibold cursor-pointer"
                   >
                     {t('free_prop_btn_add_item', language)}
                   </button>
@@ -1065,7 +1065,7 @@ export const FreelanceProposalsView: React.FC = () => {
                         scopeItems: [...editFormData.scopeItems, ''],
                       })
                     }
-                    className="text-[11px] font-semibold text-[#C4785A] hover:underline cursor-pointer"
+                    className="text-[11px] font-semibold text-[#d4522f] hover:underline cursor-pointer"
                   >
                     {language === 'ar' ? '+ إضافة تسليمة' : language === 'fr' ? '+ Ajouter un livrable' : '+ Add Item'}
                   </button>

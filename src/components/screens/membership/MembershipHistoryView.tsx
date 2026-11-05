@@ -175,7 +175,7 @@ export const MembershipHistoryView: React.FC = () => {
       minWidth: '110px',
       sortable: true,
       renderCell: (sale) => (
-        <span className="font-mono text-xs font-bold text-[#C4785A]">
+        <span className="font-mono text-xs font-bold text-[#d4522f]">
           #{sale.id}
         </span>
       ),
@@ -237,7 +237,7 @@ export const MembershipHistoryView: React.FC = () => {
             </span>
           )}
           {sale.notes && (
-            <span className="px-2 py-0.5 rounded-md bg-[#FDF4F0] dark:bg-neutral-800 text-[#C4785A] text-[10px] font-bold flex items-center gap-1 border border-[#F5E2D8] dark:border-neutral-700">
+            <span className="px-2 py-0.5 rounded-md bg-[#FDF4F0] dark:bg-neutral-800 text-[#d4522f] text-[10px] font-bold flex items-center gap-1 border border-[#F5E2D8] dark:border-neutral-700">
               <Scissors size={10} />
               <span className="truncate max-w-[120px]">{sale.notes.replace('Salon Appointment Checkout — ', '')}</span>
             </span>
@@ -257,7 +257,7 @@ export const MembershipHistoryView: React.FC = () => {
             {sale.paymentMethod === 'Cash' && <Banknote size={13} className="text-emerald-600" />}
             {sale.paymentMethod === 'Card' && <CreditCard size={13} className="text-blue-600" />}
             {sale.paymentMethod === 'Split' && <CreditCard size={13} className="text-purple-600" />}
-            {sale.paymentMethod === 'MemberBalance' && <User size={13} className="text-[#C4785A]" />}
+            {sale.paymentMethod === 'MemberBalance' && <User size={13} className="text-[#d4522f]" />}
             <span>{getLocalizedPaymentMethod(sale.paymentMethod)}</span>
           </span>
           {sale.status === 'Refunded' && (
@@ -344,7 +344,7 @@ export const MembershipHistoryView: React.FC = () => {
               onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
               className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
             >
-              <Home size={15} className="text-[#C4785A]" />
+              <Home size={15} className="text-[#d4522f]" />
               <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                 {currentBranch?.name || 'Atrium 1'}
               </span>
@@ -375,12 +375,12 @@ export const MembershipHistoryView: React.FC = () => {
                       }}
                       className={`w-full px-3 py-2 text-left flex items-center justify-between text-xs transition-colors cursor-pointer ${
                         isCurrent
-                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold'
                           : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                        <Building2 size={14} className={isCurrent ? 'text-[#d4522f]' : 'text-neutral-400'} />
                         <span className="truncate">{biz.name}</span>
                       </div>
                       {isCurrent && <Check size={14} />}
@@ -436,7 +436,7 @@ export const MembershipHistoryView: React.FC = () => {
                 {language === 'ar' ? 'نسبة الدفع النقدي' : language === 'fr' ? 'Part des espèces' : 'Cash Tender Ratio'}
               </span>
               <div className="mt-1">
-                <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-bold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded-full">
                   {cashShare}% {language === 'ar' ? 'نقداً' : language === 'fr' ? 'Espèces' : 'Cash'}
                 </span>
               </div>
@@ -580,14 +580,14 @@ export const MembershipHistoryView: React.FC = () => {
             <div className="flex flex-col justify-between h-full space-y-3">
               <div>
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <span className="font-mono text-xs font-bold text-[#C4785A]">
+                  <span className="font-mono text-xs font-bold text-[#d4522f]">
                     #{sale.id}
                   </span>
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
                     {sale.paymentMethod === 'Cash' && <Banknote size={12} className="text-emerald-600" />}
                     {sale.paymentMethod === 'Card' && <CreditCard size={12} className="text-blue-600" />}
                     {sale.paymentMethod === 'Split' && <CreditCard size={12} className="text-purple-600" />}
-                    {sale.paymentMethod === 'MemberBalance' && <User size={12} className="text-[#C4785A]" />}
+                    {sale.paymentMethod === 'MemberBalance' && <User size={12} className="text-[#d4522f]" />}
                     <span>{getLocalizedPaymentMethod(sale.paymentMethod)}</span>
                   </span>
                 </div>
@@ -668,7 +668,7 @@ export const MembershipHistoryView: React.FC = () => {
           {/* Drawer Header */}
           <div className="px-6 py-5 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Receipt size={17} className="text-[#C4785A]" />
+              <Receipt size={17} className="text-[#d4522f]" />
               <span className="text-sm font-bold text-neutral-900 dark:text-white">
                 {language === 'ar' ? 'معاينة وتدقيق الوصل' : language === 'fr' ? 'Inspecteur du reçu' : 'Receipt Audit Inspector'}
               </span>
@@ -701,7 +701,7 @@ export const MembershipHistoryView: React.FC = () => {
             <div className="p-4 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700/80 space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-neutral-400">{language === 'ar' ? 'رقم الوصل:' : language === 'fr' ? 'Réf ticket :' : 'Receipt Ref:'}</span>
-                <span className="font-mono font-bold text-[#C4785A]">#{selectedSale.id}</span>
+                <span className="font-mono font-bold text-[#d4522f]">#{selectedSale.id}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-neutral-400">{language === 'ar' ? 'الوقت والتاريخ:' : language === 'fr' ? 'Date & heure :' : 'Timestamp:'}</span>
@@ -740,7 +740,7 @@ export const MembershipHistoryView: React.FC = () => {
             {/* Stylist Attribution if present */}
             {selectedSale.notes && !selectedSale.notes.includes('REFUNDED') && (
               <div className="p-3.5 rounded-2xl bg-[#FDF4F0] dark:bg-neutral-800/80 border border-[#F5E2D8] dark:border-neutral-700 space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#C4785A] flex items-center gap-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#d4522f] flex items-center gap-1">
                   <Scissors size={12} />
                   <span>{language === 'ar' ? 'الملاحظات / الإسناد' : language === 'fr' ? 'Attribution / Notes' : 'Attribution / Notes'}</span>
                 </span>
@@ -778,14 +778,14 @@ export const MembershipHistoryView: React.FC = () => {
             {/* Grand Total */}
             <div className="p-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#E8DFD8] dark:border-neutral-700 flex justify-between items-center">
               <div>
-                <span className="text-xs font-bold text-[#C4785A]">
+                <span className="text-xs font-bold text-[#d4522f]">
                   {language === 'ar' ? 'إجمالي المدفوع' : language === 'fr' ? 'Total Encaissé' : 'Total Settled'}
                 </span>
                 <div className="text-[11px] text-neutral-500">
                   {language === 'ar' ? 'شامل الرسوم والضرائب' : language === 'fr' ? 'TTC (Toutes taxes comprises)' : 'Includes VAT & taxes'}
                 </div>
               </div>
-              <span className={`text-2xl font-black tabular-nums ${selectedSale.status === 'Refunded' ? 'line-through text-neutral-400' : 'text-[#C4785A]'}`}>
+              <span className={`text-2xl font-black tabular-nums ${selectedSale.status === 'Refunded' ? 'line-through text-neutral-400' : 'text-[#d4522f]'}`}>
                 {formatMoney(selectedSale.totalAmount)}
               </span>
             </div>

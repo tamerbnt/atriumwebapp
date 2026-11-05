@@ -10,7 +10,7 @@ export interface GuardianCardProps {
   metricValue?: string;
   statusText?: string;
   trendText?: string;
-  gaugeColor?: string; // default green '#10B981' or terracotta '#C4785A'
+  gaugeColor?: string; // default green '#10B981' or terracotta '#d4522f'
   color?: string;
   isActive?: boolean;
   defaultEnabled?: boolean;

@@ -37,7 +37,7 @@ export const INITIAL_PRACTITIONERS: MedicalPractitioner[] = [
     phone: '0555 33 44 55',
     email: 'dr.mansouri@atrium-polyclinic.dz',
     commissionRatePercent: 70,
-    color: '#C4785A', // Terracotta
+    color: '#d4522f', // Terracotta
     isAvailable: true,
   },
   {

@@ -130,7 +130,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
       <div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5">
         <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
               <Stethoscope size={16} />
             </div>
             <h3 className="font-bold text-sm text-neutral-900 dark:text-white">
@@ -190,7 +190,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
                         ? lvl === 'Urgence'
                           ? 'bg-rose-600 text-white shadow-xs'
                           : lvl === 'Prioritaire'
-                          ? 'bg-[#C4785A] text-white shadow-xs'
+                          ? 'bg-[#d4522f] text-white shadow-xs'
                           : 'bg-[#0D9488] text-white shadow-xs'
                         : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
                     }`}

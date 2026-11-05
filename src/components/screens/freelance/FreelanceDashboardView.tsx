@@ -118,10 +118,10 @@ export const FreelanceDashboardView: React.FC = () => {
 
   // Client Revenue Donut
   const clientRevenueShare = useMemo(() => {
-    const colors = ['#C4785A', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'];
+    const colors = ['#d4522f', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'];
     if ((freelanceClients || []).length === 0) {
       return [
-        { label: 'Sonatrach Tech', value: 45, color: '#C4785A' },
+        { label: 'Sonatrach Tech', value: 45, color: '#d4522f' },
         { label: 'Fintech Alger', value: 35, color: '#3B82F6' },
         { label: 'E-Commerce DZ', value: 20, color: '#10B981' },
       ];
@@ -184,7 +184,7 @@ export const FreelanceDashboardView: React.FC = () => {
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'ساعات العمل والإنتاجية' : language === 'fr' ? 'Heures Facturables & Focus' : 'Billable Hours & Time Flow'}
-            icon={<Clock size={18} className="text-[#C4785A]" />}
+            icon={<Clock size={18} className="text-[#d4522f]" />}
             badge={
               <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                 {activeTimer ? (language === 'ar' ? 'المؤقت نشط الآن' : 'Timer Actif') : (language === 'ar' ? 'مؤقت متوقف' : 'En pause')}
@@ -252,7 +252,7 @@ export const FreelanceDashboardView: React.FC = () => {
                   <span className="text-[11px] text-gray-400 block mb-2">
                     {language === 'ar' ? 'توزيع ساعات العمل على مدار 24 ساعة' : 'Courbe horaire du travail facturé (24h)'}
                   </span>
-                  <HourlyCurveChart data={hourlyData} color="#C4785A" />
+                  <HourlyCurveChart data={hourlyData} color="#d4522f" />
                 </div>
               </div>
 
@@ -267,7 +267,7 @@ export const FreelanceDashboardView: React.FC = () => {
                 </div>
                 <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-1">
                   <div
-                    className="bg-[#C4785A] h-full rounded-full transition-all duration-500"
+                    className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
                     style={{ width: `${targetPct}%` }}
                   />
                 </div>
@@ -284,7 +284,7 @@ export const FreelanceDashboardView: React.FC = () => {
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'تطور محفظة العملاء والمشاريع' : language === 'fr' ? 'Développement Portefeuille Clients' : 'Client Roster & Project Development'}
-            icon={<Briefcase size={18} className="text-[#C4785A]" />}
+            icon={<Briefcase size={18} className="text-[#d4522f]" />}
             rightControls={
               <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
                 <button
@@ -345,7 +345,7 @@ export const FreelanceDashboardView: React.FC = () => {
                 <PillBarHistogram
                   data={weeklyHoursTrend}
                   maxScale={45}
-                  barColor="#C4785A"
+                  barColor="#d4522f"
                 />
               </div>
             </div>
@@ -359,7 +359,7 @@ export const FreelanceDashboardView: React.FC = () => {
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'المسار المالي وسعر الساعة' : language === 'fr' ? 'Trajectoire Financière & TJM' : 'Financial Trajectory & P&L'}
-            icon={<TrendingUp size={18} className="text-[#C4785A]" />}
+            icon={<TrendingUp size={18} className="text-[#d4522f]" />}
             rightControls={
               <span className="text-xs font-semibold text-gray-500 uppercase">
                 {months[currentMonthIndex]} 2026
@@ -469,7 +469,7 @@ export const FreelanceDashboardView: React.FC = () => {
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'ذكاء المشاريع وحارس السيولة' : language === 'fr' ? 'Intelligence Missions & Runway Guardian' : 'Project Intelligence & Runway Guardian'}
-            icon={<Receipt size={18} className="text-[#C4785A]" />}
+            icon={<Receipt size={18} className="text-[#d4522f]" />}
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
@@ -538,7 +538,7 @@ export const FreelanceDashboardView: React.FC = () => {
                         setScreen('history');
                       }
                     }}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#C4785A] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d4522f] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
                   >
                     {activeTimer ? <Pause size={14} /> : <Play size={14} />}
                     {activeTimer ? (language === 'ar' ? 'إيقاف المؤقت' : 'Mettre en Pause') : (language === 'ar' ? 'تشغيل المؤقت' : 'Démarrer Timer')}

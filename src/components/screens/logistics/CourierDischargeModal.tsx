@@ -150,7 +150,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
               <span className="text-[11px] font-medium text-neutral-500 block">
                 {isAr ? 'المبلغ الفعلي المعدود' : 'Total Physique Compté'}
               </span>
-              <span className="text-lg font-bold font-mono text-[#C4785A]">
+              <span className="text-lg font-bold font-mono text-[#d4522f]">
                 {formatMoney(balance.actualTotalDzd, language)}
               </span>
             </div>
@@ -182,7 +182,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
               <button
                 type="button"
                 onClick={handleQuickFillClean}
-                className="text-[11px] font-semibold text-[#C4785A] hover:underline cursor-pointer"
+                className="text-[11px] font-semibold text-[#d4522f] hover:underline cursor-pointer"
               >
                 {isAr ? 'مطابقة آلية فورية' : 'Ajuster automatiquement au centime'}
               </button>
@@ -283,7 +283,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
                 type="checkbox"
                 checked={courierSigned}
                 onChange={(e) => setCourierSigned(e.target.checked)}
-                className="w-4 h-4 rounded text-[#C4785A] focus:ring-[#C4785A]"
+                className="w-4 h-4 rounded text-[#d4522f] focus:ring-[#d4522f]"
               />
               <span className="text-xs font-semibold text-neutral-900 dark:text-white">
                 {isAr

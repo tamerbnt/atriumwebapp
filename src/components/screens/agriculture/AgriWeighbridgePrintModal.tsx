@@ -33,7 +33,7 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
         {/* Modal Controls */}
         <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
               <Scale size={22} />
             </div>
             <div>
@@ -80,7 +80,7 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
               <span className="text-[10px] font-bold uppercase text-neutral-500 block">
                 N° Ticket Pesée
               </span>
-              <span className="text-sm font-mono font-black text-[#C4785A]">
+              <span className="text-sm font-mono font-black text-[#d4522f]">
                 {ticket.ticketNumber}
               </span>
               <span className="text-[10px] text-neutral-500 block">
@@ -191,7 +191,7 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
               <span className="font-black text-neutral-900 uppercase text-xs">
                 Total Net Reçu / À Régler :
               </span>
-              <span className="font-mono font-black text-sm text-[#C4785A]">
+              <span className="font-mono font-black text-sm text-[#d4522f]">
                 {formatMoney(ticket.totalAmountDzd)}
               </span>
             </div>

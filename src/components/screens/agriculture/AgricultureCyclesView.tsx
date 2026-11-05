@@ -109,7 +109,7 @@ export const AgricultureCyclesView: React.FC = () => {
       case 'ready_harvest':
         return {
           label: isAr ? 'جاهز للحصاد' : 'Prêt Récolte',
-          bg: 'bg-[#C4785A]/15 text-[#C4785A]',
+          bg: 'bg-[#d4522f]/15 text-[#d4522f]',
         };
       case 'closed':
         return {
@@ -273,7 +273,7 @@ export const AgricultureCyclesView: React.FC = () => {
       minWidth: '200px',
       cell: (c) => (
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shrink-0">
             <Sprout size={16} />
           </div>
           <div>
@@ -514,7 +514,7 @@ export const AgricultureCyclesView: React.FC = () => {
       {/* Top Header Strip with Action Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <Sprout size={22} />
           </div>
           <div>
@@ -522,7 +522,7 @@ export const AgricultureCyclesView: React.FC = () => {
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
                 {isAr ? 'دورات المحاصيل والسجل الصحي النباتي' : 'Cycles de Culture & Carnet Phyto'}
               </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
                 {cropCycles.length} {isAr ? 'دورات' : 'cycles'}
               </span>
             </div>
@@ -566,7 +566,7 @@ export const AgricultureCyclesView: React.FC = () => {
           onClick={() => setActiveTabMode('cycles')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
             activeTabMode === 'cycles'
-              ? 'bg-[#C4785A] text-white shadow-xs'
+              ? 'bg-[#d4522f] text-white shadow-xs'
               : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
           }`}
         >
@@ -582,7 +582,7 @@ export const AgricultureCyclesView: React.FC = () => {
           onClick={() => setActiveTabMode('treatments')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
             activeTabMode === 'treatments'
-              ? 'bg-[#C4785A] text-white shadow-xs'
+              ? 'bg-[#d4522f] text-white shadow-xs'
               : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
           }`}
         >
@@ -622,7 +622,7 @@ export const AgricultureCyclesView: React.FC = () => {
           <div className="text-2xl font-bold font-mono text-neutral-900 dark:text-white mt-1">
             {totalAllocatedHa.toFixed(1)} <span className="text-xs font-normal text-neutral-500">ha</span>
           </div>
-          <p className="text-[10.5px] text-[#C4785A] mt-0.5">
+          <p className="text-[10.5px] text-[#d4522f] mt-0.5">
             {cropCycles.length} {isAr ? 'دورات موسمية' : 'cycles en exploitation'}
           </p>
         </div>
@@ -703,13 +703,13 @@ export const AgricultureCyclesView: React.FC = () => {
                   onClick={() => setSelectedCycle(c)}
                   className={`p-4 rounded-2xl border transition cursor-pointer relative space-y-3 ${
                     selectedCycle?.id === c.id
-                      ? 'border-[#C4785A] bg-[#C4785A]/5'
+                      ? 'border-[#d4522f] bg-[#d4522f]/5'
                       : 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-neutral-300'
                   }`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                      <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                         <Sprout size={16} />
                       </div>
                       <div>
@@ -802,7 +802,7 @@ export const AgricultureCyclesView: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                    <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                       <Sprout size={16} />
                     </div>
                     <div>
@@ -825,7 +825,7 @@ export const AgricultureCyclesView: React.FC = () => {
                     onClick={() => setInspectorTab('details')}
                     className={`pb-2 px-2 font-bold border-b-2 transition ${
                       inspectorTab === 'details'
-                        ? 'border-[#C4785A] text-[#C4785A]'
+                        ? 'border-[#d4522f] text-[#d4522f]'
                         : 'border-transparent text-neutral-500'
                     }`}
                   >
@@ -836,7 +836,7 @@ export const AgricultureCyclesView: React.FC = () => {
                     onClick={() => setInspectorTab('rendement')}
                     className={`pb-2 px-2 font-bold border-b-2 transition ${
                       inspectorTab === 'rendement'
-                        ? 'border-[#C4785A] text-[#C4785A]'
+                        ? 'border-[#d4522f] text-[#d4522f]'
                         : 'border-transparent text-neutral-500'
                     }`}
                   >
@@ -847,7 +847,7 @@ export const AgricultureCyclesView: React.FC = () => {
                     onClick={() => setInspectorTab('couts')}
                     className={`pb-2 px-2 font-bold border-b-2 transition ${
                       inspectorTab === 'couts'
-                        ? 'border-[#C4785A] text-[#C4785A]'
+                        ? 'border-[#d4522f] text-[#d4522f]'
                         : 'border-transparent text-neutral-500'
                     }`}
                   >
@@ -921,7 +921,7 @@ export const AgricultureCyclesView: React.FC = () => {
                       </div>
                       <div className="w-full bg-neutral-200 dark:bg-neutral-700 h-2 rounded-full overflow-hidden">
                         <div
-                          className="bg-[#C4785A] h-full"
+                          className="bg-[#d4522f] h-full"
                           style={{
                             width: `${Math.min(
                               100,
@@ -970,7 +970,7 @@ export const AgricultureCyclesView: React.FC = () => {
                       </div>
                       <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700 flex justify-between font-bold">
                         <span>Total Coûts Engagés:</span>
-                        <span className="font-mono text-[#C4785A]">
+                        <span className="font-mono text-[#d4522f]">
                           {formatMoney(
                             (selectedCycle.totalInputCostDzd || 0) +
                               (selectedCycle.totalLaborCostDzd || 0) +

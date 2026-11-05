@@ -109,7 +109,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
     () => [
       { label: 'Facebook', value: 45, color: '#8B5CF6' },
       { label: 'Walk-In', value: 35, color: '#3B82F6' },
-      { label: 'Referral', value: 20, color: '#C4785A' },
+      { label: 'Referral', value: 20, color: '#d4522f' },
     ],
     []
   );
@@ -176,7 +176,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                   onClick={() => setTimeFilter('today')}
                   className={`h-7 px-3 rounded-full transition-all cursor-pointer ${
                     timeFilter === 'today'
-                      ? 'bg-[#C4785A] text-white shadow-xs font-bold'
+                      ? 'bg-[#d4522f] text-white shadow-xs font-bold'
                       : 'text-neutral-600 dark:text-neutral-400'
                   }`}
                 >
@@ -187,7 +187,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                   onClick={() => setTimeFilter('yesterday')}
                   className={`h-7 px-3 rounded-full transition-all cursor-pointer ${
                     timeFilter === 'yesterday'
-                      ? 'bg-[#C4785A] text-white shadow-xs font-bold'
+                      ? 'bg-[#d4522f] text-white shadow-xs font-bold'
                       : 'text-neutral-600 dark:text-neutral-400'
                   }`}
                 >
@@ -202,7 +202,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                 {/* Left Metric: People Inside */}
                 <div className="pr-3 rtl:pr-0 rtl:pl-3 space-y-1">
                   <div className="flex items-center gap-1.5">
-                    <div className="w-[18px] h-[18px] rounded-full bg-[#FCEEE8] dark:bg-neutral-700 flex items-center justify-center text-[#C4785A]">
+                    <div className="w-[18px] h-[18px] rounded-full bg-[#FCEEE8] dark:bg-neutral-700 flex items-center justify-center text-[#d4522f]">
                       <ArrowDown size={11} />
                     </div>
                     <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
@@ -253,7 +253,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
             <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-[#FCEEE8] dark:bg-neutral-700 flex items-center justify-center text-[#C4785A]">
+                  <div className="w-6 h-6 rounded-lg bg-[#FCEEE8] dark:bg-neutral-700 flex items-center justify-center text-[#d4522f]">
                     <DollarSign size={13} />
                   </div>
                   <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
@@ -269,7 +269,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
               <div className="w-full h-2 rounded-full bg-neutral-100 dark:bg-neutral-700 overflow-hidden">
                 <div
                   style={{ width: `${Math.max(5, targetRevenueProgress)}%` }}
-                  className="h-full bg-[#C4785A] rounded-full transition-all duration-500"
+                  className="h-full bg-[#d4522f] rounded-full transition-all duration-500"
                 />
               </div>
               <div className="flex justify-between text-[10px] text-neutral-400 font-medium">
@@ -295,7 +295,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                 <button
                   type="button"
                   onClick={() => setCurrentMonthIndex((prev) => (prev > 0 ? prev - 1 : 11))}
-                  className="p-0.5 hover:text-[#C4785A]"
+                  className="p-0.5 hover:text-[#d4522f]"
                 >
                   <ChevronLeft size={13} className="rtl:rotate-180" />
                 </button>
@@ -305,7 +305,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                 <button
                   type="button"
                   onClick={() => setCurrentMonthIndex((prev) => (prev < 11 ? prev + 1 : 0))}
-                  className="p-0.5 hover:text-[#C4785A]"
+                  className="p-0.5 hover:text-[#d4522f]"
                 >
                   <ChevronRight size={13} className="rtl:rotate-180" />
                 </button>
@@ -494,7 +494,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
               <PillBarHistogram
                 bars={weeklyTrendBars}
                 height={125}
-                activeColor="#C4785A"
+                activeColor="#d4522f"
               />
             </div>
           </DashboardPod>
@@ -561,7 +561,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                 <button
                   type="button"
                   onClick={() => setScreen('staff')}
-                  className="h-10 px-3 rounded-xl bg-[#C4785A] hover:bg-[#B26A4E] text-white text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center justify-center text-center"
+                  className="h-10 px-3 rounded-xl bg-[#d4522f] hover:bg-[#B26A4E] text-white text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center justify-center text-center"
                 >
                   {language === 'ar' ? 'الرواتب والأجور' : language === 'fr' ? 'Paie / Salaires' : 'Payroll / Wages'}
                 </button>

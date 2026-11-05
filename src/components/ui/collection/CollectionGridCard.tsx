@@ -71,7 +71,7 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
       id: 'fan-edit',
       tooltip: 'Edit',
       icon: <Pencil className="w-3.5 h-3.5" />,
-      iconColor: '#C4785A',
+      iconColor: '#d4522f',
       onClick: (e) => {
         e.stopPropagation();
         onEdit?.();
@@ -81,7 +81,7 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
       id: 'fan-pay',
       tooltip: 'Pay / Finance',
       icon: <DollarSign className="w-3.5 h-3.5" />,
-      iconColor: '#C4785A',
+      iconColor: '#d4522f',
       onClick: (e) => {
         e.stopPropagation();
         onPay?.();
@@ -148,9 +148,9 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
         }}
         className={`relative w-[260px] p-6 rounded-[20px] flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
           isSelected
-            ? 'bg-gradient-to-br from-[#C4785A] to-[#a8583c] text-white shadow-lg border border-transparent'
+            ? 'bg-gradient-to-br from-[#d4522f] to-[#a8583c] text-white shadow-lg border border-transparent'
             : isHovered
-            ? 'bg-white dark:bg-[#18181B] border border-[#C4785A] shadow-md'
+            ? 'bg-white dark:bg-[#18181B] border border-[#d4522f] shadow-md'
             : isPinned
             ? 'bg-white dark:bg-[#18181B] border-2 border-amber-400 shadow-sm'
             : 'bg-white dark:bg-[#18181B] border border-neutral-200/80 dark:border-neutral-800 shadow-sm'

@@ -156,12 +156,12 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
     });
     if (map.size === 0) {
       return [
-        { label: language === 'ar' ? 'قص وتسريح' : 'Coupe & Coiffage', value: 45, color: '#C4785A' },
+        { label: language === 'ar' ? 'قص وتسريح' : 'Coupe & Coiffage', value: 45, color: '#d4522f' },
         { label: language === 'ar' ? 'صبغة ولون' : 'Coloration', value: 30, color: '#3B82F6' },
         { label: language === 'ar' ? 'عناية وتدليك' : 'Soin & Spa', value: 25, color: '#10B981' },
       ];
     }
-    const colors = ['#C4785A', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'];
+    const colors = ['#d4522f', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'];
     let idx = 0;
     return Array.from(map.entries()).map(([label, value]) => ({
       label,
@@ -220,7 +220,7 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'حركة الكراسي والمواعيد' : language === 'fr' ? 'Activité Fauteuils' : 'Chair & Client Flow'}
-            icon={<Scissors size={18} className="text-[#C4785A]" />}
+            icon={<Scissors size={18} className="text-[#d4522f]" />}
             badge={
               <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                 {activeInChair} {language === 'ar' ? 'في الكرسي' : 'En Fauteuil'}
@@ -288,7 +288,7 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
                   <span className="text-[11px] text-gray-400 block mb-2">
                     {language === 'ar' ? 'كثافة المواعيد على مدار 24 ساعة' : 'Flux horaire des créneaux (24h)'}
                   </span>
-                  <HourlyCurveChart data={hourlyData} color="#C4785A" />
+                  <HourlyCurveChart data={hourlyData} color="#d4522f" />
                 </div>
               </div>
 
@@ -303,7 +303,7 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
                 </div>
                 <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-1">
                   <div
-                    className="bg-[#C4785A] h-full rounded-full transition-all duration-500"
+                    className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
                     style={{ width: `${targetPct}%` }}
                   />
                 </div>
@@ -320,7 +320,7 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'تطور قاعدة العملاء والحجوزات' : language === 'fr' ? 'Développement Clientèle' : 'Client Base Development'}
-            icon={<Users size={18} className="text-[#C4785A]" />}
+            icon={<Users size={18} className="text-[#d4522f]" />}
             rightControls={
               <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
                 <button
@@ -378,7 +378,7 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
                     {language === 'ar' ? 'مقارنة شهرية' : '4 dernières semaines'}
                   </span>
                 </div>
-                <PillBarHistogram data={weeklyTrend} maxScale={Math.max(10, appointments.length)} barColor="#C4785A" />
+                <PillBarHistogram data={weeklyTrend} maxScale={Math.max(10, appointments.length)} barColor="#d4522f" />
               </div>
             </div>
           </DashboardPod>
@@ -391,7 +391,7 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'مسار الإيرادات والربحية' : language === 'fr' ? 'Trajectoire Financière' : 'Financial Trajectory & P&L'}
-            icon={<TrendingUp size={18} className="text-[#C4785A]" />}
+            icon={<TrendingUp size={18} className="text-[#d4522f]" />}
             rightControls={
               <span className="text-xs font-semibold text-gray-500 uppercase">
                 {months[currentMonthIndex]} 2026
@@ -501,7 +501,7 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'ذكاء الصالون وحارس الكراسي' : language === 'fr' ? 'Intelligence Métier & Salon Guardian' : 'Domain Intelligence & Guardian'}
-            icon={<Sparkles size={18} className="text-[#C4785A]" />}
+            icon={<Sparkles size={18} className="text-[#d4522f]" />}
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
@@ -556,7 +556,7 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
                   <button
                     type="button"
                     onClick={() => setIsNewAptModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#C4785A] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d4522f] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
                   >
                     <Plus size={14} />
                     {language === 'ar' ? 'حجز موعد جديد' : 'Nouveau Rendez-vous'}

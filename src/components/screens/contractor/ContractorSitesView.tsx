@@ -237,14 +237,14 @@ export const ContractorSitesView: React.FC = () => {
       minWidth: '130px',
       cell: (p) => (
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-mono font-bold text-xs shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0">
             <HardHat size={16} />
           </div>
           <div>
             <div className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
               {p.projectCode}
               {pinnedIds.has(p.id) && (
-                <Pin size={10} className="fill-[#C4785A] text-[#C4785A]" />
+                <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />
               )}
             </div>
             <div className="text-[10px] text-neutral-400">
@@ -280,7 +280,7 @@ export const ContractorSitesView: React.FC = () => {
       minWidth: '150px',
       cell: (p) => (
         <div className="flex items-center gap-1 text-xs text-neutral-600 dark:text-neutral-300">
-          <MapPin size={12} className="text-[#C4785A] shrink-0" />
+          <MapPin size={12} className="text-[#d4522f] shrink-0" />
           <span className="truncate">{p.siteLocation}</span>
         </div>
       ),
@@ -299,7 +299,7 @@ export const ContractorSitesView: React.FC = () => {
           </div>
           <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
             <div
-              className="h-full bg-[#C4785A] rounded-full transition-all duration-300"
+              className="h-full bg-[#d4522f] rounded-full transition-all duration-300"
               style={{ width: `${p.progressPercent}%` }}
             />
           </div>
@@ -389,7 +389,7 @@ export const ContractorSitesView: React.FC = () => {
       {/* Top Header Strip with Action Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <HardHat size={22} />
           </div>
           <div>
@@ -397,7 +397,7 @@ export const ContractorSitesView: React.FC = () => {
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
                 {isAr ? 'المشاريع والورشات (Chantiers)' : 'Projets & Chantiers en Cours'}
               </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
                 {projects.length} {isAr ? 'ورشة' : 'sites'}
               </span>
             </div>
@@ -602,7 +602,7 @@ export const ContractorSitesView: React.FC = () => {
             renderGridCard={(p) => (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2.5 py-1 rounded-lg border border-[#C4785A]/20">
+                  <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg border border-[#d4522f]/20">
                     {p.projectCode}
                   </span>
                   <span
@@ -627,18 +627,18 @@ export const ContractorSitesView: React.FC = () => {
                 </div>
 
                 <div className="text-xs text-neutral-600 dark:text-neutral-400 flex items-center gap-1.5 bg-neutral-50 dark:bg-neutral-800/50 p-2 rounded-xl">
-                  <MapPin size={13} className="shrink-0 text-[#C4785A]" />
+                  <MapPin size={13} className="shrink-0 text-[#d4522f]" />
                   <span className="truncate text-[11px]">{p.siteLocation}</span>
                 </div>
 
                 <div className="space-y-1 pt-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-neutral-500 font-medium text-[11px]">{isAr ? 'الإنجاز:' : 'Avancement:'}</span>
-                    <span className="font-mono font-bold text-[#C4785A] text-xs">{p.progressPercent}%</span>
+                    <span className="font-mono font-bold text-[#d4522f] text-xs">{p.progressPercent}%</span>
                   </div>
                   <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
                     <div
-                      className="h-full bg-[#C4785A] rounded-full transition-all duration-300"
+                      className="h-full bg-[#d4522f] rounded-full transition-all duration-300"
                       style={{ width: `${p.progressPercent}%` }}
                     />
                   </div>
@@ -669,7 +669,7 @@ export const ContractorSitesView: React.FC = () => {
             {/* Drawer Header */}
             <div className="flex items-start justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                <div className="w-9 h-9 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                   <HardHat size={18} />
                 </div>
                 <div>
@@ -704,7 +704,7 @@ export const ContractorSitesView: React.FC = () => {
             <div className="flex items-center gap-1.5 flex-wrap">
               <button
                 onClick={() => handleCreateDailyLogQuick(selectedProject)}
-                className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-orange-50 text-[#C4785A] hover:bg-orange-100 dark:bg-orange-950/40 dark:hover:bg-orange-900/60 transition-colors"
+                className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-orange-50 text-[#d4522f] hover:bg-orange-100 dark:bg-orange-950/40 dark:hover:bg-orange-900/60 transition-colors"
               >
                 <BookOpen size={12} />
                 {isAr ? 'تقرير يومي' : 'Journal'}
@@ -737,7 +737,7 @@ export const ContractorSitesView: React.FC = () => {
                 onClick={() => setActiveTab('dossier')}
                 className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
                   activeTab === 'dossier'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                    ? 'border-[#d4522f] text-[#d4522f] font-bold'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -747,7 +747,7 @@ export const ContractorSitesView: React.FC = () => {
                 onClick={() => setActiveTab('boq')}
                 className={`pb-2 px-2 font-medium border-b-2 transition-colors flex items-center gap-1 ${
                   activeTab === 'boq'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                    ? 'border-[#d4522f] text-[#d4522f] font-bold'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -760,7 +760,7 @@ export const ContractorSitesView: React.FC = () => {
                 onClick={() => setActiveTab('logs')}
                 className={`pb-2 px-2 font-medium border-b-2 transition-colors flex items-center gap-1 ${
                   activeTab === 'logs'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                    ? 'border-[#d4522f] text-[#d4522f] font-bold'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -773,7 +773,7 @@ export const ContractorSitesView: React.FC = () => {
                 onClick={() => setActiveTab('notes')}
                 className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
                   activeTab === 'notes'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                    ? 'border-[#d4522f] text-[#d4522f] font-bold'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
                 }`}
               >
@@ -863,13 +863,13 @@ export const ContractorSitesView: React.FC = () => {
                     <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
                       {isAr ? 'نسبة الإنجاز الفعلية' : 'Avancement Consigné'}
                     </span>
-                    <span className="font-mono font-bold text-[#C4785A]">
+                    <span className="font-mono font-bold text-[#d4522f]">
                       {selectedProject.progressPercent}%
                     </span>
                   </div>
                   <div className="w-full h-2 rounded-full bg-neutral-200 dark:bg-neutral-700 overflow-hidden">
                     <div
-                      className="h-full bg-[#C4785A] rounded-full transition-all"
+                      className="h-full bg-[#d4522f] rounded-full transition-all"
                       style={{ width: `${selectedProject.progressPercent}%` }}
                     />
                   </div>
@@ -906,7 +906,7 @@ export const ContractorSitesView: React.FC = () => {
                         <span>
                           Qté: {item.executedQty} / {item.plannedQty} {item.unit}
                         </span>
-                        <span className="font-mono text-[#C4785A] font-semibold">
+                        <span className="font-mono text-[#d4522f] font-semibold">
                           {Math.round((item.executedQty / item.plannedQty) * 100)}%
                         </span>
                       </div>
@@ -925,7 +925,7 @@ export const ContractorSitesView: React.FC = () => {
                     <p>{isAr ? 'لا توجد تقارير يومية مسجلة' : 'Aucun journal quotidien consigné'}</p>
                     <button
                       onClick={() => handleCreateDailyLogQuick(selectedProject)}
-                      className="mt-3 text-[#C4785A] hover:underline text-xs font-semibold"
+                      className="mt-3 text-[#d4522f] hover:underline text-xs font-semibold"
                     >
                       {isAr ? '+ إنشاء أول تقرير يومي' : '+ Créer le premier journal'}
                     </button>
@@ -937,7 +937,7 @@ export const ContractorSitesView: React.FC = () => {
                       className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1.5"
                     >
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="font-mono font-bold text-[#C4785A]">
+                        <span className="font-mono font-bold text-[#d4522f]">
                           {log.logDate}
                         </span>
                         <span className="text-[10px] text-neutral-500">
@@ -976,11 +976,11 @@ export const ContractorSitesView: React.FC = () => {
                       ? 'سجل ملاحظات الورشة، تعليمات السلامة والتموين...'
                       : 'Noter les consignes de ferraillage, contrôles de résistance béton, sécurité EPI...'
                   }
-                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#C4785A] outline-hidden resize-none"
+                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none"
                 />
                 <button
                   onClick={handleSaveNotes}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#C4785A] text-white hover:bg-[#a86246] transition-colors font-medium text-xs shadow-xs"
+                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#d4522f] text-white hover:bg-[#a86246] transition-colors font-medium text-xs shadow-xs"
                 >
                   {noteSaved ? (
                     <>

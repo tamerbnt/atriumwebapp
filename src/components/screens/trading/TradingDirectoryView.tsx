@@ -342,7 +342,7 @@ export const TradingDirectoryView: React.FC = () => {
         {/* Header Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
               <Users size={22} />
             </div>
             <div>
@@ -350,7 +350,7 @@ export const TradingDirectoryView: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
                   {t('trading_directory_title', 'Répertoire des Partenaires B2B')}
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#C4785A]/15 text-[#C4785A] border border-[#C4785A]/30">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4522f]/15 text-[#d4522f] border border-[#d4522f]/30">
                   {b2bClients.length} {language === 'ar' ? 'عميل' : 'Clients'} • {b2bSuppliers.length} {language === 'ar' ? 'مورد' : 'Fournisseurs'}
                 </span>
               </div>
@@ -365,7 +365,7 @@ export const TradingDirectoryView: React.FC = () => {
                 onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
                 className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
               >
-                <Home size={15} className="text-[#C4785A]" />
+                <Home size={15} className="text-[#d4522f]" />
                 <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                   {currentBranch?.name || 'Dépôt Central'}
                 </span>
@@ -392,7 +392,7 @@ export const TradingDirectoryView: React.FC = () => {
                       className="w-full px-3 py-2 text-left rtl:text-right text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-between"
                     >
                       <span className="font-semibold text-neutral-800 dark:text-neutral-200">{b.name}</span>
-                      {b.id === currentBranch?.id && <span className="text-[#C4785A] text-xs">✓</span>}
+                      {b.id === currentBranch?.id && <span className="text-[#d4522f] text-xs">✓</span>}
                     </button>
                   ))}
                 </div>
@@ -431,7 +431,7 @@ export const TradingDirectoryView: React.FC = () => {
                 <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   {language === 'ar' ? 'العملاء التجاريون المعتمدون' : 'Clients B2B Référencés'}
                 </span>
-                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#d4522f]/10 text-[#d4522f]">
                   {b2bClients.length} comptes
                 </span>
               </div>
@@ -507,7 +507,7 @@ export const TradingDirectoryView: React.FC = () => {
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
             {/* Left Title / Icon / Count Anchor */}
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
                 <Users size={18} />
               </div>
               <div className="flex items-center gap-2">
@@ -516,7 +516,7 @@ export const TradingDirectoryView: React.FC = () => {
                     ? t('trading_directory_clients_title', 'Portefeuille Clients')
                     : t('trading_directory_suppliers_title', 'Fournisseurs Référencés')}
                 </span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-[#C4785A]/10 text-[#C4785A] font-semibold font-mono">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f] font-semibold font-mono">
                   {mode === 'clients' ? filteredClients.length : filteredSuppliers.length}
                 </span>
               </div>
@@ -535,13 +535,13 @@ export const TradingDirectoryView: React.FC = () => {
                   }}
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                     mode === 'clients'
-                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                      ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs'
                       : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
                   <span>{t('trading_directory_tab_clients', 'Clients B2B')}</span>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                    mode === 'clients' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                    mode === 'clients' ? 'bg-[#d4522f]/15 text-[#d4522f]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
                   }`}>
                     {b2bClients.length}
                   </span>
@@ -556,13 +556,13 @@ export const TradingDirectoryView: React.FC = () => {
                   }}
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                     mode === 'suppliers'
-                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                      ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs'
                       : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
                   <span>{t('trading_directory_tab_suppliers', 'Fournisseurs Référencés')}</span>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                    mode === 'suppliers' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                    mode === 'suppliers' ? 'bg-[#d4522f]/15 text-[#d4522f]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
                   }`}>
                     {b2bSuppliers.length}
                   </span>
@@ -645,7 +645,7 @@ export const TradingDirectoryView: React.FC = () => {
                         <div>
                           {/* Header: Avatar + Sector */}
                           <div className="flex items-start justify-between mb-3">
-                            <div className="w-12 h-12 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center font-bold text-base shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
+                            <div className="w-12 h-12 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-base shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
                               {c.companyName.charAt(0).toUpperCase()}
                             </div>
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 truncate max-w-[150px]">
@@ -665,7 +665,7 @@ export const TradingDirectoryView: React.FC = () => {
                           <div className="p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-1.5 text-xs">
                             <div className="flex items-center justify-between">
                               <span className="text-neutral-500">Encours Dû :</span>
-                              <span className={`font-mono font-bold tabular-nums ${isOverLimit ? 'text-rose-600' : 'text-[#C4785A]'}`}>
+                              <span className={`font-mono font-bold tabular-nums ${isOverLimit ? 'text-rose-600' : 'text-[#d4522f]'}`}>
                                 {formatMoney(c.outstandingBalance || 0)}
                               </span>
                             </div>
@@ -688,7 +688,7 @@ export const TradingDirectoryView: React.FC = () => {
                               setSelectedEntity(c);
                               setComposerOpen(true);
                             }}
-                            className="px-2.5 py-1 rounded-lg bg-[#C4785A]/10 hover:bg-[#C4785A]/20 text-[#C4785A] text-[11px] font-bold transition-colors cursor-pointer"
+                            className="px-2.5 py-1 rounded-lg bg-[#d4522f]/10 hover:bg-[#d4522f]/20 text-[#d4522f] text-[11px] font-bold transition-colors cursor-pointer"
                           >
                             + Facture/BL
                           </button>
@@ -814,7 +814,7 @@ export const TradingDirectoryView: React.FC = () => {
               <div className="p-5 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-5 animate-in fade-in duration-150">
                 <div className="flex items-start justify-between">
                   <div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#C4785A]/15 text-[#C4785A] font-bold uppercase">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#d4522f]/15 text-[#d4522f] font-bold uppercase">
                       {mode === 'clients' ? 'Fiche Client B2B' : 'Fiche Fournisseur'}
                     </span>
                     <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100 mt-1.5">
@@ -869,7 +869,7 @@ export const TradingDirectoryView: React.FC = () => {
                     )}
                   </div>
                   <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 font-mono text-[11px]">
-                    <Phone size={13} className="text-[#C4785A]" />
+                    <Phone size={13} className="text-[#d4522f]" />
                     <span>{selectedEntity.phone || 'Non renseigné'}</span>
                   </div>
                 </div>
@@ -912,7 +912,7 @@ export const TradingDirectoryView: React.FC = () => {
                         onClick={() => {
                           setComposerOpen(true);
                         }}
-                        className="text-[11px] font-semibold text-[#C4785A] hover:underline"
+                        className="text-[11px] font-semibold text-[#d4522f] hover:underline"
                       >
                         + Créer document
                       </button>
@@ -925,7 +925,7 @@ export const TradingDirectoryView: React.FC = () => {
                           className="p-2 rounded-lg border border-neutral-200 dark:border-neutral-700 flex items-center justify-between text-[11px]"
                         >
                           <span className="font-mono font-bold text-neutral-800 dark:text-neutral-200">{d.docNumber}</span>
-                          <span className="font-mono font-bold text-[#C4785A]">{formatMoney(d.netToPay)}</span>
+                          <span className="font-mono font-bold text-[#d4522f]">{formatMoney(d.netToPay)}</span>
                         </div>
                       ))}
                       {entityHistory.length === 0 && (

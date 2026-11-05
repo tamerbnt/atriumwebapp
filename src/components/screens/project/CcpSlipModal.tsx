@@ -33,7 +33,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
         {/* Modal Header */}
         <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50 dark:bg-zinc-800/50">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#C4785A]/10 text-[#C4785A] flex items-center justify-center font-bold text-xs">
+            <div className="w-8 h-8 rounded-lg bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold text-xs">
               SFP01
             </div>
             <div>
@@ -72,7 +72,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
                 <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
                   {t('pm_ccp_ministry')}
                 </p>
-                <p className="text-xs font-bold text-[#C4785A] mt-0.5">
+                <p className="text-xs font-bold text-[#d4522f] mt-0.5">
                   {t('pm_ccp_operations')}
                 </p>
               </div>
@@ -121,7 +121,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
                 <span className="text-[10px] uppercase font-semibold text-zinc-500 block">
                   {t('pm_ccp_key')}
                 </span>
-                <span className="font-mono font-black text-xl text-[#C4785A] tracking-wider tabular-nums">
+                <span className="font-mono font-black text-xl text-[#d4522f] tracking-wider tabular-nums">
                   {slip.ccpKey}
                 </span>
               </div>

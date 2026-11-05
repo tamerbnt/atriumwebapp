@@ -119,10 +119,10 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
       {/* Floating Control Card (Dedicated Small Card for Title & Controls) */}
       <div className="flex items-center justify-between px-3.5 py-2 rounded-[16px] bg-white/95 dark:bg-[#1C1C20]/95 backdrop-blur-md border border-black/8 dark:border-white/12 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.04)] text-[11px] text-neutral-500 dark:text-neutral-400 select-none">
         <div className="flex items-center gap-1.5 font-bold text-neutral-800 dark:text-neutral-200 text-xs">
-          <Bell size={13} className="text-[#C4785A]" />
+          <Bell size={13} className="text-[#d4522f]" />
           <span>{language === 'ar' ? 'الإشعارات' : language === 'fr' ? 'Notifications' : 'Notifications'}</span>
           {unreadNotificationCount > 0 && (
-            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#C4785A] text-white leading-none">
+            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#d4522f] text-white leading-none">
               {unreadNotificationCount}
             </span>
           )}
@@ -134,10 +134,10 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               <button
                 type="button"
                 onClick={() => markAllNotificationsAsRead()}
-                className="hover:text-[#C4785A] font-semibold transition-colors cursor-pointer flex items-center gap-1"
+                className="hover:text-[#d4522f] font-semibold transition-colors cursor-pointer flex items-center gap-1"
                 title={language === 'ar' ? 'تحديد الكل كمقروء' : language === 'fr' ? 'Tout marquer comme lu' : 'Mark all as read'}
               >
-                <CheckCheck size={12} className="text-[#C4785A]" />
+                <CheckCheck size={12} className="text-[#d4522f]" />
                 <span className="hidden sm:inline">
                   {language === 'ar' ? 'قراءة الكل' : language === 'fr' ? 'Tout lire' : 'Mark all read'}
                 </span>
@@ -219,7 +219,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                       <b className="flex items-center gap-1.5 truncate text-[13px] font-semibold text-neutral-900 dark:text-neutral-100">
                         <span className="truncate">{notif.title}</span>
                         {isUnread && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#C4785A] shrink-0" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
                         )}
                       </b>
                       <span className="text-[10px] text-neutral-400 shrink-0 font-normal tabular-nums">

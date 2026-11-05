@@ -125,7 +125,7 @@ export const MandateModal: React.FC<MandateModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#E2E8EC] dark:border-[#27272A] mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
               <FileText className="w-5 h-5" />
             </div>
             <div>
@@ -172,7 +172,7 @@ export const MandateModal: React.FC<MandateModalProps> = ({
 
           {/* Section 2: Owner Legal Identification (Décret 09-18 Requirement) */}
           <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-[#141416] border border-[#EDF1F3] dark:border-[#232328] space-y-4">
-            <div className="flex items-center gap-2 text-xs font-semibold text-[#C4785A] uppercase tracking-wider">
+            <div className="flex items-center gap-2 text-xs font-semibold text-[#d4522f] uppercase tracking-wider">
               <ShieldCheck className="w-4 h-4" />
               <span>Identité Légale du Mandant (Propriétaire)</span>
             </div>
@@ -263,9 +263,9 @@ export const MandateModal: React.FC<MandateModalProps> = ({
           )}
 
           {/* Commission Calculation Live Pod */}
-          <div className="p-4 rounded-2xl bg-[#FDF4F0] dark:bg-[#1C1816] border border-[#C4785A]/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="p-4 rounded-2xl bg-[#FDF4F0] dark:bg-[#1C1816] border border-[#d4522f]/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#C4785A] text-white flex items-center justify-center font-bold">
+              <div className="w-9 h-9 rounded-xl bg-[#d4522f] text-white flex items-center justify-center font-bold">
                 <Calculator className="w-5 h-5" />
               </div>
               <div>
@@ -275,14 +275,14 @@ export const MandateModal: React.FC<MandateModalProps> = ({
                     : `Honoraires Forfaitaires (${commissionRatePercent}%)`}
                 </div>
                 <div className="text-sm font-semibold text-[#18181B] dark:text-white">
-                  Base HT: <span className="font-mono text-[#C4785A] font-bold">{commissionCalc.baseHt.toLocaleString()} DZD</span> · TVA (19%): <span className="font-mono">{commissionCalc.tva.toLocaleString()} DZD</span>
+                  Base HT: <span className="font-mono text-[#d4522f] font-bold">{commissionCalc.baseHt.toLocaleString()} DZD</span> · TVA (19%): <span className="font-mono">{commissionCalc.tva.toLocaleString()} DZD</span>
                 </div>
               </div>
             </div>
 
             <div className="text-right">
               <span className="text-xs uppercase text-[#64748B] dark:text-[#A1A1AA] font-semibold">Total TTC</span>
-              <div className="text-lg font-bold font-mono text-[#C4785A]">
+              <div className="text-lg font-bold font-mono text-[#d4522f]">
                 {commissionCalc.totalTtc.toLocaleString()} DZD
               </div>
             </div>
@@ -315,7 +315,7 @@ export const MandateModal: React.FC<MandateModalProps> = ({
                   type="checkbox"
                   checked={isExclusive}
                   onChange={(e) => setIsExclusive(e.target.checked)}
-                  className="w-4 h-4 rounded border-[#E2E8EC] text-[#C4785A] focus:ring-[#C4785A]"
+                  className="w-4 h-4 rounded border-[#E2E8EC] text-[#d4522f] focus:ring-[#d4522f]"
                 />
                 <span>Mandat d'Exclusivité Accordé</span>
               </label>

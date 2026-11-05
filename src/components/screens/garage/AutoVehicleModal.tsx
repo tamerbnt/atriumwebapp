@@ -144,7 +144,7 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
       <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
               <Car size={20} />
             </div>
             <div>
@@ -182,7 +182,7 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
               onClick={() => handleFleetToggle(true)}
               className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all ${
                 isFleet
-                  ? 'bg-[#C4785A] text-white shadow-xs'
+                  ? 'bg-[#d4522f] text-white shadow-xs'
                   : 'text-neutral-500 hover:text-neutral-800'
               }`}
             >
@@ -193,7 +193,7 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
           {/* If Corporate Fleet, show fleet account picker */}
           {isFleet && (
             <div className="p-3.5 rounded-2xl bg-orange-50/70 dark:bg-orange-950/30 border border-orange-200/70 dark:border-orange-800/40 space-y-2">
-              <div className="flex items-center gap-2 text-xs font-bold text-[#C4785A]">
+              <div className="flex items-center gap-2 text-xs font-bold text-[#d4522f]">
                 <Building2 size={15} />
                 <span>{isAr ? 'حساب أسطول الشركة المتعاقدة' : 'Compte Flotte Partenaire (Conventionné)'}</span>
               </div>

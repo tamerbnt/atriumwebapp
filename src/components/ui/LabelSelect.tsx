@@ -361,7 +361,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
           <ChevronDown
             size={15}
             className={`shrink-0 text-neutral-400 transition-transform duration-200 ${
-              isOpen ? 'rotate-180 text-[#C4785A]' : ''
+              isOpen ? 'rotate-180 text-[#d4522f]' : ''
             }`}
           />
         </button>
@@ -394,7 +394,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
                       setHighlightedIndex(0);
                     }}
                     placeholder={defaultSearchPlaceholder}
-                    className="w-full h-7 pl-7 pr-7 rtl:pr-7 rtl:pl-7 text-xs bg-white dark:bg-zinc-800 border border-neutral-200 dark:border-zinc-700 rounded-lg text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-[#C4785A]"
+                    className="w-full h-7 pl-7 pr-7 rtl:pr-7 rtl:pl-7 text-xs bg-white dark:bg-zinc-800 border border-neutral-200 dark:border-zinc-700 rounded-lg text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-[#d4522f]"
                   />
                   {searchQuery && (
                     <button
@@ -437,7 +437,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
                         opt.disabled
                           ? 'opacity-40 cursor-not-allowed'
                           : isSelected
-                          ? 'bg-[#C4785A]/10 text-[#C4785A] font-semibold'
+                          ? 'bg-[#d4522f]/10 text-[#d4522f] font-semibold'
                           : isHighlighted
                           ? 'bg-neutral-100 dark:bg-zinc-800 text-neutral-900 dark:text-neutral-100'
                           : 'text-neutral-700 dark:text-neutral-300'
@@ -460,7 +460,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
                       {isSelected && (
                         <Check
                           size={13}
-                          className="shrink-0 text-[#C4785A]"
+                          className="shrink-0 text-[#d4522f]"
                           strokeWidth={2.5}
                         />
                       )}

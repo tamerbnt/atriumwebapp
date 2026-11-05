@@ -97,7 +97,7 @@ export const MembershipFinanceView: React.FC = () => {
       header: isAr ? 'رقم الإيصال' : isEn ? 'Receipt #' : 'Réf. Reçu',
       accessorKey: 'id',
       sortable: true,
-      cell: (tx) => <span className="font-mono text-xs text-[#C4785A] font-semibold">{tx.id}</span>,
+      cell: (tx) => <span className="font-mono text-xs text-[#d4522f] font-semibold">{tx.id}</span>,
     },
     {
       id: 'memberName',
@@ -185,7 +185,7 @@ export const MembershipFinanceView: React.FC = () => {
             <span className="text-[11px] font-semibold tracking-wider uppercase text-neutral-400">
               {isAr ? 'إجمالي تحصيلات الصالة' : isEn ? 'Total Gym Revenue' : 'Chiffre d’Affaires Salle'}
             </span>
-            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-[#C4785A]">
+            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-[#d4522f]">
               <Wallet size={16} />
             </div>
           </div>

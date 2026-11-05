@@ -1,0 +1,6 @@
+{
+  "summary": "Comprehensive architectural plan to:\n1. Strip all 11 category role pill switchers and their inline PIN prompts from TopBar, enforcing legitimate operator authentication via Logout and account-specific sign-in.\n2. Fully replace legacy terracotta (#C4785A and variants) across all CSS tokens, components, and views with the official Atrium brand orange (#d4522f / #E8643F) and matching translucent washes.\n3. Enhance the onboarding workstation for already signed-in users with a branded 'Return to Workspace' AtriumButton and a subtle 'Login with another account' switch action, while ensuring direct app entry on boot.",
+  "updatedAt": "2026-11-05T18:11:42.956270127Z",
+  "requestFeedback": true,
+  "userFacing": true
+}

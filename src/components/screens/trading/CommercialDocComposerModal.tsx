@@ -321,7 +321,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/70 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C4785A]/10 text-[#C4785A] flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold">
               <FileText size={20} />
             </div>
             <div>
@@ -329,7 +329,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
                 <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">
                   {isEdit ? t('trading_composer_edit_title') : t('trading_composer_title')}
                 </h2>
-                <span className="px-2 py-0.5 rounded text-xs font-mono font-medium bg-[#C4785A]/15 text-[#C4785A]">
+                <span className="px-2 py-0.5 rounded text-xs font-mono font-medium bg-[#d4522f]/15 text-[#d4522f]">
                   {generatedDocNumber}
                 </span>
               </div>
@@ -371,7 +371,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
                     onClick={() => setDocType(item.type)}
                     className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium transition-all ${
                       isSelected
-                        ? 'border-[#C4785A] bg-[#C4785A]/10 text-[#C4785A] shadow-xs font-bold'
+                        ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f] shadow-xs font-bold'
                         : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 hover:border-stone-300'
                     }`}
                   >
@@ -432,7 +432,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
                 }))}
               />
               <div className="mt-2 text-[11px] text-stone-500 flex items-center gap-1.5">
-                <Building2 size={13} className="text-[#C4785A]" />
+                <Building2 size={13} className="text-[#d4522f]" />
                 <span>{selectedDepot?.address}, {selectedDepot?.city}</span>
               </div>
             </div>
@@ -499,7 +499,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
               <button
                 type="button"
                 onClick={addItemRow}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium bg-[#C4785A]/10 text-[#C4785A] hover:bg-[#C4785A]/20 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium bg-[#d4522f]/10 text-[#d4522f] hover:bg-[#d4522f]/20 transition-colors"
               >
                 <Plus size={14} />
                 <span>{t('trading_composer_add_line')}</span>
@@ -526,7 +526,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
                       {/* Product Selector / Description */}
                       <td className="p-2 space-y-1">
                         <select
-                          className="w-full text-xs rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-stone-800 dark:text-stone-200 focus:outline-hidden focus:border-[#C4785A]"
+                          className="w-full text-xs rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-stone-800 dark:text-stone-200 focus:outline-hidden focus:border-[#d4522f]"
                           value={item.productId || ''}
                           onChange={(e) => handleProductSelect(idx, e.target.value)}
                         >
@@ -542,7 +542,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
                           placeholder="Désignation détaillée / référence"
                           value={item.description}
                           onChange={(e) => handleItemChange(idx, 'description', e.target.value)}
-                          className="w-full text-xs rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-stone-800 dark:text-stone-200 focus:outline-hidden focus:border-[#C4785A]"
+                          className="w-full text-xs rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-stone-800 dark:text-stone-200 focus:outline-hidden focus:border-[#d4522f]"
                         />
                       </td>
 
@@ -649,7 +649,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
               <div className="flex items-center gap-2">
                 <span>{t('trading_composer_advanced_accordion')}</span>
                 {(generalDiscountPercent > 0 || guaranteeRetentionPercent > 0 || isCashFiscalStampEnabled) && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#C4785A]/15 text-[#C4785A] font-mono">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#d4522f]/15 text-[#d4522f] font-mono">
                     {t('trading_composer_options_active')}
                   </span>
                 )}
@@ -696,7 +696,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
                         type="checkbox"
                         checked={isCashFiscalStampEnabled}
                         onChange={(e) => setIsCashFiscalStampEnabled(e.target.checked)}
-                        className="rounded text-[#C4785A] focus:ring-[#C4785A]"
+                        className="rounded text-[#d4522f] focus:ring-[#d4522f]"
                       />
                       <span className="text-xs font-medium text-stone-700 dark:text-stone-300">
                         {t('trading_composer_fiscal_stamp')}
@@ -726,7 +726,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
                       type="checkbox"
                       checked={includeStampSignature}
                       onChange={(e) => setIncludeStampSignature(e.target.checked)}
-                      className="rounded text-[#C4785A] focus:ring-[#C4785A]"
+                      className="rounded text-[#d4522f] focus:ring-[#d4522f]"
                     />
                     <span>{t('trading_composer_include_stamp')}</span>
                   </label>
@@ -790,9 +790,9 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
                 </div>
               )}
 
-              <div className="col-span-2 sm:col-span-1 p-2 rounded-lg bg-[#C4785A]/10 border border-[#C4785A]/30 sm:ml-auto w-full text-right">
-                <span className="text-[#C4785A] block text-[11px] font-semibold uppercase">{t('trading_composer_net_to_pay')}</span>
-                <span className="text-[#C4785A] font-bold text-base tabular-nums">
+              <div className="col-span-2 sm:col-span-1 p-2 rounded-lg bg-[#d4522f]/10 border border-[#d4522f]/30 sm:ml-auto w-full text-right">
+                <span className="text-[#d4522f] block text-[11px] font-semibold uppercase">{t('trading_composer_net_to_pay')}</span>
+                <span className="text-[#d4522f] font-bold text-base tabular-nums">
                   {formatMoney(calculations.netToPay)}
                 </span>
               </div>

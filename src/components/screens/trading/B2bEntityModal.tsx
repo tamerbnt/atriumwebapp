@@ -172,7 +172,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/70 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C4785A]/10 text-[#C4785A] flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold">
               <Building2 size={20} />
             </div>
             <div>
@@ -203,7 +203,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
           {/* Identity & Contact */}
           <div>
             <h3 className="text-xs font-semibold text-stone-600 dark:text-stone-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-              <Building2 size={14} className="text-[#C4785A]" />
+              <Building2 size={14} className="text-[#d4522f]" />
               <span>{t('trading_entity_company_identity')}</span>
             </h3>
 
@@ -272,7 +272,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
           <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/20 space-y-4">
             <h3 className="text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider flex items-center justify-between">
               <span className="flex items-center gap-2">
-                <FileText size={14} className="text-[#C4785A]" />
+                <FileText size={14} className="text-[#d4522f]" />
                 <span>{t('trading_entity_fiscal_ids')}</span>
               </span>
               <span className="text-[10px] text-stone-400 font-normal">
@@ -331,7 +331,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
           {/* Primary Contact Person */}
           <div>
             <h3 className="text-xs font-semibold text-stone-600 dark:text-stone-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-              <User size={14} className="text-[#C4785A]" />
+              <User size={14} className="text-[#d4522f]" />
               <span>{t('trading_entity_primary_contact')}</span>
             </h3>
 
@@ -379,7 +379,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
           {/* Commercial & Financial Conditions */}
           <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 space-y-4">
             <h3 className="text-xs font-semibold text-stone-600 dark:text-stone-400 uppercase tracking-wider flex items-center gap-2">
-              <CreditCard size={14} className="text-[#C4785A]" />
+              <CreditCard size={14} className="text-[#d4522f]" />
               <span>{t('trading_entity_commercial_terms')}</span>
             </h3>
 

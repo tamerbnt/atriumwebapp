@@ -150,7 +150,7 @@ export const RealEstateFinanceView: React.FC = () => {
       {/* Top Header Strip with Action Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <Receipt size={22} />
           </div>
           <div>
@@ -386,7 +386,7 @@ export const RealEstateFinanceView: React.FC = () => {
               return (
                 <div className="p-4 flex flex-col justify-between h-full space-y-3">
                   <div className="flex items-start justify-between gap-2">
-                    <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2 py-0.5 rounded">
+                    <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded">
                       {formatMoney(l.monthlyRentDzd, language)}/mois
                     </span>
                     <span
@@ -435,7 +435,7 @@ export const RealEstateFinanceView: React.FC = () => {
             {/* Inspector Top Header */}
             <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                   <Receipt size={16} />
                 </div>
                 <div>
@@ -461,7 +461,7 @@ export const RealEstateFinanceView: React.FC = () => {
                 onClick={() => setInspectorTab('quittance')}
                 className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                   inspectorTab === 'quittance'
-                    ? 'border-[#C4785A] text-[#C4785A]'
+                    ? 'border-[#d4522f] text-[#d4522f]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                 }`}
               >
@@ -471,7 +471,7 @@ export const RealEstateFinanceView: React.FC = () => {
                 onClick={() => setInspectorTab('caution')}
                 className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                   inspectorTab === 'caution'
-                    ? 'border-[#C4785A] text-[#C4785A]'
+                    ? 'border-[#d4522f] text-[#d4522f]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                 }`}
               >
@@ -481,7 +481,7 @@ export const RealEstateFinanceView: React.FC = () => {
                 onClick={() => setInspectorTab('reversement')}
                 className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                   inspectorTab === 'reversement'
-                    ? 'border-[#C4785A] text-[#C4785A]'
+                    ? 'border-[#d4522f] text-[#d4522f]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                 }`}
               >
@@ -590,7 +590,7 @@ export const RealEstateFinanceView: React.FC = () => {
                     <button
                       onClick={() => handleDisburseToOwner(selectedLease)}
                       disabled={settledBailleurIds.includes(selectedLease.id)}
-                      className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#C4785A] hover:bg-[#b06a4e] text-white disabled:opacity-50 transition-colors"
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#d4522f] hover:bg-[#b06a4e] text-white disabled:opacity-50 transition-colors"
                     >
                       {settledBailleurIds.includes(selectedLease.id) ? 'Reversé ✓' : 'Reverser Net'}
                     </button>

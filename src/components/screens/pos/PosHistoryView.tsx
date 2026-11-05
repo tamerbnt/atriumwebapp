@@ -282,7 +282,7 @@ export const PosHistoryView: React.FC = () => {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
-              <History className="text-[#C4785A]" size={26} />
+              <History className="text-[#d4522f]" size={26} />
               <span>
                 {language === 'ar' ? 'سجل التدقيق وحركات المخزون' : language === 'fr' ? 'Journal d’Audit & Mouvements de Stock' : 'Audit Trail & Stock History'}
               </span>
@@ -311,7 +311,7 @@ export const PosHistoryView: React.FC = () => {
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-[#E9EEF0] dark:border-neutral-800">
           <div className="flex items-center gap-2">
-            <Activity size={18} className="text-[#C4785A]" />
+            <Activity size={18} className="text-[#d4522f]" />
             <h2 className="text-xs font-black uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
               {language === 'ar' ? 'مؤشرات حركة وتدفق المخزون' : 'Indicateurs de Flux & Conformité d’Inventaire'}
             </h2>
@@ -401,14 +401,14 @@ export const PosHistoryView: React.FC = () => {
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           {/* Left Title / Icon / Count Anchor */}
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+            <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
               <History size={18} />
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-neutral-900 dark:text-white">
                 {language === 'ar' ? 'سجل حركات المخزون والمراجعة' : 'Registre des Mouvements de Stock'}
               </span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-[#C4785A]/10 text-[#C4785A] font-semibold font-mono">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f] font-semibold font-mono">
                 {sortedMovements.length}
               </span>
             </div>

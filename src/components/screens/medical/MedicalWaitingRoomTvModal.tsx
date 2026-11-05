@@ -154,7 +154,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
 
         {/* Center Live Clock */}
         <div className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white/5 border border-white/10">
-          <Clock size={20} className="text-[#C4785A]" />
+          <Clock size={20} className="text-[#d4522f]" />
           <div className="text-2xl font-mono font-bold tracking-wider tabular-nums text-white">
             {currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
           </div>
@@ -242,7 +242,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
               <div
                 className={`rounded-[32px] p-8 border transition-all duration-500 flex flex-col justify-between min-h-[380px] shadow-2xl relative overflow-hidden ${
                   isFlashing
-                    ? 'bg-gradient-to-br from-[#0D9488]/30 via-[#141416] to-[#C4785A]/20 border-[#14B8A6] ring-4 ring-[#14B8A6]/40 scale-[1.01]'
+                    ? 'bg-gradient-to-br from-[#0D9488]/30 via-[#141416] to-[#d4522f]/20 border-[#14B8A6] ring-4 ring-[#14B8A6]/40 scale-[1.01]'
                     : 'bg-[#18181B] border-white/10'
                 }`}
               >
@@ -279,7 +279,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
                 {/* Cabinet & Doctor Destination Banner */}
                 <div className="mt-8 p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between backdrop-blur-md">
                   <div>
-                    <span className="text-xs uppercase tracking-wider text-[#C4785A] font-semibold block mb-1">
+                    <span className="text-xs uppercase tracking-wider text-[#d4522f] font-semibold block mb-1">
                       Veuillez vous présenter au
                     </span>
                     <div className="text-3xl font-black text-white tracking-wide">
@@ -288,7 +288,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
                   </div>
 
                   <div className="flex items-center gap-4 text-right">
-                    <ArrowRight size={32} className="text-[#C4785A] animate-pulse" />
+                    <ArrowRight size={32} className="text-[#d4522f] animate-pulse" />
                     <div>
                       <span className="text-xs text-white/40 uppercase tracking-wider block">Médecin Praticien</span>
                       <div className="text-xl font-bold text-white">
@@ -347,7 +347,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
           <div>
             <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#C4785A]/20 text-[#C4785A] flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-xl bg-[#d4522f]/20 text-[#d4522f] flex items-center justify-center font-bold">
                   <Clock size={18} />
                 </div>
                 <div>

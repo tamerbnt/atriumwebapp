@@ -214,7 +214,7 @@ export const ManufacturingOrdersView: React.FC = () => {
           const isPinned = pinnedIds.has(o.id);
           return (
             <div className="flex items-center gap-3 min-w-0 pr-2">
-              <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
+              <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
                 <Factory size={18} />
               </div>
               <div className="min-w-0">
@@ -225,7 +225,7 @@ export const ManufacturingOrdersView: React.FC = () => {
                   {isPinned && <span className="text-[10px] text-amber-500 font-bold">📌 VIP</span>}
                 </div>
                 <div className="flex items-center gap-2 mt-0.5 text-[11px] text-neutral-400 font-mono">
-                  <span className="font-bold text-[#C4785A]">{o.orderNumber}</span>
+                  <span className="font-bold text-[#d4522f]">{o.orderNumber}</span>
                   <span>·</span>
                   <span>{o.batchLotNumber || 'LOT-2026'}</span>
                 </div>
@@ -250,7 +250,7 @@ export const ManufacturingOrdersView: React.FC = () => {
               </div>
               <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-1.5 overflow-hidden">
                 <div
-                  className="bg-[#C4785A] h-1.5 rounded-full transition-all"
+                  className="bg-[#d4522f] h-1.5 rounded-full transition-all"
                   style={{ width: `${pct}%` }}
                 />
               </div>
@@ -343,7 +343,7 @@ export const ManufacturingOrdersView: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <Factory size={22} />
           </div>
           <div>
@@ -351,7 +351,7 @@ export const ManufacturingOrdersView: React.FC = () => {
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
                 {language === 'ar' ? 'أوامر التصنيع والتشغيل (OF)' : 'Ordres de Fabrication (OF)'}
               </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
                 {orders.length} {language === 'ar' ? 'أمر' : 'OF'}
               </span>
             </div>
@@ -479,7 +479,7 @@ export const ManufacturingOrdersView: React.FC = () => {
         {selectedIds.size > 0 && (
           <div className="flex items-center justify-between p-3 px-4 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in">
             <div className="flex items-center gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
               <span className="text-xs font-bold text-neutral-900 dark:text-white">
                 {selectedIds.size} {language === 'ar' ? 'أوامر محددة' : 'ordres sélectionnés'}
               </span>
@@ -558,7 +558,7 @@ export const ManufacturingOrdersView: React.FC = () => {
                 const done = o.actualQuantityProduced || o.quantityProduced || 0;
                 return (
                   <div className="flex flex-col items-center justify-center w-full">
-                    <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
+                    <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
                       <Factory size={32} />
                     </div>
                     <div className="flex items-center gap-1.5 max-w-[210px] mb-0.5">
@@ -605,7 +605,7 @@ export const ManufacturingOrdersView: React.FC = () => {
               {/* Drawer Header */}
               <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-800/60 flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] text-[#C4785A] font-bold text-sm flex items-center justify-center shrink-0 border border-[#F5E2D8]">
+                  <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] text-[#d4522f] font-bold text-sm flex items-center justify-center shrink-0 border border-[#F5E2D8]">
                     <Factory size={20} />
                   </div>
                   <div className="min-w-0">
@@ -632,7 +632,7 @@ export const ManufacturingOrdersView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => handleAdvanceStatus(selectedOrder)}
-                  className="flex-1 py-1.5 px-2 rounded-lg bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
+                  className="flex-1 py-1.5 px-2 rounded-lg bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
                 >
                   <Play size={13} />
                   <span>{language === 'ar' ? 'تقديم الخطوة' : 'Avancer Étape'}</span>
@@ -672,7 +672,7 @@ export const ManufacturingOrdersView: React.FC = () => {
                   onClick={() => setActiveTab('details')}
                   className={`py-2 px-3 border-b-2 transition-colors ${
                     activeTab === 'details'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -683,7 +683,7 @@ export const ManufacturingOrdersView: React.FC = () => {
                   onClick={() => setActiveTab('costing')}
                   className={`py-2 px-3 border-b-2 transition-colors ${
                     activeTab === 'costing'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -694,7 +694,7 @@ export const ManufacturingOrdersView: React.FC = () => {
                   onClick={() => setActiveTab('bom')}
                   className={`py-2 px-3 border-b-2 transition-colors ${
                     activeTab === 'bom'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -705,7 +705,7 @@ export const ManufacturingOrdersView: React.FC = () => {
                   onClick={() => setActiveTab('notes')}
                   className={`py-2 px-3 border-b-2 transition-colors ${
                     activeTab === 'notes'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -735,7 +735,7 @@ export const ManufacturingOrdersView: React.FC = () => {
                       </div>
                       <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
                         <span className="text-neutral-500">{language === 'ar' ? 'الكمية المنتجة' : 'Quantité produite'}</span>
-                        <span className="font-mono font-bold text-[#C4785A]">{selectedOrder.actualQuantityProduced || selectedOrder.quantityProduced || 0} unités</span>
+                        <span className="font-mono font-bold text-[#d4522f]">{selectedOrder.actualQuantityProduced || selectedOrder.quantityProduced || 0} unités</span>
                       </div>
                       <div className="flex justify-between py-1">
                         <span className="text-neutral-500">{language === 'ar' ? 'محطة التشغيل' : 'Poste assigné'}</span>
@@ -761,7 +761,7 @@ export const ManufacturingOrdersView: React.FC = () => {
                       </div>
                       <div className="flex justify-between py-1.5 font-bold text-neutral-900 dark:text-white text-[13px]">
                         <span>{language === 'ar' ? 'التكلفة الإجمالية' : 'Coût Total de Fabrication'}</span>
-                        <span className="font-mono text-[#C4785A]">{formatMoney(selectedOrder.totalCostDzd)}</span>
+                        <span className="font-mono text-[#d4522f]">{formatMoney(selectedOrder.totalCostDzd)}</span>
                       </div>
                     </div>
                   </div>
@@ -776,7 +776,7 @@ export const ManufacturingOrdersView: React.FC = () => {
                           <div className="space-y-2">
                             <div className="p-2.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 font-bold text-neutral-900 dark:text-white flex items-center justify-between">
                               <span>{b.bomCode}</span>
-                              <span className="font-mono text-[#C4785A]">{formatMoney(b.estimatedCostDzd)} / u</span>
+                              <span className="font-mono text-[#d4522f]">{formatMoney(b.estimatedCostDzd)} / u</span>
                             </div>
                             <div className="space-y-1.5">
                               {b.components.map((c, i) => (
@@ -808,7 +808,7 @@ export const ManufacturingOrdersView: React.FC = () => {
                       onChange={(e) => setInspectorNotes(e.target.value)}
                       rows={8}
                       placeholder={language === 'ar' ? 'أدخل ملاحظات الورشة...' : 'Tolérances dimensionnelles, cadence, rebus observés...'}
-                      className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-2 focus:ring-[#C4785A] outline-none"
+                      className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-2 focus:ring-[#d4522f] outline-none"
                     />
                     <div className="flex items-center justify-between pt-1">
                       <span className="text-[11px] text-neutral-400">
@@ -867,7 +867,7 @@ export const ManufacturingOrdersView: React.FC = () => {
             {/* Header / Actions */}
             <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                   <Printer size={20} />
                 </div>
                 <div>
@@ -883,7 +883,7 @@ export const ManufacturingOrdersView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="px-4 py-2 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                  className="px-4 py-2 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
                 >
                   <Printer size={14} />
                   <span>{language === 'ar' ? 'طباعة' : 'Imprimer'}</span>
@@ -909,12 +909,12 @@ export const ManufacturingOrdersView: React.FC = () => {
                   <div className="text-[11px] text-neutral-500 font-medium">
                     Zone Industrielle Oued Smar, Alger • NIF: 001916010044589 • RC: 16/00-0988421
                   </div>
-                  <div className="text-xs font-bold text-[#C4785A] mt-1">
+                  <div className="text-xs font-bold text-[#d4522f] mt-1">
                     FICHE SUIVEUSE DE PRODUCTION • ORDRE DE FABRICATION
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="font-mono font-black text-xl text-[#C4785A]">
+                  <div className="font-mono font-black text-xl text-[#d4522f]">
                     {orderForFiche.orderNumber}
                   </div>
                   <div className="font-mono text-xs font-bold text-neutral-700 mt-0.5">

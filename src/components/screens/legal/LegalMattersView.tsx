@@ -98,7 +98,7 @@ export const LegalMattersView: React.FC = () => {
         sortable: true,
         renderCell: (d) => (
           <div className="flex items-center gap-3 min-w-0 pr-2">
-            <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
+            <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
               <BookOpen size={18} />
             </div>
             <div className="min-w-0">
@@ -109,7 +109,7 @@ export const LegalMattersView: React.FC = () => {
                 {pinnedIds.has(d.id) && <span className="text-[10px] text-amber-500 font-bold">📌 VIP</span>}
               </div>
               <div className="flex items-center gap-2 mt-0.5 text-[11px] text-neutral-400 font-mono">
-                <span className="font-bold text-[#C4785A]">{d.repertoireNumber}</span>
+                <span className="font-bold text-[#d4522f]">{d.repertoireNumber}</span>
                 <span>·</span>
                 <span>{d.actType.replace('_', ' ').toUpperCase()}</span>
               </div>
@@ -141,7 +141,7 @@ export const LegalMattersView: React.FC = () => {
             <div className="font-bold font-mono text-neutral-900 dark:text-white">
               {formatMoney(d.transactionValueDzd, language)}
             </div>
-            <div className="text-[10px] font-mono text-[#C4785A] mt-0.5">
+            <div className="text-[10px] font-mono text-[#d4522f] mt-0.5">
               Tarif HT: {formatMoney(d.financials.honorairesHtDzd, language)} (+{formatMoney(d.financials.tvaAmountDzd, language)} TVA)
             </div>
           </div>
@@ -196,7 +196,7 @@ export const LegalMattersView: React.FC = () => {
         sortable: true,
         renderCell: (m) => (
           <div className="flex items-center gap-3 min-w-0 pr-2">
-            <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
+            <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
               <Gavel size={18} />
             </div>
             <div className="min-w-0">
@@ -207,7 +207,7 @@ export const LegalMattersView: React.FC = () => {
                 {pinnedIds.has(m.id) && <span className="text-[10px] text-amber-500 font-bold">📌 VIP</span>}
               </div>
               <div className="flex items-center gap-2 mt-0.5 text-[11px] text-neutral-400 font-mono">
-                <span className="font-bold text-[#C4785A]">{m.matterNumber}</span>
+                <span className="font-bold text-[#d4522f]">{m.matterNumber}</span>
                 <span>·</span>
                 <span>{m.category}</span>
               </div>
@@ -257,7 +257,7 @@ export const LegalMattersView: React.FC = () => {
             <div className="font-bold text-neutral-900 dark:text-white">
               {formatMoney(m.retainerAmountDzd, language)}
             </div>
-            <div className="text-[10px] text-[#C4785A] mt-0.5">
+            <div className="text-[10px] text-[#d4522f] mt-0.5">
               CARPA: {formatMoney(m.trustEscrowBalanceDzd || 0, language)}
             </div>
           </div>
@@ -304,7 +304,7 @@ export const LegalMattersView: React.FC = () => {
                 ? isAr ? 'دليل الموكلين والأطراف والمعرف الوطني NIN' : 'Répertoire Général des Clients & Personnes Morales'
                 : isAr ? 'ملفات القضايا والمنازعات القضائية' : 'Dossiers Juridiques & Affaires au Rôle'}
             </h1>
-            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A] font-mono">
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f] font-mono">
               {activeLegalRole.toUpperCase()}
             </span>
           </div>
@@ -372,10 +372,10 @@ export const LegalMattersView: React.FC = () => {
               <div
                 key={d.id}
                 onClick={() => setSelectedDeed(d)}
-                className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-2xs hover:border-[#C4785A] transition-all cursor-pointer space-y-3"
+                className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-2xs hover:border-[#d4522f] transition-all cursor-pointer space-y-3"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-xs text-[#C4785A]">
+                  <span className="font-mono font-bold text-xs text-[#d4522f]">
                     {d.repertoireNumber}
                   </span>
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700">
@@ -430,13 +430,13 @@ export const LegalMattersView: React.FC = () => {
               <div
                 key={m.id}
                 onClick={() => setSelectedMatter(m)}
-                className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-2xs hover:border-[#C4785A] transition-all cursor-pointer space-y-3"
+                className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-2xs hover:border-[#d4522f] transition-all cursor-pointer space-y-3"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-xs text-[#C4785A]">
+                  <span className="font-mono font-bold text-xs text-[#d4522f]">
                     {m.matterNumber}
                   </span>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
                     {m.category}
                   </span>
                 </div>
@@ -461,7 +461,7 @@ export const LegalMattersView: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-700">
               <div className="flex items-center gap-2">
-                <BookOpen size={18} className="text-[#C4785A]" />
+                <BookOpen size={18} className="text-[#d4522f]" />
                 <span className="text-xs font-bold text-neutral-900 dark:text-white font-mono">
                   {selectedDeed.repertoireNumber}
                 </span>
@@ -500,7 +500,7 @@ export const LegalMattersView: React.FC = () => {
               </div>
               <div className="flex justify-between text-neutral-600 dark:text-neutral-400">
                 <span>{isAr ? 'الرسم 19% TVA' : 'TVA (19%)'}</span>
-                <span className="font-bold font-mono text-[#C4785A]">
+                <span className="font-bold font-mono text-[#d4522f]">
                   +{formatMoney(selectedDeed.financials.tvaAmountDzd, language)}
                 </span>
               </div>
@@ -512,7 +512,7 @@ export const LegalMattersView: React.FC = () => {
               </div>
               <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700 flex justify-between font-bold text-neutral-900 dark:text-white">
                 <span>{isAr ? 'إجمالي الوديعة المطلوبة' : 'Total Provision Due'}</span>
-                <span className="text-[#C4785A] font-mono">
+                <span className="text-[#d4522f] font-mono">
                   {formatMoney(selectedDeed.financials.totalProvisionClientDzd, language)}
                 </span>
               </div>
@@ -563,7 +563,7 @@ export const LegalMattersView: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-700">
               <div className="flex items-center gap-2">
-                <Gavel size={18} className="text-[#C4785A]" />
+                <Gavel size={18} className="text-[#d4522f]" />
                 <span className="text-xs font-bold text-neutral-900 dark:text-white font-mono">
                   {selectedMatter.matterNumber}
                 </span>
@@ -594,7 +594,7 @@ export const LegalMattersView: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-neutral-500">{isAr ? 'الأتعاب المتفق عليها' : 'Convention Retainer'}</span>
-                <span className="font-bold font-mono text-[#C4785A]">{formatMoney(selectedMatter.retainerAmountDzd, language)}</span>
+                <span className="font-bold font-mono text-[#d4522f]">{formatMoney(selectedMatter.retainerAmountDzd, language)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-neutral-500">{isAr ? 'رصيد حساب الحراسة' : 'Solde CARPA'}</span>

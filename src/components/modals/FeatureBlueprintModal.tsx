@@ -707,20 +707,20 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
       dir={isAr ? 'rtl' : 'ltr'}
     >
-      <div className="relative w-full max-w-2xl bg-[#141416] border border-[#C4785A]/40 rounded-[28px] shadow-[0_24px_60px_rgba(0,0,0,0.85)] overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-2xl bg-[#141416] border border-[#d4522f]/40 rounded-[28px] shadow-[0_24px_60px_rgba(0,0,0,0.85)] overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Ambient Top Glow */}
         <div
           className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-48 rounded-full blur-3xl opacity-30 pointer-events-none"
-          style={{ background: 'radial-gradient(circle, #C4785A 0%, transparent 70%)' }}
+          style={{ background: 'radial-gradient(circle, #d4522f 0%, transparent 70%)' }}
         />
 
         {/* Modal Header */}
         <div className="relative z-10 px-6 pt-6 pb-4 border-b border-white/10 flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-[#C4785A] flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#C4785A]/15 border border-[#C4785A]/30">
-                <Sparkles className="w-3 h-3 text-[#C4785A]" />
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#d4522f] flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#d4522f]/15 border border-[#d4522f]/30">
+                <Sparkles className="w-3 h-3 text-[#d4522f]" />
                 {isAr ? 'ميزات حقيقية مثبتة' : isFr ? 'Fonctionnalités réelles & certifiées' : 'Verifiable Built-in Capabilities'}
               </span>
               <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-neutral-300">
@@ -749,7 +749,7 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
                 className="p-4 rounded-2xl bg-neutral-900/80 border border-white/5 space-y-1.5 hover:border-white/15 transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-[#C4785A]/20 flex items-center justify-center text-[#E09070] font-bold text-xs shrink-0">
+                  <div className="w-6 h-6 rounded-lg bg-[#d4522f]/20 flex items-center justify-center text-[#E09070] font-bold text-xs shrink-0">
                     {idx + 1}
                   </div>
                   <h4 className="text-sm font-bold text-white">
@@ -764,8 +764,8 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
           </div>
 
           {/* Quantifiable Result Card */}
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-[#1C1A18] to-neutral-900 border border-[#C4785A]/30 flex items-center gap-4">
-            <div className="text-2xl sm:text-3xl font-black text-[#C4785A] font-mono shrink-0">
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-[#1C1A18] to-neutral-900 border border-[#d4522f]/30 flex items-center gap-4">
+            <div className="text-2xl sm:text-3xl font-black text-[#d4522f] font-mono shrink-0">
               {data.result.stat}
             </div>
             <div className="text-xs text-neutral-300 font-medium leading-relaxed">

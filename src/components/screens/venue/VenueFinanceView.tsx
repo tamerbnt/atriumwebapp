@@ -239,7 +239,7 @@ export const VenueFinanceView: React.FC = () => {
                 onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
                 className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
               >
-                <Home size={15} className="text-[#C4785A]" />
+                <Home size={15} className="text-[#d4522f]" />
                 <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                   {currentBranch?.name || 'Atrium 1'}
                 </span>
@@ -270,12 +270,12 @@ export const VenueFinanceView: React.FC = () => {
                         }}
                         className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
                           isCurrent
-                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold'
                             : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
                         }`}
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                          <Building2 size={14} className={isCurrent ? 'text-[#d4522f]' : 'text-neutral-400'} />
                           <span className="truncate">{biz.name}</span>
                         </div>
                         {isCurrent && <Check size={14} />}
@@ -461,7 +461,7 @@ export const VenueFinanceView: React.FC = () => {
               renderCard={(d) => (
                 <div className="p-4 flex flex-col justify-between h-full space-y-3">
                   <div className="flex items-start justify-between gap-2">
-                    <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2 py-0.5 rounded">
+                    <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded">
                       {formatCurrencyAmount(d.amount, d.currency)}
                     </span>
                     <span
@@ -501,7 +501,7 @@ export const VenueFinanceView: React.FC = () => {
               {/* Inspector Top Header */}
               <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                  <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                     <ShieldCheck size={16} />
                   </div>
                   <div>
@@ -527,7 +527,7 @@ export const VenueFinanceView: React.FC = () => {
                   onClick={() => setInspectorTab('caution')}
                   className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                     inspectorTab === 'caution'
-                      ? 'border-[#C4785A] text-[#C4785A]'
+                      ? 'border-[#d4522f] text-[#d4522f]'
                       : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                   }`}
                 >
@@ -537,7 +537,7 @@ export const VenueFinanceView: React.FC = () => {
                   onClick={() => setInspectorTab('degradations')}
                   className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                     inspectorTab === 'degradations'
-                      ? 'border-[#C4785A] text-[#C4785A]'
+                      ? 'border-[#d4522f] text-[#d4522f]'
                       : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                   }`}
                 >
@@ -547,7 +547,7 @@ export const VenueFinanceView: React.FC = () => {
                   onClick={() => setInspectorTab('restitution')}
                   className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                     inspectorTab === 'restitution'
-                      ? 'border-[#C4785A] text-[#C4785A]'
+                      ? 'border-[#d4522f] text-[#d4522f]'
                       : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                   }`}
                 >
@@ -603,7 +603,7 @@ export const VenueFinanceView: React.FC = () => {
                             releaseSecurityDeposit(selectedDeposit.id);
                             setSelectedDeposit({ ...selectedDeposit, status: 'Released', releasedAt: new Date().toISOString() });
                           }}
-                          className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#C4785A] hover:bg-[#b06a4e] text-white transition-colors"
+                          className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#d4522f] hover:bg-[#b06a4e] text-white transition-colors"
                         >
                           Restituer ✓
                         </button>
@@ -708,7 +708,7 @@ export const VenueFinanceView: React.FC = () => {
             <form onSubmit={handleConfirmDeduct} className="space-y-4">
               <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl text-xs space-y-1">
                 <div>Locataire: <strong className="text-neutral-900 dark:text-white">{deductionTarget.renterName}</strong></div>
-                <div>Montant Caution: <strong className="font-mono text-[#C4785A]">{formatCurrencyAmount(deductionTarget.amount, deductionTarget.currency)}</strong></div>
+                <div>Montant Caution: <strong className="font-mono text-[#d4522f]">{formatCurrencyAmount(deductionTarget.amount, deductionTarget.currency)}</strong></div>
               </div>
 
               <LabelInput

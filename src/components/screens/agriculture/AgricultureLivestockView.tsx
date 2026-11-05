@@ -283,7 +283,7 @@ export const AgricultureLivestockView: React.FC = () => {
       minWidth: '180px',
       cell: (a) => (
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-mono font-bold text-xs shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0">
             <Tag size={15} />
           </div>
           <div>
@@ -421,7 +421,7 @@ export const AgricultureLivestockView: React.FC = () => {
       sortable: true,
       minWidth: '160px',
       cell: (m) => (
-        <div className="text-xs font-mono font-bold text-[#C4785A]">
+        <div className="text-xs font-mono font-bold text-[#d4522f]">
           +{formatMoney(m.onilTotalSubsidyDzd)}
         </div>
       ),
@@ -505,7 +505,7 @@ export const AgricultureLivestockView: React.FC = () => {
       {/* Top Header Strip with Action Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <Layers size={22} />
           </div>
           <div>
@@ -513,7 +513,7 @@ export const AgricultureLivestockView: React.FC = () => {
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
                 {isAr ? 'إدارة الثروة الحيوانية والإنتاج اللبني' : 'Cheptel Bovin Laitier & Traite'}
               </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
                 {livestock.length} {isAr ? 'رأس' : 'têtes'}
               </span>
             </div>
@@ -525,7 +525,7 @@ export const AgricultureLivestockView: React.FC = () => {
             variant="ghost"
             size="sm"
             onClick={() => setIsOnilModalOpen(true)}
-            icon={<Milk size={14} className="text-[#C4785A]" />}
+            icon={<Milk size={14} className="text-[#d4522f]" />}
           >
             {isAr ? 'جدول دعم الحليب ONIL (12 دج/ل)' : 'Bordereau ONIL (12 DA/L)'}
           </AtriumButton>
@@ -603,7 +603,7 @@ export const AgricultureLivestockView: React.FC = () => {
           <div className="text-2xl font-bold font-mono text-neutral-900 dark:text-white mt-1">
             {totalMilkProduction.toFixed(1)} <span className="text-xs font-normal text-neutral-500">L / jour</span>
           </div>
-          <p className="text-[10.5px] text-[#C4785A] mt-0.5">
+          <p className="text-[10.5px] text-[#d4522f] mt-0.5">
             {bovineCount} {isAr ? 'أبقار حلوب بالضيعة' : 'vaches laitières actives'}
           </p>
         </div>
@@ -624,7 +624,7 @@ export const AgricultureLivestockView: React.FC = () => {
           <span className="text-[11px] font-medium text-neutral-500">
             {isAr ? 'إجمالي مستحقات دعم ONIL' : 'Total Prime État ONIL (12 DA/L)'}
           </span>
-          <div className="text-2xl font-bold font-mono text-[#C4785A] mt-1">
+          <div className="text-2xl font-bold font-mono text-[#d4522f] mt-1">
             {formatMoney(totalMonthlyOnilSubsidyDzd)}
           </div>
           <p className="text-[10.5px] text-neutral-400 mt-0.5">
@@ -699,7 +699,7 @@ export const AgricultureLivestockView: React.FC = () => {
               <div className="space-y-4 text-xs">
                 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                    <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                       <Tag size={16} />
                     </div>
                     <div>
@@ -802,7 +802,7 @@ export const AgricultureLivestockView: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <span className="font-mono font-bold text-[#C4785A]">
+                <span className="font-mono font-bold text-[#d4522f]">
                   +{formatMoney(selectedMilking.onilTotalSubsidyDzd)}
                 </span>
               </div>

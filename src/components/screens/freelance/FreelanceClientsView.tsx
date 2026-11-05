@@ -267,7 +267,7 @@ export const FreelanceClientsView: React.FC = () => {
             {client.name.charAt(0)}
           </div>
           <div className="min-w-0">
-            <div className="font-semibold text-neutral-900 dark:text-white truncate hover:text-[#C4785A] transition-colors">
+            <div className="font-semibold text-neutral-900 dark:text-white truncate hover:text-[#d4522f] transition-colors">
               {client.name}
             </div>
             <div className="text-[11px] text-neutral-400 truncate">
@@ -288,7 +288,7 @@ export const FreelanceClientsView: React.FC = () => {
             client.status === 'ActiveRetainer'
               ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
               : client.status === 'ProjectBased'
-              ? 'bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] border border-[#F5E2D8] dark:border-neutral-700'
+              ? 'bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700'
               : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
           }`}
         >
@@ -483,7 +483,7 @@ export const FreelanceClientsView: React.FC = () => {
         {/* Row 0 — Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
               <Users size={22} />
             </div>
             <div>
@@ -503,7 +503,7 @@ export const FreelanceClientsView: React.FC = () => {
                 onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
                 className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
               >
-                <Home size={15} className="text-[#C4785A]" />
+                <Home size={15} className="text-[#d4522f]" />
                 <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                   {currentBranch?.name || 'Studio Main'}
                 </span>
@@ -535,12 +535,12 @@ export const FreelanceClientsView: React.FC = () => {
                         }}
                         className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
                           isCurrent
-                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold'
                             : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
                         }`}
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                          <Building2 size={14} className={isCurrent ? 'text-[#d4522f]' : 'text-neutral-400'} />
                           <span className="truncate">{biz.name}</span>
                         </div>
                         {isCurrent && <Check size={14} />}
@@ -570,7 +570,7 @@ export const FreelanceClientsView: React.FC = () => {
         {selectedClientIds.size > 0 && (
           <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
             <div className="flex items-center gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
               <span className="text-xs font-bold text-neutral-900 dark:text-white">
                 {selectedClientIds.size} {language === 'ar' ? 'عملاء محددين' : language === 'fr' ? 'clients sélectionnés' : 'clients selected'}
               </span>
@@ -726,7 +726,7 @@ export const FreelanceClientsView: React.FC = () => {
                     onClick={() => setSelectedStatus(tab.id)}
                     className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
                       selectedStatus === tab.id
-                        ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A]'
+                        ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f]'
                         : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
@@ -776,7 +776,7 @@ export const FreelanceClientsView: React.FC = () => {
               <h3 className="text-[16px] font-bold text-neutral-900 dark:text-white truncate max-w-[210px] mb-1 tracking-tight">
                 {client.name}
               </h3>
-              <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] border border-[#F5E2D8] dark:border-neutral-700 mb-3 truncate max-w-[200px]">
+              <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700 mb-3 truncate max-w-[200px]">
                 {client.company || t('free_clients_private_client', language)}
               </span>
 
@@ -840,7 +840,7 @@ export const FreelanceClientsView: React.FC = () => {
               id: 'timer',
               tooltip: t('free_timer_start', language),
               icon: <Play size={13} />,
-              iconColor: '#C4785A',
+              iconColor: '#d4522f',
               onClick: (e: React.MouseEvent) => {
                 e.stopPropagation();
                 handleQuickStartTimer(client);
@@ -879,7 +879,7 @@ export const FreelanceClientsView: React.FC = () => {
             {/* Drawer Header */}
             <div className="p-5 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
               <div>
-                <span className="text-[11px] font-semibold text-[#C4785A] uppercase tracking-wider block">
+                <span className="text-[11px] font-semibold text-[#d4522f] uppercase tracking-wider block">
                   {t('free_clients_profile_360', language)}
                 </span>
                 <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
@@ -956,7 +956,7 @@ export const FreelanceClientsView: React.FC = () => {
                       setSelectedClient(null);
                       setScreen('scheduler');
                     }}
-                    className="text-[#C4785A] hover:underline font-semibold cursor-pointer"
+                    className="text-[#d4522f] hover:underline font-semibold cursor-pointer"
                   >
                     {t('free_clients_manage_deliv', language)}
                   </button>
@@ -1000,7 +1000,7 @@ export const FreelanceClientsView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleQuickBill(selectedClient)}
-                      className="text-[#C4785A] hover:underline font-semibold cursor-pointer"
+                      className="text-[#d4522f] hover:underline font-semibold cursor-pointer"
                     >
                       {t('free_clients_gen_invoice', language)}
                     </button>
@@ -1048,7 +1048,7 @@ export const FreelanceClientsView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleQuickStartTimer(selectedClient)}
-                className="flex-1 py-2.5 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                className="flex-1 py-2.5 rounded-xl bg-[#d4522f] text-white text-xs font-semibold flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
               >
                 <Play size={13} />
                 <span>{t('free_timer_start', language)}</span>
@@ -1232,7 +1232,7 @@ export const FreelanceClientsView: React.FC = () => {
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   placeholder={t('free_clients_notes_ph', language)}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
+                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#d4522f]"
                 />
               </div>
 
@@ -1246,7 +1246,7 @@ export const FreelanceClientsView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                  className="px-5 py-2 rounded-xl bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
                   {clientToEdit ? t('free_clients_save_changes', language) : t('free_clients_create_btn', language)}
                 </button>
@@ -1279,7 +1279,7 @@ export const FreelanceClientsView: React.FC = () => {
                 type="checkbox"
                 checked={deleteCascade}
                 onChange={(e) => setDeleteCascade(e.target.checked)}
-                className="mt-0.5 rounded text-[#C4785A] focus:ring-[#C4785A]"
+                className="mt-0.5 rounded text-[#d4522f] focus:ring-[#d4522f]"
               />
               <div>
                 <span className="font-semibold block text-neutral-900 dark:text-white">{t('free_clients_cascade_delete', language)}</span>

@@ -25,7 +25,7 @@ export const PillBarHistogram: React.FC<PillBarHistogramProps> = ({
   data: propData,
   height = 120,
   maxScale,
-  activeColor = '#C4785A',
+  activeColor = '#d4522f',
   barColor,
   mutedColor = '#E8DFD8',
   showYAxis = true,

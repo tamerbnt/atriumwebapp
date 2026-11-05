@@ -453,7 +453,7 @@ export const PosInventoryView: React.FC = () => {
       minWidth: '120px',
       sortable: true,
       renderCell: (p) => (
-        <span className="font-mono font-bold text-[#C4785A] tabular-nums">
+        <span className="font-mono font-bold text-[#d4522f] tabular-nums">
           {formatMoney(p.price.amount * p.stockQuantity)}
         </span>
       ),
@@ -474,7 +474,7 @@ export const PosInventoryView: React.FC = () => {
               setAdjustMode('add');
               setIsAdjustStockModalOpen(true);
             }}
-            className="p-1.5 rounded-lg text-[#C4785A] hover:bg-[#C4785A]/10 cursor-pointer"
+            className="p-1.5 rounded-lg text-[#d4522f] hover:bg-[#d4522f]/10 cursor-pointer"
             title="Adjust Stock"
           >
             <ArrowDownUp size={14} />
@@ -587,7 +587,7 @@ export const PosInventoryView: React.FC = () => {
       width: '130px',
       sortable: true,
       renderCell: (doc) => (
-        <span className="font-mono font-bold text-xs text-[#C4785A] tabular-nums">
+        <span className="font-mono font-bold text-xs text-[#d4522f] tabular-nums">
           {formatMoney(doc.totalTtc)}
         </span>
       ),
@@ -851,7 +851,7 @@ export const PosInventoryView: React.FC = () => {
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
-                <Boxes className="text-[#C4785A]" size={26} />
+                <Boxes className="text-[#d4522f]" size={26} />
                 <span>
                   {language === 'ar' ? 'المخزون والكتالوج العام' : language === 'fr' ? 'Inventaire & Gestion des Stocks' : 'Inventory & Stock Catalog'}
                 </span>
@@ -936,7 +936,7 @@ export const PosInventoryView: React.FC = () => {
                   : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
               }`}
             >
-              <Boxes size={14} className={activeSubTab === 'inventory' ? 'text-[#C4785A]' : ''} />
+              <Boxes size={14} className={activeSubTab === 'inventory' ? 'text-[#d4522f]' : ''} />
               <span>{t('nav_pos_inventory_tab_stock') || (language === 'ar' ? 'المخزون والمنتجات' : 'État des Stocks & Catalogue')}</span>
               <span className="text-[10px] font-mono text-neutral-400">({inventoryStats.totalSKUs})</span>
             </button>
@@ -950,7 +950,7 @@ export const PosInventoryView: React.FC = () => {
                   : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
               }`}
             >
-              <Truck size={14} className={activeSubTab === 'purchases' ? 'text-[#C4785A]' : ''} />
+              <Truck size={14} className={activeSubTab === 'purchases' ? 'text-[#d4522f]' : ''} />
               <span>{t('nav_pos_inventory_tab_purchases') || (language === 'ar' ? 'المشتريات وإعادة التموين' : 'Achats & Fournisseurs')}</span>
               {purchaseStats.pendingCount > 0 && (
                 <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300">
@@ -972,7 +972,7 @@ export const PosInventoryView: React.FC = () => {
                     <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                       {t('shop_kpi_skus')}
                     </span>
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#d4522f]/10 text-[#d4522f]">
                       {inventoryStats.totalUnits.toLocaleString()} unités
                     </span>
                   </div>
@@ -997,13 +997,13 @@ export const PosInventoryView: React.FC = () => {
                         +{formatMoney(inventoryStats.potentialProfit)} marge
                       </span>
                     ) : (
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#d4522f]/10 text-[#d4522f]">
                         {inventoryStats.totalUnits.toLocaleString()} {language === 'ar' ? 'وحدة' : 'unités'}
                       </span>
                     )}
                   </div>
                   <div>
-                    <div className="text-2xl lg:text-3xl font-extrabold font-mono text-[#C4785A] tabular-nums">
+                    <div className="text-2xl lg:text-3xl font-extrabold font-mono text-[#d4522f] tabular-nums">
                       {formatMoney(inventoryStats.retailValuation)}
                     </div>
                     <div className="text-[11px] text-neutral-400 mt-0.5">
@@ -1053,14 +1053,14 @@ export const PosInventoryView: React.FC = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 {/* Left Title / Icon / Count Anchor */}
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+                  <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
                     <Boxes size={18} />
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold text-neutral-900 dark:text-white">
                       {language === 'ar' ? 'المخزون والمنتجات' : 'Catalogue & Stocks Magasin'}
                     </span>
-                    <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                    <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#d4522f]/10 text-[#d4522f]">
                       {filteredInventory.length}
                     </span>
                   </div>
@@ -1195,7 +1195,7 @@ export const PosInventoryView: React.FC = () => {
                     <span className="text-neutral-400 text-[10px] font-mono">
                       {p.sku}
                     </span>
-                    <span className="font-mono font-bold text-[#C4785A] text-xs tabular-nums">
+                    <span className="font-mono font-bold text-[#d4522f] text-xs tabular-nums">
                       {formatMoney(p.price.amount * p.stockQuantity)}
                     </span>
                   </div>
@@ -1212,7 +1212,7 @@ export const PosInventoryView: React.FC = () => {
                     setAdjustMode('add');
                     setIsAdjustStockModalOpen(true);
                   }}
-                  className="w-full py-1.5 px-3 rounded-xl bg-orange-50 dark:bg-orange-950/40 hover:bg-orange-100 dark:hover:bg-orange-900/60 text-[#C4785A] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  className="w-full py-1.5 px-3 rounded-xl bg-orange-50 dark:bg-orange-950/40 hover:bg-orange-100 dark:hover:bg-orange-900/60 text-[#d4522f] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <ArrowDownUp size={13} />
                   <span>{t('shop_adjust_tooltip') || 'Ajuster Stock'}</span>
@@ -1320,7 +1320,7 @@ export const PosInventoryView: React.FC = () => {
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+            <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
               <Truck size={18} />
             </div>
             <div>
@@ -1328,7 +1328,7 @@ export const PosInventoryView: React.FC = () => {
                 <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
                   {language === 'ar' ? 'سجل طلبيات الشراء ووصولات الاستلام' : 'Commandes Fournisseurs & Réceptions'}
                 </h2>
-                <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#d4522f]/10 text-[#d4522f]">
                   {(purchaseDocs || []).length}
                 </span>
               </div>
@@ -1390,7 +1390,7 @@ export const PosInventoryView: React.FC = () => {
                 </p>
               </div>
               <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                <span className="font-mono font-bold text-sm text-[#C4785A]">
+                <span className="font-mono font-bold text-sm text-[#d4522f]">
                   {formatMoney(doc.totalTtc)}
                 </span>
                 {doc.type === 'po' && doc.status === 'Ordered' && (
@@ -1416,7 +1416,7 @@ export const PosInventoryView: React.FC = () => {
       <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Building2 size={16} className="text-[#C4785A]" />
+            <Building2 size={16} className="text-[#d4522f]" />
             <h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
               {language === 'ar' ? 'دليل الموردين التجاريين' : 'Fournisseurs & Grossistes Partenaires'}
             </h3>
@@ -1424,7 +1424,7 @@ export const PosInventoryView: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsSupplierModalOpen(true)}
-            className="text-xs font-bold text-[#C4785A] hover:underline flex items-center gap-1"
+            className="text-xs font-bold text-[#d4522f] hover:underline flex items-center gap-1"
           >
             + {language === 'ar' ? 'إضافة مورد جديد' : 'Nouveau Fournisseur'}
           </button>
@@ -1603,7 +1603,7 @@ export const PosInventoryView: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="h-10 px-5 text-xs font-bold text-white bg-[#C4785A] rounded-full hover:opacity-90 cursor-pointer shadow-xs"
+              className="h-10 px-5 text-xs font-bold text-white bg-[#d4522f] rounded-full hover:opacity-90 cursor-pointer shadow-xs"
             >
               {editingProductId ? (language === 'ar' ? 'حفظ التعديلات' : 'Enregistrer') : (language === 'ar' ? 'إضافة الصنف' : 'Créer l’Article')}
             </button>
@@ -1683,7 +1683,7 @@ export const PosInventoryView: React.FC = () => {
               </button>
               <button
                 type="submit"
-                className="h-10 px-5 text-xs font-bold text-white bg-[#C4785A] rounded-full hover:opacity-90 cursor-pointer shadow-xs"
+                className="h-10 px-5 text-xs font-bold text-white bg-[#d4522f] rounded-full hover:opacity-90 cursor-pointer shadow-xs"
               >
                 {language === 'ar' ? 'تأكيد التعديل' : 'Valider l’Ajustement'}
               </button>
@@ -1722,7 +1722,7 @@ export const PosInventoryView: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="h-10 px-5 text-xs font-bold text-white bg-[#C4785A] rounded-full hover:opacity-90 cursor-pointer shadow-xs"
+              className="h-10 px-5 text-xs font-bold text-white bg-[#d4522f] rounded-full hover:opacity-90 cursor-pointer shadow-xs"
             >
               {language === 'ar' ? 'تطبيق التموين' : 'Confirmer le Réassort'}
             </button>
@@ -1784,7 +1784,7 @@ export const PosInventoryView: React.FC = () => {
                     },
                   ])
                 }
-                className="text-xs font-bold text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-xs font-bold text-[#d4522f] hover:underline flex items-center gap-1 cursor-pointer"
               >
                 + {language === 'ar' ? 'إضافة صنف' : 'Ajouter une ligne'}
               </button>
@@ -1890,7 +1890,7 @@ export const PosInventoryView: React.FC = () => {
             <span className="font-semibold text-neutral-600 dark:text-neutral-400">
               {language === 'ar' ? 'المجموع المقدر (TTC شامل 19% رسم)' : 'Total Estimé TTC (TVA 19% incluse) :'}
             </span>
-            <span className="font-mono font-black text-sm text-[#C4785A] tabular-nums">
+            <span className="font-mono font-black text-sm text-[#d4522f] tabular-nums">
               {formatMoney(
                 poItems.reduce((sum, it) => sum + it.orderedQty * it.unitCostHt, 0) * 1.19
               )}

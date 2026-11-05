@@ -28,13 +28,13 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
       {/* Viewport Control Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl border border-zinc-200 dark:border-zinc-700/80">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold text-xs">
+          <div className="w-8 h-8 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold text-xs">
             📱
           </div>
           <div>
             <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
               <span>{title}</span>
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#C4785A]/20 text-[#C4785A]">
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#d4522f]/20 text-[#d4522f]">
                 {t('pm_sim_badge')}
               </span>
             </div>
@@ -53,7 +53,7 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
             onClick={() => setMode('mobile')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               mode === 'mobile'
-                ? 'bg-[#C4785A] text-white shadow-xs'
+                ? 'bg-[#d4522f] text-white shadow-xs'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
             }`}
           >
@@ -66,7 +66,7 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
             onClick={() => setMode('desktop')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               mode === 'desktop'
-                ? 'bg-[#C4785A] text-white shadow-xs'
+                ? 'bg-[#d4522f] text-white shadow-xs'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
             }`}
           >

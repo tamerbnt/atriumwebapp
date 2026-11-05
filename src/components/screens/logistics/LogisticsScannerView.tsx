@@ -218,7 +218,7 @@ export const LogisticsScannerView: React.FC = () => {
       {/* Top Header Strip with Action Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <ScanLine size={22} />
           </div>
           <div>
@@ -242,7 +242,7 @@ export const LogisticsScannerView: React.FC = () => {
               onClick={() => setScanMode(m)}
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                 scanMode === m
-                  ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-xs'
+                  ? 'bg-white dark:bg-neutral-900 text-[#d4522f] shadow-xs'
                   : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
               }`}
             >
@@ -324,7 +324,7 @@ export const LogisticsScannerView: React.FC = () => {
                 ? 'امسح باركود الشحنة بواسطة قارئ الباركود (Ex: ATR-EXP-88912)...'
                 : 'Scannez le code-barres AWB (Lecteur HID ou caméra, ex: ATR-EXP-88912)...'
             }
-            className="w-full pl-12 pr-28 py-4 rounded-2xl bg-white dark:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-700 focus:border-[#C4785A] text-sm font-mono font-bold text-neutral-900 dark:text-white shadow-xs outline-hidden tracking-wider"
+            className="w-full pl-12 pr-28 py-4 rounded-2xl bg-white dark:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-700 focus:border-[#d4522f] text-sm font-mono font-bold text-neutral-900 dark:text-white shadow-xs outline-hidden tracking-wider"
           />
           <div className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400">
             <Barcode size={22} />
@@ -388,7 +388,7 @@ export const LogisticsScannerView: React.FC = () => {
                 {isAr ? 'طرود رصيف الفرز' : 'Colis au Quai de Tri'}
               </h2>
             </div>
-            <div className="text-xs font-mono font-bold text-[#C4785A]">
+            <div className="text-xs font-mono font-bold text-[#d4522f]">
               {shipments.length} {isAr ? 'طرد' : 'colis'}
             </div>
           </div>
@@ -407,7 +407,7 @@ export const LogisticsScannerView: React.FC = () => {
                 header: 'AWB',
                 width: '140px',
                 renderCell: (s: LogisticsShipment) => (
-                  <span className="font-mono font-bold text-xs text-[#C4785A]">
+                  <span className="font-mono font-bold text-xs text-[#d4522f]">
                     {s.trackingCode}
                   </span>
                 ),
@@ -471,7 +471,7 @@ export const LogisticsScannerView: React.FC = () => {
           <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-md w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4">
             <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3">
               <div className="flex items-center gap-2">
-                <Lock size={18} className="text-[#C4785A]" />
+                <Lock size={18} className="text-[#d4522f]" />
                 <h3 className="font-bold text-sm text-neutral-900 dark:text-white">
                   {isAr ? 'ختم وإغلاق كيس الشحن (Scellé de Sécurité)' : 'Pose du Scellé de Sécurité'}
                 </h3>
@@ -500,7 +500,7 @@ export const LogisticsScannerView: React.FC = () => {
                   value={securitySealInput}
                   onChange={(e) => setSecuritySealInput(e.target.value)}
                   placeholder="SL-XXXXXX"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 font-mono font-bold text-sm text-center tracking-widest focus:border-[#C4785A] outline-hidden"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 font-mono font-bold text-sm text-center tracking-widest focus:border-[#d4522f] outline-hidden"
                   required
                   autoFocus
                 />

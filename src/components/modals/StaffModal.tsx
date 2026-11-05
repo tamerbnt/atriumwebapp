@@ -293,7 +293,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
 
         {/* Section 1: Essentiels & Identité */}
         <div className="space-y-4">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#C4785A]">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#d4522f]">
             <User className="w-4 h-4" />
             <span>{isAr ? 'الهوية والوظيفة الأساسية' : isEn ? 'Identity & Core Role' : 'Identité & Poste'}</span>
           </div>
@@ -378,7 +378,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
           <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/60">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#C4785A]/10 text-[#C4785A] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center">
                   <QrCode className="w-5 h-5" />
                 </div>
                 <div>
@@ -397,12 +397,12 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                   value={cardId}
                   onChange={(e) => setCardId(e.target.value.toUpperCase())}
                   placeholder="RFID-000000"
-                  className="font-mono text-xs px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 w-full sm:w-36 focus:outline-hidden focus:border-[#C4785A]"
+                  className="font-mono text-xs px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 w-full sm:w-36 focus:outline-hidden focus:border-[#d4522f]"
                 />
                 <button
                   type="button"
                   onClick={handleGenerateBadge}
-                  className="shrink-0 text-xs px-3 py-1.5 rounded-xl bg-[#C4785A] text-white hover:bg-[#b0674b] transition-colors"
+                  className="shrink-0 text-xs px-3 py-1.5 rounded-xl bg-[#d4522f] text-white hover:bg-[#b0674b] transition-colors"
                 >
                   {isAr ? 'توليد' : isEn ? 'Gen' : 'Générer'}
                 </button>
@@ -420,7 +420,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
             className="w-full flex items-center justify-between p-3 rounded-2xl bg-neutral-100/70 dark:bg-neutral-800/40 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-left transition-colors"
           >
             <div className="flex items-center gap-2.5">
-              <FileText className="w-4 h-4 text-[#C4785A]" />
+              <FileText className="w-4 h-4 text-[#d4522f]" />
               <span className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">
                 {isAr
                   ? 'الملف التعاقدي والمالي والصحي المتقدم'
@@ -440,7 +440,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
             <div className="mt-4 space-y-6 animate-in fade-in duration-200">
               {/* Contract & Compensation */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#C4785A]">
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#d4522f]">
                   <CreditCard className="w-4 h-4" />
                   <span>{isAr ? 'العقد والراتب' : isEn ? 'Contract & Compensation' : 'Contrat & Rémunération'}</span>
                 </div>
@@ -531,7 +531,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
               {/* Multi-Credential Authentication Toggles */}
               <div className="space-y-3 p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700/60">
                 <div className="flex items-center gap-2 text-xs font-semibold text-neutral-900 dark:text-neutral-100">
-                  <KeyRound className="w-4 h-4 text-[#C4785A]" />
+                  <KeyRound className="w-4 h-4 text-[#d4522f]" />
                   <span>{isAr ? 'صلاحيات تسجيل الدخول إلى التطبيق' : isEn ? 'App Login Credentials' : 'Moyens de Connexion à l\'Application'}</span>
                 </div>
                 <p className="text-[11px] text-neutral-500">
@@ -548,7 +548,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                       type="checkbox"
                       checked={canLoginEmail}
                       onChange={(e) => setCanLoginEmail(e.target.checked)}
-                      className="accent-[#C4785A] rounded-sm"
+                      className="accent-[#d4522f] rounded-sm"
                     />
                     <span>{isAr ? 'البريد وكلمة السر' : isEn ? 'Email & Password' : 'Email & Mot de passe'}</span>
                   </label>
@@ -558,7 +558,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                       type="checkbox"
                       checked={canLoginPhone}
                       onChange={(e) => setCanLoginPhone(e.target.checked)}
-                      className="accent-[#C4785A] rounded-sm"
+                      className="accent-[#d4522f] rounded-sm"
                     />
                     <span>{isAr ? 'رقم الهاتف' : isEn ? 'Phone Number' : 'Numéro de Téléphone'}</span>
                   </label>
@@ -568,7 +568,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                       type="checkbox"
                       checked={canLoginPin}
                       onChange={(e) => setCanLoginPin(e.target.checked)}
-                      className="accent-[#C4785A] rounded-sm"
+                      className="accent-[#d4522f] rounded-sm"
                     />
                     <span>{isAr ? 'رمز PIN السريع (4 أرقام)' : isEn ? 'Fast-Switch PIN (4 Digits)' : 'Code PIN (4 Chiffres)'}</span>
                   </label>
@@ -590,7 +590,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                       onClick={handleGeneratePin}
                       className="text-xs px-3 py-2 rounded-xl bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5"
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-[#C4785A]" />
+                      <Sparkles className="w-3.5 h-3.5 text-[#d4522f]" />
                       <span>{isAr ? 'توليد PIN عشوائي' : isEn ? 'Generate PIN' : 'Générer PIN'}</span>
                     </button>
                     {errors.pinCode && <p className="text-[11px] text-red-500">{errors.pinCode}</p>}
@@ -600,7 +600,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
 
               {/* Medical & Emergency Contact */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#C4785A]">
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#d4522f]">
                   <HeartPulse className="w-4 h-4" />
                   <span>{isAr ? 'الملف الصحي وحالات الطوارئ' : isEn ? 'Medical Emergency Dossier' : 'Dossier Médical & Urgences'}</span>
                 </div>
@@ -638,7 +638,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
 
               {/* Category-Specific Operational Details */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#C4785A]">
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#d4522f]">
                   <Building className="w-4 h-4" />
                   <span>{getCategoryPropertiesTitle(currentCategory, isAr, isEn)}</span>
                 </div>

@@ -90,7 +90,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
             id: 'edit',
             tooltip: 'Edit',
             icon: <Pencil className="w-3.5 h-3.5" />,
-            iconColor: '#C4785A',
+            iconColor: '#d4522f',
             onClick: (e: React.MouseEvent) => {
               e.stopPropagation();
               onEdit();
@@ -171,7 +171,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
           {
             id: 'kebab-edit',
             label: 'Edit',
-            icon: <Pencil className="w-4 h-4 text-[#C4785A]" />,
+            icon: <Pencil className="w-4 h-4 text-[#d4522f]" />,
             onClick: () => onEdit(),
           },
         ]
@@ -238,14 +238,14 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
           borderLeftWidth: isSelected || isHovered ? '3px' : isPinned ? '2px' : '1px',
           borderLeftColor:
             isSelected || isHovered
-              ? '#C4785A'
+              ? '#d4522f'
               : isPinned
               ? '#F59E0B'
               : undefined,
         }}
         className={`relative z-10 w-full min-h-[50px] px-4 py-2 rounded-[10px] flex items-center transition-all duration-150 cursor-pointer ${
           isSelected
-            ? 'bg-[#C4785A]/10 border-t border-r border-b border-[#C4785A]/30 dark:bg-[#C4785A]/15'
+            ? 'bg-[#d4522f]/10 border-t border-r border-b border-[#d4522f]/30 dark:bg-[#d4522f]/15'
             : isHovered
             ? 'bg-neutral-50/90 dark:bg-neutral-800/80 border-t border-r border-b border-neutral-200 dark:border-neutral-700 shadow-sm'
             : isPinned
@@ -322,7 +322,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
                 className={`w-10 h-10 rounded-[6px] bg-white dark:bg-[#1E1E22] border border-neutral-200/90 dark:border-neutral-700/80 shadow-md flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer ${
                   action.isSpecialDelete
                     ? 'hover:bg-red-50 dark:hover:bg-red-950/40 hover:border-red-300'
-                    : 'hover:bg-[#FDF4F0] dark:hover:bg-neutral-700/60 hover:border-[#C4785A]/50'
+                    : 'hover:bg-[#FDF4F0] dark:hover:bg-neutral-700/60 hover:border-[#d4522f]/50'
                 }`}
               >
                 {action.icon}

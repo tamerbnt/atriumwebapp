@@ -200,7 +200,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                   });
                 }}
                 className={`p-1 rounded-lg transition-colors cursor-pointer ${
-                  isPinned ? 'text-[#C4785A] bg-[#C4785A]/10' : 'text-zinc-300 hover:text-zinc-500'
+                  isPinned ? 'text-[#d4522f] bg-[#d4522f]/10' : 'text-zinc-300 hover:text-zinc-500'
                 }`}
               >
                 <Pin className={`w-3.5 h-3.5 ${isPinned ? 'fill-current' : ''}`} />
@@ -365,7 +365,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         minWidth: '220px',
         renderCell: (eq) => (
           <div className="flex items-center gap-2.5">
-            <div className="font-mono text-xs font-bold text-[#C4785A]">
+            <div className="font-mono text-xs font-bold text-[#d4522f]">
               {eq.assetCode}
             </div>
             <div>
@@ -470,7 +470,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#C4785A]">
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#d4522f]">
               Comptabilité & Trésorerie
             </span>
             <span className="text-zinc-400">·</span>
@@ -494,7 +494,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
               onClick={() => setIsBranchDropdownOpen((prev) => !prev)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200/80 dark:border-zinc-750 transition-all cursor-pointer"
             >
-              <Building2 className="w-3.5 h-3.5 text-[#C4785A]" />
+              <Building2 className="w-3.5 h-3.5 text-[#d4522f]" />
               <span>{currentBranch?.name || 'NCH Cyberpark Tower B'}</span>
               <ChevronDown className="w-3 h-3 opacity-60" />
             </button>
@@ -550,7 +550,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${
                 isActive
-                  ? 'border-[#C4785A] text-[#C4785A]'
+                  ? 'border-[#d4522f] text-[#d4522f]'
                   : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
               }`}
             >
@@ -627,7 +627,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
           <div className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <span className="text-xs font-bold text-[#C4785A] uppercase tracking-wider block">
+              <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">
                 Génération des Mandats Postaux (Slide 10)
               </span>
               <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mt-0.5">
@@ -913,7 +913,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
             renderCard={(eq) => (
               <div className="flex flex-col justify-between h-full space-y-3">
                 <div className="space-y-1">
-                  <div className="flex items-center justify-between text-xs font-mono font-bold text-[#C4785A]">
+                  <div className="flex items-center justify-between text-xs font-mono font-bold text-[#d4522f]">
                     <span>{eq.assetCode}</span>
                     <span className="text-zinc-500 font-normal">{eq.category}</span>
                   </div>
@@ -955,7 +955,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
           <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                <Receipt className="w-4 h-4 text-[#C4785A]" />
+                <Receipt className="w-4 h-4 text-[#d4522f]" />
                 Justificatif Fiscal d'Achat
               </h3>
               <button

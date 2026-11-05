@@ -154,7 +154,7 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#E2E8EC] dark:border-[#27272A] pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
               <Building2 className="w-5 h-5" />
             </div>
             <div>
@@ -178,7 +178,7 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
             onClick={() => setActiveTab('general')}
             className={`px-4 py-2 text-xs font-semibold rounded-xl transition-colors ${
               activeTab === 'general'
-                ? 'bg-[#C4785A] text-white shadow-xs'
+                ? 'bg-[#d4522f] text-white shadow-xs'
                 : 'text-[#64748B] hover:text-[#18181B] dark:hover:text-white'
             }`}
           >
@@ -189,7 +189,7 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
             onClick={() => setActiveTab('cadastre')}
             className={`px-4 py-2 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors ${
               activeTab === 'cadastre'
-                ? 'bg-[#C4785A] text-white shadow-xs'
+                ? 'bg-[#d4522f] text-white shadow-xs'
                 : 'text-[#64748B] hover:text-[#18181B] dark:hover:text-white'
             }`}
           >
@@ -285,7 +285,7 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
               </div>
 
               <div className="p-3.5 rounded-2xl bg-[#F8F9FA] dark:bg-[#141416] border border-[#EDF1F3] dark:border-[#232328] space-y-3">
-                <div className="text-xs font-semibold text-[#C4785A] uppercase">Coordonnées Propriétaire Mandant</div>
+                <div className="text-xs font-semibold text-[#d4522f] uppercase">Coordonnées Propriétaire Mandant</div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <LabelInput
                     label="Nom du Propriétaire"
@@ -310,12 +310,12 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
           ) : (
             <>
               {/* Cadastral Passport View */}
-              <div className="p-3.5 rounded-2xl bg-[#FDF4F0] dark:bg-[#1C1816] border border-[#C4785A]/30 flex items-center justify-between">
+              <div className="p-3.5 rounded-2xl bg-[#FDF4F0] dark:bg-[#1C1816] border border-[#d4522f]/30 flex items-center justify-between">
                 <div>
                   <div className="text-xs text-[#64748B] dark:text-[#A1A1AA]">Niveau de Sécurité Juridique</div>
                   <div className="text-sm font-bold text-[#18181B] dark:text-white flex items-center gap-1.5">
                     <span>{titleStrength.labelFr}</span>
-                    <span className="text-xs font-mono text-[#C4785A]">({titleStrength.score}/100)</span>
+                    <span className="text-xs font-mono text-[#d4522f]">({titleStrength.score}/100)</span>
                   </div>
                 </div>
                 <div className="text-right">
@@ -348,7 +348,7 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
                       type="checkbox"
                       checked={hasLivretFoncier}
                       onChange={(e) => setHasLivretFoncier(e.target.checked)}
-                      className="w-4 h-4 rounded border-[#E2E8EC] text-[#C4785A] focus:ring-[#C4785A]"
+                      className="w-4 h-4 rounded border-[#E2E8EC] text-[#d4522f] focus:ring-[#d4522f]"
                     />
                     <span>Livret Foncier Délivré</span>
                   </label>
@@ -358,7 +358,7 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
                       type="checkbox"
                       checked={hasNegativeCertificate}
                       onChange={(e) => setHasNegativeCertificate(e.target.checked)}
-                      className="w-4 h-4 rounded border-[#E2E8EC] text-[#C4785A] focus:ring-[#C4785A]"
+                      className="w-4 h-4 rounded border-[#E2E8EC] text-[#d4522f] focus:ring-[#d4522f]"
                     />
                     <span>Certificat Négatif Valide</span>
                   </label>
@@ -427,7 +427,7 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
                     type="checkbox"
                     checked={hasCertificatConformite}
                     onChange={(e) => setHasCertificatConformite(e.target.checked)}
-                    className="w-4 h-4 rounded border-[#E2E8EC] text-[#C4785A] focus:ring-[#C4785A]"
+                    className="w-4 h-4 rounded border-[#E2E8EC] text-[#d4522f] focus:ring-[#d4522f]"
                   />
                   <span>Certificat de Conformité (Loi 08-15)</span>
                 </label>
@@ -437,7 +437,7 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
                     type="checkbox"
                     checked={isEligibleBankMortgage}
                     onChange={(e) => setIsEligibleBankMortgage(e.target.checked)}
-                    className="w-4 h-4 rounded border-[#E2E8EC] text-[#C4785A] focus:ring-[#C4785A]"
+                    className="w-4 h-4 rounded border-[#E2E8EC] text-[#d4522f] focus:ring-[#d4522f]"
                   />
                   <span>Dossier Éligible Crédit Bancaire</span>
                 </label>
@@ -451,7 +451,7 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
               <button
                 type="button"
                 onClick={() => setActiveTab('cadastre')}
-                className="text-xs text-[#C4785A] font-semibold hover:underline"
+                className="text-xs text-[#d4522f] font-semibold hover:underline"
               >
                 Passer au Passeport Foncier →
               </button>

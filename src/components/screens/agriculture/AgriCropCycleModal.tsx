@@ -128,7 +128,7 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl p-6">
         <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
               <Sprout size={20} />
             </div>
             <div>

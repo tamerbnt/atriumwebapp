@@ -229,7 +229,7 @@ export const MedicalPatientsView: React.FC = () => {
           const hasVigilance = (p.allergies && p.allergies.length > 0) || (p.chronicConditions && p.chronicConditions.length > 0);
           return (
             <div className="flex items-center gap-3 min-w-0 pr-2">
-              <div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
+              <div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
                 {p.fullName.charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0">
@@ -357,7 +357,7 @@ export const MedicalPatientsView: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <UserCheck size={20} />
           </div>
           <div>
@@ -365,7 +365,7 @@ export const MedicalPatientsView: React.FC = () => {
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
                 {language === 'ar' ? 'سجل ودليل المرضى (EHR)' : 'Dossiers Patients & EHR'}
               </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
                 {patients.length} {language === 'ar' ? 'مريض' : 'patients'}
               </span>
             </div>
@@ -559,7 +559,7 @@ export const MedicalPatientsView: React.FC = () => {
                 const hasVigilance = (p.allergies && p.allergies.length > 0) || (p.chronicConditions && p.chronicConditions.length > 0);
                 return (
                   <div className="flex flex-col items-center justify-center w-full">
-                    <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
+                    <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
                       {p.fullName.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex items-center gap-1.5 max-w-[210px] mb-0.5">
@@ -612,7 +612,7 @@ export const MedicalPatientsView: React.FC = () => {
               {/* Drawer Header */}
               <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-800/60 flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-full bg-[#FCEEE8] text-[#C4785A] font-bold text-sm flex items-center justify-center shrink-0 border border-[#F5E2D8]">
+                  <div className="w-10 h-10 rounded-full bg-[#FCEEE8] text-[#d4522f] font-bold text-sm flex items-center justify-center shrink-0 border border-[#F5E2D8]">
                     {selectedPatient.fullName.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
@@ -641,7 +641,7 @@ export const MedicalPatientsView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => handleOpenConsultation(selectedPatient)}
-                  className="flex-1 py-1.5 px-2 rounded-lg bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
+                  className="flex-1 py-1.5 px-2 rounded-lg bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
                 >
                   <Stethoscope size={13} />
                   <span>{language === 'ar' ? 'فحص سريري' : 'Consulter'}</span>
@@ -673,7 +673,7 @@ export const MedicalPatientsView: React.FC = () => {
                   onClick={() => setActiveTab('dossier')}
                   className={`py-2 px-2.5 border-b-2 whitespace-nowrap transition-colors ${
                     activeTab === 'dossier'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -684,7 +684,7 @@ export const MedicalPatientsView: React.FC = () => {
                   onClick={() => setActiveTab('vitals')}
                   className={`py-2 px-2.5 border-b-2 whitespace-nowrap transition-colors flex items-center gap-1 ${
                     activeTab === 'vitals'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -696,7 +696,7 @@ export const MedicalPatientsView: React.FC = () => {
                   onClick={() => setActiveTab('allergies')}
                   className={`py-2 px-2.5 border-b-2 whitespace-nowrap transition-colors ${
                     activeTab === 'allergies'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -707,7 +707,7 @@ export const MedicalPatientsView: React.FC = () => {
                   onClick={() => setActiveTab('labs')}
                   className={`py-2 px-2.5 border-b-2 whitespace-nowrap transition-colors flex items-center gap-1 ${
                     activeTab === 'labs'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -719,7 +719,7 @@ export const MedicalPatientsView: React.FC = () => {
                   onClick={() => setActiveTab('history')}
                   className={`py-2 px-2.5 border-b-2 whitespace-nowrap transition-colors ${
                     activeTab === 'history'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -730,7 +730,7 @@ export const MedicalPatientsView: React.FC = () => {
                   onClick={() => setActiveTab('notes')}
                   className={`py-2 px-2.5 border-b-2 whitespace-nowrap transition-colors ${
                     activeTab === 'notes'
-                      ? 'border-[#C4785A] text-[#C4785A] font-bold'
+                      ? 'border-[#d4522f] text-[#d4522f] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
@@ -840,7 +840,7 @@ export const MedicalPatientsView: React.FC = () => {
                           <div className="p-3 rounded-xl bg-white dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700 shadow-2xs">
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center gap-1.5">
-                                <Activity size={13} className="text-[#C4785A]" />
+                                <Activity size={13} className="text-[#d4522f]" />
                                 <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                                   {language === 'ar' ? 'منحنى ضغط الدم (mmHg)' : 'Courbe Tension Artérielle (mmHg)'}
                                 </span>
@@ -939,7 +939,7 @@ export const MedicalPatientsView: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => setShowAddVitals(true)}
-                              className="w-full py-2 px-3 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:border-[#C4785A] flex items-center justify-center gap-1.5 transition-colors"
+                              className="w-full py-2 px-3 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:border-[#d4522f] flex items-center justify-center gap-1.5 transition-colors"
                             >
                               <Plus size={13} />
                               <span>{language === 'ar' ? 'تسجيل قراءة جديدة' : 'Prendre de nouvelles constantes'}</span>
@@ -1055,7 +1055,7 @@ export const MedicalPatientsView: React.FC = () => {
                                     setShowAddVitals(false);
                                     showToast('Constantes ajoutées au dossier', 'success');
                                   }}
-                                  className="px-3 py-1 bg-[#C4785A] text-white rounded text-xs font-semibold shadow-2xs"
+                                  className="px-3 py-1 bg-[#d4522f] text-white rounded text-xs font-semibold shadow-2xs"
                                 >
                                   Enregistrer
                                 </button>
@@ -1081,7 +1081,7 @@ export const MedicalPatientsView: React.FC = () => {
                           setSelectedLabRecord(null);
                           setIsLabModalOpen(true);
                         }}
-                        className="px-2 py-1 rounded bg-[#C4785A] text-white text-[11px] font-semibold flex items-center gap-1 shadow-2xs"
+                        className="px-2 py-1 rounded bg-[#d4522f] text-white text-[11px] font-semibold flex items-center gap-1 shadow-2xs"
                       >
                         <Plus size={11} />
                         <span>{language === 'ar' ? 'تحليل جديد' : 'Nouveau Bilan'}</span>
@@ -1101,7 +1101,7 @@ export const MedicalPatientsView: React.FC = () => {
                                   setSelectedLabRecord(record);
                                   setIsLabModalOpen(true);
                                 }}
-                                className="p-3 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-[#C4785A] cursor-pointer transition-all shadow-2xs"
+                                className="p-3 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-[#d4522f] cursor-pointer transition-all shadow-2xs"
                               >
                                 <div className="flex items-center justify-between mb-1">
                                   <span className="font-bold text-neutral-900 dark:text-white">
@@ -1119,7 +1119,7 @@ export const MedicalPatientsView: React.FC = () => {
                                 </div>
                                 <div className="text-[11px] text-neutral-400 font-mono flex items-center justify-between">
                                   <span>{record.testDate || record.date} · {record.orderingDoctor || record.doctorName}</span>
-                                  <span className="text-[#C4785A] font-semibold">Voir le bilan →</span>
+                                  <span className="text-[#d4522f] font-semibold">Voir le bilan →</span>
                                 </div>
                               </div>
                             );
@@ -1235,7 +1235,7 @@ export const MedicalPatientsView: React.FC = () => {
                       onChange={(e) => setInspectorNotes(e.target.value)}
                       rows={8}
                       placeholder={language === 'ar' ? 'أدخل ملاحظات الطبيب...' : 'Saisir les remarques médicales, consignes, prescriptions spécifiques...'}
-                      className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-2 focus:ring-[#C4785A] outline-none"
+                      className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-2 focus:ring-[#d4522f] outline-none"
                     />
                     <div className="flex items-center justify-between pt-1">
                       <span className="text-[11px] text-neutral-400">

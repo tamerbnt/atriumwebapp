@@ -242,7 +242,7 @@ export const VenueRentersView: React.FC = () => {
       sortable: true,
       renderCell: (renter) => (
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700">
+          <div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700">
             {renter.fullName.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0">
@@ -400,7 +400,7 @@ export const VenueRentersView: React.FC = () => {
                 onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
                 className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
               >
-                <Home size={15} className="text-[#C4785A]" />
+                <Home size={15} className="text-[#d4522f]" />
                 <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                   {currentBranch?.name || 'Atrium 1'}
                 </span>
@@ -432,12 +432,12 @@ export const VenueRentersView: React.FC = () => {
                         }}
                         className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
                           isCurrent
-                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold'
                             : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
                         }`}
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                          <Building2 size={14} className={isCurrent ? 'text-[#d4522f]' : 'text-neutral-400'} />
                           <span className="truncate">{biz.name}</span>
                         </div>
                         {isCurrent && <Check size={14} />}
@@ -495,7 +495,7 @@ export const VenueRentersView: React.FC = () => {
                   {t('venue_renters_kpi_corporate')}
                 </span>
                 <div className="mt-1">
-                  <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] font-bold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded-full">
                     {corporateCount} {language === 'ar' ? 'شركات وهيئات' : language === 'fr' ? 'entreprises' : 'corporate'}
                   </span>
                 </div>
@@ -557,7 +557,7 @@ export const VenueRentersView: React.FC = () => {
                   onClick={() => setFilterType('All')}
                   className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                     filterType === 'All'
-                      ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                      ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                       : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
@@ -568,7 +568,7 @@ export const VenueRentersView: React.FC = () => {
                   onClick={() => setFilterType('Corporate')}
                   className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                     filterType === 'Corporate'
-                      ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                      ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                       : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
@@ -579,7 +579,7 @@ export const VenueRentersView: React.FC = () => {
                   onClick={() => setFilterType('Individual')}
                   className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                     filterType === 'Individual'
-                      ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                      ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                       : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
@@ -613,7 +613,7 @@ export const VenueRentersView: React.FC = () => {
           {selectedIds.size > 0 && (
             <div className="flex items-center justify-between p-3 px-4 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
               <div className="flex items-center gap-3">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
                 <span className="text-xs font-bold text-neutral-900 dark:text-white">
                   {selectedIds.size} {language === 'ar' ? 'مستأجرين محددين' : language === 'fr' ? 'locataires sélectionnés' : 'renters selected'}
                 </span>
@@ -683,7 +683,7 @@ export const VenueRentersView: React.FC = () => {
                 ]}
                 renderCard={(renter) => (
                   <div className="flex flex-col items-center justify-center w-full">
-                    <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
+                    <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
                       {renter.fullName.charAt(0).toUpperCase()}
                     </div>
                     <h3 className="text-base font-bold text-neutral-900 dark:text-white truncate max-w-[210px] mb-0.5 tracking-tight">
@@ -699,7 +699,7 @@ export const VenueRentersView: React.FC = () => {
                         <span className="text-[11px] text-neutral-400 uppercase font-medium">
                           {renter.totalBookings} {language === 'ar' ? 'حجز' : 'bookings'}
                         </span>
-                        <span className="font-bold text-[#C4785A] tabular-nums font-mono">
+                        <span className="font-bold text-[#d4522f] tabular-nums font-mono">
                           {formatCurrencyAmount(renter.totalSpent, renter.currency)}
                         </span>
                       </div>
@@ -715,7 +715,7 @@ export const VenueRentersView: React.FC = () => {
                 {/* Header */}
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-12 h-12 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-lg font-black shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
+                    <div className="w-12 h-12 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-lg font-black shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
                       {activeRenter.fullName.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
@@ -744,7 +744,7 @@ export const VenueRentersView: React.FC = () => {
                       setBookingRenterId(activeRenter.id);
                       setIsBookingModalOpen(true);
                     }}
-                    className="flex-1 py-1.5 px-3 rounded-xl bg-[#C4785A] hover:bg-[#B3684A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                    className="flex-1 py-1.5 px-3 rounded-xl bg-[#d4522f] hover:bg-[#B3684A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
                   >
                     <Calendar size={13} />
                     <span>{language === 'ar' ? 'حجز قاعة' : language === 'fr' ? 'Réserver' : 'Book'}</span>
@@ -766,7 +766,7 @@ export const VenueRentersView: React.FC = () => {
                     onClick={() => setDrawerTab('dossier')}
                     className={`flex-1 py-1 text-center rounded-lg transition-all ${
                       drawerTab === 'dossier'
-                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        ? 'bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                         : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
@@ -777,7 +777,7 @@ export const VenueRentersView: React.FC = () => {
                     onClick={() => setDrawerTab('bookings')}
                     className={`flex-1 py-1 text-center rounded-lg transition-all ${
                       drawerTab === 'bookings'
-                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        ? 'bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                         : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
@@ -788,7 +788,7 @@ export const VenueRentersView: React.FC = () => {
                     onClick={() => setDrawerTab('finances')}
                     className={`flex-1 py-1 text-center rounded-lg transition-all ${
                       drawerTab === 'finances'
-                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        ? 'bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                         : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
@@ -799,7 +799,7 @@ export const VenueRentersView: React.FC = () => {
                     onClick={() => setDrawerTab('notes')}
                     className={`flex-1 py-1 text-center rounded-lg transition-all ${
                       drawerTab === 'notes'
-                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        ? 'bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                         : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
@@ -844,7 +844,7 @@ export const VenueRentersView: React.FC = () => {
                   <div className="space-y-2.5 text-xs animate-in fade-in duration-150">
                     <div className="flex items-center justify-between">
                       <span className="text-neutral-500 font-medium">Historique & Prévues</span>
-                      <span className="font-bold text-[#C4785A]">
+                      <span className="font-bold text-[#d4522f]">
                         {rentalBookings.filter((b) => b.renterId === activeRenter.id).length} réservations
                       </span>
                     </div>
@@ -861,7 +861,7 @@ export const VenueRentersView: React.FC = () => {
                             <div key={b.id} className="p-2.5 bg-neutral-50 dark:bg-neutral-800/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-1">
                               <div className="flex items-center justify-between font-semibold">
                                 <span className="text-neutral-900 dark:text-white truncate max-w-[170px]">{b.purpose || 'Séance de réservation'}</span>
-                                <span className="font-mono text-[#C4785A]">{formatCurrencyAmount(b.totalAmount, b.currency)}</span>
+                                <span className="font-mono text-[#d4522f]">{formatCurrencyAmount(b.totalAmount, b.currency)}</span>
                               </div>
                               <div className="flex items-center justify-between text-[11px] text-neutral-400">
                                 <span>{new Date(b.startDateTime).toLocaleDateString()}</span>
@@ -922,7 +922,7 @@ export const VenueRentersView: React.FC = () => {
                       value={renterNotes}
                       onChange={(e) => handleNotesChange(e.target.value)}
                       placeholder="Exigences techniques, sonorisation, badges sécurité, consignes traiteur..."
-                      className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/60 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4785A]"
+                      className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/60 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
                     />
                   </div>
                 )}
@@ -1012,7 +1012,7 @@ export const VenueRentersView: React.FC = () => {
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder={language === 'ar' ? 'متطلبات تقنية، سجل المدفوعات...' : language === 'fr' ? 'Exigences techniques, historique...' : 'Technical needs, catering...'}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4785A]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
                 />
               </div>
 

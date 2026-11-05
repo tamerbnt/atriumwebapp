@@ -409,9 +409,9 @@ export const FreelanceTimeTrackerView: React.FC = () => {
         const isPinned = pinnedLogIds.has(entry.id);
         return (
           <div className="flex items-center gap-2">
-            {isPinned && <span className="w-1.5 h-5 rounded-full bg-[#C4785A] shrink-0" />}
+            {isPinned && <span className="w-1.5 h-5 rounded-full bg-[#d4522f] shrink-0" />}
             <span className="text-xs text-neutral-500 tabular-nums">{entry.date}</span>
-            {isPinned && <Pin size={11} className="text-[#C4785A] shrink-0" />}
+            {isPinned && <Pin size={11} className="text-[#d4522f] shrink-0" />}
           </div>
         );
       },
@@ -442,7 +442,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             {entry.taskDescription}
           </span>
           {entry.deliverableTitle && (
-            <span className="text-[10px] text-[#C4785A] truncate block mt-0.5">
+            <span className="text-[10px] text-[#d4522f] truncate block mt-0.5">
               {t('free_time_milestone_prefix', language)}: {entry.deliverableTitle}
             </span>
           )}
@@ -591,7 +591,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
               className="h-9 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
             >
-              <Building2 size={13} className="text-[#C4785A]" />
+              <Building2 size={13} className="text-[#d4522f]" />
               <span className="truncate max-w-[130px]">
                 {currentBusiness?.name || 'Studio Main'}
               </span>
@@ -617,12 +617,12 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                       }}
                       className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center justify-between transition-colors ${
                         isCurrent
-                          ? 'bg-[#C4785A]/10 text-[#C4785A]'
+                          ? 'bg-[#d4522f]/10 text-[#d4522f]'
                           : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <Building2 size={13} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                        <Building2 size={13} className={isCurrent ? 'text-[#d4522f]' : 'text-neutral-400'} />
                         <span className="truncate">{biz.name}</span>
                       </div>
                       {isCurrent && <Check size={13} />}
@@ -660,7 +660,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
       {/* Main Digital Chronometer Console */}
       <div className="p-6 sm:p-8 rounded-3xl bg-neutral-900 dark:bg-black text-white border border-neutral-800 shadow-xl relative overflow-hidden">
         {/* Subtle terracotta ambient glow */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#C4785A]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#d4522f]/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
           {/* Left: Huge Digital Counter */}
@@ -700,7 +700,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               <button
                 type="button"
                 onClick={handleStartFocusTimer}
-                className="h-14 px-8 rounded-2xl bg-[#C4785A] text-white text-sm font-bold flex items-center gap-2.5 hover:opacity-90 transition-opacity cursor-pointer shadow-lg hover:shadow-[#C4785A]/20"
+                className="h-14 px-8 rounded-2xl bg-[#d4522f] text-white text-sm font-bold flex items-center gap-2.5 hover:opacity-90 transition-opacity cursor-pointer shadow-lg hover:shadow-[#d4522f]/20"
               >
                 <Play size={18} className="fill-current" />
                 <span>{t('free_time_timer_start', language)}</span>
@@ -803,7 +803,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                   type="checkbox"
                   checked={isBillable}
                   onChange={(e) => setIsBillable(e.target.checked)}
-                  className="rounded text-[#C4785A] focus:ring-0"
+                  className="rounded text-[#d4522f] focus:ring-0"
                 />
                 <span>{t('free_time_billable', language)}</span>
               </label>
@@ -898,7 +898,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Clock size={16} className="text-[#C4785A]" />
+            <Clock size={16} className="text-[#d4522f]" />
             <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
               {t('free_time_recent_logs', language)}
             </h3>
@@ -919,7 +919,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleBillClientUnbilled(unbilledLogs[0].clientId)}
-                className="h-9 px-3.5 rounded-full bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-2xs shrink-0"
+                className="h-9 px-3.5 rounded-full bg-[#d4522f] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-2xs shrink-0"
               >
                 <FileText size={13} />
                 <span>{t('free_clients_quick_bill', language)} ({unbilledHours}h)</span>
@@ -932,7 +932,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
         {selectedLogIds.size > 0 && (
           <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-neutral-900 text-white shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-150">
             <div className="flex items-center gap-3 text-xs font-semibold">
-              <span className="px-2 py-0.5 rounded-full bg-[#C4785A] text-white font-bold text-[11px]">
+              <span className="px-2 py-0.5 rounded-full bg-[#d4522f] text-white font-bold text-[11px]">
                 {selectedLogIds.size}
               </span>
               <span>{language === 'ar' ? 'جلسة محددة' : language === 'fr' ? 'sessions sélectionnées' : 'sessions selected'}</span>
@@ -995,13 +995,13 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 className="p-5 rounded-[22px] border border-[#E9EEF0] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 shadow-2xs relative space-y-3"
               >
                 {isPinned && (
-                  <div className="absolute top-3 left-3 text-[#C4785A]">
-                    <Pin size={12} className="fill-[#C4785A]" />
+                  <div className="absolute top-3 left-3 text-[#d4522f]">
+                    <Pin size={12} className="fill-[#d4522f]" />
                   </div>
                 )}
 
                 <div className="flex items-center justify-between pl-4">
-                  <span className="font-mono text-base font-black text-[#C4785A] tabular-nums">
+                  <span className="font-mono text-base font-black text-[#d4522f] tabular-nums">
                     {formatDuration(entry.durationSeconds)}
                   </span>
                   <span className="text-xs text-neutral-400 tabular-nums">{entry.date}</span>
@@ -1214,7 +1214,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                   onChange={(e) =>
                     setManualForm({ ...manualForm, isBillable: e.target.checked })
                   }
-                  className="rounded text-[#C4785A]"
+                  className="rounded text-[#d4522f]"
                 />
                 <label
                   htmlFor="billableManual"
@@ -1346,7 +1346,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                   onChange={(e) =>
                     setEditLogForm({ ...editLogForm, isBillable: e.target.checked })
                   }
-                  className="rounded text-[#C4785A]"
+                  className="rounded text-[#d4522f]"
                 />
                 <label
                   htmlFor="billableEdit"

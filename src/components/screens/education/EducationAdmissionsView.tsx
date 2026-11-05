@@ -165,14 +165,14 @@ export const EducationAdmissionsView: React.FC = () => {
       sortable: true,
       renderCell: (lead) => (
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700">
+          <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700">
             {lead.studentName.charAt(0)}
           </div>
           <div className="min-w-0">
             <div className="font-bold text-neutral-900 dark:text-white truncate">
               {lead.studentName}
             </div>
-            <div className="text-[11px] text-[#C4785A] font-medium truncate">
+            <div className="text-[11px] text-[#d4522f] font-medium truncate">
               {lead.desiredCourseTitle}
             </div>
           </div>
@@ -218,7 +218,7 @@ export const EducationAdmissionsView: React.FC = () => {
       renderCell: (lead) => (
         <span className="text-xs text-neutral-600 dark:text-neutral-400">
           {lead.placementScore ? (
-            <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A]">
+            <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f]">
               {lead.placementScore}
             </span>
           ) : (
@@ -253,7 +253,7 @@ export const EducationAdmissionsView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setConversionLead(lead)}
-                className="p-1 rounded-md bg-[#C4785A] text-white hover:opacity-90 shadow-2xs"
+                className="p-1 rounded-md bg-[#d4522f] text-white hover:opacity-90 shadow-2xs"
                 title={t('edu_btn_convert_student')}
               >
                 <UserCheck size={12} />
@@ -376,7 +376,7 @@ export const EducationAdmissionsView: React.FC = () => {
         {/* Row 0 — Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
               <ClipboardList size={22} />
             </div>
             <div>
@@ -396,7 +396,7 @@ export const EducationAdmissionsView: React.FC = () => {
                 onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
                 className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
               >
-                <Home size={15} className="text-[#C4785A]" />
+                <Home size={15} className="text-[#d4522f]" />
                 <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                   {currentBranch?.name || 'Campus 1'}
                 </span>
@@ -428,12 +428,12 @@ export const EducationAdmissionsView: React.FC = () => {
                         }}
                         className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
                           isCurrent
-                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold'
                             : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
                         }`}
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                          <Building2 size={14} className={isCurrent ? 'text-[#d4522f]' : 'text-neutral-400'} />
                           <span className="truncate">{biz.name}</span>
                         </div>
                         {isCurrent && <Check size={14} />}
@@ -451,7 +451,7 @@ export const EducationAdmissionsView: React.FC = () => {
                 onClick={() => setViewLayout('kanban')}
                 className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer ${
                   viewLayout === 'kanban'
-                    ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-2xs'
+                    ? 'bg-white dark:bg-neutral-900 text-[#d4522f] shadow-2xs'
                     : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
@@ -463,7 +463,7 @@ export const EducationAdmissionsView: React.FC = () => {
                 onClick={() => setViewLayout('collection')}
                 className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer ${
                   viewLayout === 'collection'
-                    ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-2xs'
+                    ? 'bg-white dark:bg-neutral-900 text-[#d4522f] shadow-2xs'
                     : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
@@ -488,7 +488,7 @@ export const EducationAdmissionsView: React.FC = () => {
         {selectedLeadIds.size > 0 && (
           <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
             <div className="flex items-center gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
               <span className="text-xs font-bold text-neutral-900 dark:text-white">
                 {selectedLeadIds.size} {language === 'ar' ? 'طلبات تسجيل محددة' : language === 'fr' ? 'dossiers sélectionnés' : 'leads selected'}
               </span>
@@ -679,13 +679,13 @@ export const EducationAdmissionsView: React.FC = () => {
               }}
               renderCard={(lead) => (
                 <div className="flex flex-col items-center justify-center w-full">
-                  <div className="w-20 h-20 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-[28px] font-bold shadow-md mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
+                  <div className="w-20 h-20 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-[28px] font-bold shadow-md mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
                     {lead.studentName.charAt(0)}
                   </div>
                   <h3 className="text-[16px] font-bold text-neutral-900 dark:text-white truncate max-w-[210px] mb-1 tracking-tight text-center">
                     {lead.studentName}
                   </h3>
-                  <span className="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] border border-[#F5E2D8] dark:border-neutral-700 mb-2 truncate max-w-[200px]">
+                  <span className="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700 mb-2 truncate max-w-[200px]">
                     {lead.desiredCourseTitle}
                   </span>
 
@@ -695,7 +695,7 @@ export const EducationAdmissionsView: React.FC = () => {
                       <div className="text-neutral-400 text-[11px]">Guardian: {lead.guardianName}</div>
                     )}
                     {lead.placementScore && (
-                      <div className="text-[11px] font-semibold text-[#C4785A]">{lead.placementScore}</div>
+                      <div className="text-[11px] font-semibold text-[#d4522f]">{lead.placementScore}</div>
                     )}
                     <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
                       <span className="text-[11px] text-neutral-400">Stage:</span>
@@ -767,20 +767,20 @@ export const EducationAdmissionsView: React.FC = () => {
                     {leadsInStage.map((lead) => (
                       <div
                         key={lead.id}
-                        className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-2xs hover:border-[#C4785A]/50 transition-all space-y-2 group"
+                        className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-2xs hover:border-[#d4522f]/50 transition-all space-y-2 group"
                       >
                         <div>
                           <div className="flex items-center justify-between">
-                            <span className="font-bold text-neutral-900 dark:text-white text-xs group-hover:text-[#C4785A] transition-colors">
+                            <span className="font-bold text-neutral-900 dark:text-white text-xs group-hover:text-[#d4522f] transition-colors">
                               {lead.studentName}
                             </span>
                             {lead.placementScore && (
-                              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A]">
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f]">
                                 Score: {lead.placementScore}
                               </span>
                             )}
                           </div>
-                          <span className="text-[11px] font-medium text-[#C4785A] block mt-0.5">
+                          <span className="text-[11px] font-medium text-[#d4522f] block mt-0.5">
                             {lead.desiredCourseTitle}
                           </span>
                         </div>
@@ -806,7 +806,7 @@ export const EducationAdmissionsView: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => setConversionLead(lead)}
-                              className="w-full py-1.5 px-2 rounded-lg bg-[#C4785A] text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-90 shadow-2xs"
+                              className="w-full py-1.5 px-2 rounded-lg bg-[#d4522f] text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-90 shadow-2xs"
                             >
                               <UserCheck size={12} />
                               <span>{t('edu_btn_convert_student')}</span>
@@ -902,7 +902,7 @@ export const EducationAdmissionsView: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleConfirmConversion}
-                  className="px-5 py-2 rounded-xl bg-[#C4785A] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                  className="px-5 py-2 rounded-xl bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
                   {t('edu_btn_convert_student')}
                 </button>
@@ -1026,7 +1026,7 @@ export const EducationAdmissionsView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#C4785A] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                  className="px-5 py-2 rounded-xl bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
                   {t('edu_btn_new_lead')}
                 </button>

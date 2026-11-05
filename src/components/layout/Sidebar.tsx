@@ -1963,7 +1963,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           footer={
             category === 'project_milestone' ? (
               <div className="flex flex-col items-center gap-1 px-2">
-                <div className="w-7 h-7 rounded-lg bg-[#C4785A] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                <div className="w-7 h-7 rounded-lg bg-[#d4522f] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
                   {activePmRole === 'direction' ? 'D' : activePmRole === 'chef_projet' ? 'Y' : activePmRole === 'crea' ? 'M' : activePmRole === 'superviseur' ? 'S' : activePmRole === 'rh' ? 'R' : 'N'}
                 </div>
                 <span className="text-[9px] text-[#A1A1AA] truncate tracking-wider uppercase font-semibold">

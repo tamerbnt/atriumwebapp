@@ -33,7 +33,7 @@ export const AppointmentStaffView: React.FC = () => {
               {member.chairOrStudio && (
                 <>
                   <span>·</span>
-                  <span className="text-[#C4785A] font-medium">{member.chairOrStudio}</span>
+                  <span className="text-[#d4522f] font-medium">{member.chairOrStudio}</span>
                 </>
               )}
             </div>
@@ -116,7 +116,7 @@ export const AppointmentStaffView: React.FC = () => {
       header: isAr ? 'نسبة العمولة' : isEn ? 'Commission %' : 'Commission Prestations',
       accessorKey: 'serviceCommissionRate',
       cell: (member) => (
-        <span className="text-xs font-semibold text-[#C4785A]">
+        <span className="text-xs font-semibold text-[#d4522f]">
           {member.serviceCommissionRate ? `${member.serviceCommissionRate}%` : 'Standard'}
         </span>
       ),

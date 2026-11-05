@@ -115,7 +115,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gradient-to-br from-[#121110] via-[#1A1715] to-[#26211C] overflow-y-auto select-none">
       {/* Background Subtle Ambient Glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#C4785A]/15 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#d4522f]/15 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Floating Language Switcher in Top Right */}
       <div className="absolute top-5 right-5 z-20">
@@ -125,7 +125,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             onClick={() => setLangMenuOpen(!langMenuOpen)}
             className="h-9 px-3 rounded-full bg-neutral-900/90 border border-neutral-700/80 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-800 transition-colors cursor-pointer shadow-lg backdrop-blur-md"
           >
-            <Globe size={14} className="text-[#C4785A]" />
+            <Globe size={14} className="text-[#d4522f]" />
             <span className="uppercase text-[11px] font-bold">
               {language === 'ar' ? 'العربية' : language === 'fr' ? 'Français' : 'English'}
             </span>
@@ -143,7 +143,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                   setLangMenuOpen(false);
                 }}
                 className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                  isLanguageAuto ? 'bg-[#C4785A]/20 text-[#C4785A] font-bold' : 'text-neutral-300 hover:bg-neutral-800'
+                  isLanguageAuto ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-neutral-300 hover:bg-neutral-800'
                 }`}
               >
                 <span>🌐 {t('settings_system_default', language)}</span>
@@ -157,7 +157,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                   setLangMenuOpen(false);
                 }}
                 className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                  !isLanguageAuto && language === 'en' ? 'bg-[#C4785A]/20 text-[#C4785A] font-bold' : 'text-neutral-300 hover:bg-neutral-800'
+                  !isLanguageAuto && language === 'en' ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-neutral-300 hover:bg-neutral-800'
                 }`}
               >
                 <span>🇺🇸 English (US)</span>
@@ -170,7 +170,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                   setLangMenuOpen(false);
                 }}
                 className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                  !isLanguageAuto && language === 'fr' ? 'bg-[#C4785A]/20 text-[#C4785A] font-bold' : 'text-neutral-300 hover:bg-neutral-800'
+                  !isLanguageAuto && language === 'fr' ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-neutral-300 hover:bg-neutral-800'
                 }`}
               >
                 <span>🇫🇷 Français</span>
@@ -183,7 +183,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                   setLangMenuOpen(false);
                 }}
                 className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                  !isLanguageAuto && language === 'ar' ? 'bg-[#C4785A]/20 text-[#C4785A] font-bold' : 'text-neutral-300 hover:bg-neutral-800'
+                  !isLanguageAuto && language === 'ar' ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-neutral-300 hover:bg-neutral-800'
                 }`}
               >
                 <span>🇩🇿 العربية (RTL)</span>
@@ -199,7 +199,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
         {/* Atrium Brand Emblem */}
         <div className="flex flex-col items-center text-center mb-6">
           <div className="w-14 h-14 rounded-2xl bg-[#2A2420] border border-[#483B33] flex items-center justify-center p-2.5 mb-3.5 shadow-md">
-            <FiveCubesLogo size={28} cubeColor="#C4785A" />
+            <FiveCubesLogo size={28} cubeColor="#d4522f" />
           </div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-black tracking-tight text-white">ATRIUM</h1>
@@ -245,7 +245,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             className="w-full h-9 px-3 rounded-xl bg-[#2A2420] hover:bg-[#342D28] border border-[#483B33] text-white text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             title="Instant sign-in without Google OAuth"
           >
-            <Sparkles size={13} className="text-[#C4785A]" />
+            <Sparkles size={13} className="text-[#d4522f]" />
             <span>{t('login_fast_access', language)}</span>
           </button>
         </div>
@@ -268,7 +268,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             }}
             className={`py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 ${
               authMode === 'password'
-                ? 'bg-[#C4785A] text-white shadow-xs font-bold'
+                ? 'bg-[#d4522f] text-white shadow-xs font-bold'
                 : 'text-neutral-400 hover:text-white'
             }`}
           >
@@ -283,7 +283,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             }}
             className={`py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 ${
               authMode === 'pin'
-                ? 'bg-[#C4785A] text-white shadow-xs font-bold'
+                ? 'bg-[#d4522f] text-white shadow-xs font-bold'
                 : 'text-neutral-400 hover:text-white'
             }`}
           >
@@ -323,7 +323,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                 <button
                   type="button"
                   onClick={() => setForgotPasswordOpen(true)}
-                  className="text-[11px] text-[#C4785A] hover:underline cursor-pointer"
+                  className="text-[11px] text-[#d4522f] hover:underline cursor-pointer"
                 >
                   {language === 'ar' ? 'نسيت كلمة المرور؟' : language === 'fr' ? 'Mot de passe oublié ?' : 'Forgot password?'}
                 </button>
@@ -346,7 +346,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                   type="checkbox"
                   checked={rememberDevice}
                   onChange={(e) => setRememberDevice(e.target.checked)}
-                  className="rounded border-neutral-700 text-[#C4785A] focus:ring-0"
+                  className="rounded border-neutral-700 text-[#d4522f] focus:ring-0"
                 />
                 <span>{language === 'ar' ? 'تذكر هذا الجهاز' : language === 'fr' ? 'Mémoriser ce terminal' : 'Remember this terminal'}</span>
               </label>
@@ -383,7 +383,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                       key={idx}
                       className={`w-4 h-4 rounded-full transition-all ${
                         isFilled
-                          ? 'bg-[#C4785A] scale-110 shadow-xs'
+                          ? 'bg-[#d4522f] scale-110 shadow-xs'
                           : 'bg-neutral-800 border border-neutral-700'
                       }`}
                     />
@@ -438,7 +438,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
           <button
             type="button"
             onClick={onStartOnboarding}
-            className="mt-2 text-xs font-bold text-[#C4785A] hover:text-[#d68565] flex items-center justify-center gap-1.5 mx-auto transition-colors cursor-pointer"
+            className="mt-2 text-xs font-bold text-[#d4522f] hover:text-[#b03b1b] flex items-center justify-center gap-1.5 mx-auto transition-colors cursor-pointer"
           >
             <Sparkles size={13} />
             <span>{language === 'ar' ? 'بدء معالج التهيئة متعدد المراحل' : language === 'fr' ? 'Lancer l\'assistant de configuration' : 'Start Multi-Step Business Onboarding'}</span>
@@ -470,7 +470,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             <button
               type="button"
               onClick={() => setForgotPasswordOpen(false)}
-              className="w-full h-10 rounded-xl bg-[#C4785A] text-white text-xs font-bold cursor-pointer"
+              className="w-full h-10 rounded-xl bg-[#d4522f] text-white text-xs font-bold cursor-pointer"
             >
               {language === 'ar' ? 'العودة لتسجيل الدخول' : language === 'fr' ? 'Retour à la connexion' : 'Back to Sign In'}
             </button>

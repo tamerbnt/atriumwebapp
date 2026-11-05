@@ -155,7 +155,7 @@ export const AppointmentHistoryView: React.FC = () => {
           <span className="font-bold text-neutral-900 dark:text-white font-mono block">
             {apt.date}
           </span>
-          <span className="text-[11px] text-[#C4785A] font-bold font-mono">
+          <span className="text-[11px] text-[#d4522f] font-bold font-mono">
             {apt.startTime} ({apt.durationMinutes}m)
           </span>
         </div>
@@ -263,7 +263,7 @@ export const AppointmentHistoryView: React.FC = () => {
           <button
             type="button"
             onClick={() => setReceiptAppointment(apt)}
-            className="p-1.5 text-neutral-400 hover:text-[#C4785A] hover:bg-[#FCEEE8] dark:hover:bg-neutral-800 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-neutral-400 hover:text-[#d4522f] hover:bg-[#FCEEE8] dark:hover:bg-neutral-800 rounded-lg transition-colors cursor-pointer"
             title="Ticket Thermique 80mm"
           >
             <Printer className="w-3.5 h-3.5" />
@@ -320,7 +320,7 @@ export const AppointmentHistoryView: React.FC = () => {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
-              <History className="text-[#C4785A]" size={26} />
+              <History className="text-[#d4522f]" size={26} />
               <span>Historique & Traçabilité des Rendez-vous</span>
             </h1>
             <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
@@ -346,7 +346,7 @@ export const AppointmentHistoryView: React.FC = () => {
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-[#E9EEF0] dark:border-neutral-800">
           <div className="flex items-center gap-2">
-            <Activity size={18} className="text-[#C4785A]" />
+            <Activity size={18} className="text-[#d4522f]" />
             <h2 className="text-xs font-black uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
               Registre d'Audit & Performances Historiques
             </h2>
@@ -502,7 +502,7 @@ export const AppointmentHistoryView: React.FC = () => {
                   <div className="font-bold text-xs text-neutral-900 dark:text-white">
                     {apt.clientName}
                   </div>
-                  <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
+                  <div className="text-[11px] text-[#d4522f] font-semibold mt-0.5">
                     {apt.serviceName}
                   </div>
 
@@ -584,7 +584,7 @@ export const AppointmentHistoryView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="h-9 px-4 rounded-full bg-[#C4785A] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                className="h-9 px-4 rounded-full bg-[#d4522f] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
               >
                 <Printer size={13} />
                 <span>Imprimer 80mm</span>

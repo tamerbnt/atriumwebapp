@@ -232,7 +232,7 @@ export const FreelanceInvoicesView: React.FC = () => {
             <FileText size={16} />
           </div>
           <div className="min-w-0">
-            <div className="font-semibold text-neutral-900 dark:text-white font-mono hover:text-[#C4785A] transition-colors">
+            <div className="font-semibold text-neutral-900 dark:text-white font-mono hover:text-[#d4522f] transition-colors">
               {inv.invoiceNumber}
             </div>
             <div className="text-[11px] text-neutral-400 truncate flex items-center gap-1.5">
@@ -240,7 +240,7 @@ export const FreelanceInvoicesView: React.FC = () => {
               {inv.clientCompany && (
                 <>
                   <span>·</span>
-                  <span className="text-[#C4785A] font-medium">{inv.clientCompany}</span>
+                  <span className="text-[#d4522f] font-medium">{inv.clientCompany}</span>
                 </>
               )}
             </div>
@@ -274,7 +274,7 @@ export const FreelanceInvoicesView: React.FC = () => {
       minWidth: '140px',
       sortable: true,
       renderCell: (inv) => (
-        <span className="font-mono font-bold text-sm text-[#C4785A] tabular-nums">
+        <span className="font-mono font-bold text-sm text-[#d4522f] tabular-nums">
           {formatCurrencyAmount(inv.totalAmount, inv.currency)}
         </span>
       ),
@@ -435,7 +435,7 @@ export const FreelanceInvoicesView: React.FC = () => {
       {/* Row 0: Workspace Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-[#C4785A]/10 text-[#C4785A] flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center shrink-0">
             <FileText size={24} />
           </div>
           <div>
@@ -458,7 +458,7 @@ export const FreelanceInvoicesView: React.FC = () => {
               onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
               className="h-[42px] px-4 rounded-[14px] bg-[#F8F9FA] dark:bg-neutral-800 border border-[#EDF1F3] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shadow-2xs"
             >
-              <Home size={15} className="text-[#C4785A]" />
+              <Home size={15} className="text-[#d4522f]" />
               <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                 {currentBranch?.name || 'Studio Main'}
               </span>
@@ -487,12 +487,12 @@ export const FreelanceInvoicesView: React.FC = () => {
                       }}
                       className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
                         isCurrent
-                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold'
                           : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                        <Building2 size={14} className={isCurrent ? 'text-[#d4522f]' : 'text-neutral-400'} />
                         <span className="truncate">{biz.name}</span>
                       </div>
                       {isCurrent && <Check size={14} />}
@@ -508,7 +508,7 @@ export const FreelanceInvoicesView: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsQuickActionsOpen(!isQuickActionsOpen)}
-              className="h-[42px] px-5 rounded-[14px] bg-[#C4785A] hover:bg-[#B3684A] text-white font-bold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all active:scale-95"
+              className="h-[42px] px-5 rounded-[14px] bg-[#d4522f] hover:bg-[#B3684A] text-white font-bold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all active:scale-95"
             >
               <Plus size={15} />
               <span>{language === 'ar' ? 'إجراءات سريعة' : language === 'fr' ? 'Actions Rapides' : 'Quick Actions'}</span>
@@ -527,7 +527,7 @@ export const FreelanceInvoicesView: React.FC = () => {
                   }}
                   className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F8F9FA] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
                 >
-                  <div className="w-[30px] h-[30px] rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center shrink-0">
+                  <div className="w-[30px] h-[30px] rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center shrink-0">
                     <Plus size={15} />
                   </div>
                   <span>{t('free_inv_btn_new', language)}</span>
@@ -758,7 +758,7 @@ export const FreelanceInvoicesView: React.FC = () => {
         {selectedInvoiceIds.size > 0 && (
           <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
             <div className="flex items-center gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
               <span className="text-xs font-bold text-neutral-900 dark:text-white">
                 {selectedInvoiceIds.size} {language === 'ar' ? 'فواتير محددة' : language === 'fr' ? 'factures sélectionnées' : 'invoices selected'}
               </span>
@@ -853,7 +853,7 @@ export const FreelanceInvoicesView: React.FC = () => {
                   <Calendar size={11} />
                   {t('free_inv_table_due', language)}: {inv.dueDate}
                 </span>
-                <span className="font-mono font-black text-sm text-[#C4785A] tabular-nums">
+                <span className="font-mono font-black text-sm text-[#d4522f] tabular-nums">
                   {formatCurrencyAmount(inv.totalAmount, inv.currency)}
                 </span>
               </div>
@@ -917,7 +917,7 @@ export const FreelanceInvoicesView: React.FC = () => {
             id: 'print',
             tooltip: t('free_inv_doc_print', language),
             icon: <Printer size={13} />,
-            iconColor: '#C4785A',
+            iconColor: '#d4522f',
             onClick: (e: React.MouseEvent) => {
               e.stopPropagation();
               setPreviewInvoice(inv);
@@ -1030,7 +1030,7 @@ export const FreelanceInvoicesView: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleAddItemRow}
-                    className="text-[#C4785A] hover:underline font-semibold cursor-pointer"
+                    className="text-[#d4522f] hover:underline font-semibold cursor-pointer"
                   >
                     + {t('free_inv_btn_add_line', language)}
                   </button>
@@ -1106,7 +1106,7 @@ export const FreelanceInvoicesView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                  className="px-5 py-2 rounded-xl bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
                   {t('free_inv_btn_new', language)}
                 </button>

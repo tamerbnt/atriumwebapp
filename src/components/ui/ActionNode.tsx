@@ -88,7 +88,7 @@ export const ActionNode: React.FC<ActionNodeProps> = ({
       {/* ── THE CARD ────────────────────────────────────── */}
       <div
         className={`nod-card cursor-pointer select-none ${
-          selected ? "ring-2 ring-[#C4785A] border-transparent" : ""
+          selected ? "ring-2 ring-[#d4522f] border-transparent" : ""
         }`}
         data-on={isHovered ? "true" : "false"}
         onClick={onClick}
@@ -114,7 +114,7 @@ export const ActionNode: React.FC<ActionNodeProps> = ({
               {title}
             </div>
             {tag && (
-              <span className="inline-block mt-0.5 text-[10.5px] font-bold text-[#C4785A] tracking-wider uppercase">
+              <span className="inline-block mt-0.5 text-[10.5px] font-bold text-[#d4522f] tracking-wider uppercase">
                 {tag}
               </span>
             )}

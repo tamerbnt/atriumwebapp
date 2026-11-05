@@ -32,7 +32,7 @@ export const NotarySimulatorModal: React.FC<NotarySimulatorModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#E2E8EC] dark:border-[#27272A] mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
               <Landmark className="w-5 h-5" />
             </div>
             <div>
@@ -73,10 +73,10 @@ export const NotarySimulatorModal: React.FC<NotarySimulatorModalProps> = ({
         {/* Results Card */}
         <div className="p-5 rounded-2xl bg-[#F8F9FA] dark:bg-[#141416] border border-[#EDF1F3] dark:border-[#232328] space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs uppercase font-bold text-[#C4785A] tracking-wider">
+            <span className="text-xs uppercase font-bold text-[#d4522f] tracking-wider">
               Décomposition Détaillée de l'Acquisition
             </span>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
               Taux Moyen: ~{sim.effectivePercentage}% du prix
             </span>
           </div>
@@ -148,7 +148,7 @@ export const NotarySimulatorModal: React.FC<NotarySimulatorModalProps> = ({
             </div>
 
             {/* Total Frais de Clôture */}
-            <div className="flex justify-between items-center pt-2 text-[#C4785A]">
+            <div className="flex justify-between items-center pt-2 text-[#d4522f]">
               <span className="font-bold text-sm">Total des Frais de Notaire & Taxes</span>
               <span className="font-mono font-bold text-lg">
                 {sim.totalClosingCostsDzd.toLocaleString()} DZD
@@ -156,7 +156,7 @@ export const NotarySimulatorModal: React.FC<NotarySimulatorModalProps> = ({
             </div>
 
             {/* Total Budget Global */}
-            <div className="p-3 rounded-xl bg-white dark:bg-[#18181B] border border-[#C4785A]/30 flex justify-between items-center mt-2">
+            <div className="p-3 rounded-xl bg-white dark:bg-[#18181B] border border-[#d4522f]/30 flex justify-between items-center mt-2">
               <div>
                 <span className="text-[11px] uppercase font-bold text-[#64748B] dark:text-[#A1A1AA]">
                   Budget Global d'Acquisition (Prix + Frais)

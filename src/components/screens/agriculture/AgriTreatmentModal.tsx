@@ -212,7 +212,7 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
         <div className="mt-4 p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl border border-neutral-100 dark:border-neutral-800">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-bold text-neutral-600 dark:text-neutral-300 flex items-center gap-1.5">
-              <Zap size={13} className="text-[#C4785A]" />
+              <Zap size={13} className="text-[#d4522f]" />
               {isAr ? 'مواد معتمدة ومطابقة لوزارة الفلاحة (INPV)' : 'Produits Homologués INPV Algérie (Pré-remplissage 1-clic)'}
             </span>
           </div>
@@ -224,8 +224,8 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
                 onClick={() => handleApplyPreset(p)}
                 className={`text-[10.5px] px-2.5 py-1 rounded-lg border transition font-medium ${
                   productName === p.name
-                    ? 'bg-[#C4785A] text-white border-[#C4785A]'
-                    : 'bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:border-[#C4785A]'
+                    ? 'bg-[#d4522f] text-white border-[#d4522f]'
+                    : 'bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:border-[#d4522f]'
                 }`}
               >
                 {p.name} <span className="opacity-70 text-[9.5px]">({p.darDays}j DAR)</span>
@@ -344,7 +344,7 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
               id="safetyGear"
               checked={safetyGearConfirmed}
               onChange={(e) => setSafetyGearConfirmed(e.target.checked)}
-              className="rounded text-[#C4785A] focus:ring-[#C4785A]"
+              className="rounded text-[#d4522f] focus:ring-[#d4522f]"
             />
             <label htmlFor="safetyGear" className="text-xs text-neutral-600 dark:text-neutral-300 cursor-pointer">
               {isAr

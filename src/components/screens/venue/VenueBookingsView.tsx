@@ -398,7 +398,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                   onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
                   className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
                 >
-                  <Home size={15} className="text-[#C4785A]" />
+                  <Home size={15} className="text-[#d4522f]" />
                   <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                     {currentBranch?.name || 'Atrium 1'}
                   </span>
@@ -430,12 +430,12 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                           }}
                           className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
                             isCurrent
-                              ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                              ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold'
                               : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
                           }`}
                         >
                           <div className="flex items-center gap-2 min-w-0">
-                            <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                            <Building2 size={14} className={isCurrent ? 'text-[#d4522f]' : 'text-neutral-400'} />
                             <span className="truncate">{biz.name}</span>
                           </div>
                           {isCurrent && <CheckCircle2 size={14} />}
@@ -931,7 +931,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="px-5 py-2 bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
+                className="px-5 py-2 bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
               >
                 <Printer size={14} /> {t('venue_btn_print_agreement')}
               </button>

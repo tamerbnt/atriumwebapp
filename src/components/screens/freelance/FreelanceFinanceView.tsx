@@ -243,14 +243,14 @@ export const FreelanceFinanceView: React.FC = () => {
         const isPinned = pinnedExpenseIds.has(exp.id);
         return (
           <div className="flex items-center gap-3 min-w-0">
-            {isPinned && <span className="w-1.5 h-6 rounded-full bg-[#C4785A] shrink-0" />}
+            {isPinned && <span className="w-1.5 h-6 rounded-full bg-[#d4522f] shrink-0" />}
             <div className="w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-300 font-bold text-xs shrink-0">
               {exp.vendor.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
               <div className="font-bold text-sm text-neutral-900 dark:text-white truncate flex items-center gap-1.5">
                 <span>{exp.vendor}</span>
-                {isPinned && <Pin size={11} className="text-[#C4785A] shrink-0" />}
+                {isPinned && <Pin size={11} className="text-[#d4522f] shrink-0" />}
               </div>
               <div className="text-xs text-neutral-400 truncate">{exp.description}</div>
             </div>
@@ -343,7 +343,7 @@ export const FreelanceFinanceView: React.FC = () => {
       {/* Row 0: Workspace Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-[#C4785A]/10 text-[#C4785A] flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center shrink-0">
             <Wallet size={24} />
           </div>
           <div>
@@ -366,7 +366,7 @@ export const FreelanceFinanceView: React.FC = () => {
               onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
               className="h-[42px] px-4 rounded-[14px] bg-[#F8F9FA] dark:bg-neutral-800 border border-[#EDF1F3] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shadow-2xs"
             >
-              <Building2 size={15} className="text-[#C4785A]" />
+              <Building2 size={15} className="text-[#d4522f]" />
               <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                 {currentBusiness?.name || 'Studio Main'}
               </span>
@@ -395,12 +395,12 @@ export const FreelanceFinanceView: React.FC = () => {
                       }}
                       className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
                         isCurrent
-                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold'
                           : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                        <Building2 size={14} className={isCurrent ? 'text-[#d4522f]' : 'text-neutral-400'} />
                         <span className="truncate">{biz.name}</span>
                       </div>
                       {isCurrent && <Check size={14} />}
@@ -416,7 +416,7 @@ export const FreelanceFinanceView: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsQuickActionsOpen(!isQuickActionsOpen)}
-              className="h-[42px] px-5 rounded-[14px] bg-[#C4785A] hover:bg-[#B3684A] text-white font-bold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all active:scale-95"
+              className="h-[42px] px-5 rounded-[14px] bg-[#d4522f] hover:bg-[#B3684A] text-white font-bold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all active:scale-95"
             >
               <Plus size={15} />
               <span>{language === 'ar' ? 'إجراءات سريعة' : language === 'fr' ? 'Actions Rapides' : 'Quick Actions'}</span>
@@ -435,7 +435,7 @@ export const FreelanceFinanceView: React.FC = () => {
                   }}
                   className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F8F9FA] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
                 >
-                  <div className="w-[30px] h-[30px] rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center shrink-0">
+                  <div className="w-[30px] h-[30px] rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center shrink-0">
                     <Plus size={15} />
                   </div>
                   <span>{t('free_fin_btn_add_expense', language)}</span>
@@ -536,7 +536,7 @@ export const FreelanceFinanceView: React.FC = () => {
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ShieldCheck size={16} className="text-[#C4785A]" />
+            <ShieldCheck size={16} className="text-[#d4522f]" />
             <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
               {language === 'ar' ? 'الاحتياطي الضريبي ومحاكاة الأرباح الصافية' : language === 'fr' ? 'Provision Fiscale & Simulation du Bénéfice Net' : 'Tax Reserve & Net Earnings Simulation'}
             </h3>
@@ -553,7 +553,7 @@ export const FreelanceFinanceView: React.FC = () => {
             <span className="font-medium">
               {language === 'ar' ? 'معدل الضريبة التقديري والاشتراكات الاجتماعية' : language === 'fr' ? 'Curseur de taux d\'imposition estimé' : 'Tax Rate & Social Contributions Slider'}
             </span>
-            <span className="font-bold font-mono text-[#C4785A] text-sm tabular-nums">{taxRate}%</span>
+            <span className="font-bold font-mono text-[#d4522f] text-sm tabular-nums">{taxRate}%</span>
           </div>
           <input
             type="range"
@@ -562,7 +562,7 @@ export const FreelanceFinanceView: React.FC = () => {
             step="1"
             value={taxRate}
             onChange={(e) => setTaxRate(Number(e.target.value))}
-            className="w-full accent-[#C4785A] h-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg cursor-pointer"
+            className="w-full accent-[#d4522f] h-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg cursor-pointer"
           />
           <div className="flex justify-between text-[10px] text-neutral-500 font-mono">
             <span>0% ({t('free_fin_tax_exempt_label', language)})</span>
@@ -628,7 +628,7 @@ export const FreelanceFinanceView: React.FC = () => {
                   onClick={() => setCategoryFilter(cat.value)}
                   className={`px-3 py-1 text-xs font-semibold rounded-full transition-all whitespace-nowrap cursor-pointer ${
                     categoryFilter === cat.value
-                      ? 'bg-[#C4785A] text-white shadow-2xs'
+                      ? 'bg-[#d4522f] text-white shadow-2xs'
                       : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
@@ -673,7 +673,7 @@ export const FreelanceFinanceView: React.FC = () => {
         {selectedExpenseIds.size > 0 && (
           <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-neutral-900 text-white shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-150">
             <div className="flex items-center gap-3 text-xs font-semibold">
-              <span className="px-2 py-0.5 rounded-full bg-[#C4785A] text-white font-bold text-[11px]">
+              <span className="px-2 py-0.5 rounded-full bg-[#d4522f] text-white font-bold text-[11px]">
                 {selectedExpenseIds.size}
               </span>
               <span>{language === 'ar' ? 'مصاريف محددة' : language === 'fr' ? 'charges sélectionnées' : 'expenses selected'}</span>
@@ -729,8 +729,8 @@ export const FreelanceFinanceView: React.FC = () => {
                 className="p-5 rounded-[22px] border border-[#E9EEF0] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 shadow-2xs relative space-y-3"
               >
                 {isPinned && (
-                  <div className="absolute top-3 left-3 text-[#C4785A]">
-                    <Pin size={12} className="fill-[#C4785A]" />
+                  <div className="absolute top-3 left-3 text-[#d4522f]">
+                    <Pin size={12} className="fill-[#d4522f]" />
                   </div>
                 )}
 
@@ -747,7 +747,7 @@ export const FreelanceFinanceView: React.FC = () => {
                 </div>
 
                 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
-                  <span className="font-mono text-base font-black text-[#C4785A] tabular-nums">
+                  <span className="font-mono text-base font-black text-[#d4522f] tabular-nums">
                     {formatCurrencyAmount(exp.amount, exp.currency)}
                   </span>
                   <div className="flex items-center gap-1.5">
@@ -874,7 +874,7 @@ export const FreelanceFinanceView: React.FC = () => {
                     type="checkbox"
                     checked={isTaxDeductible}
                     onChange={(e) => setIsTaxDeductible(e.target.checked)}
-                    className="rounded text-[#C4785A] focus:ring-0"
+                    className="rounded text-[#d4522f] focus:ring-0"
                   />
                   <span>{t('free_fin_tax_deductible_prompt', language)}</span>
                 </label>

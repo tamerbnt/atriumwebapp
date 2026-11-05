@@ -33,7 +33,7 @@ export const CollectionEmptyState: React.FC<CollectionEmptyStateProps> = ({
       />
 
       {/* 68x68px rounded icon container */}
-      <div className="relative z-10 w-[68px] h-[68px] rounded-[34px] bg-[#C4785A]/15 flex items-center justify-center mb-4 text-[#C4785A] shadow-inner">
+      <div className="relative z-10 w-[68px] h-[68px] rounded-[34px] bg-[#d4522f]/15 flex items-center justify-center mb-4 text-[#d4522f] shadow-inner">
         {icon || <Users className="w-8 h-8" />}
       </div>
 

@@ -331,7 +331,7 @@ export const PosFinanceView: React.FC = () => {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
-              <Wallet className="text-[#C4785A]" size={26} />
+              <Wallet className="text-[#d4522f]" size={26} />
               <span>
                 {language === 'ar' ? 'إدارة الصندوق والمالية' : language === 'fr' ? 'Gestion Caisse & Réconciliation Financière' : 'Cash Drawer & Store Finance'}
               </span>
@@ -350,7 +350,7 @@ export const PosFinanceView: React.FC = () => {
             variant="secondary"
             size="sm"
             onClick={() => setIsZReportOpen(true)}
-            icon={<Printer size={14} className="text-[#C4785A]" />}
+            icon={<Printer size={14} className="text-[#d4522f]" />}
           >
             {language === 'ar' ? 'إصدار تقرير Z اليومي' : 'Éditer Rapport Z'}
           </AtriumButton>
@@ -371,7 +371,7 @@ export const PosFinanceView: React.FC = () => {
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-[#E9EEF0] dark:border-neutral-800">
           <div className="flex items-center gap-2">
-            <Banknote size={18} className="text-[#C4785A]" />
+            <Banknote size={18} className="text-[#d4522f]" />
             <h2 className="text-xs font-black uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
               {language === 'ar' ? 'لوحة مؤشرات الخزينة والتسوية النقدية' : 'Indicateurs de Caisse & Contrôle des Écarts'}
             </h2>
@@ -502,8 +502,8 @@ export const PosFinanceView: React.FC = () => {
           </div>
           <span className="text-neutral-300 dark:text-neutral-600 font-bold">=</span>
           <div className="flex items-center gap-2 font-mono">
-            <span className="text-[#C4785A] uppercase font-bold text-[10px]">Théorique</span>
-            <span className="font-bold text-[#C4785A]">{formatMoney(financeTotals.expectedCashInDrawer)}</span>
+            <span className="text-[#d4522f] uppercase font-bold text-[10px]">Théorique</span>
+            <span className="font-bold text-[#d4522f]">{formatMoney(financeTotals.expectedCashInDrawer)}</span>
           </div>
         </div>
       </div>
@@ -512,7 +512,7 @@ export const PosFinanceView: React.FC = () => {
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-3">
         <div className="flex items-center justify-between pb-2 border-b border-[#EDF1F3] dark:border-neutral-800/60">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+            <div className="w-8 h-8 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
               <CreditCard size={16} />
             </div>
             <div>
@@ -570,7 +570,7 @@ export const PosFinanceView: React.FC = () => {
           <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Coins size={17} className="text-[#C4785A]" />
+                <Coins size={17} className="text-[#d4522f]" />
                 <h3 className="text-xs font-black uppercase text-neutral-700 dark:text-neutral-300">
                   BaridiMob & Virements
                 </h3>
@@ -595,14 +595,14 @@ export const PosFinanceView: React.FC = () => {
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           {/* Left Title / Icon / Count Anchor */}
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+            <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
               <TrendingDown size={18} />
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-neutral-900 dark:text-white">
                 {language === 'ar' ? 'سجل مصاريف وسحوبات الصندوق' : 'Journal des Sorties de Caisse'}
               </span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-[#C4785A]/10 text-[#C4785A] font-semibold font-mono">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f] font-semibold font-mono">
                 {filteredExpenses.length}
               </span>
             </div>
@@ -644,7 +644,7 @@ export const PosFinanceView: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsExpenseModalOpen(true)}
-              className="h-9 px-3.5 rounded-xl bg-[#C4785A] text-white text-xs font-bold flex items-center gap-1.5 hover:opacity-90 cursor-pointer shadow-xs"
+              className="h-9 px-3.5 rounded-xl bg-[#d4522f] text-white text-xs font-bold flex items-center gap-1.5 hover:opacity-90 cursor-pointer shadow-xs"
             >
               <Plus size={14} />
               <span>{language === 'ar' ? 'إضافة سحب' : 'Nouvelle Dépense'}</span>
@@ -795,7 +795,7 @@ export const PosFinanceView: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="h-10 px-5 text-xs font-bold text-white bg-[#C4785A] rounded-full hover:opacity-90 cursor-pointer shadow-xs"
+              className="h-10 px-5 text-xs font-bold text-white bg-[#d4522f] rounded-full hover:opacity-90 cursor-pointer shadow-xs"
             >
               {language === 'ar' ? 'تأكيد السحب' : 'Valider la Dépense'}
             </button>
@@ -879,7 +879,7 @@ export const PosFinanceView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="h-10 px-4 rounded-full bg-[#C4785A] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:opacity-90"
+                className="h-10 px-4 rounded-full bg-[#d4522f] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:opacity-90"
               >
                 <Printer size={14} />
                 <span>Imprimer Rapport Z 80mm</span>

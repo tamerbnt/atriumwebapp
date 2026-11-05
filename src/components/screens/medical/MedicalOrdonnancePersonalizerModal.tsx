@@ -114,7 +114,7 @@ export const MedicalOrdonnancePersonalizerModal: React.FC<MedicalOrdonnancePerso
         return '#18181B';
       case 'terracotta':
       default:
-        return '#C4785A';
+        return '#d4522f';
     }
   };
 
@@ -126,7 +126,7 @@ export const MedicalOrdonnancePersonalizerModal: React.FC<MedicalOrdonnancePerso
         {/* Header */}
         <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between shrink-0 bg-[#F8F9FA] dark:bg-neutral-800/40">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
               <Sliders size={20} />
             </div>
             <div>
@@ -193,7 +193,7 @@ export const MedicalOrdonnancePersonalizerModal: React.FC<MedicalOrdonnancePerso
             {/* 1. Paper Format & Mode Section */}
             <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/60 space-y-3">
               <span className="text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
-                <Printer size={14} className="text-[#C4785A]" />
+                <Printer size={14} className="text-[#d4522f]" />
                 Format de Papier & Mode d'Impression
               </span>
 
@@ -209,7 +209,7 @@ export const MedicalOrdonnancePersonalizerModal: React.FC<MedicalOrdonnancePerso
                       onClick={() => setFormData({ ...formData, paperFormat: 'A5' })}
                       className={`py-1.5 text-xs font-bold rounded-lg transition-all ${
                         formData.paperFormat === 'A5'
-                          ? 'bg-[#C4785A] text-white shadow-xs'
+                          ? 'bg-[#d4522f] text-white shadow-xs'
                           : 'text-neutral-600 dark:text-neutral-400'
                       }`}
                     >
@@ -220,7 +220,7 @@ export const MedicalOrdonnancePersonalizerModal: React.FC<MedicalOrdonnancePerso
                       onClick={() => setFormData({ ...formData, paperFormat: 'A4' })}
                       className={`py-1.5 text-xs font-bold rounded-lg transition-all ${
                         formData.paperFormat === 'A4'
-                          ? 'bg-[#C4785A] text-white shadow-xs'
+                          ? 'bg-[#d4522f] text-white shadow-xs'
                           : 'text-neutral-600 dark:text-neutral-400'
                       }`}
                     >
@@ -271,7 +271,7 @@ export const MedicalOrdonnancePersonalizerModal: React.FC<MedicalOrdonnancePerso
             {/* 2. Doctor Identity & Credentials */}
             <div className="space-y-3">
               <span className="text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
-                <Building size={14} className="text-[#C4785A]" />
+                <Building size={14} className="text-[#d4522f]" />
                 Identité & Titres Médicaux
               </span>
 
@@ -323,7 +323,7 @@ export const MedicalOrdonnancePersonalizerModal: React.FC<MedicalOrdonnancePerso
             {/* 3. Aesthetic Color Accent & Watermark */}
             <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/60 space-y-3">
               <span className="text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
-                <Palette size={14} className="text-[#C4785A]" />
+                <Palette size={14} className="text-[#d4522f]" />
                 Palette de Style & Sécurité
               </span>
 
@@ -361,7 +361,7 @@ export const MedicalOrdonnancePersonalizerModal: React.FC<MedicalOrdonnancePerso
                   type="checkbox"
                   checked={formData.showWatermark}
                   onChange={(e) => setFormData({ ...formData, showWatermark: e.target.checked })}
-                  className="w-4 h-4 rounded text-[#C4785A] accent-[#C4785A] cursor-pointer"
+                  className="w-4 h-4 rounded text-[#d4522f] accent-[#d4522f] cursor-pointer"
                 />
               </div>
 
@@ -373,7 +373,7 @@ export const MedicalOrdonnancePersonalizerModal: React.FC<MedicalOrdonnancePerso
                   type="checkbox"
                   checked={formData.isStampEnabled}
                   onChange={(e) => setFormData({ ...formData, isStampEnabled: e.target.checked })}
-                  className="w-4 h-4 rounded text-[#C4785A] accent-[#C4785A] cursor-pointer"
+                  className="w-4 h-4 rounded text-[#d4522f] accent-[#d4522f] cursor-pointer"
                 />
               </div>
             </div>

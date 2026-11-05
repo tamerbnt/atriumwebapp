@@ -21,7 +21,7 @@ export const MembershipStaffView: React.FC = () => {
       sortable: true,
       cell: (member) => (
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-[#C4785A]/15 text-[#C4785A] font-bold text-xs flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-full bg-[#d4522f]/15 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0">
             {member.fullName.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0">
@@ -33,7 +33,7 @@ export const MembershipStaffView: React.FC = () => {
               {member.chairOrStudio && (
                 <>
                   <span>·</span>
-                  <span className="text-[#C4785A] font-medium">{member.chairOrStudio}</span>
+                  <span className="text-[#d4522f] font-medium">{member.chairOrStudio}</span>
                 </>
               )}
             </div>

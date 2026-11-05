@@ -383,7 +383,7 @@ export const EducationFinanceView: React.FC = () => {
                   e.stopPropagation();
                   handleOpenPayment(enr, 0);
                 }}
-                className="px-2.5 py-1.5 rounded-lg bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-2xs whitespace-nowrap"
+                className="px-2.5 py-1.5 rounded-lg bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-2xs whitespace-nowrap"
               >
                 {t('edu_btn_log_payment')}
               </button>
@@ -446,7 +446,7 @@ export const EducationFinanceView: React.FC = () => {
         {/* Row 0 — Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
               <Wallet size={22} />
             </div>
             <div>
@@ -466,7 +466,7 @@ export const EducationFinanceView: React.FC = () => {
                 onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
                 className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
               >
-                <Home size={15} className="text-[#C4785A]" />
+                <Home size={15} className="text-[#d4522f]" />
                 <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                   {currentBranch?.name || 'Atlas Academy'}
                 </span>
@@ -498,12 +498,12 @@ export const EducationFinanceView: React.FC = () => {
                         }}
                         className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
                           isCurrent
-                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold'
                             : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
                         }`}
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                          <Building2 size={14} className={isCurrent ? 'text-[#d4522f]' : 'text-neutral-400'} />
                           <span className="truncate">{biz.name}</span>
                         </div>
                         {isCurrent && <Check size={14} />}
@@ -545,7 +545,7 @@ export const EducationFinanceView: React.FC = () => {
         {selectedEnrollmentIds.size > 0 && (
           <div className="p-3 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 rounded-2xl flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-150">
             <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-[#C4785A] text-white flex items-center justify-center text-xs font-bold">
+              <span className="w-6 h-6 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs font-bold">
                 {selectedEnrollmentIds.size}
               </span>
               <span className="text-xs font-semibold text-neutral-900 dark:text-white">
@@ -571,7 +571,7 @@ export const EducationFinanceView: React.FC = () => {
               <button
                 type="button"
                 onClick={handleBatchSendReminder}
-                className="px-3.5 py-1.5 rounded-xl bg-[#C4785A] hover:opacity-90 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                className="px-3.5 py-1.5 rounded-xl bg-[#d4522f] hover:opacity-90 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
               >
                 <Bell size={13} />
                 <span>{language === 'ar' ? 'إرسال تذكير بالسداد' : 'Envoyer Rappel SMS'}</span>
@@ -700,7 +700,7 @@ export const EducationFinanceView: React.FC = () => {
                     onClick={() => setFilterKey(tab.id as PaymentFilterKey)}
                     className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
                       filterKey === tab.id
-                        ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A]'
+                        ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f]'
                         : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
@@ -751,7 +751,7 @@ export const EducationFinanceView: React.FC = () => {
                   <h3 className="text-sm font-bold text-neutral-900 dark:text-white truncate max-w-[210px] mb-0.5 tracking-tight">
                     {enr.studentName}
                   </h3>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] border border-[#F5E2D8] dark:border-neutral-700 mb-3 truncate max-w-[200px]">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700 mb-3 truncate max-w-[200px]">
                     {enr.cohortName}
                   </span>
 
@@ -768,7 +768,7 @@ export const EducationFinanceView: React.FC = () => {
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
                       <div
-                        className={`h-full rounded-full ${percent >= 100 ? 'bg-emerald-500' : 'bg-[#C4785A]'}`}
+                        className={`h-full rounded-full ${percent >= 100 ? 'bg-emerald-500' : 'bg-[#d4522f]'}`}
                         style={{ width: `${Math.min(100, percent)}%` }}
                       />
                     </div>
@@ -791,7 +791,7 @@ export const EducationFinanceView: React.FC = () => {
                             e.stopPropagation();
                             handleOpenPayment(enr, 0);
                           }}
-                          className="px-2 py-1 bg-[#C4785A] text-white rounded-lg text-[10px] font-semibold hover:opacity-90"
+                          className="px-2 py-1 bg-[#d4522f] text-white rounded-lg text-[10px] font-semibold hover:opacity-90"
                         >
                           Encaisser
                         </button>
@@ -844,7 +844,7 @@ export const EducationFinanceView: React.FC = () => {
                 <div className="text-neutral-500">
                   {t('edu_label_cohort')}: {selectedEnrollmentForPayment.cohortName}
                 </div>
-                <div className="text-[#C4785A] font-bold">
+                <div className="text-[#d4522f] font-bold">
                   {t('edu_fin_receivables')}: {formatMoney(selectedEnrollmentForPayment.balanceDue)}
                 </div>
               </div>
@@ -865,7 +865,7 @@ export const EducationFinanceView: React.FC = () => {
                         }}
                         className={`p-2 rounded-xl border text-left rtl:text-right transition-colors cursor-pointer ${
                           selectedInstallmentIndex === idx
-                            ? 'bg-[#FCEEE8] dark:bg-neutral-800 border-[#C4785A] text-[#C4785A] font-bold'
+                            ? 'bg-[#FCEEE8] dark:bg-neutral-800 border-[#d4522f] text-[#d4522f] font-bold'
                             : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300'
                         }`}
                       >
@@ -933,7 +933,7 @@ export const EducationFinanceView: React.FC = () => {
           <div className="w-full max-w-md bg-white dark:bg-neutral-900 h-full shadow-2xl border-l border-neutral-200 dark:border-neutral-800 p-6 flex flex-col space-y-6 overflow-y-auto">
             <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-[#FCEEE8] text-[#C4785A] flex items-center justify-center font-bold text-sm">
+                <div className="w-10 h-10 rounded-2xl bg-[#FCEEE8] text-[#d4522f] flex items-center justify-center font-bold text-sm">
                   {detailEnrollment.studentName.charAt(0)}
                 </div>
                 <div>
@@ -1048,7 +1048,7 @@ export const EducationFinanceView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
           <div className="relative w-full max-w-sm bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-              <div className="text-xs font-bold uppercase tracking-wider text-[#C4785A]">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#d4522f]">
                 Official Tuition Receipt
               </div>
               <button

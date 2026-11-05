@@ -101,7 +101,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
         {/* Header with Close */}
         <div className="flex items-center justify-between mb-2">
           <div className="w-8" />
-          <div className="w-12 h-12 rounded-2xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center mx-auto shadow-2xs">
+          <div className="w-12 h-12 rounded-2xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center mx-auto shadow-2xs">
             <Lock size={22} />
           </div>
           <button
@@ -152,7 +152,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
                   isError
                     ? 'border-rose-500 bg-rose-50 dark:bg-rose-950/30 text-rose-600'
                     : hasDigit
-                    ? 'border-[#C4785A] bg-[#C4785A]/10 text-[#C4785A] shadow-xs'
+                    ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f] shadow-xs'
                     : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 text-neutral-400'
                 }`}
               >

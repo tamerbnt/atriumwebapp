@@ -222,18 +222,18 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             </form>
           ) : (
             /* Printable Preview */
-            <div className="printable-document preserve-border max-w-2xl mx-auto p-8 rounded-2xl border-4 border-double border-[#C4785A]/40 bg-gradient-to-br from-[#FDF4F0]/40 via-white to-[#FDF4F0]/20 dark:from-neutral-900 dark:via-[#18181B] dark:to-neutral-900 shadow-xl relative overflow-hidden">
+            <div className="printable-document preserve-border max-w-2xl mx-auto p-8 rounded-2xl border-4 border-double border-[#d4522f]/40 bg-gradient-to-br from-[#FDF4F0]/40 via-white to-[#FDF4F0]/20 dark:from-neutral-900 dark:via-[#18181B] dark:to-neutral-900 shadow-xl relative overflow-hidden">
               {/* Watermark in BG */}
-              <div className="absolute right-4 bottom-4 opacity-5 pointer-events-none text-[#C4785A]">
+              <div className="absolute right-4 bottom-4 opacity-5 pointer-events-none text-[#d4522f]">
                 <GraduationCap size={240} />
               </div>
 
               <div className="text-center space-y-4 relative z-10">
-                <div className="inline-flex items-center justify-center p-3 rounded-full bg-[#FCEEE8] text-[#C4785A] dark:bg-neutral-800 mb-1">
+                <div className="inline-flex items-center justify-center p-3 rounded-full bg-[#FCEEE8] text-[#d4522f] dark:bg-neutral-800 mb-1">
                   <ShieldCheck size={36} />
                 </div>
 
-                <div className="uppercase tracking-widest text-xs font-bold text-[#C4785A]">
+                <div className="uppercase tracking-widest text-xs font-bold text-[#d4522f]">
                   {currentBusiness?.displayName || 'Atlas Academy & Tutoring Institute'}
                 </div>
 
@@ -246,7 +246,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 </p>
 
                 <div className="py-2">
-                  <div className="text-2xl sm:text-3xl font-serif font-bold text-[#C4785A] border-b-2 border-[#C4785A]/30 inline-block px-8 pb-1">
+                  <div className="text-2xl sm:text-3xl font-serif font-bold text-[#d4522f] border-b-2 border-[#d4522f]/30 inline-block px-8 pb-1">
                     {activeCert.studentName}
                   </div>
                 </div>
@@ -260,12 +260,12 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 </div>
 
                 {activeCert.honors && (
-                  <div className="inline-block text-xs font-semibold px-3 py-1 rounded-md bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A]">
+                  <div className="inline-block text-xs font-semibold px-3 py-1 rounded-md bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f]">
                     {activeCert.honors} · {t('edu_cert_final_score')} {activeCert.averageGradeScore}%
                   </div>
                 )}
 
-                <div className="pt-8 grid grid-cols-2 gap-8 border-t border-[#C4785A]/20 mt-8 text-left rtl:text-right">
+                <div className="pt-8 grid grid-cols-2 gap-8 border-t border-[#d4522f]/20 mt-8 text-left rtl:text-right">
                   <div>
                     <div className="text-xs font-semibold text-neutral-900 dark:text-white">
                       {activeCert.signatoryName}
@@ -282,7 +282,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                     <div className="text-[10px] uppercase font-mono tracking-wider text-neutral-400 dark:text-neutral-500">
                       {t('edu_cert_verif_hash')}
                     </div>
-                    <div className="text-xs font-mono font-medium text-[#C4785A]">
+                    <div className="text-xs font-mono font-medium text-[#d4522f]">
                       {activeCert.verificationHash}
                     </div>
                     <div className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-1">

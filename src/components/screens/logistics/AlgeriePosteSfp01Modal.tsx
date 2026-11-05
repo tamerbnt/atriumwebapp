@@ -98,7 +98,7 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
             <span className="text-[11px] text-neutral-500 block">
               {isAr ? 'إجمالي مستحقات الدفعة' : 'Total Net à Verser'}
             </span>
-            <span className="text-lg font-bold font-mono text-[#C4785A]">
+            <span className="text-lg font-bold font-mono text-[#d4522f]">
               {formatMoney(totalNet, language)}
             </span>
           </div>

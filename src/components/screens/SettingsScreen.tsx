@@ -303,7 +303,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             className="h-10 px-3.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border border-neutral-200 dark:border-neutral-700"
             title="Download complete JSON database backup"
           >
-            <FileDown size={14} className="text-[#C4785A]" />
+            <FileDown size={14} className="text-[#d4522f]" />
             <span>{t('settings_export_backup', language)}</span>
           </button>
 
@@ -313,7 +313,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             className="h-10 px-3.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border border-neutral-200 dark:border-neutral-700"
             title="Restore database from a JSON backup file"
           >
-            <FileUp size={14} className="text-[#C4785A]" />
+            <FileUp size={14} className="text-[#d4522f]" />
             <span>{t('settings_restore_backup', language)}</span>
           </button>
 
@@ -322,14 +322,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             onClick={() => openDesktopUpgradeModal('general')}
             className="h-10 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer dark:border dark:border-neutral-700 shadow-xs"
           >
-            <Laptop size={14} className="text-[#C4785A]" />
+            <Laptop size={14} className="text-[#d4522f]" />
             <span>{t('topbar_desktop_app', language)}</span>
           </button>
 
           <button
             type="button"
             onClick={openOnboarding}
-            className="h-10 px-4 rounded-xl bg-[#FDF4F0] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 text-[#C4785A] text-xs font-bold flex items-center gap-2 hover:bg-[#FBECE6] dark:hover:bg-neutral-700/80 transition-colors cursor-pointer"
+            className="h-10 px-4 rounded-xl bg-[#FDF4F0] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 text-[#d4522f] text-xs font-bold flex items-center gap-2 hover:bg-[#FBECE6] dark:hover:bg-neutral-700/80 transition-colors cursor-pointer"
           >
             <Sparkles size={14} />
             <span>{t('action_relaunch_wizard', language)}</span>
@@ -363,7 +363,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                   className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
                     isLanguageAuto
                       ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
-                      : 'bg-[#FCEEE8] text-[#C4785A] dark:bg-[#C4785A]/20 dark:text-[#C4785A]'
+                      : 'bg-[#FCEEE8] text-[#d4522f] dark:bg-[#d4522f]/20 dark:text-[#d4522f]'
                   }`}
                 >
                   {isLanguageAuto ? `${t('topbar_auto_detected', language)} (${language.toUpperCase()})` : `Manual (${language.toUpperCase()})`}
@@ -398,14 +398,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             }}
             className={`p-4 rounded-[20px] text-left transition-all border cursor-pointer relative ${
               isLanguageAuto
-                ? 'bg-white dark:bg-neutral-800 border-[#C4785A] ring-2 ring-[#C4785A]/20 shadow-sm'
+                ? 'bg-white dark:bg-neutral-800 border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm'
                 : 'bg-white/60 dark:bg-neutral-800/60 border-[#E9EEF0] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
             }`}
           >
             <div className="flex items-center justify-between mb-2">
               <span className="text-xl">🌐</span>
               {isLanguageAuto && (
-                <span className="w-5 h-5 rounded-full bg-[#C4785A] text-white flex items-center justify-center text-xs">
+                <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs">
                   <Check size={12} strokeWidth={3} />
                 </span>
               )}
@@ -431,14 +431,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             }}
             className={`p-4 rounded-[20px] text-left transition-all border cursor-pointer relative ${
               !isLanguageAuto && language === 'en'
-                ? 'bg-white dark:bg-neutral-800 border-[#C4785A] ring-2 ring-[#C4785A]/20 shadow-sm'
+                ? 'bg-white dark:bg-neutral-800 border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm'
                 : 'bg-white/60 dark:bg-neutral-800/60 border-[#E9EEF0] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
             }`}
           >
             <div className="flex items-center justify-between mb-2">
               <span className="text-xl">🇺🇸</span>
               {!isLanguageAuto && language === 'en' && (
-                <span className="w-5 h-5 rounded-full bg-[#C4785A] text-white flex items-center justify-center text-xs">
+                <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs">
                   <Check size={12} strokeWidth={3} />
                 </span>
               )}
@@ -464,14 +464,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             }}
             className={`p-4 rounded-[20px] text-left transition-all border cursor-pointer relative ${
               !isLanguageAuto && language === 'fr'
-                ? 'bg-white dark:bg-neutral-800 border-[#C4785A] ring-2 ring-[#C4785A]/20 shadow-sm'
+                ? 'bg-white dark:bg-neutral-800 border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm'
                 : 'bg-white/60 dark:bg-neutral-800/60 border-[#E9EEF0] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
             }`}
           >
             <div className="flex items-center justify-between mb-2">
               <span className="text-xl">🇫🇷</span>
               {!isLanguageAuto && language === 'fr' && (
-                <span className="w-5 h-5 rounded-full bg-[#C4785A] text-white flex items-center justify-center text-xs">
+                <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs">
                   <Check size={12} strokeWidth={3} />
                 </span>
               )}
@@ -497,14 +497,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             }}
             className={`p-4 rounded-[20px] text-left transition-all border cursor-pointer relative ${
               !isLanguageAuto && language === 'ar'
-                ? 'bg-white dark:bg-neutral-800 border-[#C4785A] ring-2 ring-[#C4785A]/20 shadow-sm'
+                ? 'bg-white dark:bg-neutral-800 border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm'
                 : 'bg-white/60 dark:bg-neutral-800/60 border-[#E9EEF0] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
             }`}
           >
             <div className="flex items-center justify-between mb-2">
               <span className="text-xl">🇩🇿</span>
               {!isLanguageAuto && language === 'ar' && (
-                <span className="w-5 h-5 rounded-full bg-[#C4785A] text-white flex items-center justify-center text-xs">
+                <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs">
                   <Check size={12} strokeWidth={3} />
                 </span>
               )}
@@ -520,7 +520,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
         {/* RTL Information callout */}
         <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/60 flex items-center gap-3 text-xs text-neutral-600 dark:text-neutral-300">
-          <Sparkles size={16} className="text-[#C4785A] shrink-0" />
+          <Sparkles size={16} className="text-[#d4522f] shrink-0" />
           <span>{t('settings_rtl_notice', language)}</span>
         </div>
       </div>
@@ -798,7 +798,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               onClick={() => openDesktopUpgradeModal('general')}
               className="h-10 px-4 text-xs font-bold text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs"
             >
-              <Download size={14} className="text-[#C4785A]" />
+              <Download size={14} className="text-[#d4522f]" />
               <span>{t('settings_get_desktop', language)}</span>
             </button>
 
@@ -815,7 +815,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         {/* Free Web Edition Banner Notice */}
         <div className="p-3.5 rounded-2xl bg-gradient-to-r from-[#FDF4F0] via-[#FAF0EA] to-white dark:from-[#26211E] dark:to-[#18181B] border border-[#F5E2D8] dark:border-[#3E3832] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2.5">
-            <Laptop size={18} className="text-[#C4785A] shrink-0" />
+            <Laptop size={18} className="text-[#d4522f] shrink-0" />
             <div>
               <span className="font-extrabold text-neutral-900 dark:text-white">
                 {t('settings_current_plan', language)}: {t('settings_web_limit', language)}
@@ -931,7 +931,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               disabled={isSyncing}
               className="h-9 px-4 text-xs font-bold rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs disabled:opacity-60"
             >
-              <RotateCw size={13} className={isSyncing ? 'animate-spin text-[#C4785A]' : ''} />
+              <RotateCw size={13} className={isSyncing ? 'animate-spin text-[#d4522f]' : ''} />
               <span>
                 {isSyncing
                   ? (language === 'ar' ? 'جارٍ مزامنة الجداول...' : language === 'fr' ? 'Synchronisation des tables...' : 'Syncing Tables...')
@@ -994,7 +994,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#FDF4F0] dark:bg-[#2A2420] text-[#C4785A] flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-[#4A3B33]">
+            <div className="w-10 h-10 rounded-2xl bg-[#FDF4F0] dark:bg-[#2A2420] text-[#d4522f] flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-[#4A3B33]">
               <HardDrive size={20} />
             </div>
             <div>
@@ -1065,7 +1065,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <span className="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider">
               {language === 'ar' ? 'عملاء CRM' : language === 'fr' ? 'Clients CRM' : 'CRM Clients'}
             </span>
-            <span className="text-base font-extrabold text-[#C4785A] mt-0.5 block">
+            <span className="text-base font-extrabold text-[#d4522f] mt-0.5 block">
               {members.length + (freelanceClients?.length || 0)} {language === 'ar' ? 'جهة اتصال' : language === 'fr' ? 'Contacts' : 'Contacts'}
             </span>
             <span className="text-[10px] text-neutral-400 block mt-0.5">
@@ -1144,7 +1144,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         {branches.length >= subscription.plan.maxBranches && (
           <div className="p-3.5 rounded-2xl bg-[#FDF4F0] dark:bg-[#2A2420]/70 border border-[#F5E2D8] dark:border-[#4A3B33] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2.5">
-              <Building2 size={18} className="text-[#C4785A] shrink-0" />
+              <Building2 size={18} className="text-[#d4522f] shrink-0" />
               <div>
                 <span className="font-extrabold text-neutral-900 dark:text-white">
                   {language === 'ar' ? 'إدارة الفروع المتعددة ميزة حصرية في Atrium Desktop' : language === 'fr' ? 'La gestion multi-sites est une exclusivité Atrium Desktop' : 'Multi-Facility Management is an Atrium Desktop Feature'}
@@ -1182,7 +1182,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                     {b.code}
                   </span>
                   {b.isMainBranch && (
-                    <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-bold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded-full">
                       {language === 'ar' ? 'المقر الرئيسي' : language === 'fr' ? 'Siège principal' : 'Headquarters'}
                     </span>
                   )}
@@ -1228,7 +1228,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         {/* Hardware integration notice banner */}
         <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2.5">
-            <Printer size={18} className="text-[#C4785A] shrink-0" />
+            <Printer size={18} className="text-[#d4522f] shrink-0" />
             <div>
               <span className="font-bold text-neutral-800 dark:text-neutral-200">
                 {language === 'ar'

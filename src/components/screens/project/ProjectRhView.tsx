@@ -327,7 +327,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#C4785A]">
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#d4522f]">
               {t('pm_rh_badge_title')}
             </span>
             <span className="text-zinc-400">·</span>
@@ -351,7 +351,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               onClick={() => setIsBranchDropdownOpen((prev) => !prev)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200/80 dark:border-zinc-750 transition-all cursor-pointer"
             >
-              <Building2 className="w-3.5 h-3.5 text-[#C4785A]" />
+              <Building2 className="w-3.5 h-3.5 text-[#d4522f]" />
               <span>{currentBranch?.name || 'NCH Cyberpark Tower B'}</span>
               <ChevronDown className="w-3 h-3 opacity-60" />
             </button>
@@ -413,7 +413,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${
                 isActive
-                  ? 'border-[#C4785A] text-[#C4785A]'
+                  ? 'border-[#d4522f] text-[#d4522f]'
                   : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
               }`}
             >
@@ -521,8 +521,8 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 
           {/* Floating Batch Actions Bar */}
           {selectedTalentIds.size > 0 && (
-            <div className="flex items-center justify-between px-4 py-3 bg-[#C4785A]/10 border border-[#C4785A]/30 rounded-2xl animate-in fade-in">
-              <div className="flex items-center gap-3 text-xs font-semibold text-[#C4785A]">
+            <div className="flex items-center justify-between px-4 py-3 bg-[#d4522f]/10 border border-[#d4522f]/30 rounded-2xl animate-in fade-in">
+              <div className="flex items-center gap-3 text-xs font-semibold text-[#d4522f]">
                 <span>{selectedTalentIds.size} talent(s) sélectionné(s)</span>
                 <button
                   type="button"
@@ -590,7 +590,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 <img
                   src={talent.portraitPhotoUrl}
                   alt={talent.fullName}
-                  className="w-24 h-24 rounded-full object-cover border-2 border-[#C4785A] shadow-md mb-4"
+                  className="w-24 h-24 rounded-full object-cover border-2 border-[#d4522f] shadow-md mb-4"
                 />
                 <h3 className="text-[16px] font-bold text-zinc-900 dark:text-zinc-100 truncate max-w-[210px] mb-1 tracking-tight">
                   {talent.fullName}
@@ -676,7 +676,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                   <img
                     src={selectedTalent.portraitPhotoUrl}
                     alt={selectedTalent.fullName}
-                    className="w-16 h-16 rounded-2xl object-cover border-2 border-[#C4785A]"
+                    className="w-16 h-16 rounded-2xl object-cover border-2 border-[#d4522f]"
                   />
                   <div>
                     <div className="flex items-center gap-2">
@@ -709,7 +709,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 {/* Pillar 1: Informations Générales */}
                 <div className="p-4 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-700/60 space-y-2">
                   <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide flex items-center gap-1.5">
-                    <Users className="w-4 h-4 text-[#C4785A]" />
+                    <Users className="w-4 h-4 text-[#d4522f]" />
                     {t('pm_rh_pillar1_title')}
                   </h3>
                   <div className="text-xs space-y-1 text-zinc-600 dark:text-zinc-400">
@@ -790,7 +790,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
           >
           <div className="space-y-4">
             <div className="text-center pb-2 border-b border-zinc-200 dark:border-zinc-700">
-              <span className="text-[10px] font-bold text-[#C4785A] uppercase tracking-wide">
+              <span className="text-[10px] font-bold text-[#d4522f] uppercase tracking-wide">
                 {t('pm_rh_portal_join_title')}
               </span>
               <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
@@ -936,7 +936,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
         <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
           <div className="p-6 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs max-w-2xl mx-auto space-y-6">
             <div>
-              <span className="text-xs font-semibold text-[#C4785A] uppercase tracking-wide">
+              <span className="text-xs font-semibold text-[#d4522f] uppercase tracking-wide">
                 Écran 5.3B · Saisie Express Agence
               </span>
             <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">

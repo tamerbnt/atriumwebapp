@@ -214,7 +214,7 @@ export const MembershipSchedulerView: React.FC = () => {
           <span className="font-bold text-xs text-neutral-900 dark:text-white block">
             {event.title}
           </span>
-          <span className="text-[10px] font-bold text-[#C4785A] uppercase tracking-wider block mt-0.5">
+          <span className="text-[10px] font-bold text-[#d4522f] uppercase tracking-wider block mt-0.5">
             {event.category}
           </span>
         </div>
@@ -231,7 +231,7 @@ export const MembershipSchedulerView: React.FC = () => {
           <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 block">
             {getDayName(event.dayOfWeek)}
           </span>
-          <div className="flex items-center gap-1 text-[11px] font-mono text-[#C4785A] mt-0.5">
+          <div className="flex items-center gap-1 text-[11px] font-mono text-[#d4522f] mt-0.5">
             <Clock size={11} />
             <span>{event.startTime} - {event.endTime}</span>
           </div>
@@ -374,20 +374,20 @@ export const MembershipSchedulerView: React.FC = () => {
               <div
                 key={event.id}
                 onClick={() => setSelectedEvent(event)}
-                className="p-5 rounded-[22px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs hover:border-[#C4785A] hover:shadow-xs transition-all cursor-pointer flex flex-col justify-between group"
+                className="p-5 rounded-[22px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs hover:border-[#d4522f] hover:shadow-xs transition-all cursor-pointer flex flex-col justify-between group"
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-[10px] font-bold uppercase tracking-wide bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 px-2.5 py-0.5 rounded-full">
                       {event.category}
                     </span>
-                    <span className="text-xs font-mono font-bold text-[#C4785A] flex items-center gap-1">
+                    <span className="text-xs font-mono font-bold text-[#d4522f] flex items-center gap-1">
                       <Clock size={12} />
                       {event.startTime} - {event.endTime}
                     </span>
                   </div>
 
-                  <h3 className="font-bold text-sm text-neutral-900 dark:text-white group-hover:text-[#C4785A] transition-colors mb-1">
+                  <h3 className="font-bold text-sm text-neutral-900 dark:text-white group-hover:text-[#d4522f] transition-colors mb-1">
                     {event.title}
                   </h3>
 
@@ -453,7 +453,7 @@ export const MembershipSchedulerView: React.FC = () => {
               onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
               className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
             >
-              <Home size={15} className="text-[#C4785A]" />
+              <Home size={15} className="text-[#d4522f]" />
               <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                 {currentBranch?.name || 'Atrium 1'}
               </span>
@@ -484,12 +484,12 @@ export const MembershipSchedulerView: React.FC = () => {
                       }}
                       className={`w-full px-3 py-2 text-left flex items-center justify-between text-xs transition-colors cursor-pointer ${
                         isCurrent
-                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold'
                           : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                        <Building2 size={14} className={isCurrent ? 'text-[#d4522f]' : 'text-neutral-400'} />
                         <span className="truncate">{biz.name}</span>
                       </div>
                       {isCurrent && <Check size={14} />}
@@ -547,7 +547,7 @@ export const MembershipSchedulerView: React.FC = () => {
                 {t('schedule_enrolled_athletes', language)}
               </span>
               <div className="mt-1">
-                <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-bold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded-full">
                   82% {language === 'ar' ? 'نسبة الامتلاء' : 'Capacity Ratio'}
                 </span>
               </div>
@@ -714,7 +714,7 @@ export const MembershipSchedulerView: React.FC = () => {
                       <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
                         {event.category}
                       </span>
-                      <span className="text-xs font-mono font-bold text-[#C4785A] flex items-center gap-1">
+                      <span className="text-xs font-mono font-bold text-[#d4522f] flex items-center gap-1">
                         <Clock size={12} />
                         <span>{event.startTime} - {event.endTime}</span>
                       </span>
@@ -773,7 +773,7 @@ export const MembershipSchedulerView: React.FC = () => {
                         e.stopPropagation();
                         setSelectedEvent(event);
                       }}
-                      className="text-xs font-bold text-[#C4785A] hover:underline cursor-pointer flex items-center gap-1"
+                      className="text-xs font-bold text-[#d4522f] hover:underline cursor-pointer flex items-center gap-1"
                     >
                       <Eye size={12} />
                       <span>{language === 'ar' ? 'عرض السجل' : 'View Roster'}</span>
@@ -793,7 +793,7 @@ export const MembershipSchedulerView: React.FC = () => {
                       className={`h-8 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors ${
                         isFull
                           ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed'
-                          : 'bg-[#C4785A] text-white hover:opacity-90 shadow-2xs'
+                          : 'bg-[#d4522f] text-white hover:opacity-90 shadow-2xs'
                       }`}
                     >
                       <UserPlus size={13} />
@@ -813,7 +813,7 @@ export const MembershipSchedulerView: React.FC = () => {
         <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[420px] bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
           <div className="px-6 py-5 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Calendar size={17} className="text-[#C4785A]" />
+              <Calendar size={17} className="text-[#d4522f]" />
               <span className="text-sm font-bold text-neutral-900 dark:text-white">
                 {language === 'ar' ? 'معاينة الحصة وسجل الحضور' : language === 'fr' ? 'Inspecteur de séance & Roster' : 'Session Inspector & Roster'}
               </span>
@@ -833,7 +833,7 @@ export const MembershipSchedulerView: React.FC = () => {
                 <span className="text-[10px] font-bold uppercase tracking-wide bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200 px-2.5 py-0.5 rounded-full">
                   {selectedEvent.category}
                 </span>
-                <span className="font-mono text-xs font-bold text-[#C4785A]">
+                <span className="font-mono text-xs font-bold text-[#d4522f]">
                   {selectedEvent.startTime} - {selectedEvent.endTime}
                 </span>
               </div>
@@ -860,7 +860,7 @@ export const MembershipSchedulerView: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-neutral-400">{language === 'ar' ? 'الطاقة الاستيعابية:' : 'Max Capacity:'}</span>
-                  <span className="font-bold font-mono text-[#C4785A]">{selectedEvent.capacity} athletes</span>
+                  <span className="font-bold font-mono text-[#d4522f]">{selectedEvent.capacity} athletes</span>
                 </div>
               </div>
             </div>

@@ -33,7 +33,7 @@ export const ManufacturingStaffView: React.FC = () => {
               {member.assignedWorkstationId && (
                 <>
                   <span>·</span>
-                  <span className="font-medium text-[#C4785A]">{member.assignedWorkstationId}</span>
+                  <span className="font-medium text-[#d4522f]">{member.assignedWorkstationId}</span>
                 </>
               )}
             </div>

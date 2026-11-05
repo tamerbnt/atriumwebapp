@@ -490,7 +490,7 @@ export const VenueInventoryView: React.FC = () => {
                 onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
                 className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
               >
-                <Home size={15} className="text-[#C4785A]" />
+                <Home size={15} className="text-[#d4522f]" />
                 <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                   {currentBranch?.name || 'Atrium 1'}
                 </span>
@@ -522,12 +522,12 @@ export const VenueInventoryView: React.FC = () => {
                         }}
                         className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
                           isCurrent
-                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold'
                             : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
                         }`}
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                          <Building2 size={14} className={isCurrent ? 'text-[#d4522f]' : 'text-neutral-400'} />
                           <span className="truncate">{biz.name}</span>
                         </div>
                         {isCurrent && <Check size={14} />}
@@ -585,7 +585,7 @@ export const VenueInventoryView: React.FC = () => {
                   {language === 'ar' ? 'طاقة الاستقبال الإجمالية' : language === 'fr' ? 'Capacité d\'Accueil Totale' : 'Total Guest Capacity'}
                 </span>
                 <div className="mt-1">
-                  <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] font-bold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded-full">
                     {totalCapacity} {language === 'ar' ? 'مقعد / ضيف' : language === 'fr' ? 'places' : 'seats'}
                   </span>
                 </div>
@@ -656,7 +656,7 @@ export const VenueInventoryView: React.FC = () => {
                     onClick={() => setSelectedTypeFilter(item.id)}
                     className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
                       selectedTypeFilter === item.id
-                        ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                         : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
@@ -691,7 +691,7 @@ export const VenueInventoryView: React.FC = () => {
           {selectedUnitIds.size > 0 && (
             <div className="flex items-center justify-between p-3 px-4 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2 flex-wrap gap-2">
               <div className="flex items-center gap-3">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
                 <span className="text-xs font-bold text-neutral-900 dark:text-white">
                   {selectedUnitIds.size} {language === 'ar' ? 'مساحات محددة' : language === 'fr' ? 'espaces sélectionnés' : 'spaces selected'}
                 </span>
@@ -912,7 +912,7 @@ export const VenueInventoryView: React.FC = () => {
                             setSelectedUnitForBooking(unit.id);
                             setIsBookingModalOpen(true);
                           }}
-                          className="px-3 py-1.5 bg-[#FDF4F0] hover:bg-[#FBE5DC] text-[#C4785A] rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                          className="px-3 py-1.5 bg-[#FDF4F0] hover:bg-[#FBE5DC] text-[#d4522f] rounded-xl text-xs font-bold transition-colors cursor-pointer"
                         >
                           {t('venue_btn_reserve')}
                         </button>
@@ -963,7 +963,7 @@ export const VenueInventoryView: React.FC = () => {
                       setSelectedUnitForBooking(activeUnit.id);
                       setIsBookingModalOpen(true);
                     }}
-                    className="flex-1 py-1.5 px-3 rounded-xl bg-[#C4785A] hover:bg-[#B3684A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                    className="flex-1 py-1.5 px-3 rounded-xl bg-[#d4522f] hover:bg-[#B3684A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
                   >
                     <Calendar size={13} />
                     <span>{t('venue_reserve_space')}</span>
@@ -992,7 +992,7 @@ export const VenueInventoryView: React.FC = () => {
                     onClick={() => setDrawerTab('fiche')}
                     className={`flex-1 py-1 text-center rounded-lg transition-all ${
                       drawerTab === 'fiche'
-                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        ? 'bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                         : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
@@ -1003,7 +1003,7 @@ export const VenueInventoryView: React.FC = () => {
                     onClick={() => setDrawerTab('planning')}
                     className={`flex-1 py-1 text-center rounded-lg transition-all ${
                       drawerTab === 'planning'
-                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        ? 'bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                         : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
@@ -1014,7 +1014,7 @@ export const VenueInventoryView: React.FC = () => {
                     onClick={() => setDrawerTab('rates')}
                     className={`flex-1 py-1 text-center rounded-lg transition-all ${
                       drawerTab === 'rates'
-                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        ? 'bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                         : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
@@ -1025,7 +1025,7 @@ export const VenueInventoryView: React.FC = () => {
                     onClick={() => setDrawerTab('notes')}
                     className={`flex-1 py-1 text-center rounded-lg transition-all ${
                       drawerTab === 'notes'
-                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        ? 'bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                         : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
@@ -1087,7 +1087,7 @@ export const VenueInventoryView: React.FC = () => {
                   <div className="space-y-2.5 text-xs animate-in fade-in duration-150">
                     <div className="flex items-center justify-between">
                       <span className="text-neutral-500 font-medium">Créneaux réservés</span>
-                      <span className="font-bold text-[#C4785A]">
+                      <span className="font-bold text-[#d4522f]">
                         {rentalBookings.filter((b) => b.unitId === activeUnit.id).length} réservations
                       </span>
                     </div>
@@ -1104,7 +1104,7 @@ export const VenueInventoryView: React.FC = () => {
                             <div key={b.id} className="p-2.5 bg-neutral-50 dark:bg-neutral-800/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-1">
                               <div className="flex items-center justify-between font-semibold">
                                 <span className="text-neutral-900 dark:text-white truncate max-w-[170px]">{b.purpose || 'Séance'}</span>
-                                <span className="font-mono text-[#C4785A]">{formatCurrencyAmount(b.totalAmount, b.currency)}</span>
+                                <span className="font-mono text-[#d4522f]">{formatCurrencyAmount(b.totalAmount, b.currency)}</span>
                               </div>
                               <div className="flex items-center justify-between text-[11px] text-neutral-400">
                                 <span>{new Date(b.startDateTime).toLocaleDateString()}</span>
@@ -1163,7 +1163,7 @@ export const VenueInventoryView: React.FC = () => {
                       value={unitNotes}
                       onChange={(e) => handleNotesChange(e.target.value)}
                       placeholder="Consignes de climatisation, disposition des tables, clés des portes, codes alarme..."
-                      className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/60 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4785A]"
+                      className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/60 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
                     />
                   </div>
                 )}
@@ -1291,7 +1291,7 @@ export const VenueInventoryView: React.FC = () => {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Description commerciale de l'espace..."
-                  className="w-full px-3.5 py-2 rounded-xl border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4785A]"
+                  className="w-full px-3.5 py-2 rounded-xl border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
                 />
               </div>
 

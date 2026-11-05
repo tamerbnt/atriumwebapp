@@ -124,7 +124,7 @@ export const ManufacturingQcView: React.FC = () => {
       {/* Top Header Strip with Action Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <ShieldCheck size={22} />
           </div>
           <div>
@@ -269,7 +269,7 @@ export const ManufacturingQcView: React.FC = () => {
                 width: '130px',
                 sortable: true,
                 renderCell: (o) => (
-                  <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2 py-0.5 rounded border border-[#C4785A]/20">
+                  <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded border border-[#d4522f]/20">
                     {o.orderNumber}
                   </span>
                 ),
@@ -342,7 +342,7 @@ export const ManufacturingQcView: React.FC = () => {
               return (
                 <div className="p-4 flex flex-col justify-between h-full space-y-3">
                   <div className="flex items-start justify-between gap-2">
-                    <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2 py-0.5 rounded">
+                    <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded">
                       {o.orderNumber}
                     </span>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
@@ -382,7 +382,7 @@ export const ManufacturingQcView: React.FC = () => {
             {/* Inspector Top Header */}
             <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                   <Award size={16} />
                 </div>
                 <div>
@@ -408,7 +408,7 @@ export const ManufacturingQcView: React.FC = () => {
                 onClick={() => setInspectorTab('cq')}
                 className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                   inspectorTab === 'cq'
-                    ? 'border-[#C4785A] text-[#C4785A]'
+                    ? 'border-[#d4522f] text-[#d4522f]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                 }`}
               >
@@ -418,7 +418,7 @@ export const ManufacturingQcView: React.FC = () => {
                 onClick={() => setInspectorTab('metrologie')}
                 className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                   inspectorTab === 'metrologie'
-                    ? 'border-[#C4785A] text-[#C4785A]'
+                    ? 'border-[#d4522f] text-[#d4522f]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                 }`}
               >
@@ -428,7 +428,7 @@ export const ManufacturingQcView: React.FC = () => {
                 onClick={() => setInspectorTab('couts')}
                 className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                   inspectorTab === 'couts'
-                    ? 'border-[#C4785A] text-[#C4785A]'
+                    ? 'border-[#d4522f] text-[#d4522f]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                 }`}
               >
@@ -482,7 +482,7 @@ export const ManufacturingQcView: React.FC = () => {
                     </div>
                     <button
                       onClick={() => handleReleaseLot(selectedOrder)}
-                      className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#C4785A] hover:bg-[#b06a4e] text-white transition-colors"
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#d4522f] hover:bg-[#b06a4e] text-white transition-colors"
                     >
                       Libérer ✓
                     </button>
@@ -534,7 +534,7 @@ export const ManufacturingQcView: React.FC = () => {
                     </div>
                     <div className="flex items-center justify-between pt-1 border-t border-neutral-200 dark:border-neutral-800">
                       <span className="font-semibold text-neutral-900 dark:text-white">Coût Total Lot:</span>
-                      <span className="font-mono font-bold text-[#C4785A]">
+                      <span className="font-mono font-bold text-[#d4522f]">
                         {formatMoney(selectedOrder.totalCostDzd)}
                       </span>
                     </div>
@@ -630,7 +630,7 @@ export const ManufacturingQcView: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-neutral-500">N° de Lot de Traçabilité :</span>
-                  <span className="font-mono font-bold text-[#C4785A]">{orderForCertificate.batchLotNumber || 'LOT-202610-0089'}</span>
+                  <span className="font-mono font-bold text-[#d4522f]">{orderForCertificate.batchLotNumber || 'LOT-202610-0089'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-neutral-500">Quantité libérée :</span>

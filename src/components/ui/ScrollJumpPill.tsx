@@ -183,11 +183,11 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
         onClick={handleScrollJump}
         aria-label={label}
         title={label}
-        className="group relative flex items-center justify-center h-10 min-w-10 px-2 group-hover:ps-2.5 group-hover:pe-4 group-focus-visible:ps-2.5 group-focus-visible:pe-4 rounded-full bg-white/95 dark:bg-neutral-900/95 text-neutral-800 dark:text-neutral-100 border border-neutral-200/90 dark:border-neutral-700/90 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.12),0_4px_8px_-2px_rgba(0,0,0,0.06)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] backdrop-blur-md hover:border-[#C4785A]/80 hover:shadow-[0_10px_28px_-4px_rgba(196,120,90,0.25)] hover:scale-[1.04] active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C4785A] overflow-hidden"
+        className="group relative flex items-center justify-center h-10 min-w-10 px-2 group-hover:ps-2.5 group-hover:pe-4 group-focus-visible:ps-2.5 group-focus-visible:pe-4 rounded-full bg-white/95 dark:bg-neutral-900/95 text-neutral-800 dark:text-neutral-100 border border-neutral-200/90 dark:border-neutral-700/90 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.12),0_4px_8px_-2px_rgba(0,0,0,0.06)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] backdrop-blur-md hover:border-[#d4522f]/80 hover:shadow-[0_10px_28px_-4px_rgba(196,120,90,0.25)] hover:scale-[1.04] active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4522f] overflow-hidden"
       >
         {/* Animated Direction Arrow Icon */}
         <span
-          className="w-6 h-6 rounded-full bg-[#C4785A]/15 dark:bg-[#C4785A]/25 text-[#C4785A] dark:text-[#E09070] flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:bg-[#C4785A] group-hover:text-white shrink-0"
+          className="w-6 h-6 rounded-full bg-[#d4522f]/15 dark:bg-[#d4522f]/25 text-[#d4522f] dark:text-[#E09070] flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:bg-[#d4522f] group-hover:text-white shrink-0"
           style={{
             transform: direction === 'up' ? 'rotate(180deg)' : 'rotate(0deg)',
           }}
@@ -197,7 +197,7 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
 
         {/* Microcopy Label - icon only at rest, fluidly reveals on hover / focus */}
         {!compact && (
-          <span className="max-w-0 opacity-0 overflow-hidden whitespace-nowrap text-xs font-medium text-neutral-700 dark:text-neutral-200 group-hover:max-w-48 group-hover:opacity-100 group-hover:ms-2 group-focus-visible:max-w-48 group-focus-visible:opacity-100 group-focus-visible:ms-2 group-hover:text-[#C4785A] dark:group-hover:text-[#E09070] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none pointer-events-none">
+          <span className="max-w-0 opacity-0 overflow-hidden whitespace-nowrap text-xs font-medium text-neutral-700 dark:text-neutral-200 group-hover:max-w-48 group-hover:opacity-100 group-hover:ms-2 group-focus-visible:max-w-48 group-focus-visible:opacity-100 group-focus-visible:ms-2 group-hover:text-[#d4522f] dark:group-hover:text-[#E09070] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none pointer-events-none">
             {label}
           </span>
         )}

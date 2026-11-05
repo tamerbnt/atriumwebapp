@@ -3,7 +3,7 @@ import React from 'react';
 export interface HourlyCurveChartProps {
   data?: number[]; // typically 10 or 24 hourly points
   labels?: string[]; // e.g. ['00:00', '05:00', '10:00', '15:00', '20:00']
-  color?: string; // e.g. '#10B981' or '#C4785A'
+  color?: string; // e.g. '#10B981' or '#d4522f'
   height?: number;
   className?: string;
 }

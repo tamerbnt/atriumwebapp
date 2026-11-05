@@ -294,7 +294,7 @@ export const MedicalBillingView: React.FC = () => {
       {/* Top Header Strip with Action Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <CreditCard size={22} />
           </div>
           <div>
@@ -316,7 +316,7 @@ export const MedicalBillingView: React.FC = () => {
             onClick={() => setBillingMainTab('invoices')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
               billingMainTab === 'invoices'
-                ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs font-bold'
+                ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-2xs font-bold'
                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
             }`}
           >
@@ -327,7 +327,7 @@ export const MedicalBillingView: React.FC = () => {
             onClick={() => setBillingMainTab('bordereau')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
               billingMainTab === 'bordereau'
-                ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs font-bold'
+                ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-2xs font-bold'
                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
             }`}
           >
@@ -338,7 +338,7 @@ export const MedicalBillingView: React.FC = () => {
             onClick={() => setBillingMainTab('honoraires')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
               billingMainTab === 'honoraires'
-                ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs font-bold'
+                ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-2xs font-bold'
                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
             }`}
           >
@@ -349,7 +349,7 @@ export const MedicalBillingView: React.FC = () => {
             onClick={() => setBillingMainTab('caisse')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
               billingMainTab === 'caisse'
-                ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs font-bold'
+                ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-2xs font-bold'
                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
             }`}
           >
@@ -360,7 +360,7 @@ export const MedicalBillingView: React.FC = () => {
             onClick={() => setBillingMainTab('consumables')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
               billingMainTab === 'consumables'
-                ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs font-bold'
+                ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-2xs font-bold'
                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
             }`}
           >
@@ -590,7 +590,7 @@ export const MedicalBillingView: React.FC = () => {
                     onClick={() => setActiveInspectorTab('decompte')}
                     className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${
                       activeInspectorTab === 'decompte'
-                        ? 'border-[#C4785A] text-[#C4785A]'
+                        ? 'border-[#d4522f] text-[#d4522f]'
                         : 'border-transparent text-neutral-500 hover:text-neutral-900'
                     }`}
                   >
@@ -601,7 +601,7 @@ export const MedicalBillingView: React.FC = () => {
                     onClick={() => setActiveInspectorTab('tiers_payant')}
                     className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${
                       activeInspectorTab === 'tiers_payant'
-                        ? 'border-[#C4785A] text-[#C4785A]'
+                        ? 'border-[#d4522f] text-[#d4522f]'
                         : 'border-transparent text-neutral-500 hover:text-neutral-900'
                     }`}
                   >
@@ -612,7 +612,7 @@ export const MedicalBillingView: React.FC = () => {
                     onClick={() => setActiveInspectorTab('actions')}
                     className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${
                       activeInspectorTab === 'actions'
-                        ? 'border-[#C4785A] text-[#C4785A]'
+                        ? 'border-[#d4522f] text-[#d4522f]'
                         : 'border-transparent text-neutral-500 hover:text-neutral-900'
                     }`}
                   >
@@ -662,7 +662,7 @@ export const MedicalBillingView: React.FC = () => {
                               onClick={() => setPaymentMethod(method)}
                               className={`py-2 px-2 text-center rounded-xl font-semibold border transition-all cursor-pointer ${
                                 paymentMethod === method
-                                  ? 'border-[#C4785A] bg-[#C4785A]/10 text-[#C4785A]'
+                                  ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
                                   : 'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300'
                               }`}
                             >
@@ -845,7 +845,7 @@ export const MedicalBillingView: React.FC = () => {
                       <td className="p-3 font-semibold text-neutral-900 dark:text-white">{claim.id}</td>
                       <td className="p-3 font-sans font-medium text-neutral-800 dark:text-neutral-200">{claim.patientName}</td>
                       <td className="p-3 text-neutral-500">{claim.chifaNumber}</td>
-                      <td className="p-3 text-[#C4785A] font-bold">{claim.ngapCode}</td>
+                      <td className="p-3 text-[#d4522f] font-bold">{claim.ngapCode}</td>
                       <td className="p-3 font-sans">
                         {(() => {
                           const rate = claim.coverageRate ?? claim.chifaCoveragePercent ?? 80;
@@ -889,7 +889,7 @@ export const MedicalBillingView: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-neutral-200 dark:border-neutral-700">
             <div>
               <h2 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                <Users size={16} className="text-[#C4785A]" />
+                <Users size={16} className="text-[#d4522f]" />
                 <span>Rétrocession des Honoraires Médicaux & Quotes-parts Polyclinique</span>
               </h2>
             </div>
@@ -922,7 +922,7 @@ export const MedicalBillingView: React.FC = () => {
                       <h3 className="font-bold text-xs text-neutral-900 dark:text-white">{doc.name}</h3>
                       <p className="text-[11px] text-neutral-400">{doc.specialty}</p>
                     </div>
-                    <span className="px-2 py-0.5 rounded-full bg-orange-50 text-[#C4785A] font-bold text-[10px] font-mono border border-orange-200/50">
+                    <span className="px-2 py-0.5 rounded-full bg-orange-50 text-[#d4522f] font-bold text-[10px] font-mono border border-orange-200/50">
                       {docShare}% Rétrocession
                     </span>
                   </div>
@@ -947,7 +947,7 @@ export const MedicalBillingView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => showToast(`Virement généré pour ${doc.name}: ${formatMoney(doctorPayout, 'DZD')}`, 'success')}
-                      className="px-2.5 py-1 rounded-lg bg-[#C4785A] text-white font-semibold text-[11px] shadow-2xs hover:bg-[#b3694c] transition-colors"
+                      className="px-2.5 py-1 rounded-lg bg-[#d4522f] text-white font-semibold text-[11px] shadow-2xs hover:bg-[#b3694c] transition-colors"
                     >
                       Émettre Règlement
                     </button>
@@ -1072,7 +1072,7 @@ export const MedicalBillingView: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h3 className="font-bold text-sm text-neutral-900 dark:text-white flex items-center gap-2">
-                <Building2 size={16} className="text-[#C4785A]" />
+                <Building2 size={16} className="text-[#d4522f]" />
                 <span>{isAr ? 'المخزون والمستهلكات السريرية' : 'Pharmacie Interne & Consommables de Soins'}</span>
               </h3>
               <p className="text-xs text-neutral-500">
@@ -1177,7 +1177,7 @@ export const MedicalBillingView: React.FC = () => {
                         restockConsumable(code, 50);
                         showToast(`+50 ${item.unit} réapprovisionnés pour ${item.name}`, 'success');
                       }}
-                      className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-[#C4785A] hover:bg-[#b3684a] text-white shadow-2xs transition-colors"
+                      className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-[#d4522f] hover:bg-[#b03b1b] text-white shadow-2xs transition-colors"
                     >
                       +50 Réapprovisionner
                     </button>

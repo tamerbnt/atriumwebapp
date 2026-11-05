@@ -120,14 +120,14 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Repertoire Badge & Notice */}
-        <div className="p-3 rounded-xl bg-[#C4785A]/10 border border-[#C4785A]/20 flex items-center justify-between text-xs">
+        <div className="p-3 rounded-xl bg-[#d4522f]/10 border border-[#d4522f]/20 flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
-            <BookOpen size={16} className="text-[#C4785A]" />
+            <BookOpen size={16} className="text-[#d4522f]" />
             <span className="font-semibold text-neutral-900 dark:text-white">
               {isAr ? 'الرقم التسلسلي القانوني المحجوز:' : 'Numéro Chronologique Officiel Réservé :'}
             </span>
           </div>
-          <span className="font-mono font-bold text-sm text-[#C4785A] tracking-wider">
+          <span className="font-mono font-bold text-sm text-[#d4522f] tracking-wider">
             {repertoireNumber}
           </span>
         </div>
@@ -236,12 +236,12 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
         <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-2xs space-y-3">
           <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-700">
             <div className="flex items-center gap-2">
-              <Scale size={16} className="text-[#C4785A]" />
+              <Scale size={16} className="text-[#d4522f]" />
               <span className="text-xs font-bold text-neutral-900 dark:text-white">
                 {isAr ? 'التعريفة القانونية الرسمية (المرسوم التنفيذي 08-243)' : 'Calcul Officiel Décret 08-243 & Débours Fiscaux'}
               </span>
             </div>
-            <span className="text-xs font-mono font-bold text-[#C4785A]">
+            <span className="text-xs font-mono font-bold text-[#d4522f]">
               Total Provision : {formatMoney(tariff.totalProvisionClientDzd, language)}
             </span>
           </div>

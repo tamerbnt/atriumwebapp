@@ -102,7 +102,7 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
         {/* Header */}
         <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+            <div className="w-9 h-9 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
               <MapPin size={18} />
             </div>
             <div>
@@ -137,7 +137,7 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
                       {z.wilayasExample}
                     </span>
                   </div>
-                  <span className="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+                  <span className="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
                     Franchise: {rule.baseWeightKg} kg
                   </span>
                 </div>

@@ -93,7 +93,7 @@ export const ContractorDashboardView: React.FC = () => {
   // Expense breakdown donut
   const siteExpenses = useMemo(() => {
     return [
-      { label: language === 'ar' ? 'خرسانة وحديد تسليح' : 'Béton & Armatures', value: 45, color: '#C4785A' },
+      { label: language === 'ar' ? 'خرسانة وحديد تسليح' : 'Béton & Armatures', value: 45, color: '#d4522f' },
       { label: language === 'ar' ? 'مقاولون من الباطن' : 'Sous-Traitance Lots', value: 35, color: '#3B82F6' },
       { label: language === 'ar' ? 'آليات ووقود الورشة' : 'Engins & Carburant', value: 20, color: '#10B981' },
     ];
@@ -153,7 +153,7 @@ export const ContractorDashboardView: React.FC = () => {
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'حركة الورشات والعمال الميدانيين' : language === 'fr' ? 'Activité Chantiers & Équipes' : 'Site Velocity & Jobsite Flow'}
-            icon={<HardHat size={18} className="text-[#C4785A]" />}
+            icon={<HardHat size={18} className="text-[#d4522f]" />}
             badge={
               <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                 {workersOnSite} {language === 'ar' ? 'عامل بالميدان' : 'Ouvriers sur Site'}
@@ -221,7 +221,7 @@ export const ContractorDashboardView: React.FC = () => {
                   <span className="text-[11px] text-gray-400 block mb-2">
                     {language === 'ar' ? 'كثافة نشاط الآليات والعمال على مدار 24 ساعة' : 'Courbe horaire de présence chantier (24h)'}
                   </span>
-                  <HourlyCurveChart data={hourlyData} color="#C4785A" />
+                  <HourlyCurveChart data={hourlyData} color="#d4522f" />
                 </div>
               </div>
 
@@ -236,7 +236,7 @@ export const ContractorDashboardView: React.FC = () => {
                 </div>
                 <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-1">
                   <div
-                    className="bg-[#C4785A] h-full rounded-full transition-all duration-500"
+                    className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
                     style={{ width: `${targetPct}%` }}
                   />
                 </div>
@@ -253,7 +253,7 @@ export const ContractorDashboardView: React.FC = () => {
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'تطور الصفقات والمشاريع المعتمدة' : language === 'fr' ? 'Développement Portefeuille Marchés' : 'Project Portfolio Development'}
-            icon={<Building size={18} className="text-[#C4785A]" />}
+            icon={<Building size={18} className="text-[#d4522f]" />}
             rightControls={
               <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
                 <button
@@ -314,7 +314,7 @@ export const ContractorDashboardView: React.FC = () => {
                 <PillBarHistogram
                   data={weeklyProgress}
                   maxScale={20}
-                  barColor="#C4785A"
+                  barColor="#d4522f"
                 />
               </div>
             </div>
@@ -328,7 +328,7 @@ export const ContractorDashboardView: React.FC = () => {
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'المسار المالي وكشوفات الأشغال DGP' : language === 'fr' ? 'Trajectoire Financière & Décomptes DGP' : 'Financial Trajectory & P&L'}
-            icon={<TrendingUp size={18} className="text-[#C4785A]" />}
+            icon={<TrendingUp size={18} className="text-[#d4522f]" />}
             rightControls={
               <span className="text-xs font-semibold text-gray-500 uppercase">
                 {months[currentMonthIndex]} 2026
@@ -436,7 +436,7 @@ export const ContractorDashboardView: React.FC = () => {
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'ذكاء الورشات وحارس الآجال والتكاليف' : language === 'fr' ? 'Intelligence Chantier & Overrun Sentinel' : 'Engineering Intelligence & Overrun Guardian'}
-            icon={<ShieldCheck size={18} className="text-[#C4785A]" />}
+            icon={<ShieldCheck size={18} className="text-[#d4522f]" />}
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
@@ -491,7 +491,7 @@ export const ContractorDashboardView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#C4785A] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d4522f] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
                   >
                     <Plus size={14} />
                     {language === 'ar' ? 'إضافة صفقة / ورشة جديدة' : 'Nouveau Chantier'}

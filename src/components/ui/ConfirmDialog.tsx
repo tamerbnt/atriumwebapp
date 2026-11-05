@@ -56,8 +56,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       Icon: AlertCircle,
     },
     info: {
-      iconBg: 'bg-[#C4785A]/10 text-[#C4785A] border border-[#C4785A]/20',
-      btnBg: 'bg-[#C4785A] hover:bg-[#b3684a] text-white shadow-xs focus:ring-[#C4785A]/30',
+      iconBg: 'bg-[#d4522f]/10 text-[#d4522f] border border-[#d4522f]/20',
+      btnBg: 'bg-[#d4522f] hover:bg-[#b03b1b] text-white shadow-xs focus:ring-[#d4522f]/30',
       Icon: Info,
     },
   }[variant];

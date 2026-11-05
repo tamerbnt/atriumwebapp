@@ -207,7 +207,7 @@ export const SalonQuickChairKiosk: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-5 shadow-xs">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center text-xl shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center text-xl shrink-0">
             <Scissors size={24} />
           </div>
           <div>
@@ -223,7 +223,7 @@ export const SalonQuickChairKiosk: React.FC = () => {
         <button
           type="button"
           onClick={() => setIsAddClientModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
         >
           <Plus size={16} />
           <span>{isRtl ? 'تسكين زبون جديد' : 'Installer un Client'}</span>
@@ -243,7 +243,7 @@ export const SalonQuickChairKiosk: React.FC = () => {
                 !isOccupied
                   ? 'bg-neutral-50/60 dark:bg-neutral-800/20 border-dashed border-neutral-300 dark:border-neutral-700'
                   : active.stage === 'in_progress'
-                  ? 'bg-white dark:bg-neutral-900 border-[#C4785A] ring-2 ring-[#C4785A]/15 shadow-sm'
+                  ? 'bg-white dark:bg-neutral-900 border-[#d4522f] ring-2 ring-[#d4522f]/15 shadow-sm'
                   : active.stage === 'completed'
                   ? 'bg-emerald-50/40 dark:bg-emerald-950/15 border-emerald-400 dark:border-emerald-700'
                   : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800'
@@ -285,7 +285,7 @@ export const SalonQuickChairKiosk: React.FC = () => {
                 {isOccupied ? (
                   <div className="mt-4 space-y-2">
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-[#C4785A]/10 text-[#C4785A] flex items-center justify-center font-bold text-xs shrink-0">
+                      <div className="w-7 h-7 rounded-full bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0">
                         <User size={14} />
                       </div>
                       <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
@@ -309,7 +309,7 @@ export const SalonQuickChairKiosk: React.FC = () => {
 
                     <div className="flex items-center justify-between text-xs font-bold pt-1">
                       <span>{isRtl ? 'السعر' : 'Tarif'}:</span>
-                      <span className="text-[#C4785A] font-mono text-sm">
+                      <span className="text-[#d4522f] font-mono text-sm">
                         {formatMoney(active.servicePriceDzd, 'DZD')}
                       </span>
                     </div>
@@ -333,7 +333,7 @@ export const SalonQuickChairKiosk: React.FC = () => {
                         ? 'bg-blue-600 hover:bg-blue-700 text-white'
                         : active.stage === 'in_progress'
                         ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                        : 'bg-[#C4785A] hover:bg-[#b3684a] text-white'
+                        : 'bg-[#d4522f] hover:bg-[#b03b1b] text-white'
                     }`}
                   >
                     {active.stage === 'waiting' ? (
@@ -360,7 +360,7 @@ export const SalonQuickChairKiosk: React.FC = () => {
                       setTargetStationId(ws.id);
                       setIsAddClientModalOpen(true);
                     }}
-                    className="w-full py-2.5 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:border-[#C4785A] hover:bg-[#C4785A]/5 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-[#C4785A] transition-all flex items-center justify-center gap-1 cursor-pointer"
+                    className="w-full py-2.5 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:border-[#d4522f] hover:bg-[#d4522f]/5 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-[#d4522f] transition-all flex items-center justify-center gap-1 cursor-pointer"
                   >
                     <Plus size={14} />
                     <span>{isRtl ? 'إسناد زبون' : 'Assigner'}</span>
@@ -398,7 +398,7 @@ export const SalonQuickChairKiosk: React.FC = () => {
               )}
               <div className="flex justify-between pt-2 border-t border-neutral-200 dark:border-neutral-700 font-bold text-sm">
                 <span>{isRtl ? 'الإجمالي للدفع' : 'Total Net'}</span>
-                <span className="text-[#C4785A] font-mono">
+                <span className="text-[#d4522f] font-mono">
                   {formatMoney(
                     activeStations[checkoutModalStationKey].servicePriceDzd +
                       (paymentMethod === 'cash' ? calculateArt317Timbre(activeStations[checkoutModalStationKey].servicePriceDzd) : 0),
@@ -418,7 +418,7 @@ export const SalonQuickChairKiosk: React.FC = () => {
                   onClick={() => setPaymentMethod('cash')}
                   className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all flex flex-col items-center gap-1 ${
                     paymentMethod === 'cash'
-                      ? 'border-[#C4785A] bg-[#C4785A]/10 text-[#C4785A]'
+                      ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
                       : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400'
                   }`}
                 >
@@ -430,7 +430,7 @@ export const SalonQuickChairKiosk: React.FC = () => {
                   onClick={() => setPaymentMethod('baridimob')}
                   className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all flex flex-col items-center gap-1 ${
                     paymentMethod === 'baridimob'
-                      ? 'border-[#C4785A] bg-[#C4785A]/10 text-[#C4785A]'
+                      ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
                       : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400'
                   }`}
                 >
@@ -442,7 +442,7 @@ export const SalonQuickChairKiosk: React.FC = () => {
                   onClick={() => setPaymentMethod('cib')}
                   className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all flex flex-col items-center gap-1 ${
                     paymentMethod === 'cib'
-                      ? 'border-[#C4785A] bg-[#C4785A]/10 text-[#C4785A]'
+                      ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
                       : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400'
                   }`}
                 >
@@ -463,7 +463,7 @@ export const SalonQuickChairKiosk: React.FC = () => {
               <button
                 type="button"
                 onClick={handleConfirmCheckout}
-                className="flex-1 py-2.5 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5"
+                className="flex-1 py-2.5 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5"
               >
                 <Check size={14} />
                 <span>{isRtl ? 'تأكيد وقبض' : 'Valider'}</span>
@@ -518,7 +518,7 @@ export const SalonQuickChairKiosk: React.FC = () => {
                   value={newClientName}
                   onChange={(e) => setNewClientName(e.target.value)}
                   placeholder={isRtl ? 'كريم منصوري' : 'Ex: Karim Mansouri'}
-                  className="w-full h-10 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-xs font-medium focus:ring-2 focus:ring-[#C4785A]"
+                  className="w-full h-10 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-xs font-medium focus:ring-2 focus:ring-[#d4522f]"
                 />
               </div>
 
@@ -566,7 +566,7 @@ export const SalonQuickChairKiosk: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5"
+                  className="flex-1 py-2.5 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5"
                 >
                   <Check size={14} />
                   <span>{isRtl ? 'تسكين وبدء' : 'Installer au Poste'}</span>
@@ -587,7 +587,7 @@ export const SalonQuickChairKiosk: React.FC = () => {
             <h3 className="text-base font-bold text-neutral-900 dark:text-white mb-1">
               {isRtl ? 'وصل التحصيل جاهز' : 'Ticket de Caisse Validé'}
             </h3>
-            <p className="text-xs text-neutral-500 mb-4 font-mono font-bold text-[#C4785A]">
+            <p className="text-xs text-neutral-500 mb-4 font-mono font-bold text-[#d4522f]">
               {lastReceipt.receiptNumber}
             </p>
 
@@ -614,7 +614,7 @@ export const SalonQuickChairKiosk: React.FC = () => {
               )}
               <div className="flex justify-between pt-2 border-t border-neutral-200 dark:border-neutral-700 font-bold">
                 <span>{isRtl ? 'الإجمالي المقبوض' : 'Total Reçu'}</span>
-                <span className="text-[#C4785A] font-mono">
+                <span className="text-[#d4522f] font-mono">
                   {formatMoney(lastReceipt.amountDzd + lastReceipt.timbreFiscalDzd, 'DZD')}
                 </span>
               </div>
@@ -634,7 +634,7 @@ export const SalonQuickChairKiosk: React.FC = () => {
                   window.print();
                   setLastReceipt(null);
                 }}
-                className="flex-1 py-2.5 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5"
+                className="flex-1 py-2.5 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5"
               >
                 <Printer size={14} />
                 <span>{isRtl ? 'طباعة' : 'Imprimer'}</span>

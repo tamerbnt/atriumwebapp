@@ -271,7 +271,7 @@ export const PosOrdersView: React.FC = () => {
             ) : isCard ? (
               <CreditCard size={14} className="text-blue-500 shrink-0" />
             ) : (
-              <Coins size={14} className="text-[#C4785A] shrink-0" />
+              <Coins size={14} className="text-[#d4522f] shrink-0" />
             )}
             <span className="font-medium text-neutral-800 dark:text-neutral-200 truncate">
               {label}
@@ -328,7 +328,7 @@ export const PosOrdersView: React.FC = () => {
             className="h-8 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-200 flex items-center gap-1 cursor-pointer transition-colors"
             title="Ticket Thermique 80mm"
           >
-            <Printer size={13} className="text-[#C4785A]" />
+            <Printer size={13} className="text-[#d4522f]" />
             <span>{language === 'ar' ? 'وصل' : 'Reçu'}</span>
           </button>
           {s.status !== 'Refunded' && (
@@ -395,7 +395,7 @@ export const PosOrdersView: React.FC = () => {
       width: '140px',
       sortable: true,
       renderCell: (po) => (
-        <span className="font-mono font-bold text-xs text-[#C4785A] tabular-nums">
+        <span className="font-mono font-bold text-xs text-[#d4522f] tabular-nums">
           {formatMoney(po.totalAmount)}
         </span>
       ),
@@ -413,7 +413,7 @@ export const PosOrdersView: React.FC = () => {
               resumeParkedOrder(po.id);
               setScreen('shop');
             }}
-            className="h-8 px-3 rounded-xl bg-[#C4785A] text-white text-xs font-bold flex items-center gap-1 hover:opacity-90 cursor-pointer shadow-xs"
+            className="h-8 px-3 rounded-xl bg-[#d4522f] text-white text-xs font-bold flex items-center gap-1 hover:opacity-90 cursor-pointer shadow-xs"
           >
             <PlayCircle size={13} />
             <span>{language === 'ar' ? 'استئناف' : 'Reprendre'}</span>
@@ -501,7 +501,7 @@ export const PosOrdersView: React.FC = () => {
         {/* Header Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
               <ClipboardList size={22} />
             </div>
             <div>
@@ -509,7 +509,7 @@ export const PosOrdersView: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
                   {language === 'ar' ? 'سجل الطلبات والمبيعات' : language === 'fr' ? 'Commandes & Tickets de Caisse' : 'Sales Ledger & Orders'}
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#C4785A]/15 text-[#C4785A] border border-[#C4785A]/30">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4522f]/15 text-[#d4522f] border border-[#d4522f]/30">
                   {branchSales.length} {language === 'ar' ? 'عملية مسجلة' : 'ventes'}
                 </span>
               </div>
@@ -524,7 +524,7 @@ export const PosOrdersView: React.FC = () => {
                 onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
                 className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
               >
-                <Home size={15} className="text-[#C4785A]" />
+                <Home size={15} className="text-[#d4522f]" />
                 <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                   {currentBranch?.name || 'Magasin Principal'}
                 </span>
@@ -551,7 +551,7 @@ export const PosOrdersView: React.FC = () => {
                       className="w-full px-3 py-2 text-left rtl:text-right text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-between"
                     >
                       <span className="font-semibold text-neutral-800 dark:text-neutral-200">{b.name}</span>
-                      {b.id === currentBranch?.id && <span className="text-[#C4785A] text-xs">✓</span>}
+                      {b.id === currentBranch?.id && <span className="text-[#d4522f] text-xs">✓</span>}
                     </button>
                   ))}
                 </div>
@@ -565,7 +565,7 @@ export const PosOrdersView: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={handleExportCSV}
-              icon={<Download size={14} className="text-[#C4785A]" />}
+              icon={<Download size={14} className="text-[#d4522f]" />}
             >
               {language === 'ar' ? 'تصدير CSV' : 'Export CSV'}
             </AtriumButton>
@@ -592,7 +592,7 @@ export const PosOrdersView: React.FC = () => {
                 <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   {language === 'ar' ? 'إجمالي المبيعات الإجمالي' : 'Volume Brut des Ventes'}
                 </span>
-                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#d4522f]/10 text-[#d4522f]">
                   {salesKpis.completedCount} tickets
                 </span>
               </div>
@@ -601,7 +601,7 @@ export const PosOrdersView: React.FC = () => {
                   {formatMoney(salesKpis.totalGross)}
                 </div>
                 <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
-                  <Receipt size={13} className="text-[#C4785A]" />
+                  <Receipt size={13} className="text-[#d4522f]" />
                   <span>Ticket moyen: <strong className="font-mono text-neutral-800 dark:text-neutral-200">{salesKpis.completedCount > 0 ? formatMoney(Math.round(salesKpis.totalGross / salesKpis.completedCount)) : '0 DA'}</strong></span>
                 </div>
               </div>
@@ -665,14 +665,14 @@ export const PosOrdersView: React.FC = () => {
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
             {/* Left Title / Icon / Count Anchor */}
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
                 <Receipt size={18} />
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-neutral-900 dark:text-white">
                   {language === 'ar' ? 'سجل تذاكر المبيعات' : 'Grand Livre des Encaissements'}
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#d4522f]/10 text-[#d4522f]">
                   {activeSubTab === 'sales' ? filteredSales.length : parkedOrders.length}
                 </span>
               </div>
@@ -777,7 +777,7 @@ export const PosOrdersView: React.FC = () => {
                       </div>
 
                       <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                        <span className="font-mono font-black text-sm text-[#C4785A] tabular-nums">
+                        <span className="font-mono font-black text-sm text-[#d4522f] tabular-nums">
                           {formatMoney(s.totalAmount)}
                         </span>
                         <button
@@ -788,7 +788,7 @@ export const PosOrdersView: React.FC = () => {
                           }}
                           className="h-7 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-xs font-bold flex items-center gap-1 cursor-pointer"
                         >
-                          <Printer size={12} className="text-[#C4785A]" />
+                          <Printer size={12} className="text-[#d4522f]" />
                           <span>Reçu</span>
                         </button>
                       </div>
@@ -844,7 +844,7 @@ export const PosOrdersView: React.FC = () => {
                   <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-xs text-neutral-900 dark:text-white">{po.referenceName}</span>
-                      <span className="font-mono font-bold text-xs text-[#C4785A]">{formatMoney(po.totalAmount)}</span>
+                      <span className="font-mono font-bold text-xs text-[#d4522f]">{formatMoney(po.totalAmount)}</span>
                     </div>
                     <div className="text-[11px] text-neutral-400">
                       {po.items.length} article(s) · {new Date(po.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -981,7 +981,7 @@ export const PosOrdersView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="flex-1 h-10 px-4 text-xs font-bold text-white bg-[#C4785A] rounded-full cursor-pointer hover:opacity-90 flex items-center justify-center gap-2"
+                className="flex-1 h-10 px-4 text-xs font-bold text-white bg-[#d4522f] rounded-full cursor-pointer hover:opacity-90 flex items-center justify-center gap-2"
               >
                 <Printer size={14} />
                 <span>{language === 'ar' ? 'طباعة الوصل' : 'Imprimer Ticket 80mm'}</span>

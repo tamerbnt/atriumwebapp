@@ -236,7 +236,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         title: language === 'ar' ? 'فريق العمل' : language === 'en' ? 'Staff' : 'Équipe',
         subtitle: language === 'ar' ? 'إدارة الموظفين ونقاط الحضور والرواتب' : language === 'en' ? 'Staff & Workforce Management' : 'Annuaire d\'équipe & Pointage',
         category: navCategoryLabel,
-        icon: <Users size={15} className="text-[#C4785A]" />,
+        icon: <Users size={15} className="text-[#d4522f]" />,
         onSelect: () => {
           setScreen('staff');
           onClose();
@@ -250,7 +250,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       title: t('fast_switch_title', language),
       subtitle: t('fast_switch_subtitle', language),
       category: actionCategoryLabel,
-      icon: <Layers size={15} className="text-[#C4785A]" />,
+      icon: <Layers size={15} className="text-[#d4522f]" />,
       onSelect: () => {
         openFastSwitch();
         onClose();
@@ -275,7 +275,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       title: t('onboarding_title', language),
       subtitle: t('onboarding_subtitle', language),
       category: actionCategoryLabel,
-      icon: <Sparkles size={15} className="text-[#C4785A]" />,
+      icon: <Sparkles size={15} className="text-[#d4522f]" />,
       onSelect: () => {
         openOnboarding();
         onClose();
@@ -359,7 +359,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
           title: mem.fullName,
           subtitle: `${localizeStatus(mem.status, language)} • ${mem.phoneNumber || mem.email || ''}`,
           category: 'Records',
-          icon: <User size={15} className="text-[#C4785A]" />,
+          icon: <User size={15} className="text-[#d4522f]" />,
           onSelect: () => {
             selectMember(mem.id);
             setScreen('members');
@@ -448,13 +448,13 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         <div
           className={`p-3.5 sm:p-4 border-b transition-colors flex items-center gap-3 ${
             isFocused
-              ? 'border-[#C4785A]/40 bg-[#FDF4F0]/40 dark:bg-neutral-800/40'
+              ? 'border-[#d4522f]/40 bg-[#FDF4F0]/40 dark:bg-neutral-800/40'
               : 'border-neutral-100 dark:border-neutral-800 bg-transparent'
           }`}
         >
           <div
             className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-transform ${
-              isBusy ? 'scale-110 text-neutral-900 dark:text-white' : 'text-[#C4785A]'
+              isBusy ? 'scale-110 text-neutral-900 dark:text-white' : 'text-[#d4522f]'
             }`}
           >
             <Search size={18} strokeWidth={isBusy ? 2.4 : 2} />
@@ -524,7 +524,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                     <div
                       className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
                         isSelected
-                          ? 'bg-[#C4785A] text-white shadow-xs'
+                          ? 'bg-[#d4522f] text-white shadow-xs'
                           : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
                       }`}
                     >
@@ -553,7 +553,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                         : item.category}
                     </span>
                     {isSelected && (
-                      <ArrowRight size={13} className="text-[#C4785A] hidden sm:block" />
+                      <ArrowRight size={13} className="text-[#d4522f] hidden sm:block" />
                     )}
                   </div>
                 </button>
@@ -585,7 +585,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-1 font-semibold text-[#C4785A]">
+          <div className="flex items-center gap-1 font-semibold text-[#d4522f]">
             <Command size={11} />
             <span>Atrium Navigator</span>
           </div>

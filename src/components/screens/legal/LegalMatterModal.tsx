@@ -125,7 +125,7 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
       <div className="bg-white dark:bg-neutral-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-700 space-y-5 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-700">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center">
               <Scale size={18} />
             </div>
             <div>

@@ -328,7 +328,7 @@ export const TradingInventoryView: React.FC = () => {
         {/* Header Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
               <Boxes size={22} />
             </div>
             <div>
@@ -336,7 +336,7 @@ export const TradingInventoryView: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
                   {t('trading_inventory_title', 'Dépôts Logistiques & Inventaire')}
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#C4785A]/15 text-[#C4785A] border border-[#C4785A]/30">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4522f]/15 text-[#d4522f] border border-[#d4522f]/30">
                   {warehouses.length} {language === 'ar' ? 'مستودعات' : 'dépôts actifs'}
                 </span>
               </div>
@@ -351,7 +351,7 @@ export const TradingInventoryView: React.FC = () => {
                 onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
                 className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
               >
-                <Home size={15} className="text-[#C4785A]" />
+                <Home size={15} className="text-[#d4522f]" />
                 <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                   {currentBranch?.name || 'Dépôt Central'}
                 </span>
@@ -378,7 +378,7 @@ export const TradingInventoryView: React.FC = () => {
                       className="w-full px-3 py-2 text-left rtl:text-right text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-between"
                     >
                       <span className="font-semibold text-neutral-800 dark:text-neutral-200">{b.name}</span>
-                      {b.id === currentBranch?.id && <span className="text-[#C4785A] text-xs">✓</span>}
+                      {b.id === currentBranch?.id && <span className="text-[#d4522f] text-xs">✓</span>}
                     </button>
                   ))}
                 </div>
@@ -392,7 +392,7 @@ export const TradingInventoryView: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={() => setNewDepotModalOpen(true)}
-              icon={<Building2 size={14} className="text-[#C4785A]" />}
+              icon={<Building2 size={14} className="text-[#d4522f]" />}
             >
               {t('trading_inventory_new_depot', 'Nouveau Dépôt')}
             </AtriumButton>
@@ -418,7 +418,7 @@ export const TradingInventoryView: React.FC = () => {
                 <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   {language === 'ar' ? 'المقالات والوحدات المخزنة' : 'Références & Volume Réel'}
                 </span>
-                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#d4522f]/10 text-[#d4522f]">
                   {products.length} SKUs
                 </span>
               </div>
@@ -497,7 +497,7 @@ export const TradingInventoryView: React.FC = () => {
         <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-3">
           <div className="flex items-center justify-between pb-2 border-b border-[#EDF1F3] dark:border-neutral-800/60">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <div className="w-8 h-8 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
                 <Warehouse size={16} />
               </div>
               <div>
@@ -520,7 +520,7 @@ export const TradingInventoryView: React.FC = () => {
               onClick={() => setSelectedDepotId('all')}
               className={`p-3.5 rounded-2xl border text-left rtl:text-right transition-all cursor-pointer ${
                 selectedDepotId === 'all'
-                  ? 'border-[#C4785A] bg-white dark:bg-neutral-800 shadow-xs ring-2 ring-[#C4785A]/20'
+                  ? 'border-[#d4522f] bg-white dark:bg-neutral-800 shadow-xs ring-2 ring-[#d4522f]/20'
                   : 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800/80 hover:border-neutral-300'
               }`}
             >
@@ -532,7 +532,7 @@ export const TradingInventoryView: React.FC = () => {
                   GLOBAL
                 </span>
               </div>
-              <div className="text-xs font-bold font-mono text-[#C4785A]">
+              <div className="text-xs font-bold font-mono text-[#d4522f]">
                 {formatMoney(metrics.totalValuation)}
               </div>
             </button>
@@ -544,7 +544,7 @@ export const TradingInventoryView: React.FC = () => {
                 onClick={() => setSelectedDepotId(w.id)}
                 className={`p-3.5 rounded-2xl border text-left rtl:text-right transition-all cursor-pointer ${
                   selectedDepotId === w.id
-                    ? 'border-[#C4785A] bg-white dark:bg-neutral-800 shadow-xs ring-2 ring-[#C4785A]/20'
+                    ? 'border-[#d4522f] bg-white dark:bg-neutral-800 shadow-xs ring-2 ring-[#d4522f]/20'
                     : 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800/80 hover:border-neutral-300'
                 }`}
               >
@@ -572,7 +572,7 @@ export const TradingInventoryView: React.FC = () => {
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
             {/* Left Title / Icon / Count Anchor */}
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
                 <Boxes size={18} />
               </div>
               <div className="flex items-center gap-2">
@@ -581,7 +581,7 @@ export const TradingInventoryView: React.FC = () => {
                     ? t('trading_inventory_tab_state', 'État des Stocks')
                     : t('trading_inventory_tab_vouchers', 'Bons de Mouvements')}
                 </span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-[#C4785A]/10 text-[#C4785A] font-semibold font-mono">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f] font-semibold font-mono">
                   {viewMode === 'stock_state' ? filteredProducts.length : filteredVouchers.length}
                 </span>
               </div>
@@ -596,13 +596,13 @@ export const TradingInventoryView: React.FC = () => {
                   onClick={() => setViewMode('stock_state')}
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                     viewMode === 'stock_state'
-                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                      ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs'
                       : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
                   <span>{t('trading_inventory_tab_state', 'État des Stocks')}</span>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                    viewMode === 'stock_state' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                    viewMode === 'stock_state' ? 'bg-[#d4522f]/15 text-[#d4522f]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
                   }`}>
                     {products.length}
                   </span>
@@ -613,13 +613,13 @@ export const TradingInventoryView: React.FC = () => {
                   onClick={() => setViewMode('vouchers')}
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                     viewMode === 'vouchers'
-                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                      ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs'
                       : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
                   <span>{t('trading_inventory_tab_vouchers', 'Bons de Mouvements')}</span>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                    viewMode === 'vouchers' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                    viewMode === 'vouchers' ? 'bg-[#d4522f]/15 text-[#d4522f]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
                   }`}>
                     {stockVouchers.length}
                   </span>
@@ -657,7 +657,7 @@ export const TradingInventoryView: React.FC = () => {
                     <p className="font-bold text-xs">{p.name}</p>
                     <div className="flex justify-between text-xs pt-1 border-t border-neutral-100 dark:border-neutral-700">
                       <span>Stock : {p.stockQuantity}</span>
-                      <span className="font-bold text-[#C4785A]">{formatMoney(p.price?.amount || 0)}</span>
+                      <span className="font-bold text-[#d4522f]">{formatMoney(p.price?.amount || 0)}</span>
                     </div>
                   </div>
                 )}
@@ -684,7 +684,7 @@ export const TradingInventoryView: React.FC = () => {
                     <p className="font-bold text-xs">{v.reason}</p>
                     <div className="flex justify-between text-xs pt-1 border-t border-neutral-100 dark:border-neutral-700">
                       <span>{v.date}</span>
-                      <span className="font-bold text-[#C4785A]">{formatMoney(v.totalValuationDzd)}</span>
+                      <span className="font-bold text-[#d4522f]">{formatMoney(v.totalValuationDzd)}</span>
                     </div>
                   </div>
                 )}
@@ -713,7 +713,7 @@ export const TradingInventoryView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="relative w-full max-w-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 space-y-4">
             <h2 className="text-base font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
-              <Building2 size={18} className="text-[#C4785A]" />
+              <Building2 size={18} className="text-[#d4522f]" />
               <span>Ajouter un Nouveau Dépôt</span>
             </h2>
 

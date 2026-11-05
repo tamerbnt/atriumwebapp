@@ -157,14 +157,14 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                   });
                 }}
                 className={`p-1 rounded-lg transition-colors cursor-pointer ${
-                  isPinned ? 'text-[#C4785A] bg-[#C4785A]/10' : 'text-zinc-300 hover:text-zinc-500'
+                  isPinned ? 'text-[#d4522f] bg-[#d4522f]/10' : 'text-zinc-300 hover:text-zinc-500'
                 }`}
               >
                 <Pin className={`w-3.5 h-3.5 ${isPinned ? 'fill-current' : ''}`} />
               </button>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-bold text-xs text-[#C4785A]">{m.code}</span>
+                  <span className="font-mono font-bold text-xs text-[#d4522f]">{m.code}</span>
                   <span className="font-semibold text-xs text-zinc-900 dark:text-zinc-100">{m.title}</span>
                 </div>
                 <div className="text-[11px] text-zinc-500 truncate max-w-[200px]">{m.projectTitle}</div>
@@ -264,7 +264,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
         minWidth: '220px',
         renderCell: (att) => (
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-xs text-[#C4785A] shrink-0">
+            <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-xs text-[#d4522f] shrink-0">
               {att.talentName.substring(0, 2).toUpperCase()}
             </div>
             <div>
@@ -436,7 +436,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#C4785A]">
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#d4522f]">
               Superviseur Terrain
             </span>
             <span className="text-zinc-400">·</span>
@@ -460,7 +460,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
               onClick={() => setIsBranchDropdownOpen((prev) => !prev)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200/80 dark:border-zinc-750 transition-all cursor-pointer"
             >
-              <Building2 className="w-3.5 h-3.5 text-[#C4785A]" />
+              <Building2 className="w-3.5 h-3.5 text-[#d4522f]" />
               <span>{currentBranch?.name || 'NCH Cyberpark Tower B'}</span>
               <ChevronDown className="w-3 h-3 opacity-60" />
             </button>
@@ -493,7 +493,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
             onClick={() => setShowPhoneSimulator((prev) => !prev)}
             className={`px-3 py-1.5 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer ${
               showPhoneSimulator
-                ? 'bg-[#C4785A] text-white'
+                ? 'bg-[#d4522f] text-white'
                 : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50'
             }`}
           >
@@ -519,7 +519,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${
                 isActive
-                  ? 'border-[#C4785A] text-[#C4785A]'
+                  ? 'border-[#d4522f] text-[#d4522f]'
                   : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
               }`}
             >
@@ -636,7 +636,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
             renderCard={(mission) => (
               <div className="flex flex-col justify-between h-full space-y-3">
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs font-mono font-bold text-[#C4785A]">
+                  <div className="flex items-center justify-between text-xs font-mono font-bold text-[#d4522f]">
                     <span>{mission.code}</span>
                     <span className="text-zinc-500 font-normal">{mission.activationType}</span>
                   </div>
@@ -657,7 +657,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                       setSelectedMissionId(mission.id);
                       setActiveTab('attendance');
                     }}
-                    className="text-[#C4785A] font-semibold hover:underline cursor-pointer"
+                    className="text-[#d4522f] font-semibold hover:underline cursor-pointer"
                   >
                     Pointer ➔
                   </button>
@@ -674,7 +674,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
           <div className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-[#C4785A] uppercase tracking-wider">
+                <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider">
                   Feuille de Présence & Pointage (Slide 9 & 10)
                 </span>
                 {isMissionLocked && (
@@ -723,7 +723,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
             renderCard={(att) => (
               <div className="flex flex-col justify-between h-full space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-sm text-[#C4785A] shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-sm text-[#d4522f] shrink-0">
                     {att.talentName.substring(0, 2).toUpperCase()}
                   </div>
                   <div>
@@ -775,7 +775,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 <img
                   src={talent.portraitPhotoUrl}
                   alt={talent.fullName}
-                  className="w-12 h-12 rounded-full object-cover border border-[#C4785A]"
+                  className="w-12 h-12 rounded-full object-cover border border-[#d4522f]"
                 />
                 <div className="min-w-0">
                   <div className="font-bold text-xs text-zinc-900 dark:text-zinc-100 truncate">
@@ -800,7 +800,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
         <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
           <div className="p-6 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs max-w-xl mx-auto space-y-4">
             <div>
-              <span className="text-xs font-bold text-[#C4785A] uppercase tracking-wider block">
+              <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">
                 Dépense d'Urgence Terrain (Slide 11)
               </span>
               <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mt-0.5">
@@ -877,7 +877,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
             >
               <div className="p-4 space-y-4">
                 <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700">
-                  <div className="text-xs font-bold text-[#C4785A]">
+                  <div className="text-xs font-bold text-[#d4522f]">
                     {selectedMission?.code || 'MIS-104'}
                   </div>
                   <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">

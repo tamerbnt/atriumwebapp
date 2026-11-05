@@ -100,7 +100,7 @@ export const RealEstateDashboardView: React.FC = () => {
   // Property types donut
   const propertyTypes = useMemo(() => {
     return [
-      { label: language === 'ar' ? 'شقق سكنية' : 'Appartements F3/F4', value: 48, color: '#C4785A' },
+      { label: language === 'ar' ? 'شقق سكنية' : 'Appartements F3/F4', value: 48, color: '#d4522f' },
       { label: language === 'ar' ? 'فيلات ومنازل' : 'Villas Haut Standing', value: 32, color: '#3B82F6' },
       { label: language === 'ar' ? 'مكاتب ومحلات' : 'Locaux & Bureaux', value: 20, color: '#10B981' },
     ];
@@ -160,7 +160,7 @@ export const RealEstateDashboardView: React.FC = () => {
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'حركة المعاينات والصفقات' : language === 'fr' ? 'Visites & Dynamique Commerciale' : 'Deal Flow & Showing Velocity'}
-            icon={<Key size={18} className="text-[#C4785A]" />}
+            icon={<Key size={18} className="text-[#d4522f]" />}
             badge={
               <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                 {rentedProps} / {totalProps} {language === 'ar' ? 'عقارات مؤجرة' : 'Biens Loués'}
@@ -228,7 +228,7 @@ export const RealEstateDashboardView: React.FC = () => {
                   <span className="text-[11px] text-gray-400 block mb-2">
                     {language === 'ar' ? 'كثافة طلبات المعاينة على مدار 24 ساعة' : 'Courbe horaire des visites planifiées (24h)'}
                   </span>
-                  <HourlyCurveChart data={hourlyData} color="#C4785A" />
+                  <HourlyCurveChart data={hourlyData} color="#d4522f" />
                 </div>
               </div>
 
@@ -243,7 +243,7 @@ export const RealEstateDashboardView: React.FC = () => {
                 </div>
                 <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-1">
                   <div
-                    className="bg-[#C4785A] h-full rounded-full transition-all duration-500"
+                    className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
                     style={{ width: `${targetPct}%` }}
                   />
                 </div>
@@ -260,7 +260,7 @@ export const RealEstateDashboardView: React.FC = () => {
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'تطور المحفظة والعقود المعتمدة' : language === 'fr' ? 'Développement Portefeuille & Mandats' : 'Portfolio Asset Development'}
-            icon={<Building2 size={18} className="text-[#C4785A]" />}
+            icon={<Building2 size={18} className="text-[#d4522f]" />}
             rightControls={
               <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
                 <button
@@ -321,7 +321,7 @@ export const RealEstateDashboardView: React.FC = () => {
                 <PillBarHistogram
                   data={weeklySignatures}
                   maxScale={8}
-                  barColor="#C4785A"
+                  barColor="#d4522f"
                 />
               </div>
             </div>
@@ -335,7 +335,7 @@ export const RealEstateDashboardView: React.FC = () => {
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'المسار المالي وعمولات الوكالة' : language === 'fr' ? 'Trajectoire Financière & Honoraires' : 'Financial Trajectory & P&L'}
-            icon={<TrendingUp size={18} className="text-[#C4785A]" />}
+            icon={<TrendingUp size={18} className="text-[#d4522f]" />}
             rightControls={
               <span className="text-xs font-semibold text-gray-500 uppercase">
                 {months[currentMonthIndex]} 2026
@@ -443,7 +443,7 @@ export const RealEstateDashboardView: React.FC = () => {
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'ذكاء السوق وحارس التجديد' : language === 'fr' ? 'Intelligence Marché & Expiry Sentinel' : 'Property Intelligence & Expiry Guardian'}
-            icon={<ShieldCheck size={18} className="text-[#C4785A]" />}
+            icon={<ShieldCheck size={18} className="text-[#d4522f]" />}
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
@@ -498,7 +498,7 @@ export const RealEstateDashboardView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsPropModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#C4785A] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d4522f] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
                   >
                     <Plus size={14} />
                     {language === 'ar' ? 'إضافة عقار جديد' : 'Nouveau Bien'}

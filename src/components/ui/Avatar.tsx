@@ -8,7 +8,7 @@ interface AvatarProps {
 }
 
 const AVATAR_COLORS = [
-  '#C4785A', // Terracotta Brand
+  '#d4522f', // Terracotta Brand
   '#8B5CF6', // Purple
   '#06B6D4', // Cyan
   '#10B981', // Emerald

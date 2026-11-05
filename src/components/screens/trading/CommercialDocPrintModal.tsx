@@ -139,7 +139,7 @@ export const CommercialDocPrintModal: React.FC<CommercialDocPrintModalProps> = (
                   {docTitleAr}
                 </span>
               </div>
-              <div className="text-base font-black font-mono text-[#C4785A] mb-3">
+              <div className="text-base font-black font-mono text-[#d4522f] mb-3">
                 N° {doc.docNumber}
               </div>
 
@@ -344,7 +344,7 @@ export const CommercialDocPrintModal: React.FC<CommercialDocPrintModalProps> = (
                 Pour la Société — Direction Commerciale & Facturation
               </span>
               {doc.includeStampSignature && (
-                <div className="w-24 h-12 border-2 border-dashed border-[#C4785A]/60 rounded-lg flex items-center justify-center text-[10px] text-[#C4785A] font-bold uppercase rotate-[-3deg] ml-auto">
+                <div className="w-24 h-12 border-2 border-dashed border-[#d4522f]/60 rounded-lg flex items-center justify-center text-[10px] text-[#d4522f] font-bold uppercase rotate-[-3deg] ml-auto">
                   Cachet & Signé
                 </div>
               )}

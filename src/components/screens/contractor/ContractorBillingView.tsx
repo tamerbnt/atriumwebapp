@@ -186,7 +186,7 @@ export const ContractorBillingView: React.FC = () => {
         const isPinned = pinnedIds.has(d.id);
         return (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800">
+            <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800">
               <Building2 size={16} />
             </div>
             <div className="min-w-0">
@@ -229,7 +229,7 @@ export const ContractorBillingView: React.FC = () => {
       sortable: true,
       minWidth: '140px',
       renderCell: (d) => (
-        <div className="font-mono font-bold text-xs text-[#C4785A]">
+        <div className="font-mono font-bold text-xs text-[#d4522f]">
           {formatMoney(d.netPayableDzd)}
         </div>
       ),
@@ -283,7 +283,7 @@ export const ContractorBillingView: React.FC = () => {
       {/* Top Header Strip with Action Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <Wallet size={22} />
           </div>
           <div>
@@ -291,7 +291,7 @@ export const ContractorBillingView: React.FC = () => {
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
                 {isAr ? 'الكشوفات المالية والضمان (DGP)' : 'Décomptes Généraux Provisoires (DGP)'}
               </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
                 {projectDgps.length} situations
               </span>
             </div>
@@ -500,7 +500,7 @@ export const ContractorBillingView: React.FC = () => {
                     </div>
                     <div className="flex justify-between font-bold text-neutral-900 dark:text-white pt-1 border-t border-neutral-200 dark:border-neutral-700">
                       <span>Net TTC:</span>
-                      <span className="text-[#C4785A]">{formatMoney(d.netPayableDzd)}</span>
+                      <span className="text-[#d4522f]">{formatMoney(d.netPayableDzd)}</span>
                     </div>
                   </div>
 
@@ -522,7 +522,7 @@ export const ContractorBillingView: React.FC = () => {
             {/* Header */}
             <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-800/60 flex items-center justify-between">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-950/60 text-[#C4785A] font-bold text-sm flex items-center justify-center shrink-0 border border-orange-200/60">
+                <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-950/60 text-[#d4522f] font-bold text-sm flex items-center justify-center shrink-0 border border-orange-200/60">
                   <Wallet size={18} />
                 </div>
                 <div className="min-w-0">
@@ -551,7 +551,7 @@ export const ContractorBillingView: React.FC = () => {
                 onClick={() => setActiveInspectorTab('decompte')}
                 className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${
                   activeInspectorTab === 'decompte'
-                    ? 'border-[#C4785A] text-[#C4785A]'
+                    ? 'border-[#d4522f] text-[#d4522f]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
                 }`}
               >
@@ -562,7 +562,7 @@ export const ContractorBillingView: React.FC = () => {
                 onClick={() => setActiveInspectorTab('certificat')}
                 className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${
                   activeInspectorTab === 'certificat'
-                    ? 'border-[#C4785A] text-[#C4785A]'
+                    ? 'border-[#d4522f] text-[#d4522f]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
                 }`}
               >
@@ -573,7 +573,7 @@ export const ContractorBillingView: React.FC = () => {
                 onClick={() => setActiveInspectorTab('actions')}
                 className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${
                   activeInspectorTab === 'actions'
-                    ? 'border-[#C4785A] text-[#C4785A]'
+                    ? 'border-[#d4522f] text-[#d4522f]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
                 }`}
               >
@@ -608,7 +608,7 @@ export const ContractorBillingView: React.FC = () => {
                     </div>
                     <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700 flex justify-between items-center font-bold text-sm">
                       <span>Net à Mandater TTC:</span>
-                      <span className="text-[#C4785A]">{formatMoney(selectedDgp.netPayableDzd)}</span>
+                      <span className="text-[#d4522f]">{formatMoney(selectedDgp.netPayableDzd)}</span>
                     </div>
                   </div>
 
@@ -625,7 +625,7 @@ export const ContractorBillingView: React.FC = () => {
                 <div className="space-y-3 animate-in fade-in duration-150">
                   <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-neutral-900 dark:text-white">
-                      <ShieldCheck size={16} className="text-[#C4785A]" />
+                      <ShieldCheck size={16} className="text-[#d4522f]" />
                       <span>Certificat de Paiement BTP</span>
                     </div>
                     <div className="space-y-1.5 font-mono text-[11px] text-neutral-600 dark:text-neutral-400">
@@ -649,7 +649,7 @@ export const ContractorBillingView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handlePrintDgp(selectedDgp)}
-                    className="w-full p-3 rounded-xl bg-[#C4785A] text-white font-semibold flex items-center justify-between hover:bg-[#b0674b] transition-colors cursor-pointer"
+                    className="w-full p-3 rounded-xl bg-[#d4522f] text-white font-semibold flex items-center justify-between hover:bg-[#b0674b] transition-colors cursor-pointer"
                   >
                     <span className="flex items-center gap-2">
                       <Printer size={16} />
@@ -696,7 +696,7 @@ export const ContractorBillingView: React.FC = () => {
           <div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5">
             <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                   <Plus size={16} />
                 </div>
                 <h3 className="font-bold text-sm text-neutral-900 dark:text-white">
@@ -757,7 +757,7 @@ export const ContractorBillingView: React.FC = () => {
                   type="checkbox"
                   checked={hasBankCaution}
                   onChange={(e) => setHasBankCaution(e.target.checked)}
-                  className="w-4 h-4 rounded text-[#C4785A] accent-[#C4785A] cursor-pointer"
+                  className="w-4 h-4 rounded text-[#d4522f] accent-[#d4522f] cursor-pointer"
                 />
               </div>
 

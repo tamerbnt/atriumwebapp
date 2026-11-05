@@ -33,7 +33,7 @@ export const LegalStaffView: React.FC = () => {
               {member.barAssociationNumber && (
                 <>
                   <span>·</span>
-                  <span className="font-mono text-[#C4785A]">{member.barAssociationNumber}</span>
+                  <span className="font-mono text-[#d4522f]">{member.barAssociationNumber}</span>
                 </>
               )}
             </div>

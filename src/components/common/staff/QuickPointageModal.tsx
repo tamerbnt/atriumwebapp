@@ -147,7 +147,7 @@ export const QuickPointageModal: React.FC<QuickPointageModalProps> = ({
                     </div>
                   </div>
                 </div>
-                <span className="text-[11px] text-[#C4785A] font-semibold shrink-0 flex items-center gap-1">
+                <span className="text-[11px] text-[#d4522f] font-semibold shrink-0 flex items-center gap-1">
                   <span>{punchType === 'in' ? (isAr ? 'دخول' : isEn ? 'In' : 'Entrée') : (isAr ? 'خروج' : isEn ? 'Out' : 'Sortie')}</span>
                   <ArrowRight size={12} className="rtl:rotate-180" />
                 </span>

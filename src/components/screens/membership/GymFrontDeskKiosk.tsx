@@ -278,7 +278,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
       {/* Top Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-5 shadow-xs">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center text-xl shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center text-xl shrink-0">
             <Scan size={24} />
           </div>
           <div>
@@ -295,7 +295,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsWalkInModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
           >
             <Ticket size={16} />
             <span>{isRtl ? 'بيع تذكرة حصة (Pass)' : 'Vendre Pass Séance'}</span>
@@ -323,12 +323,12 @@ export const GymFrontDeskKiosk: React.FC = () => {
                   value={scanInput}
                   onChange={(e) => setScanInput(e.target.value)}
                   placeholder={isRtl ? 'امسح الباركود أو ابدأ بالكتابة...' : 'Scanner le badge ou taper le nom/téléphone...'}
-                  className="w-full h-14 pl-12 pr-28 rounded-2xl border-2 border-[#C4785A]/40 focus:border-[#C4785A] focus:ring-4 focus:ring-[#C4785A]/15 bg-neutral-50 dark:bg-neutral-800/60 text-base font-medium text-neutral-900 dark:text-white transition-all"
+                  className="w-full h-14 pl-12 pr-28 rounded-2xl border-2 border-[#d4522f]/40 focus:border-[#d4522f] focus:ring-4 focus:ring-[#d4522f]/15 bg-neutral-50 dark:bg-neutral-800/60 text-base font-medium text-neutral-900 dark:text-white transition-all"
                   dir="ltr"
                 />
                 <Scan
                   size={20}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#C4785A]"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#d4522f]"
                 />
                 <button
                   type="submit"
@@ -348,7 +348,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
                       className="p-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 flex items-center justify-between cursor-pointer transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center font-bold text-xs text-[#C4785A]">
+                        <div className="w-9 h-9 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center font-bold text-xs text-[#d4522f]">
                           {m.fullName.charAt(0)}
                         </div>
                         <div>
@@ -469,7 +469,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
               <span className="text-2xs text-neutral-500 font-semibold block uppercase">
                 {isRtl ? 'تذاكر الحصة' : 'Pass Séance Émis'}
               </span>
-              <span className="text-xl font-bold font-mono text-[#C4785A] mt-1 block">
+              <span className="text-xl font-bold font-mono text-[#d4522f] mt-1 block">
                 {walkInTickets.length}
               </span>
             </div>
@@ -497,7 +497,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
         <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-5 shadow-xs flex flex-col h-[520px]">
           <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
             <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-              <Clock size={16} className="text-[#C4785A]" />
+              <Clock size={16} className="text-[#d4522f]" />
               <span>{isRtl ? 'سجل الدخول اللحظي' : 'Journal des Passages Direct'}</span>
             </h3>
             <span className="text-2xs text-neutral-400 font-mono">
@@ -567,7 +567,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
           <div className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl border border-neutral-200 dark:border-neutral-800 max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center">
                   <Ticket size={20} />
                 </div>
                 <div>
@@ -599,7 +599,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
                   value={walkInName}
                   onChange={(e) => setWalkInName(e.target.value)}
                   placeholder={isRtl ? 'محمد بلقاسم' : 'Ex: Karim Benali'}
-                  className="w-full h-10 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-xs font-medium focus:ring-2 focus:ring-[#C4785A]"
+                  className="w-full h-10 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-xs font-medium focus:ring-2 focus:ring-[#d4522f]"
                 />
               </div>
 
@@ -612,7 +612,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
                   value={walkInPhone}
                   onChange={(e) => setWalkInPhone(e.target.value)}
                   placeholder="0550 12 34 56"
-                  className="w-full h-10 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-xs font-medium focus:ring-2 focus:ring-[#C4785A]"
+                  className="w-full h-10 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-xs font-medium focus:ring-2 focus:ring-[#d4522f]"
                   dir="ltr"
                 />
               </div>
@@ -629,7 +629,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
                       onClick={() => setWalkInAmount(amt)}
                       className={`py-2 rounded-xl text-xs font-bold font-mono transition-all border ${
                         walkInAmount === amt
-                          ? 'border-[#C4785A] bg-[#C4785A]/10 text-[#C4785A]'
+                          ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
                           : 'border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300'
                       }`}
                     >
@@ -642,7 +642,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
                   required
                   value={walkInAmount}
                   onChange={(e) => setWalkInAmount(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-xs font-bold font-mono focus:ring-2 focus:ring-[#C4785A]"
+                  className="w-full h-10 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-xs font-bold font-mono focus:ring-2 focus:ring-[#d4522f]"
                   dir="ltr"
                 />
               </div>
@@ -657,7 +657,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
                     onClick={() => setWalkInPaymentMethod('cash')}
                     className={`py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all ${
                       walkInPaymentMethod === 'cash'
-                        ? 'border-[#C4785A] bg-[#C4785A]/10 text-[#C4785A]'
+                        ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
                         : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400'
                     }`}
                   >
@@ -669,7 +669,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
                     onClick={() => setWalkInPaymentMethod('baridimob')}
                     className={`py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all ${
                       walkInPaymentMethod === 'baridimob'
-                        ? 'border-[#C4785A] bg-[#C4785A]/10 text-[#C4785A]'
+                        ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
                         : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400'
                     }`}
                   >
@@ -681,7 +681,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
                     onClick={() => setWalkInPaymentMethod('cib')}
                     className={`py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all ${
                       walkInPaymentMethod === 'cib'
-                        ? 'border-[#C4785A] bg-[#C4785A]/10 text-[#C4785A]'
+                        ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
                         : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400'
                     }`}
                   >
@@ -701,7 +701,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5"
+                  className="flex-1 py-2.5 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5"
                 >
                   <Printer size={14} />
                   <span>{isRtl ? 'تأكيد وطباعة التذكرة' : 'Valider & Imprimer'}</span>
@@ -722,7 +722,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
             <h3 className="text-base font-bold text-neutral-900 dark:text-white mb-1">
               {isRtl ? 'تذكرة الحصة جاهزة' : 'Pass Séance Validé'}
             </h3>
-            <p className="text-xs text-neutral-500 mb-4 font-mono font-bold text-[#C4785A]">
+            <p className="text-xs text-neutral-500 mb-4 font-mono font-bold text-[#d4522f]">
               {lastPrintedTicket.ticketNumber}
             </p>
 
@@ -745,7 +745,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
               )}
               <div className="flex justify-between pt-2 border-t border-neutral-200 dark:border-neutral-700 font-bold">
                 <span>{isRtl ? 'الإجمالي المقبوض' : 'Total Reçu'}</span>
-                <span className="text-[#C4785A] font-mono">
+                <span className="text-[#d4522f] font-mono">
                   {formatMoney(lastPrintedTicket.amountDzd + lastPrintedTicket.timbreFiscalDzd, 'DZD')}
                 </span>
               </div>
@@ -765,7 +765,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
                   window.print();
                   setLastPrintedTicket(null);
                 }}
-                className="flex-1 py-2.5 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5"
+                className="flex-1 py-2.5 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5"
               >
                 <Printer size={14} />
                 <span>{isRtl ? 'طباعة' : 'Imprimer'}</span>

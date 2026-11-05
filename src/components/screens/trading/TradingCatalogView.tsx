@@ -446,7 +446,7 @@ export const TradingCatalogView: React.FC = () => {
         {/* Header Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
               <ShoppingBag size={22} />
             </div>
             <div>
@@ -454,7 +454,7 @@ export const TradingCatalogView: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
                   {t('trading_catalog_title', 'Catalogue Produits & Prestations')}
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#C4785A]/15 text-[#C4785A] border border-[#C4785A]/30">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4522f]/15 text-[#d4522f] border border-[#d4522f]/30">
                   {products.length} {language === 'ar' ? 'عنصر' : 'références'}
                 </span>
               </div>
@@ -469,7 +469,7 @@ export const TradingCatalogView: React.FC = () => {
                 onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
                 className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
               >
-                <Home size={15} className="text-[#C4785A]" />
+                <Home size={15} className="text-[#d4522f]" />
                 <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                   {currentBranch?.name || 'Dépôt Central'}
                 </span>
@@ -496,7 +496,7 @@ export const TradingCatalogView: React.FC = () => {
                       className="w-full px-3 py-2 text-left rtl:text-right text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-between"
                     >
                       <span className="font-semibold text-neutral-800 dark:text-neutral-200">{b.name}</span>
-                      {b.id === currentBranch?.id && <span className="text-[#C4785A] text-xs">✓</span>}
+                      {b.id === currentBranch?.id && <span className="text-[#d4522f] text-xs">✓</span>}
                     </button>
                   ))}
                 </div>
@@ -533,7 +533,7 @@ export const TradingCatalogView: React.FC = () => {
                 <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   {language === 'ar' ? 'مواد وسلع المخزن' : 'Articles & Matériaux'}
                 </span>
-                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#d4522f]/10 text-[#d4522f]">
                   {stats.productsCount} références
                 </span>
               </div>
@@ -542,7 +542,7 @@ export const TradingCatalogView: React.FC = () => {
                   {stats.productsCount}
                 </div>
                 <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
-                  <Tag size={13} className="text-[#C4785A]" />
+                  <Tag size={13} className="text-[#d4522f]" />
                   <span>Prix de vente HT moyen: <strong>{formatMoney(1850)}</strong></span>
                 </div>
               </div>
@@ -605,7 +605,7 @@ export const TradingCatalogView: React.FC = () => {
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
             {/* Left Title / Icon / Count Anchor */}
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
                 <ShoppingBag size={18} />
               </div>
               <div className="flex items-center gap-2">
@@ -614,7 +614,7 @@ export const TradingCatalogView: React.FC = () => {
                     ? t('trading_catalog_articles_title', 'Articles de Négoce')
                     : t('trading_catalog_services_title', 'Prestations & Forfaits')}
                 </span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-[#C4785A]/10 text-[#C4785A] font-semibold font-mono">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f] font-semibold font-mono">
                   {filteredItems.length}
                 </span>
               </div>
@@ -629,12 +629,12 @@ export const TradingCatalogView: React.FC = () => {
                   onClick={() => setActiveTab('products')}
                   className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                     activeTab === 'products'
-                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                      ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs'
                       : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
                   <span>{t('trading_catalog_tab_products', 'Articles & Matériaux de Stock')}</span>
-                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${activeTab === 'products' ? 'bg-[#C4785A] text-white' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'}`}>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${activeTab === 'products' ? 'bg-[#d4522f] text-white' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'}`}>
                     {stats.productsCount}
                   </span>
                 </button>
@@ -644,12 +644,12 @@ export const TradingCatalogView: React.FC = () => {
                   onClick={() => setActiveTab('services')}
                   className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                     activeTab === 'services'
-                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                      ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs'
                       : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
                   <span>{t('trading_catalog_tab_services', 'Prestations & Services Immatériels')}</span>
-                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${activeTab === 'services' ? 'bg-[#C4785A] text-white' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'}`}>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${activeTab === 'services' ? 'bg-[#d4522f] text-white' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'}`}>
                     {stats.servicesCount}
                   </span>
                 </button>
@@ -692,7 +692,7 @@ export const TradingCatalogView: React.FC = () => {
           {selectedIds.size > 0 && (
             <div className="flex items-center justify-between p-3 px-4 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
               <div className="flex items-center gap-3">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
                 <span className="text-xs font-bold text-neutral-900 dark:text-white">
                   {selectedIds.size} articles sélectionnés
                 </span>
@@ -792,7 +792,7 @@ export const TradingCatalogView: React.FC = () => {
                           <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200">
                             {p.sku || 'N/A'}
                           </span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#C4785A]/10 text-[#C4785A]">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f]">
                             {p.category || 'Général'}
                           </span>
                         </div>
@@ -809,7 +809,7 @@ export const TradingCatalogView: React.FC = () => {
                         <div className="mt-3 p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-1.5 text-xs">
                           <div className="flex items-center justify-between">
                             <span className="text-neutral-500">Prix Vente HT :</span>
-                            <span className="font-mono font-bold text-[#C4785A] text-sm tabular-nums">
+                            <span className="font-mono font-bold text-[#d4522f] text-sm tabular-nums">
                               {formatMoney(p.price?.amount || 0)}
                             </span>
                           </div>
@@ -852,14 +852,14 @@ export const TradingCatalogView: React.FC = () => {
                                 e.stopPropagation();
                                 handleReplenishStock(p, 10);
                               }}
-                              className="px-2.5 py-1 rounded-lg bg-[#C4785A]/10 hover:bg-[#C4785A]/20 text-[#C4785A] text-[11px] font-bold transition-colors cursor-pointer"
+                              className="px-2.5 py-1 rounded-lg bg-[#d4522f]/10 hover:bg-[#d4522f]/20 text-[#d4522f] text-[11px] font-bold transition-colors cursor-pointer"
                             >
                               +10 Stock
                             </button>
                           </>
                         ) : (
                           <div className="flex items-center gap-1.5 text-neutral-500">
-                            <Sparkles size={13} className="text-[#C4785A]" />
+                            <Sparkles size={13} className="text-[#d4522f]" />
                             <span>Prestation au Forfait</span>
                           </div>
                         )}
@@ -877,7 +877,7 @@ export const TradingCatalogView: React.FC = () => {
                 {/* Header */}
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-12 h-12 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-lg font-bold shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
+                    <div className="w-12 h-12 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-lg font-bold shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
                       <ShoppingBag size={22} />
                     </div>
                     <div className="min-w-0">
@@ -906,7 +906,7 @@ export const TradingCatalogView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleReplenishStock(activeProduct, 10)}
-                      className="flex-1 py-1.5 px-3 rounded-xl bg-[#C4785A] hover:bg-[#B3684A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                      className="flex-1 py-1.5 px-3 rounded-xl bg-[#d4522f] hover:bg-[#B3684A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
                     >
                       <PackagePlus size={13} />
                       <span>+10 Stock</span>
@@ -941,7 +941,7 @@ export const TradingCatalogView: React.FC = () => {
                     onClick={() => setDrawerTab('fiche')}
                     className={`flex-1 py-1 text-center rounded-lg transition-all ${
                       drawerTab === 'fiche'
-                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        ? 'bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                         : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
@@ -952,7 +952,7 @@ export const TradingCatalogView: React.FC = () => {
                     onClick={() => setDrawerTab('stock')}
                     className={`flex-1 py-1 text-center rounded-lg transition-all ${
                       drawerTab === 'stock'
-                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        ? 'bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                         : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
@@ -963,7 +963,7 @@ export const TradingCatalogView: React.FC = () => {
                     onClick={() => setDrawerTab('marge')}
                     className={`flex-1 py-1 text-center rounded-lg transition-all ${
                       drawerTab === 'marge'
-                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        ? 'bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                         : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
@@ -974,7 +974,7 @@ export const TradingCatalogView: React.FC = () => {
                     onClick={() => setDrawerTab('notes')}
                     className={`flex-1 py-1 text-center rounded-lg transition-all ${
                       drawerTab === 'notes'
-                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        ? 'bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                         : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
@@ -1037,7 +1037,7 @@ export const TradingCatalogView: React.FC = () => {
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-neutral-500">Valorisation Stock HT :</span>
-                          <span className="font-mono font-bold text-[#C4785A]">
+                          <span className="font-mono font-bold text-[#d4522f]">
                             {formatMoney((activeProduct.stockQuantity || 0) * (activeProduct.cost?.amount || activeProduct.costPrice || 0))}
                           </span>
                         </div>
@@ -1045,7 +1045,7 @@ export const TradingCatalogView: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => handleReplenishStock(activeProduct, 10)}
-                            className="w-full py-2 rounded-xl bg-[#C4785A] hover:bg-[#B3684A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                            className="w-full py-2 rounded-xl bg-[#d4522f] hover:bg-[#B3684A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
                           >
                             <PackagePlus size={14} />
                             <span>Ajouter +10 {activeProduct.unit || 'u'} au stock</span>
@@ -1112,7 +1112,7 @@ export const TradingCatalogView: React.FC = () => {
                       value={productNotes}
                       onChange={(e) => handleNotesChange(e.target.value)}
                       placeholder="Spécifications techniques, fiches de sécurité, fournisseur de référence, conditionnement..."
-                      className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/60 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4785A]"
+                      className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/60 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
                     />
                   </div>
                 )}

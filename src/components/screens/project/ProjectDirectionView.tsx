@@ -261,14 +261,14 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                 }}
                 className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                   isPinned
-                    ? 'text-[#C4785A] bg-[#C4785A]/10'
+                    ? 'text-[#d4522f] bg-[#d4522f]/10'
                     : 'text-zinc-300 hover:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                 }`}
                 title={isPinned ? 'Détacher le projet' : 'Épingler en haut'}
               >
                 <Pin className={`w-3.5 h-3.5 ${isPinned ? 'fill-current' : ''}`} />
               </button>
-              <div className="w-9 h-9 rounded-xl bg-[#C4785A]/10 text-[#C4785A] flex items-center justify-center font-bold text-xs shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0">
                 {proj.title.substring(0, 2).toUpperCase()}
               </div>
               <div className="min-w-0">
@@ -483,7 +483,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#C4785A]">
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#d4522f]">
               {t('pm_role_direction_badge')}
             </span>
             <span className="text-zinc-400">·</span>
@@ -527,7 +527,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               onClick={() => setIsBranchDropdownOpen((prev) => !prev)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200/80 dark:border-zinc-750 transition-all cursor-pointer"
             >
-              <Building2 className="w-3.5 h-3.5 text-[#C4785A]" />
+              <Building2 className="w-3.5 h-3.5 text-[#d4522f]" />
               <span>{currentBranch?.name || 'NCH Cyberpark Tower B'}</span>
               <ChevronDown className="w-3 h-3 opacity-60" />
             </button>
@@ -547,12 +547,12 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                       }}
                       className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center justify-between cursor-pointer ${
                         currentBranch?.id === b.id
-                          ? 'bg-[#C4785A]/10 text-[#C4785A] font-bold'
+                          ? 'bg-[#d4522f]/10 text-[#d4522f] font-bold'
                           : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                       }`}
                     >
                       <span>{b.name}</span>
-                      {currentBranch?.id === b.id && <Check className="w-3.5 h-3.5 text-[#C4785A]" />}
+                      {currentBranch?.id === b.id && <Check className="w-3.5 h-3.5 text-[#d4522f]" />}
                     </button>
                   ))
                 ) : (
@@ -590,7 +590,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               onClick={() => setActivePmSubScreen(tab.id as any)}
               className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${
                 isActive
-                  ? 'border-[#C4785A] text-[#C4785A]'
+                  ? 'border-[#d4522f] text-[#d4522f]'
                   : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
               }`}
             >
@@ -619,7 +619,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
             <div className="lg:col-span-5 flex flex-col">
               <DashboardPod
                 title={language === 'ar' ? 'حركة تسليم المشاريع والمهام' : language === 'fr' ? 'Vélocité Projets & Livrables' : 'Active Sprint Velocity & Deliverable Flow'}
-                icon={<TrendingUp size={18} className="text-[#C4785A]" />}
+                icon={<TrendingUp size={18} className="text-[#d4522f]" />}
                 badge={
                   <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                     {pmProjects.length} {language === 'ar' ? 'مشاريع نشطة' : 'Campagnes Actives'}
@@ -670,7 +670,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                       <span className="text-[11px] text-gray-400 block mb-2">
                         {language === 'ar' ? 'كثافة نشاط الفريق على مدار 24 ساعة' : 'Courbe horaire de cadence agence (24h)'}
                       </span>
-                      <HourlyCurveChart data={[0, 2, 8, 6, 2]} color="#C4785A" />
+                      <HourlyCurveChart data={[0, 2, 8, 6, 2]} color="#d4522f" />
                     </div>
                   </div>
 
@@ -685,7 +685,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                     </div>
                     <div className="w-full bg-gray-100 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
                       <div
-                        className="bg-[#C4785A] h-full rounded-full transition-all duration-500"
+                        className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
                         style={{ width: '88%' }}
                       />
                     </div>
@@ -702,7 +702,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
             <div className="lg:col-span-7 flex flex-col">
               <DashboardPod
                 title={language === 'ar' ? 'تطور محفظة المشاريع والعملاء' : language === 'fr' ? 'Développement Portefeuille & Contrats' : 'Project Portfolio Development'}
-                icon={<FolderKanban size={18} className="text-[#C4785A]" />}
+                icon={<FolderKanban size={18} className="text-[#d4522f]" />}
                 rightControls={
                   <span className="text-xs font-semibold text-gray-500">
                     58 Wilayas Coverage
@@ -754,7 +754,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                         { week: 'Semaine 4', value: 16 },
                       ]}
                       maxScale={20}
-                      barColor="#C4785A"
+                      barColor="#d4522f"
                     />
                   </div>
                 </div>
@@ -769,7 +769,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               <DashboardPod
                 title={language === 'ar' ? 'المسار المالي وهوامش المشاريع' : language === 'fr' ? 'Trajectoire Financière & Marges' : 'Financial Trajectory & Project P&L'}
                 subtitle={language === 'ar' ? 'تتبع الإيرادات المفوترة، تكاليف المواهب وهامش الربحية' : language === 'fr' ? 'Suivi de la facturation client, coûts talents et marge nette' : 'Billing milestones, talent fees and gross margins'}
-                icon={<DollarSign size={18} className="text-[#C4785A]" />}
+                icon={<DollarSign size={18} className="text-[#d4522f]" />}
                 rightControls={
                   <span className="text-xs font-semibold text-gray-500 font-mono">
                     {language === 'ar' ? 'نوفمبر 2026' : 'NOVEMBRE 2026'}
@@ -816,7 +816,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                         1050000, 1120000, 1180000, 1240000, 1310000, 1380000, 1420000, 1490000, 1560000, totalTurnoverDzd || 1650000
                       ]}
                       currency="DA"
-                      color="#C4785A"
+                      color="#d4522f"
                     />
                   </div>
 
@@ -852,7 +852,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               <DashboardPod
                 title={language === 'ar' ? 'ذكاء الفريق ومراقبة الانحراف' : language === 'fr' ? 'Intelligence Équipe & Gardien Budget' : 'Team Allocation & Budget Runaway Guardian'}
                 subtitle={language === 'ar' ? 'توزيع الموارد حسب التخصص وحماية هوامش المشاريع' : language === 'fr' ? 'Répartition par pôle, cadence créative et prévention des dépassements' : 'Workload distribution, creative cadence and runaway guard'}
-                icon={<ShieldCheck size={18} className="text-[#C4785A]" />}
+                icon={<ShieldCheck size={18} className="text-[#d4522f]" />}
               >
                 <div className="space-y-4">
                   {/* Two domain intelligence charts */}
@@ -863,7 +863,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                       </span>
                       <DonutChart
                         segments={[
-                          { label: language === 'ar' ? 'تصميم وهوية' : 'Key Visual / UI', value: 45, color: '#C4785A' },
+                          { label: language === 'ar' ? 'تصميم وهوية' : 'Key Visual / UI', value: 45, color: '#d4522f' },
                           { label: language === 'ar' ? 'تطوير وإنتاج' : 'Dev / Motion', value: 30, color: '#6366F1' },
                           { label: language === 'ar' ? 'استراتيجية وإدارة' : 'Stratégie & PM', value: 15, color: '#10B981' },
                           { label: language === 'ar' ? 'مراجعة وتدقيق' : 'QA & Recette', value: 10, color: '#F59E0B' },
@@ -882,7 +882,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                           { label: language === 'ar' ? 'أسبوع 3' : 'Sem 3', value: 16 },
                           { label: language === 'ar' ? 'أسبوع 4' : 'Sem 4', value: 20, highlight: true },
                         ]}
-                        activeColor="#C4785A"
+                        activeColor="#d4522f"
                       />
                     </div>
                   </div>
@@ -914,7 +914,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                       <button
                         type="button"
                         onClick={() => setActivePmSubScreen('new_project')}
-                        className="py-2.5 px-3 rounded-[12px] bg-[#C4785A] hover:bg-[#B3684B] text-white text-xs font-semibold text-center transition-colors cursor-pointer shadow-xs"
+                        className="py-2.5 px-3 rounded-[12px] bg-[#d4522f] hover:bg-[#B3684B] text-white text-xs font-semibold text-center transition-colors cursor-pointer shadow-xs"
                       >
                         {language === 'ar' ? '+ مشروع جديد' : '+ Nouveau Projet'}
                       </button>
@@ -1009,8 +1009,8 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 
           {/* Floating Batch Action Toolbar */}
           {selectedProjectIds.size > 0 && (
-            <div className="flex items-center justify-between px-4 py-3 bg-[#C4785A]/10 border border-[#C4785A]/30 rounded-2xl animate-in fade-in slide-in-from-top-2">
-              <div className="flex items-center gap-3 text-xs font-semibold text-[#C4785A]">
+            <div className="flex items-center justify-between px-4 py-3 bg-[#d4522f]/10 border border-[#d4522f]/30 rounded-2xl animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-center gap-3 text-xs font-semibold text-[#d4522f]">
                 <span>{selectedProjectIds.size} projet(s) sélectionné(s)</span>
                 <button
                   type="button"
@@ -1079,7 +1079,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               <div className="flex flex-col justify-between h-full space-y-4">
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-2">
-                    <span className="text-[11px] font-bold text-[#C4785A] uppercase tracking-wider truncate">
+                    <span className="text-[11px] font-bold text-[#d4522f] uppercase tracking-wider truncate">
                       {proj.clientName}
                     </span>
                     <span className="font-mono text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded">
@@ -1122,7 +1122,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
       {currentScreen === 'new_project' && (
         <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs max-w-4xl mx-auto space-y-6">
           <div>
-            <span className="text-xs font-semibold text-[#C4785A] uppercase tracking-wide">
+            <span className="text-xs font-semibold text-[#d4522f] uppercase tracking-wide">
               {t('pm_dir_screen_new_badge')}
             </span>
             <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">
@@ -1215,7 +1215,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                   placeholder={t('pm_dir_field_scope_ph')}
                   value={newProjectScope}
                   onChange={(e) => setNewProjectScope(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#C4785A]"
+                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
                 />
               </div>
 
@@ -1301,7 +1301,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
             <div>
-              <span className="text-xs font-semibold text-[#C4785A] uppercase tracking-wide">
+              <span className="text-xs font-semibold text-[#d4522f] uppercase tracking-wide">
                 {t('pm_dir_approvals_badge')}
               </span>
               <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-0.5">
@@ -1513,7 +1513,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
           <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <span className="text-xs font-bold text-[#C4785A] uppercase tracking-wider block">
+                <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">
                   Écran 1.4 · Rapports d'Activité & Marges
                 </span>
                 <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
@@ -1636,7 +1636,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
           <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                <Receipt className="w-4 h-4 text-[#C4785A]" />
+                <Receipt className="w-4 h-4 text-[#d4522f]" />
                 Justificatif Fiscal de Paiement
               </h3>
               <button

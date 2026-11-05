@@ -164,7 +164,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   });
                 }}
                 className={`p-1 rounded-lg transition-colors cursor-pointer ${
-                  isPinned ? 'text-[#C4785A] bg-[#C4785A]/10' : 'text-zinc-300 hover:text-zinc-500'
+                  isPinned ? 'text-[#d4522f] bg-[#d4522f]/10' : 'text-zinc-300 hover:text-zinc-500'
                 }`}
               >
                 <Pin className={`w-3.5 h-3.5 ${isPinned ? 'fill-current' : ''}`} />
@@ -358,7 +358,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#C4785A]">
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#d4522f]">
               Studio Créa
             </span>
             <span className="text-zinc-400">·</span>
@@ -382,7 +382,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               onClick={() => setIsBranchDropdownOpen((prev) => !prev)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200/80 dark:border-zinc-750 transition-all cursor-pointer"
             >
-              <Building2 className="w-3.5 h-3.5 text-[#C4785A]" />
+              <Building2 className="w-3.5 h-3.5 text-[#d4522f]" />
               <span>{currentBranch?.name || 'NCH Cyberpark Tower B'}</span>
               <ChevronDown className="w-3 h-3 opacity-60" />
             </button>
@@ -518,7 +518,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-2.5"
                 >
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="font-mono font-bold text-[#C4785A]">{order.orderNumber}</span>
+                    <span className="font-mono font-bold text-[#d4522f]">{order.orderNumber}</span>
                     <span className="text-zinc-400">{order.items.length} support(s)</span>
                   </div>
                   <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
@@ -626,8 +626,8 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
           </div>
 
           {selectedBatIds.size > 0 && (
-            <div className="flex items-center justify-between px-4 py-3 bg-[#C4785A]/10 border border-[#C4785A]/30 rounded-2xl animate-in fade-in">
-              <div className="flex items-center gap-3 text-xs font-semibold text-[#C4785A]">
+            <div className="flex items-center justify-between px-4 py-3 bg-[#d4522f]/10 border border-[#d4522f]/30 rounded-2xl animate-in fade-in">
+              <div className="flex items-center gap-3 text-xs font-semibold text-[#d4522f]">
                 <span>{selectedBatIds.size} livrable(s) sélectionné(s)</span>
                 <button
                   type="button"
@@ -690,7 +690,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                     className="w-full h-36 rounded-xl object-cover border border-zinc-100 dark:border-zinc-800"
                   />
                   <div className="flex justify-between items-center text-xs">
-                    <span className="font-bold text-[#C4785A]">{bat.versionCode}</span>
+                    <span className="font-bold text-[#d4522f]">{bat.versionCode}</span>
                     <span className="font-mono text-zinc-400">{bat.fileFormat.toUpperCase()}</span>
                   </div>
                   <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 line-clamp-1">
@@ -706,7 +706,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   <button
                     type="button"
                     onClick={() => setSelectedPreviewBat(bat)}
-                    className="text-[#C4785A] font-semibold hover:underline cursor-pointer"
+                    className="text-[#d4522f] font-semibold hover:underline cursor-pointer"
                   >
                     Inspecter ➔
                   </button>
@@ -722,7 +722,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
         <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
           <div className="p-6 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs max-w-3xl mx-auto space-y-6">
             <div>
-              <span className="text-xs font-bold text-[#C4785A] uppercase tracking-wider block">
+              <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">
                 Dépôt & Conformité Pré-Presse (Slide 8)
               </span>
               <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">
@@ -807,7 +807,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   type="checkbox"
                   checked={hasBleedIncluded}
                   onChange={(e) => setHasBleedIncluded(e.target.checked)}
-                  className="w-4 h-4 rounded text-[#C4785A] focus:ring-[#C4785A]"
+                  className="w-4 h-4 rounded text-[#d4522f] focus:ring-[#d4522f]"
                 />
               </div>
 
@@ -836,7 +836,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-3"
               >
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-[#C4785A] uppercase">{p.clientName}</span>
+                  <span className="font-bold text-[#d4522f] uppercase">{p.clientName}</span>
                   <span className="font-mono text-zinc-400">Échéance KV: {p.kvDeadline}</span>
                 </div>
                 <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">

@@ -79,7 +79,7 @@ export const AppointmentServicesView: React.FC = () => {
   const [formCostPrice, setFormCostPrice] = useState(500);
   const [formCommission, setFormCommission] = useState(40);
   const [formBuffer, setFormBuffer] = useState(10);
-  const [formColor, setFormColor] = useState('#C4785A');
+  const [formColor, setFormColor] = useState('#d4522f');
   const [formDescription, setFormDescription] = useState('');
 
   // Filtered services list
@@ -137,7 +137,7 @@ export const AppointmentServicesView: React.FC = () => {
     setFormCostPrice(500);
     setFormCommission(40);
     setFormBuffer(10);
-    setFormColor('#C4785A');
+    setFormColor('#d4522f');
     setFormDescription('');
     setIsServiceModalOpen(true);
   };
@@ -151,7 +151,7 @@ export const AppointmentServicesView: React.FC = () => {
     setFormCostPrice(service.costPrice || 0);
     setFormCommission(service.commissionRate || 40);
     setFormBuffer(service.bufferMinutes || 0);
-    setFormColor(service.color || '#C4785A');
+    setFormColor(service.color || '#d4522f');
     setFormDescription(service.description || '');
     setIsServiceModalOpen(true);
   };
@@ -270,7 +270,7 @@ export const AppointmentServicesView: React.FC = () => {
         <div className="flex items-center gap-2.5">
           <div
             className="w-3.5 h-3.5 rounded-full shrink-0 shadow-2xs"
-            style={{ backgroundColor: service.color || '#C4785A' }}
+            style={{ backgroundColor: service.color || '#d4522f' }}
           />
           <div className="min-w-0">
             <span className="font-bold text-xs text-neutral-900 dark:text-white block truncate">
@@ -426,7 +426,7 @@ export const AppointmentServicesView: React.FC = () => {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
-              <Scissors className="text-[#C4785A]" size={26} />
+              <Scissors className="text-[#d4522f]" size={26} />
               <span>Catalogue des Soins & Prestations</span>
             </h1>
             <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-800">
@@ -461,7 +461,7 @@ export const AppointmentServicesView: React.FC = () => {
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-[#E9EEF0] dark:border-neutral-800">
           <div className="flex items-center gap-2">
-            <Tag size={18} className="text-[#C4785A]" />
+            <Tag size={18} className="text-[#d4522f]" />
             <h2 className="text-xs font-black uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
               Indicateurs Clés de Rentabilité & Tarification
             </h2>
@@ -551,14 +551,14 @@ export const AppointmentServicesView: React.FC = () => {
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           {/* Left Title / Icon / Count Anchor */}
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+            <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
               <Scissors size={18} />
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-neutral-900 dark:text-white">
                 Prestations & Forfaits
               </span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-[#C4785A]/10 text-[#C4785A] font-semibold">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f] font-semibold">
                 {filteredServices.length}
               </span>
             </div>
@@ -583,7 +583,7 @@ export const AppointmentServicesView: React.FC = () => {
                   onClick={() => setActiveCategory(cat.id)}
                   className={`px-3 py-1.5 text-xs font-semibold rounded-xl whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer ${
                     activeCategory === cat.id
-                      ? 'bg-[#C4785A] text-white shadow-xs'
+                      ? 'bg-[#d4522f] text-white shadow-xs'
                       : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-[#E9EEF0] dark:border-neutral-700/60'
                   }`}
                 >
@@ -614,7 +614,7 @@ export const AppointmentServicesView: React.FC = () => {
         {selectedServiceIds.size > 0 && (
           <div className="p-3 bg-neutral-900 text-white rounded-xl flex items-center justify-between gap-4 shadow-xl">
             <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-[#C4785A] text-white text-xs font-bold flex items-center justify-center">
+              <span className="w-6 h-6 rounded-full bg-[#d4522f] text-white text-xs font-bold flex items-center justify-center">
                 {selectedServiceIds.size}
               </span>
               <span className="text-xs font-medium">prestations sélectionnées</span>
@@ -661,7 +661,7 @@ export const AppointmentServicesView: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <div
                         className="w-3 h-3 rounded-full shrink-0 shadow-2xs"
-                        style={{ backgroundColor: service.color || '#C4785A' }}
+                        style={{ backgroundColor: service.color || '#d4522f' }}
                       />
                       <span className="font-bold text-xs text-neutral-900 dark:text-white truncate">
                         {service.name}
@@ -683,7 +683,7 @@ export const AppointmentServicesView: React.FC = () => {
                     <Clock size={12} className="text-neutral-400" />
                     <span>{service.durationMinutes} min</span>
                   </div>
-                  <span className="font-mono font-bold text-sm text-[#C4785A] tabular-nums">
+                  <span className="font-mono font-bold text-sm text-[#d4522f] tabular-nums">
                     {formatMoney(service.price)}
                   </span>
                 </div>
@@ -815,7 +815,7 @@ export const AppointmentServicesView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="h-10 px-5 text-xs font-bold text-white bg-[#C4785A] rounded-full hover:opacity-90 cursor-pointer shadow-xs"
+                  className="h-10 px-5 text-xs font-bold text-white bg-[#d4522f] rounded-full hover:opacity-90 cursor-pointer shadow-xs"
                 >
                   Enregistrer
                 </button>

@@ -256,7 +256,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
                 type="button"
                 onClick={() => setUrgency('Prioritaire')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  urgency === 'Prioritaire' ? 'bg-[#C4785A] text-white shadow-xs' : 'text-neutral-600 dark:text-neutral-400'
+                  urgency === 'Prioritaire' ? 'bg-[#d4522f] text-white shadow-xs' : 'text-neutral-600 dark:text-neutral-400'
                 }`}
               >
                 Prioritaire
@@ -270,7 +270,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
                 type="checkbox"
                 checked={isEmergencyBypass}
                 onChange={(e) => setIsEmergencyBypass(e.target.checked)}
-                className="w-4 h-4 rounded text-[#C4785A] accent-[#C4785A] cursor-pointer"
+                className="w-4 h-4 rounded text-[#d4522f] accent-[#d4522f] cursor-pointer"
               />
               <span className="text-xs font-bold text-amber-700 dark:text-amber-400">
                 Sur-réservation d'urgence (Bypass de conflit)

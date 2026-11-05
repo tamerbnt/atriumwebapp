@@ -285,7 +285,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
   const getMemberInitialsColor = (name: string) => {
     if (name.toLowerCase().startsWith('a')) return '#D946EF'; // Magenta amira
     if (name.toLowerCase().startsWith('s')) return '#2563EB'; // Blue saraa
-    if (name.toLowerCase().startsWith('y')) return '#C4785A'; // Terracotta
+    if (name.toLowerCase().startsWith('y')) return '#d4522f'; // Terracotta
     if (name.toLowerCase().startsWith('n')) return '#10B981'; // Green
     if (name.toLowerCase().startsWith('r')) return '#06B6D4'; // Cyan
     return '#8B5CF6'; // Purple
@@ -351,7 +351,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                 {member.phoneNumber && (
                   <>
                     <span>·</span>
-                    <span className="hover:text-[#C4785A] transition-colors">{member.phoneNumber}</span>
+                    <span className="hover:text-[#d4522f] transition-colors">{member.phoneNumber}</span>
                   </>
                 )}
               </div>
@@ -367,7 +367,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
       sortable: true,
       renderCell: (member) => (
         <div className="text-center">
-          <span className="inline-block px-3 py-0.5 rounded-full bg-[#FDF4F0] dark:bg-neutral-700/80 text-[#C4785A] text-[11px] font-bold border border-[#F5E2D8] dark:border-neutral-600 truncate max-w-[130px]">
+          <span className="inline-block px-3 py-0.5 rounded-full bg-[#FDF4F0] dark:bg-neutral-700/80 text-[#d4522f] text-[11px] font-bold border border-[#F5E2D8] dark:border-neutral-600 truncate max-w-[130px]">
             {member.membershipPlanName || 'Standard'}
           </span>
         </div>
@@ -523,7 +523,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
               className="h-10 px-4 rounded-[6px] bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
             >
-              <Home size={16} className="text-[#C4785A]" />
+              <Home size={16} className="text-[#d4522f]" />
               <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                 {currentBranch?.name || 'Atrium 1'}
               </span>
@@ -555,12 +555,12 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                       }}
                       className={`w-full px-3 py-2 text-left flex items-center justify-between text-xs transition-colors cursor-pointer ${
                         isCurrent
-                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold'
                           : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                        <Building2 size={14} className={isCurrent ? 'text-[#d4522f]' : 'text-neutral-400'} />
                         <span className="truncate">{biz.name}</span>
                       </div>
                       {isCurrent && <Check size={14} />}
@@ -619,7 +619,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                 {language === 'ar' ? 'تنبيهات انتهاء الاشتراك' : language === 'fr' ? 'Alertes de renouvellement' : 'Renewal & Retention Alert'}
               </span>
               <div className="mt-1">
-                <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-bold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded-full">
                   {expiringCount} {language === 'ar' ? 'تنتهي قريباً (<14j)' : language === 'fr' ? 'expirent sous 14j' : 'expiring (<14d)'}
                 </span>
               </div>
@@ -699,16 +699,16 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                 onClick={toggleFilterPopover}
                 className={`h-10 px-3.5 rounded-xl border flex items-center gap-2 text-xs font-semibold cursor-pointer transition-all shadow-2xs select-none ${
                   hasActiveAdvancedFilters || isFilterPopoverOpen
-                    ? 'bg-[#FCEEE8] dark:bg-[#C4785A]/15 text-[#C4785A] border-[#C4785A]/40 ring-1 ring-[#C4785A]/20'
+                    ? 'bg-[#FCEEE8] dark:bg-[#d4522f]/15 text-[#d4522f] border-[#d4522f]/40 ring-1 ring-[#d4522f]/20'
                     : 'bg-white dark:bg-neutral-800 border-[#E9EEF0] dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700/50'
                 }`}
                 title={language === 'ar' ? 'مرشحات متقدمة' : language === 'fr' ? 'Filtres avancés' : 'Advanced Filters'}
                 aria-expanded={isFilterPopoverOpen}
               >
-                <SlidersHorizontal size={15} className={hasActiveAdvancedFilters ? 'text-[#C4785A]' : 'text-neutral-500'} />
+                <SlidersHorizontal size={15} className={hasActiveAdvancedFilters ? 'text-[#d4522f]' : 'text-neutral-500'} />
                 <span>{language === 'ar' ? 'مرشحات' : language === 'fr' ? 'Filtres' : 'Filters'}</span>
                 {activeFiltersCount > 0 && (
-                  <span className="w-5 h-5 rounded-md text-[10px] font-bold flex items-center justify-center bg-[#C4785A] text-white tabular-nums">
+                  <span className="w-5 h-5 rounded-md text-[10px] font-bold flex items-center justify-center bg-[#d4522f] text-white tabular-nums">
                     {activeFiltersCount}
                   </span>
                 )}
@@ -778,7 +778,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               {/* Header: Title, Total Matches, Reset & Close */}
               <div className="flex items-center justify-between pb-3.5 border-b border-neutral-100 dark:border-neutral-800 shrink-0">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-[#C4785A]/20 flex items-center justify-center text-[#C4785A] shadow-2xs">
+                  <div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-[#d4522f]/20 flex items-center justify-center text-[#d4522f] shadow-2xs">
                     <SlidersHorizontal size={16} />
                   </div>
                   <div>
@@ -795,7 +795,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                     <button
                       type="button"
                       onClick={handleResetFilters}
-                      className="text-xs font-semibold text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer transition-colors px-2 py-1 rounded-md"
+                      className="text-xs font-semibold text-[#d4522f] hover:underline flex items-center gap-1 cursor-pointer transition-colors px-2 py-1 rounded-md"
                     >
                       <RotateCcw size={12} />
                       <span>{language === 'ar' ? 'إعادة ضبط' : language === 'fr' ? 'Réinitialiser' : 'Reset'}</span>
@@ -824,7 +824,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                       <button
                         type="button"
                         onClick={() => setGenderFilter('All')}
-                        className="text-[10px] text-[#C4785A] font-semibold hover:underline cursor-pointer"
+                        className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer"
                       >
                         {language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All'}
                       </button>
@@ -866,7 +866,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                       <button
                         type="button"
                         onClick={() => setAgeGroupFilter('All')}
-                        className="text-[10px] text-[#C4785A] font-semibold hover:underline cursor-pointer"
+                        className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer"
                       >
                         {language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All'}
                       </button>
@@ -890,7 +890,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                           onClick={() => setAgeGroupFilter(ag.val as any)}
                           className={`h-9 px-2.5 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-all ${
                             isSelected
-                              ? 'bg-[#FCEEE8] dark:bg-[#C4785A]/20 text-[#C4785A] border-[#C4785A]/40 font-bold shadow-2xs'
+                              ? 'bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs'
                               : 'bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/40'
                           }`}
                         >
@@ -914,7 +914,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                       <button
                         type="button"
                         onClick={() => setPlanFilter('All')}
-                        className="text-[10px] text-[#C4785A] font-semibold hover:underline cursor-pointer"
+                        className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer"
                       >
                         {language === 'ar' ? 'عرض الكل' : language === 'fr' ? 'Toutes' : 'Show All'}
                       </button>
@@ -926,7 +926,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                       onClick={() => setPlanFilter('All')}
                       className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-all ${
                         planFilter === 'All'
-                          ? 'bg-[#FCEEE8] dark:bg-[#C4785A]/20 text-[#C4785A] border-[#C4785A]/40 font-bold shadow-2xs'
+                          ? 'bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs'
                           : 'bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
                       }`}
                     >
@@ -947,7 +947,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                           onClick={() => setPlanFilter(p.id)}
                           className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-all ${
                             isSelected
-                              ? 'bg-[#FCEEE8] dark:bg-[#C4785A]/20 text-[#C4785A] border-[#C4785A]/40 font-bold shadow-2xs'
+                              ? 'bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs'
                               : 'bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
                           }`}
                         >
@@ -978,7 +978,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                       <button
                         type="button"
                         onClick={() => setStatusFilter('All')}
-                        className="text-[10px] text-[#C4785A] font-semibold hover:underline cursor-pointer"
+                        className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer"
                       >
                         {language === 'ar' ? 'إعادة ضبط' : language === 'fr' ? 'Réinitialiser' : 'Reset'}
                       </button>
@@ -1000,7 +1000,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                           onClick={() => setStatusFilter(item.val as any)}
                           className={`h-9 px-2.5 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-all ${
                             isSelected
-                              ? 'bg-[#FCEEE8] dark:bg-[#C4785A]/20 text-[#C4785A] border-[#C4785A]/40 font-bold shadow-2xs'
+                              ? 'bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs'
                               : 'bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/40'
                           }`}
                         >
@@ -1070,7 +1070,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
             </span>
 
             {genderFilter !== 'All' && (
-              <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#C4785A]/20 text-[#C4785A] border border-[#C4785A]/30 text-xs font-semibold">
+              <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
                 <span>
                   {language === 'ar' ? 'الجنس' : 'Sexe'}: {genderFilter === 'Male' ? (language === 'ar' ? 'ذكور' : 'Hommes') : genderFilter === 'Female' ? (language === 'ar' ? 'إناث' : 'Femmes') : (language === 'ar' ? 'آخر' : 'Autre')}
                 </span>
@@ -1087,7 +1087,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
             )}
 
             {ageGroupFilter !== 'All' && (
-              <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#C4785A]/20 text-[#C4785A] border border-[#C4785A]/30 text-xs font-semibold">
+              <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
                 <span>
                   {language === 'ar' ? 'العمر' : 'Âge'}: {
                     ageGroupFilter === 'under18' ? '< 18 ans' :
@@ -1110,7 +1110,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
             )}
 
             {planFilter !== 'All' && (
-              <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#C4785A]/20 text-[#C4785A] border border-[#C4785A]/30 text-xs font-semibold">
+              <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
                 <span>
                   {t('member_filter_plan_label', language)}: {dynamicAvailablePlans.find((p) => p.id === planFilter)?.name || plans.find((p) => p.id === planFilter)?.name || planFilter}
                 </span>
@@ -1127,7 +1127,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
             )}
 
             {(statusFilter === 'Expired' || statusFilter === 'Archived') && (
-              <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#C4785A]/20 text-[#C4785A] border border-[#C4785A]/30 text-xs font-semibold">
+              <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
                 <span>
                   {language === 'ar' ? 'الحالة' : language === 'fr' ? 'Statut' : 'Status'}: {localizeStatus(statusFilter, language)}
                 </span>
@@ -1192,7 +1192,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                     </div>
 
                     {/* Plan Badge Pill */}
-                    <div className="mt-1.5 inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-[#FDF4F0] dark:bg-neutral-800 text-[#C4785A] border border-[#F5E2D8] dark:border-neutral-700">
+                    <div className="mt-1.5 inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-[#FDF4F0] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700">
                       {member.membershipPlanName || 'Standard'}
                     </div>
 
@@ -1202,7 +1202,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                         RFID: {member.cardId?.replace('RFID-', '') || '46466446'}
                       </div>
                       {member.phoneNumber && (
-                        <div className="truncate font-mono text-[11px] hover:text-[#C4785A] transition-colors">
+                        <div className="truncate font-mono text-[11px] hover:text-[#d4522f] transition-colors">
                           {member.phoneNumber}
                         </div>
                       )}
@@ -1210,7 +1210,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                         <span className="font-semibold text-neutral-700 dark:text-neutral-300">
                           {daysLeft > 0 ? `${daysLeft}d left` : 'Expired'}
                         </span>
-                        <span className="font-mono font-bold text-[#C4785A] tabular-nums">
+                        <span className="font-mono font-bold text-[#d4522f] tabular-nums">
                           {priceDisplay}
                         </span>
                       </div>
@@ -1313,7 +1313,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               }}
               emptyTitle={language === 'ar' ? 'لا يوجد مشتركون' : language === 'fr' ? 'Aucun adhérent trouvé' : 'No members found'}
               emptyDescription={language === 'ar' ? 'جرب تغيير معايير البحث أو إضافة مشترك جديد' : language === 'fr' ? 'Essayez de modifier vos filtres ou ajoutez un nouvel adhérent' : 'Try adjusting your search filters or add a new member'}
-              emptyIcon={<Users size={32} className="text-[#C4785A]" />}
+              emptyIcon={<Users size={32} className="text-[#d4522f]" />}
               primaryActionLabel={`${t('action_add', language)} ${terminology.memberSingle}`}
               onAddFirstItem={onAddMember}
             />
@@ -1359,7 +1359,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                         {selectedMember.fullName}
                       </h3>
                       <div className="mt-1 flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[11px] font-bold text-[#C4785A] bg-[#FCEEE8] dark:bg-[#C4785A]/15 px-2.5 py-0.5 rounded-full border border-[#C4785A]/20">
+                        <span className="text-[11px] font-bold text-[#d4522f] bg-[#FCEEE8] dark:bg-[#d4522f]/15 px-2.5 py-0.5 rounded-full border border-[#d4522f]/20">
                           {selectedMember.membershipPlanName || (language === 'ar' ? 'الباقة القياسية' : language === 'fr' ? 'Formule Standard' : 'Standard Package')}
                         </span>
                         <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-300 px-2 py-0.5 rounded-full flex items-center gap-1">
@@ -1419,7 +1419,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                       <button
                         type="button"
                         onClick={() => checkInMember(selectedMember.id)}
-                        className="h-16 p-2 rounded-[14px] bg-[#FDF4F0] dark:bg-[#C4785A]/15 text-xs font-semibold flex flex-col items-center justify-center gap-1 text-[#C4785A] hover:bg-[#FCEEE8] cursor-pointer transition-all border border-[#F5E2D8] dark:border-[#C4785A]/30 shadow-2xs hover:scale-[1.02] active:scale-[0.98]"
+                        className="h-16 p-2 rounded-[14px] bg-[#FDF4F0] dark:bg-[#d4522f]/15 text-xs font-semibold flex flex-col items-center justify-center gap-1 text-[#d4522f] hover:bg-[#FCEEE8] cursor-pointer transition-all border border-[#F5E2D8] dark:border-[#d4522f]/30 shadow-2xs hover:scale-[1.02] active:scale-[0.98]"
                         title={t('member_drawer_quick_checkin', language)}
                       >
                         <UserCheck size={18} />
@@ -1430,7 +1430,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                         onClick={() => onEditMember(selectedMember)}
                         className="h-16 p-2 rounded-[14px] bg-white dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 text-xs font-semibold flex flex-col items-center justify-center gap-1 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer transition-all shadow-2xs hover:scale-[1.02] active:scale-[0.98]"
                       >
-                        <Edit size={18} className="text-[#C4785A]" />
+                        <Edit size={18} className="text-[#d4522f]" />
                         <span className="text-[10px] font-medium truncate max-w-full">{t('action_edit', language)}</span>
                       </button>
                       <button
@@ -1487,7 +1487,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                       <span className="text-neutral-500 dark:text-neutral-400 font-medium">
                         {language === 'ar' ? 'الأيام المتبقية:' : language === 'fr' ? 'Jours restants :' : 'Remaining Days:'}
                       </span>
-                      <span className="font-bold text-[#C4785A] tabular-nums">
+                      <span className="font-bold text-[#d4522f] tabular-nums">
                         {calculateDaysRemaining(false, selectedMember.expirationDate)} {t('member_days_unit', language)}
                       </span>
                     </div>
@@ -1541,7 +1541,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                         setTimeout(() => setSaveNoteSuccess(false), 2000);
                       }}
                       placeholder={language === 'ar' ? 'أضف ملاحظات خاصة حول المشترك...' : language === 'fr' ? 'Ajouter des notes internes sur l\'adhérent...' : 'Add private staff notes...'}
-                      className="w-full p-3.5 rounded-[18px] border border-neutral-200 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-800/60 text-xs focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white resize-none shadow-2xs"
+                      className="w-full p-3.5 rounded-[18px] border border-neutral-200 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-800/60 text-xs focus:outline-none focus:border-[#d4522f] text-neutral-900 dark:text-white resize-none shadow-2xs"
                     />
                   </div>
                 </div>
@@ -1611,7 +1611,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                             <span className="font-bold text-neutral-900 dark:text-white">
                               {ev.title}
                             </span>
-                            <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2.5 py-0.5 rounded-full">
+                            <span className="text-[10px] font-bold text-[#d4522f] bg-[#d4522f]/10 px-2.5 py-0.5 rounded-full">
                               {ev.category}
                             </span>
                           </div>
@@ -1646,16 +1646,16 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
 
                     return (
                       <>
-                        <div className="p-4 rounded-[20px] bg-[#FCEEE8] dark:bg-[#C4785A]/15 border border-[#C4785A]/30 flex items-center justify-between shadow-2xs">
+                        <div className="p-4 rounded-[20px] bg-[#FCEEE8] dark:bg-[#d4522f]/15 border border-[#d4522f]/30 flex items-center justify-between shadow-2xs">
                           <div>
-                            <span className="text-[11px] text-[#C4785A] font-bold uppercase tracking-wider block">
+                            <span className="text-[11px] text-[#d4522f] font-bold uppercase tracking-wider block">
                               {language === 'ar' ? 'إجمالي المشتريات' : language === 'fr' ? 'Total des achats' : 'Lifetime Spend'}
                             </span>
                             <span className="text-xs text-neutral-500 dark:text-neutral-400">
                               {memberSales.length} {language === 'ar' ? 'عمليات دفع' : 'factures'}
                             </span>
                           </div>
-                          <span className="text-lg font-bold font-mono text-[#C4785A] tabular-nums">
+                          <span className="text-lg font-bold font-mono text-[#d4522f] tabular-nums">
                             {formatMoney(totalSpent)}
                           </span>
                         </div>
@@ -1766,7 +1766,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
           <button
             type="button"
             onClick={handleExportCSV}
-            className="hover:text-[#C4785A] cursor-pointer font-medium"
+            className="hover:text-[#d4522f] cursor-pointer font-medium"
           >
             {language === 'ar' ? 'تصدير المحدد' : language === 'fr' ? 'Exporter la sélection' : 'Export Selected'}
           </button>

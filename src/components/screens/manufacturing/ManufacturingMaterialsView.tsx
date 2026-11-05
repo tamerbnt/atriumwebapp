@@ -292,7 +292,7 @@ export const ManufacturingMaterialsView: React.FC = () => {
         sortable: true,
         renderCell: (m) => (
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8]">
+            <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8]">
               <Boxes size={18} />
             </div>
             <div className="min-w-0">
@@ -300,7 +300,7 @@ export const ManufacturingMaterialsView: React.FC = () => {
                 {m.name}
               </div>
               <div className="flex items-center gap-2 text-[11px] text-neutral-400 font-mono mt-0.5">
-                <span className="font-bold text-[#C4785A]">{m.sku}</span>
+                <span className="font-bold text-[#d4522f]">{m.sku}</span>
                 <span>•</span>
                 <span>{m.warehouseLocation || 'Allée A-01'}</span>
               </div>
@@ -396,7 +396,7 @@ export const ManufacturingMaterialsView: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <Warehouse size={22} />
           </div>
           <div>
@@ -404,7 +404,7 @@ export const ManufacturingMaterialsView: React.FC = () => {
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
                 {isAr ? 'مستودع المواد الأولية وسندات الصرف' : 'Dépôt Matières & Mouvements Décret 05-468'}
               </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
                 {materials.length} {isAr ? 'صنف' : 'références'}
               </span>
             </div>
@@ -566,13 +566,13 @@ export const ManufacturingMaterialsView: React.FC = () => {
                 onEdit={handleOpenEdit}
                 renderCard={(m) => (
                   <div className="flex flex-col items-center justify-center w-full">
-                    <div className="w-16 h-16 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-xl font-bold mb-3 border border-[#F5E2D8]">
+                    <div className="w-16 h-16 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-xl font-bold mb-3 border border-[#F5E2D8]">
                       <Boxes size={28} />
                     </div>
                     <h3 className="text-sm font-bold text-neutral-900 dark:text-white text-center truncate max-w-[200px]">
                       {m.name}
                     </h3>
-                    <span className="text-[11px] font-mono text-[#C4785A] font-bold mt-0.5">
+                    <span className="text-[11px] font-mono text-[#d4522f] font-bold mt-0.5">
                       {m.sku}
                     </span>
                     <div className="w-full pt-3 mt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs flex justify-between">
@@ -595,7 +595,7 @@ export const ManufacturingMaterialsView: React.FC = () => {
               <div className="w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#EDF1F3] dark:border-neutral-800 shadow-lg flex flex-col h-[650px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
                 <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-800/60 flex items-center justify-between">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] text-[#C4785A] font-bold text-sm flex items-center justify-center shrink-0 border border-[#F5E2D8]">
+                    <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] text-[#d4522f] font-bold text-sm flex items-center justify-center shrink-0 border border-[#F5E2D8]">
                       <Boxes size={20} />
                     </div>
                     <div className="min-w-0">
@@ -649,7 +649,7 @@ export const ManufacturingMaterialsView: React.FC = () => {
                     </span>
                     <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700">
                       <span className="text-neutral-500">Coût Unitaire PMP :</span>
-                      <span className="font-mono font-bold text-[#C4785A]">{formatMoney(selectedMaterial.unitCostPmpDzd)} / {selectedMaterial.unit}</span>
+                      <span className="font-mono font-bold text-[#d4522f]">{formatMoney(selectedMaterial.unitCostPmpDzd)} / {selectedMaterial.unit}</span>
                     </div>
                     <div className="flex justify-between py-1 font-bold text-sm">
                       <span className="text-neutral-900 dark:text-white">Valeur Totale :</span>
@@ -671,7 +671,7 @@ export const ManufacturingMaterialsView: React.FC = () => {
                         setVoucherMaterialId(selectedMaterial.id);
                         setIsVoucherModalOpen(true);
                       }}
-                      className="flex-1 py-2 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                      className="flex-1 py-2 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
                     >
                       Émettre Bon BSM
                     </button>
@@ -707,7 +707,7 @@ export const ManufacturingMaterialsView: React.FC = () => {
                 className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-3"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-[#C4785A]">
+                  <span className="font-mono text-xs font-bold text-[#d4522f]">
                     {v.voucherNumber}
                   </span>
                   <span
@@ -742,7 +742,7 @@ export const ManufacturingMaterialsView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setPrintableVoucher(v)}
-                    className="text-[#C4785A] hover:underline font-bold text-xs flex items-center gap-1 cursor-pointer"
+                    className="text-[#d4522f] hover:underline font-bold text-xs flex items-center gap-1 cursor-pointer"
                   >
                     <Printer size={12} />
                     <span>{isAr ? 'معاينة وطباعة' : 'Imprimer'}</span>
@@ -940,7 +940,7 @@ export const ManufacturingMaterialsView: React.FC = () => {
           <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-6 animate-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                   <Printer size={20} />
                 </div>
                 <div>
@@ -956,7 +956,7 @@ export const ManufacturingMaterialsView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="px-4 py-2 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                  className="px-4 py-2 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
                 >
                   <Printer size={14} />
                   <span>{isAr ? 'طباعة' : 'Imprimer'}</span>
@@ -981,12 +981,12 @@ export const ManufacturingMaterialsView: React.FC = () => {
                   <div className="text-[10px] text-neutral-500 font-medium">
                     RC: 16/00-0988421 • NIF: 001916010044589 • Alger
                   </div>
-                  <div className="text-xs font-bold text-[#C4785A] mt-1 uppercase">
+                  <div className="text-xs font-bold text-[#d4522f] mt-1 uppercase">
                     {printableVoucher.voucherType === 'BonDeSortie' ? 'Bon de Sortie Magasin (BSM)' : printableVoucher.voucherType === 'BonDeReception' ? 'Bon de Réception Magasin (BR)' : 'Bon de Transfert Interne (BT)'}
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="font-mono font-bold text-sm text-[#C4785A]">
+                  <div className="font-mono font-bold text-sm text-[#d4522f]">
                     {printableVoucher.voucherNumber}
                   </div>
                   <div className="text-[11px] text-neutral-500 mt-0.5">
@@ -1029,7 +1029,7 @@ export const ManufacturingMaterialsView: React.FC = () => {
 
               <div className="flex justify-end pt-2 text-xs font-bold text-neutral-900">
                 <span>Total Mouvement :&nbsp;</span>
-                <span className="font-mono text-[#C4785A]">{formatMoney(printableVoucher.totalValueDzd)}</span>
+                <span className="font-mono text-[#d4522f]">{formatMoney(printableVoucher.totalValueDzd)}</span>
               </div>
 
               <div className="grid grid-cols-2 gap-4 pt-6 border-t text-center text-xs">

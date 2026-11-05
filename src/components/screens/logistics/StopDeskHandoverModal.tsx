@@ -77,7 +77,7 @@ export const StopDeskHandoverModal: React.FC<StopDeskHandoverModalProps> = ({
                 {isAr ? 'تسليم الطرد للزبون بالمكتب (Stop-Desk)' : 'Remise Colis au Guichet Stop-Desk'}
               </h3>
               <p className="text-xs text-neutral-500">
-                AWB: <span className="font-mono font-bold text-[#C4785A]">{shipment.trackingCode}</span>
+                AWB: <span className="font-mono font-bold text-[#d4522f]">{shipment.trackingCode}</span>
               </p>
             </div>
           </div>
@@ -142,7 +142,7 @@ export const StopDeskHandoverModal: React.FC<StopDeskHandoverModalProps> = ({
                 className={`w-full px-4 py-2.5 rounded-xl bg-white dark:bg-neutral-900 border text-center font-mono text-lg font-black tracking-widest ${
                   otpError
                     ? 'border-red-500 text-red-600'
-                    : 'border-neutral-200 dark:border-neutral-700 focus:border-[#C4785A]'
+                    : 'border-neutral-200 dark:border-neutral-700 focus:border-[#d4522f]'
                 }`}
                 required
               />

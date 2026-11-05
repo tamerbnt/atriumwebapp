@@ -77,13 +77,13 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
             <div className="text-sm font-bold text-neutral-900 dark:text-white mt-0.5">
               {subscription.plan.name} {language === 'ar' ? `الرتبة #${subscription.plan.tierRank}` : language === 'fr' ? `Niveau #${subscription.plan.tierRank}` : `Tier Rank #${subscription.plan.tierRank}`}
             </div>
-            <span className="text-xs text-[#C4785A] font-semibold">
+            <span className="text-xs text-[#d4522f] font-semibold">
               {subscription.isLifetime
                 ? t('settings_lifetime_badge', language)
                 : t('settings_trial_badge', language)}
             </span>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/10 text-[#C4785A] flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center shrink-0">
             <Shield size={20} />
           </div>
         </div>
@@ -152,11 +152,11 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
                   <div className="text-xs font-bold text-neutral-900 dark:text-white">
                     {v.label}
                   </div>
-                  <span className="text-[11px] font-mono text-[#C4785A] font-semibold">
+                  <span className="text-[11px] font-mono text-[#d4522f] font-semibold">
                     {v.code}
                   </span>
                 </div>
-                <span className="text-[10px] font-bold text-neutral-400 group-hover:text-[#C4785A] uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-neutral-400 group-hover:text-[#d4522f] uppercase tracking-wider">
                   {t('voucher_fill_code', language)}
                 </span>
               </button>

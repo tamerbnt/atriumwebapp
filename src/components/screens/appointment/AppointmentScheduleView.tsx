@@ -169,7 +169,7 @@ export const AppointmentScheduleView: React.FC = () => {
       sortable: true,
       renderCell: (apt) => (
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/10 text-[#C4785A] font-bold text-xs flex flex-col items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/10 text-[#d4522f] font-bold text-xs flex flex-col items-center justify-center shrink-0">
             <span className="text-[11px] font-bold leading-tight font-mono">{apt.startTime}</span>
             <span className="text-[9px] text-neutral-400 font-medium font-mono">{apt.durationMinutes}m</span>
           </div>
@@ -403,7 +403,7 @@ export const AppointmentScheduleView: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="p-1.5 rounded-lg bg-[#C4785A]/10 text-[#C4785A]">
+              <span className="p-1.5 rounded-lg bg-[#d4522f]/10 text-[#d4522f]">
                 <Scissors size={18} />
               </span>
               <h1 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
@@ -417,7 +417,7 @@ export const AppointmentScheduleView: React.FC = () => {
                   onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
                   className="px-2.5 py-1 text-xs font-semibold rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
-                  <Building2 size={12} className="text-[#C4785A]" />
+                  <Building2 size={12} className="text-[#d4522f]" />
                   <span>{currentBranch.name}</span>
                   <ChevronDown size={11} />
                 </button>
@@ -446,7 +446,7 @@ export const AppointmentScheduleView: React.FC = () => {
                                   setIsFacilityDropdownOpen(false);
                                 }}
                                 className={`w-full px-4 py-1.5 text-xs text-left flex items-center justify-between hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors ${
-                                  isCurrent ? 'text-[#C4785A] font-bold' : 'text-neutral-700 dark:text-neutral-300'
+                                  isCurrent ? 'text-[#d4522f] font-bold' : 'text-neutral-700 dark:text-neutral-300'
                                 }`}
                               >
                                 <span>{br.name}</span>
@@ -501,7 +501,7 @@ export const AppointmentScheduleView: React.FC = () => {
                 <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   {t('salon_kpi_total_bookings', language)}
                 </span>
-                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#d4522f]/10 text-[#d4522f]">
                   {stats.completedCount} terminés
                 </span>
               </div>
@@ -510,7 +510,7 @@ export const AppointmentScheduleView: React.FC = () => {
                   {stats.totalBookings}
                 </div>
                 <div className="flex items-center gap-1.5 text-[11px] text-neutral-400 mt-0.5">
-                  <Calendar size={13} className="text-[#C4785A]" />
+                  <Calendar size={13} className="text-[#d4522f]" />
                   <span>Agenda journalier • {formattedDateLabel}</span>
                 </div>
               </div>
@@ -574,7 +574,7 @@ export const AppointmentScheduleView: React.FC = () => {
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
             {/* Left Title / Icon / Count Anchor */}
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
                 <Scissors size={18} />
               </div>
               <div className="flex items-center gap-2">
@@ -583,7 +583,7 @@ export const AppointmentScheduleView: React.FC = () => {
                     ? (language === 'ar' ? 'مخطط كراسي المصففين' : 'Planning des Postes de Coiffure')
                     : (language === 'ar' ? 'سجل المواعيد العام' : 'Registre des Rendez-Vous')}
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#d4522f]/10 text-[#d4522f]">
                   {dayAppointments.length}
                 </span>
               </div>
@@ -604,7 +604,7 @@ export const AppointmentScheduleView: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleToday}
-                  className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] shadow-2xs cursor-pointer"
+                  className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] shadow-2xs cursor-pointer"
                 >
                   {t('salon_btn_today', language)}
                 </button>
@@ -698,7 +698,7 @@ export const AppointmentScheduleView: React.FC = () => {
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-full bg-[#C4785A]/15 text-[#C4785A] font-bold text-xs flex items-center justify-center">
+                              <div className="w-8 h-8 rounded-full bg-[#d4522f]/15 text-[#d4522f] font-bold text-xs flex items-center justify-center">
                                 {stylist.fullName.split(' ').map((n) => n[0]).join('')}
                               </div>
                               <div>
@@ -786,7 +786,7 @@ export const AppointmentScheduleView: React.FC = () => {
 
                                     <div className="flex items-center justify-between text-[10px] text-neutral-500 font-medium">
                                       <span>{apt.startTime} - {apt.endTime} ({apt.durationMinutes}m)</span>
-                                      <span className="font-bold text-[#C4785A]">{formatMoney(apt.price)}</span>
+                                      <span className="font-bold text-[#d4522f]">{formatMoney(apt.price)}</span>
                                     </div>
 
                                     {apt.status === 'InChair' && (
@@ -810,7 +810,7 @@ export const AppointmentScheduleView: React.FC = () => {
                                   <button
                                     type="button"
                                     onClick={() => handleOpenAddModal(time, stylist.id)}
-                                    className="w-full h-full min-h-[50px] rounded-xl border border-dashed border-transparent group-hover:border-neutral-300 dark:group-hover:border-neutral-700 group-hover:bg-neutral-100/50 dark:group-hover:bg-neutral-800/40 flex items-center justify-center text-neutral-400 hover:text-[#C4785A] transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+                                    className="w-full h-full min-h-[50px] rounded-xl border border-dashed border-transparent group-hover:border-neutral-300 dark:group-hover:border-neutral-700 group-hover:bg-neutral-100/50 dark:group-hover:bg-neutral-800/40 flex items-center justify-center text-neutral-400 hover:text-[#d4522f] transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
                                   >
                                     <span className="flex items-center gap-1 text-[11px] font-medium">
                                       <Plus size={13} /> {t('salon_book_slot', language)}
@@ -875,7 +875,7 @@ export const AppointmentScheduleView: React.FC = () => {
                   <div className="flex flex-col justify-between w-full h-full">
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white bg-[#C4785A]/10 text-[#C4785A] px-2.5 py-1 rounded-lg">
+                        <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg">
                           {apt.startTime} ({apt.durationMinutes}m)
                         </span>
                         <span
@@ -958,7 +958,7 @@ export const AppointmentScheduleView: React.FC = () => {
                           id: 'checkout',
                           tooltip: t('salon_quick_checkout', language) || 'Checkout',
                           icon: <CreditCard size={13} />,
-                          iconColor: '#C4785A',
+                          iconColor: '#d4522f',
                           onClick: (e: React.MouseEvent) => {
                             e.stopPropagation();
                             handleOneClickCheckout(apt);

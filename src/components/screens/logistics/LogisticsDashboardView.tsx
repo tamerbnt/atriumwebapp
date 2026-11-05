@@ -98,7 +98,7 @@ export const LogisticsDashboardView: React.FC = () => {
   // Delivery zone donut
   const zoneDistribution = useMemo(() => {
     return [
-      { label: language === 'ar' ? 'الجزائر العاصمة وضواحيها' : 'Grand Alger & Centre', value: 50, color: '#C4785A' },
+      { label: language === 'ar' ? 'الجزائر العاصمة وضواحيها' : 'Grand Alger & Centre', value: 50, color: '#d4522f' },
       { label: language === 'ar' ? 'الشرق الجزائري (قسنطينة/عنابة)' : 'Est (Constantine/Annaba)', value: 30, color: '#3B82F6' },
       { label: language === 'ar' ? 'الغرب والجنوب' : 'Ouest & Sud', value: 20, color: '#10B981' },
     ];
@@ -158,7 +158,7 @@ export const LogisticsDashboardView: React.FC = () => {
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'حركة الأسطول والطرود اليوم' : language === 'fr' ? 'Activité Flotte & Livraisons' : 'Fleet Velocity & Delivery Flow'}
-            icon={<Truck size={18} className="text-[#C4785A]" />}
+            icon={<Truck size={18} className="text-[#d4522f]" />}
             badge={
               <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                 {outForDelivery} {language === 'ar' ? 'طرود في الطريق' : 'En Tournée'}
@@ -226,7 +226,7 @@ export const LogisticsDashboardView: React.FC = () => {
                   <span className="text-[11px] text-gray-400 block mb-2">
                     {language === 'ar' ? 'كثافة تسليم الطرود على مدار 24 ساعة' : 'Courbe horaire des scans de livraison (24h)'}
                   </span>
-                  <HourlyCurveChart data={hourlyData} color="#C4785A" />
+                  <HourlyCurveChart data={hourlyData} color="#d4522f" />
                 </div>
               </div>
 
@@ -241,7 +241,7 @@ export const LogisticsDashboardView: React.FC = () => {
                 </div>
                 <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-1">
                   <div
-                    className="bg-[#C4785A] h-full rounded-full transition-all duration-500"
+                    className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
                     style={{ width: `${targetPct}%` }}
                   />
                 </div>
@@ -258,7 +258,7 @@ export const LogisticsDashboardView: React.FC = () => {
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'تطور حجم الشحنات والطرود' : language === 'fr' ? 'Développement Expéditions & Volume' : 'Delivery Volume Development'}
-            icon={<Package size={18} className="text-[#C4785A]" />}
+            icon={<Package size={18} className="text-[#d4522f]" />}
             rightControls={
               <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
                 <button
@@ -319,7 +319,7 @@ export const LogisticsDashboardView: React.FC = () => {
                 <PillBarHistogram
                   data={weeklyDeliveries}
                   maxScale={350}
-                  barColor="#C4785A"
+                  barColor="#d4522f"
                 />
               </div>
             </div>
@@ -333,7 +333,7 @@ export const LogisticsDashboardView: React.FC = () => {
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'المسار المالي وأتعاب الشحن' : language === 'fr' ? 'Trajectoire Financière & COD' : 'Financial Trajectory & P&L'}
-            icon={<TrendingUp size={18} className="text-[#C4785A]" />}
+            icon={<TrendingUp size={18} className="text-[#d4522f]" />}
             rightControls={
               <span className="text-xs font-semibold text-gray-500 uppercase">
                 {months[currentMonthIndex]} 2026
@@ -441,7 +441,7 @@ export const LogisticsDashboardView: React.FC = () => {
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
             title={language === 'ar' ? 'ذكاء التوجيه وحارس أموال COD' : language === 'fr' ? 'Intelligence Routage & COD Sentinel' : 'Routing Intelligence & COD Guardian'}
-            icon={<ShieldCheck size={18} className="text-[#C4785A]" />}
+            icon={<ShieldCheck size={18} className="text-[#d4522f]" />}
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
@@ -496,7 +496,7 @@ export const LogisticsDashboardView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsShipModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#C4785A] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d4522f] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
                   >
                     <Plus size={14} />
                     {language === 'ar' ? 'إنشاء إرسالية طرد' : 'Nouveau Colis'}

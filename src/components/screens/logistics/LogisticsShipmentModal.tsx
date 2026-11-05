@@ -200,7 +200,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
               <Package size={20} />
             </div>
             <div>
@@ -249,7 +249,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
                   onClick={() => setDeliveryMode('StopDesk')}
                   className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                     deliveryMode === 'StopDesk'
-                      ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-xs'
+                      ? 'bg-white dark:bg-neutral-900 text-[#d4522f] shadow-xs'
                       : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
@@ -297,7 +297,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
                 value={recipientPhone}
                 onChange={(e) => setRecipientPhone(e.target.value)}
                 placeholder="0555 41 22 33"
-                className="w-full px-3 py-2 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-xs font-mono font-medium focus:border-[#C4785A] outline-hidden"
+                className="w-full px-3 py-2 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-xs font-mono font-medium focus:border-[#d4522f] outline-hidden"
                 required
               />
             </div>
@@ -326,7 +326,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
               <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                 {isAr ? 'الوزن والقياسات الحجمية (Diviseur 5000)' : 'Poids & Encombrement Volumétrique'}
               </span>
-              <span className="text-[11px] font-mono text-[#C4785A] font-bold">
+              <span className="text-[11px] font-mono text-[#d4522f] font-bold">
                 Facturé: {tariffCalc.billableWeightKg} kg
               </span>
             </div>

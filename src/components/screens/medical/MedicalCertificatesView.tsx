@@ -163,7 +163,7 @@ export const MedicalCertificatesView: React.FC = () => {
       {/* Top Header Strip */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <FileBadge size={22} />
           </div>
           <div>
@@ -340,7 +340,7 @@ export const MedicalCertificatesView: React.FC = () => {
           <div className="bg-white dark:bg-neutral-900 w-full max-w-lg rounded-[28px] border border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col overflow-hidden">
             <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-[#F8F9FA] dark:bg-neutral-800/40">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                   <FileBadge size={20} />
                 </div>
                 <div>
@@ -486,9 +486,9 @@ export const MedicalCertificatesView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white text-neutral-900 w-full max-w-xl rounded-[28px] border border-neutral-300 shadow-2xl p-8 flex flex-col justify-between max-h-[90vh] overflow-y-auto">
             {/* Header */}
-            <div className="border-b-2 border-[#C4785A] pb-4 flex justify-between items-start">
+            <div className="border-b-2 border-[#d4522f] pb-4 flex justify-between items-start">
               <div>
-                <h2 className="text-lg font-black uppercase text-[#C4785A]">
+                <h2 className="text-lg font-black uppercase text-[#d4522f]">
                   {activePrintCert.doctorName}
                 </h2>
                 <p className="text-xs font-semibold text-neutral-800">{activePrintCert.doctorSpecialty}</p>

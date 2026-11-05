@@ -58,7 +58,7 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
         {/* Instant Access Banner */}
         <div className="p-4 rounded-2xl bg-[#FDF4F0] dark:bg-[#2A2420] border border-[#F5E2D8] dark:border-[#4A3B33] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="space-y-1">
-            <div className="flex items-center gap-1.5 font-extrabold text-[#C4785A]">
+            <div className="flex items-center gap-1.5 font-extrabold text-[#d4522f]">
               <Sparkles size={15} />
               <span>Want to skip setup and start right away?</span>
             </div>
@@ -121,7 +121,7 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
                 You can leave this completely <strong>blank</strong>, or copy your Supabase URL:
               </p>
               <div className="flex items-center gap-2">
-                <code className="text-[11px] font-mono text-[#C4785A] bg-neutral-100 dark:bg-neutral-800 px-2 py-1 rounded truncate flex-1">
+                <code className="text-[11px] font-mono text-[#d4522f] bg-neutral-100 dark:bg-neutral-800 px-2 py-1 rounded truncate flex-1">
                   {supabaseUrl}
                 </code>
                 <button
@@ -148,7 +148,7 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
                 Paste this exact URL into Google Cloud Console:
               </p>
               <div className="flex items-center gap-2">
-                <code className="text-[11px] font-mono text-[#C4785A] bg-neutral-100 dark:bg-neutral-800 px-2 py-1 rounded truncate flex-1">
+                <code className="text-[11px] font-mono text-[#d4522f] bg-neutral-100 dark:bg-neutral-800 px-2 py-1 rounded truncate flex-1">
                   {redirectUri}
                 </code>
                 <button

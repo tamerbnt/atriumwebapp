@@ -110,7 +110,7 @@ export const CacobatphDossierModal: React.FC<CacobatphDossierModalProps> = ({
             <p className="text-[10px] text-neutral-600 font-semibold">
               الصندوق الوطني للعطل المدفوعة الأجر والبطالة الناجمة عن سوء الأحوال الجوية لقطاعات البناء والأشغال العمومية
             </p>
-            <div className="text-xs font-bold text-[#C4785A] pt-1">
+            <div className="text-xs font-bold text-[#d4522f] pt-1">
               DÉCLARATION D'ARRÊT DE CHANTIER POUR INTEMPÉRIES
             </div>
           </div>

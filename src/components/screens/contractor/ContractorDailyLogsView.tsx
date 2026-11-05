@@ -316,7 +316,7 @@ export const ContractorDailyLogsView: React.FC = () => {
       {/* Top Header Strip with Action Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <Calendar size={22} />
           </div>
           <div>
@@ -324,7 +324,7 @@ export const ContractorDailyLogsView: React.FC = () => {
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
                 {isAr ? 'سجل العمليات اليومية ومحاضر الورشة' : 'Journal de Chantier & Attachements de Travaux'}
               </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
                 {activeSection === 'logs'
                   ? `${projectLogs.length} rapports`
                   : activeSection === 'concrete'
@@ -382,7 +382,7 @@ export const ContractorDailyLogsView: React.FC = () => {
           onClick={() => setActiveSection('logs')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
             activeSection === 'logs'
-              ? 'bg-white dark:bg-neutral-800 text-[#C4785A] shadow-xs'
+              ? 'bg-white dark:bg-neutral-800 text-[#d4522f] shadow-xs'
               : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
           }`}
         >
@@ -397,7 +397,7 @@ export const ContractorDailyLogsView: React.FC = () => {
           onClick={() => setActiveSection('concrete')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
             activeSection === 'concrete'
-              ? 'bg-white dark:bg-neutral-800 text-[#C4785A] shadow-xs'
+              ? 'bg-white dark:bg-neutral-800 text-[#d4522f] shadow-xs'
               : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
           }`}
         >
@@ -412,7 +412,7 @@ export const ContractorDailyLogsView: React.FC = () => {
           onClick={() => setActiveSection('equipment')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
             activeSection === 'equipment'
-              ? 'bg-white dark:bg-neutral-800 text-[#C4785A] shadow-xs'
+              ? 'bg-white dark:bg-neutral-800 text-[#d4522f] shadow-xs'
               : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
           }`}
         >
@@ -520,7 +520,7 @@ export const ContractorDailyLogsView: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs">
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[#FCEEE8] text-[#C4785A]">
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[#FCEEE8] text-[#d4522f]">
                 {isAr ? 'جميع المحاضر المعتمدة' : 'Attachements Contradictoires'}
               </span>
             </div>
@@ -551,7 +551,7 @@ export const ContractorDailyLogsView: React.FC = () => {
                     sortable: true,
                     renderCell: (log) => (
                       <div className="flex items-center gap-2 font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100">
-                        <Calendar size={13} className="text-[#C4785A]" />
+                        <Calendar size={13} className="text-[#d4522f]" />
                         <span>{log.date}</span>
                       </div>
                     ),
@@ -633,7 +633,7 @@ export const ContractorDailyLogsView: React.FC = () => {
                 {/* Inspector Top Header */}
                 <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                    <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                       <HardHat size={16} />
                     </div>
                     <div>
@@ -659,7 +659,7 @@ export const ContractorDailyLogsView: React.FC = () => {
                     onClick={() => setInspectorTab('fiche')}
                     className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 whitespace-nowrap ${
                       inspectorTab === 'fiche'
-                        ? 'border-[#C4785A] text-[#C4785A]'
+                        ? 'border-[#d4522f] text-[#d4522f]'
                         : 'border-transparent text-neutral-500 hover:text-neutral-700'
                     }`}
                   >
@@ -669,7 +669,7 @@ export const ContractorDailyLogsView: React.FC = () => {
                     onClick={() => setInspectorTab('rollcall')}
                     className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 whitespace-nowrap ${
                       inspectorTab === 'rollcall'
-                        ? 'border-[#C4785A] text-[#C4785A]'
+                        ? 'border-[#d4522f] text-[#d4522f]'
                         : 'border-transparent text-neutral-500 hover:text-neutral-700'
                     }`}
                   >
@@ -679,7 +679,7 @@ export const ContractorDailyLogsView: React.FC = () => {
                     onClick={() => setInspectorTab('engins')}
                     className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 whitespace-nowrap ${
                       inspectorTab === 'engins'
-                        ? 'border-[#C4785A] text-[#C4785A]'
+                        ? 'border-[#d4522f] text-[#d4522f]'
                         : 'border-transparent text-neutral-500 hover:text-neutral-700'
                     }`}
                   >
@@ -689,7 +689,7 @@ export const ContractorDailyLogsView: React.FC = () => {
                     onClick={() => setInspectorTab('hse')}
                     className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 whitespace-nowrap ${
                       inspectorTab === 'hse'
-                        ? 'border-[#C4785A] text-[#C4785A]'
+                        ? 'border-[#d4522f] text-[#d4522f]'
                         : 'border-transparent text-neutral-500 hover:text-neutral-700'
                     }`}
                   >
@@ -797,7 +797,7 @@ export const ContractorDailyLogsView: React.FC = () => {
                             className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 flex items-center justify-between"
                           >
                             <div className="flex items-center gap-2">
-                              <Truck size={14} className="text-[#C4785A]" />
+                              <Truck size={14} className="text-[#d4522f]" />
                               <span className="font-medium text-neutral-800 dark:text-neutral-200">{eq}</span>
                             </div>
                             <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
@@ -898,10 +898,10 @@ export const ContractorDailyLogsView: React.FC = () => {
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
-                        <Calendar size={13} className="text-[#C4785A]" />
+                        <Calendar size={13} className="text-[#d4522f]" />
                         {pour.pourDate}
                       </span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#C4785A]/15 text-[#C4785A]">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#d4522f]/15 text-[#d4522f]">
                         {pour.concreteGrade}
                       </span>
                     </div>
@@ -1071,7 +1071,7 @@ export const ContractorDailyLogsView: React.FC = () => {
           <div className="bg-white dark:bg-neutral-900 rounded-[28px] border border-neutral-200 dark:border-neutral-800 p-6 w-full max-w-xl shadow-xl space-y-5 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2">
-                <Calendar size={20} className="text-[#C4785A]" />
+                <Calendar size={20} className="text-[#d4522f]" />
                 <h3 className="font-bold text-base text-neutral-900 dark:text-white">
                   {isAr ? 'محضر ورشة يومي وتعداد المهن' : 'Nouveau Rapport Journalier & Pointage'}
                 </h3>
@@ -1127,7 +1127,7 @@ export const ContractorDailyLogsView: React.FC = () => {
                   <div className="p-2 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700/60 flex items-center justify-between">
                     <div>
                       <span className="text-[11px] font-medium block">Maçons</span>
-                      <span className="text-xs font-mono font-bold text-[#C4785A]">{craftMasons}</span>
+                      <span className="text-xs font-mono font-bold text-[#d4522f]">{craftMasons}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <button
@@ -1151,7 +1151,7 @@ export const ContractorDailyLogsView: React.FC = () => {
                   <div className="p-2 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700/60 flex items-center justify-between">
                     <div>
                       <span className="text-[11px] font-medium block">Ferrailleurs</span>
-                      <span className="text-xs font-mono font-bold text-[#C4785A]">{craftIronworkers}</span>
+                      <span className="text-xs font-mono font-bold text-[#d4522f]">{craftIronworkers}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <button
@@ -1175,7 +1175,7 @@ export const ContractorDailyLogsView: React.FC = () => {
                   <div className="p-2 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700/60 flex items-center justify-between">
                     <div>
                       <span className="text-[11px] font-medium block">Manœuvres</span>
-                      <span className="text-xs font-mono font-bold text-[#C4785A]">{craftLaborers}</span>
+                      <span className="text-xs font-mono font-bold text-[#d4522f]">{craftLaborers}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <button
@@ -1199,7 +1199,7 @@ export const ContractorDailyLogsView: React.FC = () => {
                   <div className="p-2 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700/60 flex items-center justify-between">
                     <div>
                       <span className="text-[11px] font-medium block">Conduct. Engins</span>
-                      <span className="text-xs font-mono font-bold text-[#C4785A]">{craftOperators}</span>
+                      <span className="text-xs font-mono font-bold text-[#d4522f]">{craftOperators}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <button
@@ -1223,7 +1223,7 @@ export const ContractorDailyLogsView: React.FC = () => {
                   <div className="p-2 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700/60 flex items-center justify-between">
                     <div>
                       <span className="text-[11px] font-medium block">Encadrement</span>
-                      <span className="text-xs font-mono font-bold text-[#C4785A]">{craftSupervisors}</span>
+                      <span className="text-xs font-mono font-bold text-[#d4522f]">{craftSupervisors}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <button
@@ -1294,7 +1294,7 @@ export const ContractorDailyLogsView: React.FC = () => {
           <div className="bg-white dark:bg-neutral-900 rounded-[28px] border border-neutral-200 dark:border-neutral-800 p-6 w-full max-w-lg shadow-xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2">
-                <Layers size={20} className="text-[#C4785A]" />
+                <Layers size={20} className="text-[#d4522f]" />
                 <h3 className="font-bold text-base text-neutral-900 dark:text-white">
                   {isAr ? 'تسجيل صبة خرسانة وعينات مخبرية CTC' : 'Enregistrement Coulée & Prélèvement CTC'}
                 </h3>
@@ -1404,7 +1404,7 @@ export const ContractorDailyLogsView: React.FC = () => {
           <div className="bg-white dark:bg-neutral-900 rounded-[28px] border border-neutral-200 dark:border-neutral-800 p-6 w-full max-w-lg shadow-xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2">
-                <Fuel size={20} className="text-[#C4785A]" />
+                <Fuel size={20} className="text-[#d4522f]" />
                 <h3 className="font-bold text-base text-neutral-900 dark:text-white">
                   {isAr ? 'تسجيل ساعات عمل الآلية والوقود' : 'Relevé Compteur Horaire & Plein Gasoil'}
                 </h3>

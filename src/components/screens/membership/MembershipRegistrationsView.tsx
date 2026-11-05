@@ -267,13 +267,13 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
         return (
           <div className="flex items-center gap-3 min-w-0">
             {isPinned && (
-              <span className="w-1.5 h-6 rounded-full bg-[#C4785A] shrink-0" title="Pinned" />
+              <span className="w-1.5 h-6 rounded-full bg-[#d4522f] shrink-0" title="Pinned" />
             )}
             <Avatar name={lead.fullName} size={36} />
             <div className="min-w-0">
               <div className="text-sm font-bold text-neutral-900 dark:text-white truncate flex items-center gap-1.5">
                 <span>{lead.fullName}</span>
-                {isPinned && <Pin size={11} className="text-[#C4785A] shrink-0" />}
+                {isPinned && <Pin size={11} className="text-[#d4522f] shrink-0" />}
               </div>
               <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
                 {lead.phoneNumber} · {lead.email}
@@ -308,7 +308,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
       sortable: true,
       renderCell: (lead) => (
         <div>
-          <span className="inline-block px-2.5 py-0.5 rounded-full bg-[#FDF4F0] dark:bg-neutral-800 text-[#C4785A] text-xs font-bold border border-[#F5E2D8] dark:border-neutral-700">
+          <span className="inline-block px-2.5 py-0.5 rounded-full bg-[#FDF4F0] dark:bg-neutral-800 text-[#d4522f] text-xs font-bold border border-[#F5E2D8] dark:border-neutral-700">
             {lead.preferredPlanName || plans[0]?.name || 'Standard Package'}
           </span>
           {lead.preferredStartDate && (
@@ -448,7 +448,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
               onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
               className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
             >
-              <Home size={15} className="text-[#C4785A]" />
+              <Home size={15} className="text-[#d4522f]" />
               <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                 {currentBranch?.name || 'Atrium 1'}
               </span>
@@ -479,12 +479,12 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
                       }}
                       className={`w-full px-3 py-2 text-left flex items-center justify-between text-xs transition-colors cursor-pointer ${
                         isCurrent
-                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold'
                           : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                        <Building2 size={14} className={isCurrent ? 'text-[#d4522f]' : 'text-neutral-400'} />
                         <span className="truncate">{biz.name}</span>
                       </div>
                       {isCurrent && <Check size={14} />}
@@ -732,14 +732,14 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
                 onClick={() => setSelectedLead(lead)}
                 className={`p-5 rounded-[22px] border transition-all cursor-pointer relative shadow-2xs ${
                   selectedLead?.id === lead.id
-                    ? 'border-[#C4785A] bg-[#FCEEE8]/40 dark:bg-neutral-800/80 ring-1 ring-[#C4785A]/30'
+                    ? 'border-[#d4522f] bg-[#FCEEE8]/40 dark:bg-neutral-800/80 ring-1 ring-[#d4522f]/30'
                     : 'border-[#E9EEF0] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 hover:border-[#D5DFE3] dark:hover:border-neutral-600'
                 }`}
               >
                 {/* Pin indicator */}
                 {isPinned && (
-                  <div className="absolute top-3 left-3 text-[#C4785A]" title="Pinned lead">
-                    <Pin size={12} className="fill-[#C4785A]" />
+                  <div className="absolute top-3 left-3 text-[#d4522f]" title="Pinned lead">
+                    <Pin size={12} className="fill-[#d4522f]" />
                   </div>
                 )}
 
@@ -773,7 +773,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
                 <div className="text-xs space-y-1 mb-4 text-neutral-600 dark:text-neutral-400 pt-2 border-t border-neutral-100 dark:border-neutral-700/60">
                   <div className="flex justify-between">
                     <span className="text-neutral-400">{language === 'ar' ? 'الباقة:' : language === 'fr' ? 'Formule :' : 'Plan:'}</span>
-                    <span className="font-bold text-[#C4785A] truncate max-w-[140px]">
+                    <span className="font-bold text-[#d4522f] truncate max-w-[140px]">
                       {lead.preferredPlanName || plans[0]?.name || 'Standard Package'}
                     </span>
                   </div>
@@ -829,7 +829,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
         <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[420px] bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
           <div className="px-6 py-5 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <ClipboardList size={17} className="text-[#C4785A]" />
+              <ClipboardList size={17} className="text-[#d4522f]" />
               <span className="text-sm font-bold text-neutral-900 dark:text-white">
                 {language === 'ar' ? 'معاينة ملف المرشح' : language === 'fr' ? 'Fiche du prospect' : 'Prospect Dossier Inspector'}
               </span>
@@ -872,19 +872,19 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
               </span>
               <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-2.5">
                 <div className="flex items-center gap-2.5">
-                  <Phone size={14} className="text-[#C4785A]" />
+                  <Phone size={14} className="text-[#d4522f]" />
                   <span className="text-neutral-800 dark:text-neutral-200 font-semibold">
                     {selectedLead.phoneNumber}
                   </span>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <Mail size={14} className="text-[#C4785A]" />
+                  <Mail size={14} className="text-[#d4522f]" />
                   <span className="text-neutral-800 dark:text-neutral-200 font-semibold">
                     {selectedLead.email}
                   </span>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <Calendar size={14} className="text-[#C4785A]" />
+                  <Calendar size={14} className="text-[#d4522f]" />
                   <span className="text-neutral-800 dark:text-neutral-200">
                     {language === 'ar' ? 'تاريخ البدء المطلوب:' : language === 'fr' ? 'Début souhaité :' : 'Requested start:'}{' '}
                     <strong className="text-neutral-900 dark:text-white">
@@ -906,14 +906,14 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
             {/* Preferred Plan */}
             <div className="p-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#E8DFD8] dark:border-neutral-700 flex justify-between items-center">
               <div>
-                <span className="text-xs font-bold text-[#C4785A]">
+                <span className="text-xs font-bold text-[#d4522f]">
                   {language === 'ar' ? 'الباقة المفضلة' : language === 'fr' ? 'Formule préférée' : 'Preferred Plan'}
                 </span>
                 <div className="text-sm font-black text-neutral-900 dark:text-white mt-0.5">
                   {selectedLead.preferredPlanName || plans[0]?.name || 'Standard Package'}
                 </div>
               </div>
-              <span className="text-base font-black text-[#C4785A] tabular-nums">
+              <span className="text-base font-black text-[#d4522f] tabular-nums">
                 1 500 {language === 'ar' ? 'د.ج' : 'DA'}
               </span>
             </div>
@@ -1024,7 +1024,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
               />
             </div>
 
-            <div className="p-3 rounded-2xl bg-[#C4785A]/10 border border-[#C4785A]/20 text-xs text-[#C4785A]">
+            <div className="p-3 rounded-2xl bg-[#d4522f]/10 border border-[#d4522f]/20 text-xs text-[#d4522f]">
               {language === 'ar'
                 ? 'عند التأكيد، سيتم إنشاء معرف بطاقة RFID تلقائياً، واعتماد الطلب، وتسجيل المشترك مباشرة.'
                 : language === 'fr'

@@ -172,7 +172,7 @@ export const AppointmentFinanceView: React.FC = () => {
       sortable: true,
       renderCell: (payout) => (
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-[#C4785A]/15 text-[#C4785A] font-bold text-xs flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded-full bg-[#d4522f]/15 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0">
             {payout.staffName.charAt(0)}
           </div>
           <div className="min-w-0">
@@ -245,7 +245,7 @@ export const AppointmentFinanceView: React.FC = () => {
       sortable: true,
       renderCell: (payout) => (
         <div className="text-xs">
-          <span className="font-extrabold text-sm text-[#C4785A] tabular-nums font-mono block">
+          <span className="font-extrabold text-sm text-[#d4522f] tabular-nums font-mono block">
             {formatMoney(payout.totalPayout)}
           </span>
           <span className="text-[10px] text-neutral-400">
@@ -351,7 +351,7 @@ export const AppointmentFinanceView: React.FC = () => {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
-              <DollarSign className="text-[#C4785A]" size={26} />
+              <DollarSign className="text-[#d4522f]" size={26} />
               <span>Finances & Commissions Stylistes</span>
             </h1>
             <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
@@ -377,7 +377,7 @@ export const AppointmentFinanceView: React.FC = () => {
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-[#E9EEF0] dark:border-neutral-800">
           <div className="flex items-center gap-2">
-            <Wallet size={18} className="text-[#C4785A]" />
+            <Wallet size={18} className="text-[#d4522f]" />
             <h2 className="text-xs font-black uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
               Synthèse Financière & Répartition des Bénéfices
             </h2>
@@ -465,7 +465,7 @@ export const AppointmentFinanceView: React.FC = () => {
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-3">
         <div className="flex items-center justify-between pb-2 border-b border-[#EDF1F3] dark:border-neutral-800/60">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+            <div className="w-8 h-8 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
               <CreditCard size={16} />
             </div>
             <div>
@@ -503,7 +503,7 @@ export const AppointmentFinanceView: React.FC = () => {
           <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Smartphone size={17} className="text-[#C4785A]" />
+                <Smartphone size={17} className="text-[#d4522f]" />
                 <h3 className="text-xs font-black uppercase text-neutral-700 dark:text-neutral-300">
                   BaridiMob & Virement RIP
                 </h3>
@@ -570,7 +570,7 @@ export const AppointmentFinanceView: React.FC = () => {
                   onClick={() => setSelectedStatusFilter(statusKey)}
                   className={`px-3 py-1 rounded-[10px] text-xs font-semibold transition-all cursor-pointer ${
                     selectedStatusFilter === statusKey
-                      ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                      ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
                       : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
@@ -609,7 +609,7 @@ export const AppointmentFinanceView: React.FC = () => {
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-[#C4785A]/15 text-[#C4785A] font-bold text-xs flex items-center justify-center">
+                      <div className="w-7 h-7 rounded-full bg-[#d4522f]/15 text-[#d4522f] font-bold text-xs flex items-center justify-center">
                         {payout.staffName.charAt(0)}
                       </div>
                       <span className="font-bold text-xs text-neutral-900 dark:text-white">
@@ -643,7 +643,7 @@ export const AppointmentFinanceView: React.FC = () => {
 
                 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
                   <span className="text-xs text-neutral-400">Total Net :</span>
-                  <span className="font-mono font-black text-sm text-[#C4785A]">
+                  <span className="font-mono font-black text-sm text-[#d4522f]">
                     {formatMoney(payout.totalPayout)}
                   </span>
                 </div>
@@ -702,7 +702,7 @@ export const AppointmentFinanceView: React.FC = () => {
                   <span>Part Revente ({inspectingPayout.retailCommissionRate}%) :</span>
                   <span className="font-bold">+{formatMoney(inspectingPayout.retailCommissionAmount)}</span>
                 </div>
-                <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700 flex justify-between text-sm font-black text-[#C4785A]">
+                <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700 flex justify-between text-sm font-black text-[#d4522f]">
                   <span>NET COMMISSION :</span>
                   <span>{formatMoney(inspectingPayout.totalPayout)}</span>
                 </div>

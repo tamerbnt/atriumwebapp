@@ -284,7 +284,7 @@ html[data-scrolling="true"],
 
 /* When hovering directly on the scrollbar thumb to grab/drag it */
 ::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-accent, #C4785A) !important;
+  background-color: var(--color-accent, #d4522f) !important;
 }
 
 /* Fluid scroll physics and touch momentum on all scrollable elements */
@@ -718,7 +718,7 @@ div[tabindex],
 }
 
 .lbi[data-focus="true"] .lbi-ring path {
-  stroke: var(--color-accent, #C4785A);
+  stroke: var(--color-accent, #d4522f);
   stroke-width: 1.5;
 }
 
@@ -784,7 +784,7 @@ div[tabindex],
   font-size: 13px;
   letter-spacing: -0.01em;
   color: var(--fill-on, var(--ink));
-  caret-color: var(--color-accent, #C4785A);
+  caret-color: var(--color-accent, #d4522f);
   outline: none;
 }
 
@@ -800,7 +800,7 @@ div[tabindex],
 
 [data-theme="dark"] .lbi[data-focus="true"] .lbi-label,
 .dark .lbi[data-focus="true"] .lbi-label {
-  color: var(--color-accent, #C4785A) !important;
+  color: var(--color-accent, #d4522f) !important;
 }
 
 [data-theme="dark"] .lbi-ring path,
@@ -810,7 +810,7 @@ div[tabindex],
 
 [data-theme="dark"] .lbi[data-focus="true"] .lbi-ring path,
 .dark .lbi[data-focus="true"] .lbi-ring path {
-  stroke: var(--color-accent, #C4785A) !important;
+  stroke: var(--color-accent, #d4522f) !important;
   stroke-width: 1.5;
 }
 
@@ -1052,7 +1052,7 @@ div[tabindex],
 
 .nod-act:hover {
   --zoom: 1.15;
-  color: var(--color-accent, #C4785A);
+  color: var(--color-accent, #d4522f);
 }
 
 /* ══ Seek ═══════════════════════════════════════════════════ */
@@ -1273,7 +1273,7 @@ div[tabindex],
 }
 
 .tst-act:hover {
-  background: var(--color-accent, #C4785A);
+  background: var(--color-accent, #d4522f);
   color: #ffffff;
 }
 
@@ -1295,7 +1295,7 @@ div[tabindex],
 
 .tst-x:hover { background: var(--tst-wash); color: var(--fill-on, var(--ink)); }
 
-.tst-act:focus-visible, .tst-x:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-accent, #C4785A); }
+.tst-act:focus-visible, .tst-x:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-accent, #d4522f); }
 
 /* Universal Shimmer & Skeleton Animations */
 @keyframes atrium-shimmer {
@@ -1731,7 +1731,6 @@ button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]):not([d
 [data-atr-tone="accent"],
 .btn-primary,
 button[class*="bg-[#d4522f]"],
-button[class*="bg-[#C4785A]"],
 button[class*="bg-accent"] {
   --q: var(--atr-accq);
 }

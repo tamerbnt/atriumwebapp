@@ -33,7 +33,7 @@ export const TransportManifestPrintModal: React.FC<TransportManifestPrintModalPr
         {/* Modal Top Actions */}
         <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3 shrink-0 print:hidden">
           <div className="flex items-center gap-2">
-            <ShieldCheck size={20} className="text-[#C4785A]" />
+            <ShieldCheck size={20} className="text-[#d4522f]" />
             <h3 className="font-bold text-sm text-neutral-900 dark:text-white">
               {isAr ? 'بيان الشحن القانوني (المرسوم التنفيذي 05-468)' : 'Lettre de Voiture Routière (Décret 05-468)'}
             </h3>
@@ -132,7 +132,7 @@ export const TransportManifestPrintModal: React.FC<TransportManifestPrintModalPr
                 <tr>
                   <td className="p-1.5 font-medium">Colis E-commerce & Messagerie ({manifest.totalShipmentsCount} colis)</td>
                   <td className="p-1.5 font-mono">{(manifest.bagIds && manifest.bagIds.join(', ')) || 'BAG-16-ORN-0042'}</td>
-                  <td className="p-1.5 font-mono font-bold text-[#C4785A]">{(manifest.sealNumbers && manifest.sealNumbers.join(', ')) || 'SL-994821'}</td>
+                  <td className="p-1.5 font-mono font-bold text-[#d4522f]">{(manifest.sealNumbers && manifest.sealNumbers.join(', ')) || 'SL-994821'}</td>
                   <td className="p-1.5 text-right font-mono">{manifest.totalGrossWeightKg || 28.5} kg</td>
                   <td className="p-1.5 text-right font-mono font-bold">{formatMoney(manifest.totalCodExpectedDzd, 'fr')}</td>
                 </tr>
