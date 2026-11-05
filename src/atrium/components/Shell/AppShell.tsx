@@ -237,11 +237,6 @@ export function AppShell({
               {topbar}
             </div>
           </div>
-          {hidden ? (
-            <button type="button" className={s.reveal} onClick={() => request(false)}>
-              Show top bar
-            </button>
-          ) : null}
           <main ref={main} id={mainId} className={s.main} aria-label={mainLabel} tabIndex={-1}>
             {children}
           </main>

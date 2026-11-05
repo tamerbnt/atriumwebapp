@@ -1173,10 +1173,24 @@ export default function App() {
               />
             }
           >
+            {/* Small rounded shape button at top of screen to restore header when collapsed */}
+            {isTopBarCollapsed && (
+              <button
+                type="button"
+                onClick={() => setTopBarCollapsed(false)}
+                className="fixed top-2.5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 px-3 py-1 rounded-full bg-white dark:bg-[#18181B] border border-[#E2E8EC] dark:border-neutral-700 text-neutral-700 dark:text-neutral-200 text-xs font-medium shadow-sm hover:shadow-md hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-all duration-200 cursor-pointer group select-none backdrop-blur-md"
+                title={t('topbar_focus_restore', "Afficher l'en-tête")}
+                aria-label={t('topbar_focus_restore', "Afficher l'en-tête")}
+              >
+                <ChevronDown size={14} className="text-[var(--color-accent)] group-hover:translate-y-0.5 transition-transform" />
+                <span>{t('topbar_focus_restore', "Afficher l'en-tête")}</span>
+              </button>
+            )}
+
             <div className="relative w-full min-h-full flex flex-col p-6 sm:p-8 pb-16 sm:pb-20">
               {renderActiveScreen()}
               <ScrollJumpPill
-                className="!fixed bottom-6 right-8 z-20"
+                targetContainerId="main-content-scroll"
               />
             </div>
           </AppShell>

@@ -33,7 +33,7 @@ export interface ScrollJumpPillProps {
 export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
   containerRef,
   targetContainerId = 'main-content-scroll',
-  overflowThreshold = 120,
+  overflowThreshold = 40,
   bottomThreshold = 140,
   hasActiveBulkBar,
   className = '',
@@ -53,8 +53,8 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
       const el = document.getElementById(targetContainerId);
       if (el) return el;
     }
-    // Fallback: look for #main-content-scroll
-    return document.getElementById('main-content-scroll') || document.documentElement;
+    // Fallback: look for #main-content-scroll or main scroll element
+    return document.getElementById('main-content-scroll') || document.querySelector('main') || document.documentElement;
   }, [containerRef, targetContainerId]);
 
   // Update scroll metrics
@@ -76,15 +76,14 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
       return;
     }
 
-    // Determine direction
+    // Determine direction: up if near bottom, otherwise down
     const distanceToBottom = maxScroll - scrollTop;
     const isNearBottom = distanceToBottom <= bottomThreshold;
 
     setDirection(isNearBottom ? 'up' : 'down');
 
-    // Only show if user has actively scrolled away from top
-    const shouldShow = overflowExists && scrollTop > 100;
-    setIsVisible(shouldShow);
+    // Show whenever overflow exists so user can jump to bottom from top, or back to top from bottom
+    setIsVisible(true);
 
     // Detect if bulk toolbar is present in the DOM
     if (hasActiveBulkBar !== undefined) {

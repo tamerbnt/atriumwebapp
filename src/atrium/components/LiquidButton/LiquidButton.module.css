@@ -3,10 +3,13 @@
 .root {
   --h: var(--atr-h, 34px);
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   vertical-align: middle;
   box-sizing: border-box;
   height: var(--h);
+  max-height: var(--h);
   width: calc(var(--h) * 4.1667); /* 300 : 72, override with style={{ width }} or className */
   margin: 0;
   padding: 0;
@@ -17,7 +20,8 @@
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  border-radius: calc(var(--h) * 0.147);
+  border-radius: calc(var(--h) * 0.28);
+  overflow: hidden;
   appearance: none;
   -webkit-appearance: none;
 }
@@ -25,7 +29,7 @@
 .root[aria-busy='true'] { cursor: progress; }
 .root:focus-visible { outline: 2px solid var(--atr-acc-text); outline-offset: 3px; }
 
-.svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; display: block; }
+.svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; display: block; }
 
 .accent { --lb-body: var(--atr-acc); --lb-liq: var(--atr-sw-liquid); --lb-t1: var(--atr-onacc); --lb-t2: #0a0a0a; }
 .ink { --lb-body: var(--atr-lb-body); --lb-liq: var(--atr-lb-liq); --lb-t1: var(--atr-lb-t1); --lb-t2: #0a0a0a; }

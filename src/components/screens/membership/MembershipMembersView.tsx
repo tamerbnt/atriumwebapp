@@ -670,14 +670,14 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
 
           {/* Middle: Search + Quick Status Tabs + Filter Modal Button */}
           <div className="flex items-center gap-2.5 min-w-0 flex-wrap">
-            {/* Seek Kinetic Search Box (40px Standard Circular/Pill) */}
+            {/* Seek Kinetic Search Box (40px Standard Squircle) */}
             <Seek
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder={language === 'ar' ? `البحث في ${terminology.members}...` : language === 'fr' ? `Rechercher...` : `Search...`}
               shutSize={40}
               openWidth={240}
-              className="shrink-0"
+              className="shrink-0 !rounded-xl"
             />
 
             {/* Streamlined Quick Status Tabs (40px Standard Squircle) */}
@@ -691,13 +691,13 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               />
             </div>
 
-            {/* On-Demand Filters Modal Trigger Button (40px Standard Squircle/Pill) */}
+            {/* On-Demand Filters Modal Trigger Button (40px Standard Squircle) */}
             <div className="relative shrink-0">
               <button
                 ref={filterButtonRef}
                 type="button"
                 onClick={toggleFilterPopover}
-                className={`h-10 px-3.5 rounded-full border flex items-center gap-2 text-xs font-semibold cursor-pointer transition-all shadow-2xs select-none ${
+                className={`h-10 px-3.5 rounded-xl border flex items-center gap-2 text-xs font-semibold cursor-pointer transition-all shadow-2xs select-none ${
                   hasActiveAdvancedFilters || isFilterPopoverOpen
                     ? 'bg-[#FCEEE8] dark:bg-[#C4785A]/15 text-[#C4785A] border-[#C4785A]/40 ring-1 ring-[#C4785A]/20'
                     : 'bg-white dark:bg-neutral-800 border-[#E9EEF0] dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700/50'
@@ -708,7 +708,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                 <SlidersHorizontal size={15} className={hasActiveAdvancedFilters ? 'text-[#C4785A]' : 'text-neutral-500'} />
                 <span>{language === 'ar' ? 'مرشحات' : language === 'fr' ? 'Filtres' : 'Filters'}</span>
                 {activeFiltersCount > 0 && (
-                  <span className="w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center bg-[#C4785A] text-white tabular-nums">
+                  <span className="w-5 h-5 rounded-md text-[10px] font-bold flex items-center justify-center bg-[#C4785A] text-white tabular-nums">
                     {activeFiltersCount}
                   </span>
                 )}
@@ -722,7 +722,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
             </div>
           </div>
 
-          {/* Right Utility Group: View Switcher (List/Grid) + Branded Atrium Export Button (40px) */}
+          {/* Right Utility Group: View Switcher (List/Grid) + Branded Atrium Export Button (40px Squircle) */}
           <div className="flex items-center gap-2 shrink-0">
             {/* View Switcher: List | Grid (40px standard squircle) */}
             <LiveSegmentedControl
@@ -736,7 +736,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               aria-label="View Switcher"
             />
 
-            {/* Official Branded Atrium Liquid Exporter Button (exact 40px height) */}
+            {/* Official Branded Atrium Liquid Export Button (exact 40px height matching row) */}
             <LiquidButton
               kind="export"
               size={40}
@@ -753,7 +753,8 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               }}
               title={t('members_export_csv', language)}
               aria-label={t('members_export_csv', language)}
-              className="shrink-0 h-10"
+              className="shrink-0 !h-10 !max-h-10 !rounded-xl"
+              style={{ height: '40px', maxHeight: '40px', width: '148px' }}
             />
           </div>
         </div>
