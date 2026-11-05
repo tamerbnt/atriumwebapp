@@ -215,21 +215,92 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* ============================================================
+   Fluid Auto-Hiding Scrollbar Architecture
+   Scrollbars stay invisible when idle, smoothly fading in ONLY
+   when the user is actively scrolling.
+   ============================================================ */
+
+/* Standard Firefox & Modern CSS */
+html,
+body,
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-overflow-scrolling: touch;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* While actively scrolling */
+html.is-scrolling,
+html[data-scrolling="true"],
+.is-scrolling,
+[data-scrolling="true"] {
+  scrollbar-color: rgba(196, 120, 90, 0.45) transparent;
+}
+
+.dark html.is-scrolling,
+.dark html[data-scrolling="true"],
+.dark .is-scrolling,
+.dark [data-scrolling="true"] {
+  scrollbar-color: rgba(220, 140, 110, 0.45) transparent;
+}
+
+/* WebKit / Chromium (Chrome, Edge, Safari, Opera) */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: rgba(196, 120, 90, 0.25);
+  background-color: transparent;
   border-radius: 9999px;
+  background-clip: padding-box;
+  transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+/* Scrollbar thumb fades in ONLY when scrolling */
+.is-scrolling::-webkit-scrollbar-thumb,
+.is-scrolling ::-webkit-scrollbar-thumb,
+[data-scrolling="true"]::-webkit-scrollbar-thumb,
+[data-scrolling="true"] ::-webkit-scrollbar-thumb {
+  background-color: rgba(196, 120, 90, 0.45);
+}
+
+.dark .is-scrolling::-webkit-scrollbar-thumb,
+.dark .is-scrolling ::-webkit-scrollbar-thumb,
+.dark [data-scrolling="true"]::-webkit-scrollbar-thumb,
+.dark [data-scrolling="true"] ::-webkit-scrollbar-thumb {
+  background-color: rgba(220, 140, 110, 0.45);
+}
+
+/* When hovering directly on the scrollbar thumb to grab/drag it */
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent);
+  background-color: var(--color-accent, #C4785A) !important;
 }
+
+/* Fluid scroll physics and touch momentum on all scrollable elements */
+.main,
+[data-scroll-container],
+main,
+aside,
+div[tabindex],
+.overflow-y-auto,
+.overflow-x-auto,
+.overflow-auto {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
 
 /* ============================================================
    Terracotta Kinetic & Motion Design Keyframes

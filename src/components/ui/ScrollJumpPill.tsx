@@ -82,10 +82,8 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
 
     setDirection(isNearBottom ? 'up' : 'down');
 
-    // Only show if user has scrolled away from top OR if content is long enough
-    // When at top (scrollTop < 40), display downward prompt if content is significantly long (>300px maxScroll)
-    // When user scrolls, always show the pill
-    const shouldShow = scrollTop > 60 || maxScroll > 350;
+    // Only show if user has actively scrolled away from top
+    const shouldShow = overflowExists && scrollTop > 100;
     setIsVisible(shouldShow);
 
     // Detect if bulk toolbar is present in the DOM

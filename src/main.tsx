@@ -3,8 +3,10 @@ import App from './App.tsx';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import './index.css';
 import { configureMotion } from '@/atrium';
+import { initFluidScrollbar } from './utils/fluidScrollbar';
 
 configureMotion({ tier: 'full' });
+initFluidScrollbar();
 
 createRoot(document.getElementById('root')!).render(
   <ErrorBoundary>
