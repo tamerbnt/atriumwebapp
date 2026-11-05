@@ -39,7 +39,7 @@ import { Seek } from '../../ui/Seek';
 import { ActionNode } from '../../ui/ActionNode';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { AtriumButton } from '../../ui/AtriumButton';
-import { Button as BrandedAtriumButton } from '@/atrium';
+import { Button as BrandedAtriumButton, LiquidButton } from '@/atrium';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { t } from '../../../utils/i18n';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -571,15 +571,15 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
             )}
           </div>
 
-          {/* Add Member Primary Button: 48px Hero Action */}
+          {/* Add Member Primary Button: Refined 40px Action */}
           <AtriumButton
             variant="primary"
-            size="lg"
+            size="md"
             onClick={onAddMember}
-            icon={<Plus size={18} strokeWidth={2.5} />}
-            className="px-6 font-semibold shadow-md"
+            icon={<Plus size={16} strokeWidth={2.2} />}
+            className="px-4 font-semibold shadow-xs"
           >
-            <span className="text-sm font-bold tracking-wide">
+            <span className="text-xs sm:text-sm font-semibold">
               {t('action_add', language)} {terminology.memberSingle}
             </span>
           </AtriumButton>
@@ -736,17 +736,25 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               aria-label="View Switcher"
             />
 
-            {/* Official Branded Atrium Export Button (exact 40px height) */}
-            <BrandedAtriumButton
+            {/* Official Branded Atrium Liquid Exporter Button (exact 40px height) */}
+            <LiquidButton
+              kind="export"
               size={40}
-              tone="soft"
-              leading={<Download size={15} className="text-neutral-500" />}
-              onClick={handleExportCSV}
+              tone="accent"
+              labels={{
+                idle: language === 'ar' ? 'تصدير' : language === 'fr' ? 'Exporter' : 'Export',
+                busy: language === 'ar' ? 'جاري التصدير' : language === 'fr' ? 'Exportation...' : 'Exporting...',
+                done: language === 'ar' ? 'تم التصدير' : language === 'fr' ? 'Exporté' : 'Exported',
+                error: language === 'ar' ? 'فشل' : language === 'fr' ? 'Échec' : 'Failed',
+              }}
+              onPress={async () => {
+                await new Promise((resolve) => setTimeout(resolve, 600));
+                handleExportCSV();
+              }}
               title={t('members_export_csv', language)}
-              className="font-semibold shadow-2xs"
-            >
-              <span className="hidden xl:inline">{t('members_export_csv', language)}</span>
-            </BrandedAtriumButton>
+              aria-label={t('members_export_csv', language)}
+              className="shrink-0 h-10"
+            />
           </div>
         </div>
 
