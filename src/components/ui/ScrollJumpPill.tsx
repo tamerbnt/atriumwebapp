@@ -57,7 +57,7 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
     return document.getElementById('main-content-scroll') || document.querySelector('main') || document.documentElement;
   }, [containerRef, targetContainerId]);
 
-  // Update scroll metrics
+  // Update scroll metrics with stable hysteresis
   const updateMetrics = useCallback(() => {
     const container = getContainer();
     if (!container) return;
@@ -69,32 +69,45 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
     const maxScroll = Math.max(0, scrollHeight - clientHeight);
     const overflowExists = maxScroll > overflowThreshold;
 
-    setHasOverflow(overflowExists);
-
     if (!overflowExists) {
+      setHasOverflow(false);
       setIsVisible(false);
       return;
     }
 
-    // Determine direction: up if near bottom, otherwise down
-    const distanceToBottom = maxScroll - scrollTop;
-    const isNearBottom = distanceToBottom <= bottomThreshold;
-
-    setDirection(isNearBottom ? 'up' : 'down');
-
-    // Show whenever overflow exists so user can jump to bottom from top, or back to top from bottom
+    setHasOverflow(true);
     setIsVisible(true);
 
+    const distanceToBottom = maxScroll - scrollTop;
+
+    // Stable hysteresis direction calculation:
+    // If near the top (scrollTop < 80) -> definitely DOWN
+    // If near the bottom (distanceToBottom < 80) -> definitely UP
+    // In between, use hysteresis to prevent rapid flapping or jumping
+    setDirection(prevDirection => {
+      if (scrollTop < 80) {
+        return 'down';
+      }
+      if (distanceToBottom < 80) {
+        return 'up';
+      }
+      if (prevDirection === 'down' && distanceToBottom <= bottomThreshold) {
+        return 'up';
+      }
+      if (prevDirection === 'up' && scrollTop <= bottomThreshold) {
+        return 'down';
+      }
+      return prevDirection;
+    });
+
     // Detect if bulk toolbar is present in the DOM
-    if (hasActiveBulkBar !== undefined) {
-      setIsBulkToolbarVisible(hasActiveBulkBar);
-    } else {
-      const bulkEl = document.querySelector('[data-atrium-bulk-toolbar="true"]');
-      setIsBulkToolbarVisible(!!bulkEl);
-    }
+    const hasBulk = hasActiveBulkBar !== undefined
+      ? hasActiveBulkBar
+      : Boolean(document.querySelector('[data-atrium-bulk-toolbar="true"]'));
+    setIsBulkToolbarVisible(prev => (prev !== hasBulk ? hasBulk : prev));
   }, [getContainer, overflowThreshold, bottomThreshold, hasActiveBulkBar]);
 
-  // Scroll listener throttled via requestAnimationFrame
+  // Scroll listener throttled via requestAnimationFrame + ResizeObserver
   useEffect(() => {
     const container = getContainer();
     if (!container) return;
@@ -114,21 +127,37 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
     targetEventElement.addEventListener('scroll', onScrollOrResize, { passive: true });
     window.addEventListener('resize', onScrollOrResize, { passive: true });
 
-    // Mutation observer to detect list additions/filter changes and bulk toolbar
-    const observer = new MutationObserver(() => {
-      onScrollOrResize();
+    // ResizeObserver tracks dynamic content additions, filtered lists, or table resizing
+    let ro: ResizeObserver | undefined;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(() => onScrollOrResize());
+      ro.observe(container);
+    }
+
+    // MutationObserver watches only childList additions/removals (e.g. bulk toolbar open/close)
+    // NEVER watch attributes/style/class to avoid feedback loops with spring transforms
+    const observer = new MutationObserver((mutations) => {
+      let shouldUpdate = false;
+      for (const m of mutations) {
+        if (m.type === 'childList') {
+          shouldUpdate = true;
+          break;
+        }
+      }
+      if (shouldUpdate) {
+        onScrollOrResize();
+      }
     });
 
     observer.observe(container, {
       childList: true,
       subtree: true,
-      attributes: true,
-      attributeFilter: ['data-atrium-bulk-toolbar', 'style', 'class'],
     });
 
     return () => {
       targetEventElement.removeEventListener('scroll', onScrollOrResize);
       window.removeEventListener('resize', onScrollOrResize);
+      ro?.disconnect();
       observer.disconnect();
       if (rafIdRef.current !== null) {
         cancelAnimationFrame(rafIdRef.current);
@@ -167,15 +196,13 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
       : t('scroll_jump_top', 'Défiler vers le haut');
 
   // Coordinated vertical placement: elevate above bulk toolbar if present
-  const isAbsolute = className.includes('absolute');
-  const bottomPlacement = isBulkToolbarVisible
-    ? (isAbsolute ? 'bottom-22' : 'bottom-24')
-    : (isAbsolute ? 'bottom-5' : 'bottom-8');
-  const positionClass = isAbsolute ? '' : 'fixed';
+  const hasFixed = className.includes('fixed');
+  const positionClass = hasFixed ? 'fixed' : 'absolute';
+  const bottomPlacement = isBulkToolbarVisible ? 'bottom-24' : 'bottom-6';
 
   return (
     <div
-      className={`${positionClass} ${bottomPlacement} left-1/2 -translate-x-1/2 z-40 transition-all duration-300 ease-out animate-in fade-in zoom-in-95 pointer-events-auto ${className}`}
+      className={`${positionClass} ${bottomPlacement} left-1/2 -translate-x-1/2 z-40 transition-[bottom,transform,opacity] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-auto select-none ${className}`}
       dir={isRtl ? 'rtl' : 'ltr'}
     >
       <button
@@ -183,7 +210,7 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
         onClick={handleScrollJump}
         aria-label={label}
         title={label}
-        className="group relative flex items-center justify-center h-10 min-w-10 px-2 group-hover:ps-2.5 group-hover:pe-4 group-focus-visible:ps-2.5 group-focus-visible:pe-4 rounded-full bg-white/95 dark:bg-neutral-900/95 text-neutral-800 dark:text-neutral-100 border border-neutral-200/90 dark:border-neutral-700/90 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.12),0_4px_8px_-2px_rgba(0,0,0,0.06)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] backdrop-blur-md hover:border-[#d4522f]/80 hover:shadow-[0_10px_28px_-4px_rgba(196,120,90,0.25)] hover:scale-[1.04] active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4522f] overflow-hidden"
+        className="group relative flex items-center justify-center h-10 min-w-10 px-2 group-hover:ps-2.5 group-hover:pe-4 group-focus-visible:ps-2.5 group-focus-visible:pe-4 rounded-full bg-white/95 dark:bg-neutral-900/95 text-neutral-800 dark:text-neutral-100 border border-neutral-200/90 dark:border-neutral-700/90 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.12),0_4px_8px_-2px_rgba(0,0,0,0.06)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] backdrop-blur-md hover:border-[#d4522f]/80 hover:shadow-[0_10px_28px_-4px_rgba(212,82,47,0.25)] hover:scale-[1.04] active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4522f] overflow-hidden"
       >
         {/* Animated Direction Arrow Icon */}
         <span

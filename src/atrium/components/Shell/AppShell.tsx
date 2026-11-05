@@ -38,6 +38,8 @@ export interface AppShellProps {
   mainLabel?: string;
   /** DOM ID for the scrollable main container */
   mainId?: string;
+  /** Optional floating overlay elements anchored to the content area (e.g. scroll jump pill) */
+  floatingOverlay?: ReactNode;
 }
 
 const HIDE_AFTER = 48; // px scrolled down before the bar goes
@@ -59,6 +61,7 @@ export function AppShell({
   sidebarOpen: sidebarOpenProp, defaultSidebarOpen, onSidebarOpenChange,
   barHidden: hiddenProp, defaultBarHidden, onBarHiddenChange,
   autoHide = true, scrollRef, className, style, mainLabel = 'Page', mainId = 'main-content-scroll',
+  floatingOverlay,
 }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useControllable<boolean>(sidebarOpenProp, defaultSidebarOpen ?? false, onSidebarOpenChange);
   const [hidden, setHidden] = useControllable<boolean>(hiddenProp, defaultBarHidden ?? false, onBarHiddenChange);
@@ -240,6 +243,11 @@ export function AppShell({
           <main ref={main} id={mainId} className={s.main} aria-label={mainLabel} tabIndex={-1}>
             {children}
           </main>
+          {floatingOverlay && (
+            <div className={s.floatingOverlay}>
+              {floatingOverlay}
+            </div>
+          )}
         </div>
       </div>
     </ShellContext.Provider>

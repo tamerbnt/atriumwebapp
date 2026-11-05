@@ -1172,6 +1172,9 @@ export default function App() {
                 onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
               />
             }
+            floatingOverlay={
+              <ScrollJumpPill targetContainerId="main-content-scroll" />
+            }
           >
             {/* Small rounded shape button at top of screen to restore header when collapsed */}
             {isTopBarCollapsed && (
@@ -1189,9 +1192,6 @@ export default function App() {
 
             <div className="relative w-full min-h-full flex flex-col p-6 sm:p-8 pb-16 sm:pb-20">
               {renderActiveScreen()}
-              <ScrollJumpPill
-                targetContainerId="main-content-scroll"
-              />
             </div>
           </AppShell>
         </div>
