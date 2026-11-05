@@ -509,43 +509,6 @@ export const EducationDashboardView: React.FC = () => {
                 trendText={language === 'ar' ? 'مستقر' : 'Cohortes stables'}
                 defaultEnabled={true}
               />
-
-              {/* Action Buttons Bar */}
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm flex flex-wrap items-center justify-between gap-3">
-                <span className="text-xs font-semibold text-gray-600">
-                  {language === 'ar' ? 'إجراءات سريعة واختصارات' : 'Raccourcis Opérationnels'}
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (eduSessions && eduSessions.length > 0) {
-                        setSelectedSessionForRollCall(eduSessions[0].id);
-                      }
-                    }}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d4522f] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
-                  >
-                    <Award size={14} />
-                    {language === 'ar' ? 'تسجيل الحضور (Appel)' : 'Faire l’Appel'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setScreen('scheduler')}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all"
-                  >
-                    <Calendar size={14} />
-                    {language === 'ar' ? 'جدول الحصص' : 'Emploi du Temps'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setScreen('shop')}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all"
-                  >
-                    <GraduationCap size={14} />
-                    {language === 'ar' ? 'إدارة الأفواج' : 'Gestion Cohortes'}
-                  </button>
-                </div>
-              </div>
             </div>
           </DashboardPod>
         </div>

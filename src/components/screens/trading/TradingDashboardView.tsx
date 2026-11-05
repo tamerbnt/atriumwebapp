@@ -493,39 +493,6 @@ export const TradingDashboardView: React.FC = () => {
                 trendText={language === 'ar' ? 'آمن' : 'BFR sain'}
                 defaultEnabled={true}
               />
-
-              {/* Action Buttons Bar */}
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm flex flex-wrap items-center justify-between gap-3">
-                <span className="text-xs font-semibold text-gray-600">
-                  {language === 'ar' ? 'إجراءات سريعة واختصارات' : 'Raccourcis Opérationnels'}
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsComposerOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d4522f] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
-                  >
-                    <Plus size={14} />
-                    {language === 'ar' ? 'إنشاء وثيقة تجارية (BL/Facture)' : 'Nouvelle Vente B2B'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setScreen('trading_inventory' as any)}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all"
-                  >
-                    <Boxes size={14} />
-                    {language === 'ar' ? 'حركة المستودع' : 'Stocks Dépôt'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setScreen('trading_sales' as any)}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all"
-                  >
-                    <FileText size={14} />
-                    {language === 'ar' ? 'سجل المبيعات' : 'Journal Ventes'}
-                  </button>
-                </div>
-              </div>
             </div>
           </DashboardPod>
         </div>

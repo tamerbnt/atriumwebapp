@@ -495,39 +495,6 @@ export const LegalDashboardView: React.FC = () => {
                 trendText={language === 'ar' ? 'مؤمن' : 'Délais sous contrôle'}
                 defaultEnabled={true}
               />
-
-              {/* Action Buttons Bar */}
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm flex flex-wrap items-center justify-between gap-3">
-                <span className="text-xs font-semibold text-gray-600">
-                  {language === 'ar' ? 'إجراءات سريعة واختصارات' : 'Raccourcis Opérationnels'}
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsMatterModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d4522f] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
-                  >
-                    <Plus size={14} />
-                    {language === 'ar' ? 'فتح ملف قضية جديدة' : 'Nouveau Dossier'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsDeadlineModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all"
-                  >
-                    <Calendar size={14} />
-                    {language === 'ar' ? 'تسجيل أجل CPCA' : 'Échéance CPCA'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setScreen('finance')}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all"
-                  >
-                    <Lock size={14} />
-                    {language === 'ar' ? 'حسابات الودائع CARPA' : 'Comptes CARPA'}
-                  </button>
-                </div>
-              </div>
             </div>
           </DashboardPod>
         </div>

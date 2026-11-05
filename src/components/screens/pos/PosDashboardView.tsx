@@ -541,39 +541,6 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
                 trendText={language === 'ar' ? 'معدل سليم' : 'Seuils sous contrôle'}
                 defaultEnabled={true}
               />
-
-              {/* Action Buttons Bar */}
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm flex flex-wrap items-center justify-between gap-3">
-                <span className="text-xs font-semibold text-gray-600">
-                  {language === 'ar' ? 'إجراءات سريعة واختصارات' : 'Raccourcis Opérationnels'}
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setScreen('shop')}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d4522f] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
-                  >
-                    <ShoppingBag size={14} />
-                    {language === 'ar' ? 'فتح واجهة الكاشير' : 'Ouvrir la Caisse'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setScreen('scheduler')}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all"
-                  >
-                    <Warehouse size={14} />
-                    {language === 'ar' ? 'إدارة المخزون' : 'Inventaire Stocks'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setScreen('finance')}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all"
-                  >
-                    <Printer size={14} />
-                    {language === 'ar' ? 'تقرير الإقفال Z' : 'Rapport de Clôture Z'}
-                  </button>
-                </div>
-              </div>
             </div>
           </DashboardPod>
         </div>

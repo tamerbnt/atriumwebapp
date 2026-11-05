@@ -546,39 +546,6 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
                 trendText={language === 'ar' ? '+5% هذا الأسبوع' : '+5% cette semaine'}
                 defaultEnabled={true}
               />
-
-              {/* Action Buttons Bar */}
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm flex flex-wrap items-center justify-between gap-3">
-                <span className="text-xs font-semibold text-gray-600">
-                  {language === 'ar' ? 'إجراءات سريعة واختصارات' : 'Raccourcis Opérationnels'}
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsNewAptModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d4522f] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
-                  >
-                    <Plus size={14} />
-                    {language === 'ar' ? 'حجز موعد جديد' : 'Nouveau Rendez-vous'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setScreen('scheduler')}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all"
-                  >
-                    <Calendar size={14} />
-                    {language === 'ar' ? 'جدول المواعيد' : 'Agenda'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setScreen('shop')}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all"
-                  >
-                    <Scissors size={14} />
-                    {language === 'ar' ? 'كتالوج الخدمات' : 'Services & Tarifs'}
-                  </button>
-                </div>
-              </div>
             </div>
           </DashboardPod>
         </div>

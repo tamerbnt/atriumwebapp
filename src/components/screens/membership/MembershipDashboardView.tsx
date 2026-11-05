@@ -536,7 +536,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
               </div>
             </div>
 
-            {/* Middle: Signature Dark Espresso Retention Guardian Card */}
+            {/* Signature Dark Espresso Retention Guardian Card */}
             <GuardianCard
               title={language === 'ar' ? 'حارس ولاء المشتركين' : language === 'fr' ? 'Retention Guardian' : 'Retention Guardian'}
               subtitle={
@@ -550,39 +550,6 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
               scoreLabel={language === 'ar' ? 'صحة النادي' : 'Health'}
               gaugeColor="#10B981"
             />
-
-            {/* Bottom: Operational Shortcuts & Reports */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-3">
-              <span className="text-[11px] font-bold text-neutral-600 dark:text-neutral-300 block">
-                {language === 'ar' ? 'اختصارات العمليات والتقارير' : language === 'fr' ? 'Raccourcis Opérationnels & Rapports' : 'Operational Shortcuts & Reports'}
-              </span>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => setScreen('staff')}
-                  className="h-10 px-3 rounded-xl bg-[#d4522f] hover:bg-[#B26A4E] text-white text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center justify-center text-center"
-                >
-                  {language === 'ar' ? 'الرواتب والأجور' : language === 'fr' ? 'Paie / Salaires' : 'Payroll / Wages'}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setScreen('finance')}
-                  className="h-10 px-3 rounded-xl bg-[#F8F9FA] dark:bg-neutral-700/60 hover:bg-[#EDF1F3] text-neutral-700 dark:text-neutral-200 text-xs font-semibold transition-all border border-[#EDF1F3] dark:border-neutral-700 cursor-pointer flex items-center justify-center text-center"
-                >
-                  {language === 'ar' ? 'سجل المقبوضات' : language === 'fr' ? 'Historique Recettes' : 'Revenue History'}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setScreen('history')}
-                  className="h-10 px-3 rounded-xl bg-[#F8F9FA] dark:bg-neutral-700/60 hover:bg-[#EDF1F3] text-neutral-700 dark:text-neutral-200 text-xs font-semibold transition-all border border-[#EDF1F3] dark:border-neutral-700 cursor-pointer flex items-center justify-center text-center"
-                >
-                  {language === 'ar' ? 'سجل البوابات' : language === 'fr' ? 'Historique Flux' : 'Turnstile Traffic'}
-                </button>
-              </div>
-            </div>
           </DashboardPod>
         </div>
       </div>

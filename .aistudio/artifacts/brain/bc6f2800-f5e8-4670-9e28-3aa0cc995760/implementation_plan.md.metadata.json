@@ -1,0 +1,6 @@
+{
+  "summary": "Revised Implementation Plan for Universal Dashboard Overhaul:\n1. Context-Adaptive Date Filters: Tailored date switchers per card archetype (Daily switchers: Today, Yesterday, Day Before, 7D Avg for Hourly curves; Monthly/Quarterly switchers: This Month, Last Month, Quarter, Year for Revenue/Cash area curves; Cadence switchers for Histograms and Donut charts).\n2. Deep Interactive Charts: High-precision cursor tracking, vertical dashed crosshairs, and rich floating glass tooltips across MonthlyAreaChart, HourlyCurveChart, PillBarHistogram, and DonutChart.\n3. Top Header Cleanliness: Removed large global filter; standardized export button to 40px height matching primary buttons.\n4. Shortcuts Clean-up: Removed the 3 buttons under 'Raccourcis Opérationnels & Rapports' across all 16 category dashboards, expanding the Guardian intelligence monitor.",
+  "updatedAt": "2026-11-05T19:04:04.818079460Z",
+  "requestFeedback": true,
+  "userFacing": true
+}

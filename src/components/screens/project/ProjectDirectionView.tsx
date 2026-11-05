@@ -482,44 +482,41 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
       {/* Top Header with Facility Switcher & Demo Data Button */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#d4522f]">
-              {t('pm_role_direction_badge')}
-            </span>
-            <span className="text-zinc-400">·</span>
-            <span className="text-xs text-zinc-500">Direction Générale & Arbitrage</span>
+          {currentScreen !== 'dashboard' && (
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#d4522f]">
+                {t('pm_role_direction_badge')}
+              </span>
+              <span className="text-zinc-400">·</span>
+              <span className="text-xs text-zinc-500">Direction Générale & Arbitrage</span>
+            </div>
+          )}
+          <div className="flex items-center gap-3.5">
+            {currentScreen === 'dashboard' && (
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                  <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                  <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                  <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                  <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                </svg>
+              </div>
+            )}
+            <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
+              {currentScreen === 'dashboard'
+                ? t('nav_dashboard', language)
+                : currentScreen === 'projects'
+                ? 'Portefeuille Projets'
+                : currentScreen === 'new_project'
+                ? t('pm_btn_new_project')
+                : currentScreen === 'approvals'
+                ? 'Approbations & Décaissements'
+                : t('nav_pm_dir_reports')}
+            </h1>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-            {currentScreen === 'dashboard'
-              ? t('nav_dashboard', language)
-              : currentScreen === 'projects'
-              ? 'Portefeuille Projets'
-              : currentScreen === 'new_project'
-              ? t('pm_btn_new_project')
-              : currentScreen === 'approvals'
-              ? 'Approbations & Décaissements'
-              : t('nav_pm_dir_reports')}
-          </h1>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Kinetic 34px Dashboard Live Filter Switcher */}
-          {currentScreen === 'dashboard' && (
-            <div className="order-first sm:order-none">
-              <LiveSegmentedControl
-                size="md"
-                value={directionPeriod}
-                onValueChange={setDirectionPeriod}
-                options={[
-                  { value: 'today', label: language === 'ar' ? 'اليوم' : language === 'fr' ? "Aujourd'hui" : 'Today' },
-                  { value: '7d', label: language === 'ar' ? '٧ أيام' : language === 'fr' ? '7J' : '7D' },
-                  { value: '30d', label: language === 'ar' ? '٣٠ يوماً' : language === 'fr' ? '30J' : '30D' },
-                  { value: 'year', label: language === 'ar' ? 'السنة' : language === 'fr' ? 'Année' : 'Year' },
-                ]}
-                aria-label="Direction Period Filter"
-              />
-            </div>
-          )}
 
           {/* Facility Switcher Dropdown Pill */}
           <div className="relative">
@@ -904,36 +901,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                     gaugeColor={pendingPayrollBatches.length > 0 ? '#F59E0B' : '#10B981'}
                     onToggle={() => showToast(language === 'ar' ? 'تم تحديث وضع حارس الميزانية' : 'Gardien budgétaire actif', 'info')}
                   />
-
-                  {/* Operational Shortcuts */}
-                  <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-3 border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm">
-                    <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider block mb-2">
-                      {language === 'ar' ? 'اختصارات العمليات والتقارير' : language === 'fr' ? 'Raccourcis Opérationnels & Direction' : 'Operational Shortcuts & Reports'}
-                    </span>
-                    <div className="grid grid-cols-3 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setActivePmSubScreen('new_project')}
-                        className="py-2.5 px-3 rounded-[12px] bg-[#d4522f] hover:bg-[#B3684B] text-white text-xs font-semibold text-center transition-colors cursor-pointer shadow-xs"
-                      >
-                        {language === 'ar' ? '+ مشروع جديد' : '+ Nouveau Projet'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setActivePmSubScreen('approvals')}
-                        className="py-2.5 px-3 rounded-[12px] bg-gray-100 hover:bg-gray-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-gray-800 dark:text-gray-200 text-xs font-semibold text-center transition-colors cursor-pointer"
-                      >
-                        {language === 'ar' ? 'الموافقات والرواتب' : 'Valider Lots Paie'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setActivePmSubScreen('reports')}
-                        className="py-2.5 px-3 rounded-[12px] bg-gray-100 hover:bg-gray-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-gray-800 dark:text-gray-200 text-xs font-semibold text-center transition-colors cursor-pointer"
-                      >
-                        {language === 'ar' ? 'تقارير المردودية' : 'Rapports Rentabilité'}
-                      </button>
-                    </div>
-                  </div>
                 </div>
               </DashboardPod>
             </div>

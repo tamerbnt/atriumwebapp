@@ -486,39 +486,6 @@ export const LogisticsDashboardView: React.FC = () => {
                 trendText={language === 'ar' ? 'مطابق' : 'Fonds sécurisés'}
                 defaultEnabled={true}
               />
-
-              {/* Action Buttons Bar */}
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm flex flex-wrap items-center justify-between gap-3">
-                <span className="text-xs font-semibold text-gray-600">
-                  {language === 'ar' ? 'إجراءات سريعة واختصارات' : 'Raccourcis Opérationnels'}
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsShipModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d4522f] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
-                  >
-                    <Plus size={14} />
-                    {language === 'ar' ? 'إنشاء إرسالية طرد' : 'Nouveau Colis'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setScreen('registrations')}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all"
-                  >
-                    <QrCode size={14} />
-                    {language === 'ar' ? 'ماسح الباركود' : 'Scanner Code-Barres'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setScreen('finance')}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all"
-                  >
-                    <Receipt size={14} />
-                    {language === 'ar' ? 'تسوية مبالغ COD' : 'Décharge COD'}
-                  </button>
-                </div>
-              </div>
             </div>
           </DashboardPod>
         </div>

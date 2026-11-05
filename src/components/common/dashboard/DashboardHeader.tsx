@@ -3,7 +3,6 @@ import { Home, ChevronDown, Sparkles, Download } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { useTranslation } from '../../../utils/useTranslation';
 import { Button, LiquidButton } from '@/atrium';
-import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 
 export interface DashboardHeaderProps {
   title?: string;
@@ -117,9 +116,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
       <div>
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-[#F8F9FA] dark:bg-neutral-800 border border-[#EDF1F3] dark:border-neutral-700 flex items-center justify-center text-[#d4522f]">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <rect x="3" y="3" width="7" height="7" rx="1.5" />
               <rect x="14" y="3" width="7" height="7" rx="1.5" />
               <rect x="14" y="14" width="7" height="7" rx="1.5" />
@@ -130,23 +129,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             {displayTitle}
           </h1>
         </div>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-          {displaySubtitle}
-        </p>
       </div>
 
       <div className="flex items-center gap-2.5 flex-wrap">
-        {/* Kinetic 34px Dashboard Live Filter Switcher */}
-        <div className="order-first sm:order-none">
-          <LiveSegmentedControl
-            size="md"
-            value={activePeriod}
-            onValueChange={handlePeriodChange}
-            options={periodOptions || defaultPeriodOptions}
-            aria-label="Dashboard Period Filter"
-          />
-        </div>
-
         {/* Branch / Facility Selector Pill */}
         <div className="relative">
           <button
@@ -203,11 +188,10 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           )}
         </div>
 
-
-        {/* Liquid Export Report Action */}
+        {/* Liquid Export Report Action - 40px height matching primary buttons */}
         <LiquidButton
           kind="export"
-          size="sm"
+          size={40}
           progress={exportProgress}
           onPress={handleExport}
           id="dash-header-export-btn"
