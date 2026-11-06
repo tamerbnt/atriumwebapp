@@ -1,0 +1,6 @@
+{
+  "summary": "Comprehensive architectural plan to solve Atrium's 7.2MB monolithic bundle issue:\n- Replaces 116 top-level static screen imports in App.tsx with dynamic React.lazy imports grouped into 16 category-dedicated chunks (category-membership, category-medical, category-contractor, category-garage, etc.).\n- Configures Vite rollup manualChunks for vendor caching (vendor-react, vendor-motion, vendor-icons, vendor-supabase).\n- Integrates existing StructuralSkeletons into React Suspense boundaries for zero-CLS, instant category-matched wireframe transitions.\n- Converts heavy printable engines (SFP 01, Decomptes, Weighbridge, Ordonnance) and global modals to on-demand lazy imports.\n- Anticipates a 93%+ initial bundle reduction from 7.2MB to ~380-480kB.",
+  "updatedAt": "2026-11-06T19:29:09.426373221Z",
+  "requestFeedback": true,
+  "userFacing": true
+}

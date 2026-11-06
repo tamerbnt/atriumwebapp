@@ -4,137 +4,151 @@ import { Member } from './types/index';
 import { AppShell } from '@/atrium';
 import { Sidebar } from './components/layout/Sidebar';
 import { TopBar } from './components/layout/TopBar';
-import { SettingsScreen } from './components/screens/SettingsScreen';
-import { VoucherModal } from './components/modals/VoucherModal';
-import { MemberModal } from './components/modals/MemberModal';
-import { LeadModal } from './components/modals/LeadModal';
 import { LoginScreen } from './components/auth/LoginScreen';
-import { FastSwitchModal } from './components/auth/FastSwitchModal';
-import { PowerOnboardingScreen } from './components/auth/PowerOnboardingScreen';
-import { FreelanceDashboardView } from './components/screens/freelance/FreelanceDashboardView';
-import { FreelanceClientsView } from './components/screens/freelance/FreelanceClientsView';
-import { FreelanceDeliverablesView } from './components/screens/freelance/FreelanceDeliverablesView';
-import { FreelanceTimeTrackerView } from './components/screens/freelance/FreelanceTimeTrackerView';
-import { FreelanceInvoicesView } from './components/screens/freelance/FreelanceInvoicesView';
-import { FreelanceProposalsView } from './components/screens/freelance/FreelanceProposalsView';
-import { FreelanceFinanceView } from './components/screens/freelance/FreelanceFinanceView';
-import { VenueDashboardView } from './components/screens/venue/VenueDashboardView';
-import { VenueTimelineView } from './components/screens/venue/VenueTimelineView';
-import { VenueBookingsView } from './components/screens/venue/VenueBookingsView';
-import { VenueInventoryView } from './components/screens/venue/VenueInventoryView';
-import { VenueRentersView } from './components/screens/venue/VenueRentersView';
-import { VenueFinanceView } from './components/screens/venue/VenueFinanceView';
-import { EducationDashboardView } from './components/screens/education/EducationDashboardView';
-import { EducationTimetableView } from './components/screens/education/EducationTimetableView';
-import { EducationStudentsView } from './components/screens/education/EducationStudentsView';
-import { EducationCohortsView } from './components/screens/education/EducationCohortsView';
-import { EducationAdmissionsView } from './components/screens/education/EducationAdmissionsView';
-import { EducationAttendanceView } from './components/screens/education/EducationAttendanceView';
-import { EducationFinanceView } from './components/screens/education/EducationFinanceView';
-import { ProjectDirectionView } from './components/screens/project/ProjectDirectionView';
-import { ProjectChefProjetView } from './components/screens/project/ProjectChefProjetView';
-import { ProjectCreaView } from './components/screens/project/ProjectCreaView';
-import { ProjectSuperviseurView } from './components/screens/project/ProjectSuperviseurView';
-import { ProjectRhView } from './components/screens/project/ProjectRhView';
-import { ProjectComptaView } from './components/screens/project/ProjectComptaView';
-import { MembershipDashboardView } from './components/screens/membership/MembershipDashboardView';
-import { MembershipMembersView } from './components/screens/membership/MembershipMembersView';
-import { MembershipRegistrationsView } from './components/screens/membership/MembershipRegistrationsView';
-import { MembershipShopView } from './components/screens/membership/MembershipShopView';
-import { MembershipSchedulerView } from './components/screens/membership/MembershipSchedulerView';
-import { MembershipFinanceView } from './components/screens/membership/MembershipFinanceView';
-import { MembershipHistoryView } from './components/screens/membership/MembershipHistoryView';
-import { AppointmentDashboardView } from './components/screens/appointment/AppointmentDashboardView';
-import { AppointmentClientsView } from './components/screens/appointment/AppointmentClientsView';
-import { AppointmentScheduleView } from './components/screens/appointment/AppointmentScheduleView';
-import { AppointmentServicesView } from './components/screens/appointment/AppointmentServicesView';
-import { AppointmentFinanceView } from './components/screens/appointment/AppointmentFinanceView';
-import { AppointmentHistoryView } from './components/screens/appointment/AppointmentHistoryView';
-import { GymFrontDeskKiosk } from './components/screens/membership/GymFrontDeskKiosk';
-import { SalonQuickChairKiosk } from './components/screens/appointment/SalonQuickChairKiosk';
-import { AcademyRollCallKiosk } from './components/screens/education/AcademyRollCallKiosk';
-import { PosDashboardView } from './components/screens/pos/PosDashboardView';
-import { PosRegisterView } from './components/screens/pos/PosRegisterView';
-import { PosInventoryView } from './components/screens/pos/PosInventoryView';
-import { PosOrdersView } from './components/screens/pos/PosOrdersView';
-import { PosFinanceView } from './components/screens/pos/PosFinanceView';
-import { PosHistoryView } from './components/screens/pos/PosHistoryView';
-import { TradingDashboardView } from './components/screens/trading/TradingDashboardView';
-import { TradingSalesView } from './components/screens/trading/TradingSalesView';
-import { TradingPurchasesView } from './components/screens/trading/TradingPurchasesView';
-import { TradingInventoryView } from './components/screens/trading/TradingInventoryView';
-import { TradingDirectoryView } from './components/screens/trading/TradingDirectoryView';
-import { TradingCatalogView } from './components/screens/trading/TradingCatalogView';
-import { TradingFinanceView } from './components/screens/trading/TradingFinanceView';
-import { MedicalDashboardView } from './components/screens/medical/MedicalDashboardView';
-import { MedicalQueueView } from './components/screens/medical/MedicalQueueView';
-import { MedicalAgendaView } from './components/screens/medical/MedicalAgendaView';
-import { MedicalPatientsView } from './components/screens/medical/MedicalPatientsView';
-import { MedicalPrescriptionsView } from './components/screens/medical/MedicalPrescriptionsView';
-import { MedicalBillingView } from './components/screens/medical/MedicalBillingView';
-import { MedicalCertificatesView } from './components/screens/medical/MedicalCertificatesView';
+import { ScreenSuspenseFallback } from './components/ui/skeleton/ScreenSuspenseFallback';
 
-import { AutoGarageDashboardView } from './components/screens/garage/AutoGarageDashboardView';
-import { AutoGarageOrdersView } from './components/screens/garage/AutoGarageOrdersView';
-import { AutoGarageVehiclesView } from './components/screens/garage/AutoGarageVehiclesView';
-import { AutoGaragePartsView } from './components/screens/garage/AutoGaragePartsView';
-import { AutoGarageBillingView } from './components/screens/garage/AutoGarageBillingView';
+// Lazy-loaded Onboarding & Global Modals (loaded on-demand only when open)
+const PowerOnboardingScreen = React.lazy(() =>
+  import('./components/auth/PowerOnboardingScreen').then((m) => ({ default: m.PowerOnboardingScreen }))
+);
+const FastSwitchModal = React.lazy(() =>
+  import('./components/auth/FastSwitchModal').then((m) => ({ default: m.FastSwitchModal }))
+);
+const CommandPaletteModal = React.lazy(() =>
+  import('./components/modals/CommandPaletteModal').then((m) => ({ default: m.CommandPaletteModal }))
+);
+const VoucherModal = React.lazy(() =>
+  import('./components/modals/VoucherModal').then((m) => ({ default: m.VoucherModal }))
+);
+const MemberModal = React.lazy(() =>
+  import('./components/modals/MemberModal').then((m) => ({ default: m.MemberModal }))
+);
+const LeadModal = React.lazy(() =>
+  import('./components/modals/LeadModal').then((m) => ({ default: m.LeadModal }))
+);
+const DesktopUpgradeModal = React.lazy(() =>
+  import('./components/modals/DesktopUpgradeModal').then((m) => ({ default: m.DesktopUpgradeModal }))
+);
 
-import { RealEstateDashboardView } from './components/screens/realestate/RealEstateDashboardView';
-import { RealEstateMandatesView } from './components/screens/realestate/RealEstateMandatesView';
-import { RealEstatePropertiesView } from './components/screens/realestate/RealEstatePropertiesView';
-import { RealEstateLeasesView } from './components/screens/realestate/RealEstateLeasesView';
-import { RealEstateInspectionsView } from './components/screens/realestate/RealEstateInspectionsView';
-import { RealEstateFinanceView } from './components/screens/realestate/RealEstateFinanceView';
-
-import { ManufacturingDashboardView } from './components/screens/manufacturing/ManufacturingDashboardView';
-import { ManufacturingOrdersView } from './components/screens/manufacturing/ManufacturingOrdersView';
-import { ManufacturingBomView } from './components/screens/manufacturing/ManufacturingBomView';
-import { ManufacturingMaterialsView } from './components/screens/manufacturing/ManufacturingMaterialsView';
-import { ManufacturingQcView } from './components/screens/manufacturing/ManufacturingQcView';
-import { ManufacturingWorkstationView } from './components/screens/manufacturing/ManufacturingWorkstationView';
-
-import { LegalDashboardView } from './components/screens/legal/LegalDashboardView';
-import { LegalMattersView } from './components/screens/legal/LegalMattersView';
-import { LegalHearingsView } from './components/screens/legal/LegalHearingsView';
-import { LegalVaultView } from './components/screens/legal/LegalVaultView';
-import { LegalTrustView } from './components/screens/legal/LegalTrustView';
-
-import { LogisticsDashboardView } from './components/screens/logistics/LogisticsDashboardView';
-import { LogisticsShipmentsView } from './components/screens/logistics/LogisticsShipmentsView';
-import { LogisticsManifestsView } from './components/screens/logistics/LogisticsManifestsView';
-import { LogisticsScannerView } from './components/screens/logistics/LogisticsScannerView';
-import { LogisticsCodView } from './components/screens/logistics/LogisticsCodView';
-
-import { ContractorDashboardView } from './components/screens/contractor/ContractorDashboardView';
-import { ContractorSitesView } from './components/screens/contractor/ContractorSitesView';
-import { ContractorBoqView } from './components/screens/contractor/ContractorBoqView';
-import { ContractorDailyLogsView } from './components/screens/contractor/ContractorDailyLogsView';
-import { ContractorBillingView } from './components/screens/contractor/ContractorBillingView';
-
-import { AgricultureDashboardView } from './components/screens/agriculture/AgricultureDashboardView';
-import { AgricultureParcelsView } from './components/screens/agriculture/AgricultureParcelsView';
-import { AgricultureCyclesView } from './components/screens/agriculture/AgricultureCyclesView';
-import { AgricultureHarvestView } from './components/screens/agriculture/AgricultureHarvestView';
-import { AgricultureLivestockView } from './components/screens/agriculture/AgricultureLivestockView';
-import { AgricultureWholesaleView } from './components/screens/agriculture/AgricultureWholesaleView';
-import { MembershipStaffView } from './components/screens/membership/MembershipStaffView';
-import { AppointmentStaffView } from './components/screens/appointment/AppointmentStaffView';
-import { PosStaffView } from './components/screens/pos/PosStaffView';
-import { EducationStaffView } from './components/screens/education/EducationStaffView';
-import { AutoGarageStaffView } from './components/screens/garage/AutoGarageStaffView';
-import { MedicalStaffView } from './components/screens/medical/MedicalStaffView';
-import { ContractorStaffView } from './components/screens/contractor/ContractorStaffView';
-import { LogisticsStaffView } from './components/screens/logistics/LogisticsStaffView';
-import { ManufacturingStaffView } from './components/screens/manufacturing/ManufacturingStaffView';
-import { AgricultureStaffView } from './components/screens/agriculture/AgricultureStaffView';
-import { LegalStaffView } from './components/screens/legal/LegalStaffView';
-import { RealEstateStaffView } from './components/screens/realestate/RealEstateStaffView';
-import { TradingStaffView } from './components/screens/trading/TradingStaffView';
-import { VenueStaffView } from './components/screens/venue/VenueStaffView';
-import { FreelanceStaffView } from './components/screens/freelance/FreelanceStaffView';
-import { DesktopUpgradeModal } from './components/modals/DesktopUpgradeModal';
-import { CommandPaletteModal } from './components/modals/CommandPaletteModal';
+// All 116 Screens lazy-loaded with Category Chunk Partitioning
+import {
+  SettingsScreen,
+  FreelanceDashboardView,
+  FreelanceClientsView,
+  FreelanceDeliverablesView,
+  FreelanceTimeTrackerView,
+  FreelanceInvoicesView,
+  FreelanceProposalsView,
+  FreelanceFinanceView,
+  VenueDashboardView,
+  VenueTimelineView,
+  VenueBookingsView,
+  VenueInventoryView,
+  VenueRentersView,
+  VenueFinanceView,
+  EducationDashboardView,
+  EducationTimetableView,
+  EducationStudentsView,
+  EducationCohortsView,
+  EducationAdmissionsView,
+  EducationAttendanceView,
+  EducationFinanceView,
+  ProjectDirectionView,
+  ProjectChefProjetView,
+  ProjectCreaView,
+  ProjectSuperviseurView,
+  ProjectRhView,
+  ProjectComptaView,
+  MembershipDashboardView,
+  MembershipMembersView,
+  MembershipRegistrationsView,
+  MembershipShopView,
+  MembershipSchedulerView,
+  MembershipFinanceView,
+  MembershipHistoryView,
+  AppointmentDashboardView,
+  AppointmentClientsView,
+  AppointmentScheduleView,
+  AppointmentServicesView,
+  AppointmentFinanceView,
+  AppointmentHistoryView,
+  GymFrontDeskKiosk,
+  SalonQuickChairKiosk,
+  AcademyRollCallKiosk,
+  PosDashboardView,
+  PosRegisterView,
+  PosInventoryView,
+  PosOrdersView,
+  PosFinanceView,
+  PosHistoryView,
+  TradingDashboardView,
+  TradingSalesView,
+  TradingPurchasesView,
+  TradingInventoryView,
+  TradingDirectoryView,
+  TradingCatalogView,
+  TradingFinanceView,
+  MedicalDashboardView,
+  MedicalQueueView,
+  MedicalAgendaView,
+  MedicalPatientsView,
+  MedicalPrescriptionsView,
+  MedicalBillingView,
+  MedicalCertificatesView,
+  AutoGarageDashboardView,
+  AutoGarageOrdersView,
+  AutoGarageVehiclesView,
+  AutoGaragePartsView,
+  AutoGarageBillingView,
+  RealEstateDashboardView,
+  RealEstateMandatesView,
+  RealEstatePropertiesView,
+  RealEstateLeasesView,
+  RealEstateInspectionsView,
+  RealEstateFinanceView,
+  ManufacturingDashboardView,
+  ManufacturingOrdersView,
+  ManufacturingBomView,
+  ManufacturingMaterialsView,
+  ManufacturingQcView,
+  ManufacturingWorkstationView,
+  LegalDashboardView,
+  LegalMattersView,
+  LegalHearingsView,
+  LegalVaultView,
+  LegalTrustView,
+  LogisticsDashboardView,
+  LogisticsShipmentsView,
+  LogisticsManifestsView,
+  LogisticsScannerView,
+  LogisticsCodView,
+  ContractorDashboardView,
+  ContractorSitesView,
+  ContractorBoqView,
+  ContractorDailyLogsView,
+  ContractorBillingView,
+  AgricultureDashboardView,
+  AgricultureParcelsView,
+  AgricultureCyclesView,
+  AgricultureHarvestView,
+  AgricultureLivestockView,
+  AgricultureWholesaleView,
+  MembershipStaffView,
+  AppointmentStaffView,
+  PosStaffView,
+  EducationStaffView,
+  AutoGarageStaffView,
+  MedicalStaffView,
+  ContractorStaffView,
+  LogisticsStaffView,
+  ManufacturingStaffView,
+  AgricultureStaffView,
+  LegalStaffView,
+  RealEstateStaffView,
+  TradingStaffView,
+  VenueStaffView,
+  FreelanceStaffView,
+} from './components/screens/lazyScreens';
 import { ToastStack } from './components/ui/ToastStack';
 import { ScrollJumpPill } from './components/ui/ScrollJumpPill';
 import { AtriumIntroOverlay } from './components/ui/AtriumIntroOverlay';
@@ -1138,10 +1152,12 @@ export default function App() {
       )}
 
       {showPowerOnboarding || isOnboardingOpen ? (
-        <PowerOnboardingScreen
-          onComplete={handleCompleteOrSkipOnboarding}
-          onSkipToDashboard={handleCompleteOrSkipOnboarding}
-        />
+        <React.Suspense fallback={<div className="min-h-screen w-screen bg-[#121110]" />}>
+          <PowerOnboardingScreen
+            onComplete={handleCompleteOrSkipOnboarding}
+            onSkipToDashboard={handleCompleteOrSkipOnboarding}
+          />
+        </React.Suspense>
       ) : !isAuthenticated ? (
         <div className="min-h-screen w-screen bg-[#121110]">
           <LoginScreen onStartOnboarding={openOnboarding} />
@@ -1191,51 +1207,85 @@ export default function App() {
             )}
 
             <div className="relative w-full min-h-full flex flex-col p-6 sm:p-8 pb-16 sm:pb-20">
-              {renderActiveScreen()}
+              <React.Suspense
+                fallback={
+                  <ScreenSuspenseFallback
+                    category={currentBusiness?.category}
+                    screen={activeScreen}
+                  />
+                }
+              >
+                {renderActiveScreen()}
+              </React.Suspense>
             </div>
           </AppShell>
         </div>
       )
     }
-{/* Global Modals */}
-      <CommandPaletteModal
-        isOpen={isCommandPaletteOpen}
-        onClose={() => setIsCommandPaletteOpen(false)}
-      />
 
-      <VoucherModal
-        isOpen={isVoucherModalOpen}
-        onClose={() => setIsVoucherModalOpen(false)}
-      />
+      {/* Global Modals - Loaded On-Demand via React.Suspense */}
+      {isCommandPaletteOpen && (
+        <React.Suspense fallback={null}>
+          <CommandPaletteModal
+            isOpen={isCommandPaletteOpen}
+            onClose={() => setIsCommandPaletteOpen(false)}
+          />
+        </React.Suspense>
+      )}
 
-      <MemberModal
-        isOpen={isMemberModalOpen}
-        onClose={() => {
-          setIsMemberModalOpen(false);
-          setMemberToEdit(null);
-        }}
-        memberToEdit={memberToEdit}
-      />
+      {isVoucherModalOpen && (
+        <React.Suspense fallback={null}>
+          <VoucherModal
+            isOpen={isVoucherModalOpen}
+            onClose={() => setIsVoucherModalOpen(false)}
+          />
+        </React.Suspense>
+      )}
 
-      <LeadModal
-        isOpen={isLeadModalOpen}
-        onClose={() => setIsLeadModalOpen(false)}
-      />
+      {isMemberModalOpen && (
+        <React.Suspense fallback={null}>
+          <MemberModal
+            isOpen={isMemberModalOpen}
+            onClose={() => {
+              setIsMemberModalOpen(false);
+              setMemberToEdit(null);
+            }}
+            memberToEdit={memberToEdit}
+          />
+        </React.Suspense>
+      )}
+
+      {isLeadModalOpen && (
+        <React.Suspense fallback={null}>
+          <LeadModal
+            isOpen={isLeadModalOpen}
+            onClose={() => setIsLeadModalOpen(false)}
+          />
+        </React.Suspense>
+      )}
 
       {/* Section 11 Fast Switch Modal */}
-      <FastSwitchModal
-        isOpen={isFastSwitchOpen}
-        onClose={closeFastSwitch}
-        onOpenOnboarding={() => setShowPowerOnboarding(true)}
-      />
+      {isFastSwitchOpen && (
+        <React.Suspense fallback={null}>
+          <FastSwitchModal
+            isOpen={isFastSwitchOpen}
+            onClose={closeFastSwitch}
+            onOpenOnboarding={() => setShowPowerOnboarding(true)}
+          />
+        </React.Suspense>
+      )}
 
       {/* Free Web to Desktop Lifetime Upgrade Modal */}
-      <DesktopUpgradeModal
-        isOpen={isDesktopUpgradeModalOpen}
-        onClose={closeDesktopUpgradeModal}
-        onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
-        reason={desktopUpgradeReason}
-      />
+      {isDesktopUpgradeModalOpen && (
+        <React.Suspense fallback={null}>
+          <DesktopUpgradeModal
+            isOpen={isDesktopUpgradeModalOpen}
+            onClose={closeDesktopUpgradeModal}
+            onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+            reason={desktopUpgradeReason}
+          />
+        </React.Suspense>
+      )}
 
       {/* Kinetic Category-Dedicated ToastStack */}
       <ToastStack />

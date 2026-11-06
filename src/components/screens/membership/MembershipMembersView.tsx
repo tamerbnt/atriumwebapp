@@ -38,7 +38,9 @@ import { AppointmentModal } from '../../modals/AppointmentModal';
 import { Seek } from '../../ui/Seek';
 import { ActionNode } from '../../ui/ActionNode';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
-import { MemberKineticRow } from './MemberKineticRow';
+import { MemberRow, MemberRowData } from './components/MemberRow';
+import { StatusTabs } from './components/StatusTabs';
+import { FloatingBulkBar } from './components/FloatingBulkBar';
 import { MemberSlideOverInspector } from './MemberSlideOverInspector';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Button as BrandedAtriumButton, LiquidButton } from '@/atrium';
@@ -695,14 +697,28 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               className="shrink-0 !rounded-xl"
             />
 
-            {/* Streamlined Quick Status Tabs (40px Standard Squircle) */}
+            {/* Streamlined Quick Status Tabs (Prototype StatusTabs with live counter badges) */}
             <div className="shrink-0">
-              <LiveSegmentedControl
-                size="md"
-                value={statusFilter === 'Expired' || statusFilter === 'Archived' ? '' : statusFilter}
-                onValueChange={(val) => setStatusFilter(val as any)}
-                options={quickStatusOptions}
-                aria-label="Member Status Filter"
+              <StatusTabs
+                tabs={[
+                  {
+                    id: 'All',
+                    label: language === 'ar' ? 'جميع المشتركين' : language === 'fr' ? 'Tous les adhérents' : 'All Members',
+                    count: members.length,
+                  },
+                  {
+                    id: 'Active',
+                    label: language === 'ar' ? 'اشتراكات نشطة' : language === 'fr' ? 'Abonnements actifs' : 'Active Members',
+                    count: activeMembersCount,
+                  },
+                  {
+                    id: 'Expiring',
+                    label: language === 'ar' ? 'قيد التجديد (<14 يوم)' : language === 'fr' ? 'À renouveler (<14j)' : 'Expiring (<14d)',
+                    count: expiringCount,
+                  },
+                ]}
+                activeTab={statusFilter === 'Expired' || statusFilter === 'Archived' ? 'All' : statusFilter}
+                onChange={(val) => setStatusFilter(val as any)}
               />
             </div>
 
@@ -1180,79 +1196,101 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               onViewModeChange={setViewMode}
               showViewToggle={false}
               columns={memberColumns}
-              renderRow={(member, isSelected, isPinned) => (
-                <MemberKineticRow
-                  key={member.id}
-                  member={member}
-                  isSelected={isSelected}
-                  isPinned={isPinned}
-                  isExpanded={expandedMemberIds.has(member.id)}
-                  onToggleSelect={() => {
-                    setSelectedMemberIds((prev) => {
-                      const next = new Set(prev);
-                      if (next.has(member.id)) next.delete(member.id);
-                      else next.add(member.id);
-                      return next;
-                    });
-                  }}
-                  onToggleExpand={() => toggleExpandMember(member.id)}
-                  onOpenDetails={() => selectMember(member.id)}
-                  onEdit={() => onEditMember(member)}
-                  onEmail={() => {
-                    if (member.email) {
-                      window.location.href = `mailto:${member.email}`;
-                    } else {
+              renderRow={(member, isSelected, isPinned) => {
+                const daysRemaining = calculateDaysRemaining(false, member.expirationDate);
+                const remainingText =
+                  daysRemaining > 0
+                    ? `${daysRemaining} j restants`
+                    : daysRemaining === 0
+                    ? 'Expire aujourd’hui'
+                    : 'Expiré';
+                const isBlocked =
+                  member.status === 'Suspended' ||
+                  member.status === 'Banned' ||
+                  Boolean((member as any).isBlocked);
+                const isExp = member.status === 'Expired' || daysRemaining <= 0;
+
+                const memberRowData: MemberRowData = {
+                  id: member.id,
+                  name: member.fullName || 'Adhérent',
+                  phone: member.phoneNumber || '',
+                  email: member.email || '',
+                  planName: member.membershipPlanName || 'Full Access Monthly',
+                  status: isBlocked ? 'Bloqué' : isExp ? 'Expiré' : 'Actif',
+                  statusVariant: isBlocked ? 'blocked' : isExp ? 'expired' : 'active',
+                  expiryDate: member.expirationDate || 'Non spécifié',
+                  daysRemainingLabel: remainingText,
+                  balance: (member as any).balance || 0,
+                  balanceLabel: (member as any).balance
+                    ? `${Math.round((member as any).balance).toLocaleString()} DZD`
+                    : 'Soldé',
+                  avatarColor: getMemberInitialsColor(member.fullName),
+                  remainingSessions: (member as any).remainingSessions || 24,
+                  notes: member.notes,
+                };
+
+                return (
+                  <MemberRow
+                    key={member.id}
+                    member={memberRowData}
+                    isSelected={selectedMemberIds.has(member.id)}
+                    isOpen={isDetailOpen && selectedMember?.id === member.id}
+                    isExpanded={expandedMemberIds.has(member.id)}
+                    viewMode={viewMode}
+                    onSelect={() => {
+                      setSelectedMemberIds((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(member.id)) next.delete(member.id);
+                        else next.add(member.id);
+                        return next;
+                      });
+                    }}
+                    onToggleExpand={() => toggleExpandMember(member.id)}
+                    onOpenDetails={() => selectMember(member.id)}
+                    onEdit={() => onEditMember(member)}
+                    onMessage={() => {
+                      if (member.email) {
+                        window.location.href = `mailto:${member.email}`;
+                      } else {
+                        showToast({
+                          type: 'info',
+                          title: 'Email draft',
+                          message: `No email address for ${member.fullName}`,
+                        });
+                      }
+                    }}
+                    onDelete={() => {
+                      if (window.confirm(`Delete ${member.fullName}?`)) {
+                        deleteMember(member.id);
+                        showToast({
+                          type: 'info',
+                          title: 'Member Removed',
+                          message: `${member.fullName} has been removed.`,
+                        });
+                      }
+                    }}
+                    onRenew={() => {
+                      const daysToAdd = 30;
+                      const currentExp = new Date(member.expirationDate || new Date().toISOString());
+                      const newExp = new Date(currentExp.getTime() + daysToAdd * 864e5).toISOString().split('T')[0];
+                      updateMember(member.id, { expirationDate: newExp, status: 'Active' });
+                      showToast({
+                        type: 'success',
+                        title: 'Abonnement renouvelé',
+                        message: `${member.fullName} prolongé jusqu'au ${newExp}`,
+                      });
+                    }}
+                    onArchive={() => {
+                      updateMember(member.id, { status: 'Suspended' });
                       showToast({
                         type: 'info',
-                        title: 'Email draft',
-                        message: `No email address for ${member.fullName}`,
+                        title: 'Member Archived',
+                        message: `${member.fullName} archivé (suspendu).`,
                       });
-                    }
-                  }}
-                  onDelete={() => {
-                    if (window.confirm(`Delete ${member.fullName}?`)) {
-                      deleteMember(member.id);
-                      showToast({
-                        type: 'info',
-                        title: 'Member Removed',
-                        message: `${member.fullName} has been removed.`,
-                      });
-                    }
-                  }}
-                  onArchive={() => {
-                    updateMember(member.id, { status: 'Suspended' });
-                    showToast({
-                      type: 'info',
-                      title: 'Member Archived',
-                      message: `${member.fullName} archivé (suspendu).`,
-                    });
-                  }}
-                  onToggleStatus={() => {
-                    const nextStatus: MemberStatus = member.status === 'Active' ? 'Frozen' : 'Active';
-                    updateMember(member.id, { status: nextStatus });
-                    showToast({
-                      type: 'info',
-                      title: `${member.fullName}: ${localizeStatus(nextStatus, language)}`,
-                      message: `Status updated to ${nextStatus}`,
-                    });
-                  }}
-                  onTogglePin={() => {
-                    setPinnedMemberIds((prev) => {
-                      const next = new Set(prev);
-                      if (next.has(member.id)) next.delete(member.id);
-                      else next.add(member.id);
-                      return next;
-                    });
-                  }}
-                  onPay={() => {
-                    showToast({
-                      type: 'info',
-                      title: 'Caisse / Règlement',
-                      message: `Ouverture caisse pour ${member.fullName}`,
-                    });
-                  }}
-                />
-              )}
+                    }}
+                  />
+                );
+              }}
               isLoading={isSyncing || networkMode === 'force_skeleton'}
               isOffline={networkMode === 'offline'}
               isTimedOut={isSyncTimeout}
@@ -1469,54 +1507,49 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
         }
       />
 
-      {/* Floating Batch Actions Bar */}
-      {selectedIds.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#18181B] text-white px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-4 z-50 text-xs animate-in slide-in-from-bottom-4">
-          <span className="font-semibold text-neutral-300">
-            {selectedIds.length}{' '}
-            {language === 'ar'
-              ? 'مشتركين تم تحديدهم'
-              : language === 'fr'
-              ? 'adhérents sélectionnés'
-              : `${terminology.members.toLowerCase()} selected`}
-          </span>
-          <div className="h-4 w-px bg-neutral-700" />
-          <button
-            type="button"
-            onClick={() => {
-              selectedIds.forEach((id) => updateMember(id, { status: 'Frozen' }));
-              setSelectedIds([]);
-            }}
-            className="hover:text-amber-400 cursor-pointer font-medium"
-          >
-            {language === 'ar' ? 'تجميد وحظر المحدد' : language === 'fr' ? 'Bloquer la sélection' : 'Freeze Selected'}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              selectedIds.forEach((id) => updateMember(id, { status: 'Active' }));
-              setSelectedIds([]);
-            }}
-            className="hover:text-emerald-400 cursor-pointer font-medium"
-          >
-            {language === 'ar' ? 'تفعيل المحدد' : language === 'fr' ? 'Activer la sélection' : 'Activate Selected'}
-          </button>
-          <button
-            type="button"
-            onClick={handleExportCSV}
-            className="hover:text-[#d4522f] cursor-pointer font-medium"
-          >
-            {language === 'ar' ? 'تصدير المحدد' : language === 'fr' ? 'Exporter la sélection' : 'Export Selected'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setSelectedIds([])}
-            className="text-neutral-400 hover:text-white cursor-pointer ml-1"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      )}
+      {/* Floating Batch Actions Bar (Prototype FloatingBulkBar with spring scale/translate) */}
+      <FloatingBulkBar
+        selectedCount={selectedMemberIds.size}
+        onClear={() => setSelectedMemberIds(new Set())}
+        onExport={handleExportCSV}
+        onRenew={() => {
+          selectedMemberIds.forEach((id) => {
+            const m = members.find((x) => x.id === id);
+            if (m) {
+              const currentExp = new Date(m.expirationDate || new Date().toISOString());
+              const newExp = new Date(currentExp.getTime() + 30 * 864e5).toISOString().split('T')[0];
+              updateMember(m.id, { expirationDate: newExp, status: 'Active' });
+            }
+          });
+          showToast({
+            type: 'success',
+            title: 'Renouvellement groupé',
+            message: `${selectedMemberIds.size} adhérents renouvelés.`,
+          });
+        }}
+        onArchive={() => {
+          selectedMemberIds.forEach((id) => {
+            updateMember(id, { status: 'Suspended' });
+          });
+          setSelectedMemberIds(new Set());
+          showToast({
+            type: 'info',
+            title: 'Archivage groupé',
+            message: `${selectedMemberIds.size} adhérents archivés.`,
+          });
+        }}
+        onDelete={() => {
+          if (window.confirm(`Supprimer ${selectedMemberIds.size} adhérents?`)) {
+            selectedMemberIds.forEach((id) => deleteMember(id));
+            setSelectedMemberIds(new Set());
+            showToast({
+              type: 'info',
+              title: 'Suppression groupée',
+              message: `Adhérents supprimés.`,
+            });
+          }
+        }}
+      />
 
       {/* Appointment Booking Modal */}
       {selectedMember && (
