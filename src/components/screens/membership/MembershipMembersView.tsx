@@ -38,6 +38,8 @@ import { AppointmentModal } from '../../modals/AppointmentModal';
 import { Seek } from '../../ui/Seek';
 import { ActionNode } from '../../ui/ActionNode';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { MemberKineticRow } from './MemberKineticRow';
+import { MemberSlideOverInspector } from './MemberSlideOverInspector';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Button as BrandedAtriumButton, LiquidButton } from '@/atrium';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
@@ -95,8 +97,21 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selectedMemberIds, setSelectedMemberIds] = useState<Set<string>>(new Set());
   const [pinnedMemberIds, setPinnedMemberIds] = useState<Set<string>>(new Set());
+  const [expandedMemberIds, setExpandedMemberIds] = useState<Set<string>>(new Set());
   const [memberSortBy, setMemberSortBy] = useState<string>('member');
   const [memberSortDir, setMemberSortDir] = useState<'asc' | 'desc'>('asc');
+
+  const toggleExpandMember = (id: string) => {
+    setExpandedMemberIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
   const [saveNoteSuccess, setSaveNoteSuccess] = useState(false);
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
@@ -1165,6 +1180,79 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               onViewModeChange={setViewMode}
               showViewToggle={false}
               columns={memberColumns}
+              renderRow={(member, isSelected, isPinned) => (
+                <MemberKineticRow
+                  key={member.id}
+                  member={member}
+                  isSelected={isSelected}
+                  isPinned={isPinned}
+                  isExpanded={expandedMemberIds.has(member.id)}
+                  onToggleSelect={() => {
+                    setSelectedMemberIds((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(member.id)) next.delete(member.id);
+                      else next.add(member.id);
+                      return next;
+                    });
+                  }}
+                  onToggleExpand={() => toggleExpandMember(member.id)}
+                  onOpenDetails={() => selectMember(member.id)}
+                  onEdit={() => onEditMember(member)}
+                  onEmail={() => {
+                    if (member.email) {
+                      window.location.href = `mailto:${member.email}`;
+                    } else {
+                      showToast({
+                        type: 'info',
+                        title: 'Email draft',
+                        message: `No email address for ${member.fullName}`,
+                      });
+                    }
+                  }}
+                  onDelete={() => {
+                    if (window.confirm(`Delete ${member.fullName}?`)) {
+                      deleteMember(member.id);
+                      showToast({
+                        type: 'info',
+                        title: 'Member Removed',
+                        message: `${member.fullName} has been removed.`,
+                      });
+                    }
+                  }}
+                  onArchive={() => {
+                    updateMember(member.id, { status: 'Suspended' });
+                    showToast({
+                      type: 'info',
+                      title: 'Member Archived',
+                      message: `${member.fullName} archivé (suspendu).`,
+                    });
+                  }}
+                  onToggleStatus={() => {
+                    const nextStatus: MemberStatus = member.status === 'Active' ? 'Frozen' : 'Active';
+                    updateMember(member.id, { status: nextStatus });
+                    showToast({
+                      type: 'info',
+                      title: `${member.fullName}: ${localizeStatus(nextStatus, language)}`,
+                      message: `Status updated to ${nextStatus}`,
+                    });
+                  }}
+                  onTogglePin={() => {
+                    setPinnedMemberIds((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(member.id)) next.delete(member.id);
+                      else next.add(member.id);
+                      return next;
+                    });
+                  }}
+                  onPay={() => {
+                    showToast({
+                      type: 'info',
+                      title: 'Caisse / Règlement',
+                      message: `Ouverture caisse pour ${member.fullName}`,
+                    });
+                  }}
+                />
+              )}
               isLoading={isSyncing || networkMode === 'force_skeleton'}
               isOffline={networkMode === 'offline'}
               isTimedOut={isSyncTimeout}
@@ -1321,415 +1409,65 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
         </div>
       </div>
 
-      {/* Floating Free-Floating Member Detail Island Card (Separated like Sidebar) */}
-      {isDetailOpen && selectedMember && createPortal(
-        <div className="fixed inset-0 z-[100] flex justify-end p-4 pointer-events-none animate-in fade-in duration-200" role="dialog" aria-modal="true">
-          {/* Backdrop Overlay */}
-          <div
-            className="fixed inset-0 bg-neutral-950/40 dark:bg-black/60 backdrop-blur-xs transition-opacity cursor-pointer pointer-events-auto"
-            onClick={closeDetail}
-            aria-hidden="true"
-          />
-
-          {/* Floating Freely 480px Card with Complete Rounded Corners (Matching Sidebar Margin & Radius) */}
-          <aside
-            style={{
-              width: '480px',
-              maxWidth: 'calc(100vw - 32px)',
-              borderRadius: '28px',
-            }}
-            className="relative z-10 h-full bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.35)] flex flex-col justify-between overflow-hidden pointer-events-auto animate-in zoom-in-95 fade-in duration-200 select-none touch-pan-y"
-          >
-            {/* Drawer Body with Apple Top-Level Segmented Tabs */}
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-              {/* Header: Avatar, Name, Badges, Close */}
-              <div className="p-6 pb-3 shrink-0 border-b border-neutral-100 dark:border-neutral-800/80">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3.5">
-                    <div
-                      style={{
-                        backgroundColor: getMemberInitialsColor(selectedMember.fullName),
-                      }}
-                      className="w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-white text-base shadow-sm ring-2 ring-white dark:ring-neutral-700 select-none"
-                    >
-                      {selectedMember.fullName.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-neutral-900 dark:text-white capitalize leading-tight">
-                        {selectedMember.fullName}
-                      </h3>
-                      <div className="mt-1 flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[11px] font-bold text-[#d4522f] bg-[#FCEEE8] dark:bg-[#d4522f]/15 px-2.5 py-0.5 rounded-full border border-[#d4522f]/20">
-                          {selectedMember.membershipPlanName || (language === 'ar' ? 'الباقة القياسية' : language === 'fr' ? 'Formule Standard' : 'Standard Package')}
-                        </span>
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-300 px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <Check size={10} /> {t('member_drawer_verified', language)}
-                        </span>
-                        <span className="text-[11px] font-mono text-neutral-400">
-                          ID: {selectedMember.cardId || '46466446'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={closeDetail}
-                    className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer transition-colors shadow-2xs border border-transparent hover:border-neutral-200 dark:hover:border-neutral-700"
-                    aria-label="Close details"
-                  >
-                    <X size={17} />
-                  </button>
-                </div>
-
-                {/* Top-Level Apple Segmented Control - Full Width Tabs */}
-                <div className="mt-4 pt-1">
-                  <LiveSegmentedControl
-                    size="md"
-                    value={gymDrawerTab}
-                    onValueChange={(val) => setGymDrawerTab(val as any)}
-                    options={[
-                      {
-                        value: 'history',
-                        label: language === 'ar' ? 'البطاقة والاشتراك' : language === 'fr' ? 'Aperçu & Forfait' : 'Overview & Pass',
-                      },
-                      {
-                        value: 'bookings',
-                        label: language === 'ar' ? 'سجل الدخول والحصص' : language === 'fr' ? 'Accès & Séances' : 'Access & Bookings',
-                      },
-                      {
-                        value: 'sales',
-                        label: language === 'ar' ? 'المشتريات والفواتير' : language === 'fr' ? 'Ventes & Factures' : 'Sales & Receipts',
-                      },
-                    ]}
-                    aria-label="Member Detail Inspector Navigation"
-                  />
-                </div>
-              </div>
-
-              {/* Tab 1: Overview & Subscription (Full Height) */}
-              {gymDrawerTab === 'history' && (
-                <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-5 animate-in fade-in duration-150">
-                  {/* Quick Action Squircle Tiles */}
-                  <div>
-                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-2">
-                      {language === 'ar' ? 'الإجراءات السريعة' : language === 'fr' ? 'Actions rapides' : 'Quick Actions'}
-                    </h4>
-                    <div className="grid grid-cols-4 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => checkInMember(selectedMember.id)}
-                        className="h-16 p-2 rounded-[14px] bg-[#FDF4F0] dark:bg-[#d4522f]/15 text-xs font-semibold flex flex-col items-center justify-center gap-1 text-[#d4522f] hover:bg-[#FCEEE8] cursor-pointer transition-all border border-[#F5E2D8] dark:border-[#d4522f]/30 shadow-2xs hover:scale-[1.02] active:scale-[0.98]"
-                        title={t('member_drawer_quick_checkin', language)}
-                      >
-                        <UserCheck size={18} />
-                        <span className="text-[10px] font-medium truncate max-w-full">{t('member_drawer_quick_checkin', language)}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onEditMember(selectedMember)}
-                        className="h-16 p-2 rounded-[14px] bg-white dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 text-xs font-semibold flex flex-col items-center justify-center gap-1 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer transition-all shadow-2xs hover:scale-[1.02] active:scale-[0.98]"
-                      >
-                        <Edit size={18} className="text-[#d4522f]" />
-                        <span className="text-[10px] font-medium truncate max-w-full">{t('action_edit', language)}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const next = selectedMember.status === 'Frozen' ? 'Active' : 'Frozen';
-                          updateMember(selectedMember.id, { status: next });
-                        }}
-                        className="h-16 p-2 rounded-[14px] bg-white dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 text-xs font-semibold flex flex-col items-center justify-center gap-1 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer transition-all shadow-2xs hover:scale-[1.02] active:scale-[0.98]"
-                      >
-                        {selectedMember.status === 'Frozen' ? (
-                          <Unlock size={18} className="text-emerald-500" />
-                        ) : (
-                          <Lock size={18} className="text-amber-500" />
-                        )}
-                        <span className="text-[10px] font-medium truncate max-w-full">
-                          {selectedMember.status === 'Frozen'
-                            ? t('member_drawer_unblock', language)
-                            : t('member_drawer_block', language)}
-                        </span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => updateMember(selectedMember.id, { remainingSessions: (selectedMember.remainingSessions || 0) + 30 })}
-                        className="h-16 p-2 rounded-[14px] bg-white dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 text-xs font-semibold flex flex-col items-center justify-center gap-1 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer transition-all shadow-2xs hover:scale-[1.02] active:scale-[0.98]"
-                      >
-                        <RotateCcw size={18} className="text-blue-500" />
-                        <span className="text-[10px] font-medium truncate max-w-full">{currentBusiness.category === 'appointment_service' ? '+Pass' : t('member_drawer_renew', language)}</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Subscription Overview Card */}
-                  <div className="p-4 rounded-[20px] bg-[#F8F9FA] dark:bg-neutral-800/50 border border-neutral-200/70 dark:border-neutral-700/70 text-xs space-y-3 shadow-2xs">
-                    <div className="flex justify-between items-center pb-2 border-b border-neutral-200/50 dark:border-neutral-700/50">
-                      <span className="text-neutral-500 dark:text-neutral-400 font-medium">
-                        {currentBusiness.category === 'appointment_service'
-                          ? t('salon_package_plan', language)
-                          : (language === 'ar' ? 'باقة الاشتراك:' : language === 'fr' ? 'Formule d\'abonnement :' : 'Account Plan:')}
-                      </span>
-                      <span className="font-bold text-neutral-900 dark:text-white truncate max-w-[220px]">
-                        {selectedMember.membershipPlanName || (currentBusiness.category === 'appointment_service' ? t('salon_standard_package', language) : (language === 'ar' ? 'الباقة القياسية' : language === 'fr' ? 'Formule Standard' : 'Standard Package'))}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-neutral-500 dark:text-neutral-400 font-medium">
-                        {language === 'ar' ? 'تاريخ الانتهاء:' : language === 'fr' ? 'Date d\'échéance :' : 'Expiration Date:'}
-                      </span>
-                      <span className="font-semibold tabular-nums text-neutral-800 dark:text-neutral-200 font-mono">
-                        {selectedMember.expirationDate}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-neutral-500 dark:text-neutral-400 font-medium">
-                        {language === 'ar' ? 'الأيام المتبقية:' : language === 'fr' ? 'Jours restants :' : 'Remaining Days:'}
-                      </span>
-                      <span className="font-bold text-[#d4522f] tabular-nums">
-                        {calculateDaysRemaining(false, selectedMember.expirationDate)} {t('member_days_unit', language)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center pt-2 border-t border-neutral-200/50 dark:border-neutral-700/50">
-                      <span className="text-neutral-500 dark:text-neutral-400 font-medium">
-                        {currentBusiness.category === 'appointment_service'
-                          ? t('salon_included_sessions', language)
-                          : (language === 'ar' ? 'الحصص المتبقية:' : language === 'fr' ? 'Séances restantes :' : 'Remaining Sessions:')}
-                      </span>
-                      <span className="font-bold text-emerald-600 tabular-nums">
-                        {selectedMember.remainingSessions || 30} {currentBusiness.category === 'appointment_service' ? t('salon_session_unit', language) : (language === 'ar' ? 'حصة' : language === 'fr' ? 'séances' : 'visits')}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Contact Information Group */}
-                  <div className="space-y-2 text-xs">
-                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">
-                      {language === 'ar' ? 'بيانات الاتصال والدخول' : language === 'fr' ? 'Contact & Accès' : 'Contact & Access'}
-                    </h4>
-                    <div className="p-3.5 rounded-[18px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-neutral-200/60 dark:border-neutral-700/60 space-y-2.5">
-                      <div className="flex items-center gap-2.5 text-neutral-700 dark:text-neutral-300">
-                        <Phone size={14} className="text-neutral-400 shrink-0" />
-                        <span className="font-mono text-xs">{selectedMember.phoneNumber || '—'}</span>
-                      </div>
-                      <div className="flex items-center gap-2.5 text-neutral-700 dark:text-neutral-300">
-                        <Mail size={14} className="text-neutral-400 shrink-0" />
-                        <span className="text-xs truncate">{selectedMember.email || '—'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Staff Notes */}
-                  <div className="space-y-1.5 text-xs">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">
-                        {language === 'ar' ? 'ملاحظات الفريق' : language === 'fr' ? 'Notes du personnel' : 'Staff Notes'}
-                      </h4>
-                      {saveNoteSuccess && (
-                        <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5">
-                          <Check size={11} /> {language === 'ar' ? 'تم الحفظ' : language === 'fr' ? 'Enregistré' : 'Saved'}
-                        </span>
-                      )}
-                    </div>
-                    <textarea
-                      rows={3}
-                      value={selectedMember.notes || ''}
-                      onChange={(e) => {
-                        updateMember(selectedMember.id, { notes: e.target.value });
-                        setSaveNoteSuccess(true);
-                        setTimeout(() => setSaveNoteSuccess(false), 2000);
-                      }}
-                      placeholder={language === 'ar' ? 'أضف ملاحظات خاصة حول المشترك...' : language === 'fr' ? 'Ajouter des notes internes sur l\'adhérent...' : 'Add private staff notes...'}
-                      className="w-full p-3.5 rounded-[18px] border border-neutral-200 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-800/60 text-xs focus:outline-none focus:border-[#d4522f] text-neutral-900 dark:text-white resize-none shadow-2xs"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Tab 2: Turnstile Access & Bookings (Full Vertical Height) */}
-              {gymDrawerTab === 'bookings' && (
-                <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-5 animate-in fade-in duration-150">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">
-                        {language === 'ar' ? 'سجل دخول البوابة الإلكترونية' : language === 'fr' ? 'Historique des passages tourniquet' : 'Turnstile Access Log'}
-                      </h4>
-                      <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                        {language === 'ar' ? 'مباشر' : 'Live'}
-                      </span>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="p-3.5 rounded-[18px] border border-neutral-200/70 dark:border-neutral-800/80 bg-[#F8F9FA] dark:bg-neutral-800/40 text-xs flex items-center justify-between shadow-2xs">
-                        <div className="flex items-center gap-3">
-                          <div className="w-3 h-3 rounded-full bg-emerald-500 shrink-0" />
-                          <div>
-                            <div className="font-bold text-neutral-900 dark:text-white">
-                              {language === 'ar' ? 'بوابة الدخول الرئيسية A1' : language === 'fr' ? 'Portique Tourniquet A1' : 'Main Turnstile Gate A1'}
-                            </div>
-                            <div className="text-[11px] text-neutral-400 mt-0.5">
-                              {language === 'ar' ? 'اليوم · 09:14' : language === 'fr' ? 'Aujourd\'hui · 09:14' : 'Today · 09:14'} · {selectedMember.cardId || 'RFID-994821'}
-                            </div>
-                          </div>
-                        </div>
-                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full">
-                          {language === 'ar' ? 'تم الدخول' : language === 'fr' ? 'Accès Autorisé' : 'Admitted'}
-                        </span>
-                      </div>
-
-                      <div className="p-3.5 rounded-[18px] border border-neutral-200/70 dark:border-neutral-800/80 bg-[#F8F9FA] dark:bg-neutral-800/40 text-xs flex items-center justify-between shadow-2xs">
-                        <div className="flex items-center gap-3">
-                          <div className="w-3 h-3 rounded-full bg-emerald-500 shrink-0" />
-                          <div>
-                            <div className="font-bold text-neutral-900 dark:text-white">
-                              {language === 'ar' ? 'بوابة الدخول الرئيسية A1' : language === 'fr' ? 'Portique Tourniquet A1' : 'Main Turnstile Gate A1'}
-                            </div>
-                            <div className="text-[11px] text-neutral-400 mt-0.5">
-                              {language === 'ar' ? 'أمس · 17:35' : language === 'fr' ? 'Hier · 17:35' : 'Yesterday · 17:35'} · {selectedMember.cardId || 'RFID-994821'}
-                            </div>
-                          </div>
-                        </div>
-                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full">
-                          {language === 'ar' ? 'تم الدخول' : language === 'fr' ? 'Accès Autorisé' : 'Admitted'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-2">
-                      {language === 'ar' ? 'الحصص والأنشطة المحجوزة' : language === 'fr' ? 'Séances & Cours réservés' : 'Booked Classes & Sessions'}
-                    </h4>
-                    <div className="space-y-2">
-                      {schedule.slice(0, 4).map((ev) => (
-                        <div
-                          key={ev.id}
-                          className="p-3.5 rounded-[18px] border border-neutral-200/70 dark:border-neutral-800/80 bg-[#F8F9FA] dark:bg-neutral-800/40 text-xs flex flex-col gap-1.5 shadow-2xs"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-neutral-900 dark:text-white">
-                              {ev.title}
-                            </span>
-                            <span className="text-[10px] font-bold text-[#d4522f] bg-[#d4522f]/10 px-2.5 py-0.5 rounded-full">
-                              {ev.category}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between text-[11px] text-neutral-500">
-                            <span>{ev.startTime} - {ev.endTime} • {ev.roomOrArea}</span>
-                            <span className="text-neutral-400 font-medium">{ev.trainerOrStaff}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Tab 3: Sales & Purchases (Full Vertical Height) */}
-              {gymDrawerTab === 'sales' && (
-                <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-4 animate-in fade-in duration-150">
-                  {(() => {
-                    const memberSales = sales.filter((s) => s.memberId === selectedMember.id);
-                    if (memberSales.length === 0) {
-                      return (
-                        <div className="p-8 rounded-[20px] border border-dashed border-neutral-200 dark:border-neutral-800 text-center text-neutral-400 flex flex-col items-center justify-center gap-2">
-                          <ShoppingCart size={24} className="text-neutral-300 dark:text-neutral-600" />
-                          <p className="text-xs font-medium">
-                            {language === 'ar' ? 'لا توجد مشتريات مسجلة للمشترك' : language === 'fr' ? 'Aucun achat boutique enregistré' : 'No purchases recorded for this member'}
-                          </p>
-                        </div>
-                      );
-                    }
-
-                    const totalSpent = memberSales.reduce((sum, s) => sum + s.totalAmount, 0);
-
-                    return (
-                      <>
-                        <div className="p-4 rounded-[20px] bg-[#FCEEE8] dark:bg-[#d4522f]/15 border border-[#d4522f]/30 flex items-center justify-between shadow-2xs">
-                          <div>
-                            <span className="text-[11px] text-[#d4522f] font-bold uppercase tracking-wider block">
-                              {language === 'ar' ? 'إجمالي المشتريات' : language === 'fr' ? 'Total des achats' : 'Lifetime Spend'}
-                            </span>
-                            <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                              {memberSales.length} {language === 'ar' ? 'عمليات دفع' : 'factures'}
-                            </span>
-                          </div>
-                          <span className="text-lg font-bold font-mono text-[#d4522f] tabular-nums">
-                            {formatMoney(totalSpent)}
-                          </span>
-                        </div>
-
-                        <div className="space-y-2.5">
-                          {memberSales.map((sale) => (
-                            <div
-                              key={sale.id}
-                              className="p-3.5 rounded-[18px] border border-neutral-200/70 dark:border-neutral-800/80 bg-[#F8F9FA] dark:bg-neutral-800/40 text-xs flex flex-col gap-1.5 shadow-2xs"
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="font-bold text-neutral-900 dark:text-white font-mono">
-                                  #{sale.id.slice(-6).toUpperCase()}
-                                </span>
-                                <span className="font-bold text-emerald-600 font-mono">
-                                  {formatMoney(sale.totalAmount)}
-                                </span>
-                              </div>
-                              <div className="text-[11px] text-neutral-500 truncate">
-                                {sale.items.map((it) => `${it.quantity}x ${it.productName}`).join(', ')}
-                              </div>
-                              <div className="flex items-center justify-between text-[10px] text-neutral-400 pt-1.5 border-t border-neutral-200/50 dark:border-neutral-700/50">
-                                <span>{new Date(sale.createdAt).toLocaleDateString()}</span>
-                                <span className="font-medium text-neutral-600 dark:text-neutral-300">{sale.paymentMethod}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    );
-                  })()}
-                </div>
-              )}
-            </div>
-
-            {/* Bottom Actions Footer */}
-            <div className="p-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-900/60 flex items-center justify-between gap-3 shrink-0">
-              <button
-                type="button"
-                onClick={() => {
-                  const confirmMsg = language === 'ar'
-                    ? `هل أنت متأكد من حذف ${selectedMember.fullName}؟`
-                    : language === 'fr'
-                    ? `Supprimer définitivement ${selectedMember.fullName} ?`
-                    : `Delete ${selectedMember.fullName}?`;
-                  if (confirm(confirmMsg)) {
-                    deleteMember(selectedMember.id);
-                  }
-                }}
-                className="text-xs font-semibold text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 cursor-pointer flex items-center gap-1.5 transition-colors px-2 py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30"
-              >
-                <Trash2 size={14} />
-                <span>
-                  {language === 'ar'
-                    ? `حذف ${terminology.memberSingle}`
-                    : language === 'fr'
-                    ? `Supprimer ${terminology.memberSingle.toLowerCase()}`
-                    : `Delete ${terminology.memberSingle}`}
-                </span>
-              </button>
-
-              <AtriumButton
-                variant="primary"
-                size="md"
-                onClick={closeDetail}
-                className="font-semibold shadow-2xs"
-              >
-                {language === 'ar' ? 'إغلاق' : language === 'fr' ? 'Fermer' : 'Close'}
-              </AtriumButton>
-            </div>
-          </aside>
-        </div>,
-        document.body
-      )}
+      {/* Atrium 560px Kinetic Slide-Over Inspector with Shallow Water Wave Physics */}
+      <MemberSlideOverInspector
+        isOpen={isDetailOpen && Boolean(selectedMember)}
+        member={selectedMember}
+        allMembers={sortedMembers}
+        onClose={closeDetail}
+        onSelectMember={(m) => selectMember(m.id)}
+        onEdit={(m) => onEditMember(m)}
+        onDelete={(m) => {
+          deleteMember(m.id);
+          closeDetail();
+          showToast({
+            type: 'info',
+            title: 'Adhérent supprimé',
+            message: `${m.fullName} a été supprimé.`,
+          });
+        }}
+        onCheckIn={(m) => {
+          checkInMember(m.id);
+          showToast({
+            type: 'success',
+            title: 'Passage enregistré',
+            message: `Accès autorisé pour ${m.fullName}`,
+          });
+        }}
+        onRenew={(m) => {
+          const daysToAdd =
+            m.membershipPlanName?.toLowerCase().includes('trimest') ||
+            m.membershipPlanName?.toLowerCase().includes('quarter')
+              ? 90
+              : 30;
+          const currentExp = new Date(m.expirationDate || new Date().toISOString());
+          const newExp = new Date(currentExp.getTime() + daysToAdd * 864e5).toISOString().split('T')[0];
+          updateMember(m.id, { expirationDate: newExp, status: 'Active' });
+          showToast({
+            type: 'success',
+            title: 'Abonnement renouvelé',
+            message: `${m.fullName} prolongé jusqu'au ${newExp}`,
+          });
+        }}
+        onToggleBlock={(m) => {
+          const isCurrentlyBlocked = m.status === 'Suspended' || m.status === 'Banned' || Boolean((m as any).isBlocked);
+          const nextStatus: MemberStatus = isCurrentlyBlocked ? 'Active' : 'Suspended';
+          updateMember(m.id, { status: nextStatus, isBlocked: !isCurrentlyBlocked } as any);
+          showToast({
+            type: 'info',
+            title: !isCurrentlyBlocked ? 'Badge bloqué' : 'Badge débloqué',
+            message: `Badge de ${m.fullName} ${!isCurrentlyBlocked ? 'bloqué' : 'débloqué'}.`,
+          });
+        }}
+        onUpdateNotes={(id, notes) => updateMember(id, { notes })}
+        showToast={(msg) =>
+          showToast({
+            type: 'info',
+            title: 'Notification',
+            message: msg,
+          })
+        }
+      />
 
       {/* Floating Batch Actions Bar */}
       {selectedIds.length > 0 && (

@@ -42,6 +42,7 @@ export interface UniversalDataCollectionProps<T> {
   renderCard?: (item: T, isSelected: boolean) => React.ReactNode;
   renderGridCard?: (item: T, isSelected?: boolean) => React.ReactNode;
   renderCalendarView?: () => React.ReactNode;
+  renderRow?: (item: T, isSelected: boolean, isPinned: boolean) => React.ReactNode;
 
   // Row and Card Click
   onItemClick?: (item: T) => void;
@@ -137,6 +138,7 @@ export function UniversalDataCollection<T>({
   renderCard,
   renderGridCard,
   renderCalendarView,
+  renderRow,
   onItemClick,
   onViewDetails,
   onEdit,
@@ -619,6 +621,14 @@ export function UniversalDataCollection<T>({
               const isSelected = effectiveSelectedIds.has(id);
               const pinned = checkPinned(item);
               const active = isActive(item);
+
+              if (renderRow) {
+                return (
+                  <React.Fragment key={id}>
+                    {renderRow(item, isSelected, pinned)}
+                  </React.Fragment>
+                );
+              }
 
               return (
                 <CollectionListRow
