@@ -30,33 +30,33 @@ export const RowFan: React.FC<RowFanProps> = ({
     {
       id: 'edit',
       label: memberName ? `Modifier ${memberName}` : 'Modifier',
-      icon: <Pencil className="w-3.5 h-3.5" />,
+      icon: <Pencil className="w-4 h-4" />,
       onClick: (e) => onEdit?.(e),
     },
     {
       id: 'mail',
       label: memberName ? `Écrire à ${memberName}` : 'Envoyer un message',
-      icon: <Mail className="w-3.5 h-3.5" />,
+      icon: <Mail className="w-4 h-4" />,
       onClick: (e) => onMessage?.(e),
     },
     {
       id: 'del',
       label: memberName ? `Supprimer ${memberName}` : 'Supprimer',
-      icon: <Trash2 className="w-3.5 h-3.5" />,
+      icon: <Trash2 className="w-4 h-4" />,
       isDanger: true,
       onClick: (e) => onDelete?.(e),
     },
   ];
 
   // In the prototype:
-  // First in array has highest index (left-most when fanned out, e.g. --i: 2)
-  // Last in array has index 0 (closest to chevron button, e.g. --i: 0)
+  // First in array has highest index (left-most when fanned out, e.g. --i: 2 for Edit)
+  // Last in array has index 0 (closest to chevron button, e.g. --i: 0 for Delete)
   const total = fanActions.length;
 
   return (
     <div className={`pointer-events-none ${className}`}>
       {fanActions.map((action, index) => {
-        const i = total - 1 - index; // e.g. 2, 1, 0 for 3 actions
+        const i = total - 1 - index; // 2, 1, 0 for 3 actions
         return (
           <button
             key={action.id}
@@ -65,23 +65,22 @@ export const RowFan: React.FC<RowFanProps> = ({
               {
                 '--i': i,
                 position: 'absolute',
+                top: '18px',
+                right: '18px',
                 zIndex: 2,
-                right: '15px',
-                top: '15px',
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                borderRadius: '11px',
                 display: 'grid',
                 placeItems: 'center',
                 padding: 0,
                 cursor: 'pointer',
-                backgroundColor: '#F3EDE7',
               } as React.CSSProperties
             }
-            className={`act pointer-events-auto border border-[#E6DED6] transition-colors duration-150 ${
+            className={`act pointer-events-auto border border-[#E6DED6] dark:border-[#3A3734] bg-[#F3EDE7] dark:bg-[#2A2A2A] transition-colors duration-150 ${
               action.isDanger
-                ? 'd hover:!bg-[#C9441F] hover:!text-white text-[#1B1917]'
-                : 'hover:!bg-[#FBE7DF] text-[#1B1917]'
+                ? 'd hover:!bg-[#C9441F] hover:!text-white text-[#1B1917] dark:text-[#EAE3DC]'
+                : 'hover:!bg-[#FBE7DF] hover:!text-[#C9441F] text-[#1B1917] dark:text-[#EAE3DC]'
             }`}
             aria-label={action.label}
             title={action.label}

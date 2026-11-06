@@ -1,0 +1,6 @@
+{
+  "summary": "Comprehensive architectural implementation plan to align the Membership Members screen 1:1 with members2_reference.html:\n1. Root cause diagnosis explaining why the chevron button and detail drawer were previously misplaced.\n2. Architecture for the shared single-loop frame-based spring engine (Sp, frame, wake, auto-parking, reduced motion) driving coordinates, heights, and rotations.\n3. 1:1 restoration of the 72px island row (.ri, .slab, .in) with the chevron button (.rb) locked at the extreme right (right: 14px) and 3 kinetic hover fan buttons (.act) sliding out to the left.\n4. Correct placement and styling of the expanded detail drawer (.dt) at top: 80px, height: 150px with a pure card background and full action column (.db) housing both prototype and secondary operations (Freeze, Pin, Pay).\n5. Spring-driven row push physics (H=72px, G=8px, DH=150px) where expanding a drawer smoothly pushes rows below down without layout thrashing.",
+  "updatedAt": "2026-11-06T20:34:20.481870559Z",
+  "requestFeedback": true,
+  "userFacing": true
+}

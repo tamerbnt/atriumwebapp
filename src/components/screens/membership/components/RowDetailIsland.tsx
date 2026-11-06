@@ -1,11 +1,6 @@
 import React from 'react';
 import { clamp } from '../motion/adherentsMotion';
-import { User, RotateCcw, Archive } from 'lucide-react';
-
-export interface RowDetailSection {
-  title: string;
-  items: React.ReactNode[];
-}
+import { User, Archive, Snowflake, Pin, CreditCard, RotateCcw } from 'lucide-react';
 
 export interface RowDetailIslandProps {
   /** Spring e value (0..100) */
@@ -13,7 +8,6 @@ export interface RowDetailIslandProps {
   rowWidth?: number;
   rowHeight?: number;
   detailHeight?: number;
-  buttonSize?: number;
   gap?: number;
   contactInfo?: {
     phone?: string;
@@ -26,9 +20,14 @@ export interface RowDetailIslandProps {
     remainingSessions?: number | string;
   };
   notes?: string;
+  isBlocked?: boolean;
+  isPinned?: boolean;
   onOpenDetails?: () => void;
   onRenew?: () => void;
   onArchive?: () => void;
+  onToggleStatus?: () => void;
+  onTogglePin?: () => void;
+  onPay?: () => void;
   actions?: Array<{
     id: string;
     label: string;
@@ -41,43 +40,30 @@ export interface RowDetailIslandProps {
 
 export const RowDetailIsland: React.FC<RowDetailIslandProps> = ({
   eValue,
-  rowWidth = 1200,
-  rowHeight = 62,
-  detailHeight = 150,
-  buttonSize = 38,
-  gap = 8,
   contactInfo,
   planInfo,
   notes,
+  isBlocked = false,
+  isPinned = false,
   onOpenDetails,
   onRenew,
   onArchive,
+  onToggleStatus,
+  onTogglePin,
+  onPay,
   actions,
   children,
   className = '',
 }) => {
-  const e = clamp(eValue / 100, 0, 1.1);
-  if (e < 0.01) return null;
+  const e = clamp(eValue / 100, 0, 1.08);
+  if (e < 0.02) return null;
 
-  const w = rowWidth;
-  const RH = rowHeight;
-  const B = buttonSize;
-  const G = gap;
-  const DH = detailHeight;
+  // Content fade and interaction gate matching members2_reference.html:
+  // dtl.style.opacity = cl((e - 0.5) / 0.4, 0, 1);
+  const opacity = clamp((e - 0.45) / 0.4, 0, 1);
+  const isInteractive = e > 0.65;
 
-  // Exact rectangle interpolation from the prototype (supports both explicit px and fluid 100%):
-  const isFluid = rowWidth === undefined || rowWidth <= 0;
-  const leftCss = isFluid ? `calc((100% - 14px - ${B}px) * ${1 - e})` : `${(rowWidth - 14 - B) * (1 - e)}px`;
-  const widthCss = isFluid ? `calc(${B}px + (100% - ${B}px) * ${e})` : `${Math.max(0, B + (rowWidth - B) * e)}px`;
-  const top = (RH / 2 - B / 2) * (1 - e) + (RH + G) * e;
-  const currentHeight = Math.max(0, B + (DH - B) * e);
-  const borderRadius = 19 + 3 * e;
-
-  // Content fade and interaction gate:
-  const sh = clamp((e - 0.55) / 0.35, 0, 1);
-  const isInteractive = sh > 0.6;
-
-  const detailActions = actions || [
+  const defaultActions = [
     ...(onOpenDetails
       ? [
           {
@@ -98,6 +84,36 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = ({
           },
         ]
       : []),
+    ...(onToggleStatus
+      ? [
+          {
+            id: 'freeze',
+            label: isBlocked ? 'Débloquer badge' : 'Geler badge',
+            icon: <Snowflake className="w-3.5 h-3.5 text-[#3B82F6]" />,
+            onClick: onToggleStatus,
+          },
+        ]
+      : []),
+    ...(onTogglePin
+      ? [
+          {
+            id: 'pin',
+            label: isPinned ? 'Détacher' : 'Épingler en haut',
+            icon: <Pin className="w-3.5 h-3.5 text-[#E8B33F]" />,
+            onClick: onTogglePin,
+          },
+        ]
+      : []),
+    ...(onPay
+      ? [
+          {
+            id: 'pay',
+            label: 'Encaisser / Solde',
+            icon: <CreditCard className="w-3.5 h-3.5 text-[#0B7A45]" />,
+            onClick: onPay,
+          },
+        ]
+      : []),
     ...(onArchive
       ? [
           {
@@ -110,107 +126,86 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = ({
       : []),
   ];
 
+  const detailActions = actions && actions.length > 0 ? actions : defaultActions;
+
   return (
-    <>
-      {/* Expanding slab background (.det) */}
-      <div
-        className={`det border border-[#F3C9BA] bg-[#FBE7DF] shadow-sm pointer-events-none ${className}`}
-        style={{
-          position: 'absolute',
-          display: 'block',
-          left: leftCss,
-          top: `${top}px`,
-          width: widthCss,
-          height: `${currentHeight}px`,
-          borderRadius: `${borderRadius}px`,
-          boxSizing: 'border-box',
-          zIndex: 0,
-        }}
-        aria-hidden="true"
-      />
+    <div
+      className={`dt absolute left-0 right-0 top-[80px] h-[150px] rounded-[14px] bg-white dark:bg-[#1A1A1A] border border-[#E4DCD5] dark:border-[#3A3734] shadow-xs select-text box-border z-[2] transition-opacity duration-150 ${className}`}
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr 1.2fr 1.2fr auto',
+        gap: '24px',
+        padding: '18px 24px',
+        opacity: opacity,
+        pointerEvents: isInteractive ? 'auto' : 'none',
+      }}
+      aria-hidden={!isInteractive}
+    >
+      {children ? (
+        children
+      ) : (
+        <>
+          {/* Col 1: Contact */}
+          <div className="flex flex-col min-w-0">
+            <h4 className="m-0 mb-2 font-mono text-[11px] font-bold tracking-widest uppercase text-[#6B635C] dark:text-[#A89F95]">
+              Contact
+            </h4>
+            <p className="m-0 mb-1 font-mono text-[13px] text-[#1B1917] dark:text-[#F3EDE7] font-semibold truncate">
+              {contactInfo?.phone || 'Non renseigné'}
+            </p>
+            <p className="m-0 text-[13px] text-[#6B635C] dark:text-[#A89F95] truncate">
+              {contactInfo?.email || 'Sans email'}
+            </p>
+          </div>
 
-      {/* Content panel (.dc) */}
-      <div
-        className="dc"
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          top: `${RH + G}px`,
-          height: `${DH}px`,
-          zIndex: 2,
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr 1.2fr auto',
-          gap: '28px',
-          padding: '18px 22px',
-          boxSizing: 'border-box',
-          opacity: sh,
-          pointerEvents: isInteractive ? 'auto' : 'none',
-        }}
-        aria-hidden={!isInteractive}
-      >
-        {children ? (
-          children
-        ) : (
-          <>
-            <div>
-              <h4 className="m-0 mb-1.5 font-mono text-[11px] font-bold tracking-widest uppercase text-[#6B635C]">
-                Contact
-              </h4>
-              <p className="m-0 mb-1 text-[13px] leading-snug text-[#1B1917] font-medium">
-                {contactInfo?.phone || '—'}
+          {/* Col 2: Forfait */}
+          <div className="flex flex-col min-w-0">
+            <h4 className="m-0 mb-2 font-mono text-[11px] font-bold tracking-widest uppercase text-[#6B635C] dark:text-[#A89F95]">
+              Forfait
+            </h4>
+            <p className="m-0 mb-1 text-[13px] font-bold text-[#1B1917] dark:text-[#F3EDE7] truncate">
+              {planInfo?.planName || 'Standard'}
+            </p>
+            <p className="m-0 mb-1 text-[12px] text-[#6B635C] dark:text-[#A89F95] truncate">
+              Échéance {planInfo?.expiry || '—'} · {planInfo?.daysLeft || ''}
+            </p>
+            {planInfo?.remainingSessions !== undefined && (
+              <p className="m-0 text-[12px] font-semibold text-[#0B7A45] dark:text-[#3CE085]">
+                {planInfo.remainingSessions} séances restantes
               </p>
-              <p className="m-0 text-[13px] leading-snug text-[#6B635C] truncate">
-                {contactInfo?.email || '—'}
-              </p>
-            </div>
+            )}
+          </div>
 
-            <div>
-              <h4 className="m-0 mb-1.5 font-mono text-[11px] font-bold tracking-widest uppercase text-[#6B635C]">
-                Forfait
-              </h4>
-              <p className="m-0 mb-1 text-[13px] leading-snug font-semibold text-[#1B1917]">
-                {planInfo?.planName || '—'}
-              </p>
-              <p className="m-0 mb-1 text-[12px] leading-snug text-[#6B635C]">
-                Échéance {planInfo?.expiry || '—'} · {planInfo?.daysLeft || ''}
-              </p>
-              {planInfo?.remainingSessions !== undefined && (
-                <p className="m-0 text-[12px] font-medium text-[#0B7A45]">
-                  {planInfo.remainingSessions} séances restantes
-                </p>
-              )}
-            </div>
+          {/* Col 3: Notes */}
+          <div className="flex flex-col min-w-0">
+            <h4 className="m-0 mb-2 font-mono text-[11px] font-bold tracking-widest uppercase text-[#6B635C] dark:text-[#A89F95]">
+              Notes
+            </h4>
+            <p className="m-0 text-[13px] leading-relaxed text-[#6B635C] dark:text-[#A89F95] line-clamp-3 italic">
+              {notes || 'Aucune note sur cet adhérent.'}
+            </p>
+          </div>
 
-            <div>
-              <h4 className="m-0 mb-1.5 font-mono text-[11px] font-bold tracking-widest uppercase text-[#6B635C]">
-                Notes
-              </h4>
-              <p className="m-0 text-[13px] leading-snug text-[#6B635C] line-clamp-3 italic">
-                {notes || 'Aucune note.'}
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-1.5 justify-end">
-              {detailActions.map((btn) => (
-                <button
-                  key={btn.id}
-                  type="button"
-                  tabIndex={isInteractive ? 0 : -1}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    btn.onClick();
-                  }}
-                  className="h-8 px-3.5 border border-[#E6DED6] rounded-[10px] bg-white font-medium text-[13px] text-[#1B1917] flex items-center gap-2 hover:bg-[#1B1917] hover:text-white transition-colors duration-150 cursor-pointer shadow-xs whitespace-nowrap"
-                >
-                  {btn.icon}
-                  <span>{btn.label}</span>
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-    </>
+          {/* Col 4: Action cluster (.db) */}
+          <div className="db flex flex-col gap-1.5 justify-end items-end shrink-0">
+            {detailActions.map((btn) => (
+              <button
+                key={btn.id}
+                type="button"
+                tabIndex={isInteractive ? 0 : -1}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  btn.onClick();
+                }}
+                className="h-[30px] px-3 rounded-[9px] border border-[#E6DED6] dark:border-[#3A3734] bg-[#F7F4F1] dark:bg-[#262422] hover:bg-[#1B1917] hover:text-white dark:hover:bg-[#C9441F] dark:hover:text-white text-[#1B1917] dark:text-[#EAE3DC] font-medium text-[12px] flex items-center gap-2 transition-colors duration-140 cursor-pointer shadow-2xs whitespace-nowrap"
+              >
+                {btn.icon}
+                <span>{btn.label}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
   );
 };

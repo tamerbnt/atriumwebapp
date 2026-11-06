@@ -1188,109 +1188,268 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
         <div className="w-full">
           {/* Table / Grid Container */}
           <div className="w-full">
-            <UniversalDataCollection<Member>
-              items={sortedMembers}
-              keyExtractor={(m) => m.id}
-              defaultViewMode={viewMode}
-              viewMode={viewMode}
-              onViewModeChange={setViewMode}
-              showViewToggle={false}
-              columns={memberColumns}
-              renderRow={(member, isSelected, isPinned) => {
-                const daysRemaining = calculateDaysRemaining(false, member.expirationDate);
-                const remainingText =
-                  daysRemaining > 0
-                    ? `${daysRemaining} j restants`
-                    : daysRemaining === 0
-                    ? 'Expire aujourd’hui'
-                    : 'Expiré';
-                const isBlocked =
-                  member.status === 'Suspended' ||
-                  member.status === 'Banned' ||
-                  Boolean((member as any).isBlocked);
-                const isExp = member.status === 'Expired' || daysRemaining <= 0;
-
-                const memberRowData: MemberRowData = {
-                  id: member.id,
-                  name: member.fullName || 'Adhérent',
-                  phone: member.phoneNumber || '',
-                  email: member.email || '',
-                  planName: member.membershipPlanName || 'Full Access Monthly',
-                  status: isBlocked ? 'Bloqué' : isExp ? 'Expiré' : 'Actif',
-                  statusVariant: isBlocked ? 'blocked' : isExp ? 'expired' : 'active',
-                  expiryDate: member.expirationDate || 'Non spécifié',
-                  daysRemainingLabel: remainingText,
-                  balance: (member as any).balance || 0,
-                  balanceLabel: (member as any).balance
-                    ? `${Math.round((member as any).balance).toLocaleString()} DZD`
-                    : 'Soldé',
-                  avatarColor: getMemberInitialsColor(member.fullName),
-                  remainingSessions: (member as any).remainingSessions || 24,
-                  notes: member.notes,
-                };
-
-                return (
-                  <MemberRow
-                    key={member.id}
-                    member={memberRowData}
-                    isSelected={selectedMemberIds.has(member.id)}
-                    isOpen={isDetailOpen && selectedMember?.id === member.id}
-                    isExpanded={expandedMemberIds.has(member.id)}
-                    viewMode={viewMode}
-                    onSelect={() => {
-                      setSelectedMemberIds((prev) => {
-                        const next = new Set(prev);
-                        if (next.has(member.id)) next.delete(member.id);
-                        else next.add(member.id);
-                        return next;
-                      });
-                    }}
-                    onToggleExpand={() => toggleExpandMember(member.id)}
-                    onOpenDetails={() => selectMember(member.id)}
-                    onEdit={() => onEditMember(member)}
-                    onMessage={() => {
-                      if (member.email) {
-                        window.location.href = `mailto:${member.email}`;
+            {viewMode === 'list' ? (
+              <div className="w-full flex flex-col">
+                {/* Prototype Header Bar (.lh) */}
+                <div
+                  className="lh w-full grid grid-cols-[22px_40px_minmax(200px,1.5fr)_minmax(150px,1fr)_100px_150px_110px] gap-3.5 items-center px-4 pr-[130px] h-[38px] mb-2.5 bg-white dark:bg-[#18181B] border border-neutral-200/90 dark:border-neutral-800 rounded-[12px] text-[#6B635C] dark:text-[#A89F95] font-semibold text-[12px] uppercase tracking-wider shadow-xs box-border select-none"
+                  aria-hidden="true"
+                >
+                  <button
+                    type="button"
+                    role="checkbox"
+                    aria-checked={selectedMemberIds.size === sortedMembers.length && sortedMembers.length > 0}
+                    aria-label="Tout sélectionner"
+                    onClick={() => {
+                      if (selectedMemberIds.size === sortedMembers.length) {
+                        setSelectedMemberIds(new Set());
                       } else {
-                        showToast({
-                          type: 'info',
-                          title: 'Email draft',
-                          message: `No email address for ${member.fullName}`,
-                        });
+                        setSelectedMemberIds(new Set(sortedMembers.map((m) => m.id)));
                       }
                     }}
-                    onDelete={() => {
-                      if (window.confirm(`Delete ${member.fullName}?`)) {
-                        deleteMember(member.id);
-                        showToast({
-                          type: 'info',
-                          title: 'Member Removed',
-                          message: `${member.fullName} has been removed.`,
-                        });
+                    className={`cb w-[22px] h-[22px] rounded-[7px] border-[1.5px] grid place-items-center p-0 transition-colors duration-140 cursor-pointer ${
+                      selectedMemberIds.size === sortedMembers.length && sortedMembers.length > 0
+                        ? 'bg-[#C9441F] border-[#C9441F] text-white'
+                        : 'bg-white dark:bg-[#262422] border-[#B3A89E] dark:border-[#5A5550] text-transparent hover:border-[#C9441F]'
+                    }`}
+                  >
+                    <Check
+                      className={`w-3.5 h-3.5 stroke-[3] transition-opacity duration-120 ${
+                        selectedMemberIds.size === sortedMembers.length && sortedMembers.length > 0
+                          ? 'opacity-100 text-white'
+                          : 'opacity-0'
+                      }`}
+                    />
+                  </button>
+                  <span />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (memberSortBy === 'member') {
+                        setMemberSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+                      } else {
+                        setMemberSortBy('member');
+                        setMemberSortDir('asc');
                       }
                     }}
-                    onRenew={() => {
-                      const daysToAdd = 30;
-                      const currentExp = new Date(member.expirationDate || new Date().toISOString());
-                      const newExp = new Date(currentExp.getTime() + daysToAdd * 864e5).toISOString().split('T')[0];
-                      updateMember(member.id, { expirationDate: newExp, status: 'Active' });
-                      showToast({
-                        type: 'success',
-                        title: 'Abonnement renouvelé',
-                        message: `${member.fullName} prolongé jusqu'au ${newExp}`,
-                      });
+                    className="text-left font-semibold text-[12px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:text-[#C9441F] bg-transparent border-0 p-0 text-inherit"
+                  >
+                    <span>{terminology.memberSingle}</span>
+                    {memberSortBy === 'member' && <span>{memberSortDir === 'asc' ? '↑' : '↓'}</span>}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (memberSortBy === 'plan') {
+                        setMemberSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+                      } else {
+                        setMemberSortBy('plan');
+                        setMemberSortDir('asc');
+                      }
                     }}
-                    onArchive={() => {
-                      updateMember(member.id, { status: 'Suspended' });
-                      showToast({
-                        type: 'info',
-                        title: 'Member Archived',
-                        message: `${member.fullName} archivé (suspendu).`,
-                      });
+                    className="text-left font-semibold text-[12px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:text-[#C9441F] bg-transparent border-0 p-0 text-inherit"
+                  >
+                    <span>{t('member_col_plan', language)}</span>
+                    {memberSortBy === 'plan' && <span>{memberSortDir === 'asc' ? '↑' : '↓'}</span>}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (memberSortBy === 'status') {
+                        setMemberSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+                      } else {
+                        setMemberSortBy('status');
+                        setMemberSortDir('asc');
+                      }
                     }}
-                  />
-                );
-              }}
+                    className="text-left font-semibold text-[12px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:text-[#C9441F] bg-transparent border-0 p-0 text-inherit"
+                  >
+                    <span>{t('member_col_access', language)}</span>
+                    {memberSortBy === 'status' && <span>{memberSortDir === 'asc' ? '↑' : '↓'}</span>}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (memberSortBy === 'expiration') {
+                        setMemberSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+                      } else {
+                        setMemberSortBy('expiration');
+                        setMemberSortDir('asc');
+                      }
+                    }}
+                    className="text-left font-semibold text-[12px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:text-[#C9441F] bg-transparent border-0 p-0 text-inherit"
+                  >
+                    <span>{t('member_col_expiration', language)}</span>
+                    {memberSortBy === 'expiration' && <span>{memberSortDir === 'asc' ? '↑' : '↓'}</span>}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (memberSortBy === 'balance') {
+                        setMemberSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+                      } else {
+                        setMemberSortBy('balance');
+                        setMemberSortDir('asc');
+                      }
+                    }}
+                    className="text-left font-semibold text-[12px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:text-[#C9441F] bg-transparent border-0 p-0 text-inherit"
+                  >
+                    <span>{language === 'ar' ? 'الرصيد' : language === 'fr' ? 'Solde' : 'Balance'}</span>
+                    {memberSortBy === 'balance' && <span>{memberSortDir === 'asc' ? '↑' : '↓'}</span>}
+                  </button>
+                </div>
+
+                {/* List of Member Rows */}
+                {sortedMembers.length === 0 ? (
+                  <p className="empty text-center text-[#6B635C] dark:text-[#A89F95] py-10">
+                    Aucun adhérent ne correspond. Effacez la recherche ou changez de filtre.
+                  </p>
+                ) : (
+                  <div role="list" aria-label="Adhérents" className="flex flex-col">
+                    {sortedMembers.map((member) => {
+                      const daysRemaining = calculateDaysRemaining(false, member.expirationDate);
+                      const remainingText =
+                        daysRemaining > 0
+                          ? `${daysRemaining} j restants`
+                          : daysRemaining === 0
+                          ? 'Expire aujourd’hui'
+                          : 'Expiré';
+                      const isBlocked =
+                        member.status === 'Suspended' ||
+                        member.status === 'Banned' ||
+                        Boolean((member as any).isBlocked);
+                      const isExp = member.status === 'Expired' || daysRemaining <= 0;
+
+                      const memberRowData: MemberRowData = {
+                        id: member.id,
+                        name: member.fullName || 'Adhérent',
+                        phone: member.phoneNumber || '',
+                        email: member.email || '',
+                        planName: member.membershipPlanName || 'Full Access Monthly',
+                        status: isBlocked ? 'Bloqué' : isExp ? 'Expiré' : 'Actif',
+                        statusVariant: isBlocked ? 'blocked' : isExp ? 'expired' : 'active',
+                        expiryDate: member.expirationDate || 'Non spécifié',
+                        daysRemainingLabel: remainingText,
+                        balance: (member as any).balance || 0,
+                        balanceLabel: (member as any).balance
+                          ? `${Math.round((member as any).balance).toLocaleString()} DZD`
+                          : 'Soldé',
+                        avatarColor: getMemberInitialsColor(member.fullName),
+                        remainingSessions: (member as any).remainingSessions || 24,
+                        notes: member.notes,
+                        isBlocked: isBlocked,
+                        isPinned: pinnedMemberIds.has(member.id),
+                      };
+
+                      return (
+                        <MemberRow
+                          key={member.id}
+                          member={memberRowData}
+                          isSelected={selectedMemberIds.has(member.id)}
+                          isOpen={isDetailOpen && selectedMember?.id === member.id}
+                          isExpanded={expandedMemberIds.has(member.id)}
+                          isPinned={pinnedMemberIds.has(member.id)}
+                          viewMode="list"
+                          onSelect={() => {
+                            setSelectedMemberIds((prev) => {
+                              const next = new Set(prev);
+                              if (next.has(member.id)) next.delete(member.id);
+                              else next.add(member.id);
+                              return next;
+                            });
+                          }}
+                          onToggleExpand={() => toggleExpandMember(member.id)}
+                          onOpenDetails={() => selectMember(member.id)}
+                          onEdit={() => onEditMember(member)}
+                          onMessage={() => {
+                            if (member.email) {
+                              window.location.href = `mailto:${member.email}`;
+                            } else {
+                              showToast({
+                                type: 'info',
+                                title: 'Email draft',
+                                message: `No email address for ${member.fullName}`,
+                              });
+                            }
+                          }}
+                          onDelete={() => {
+                            if (window.confirm(`Delete ${member.fullName}?`)) {
+                              deleteMember(member.id);
+                              showToast({
+                                type: 'info',
+                                title: 'Member Removed',
+                                message: `${member.fullName} has been removed.`,
+                              });
+                            }
+                          }}
+                          onRenew={() => {
+                            const daysToAdd = 30;
+                            const currentExp = new Date(member.expirationDate || new Date().toISOString());
+                            const newExp = new Date(currentExp.getTime() + daysToAdd * 864e5).toISOString().split('T')[0];
+                            updateMember(member.id, { expirationDate: newExp, status: 'Active' });
+                            showToast({
+                              type: 'success',
+                              title: 'Abonnement renouvelé',
+                              message: `${member.fullName} prolongé jusqu'au ${newExp}`,
+                            });
+                          }}
+                          onArchive={() => {
+                            updateMember(member.id, { status: 'Suspended' });
+                            showToast({
+                              type: 'info',
+                              title: 'Member Archived',
+                              message: `${member.fullName} archivé (suspendu).`,
+                            });
+                          }}
+                          onToggleStatus={() => {
+                            const newStatus: MemberStatus = isBlocked ? 'Active' : 'Suspended';
+                            updateMember(member.id, { status: newStatus });
+                            showToast({
+                              type: isBlocked ? 'success' : 'info',
+                              title: isBlocked ? 'Badge réactivé' : 'Badge gelé',
+                              message: `${member.fullName}: ${isBlocked ? 'Accès rétabli' : 'Accès temporairement suspendu'}`,
+                            });
+                          }}
+                          onTogglePin={() => {
+                            setPinnedMemberIds((prev) => {
+                              const next = new Set(prev);
+                              if (next.has(member.id)) {
+                                next.delete(member.id);
+                                showToast({
+                                  type: 'info',
+                                  title: 'Détaché',
+                                  message: `${member.fullName} n'est plus épinglé`,
+                                });
+                              } else {
+                                next.add(member.id);
+                                showToast({
+                                  type: 'success',
+                                  title: 'Épinglé',
+                                  message: `${member.fullName} épinglé en tête de liste`,
+                                });
+                              }
+                              return next;
+                            });
+                          }}
+                          onPay={() => {
+                            selectMember(member.id);
+                            setGymDrawerTab('sales');
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <UniversalDataCollection<Member>
+                items={sortedMembers}
+                keyExtractor={(m) => m.id}
+                defaultViewMode={viewMode}
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                showViewToggle={false}
+                columns={memberColumns}
               isLoading={isSyncing || networkMode === 'force_skeleton'}
               isOffline={networkMode === 'offline'}
               isTimedOut={isSyncTimeout}
@@ -1443,7 +1602,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               primaryActionLabel={`${t('action_add', language)} ${terminology.memberSingle}`}
               onAddFirstItem={onAddMember}
             />
-          </div>
+          )}
         </div>
       </div>
 

@@ -33,12 +33,12 @@
   scale: 0.6;
   transition: translate 140ms, opacity 100ms, scale 140ms, visibility 0s linear 140ms;
 }
-.row:hover .act, .row:focus-within .act {
+.row:hover .act, .row:focus-within .act, .rw:hover .act, .rw:focus-within .act, .rw[data-x] .act {
   opacity: 1;
   visibility: visible;
-  translate: calc(var(--i) * -40px - 46px) 0;
+  translate: calc(var(--i) * -42px - 44px) 0;
   scale: var(--zoom, 1);
-  transition: translate 300ms cubic-bezier(.24, 1.34, .38, 1) calc(var(--i) * 45ms),
+  transition: translate 280ms cubic-bezier(.24, 1.34, .38, 1) calc(var(--i) * 45ms),
               opacity 140ms calc(var(--i) * 45ms),
               scale 160ms,
               visibility 0s;
