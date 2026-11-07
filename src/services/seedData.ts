@@ -552,7 +552,56 @@ export const INITIAL_PLANS_BY_BRANCH: Record<string, MembershipPlan[]> = {
   branch_rest_didouche: [],
 };
 
-export const INITIAL_MEMBERS: Member[] = [];
+export const INITIAL_MEMBERS: Member[] = [
+  {
+    id: 'mem_1793994069207_1',
+    accountId: 'acc_01',
+    businessId: 'biz_gym',
+    branchId: 'branch_gym_main',
+    tenantId: 'acc_01',
+    facilityId: 'branch_gym_main',
+    fullName: 'Amira Cherif',
+    email: 'amira.cherif@gmail.com',
+    phoneNumber: '+213 550 11 22 33',
+    cardId: 'RFID-46466446',
+    status: 'Active',
+    startDate: '2026-11-06',
+    expirationDate: '2026-12-06',
+    membershipPlanId: 'plan_monthly',
+    membershipPlanName: 'Full Access Monthly',
+    remainingSessions: 24,
+    gender: 'Female',
+    source: 'Instagram',
+    notes: 'Welcome member. Prefers morning slots.',
+    balance: 0,
+    createdAt: '2026-11-06T10:00:00Z',
+    updatedAt: '2026-11-06T10:00:00Z',
+  },
+  {
+    id: 'mem_1793994069207_2',
+    accountId: 'acc_01',
+    businessId: 'biz_gym',
+    branchId: 'branch_gym_main',
+    tenantId: 'acc_01',
+    facilityId: 'branch_gym_main',
+    fullName: 'Sara Bouzid',
+    email: 'sara.bouzid@outlook.com',
+    phoneNumber: '+213 661 44 55 66',
+    cardId: 'RFID-88991122',
+    status: 'Active',
+    startDate: '2026-11-06',
+    expirationDate: '2027-02-04',
+    membershipPlanId: 'plan_quarterly',
+    membershipPlanName: 'Quarterly Pro Membership',
+    remainingSessions: 72,
+    gender: 'Female',
+    source: 'Referral',
+    notes: 'Athlete pass. Locker 14.',
+    balance: 0,
+    createdAt: '2026-11-06T10:00:00Z',
+    updatedAt: '2026-11-06T10:00:00Z',
+  },
+];
 export const INITIAL_LEADS: RegistrationLead[] = [];
 
 export const INITIAL_STAFF: StaffMember[] = [

@@ -1605,6 +1605,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
           )}
         </div>
       </div>
+    </div>
 
       {/* Atrium 560px Kinetic Slide-Over Inspector with Shallow Water Wave Physics */}
       <MemberSlideOverInspector
