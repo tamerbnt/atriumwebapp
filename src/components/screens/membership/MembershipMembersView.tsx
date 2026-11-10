@@ -39,9 +39,10 @@ import { Seek } from '../../ui/Seek';
 import { ActionNode } from '../../ui/ActionNode';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { MemberRow, MemberRowData } from './components/MemberRow';
-import { StatusTabs } from './components/StatusTabs';
 import { FloatingBulkBar } from './components/FloatingBulkBar';
 import { MemberSlideOverInspector } from './MemberSlideOverInspector';
+import { useSpringCount } from './motion/adherentsMotion';
+import { useKineticRowLayout } from './motion/useKineticRowLayout';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Button as BrandedAtriumButton, LiquidButton } from '@/atrium';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
@@ -336,6 +337,51 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
     return list;
   }, [displayMembers, pinnedMemberIds, memberSortBy, memberSortDir]);
 
+  // Kinetic absolute row layout and physics management
+  const listContainerRef = useRef<HTMLDivElement | null>(null);
+  const [listWidth, setListWidth] = useState(1200);
+
+  useEffect(() => {
+    if (!listContainerRef.current) return;
+    const updateWidth = () => {
+      if (listContainerRef.current) {
+        const w = listContainerRef.current.clientWidth;
+        if (w > 0) setListWidth(w);
+      }
+    };
+    updateWidth();
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0) {
+          setListWidth(entry.contentRect.width);
+        }
+      }
+    });
+    ro.observe(listContainerRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  const { renderRows, containerHeight, hasVisibleRows } = useKineticRowLayout({
+    matchingMembers: sortedMembers,
+    expandedMemberIds,
+    onPruneSelection: (hiddenIds) => {
+      setSelectedMemberIds((prev) => {
+        const next = new Set(prev);
+        hiddenIds.forEach((id) => next.delete(id));
+        return next;
+      });
+    },
+    onFilterChange: () => {
+      // Scroll list to top on filter change
+      listContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+  });
+
+  // Metric count-up springs (tune 20)
+  const animatedActiveCount = useSpringCount(activeMembersCount);
+  const animatedExpiringCount = useSpringCount(expiringCount);
+  const animatedDisplayCount = useSpringCount(displayMembers.length);
+
   const memberColumns = useMemo<ColumnDefinition<Member>[]>(() => [
     {
       key: 'member',
@@ -592,6 +638,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
           <AtriumButton
             variant="primary"
             size="md"
+            data-action="add-member"
             onClick={onAddMember}
             icon={<Plus size={16} strokeWidth={2.2} />}
             className="px-4 font-semibold shadow-xs"
@@ -625,7 +672,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               </div>
             </div>
             <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
-              {activeMembersCount}
+              {animatedActiveCount}
             </div>
           </div>
 
@@ -637,12 +684,12 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded-full">
-                  {expiringCount} {language === 'ar' ? 'تنتهي قريباً (<14j)' : language === 'fr' ? 'expirent sous 14j' : 'expiring (<14d)'}
+                  {animatedExpiringCount} {language === 'ar' ? 'تنتهي قريباً (<14j)' : language === 'fr' ? 'expirent sous 14j' : 'expiring (<14d)'}
                 </span>
               </div>
             </div>
             <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
-              {expiringCount}
+              {animatedExpiringCount}
             </div>
           </div>
 
@@ -653,12 +700,12 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                 {language === 'ar' ? 'الوافدون الجدد شهرياً' : language === 'fr' ? 'Adhésions du mois' : 'Monthly Inflow'}
               </span>
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
-                +{displayMembers.length} {terminology.members.toLowerCase()}
+                +{animatedDisplayCount} {terminology.members.toLowerCase()}
               </span>
             </div>
             <div>
               <div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
-                +{displayMembers.length}
+                +{animatedDisplayCount}
               </div>
               <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
@@ -681,8 +728,15 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               {language === 'ar' ? 'قائمة المشتركين' : 'Liste des adhérents'}
             </h2>
             <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700/70 text-neutral-700 dark:text-neutral-300 shadow-2xs tabular-nums">
-              {displayMembers.length}
+              {animatedDisplayCount}
             </span>
+          </div>
+
+          {/* Accessible Live Region Announcing Result Count */}
+          <div aria-live="polite" className="sr-only">
+            {displayMembers.length === 0
+              ? 'Aucun adhérent ne correspond'
+              : `${displayMembers.length} adhérent${displayMembers.length > 1 ? 's' : ''} trouvé${displayMembers.length > 1 ? 's' : ''}`}
           </div>
 
           {/* Middle: Search + Quick Status Tabs + Filter Modal Button */}
@@ -697,28 +751,30 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               className="shrink-0 !rounded-xl"
             />
 
-            {/* Streamlined Quick Status Tabs (Prototype StatusTabs with live counter badges) */}
+            {/* Streamlined Quick Status Tabs (Official Atrium Branded Switcher Toggle with live counter badges) */}
             <div className="shrink-0">
-              <StatusTabs
-                tabs={[
+              <LiveSegmentedControl
+                size="md"
+                options={[
                   {
-                    id: 'All',
+                    value: 'All',
                     label: language === 'ar' ? 'جميع المشتركين' : language === 'fr' ? 'Tous les adhérents' : 'All Members',
                     count: members.length,
                   },
                   {
-                    id: 'Active',
+                    value: 'Active',
                     label: language === 'ar' ? 'اشتراكات نشطة' : language === 'fr' ? 'Abonnements actifs' : 'Active Members',
                     count: activeMembersCount,
                   },
                   {
-                    id: 'Expiring',
-                    label: language === 'ar' ? 'قيد التجديد (<14 يوم)' : language === 'fr' ? 'À renouveler (<14j)' : 'Expiring (<14d)',
+                    value: 'Expiring',
+                    label: language === 'ar' ? 'قيد التجديد (<14j)' : language === 'fr' ? 'À renouveler (<14j)' : 'Expiring (<14d)',
                     count: expiringCount,
                   },
                 ]}
-                activeTab={statusFilter === 'Expired' || statusFilter === 'Archived' ? 'All' : statusFilter}
-                onChange={(val) => setStatusFilter(val as any)}
+                value={statusFilter === 'Expired' || statusFilter === 'Archived' ? 'All' : statusFilter}
+                onValueChange={(val) => setStatusFilter(val as any)}
+                aria-label={language === 'ar' ? 'تصفية المشتركين' : 'Filtre des adhérents'}
               />
             </div>
 
@@ -845,7 +901,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
 
               {/* Scrollable Filters Body (Apple Inset Groups with Atrium Terracotta Styling) */}
               <div className="space-y-4 overflow-y-auto pr-1 max-h-[58vh] -mr-1">
-                {/* Section 1: Gender (Apple Segmented Control Style) */}
+                {/* Section 1: Gender (Atrium Branded Switcher Toggle) */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
@@ -861,30 +917,19 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                       </button>
                     )}
                   </div>
-                  <div className="grid grid-cols-4 gap-1 p-1 bg-neutral-100/80 dark:bg-neutral-800/80 rounded-[10px] border border-neutral-200/60 dark:border-neutral-700/60">
-                    {[
-                      { val: 'All', label: language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All' },
-                      { val: 'Male', label: language === 'ar' ? 'ذكور' : language === 'fr' ? 'Hommes' : 'Male' },
-                      { val: 'Female', label: language === 'ar' ? 'إناث' : language === 'fr' ? 'Femmes' : 'Female' },
-                      { val: 'Other', label: language === 'ar' ? 'آخر' : language === 'fr' ? 'Autre' : 'Other' },
-                    ].map((g) => {
-                      const isSelected = genderFilter === g.val;
-                      return (
-                        <button
-                          key={g.val}
-                          type="button"
-                          onClick={() => setGenderFilter(g.val as any)}
-                          className={`h-7 rounded-[7px] text-xs font-semibold flex items-center justify-center transition-all cursor-pointer ${
-                            isSelected
-                              ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-2xs font-bold'
-                              : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                          }`}
-                        >
-                          {g.label}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <LiveSegmentedControl
+                    size="sm"
+                    className="w-full flex [&>button]:flex-1"
+                    options={[
+                      { value: 'All', label: language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All' },
+                      { value: 'Male', label: language === 'ar' ? 'ذكور' : language === 'fr' ? 'Hommes' : 'Male' },
+                      { value: 'Female', label: language === 'ar' ? 'إناث' : language === 'fr' ? 'Femmes' : 'Female' },
+                      { value: 'Other', label: language === 'ar' ? 'آخر' : language === 'fr' ? 'Autre' : 'Other' },
+                    ]}
+                    value={genderFilter}
+                    onValueChange={(val) => setGenderFilter(val as any)}
+                    aria-label={language === 'ar' ? 'الجنس' : 'Sexe'}
+                  />
                 </div>
 
                 {/* Section 2: Age Groups (Apple Inset Grouped Tiles) */}
@@ -999,7 +1044,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                   </div>
                 </div>
 
-                {/* Section 4: Extended Status Filter */}
+                {/* Section 4: Extended Status Filter (Atrium Branded Switcher Toggle) */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
@@ -1015,49 +1060,20 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                       </button>
                     )}
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-                    {[
-                      { val: 'All', label: t('member_filter_all', language), count: members.length, color: 'neutral' },
-                      { val: 'Active', label: t('member_filter_active', language), count: activeMembersCount, color: 'emerald' },
-                      { val: 'Expiring', label: t('member_filter_expiring', language), count: expiringCount, color: 'amber' },
-                      { val: 'Expired', label: t('member_filter_expired', language), count: expiredCount, color: 'rose' },
-                      { val: 'Archived', label: t('member_filter_archived', language), count: archivedCount, color: 'zinc' },
-                    ].map((item) => {
-                      const isSelected = statusFilter === item.val;
-                      return (
-                        <button
-                          key={item.val}
-                          type="button"
-                          onClick={() => setStatusFilter(item.val as any)}
-                          className={`h-9 px-2.5 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-all ${
-                            isSelected
-                              ? 'bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs'
-                              : 'bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/40'
-                          }`}
-                        >
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <span
-                              className={`w-2 h-2 rounded-full shrink-0 ${
-                                item.color === 'emerald'
-                                  ? 'bg-emerald-500'
-                                  : item.color === 'amber'
-                                  ? 'bg-amber-500'
-                                  : item.color === 'rose'
-                                  ? 'bg-rose-500'
-                                  : item.color === 'zinc'
-                                  ? 'bg-neutral-400'
-                                  : 'bg-neutral-300'
-                              }`}
-                            />
-                            <span className="truncate">{item.label}</span>
-                          </div>
-                          <span className="text-[10px] font-mono opacity-70 tabular-nums ml-1">
-                            {item.count}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <LiveSegmentedControl
+                    size="sm"
+                    className="w-full flex [&>button]:flex-1 overflow-x-auto"
+                    options={[
+                      { value: 'All', label: t('member_filter_all', language), count: members.length },
+                      { value: 'Active', label: t('member_filter_active', language), count: activeMembersCount },
+                      { value: 'Expiring', label: t('member_filter_expiring', language), count: expiringCount },
+                      { value: 'Expired', label: t('member_filter_expired', language), count: expiredCount },
+                      { value: 'Archived', label: t('member_filter_archived', language), count: archivedCount },
+                    ]}
+                    value={statusFilter}
+                    onValueChange={(val) => setStatusFilter(val as any)}
+                    aria-label={language === 'ar' ? 'حالة الحساب' : 'Statut du compte'}
+                  />
                 </div>
               </div>
 
@@ -1300,13 +1316,20 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                 </div>
 
                 {/* List of Member Rows */}
-                {sortedMembers.length === 0 ? (
+                {renderRows.length === 0 ? (
                   <p className="empty text-center text-[#6B635C] dark:text-[#A89F95] py-10">
                     Aucun adhérent ne correspond. Effacez la recherche ou changez de filtre.
                   </p>
                 ) : (
-                  <div role="list" aria-label="Adhérents" className="flex flex-col">
-                    {sortedMembers.map((member) => {
+                  <div
+                    ref={listContainerRef}
+                    role="list"
+                    aria-label="Adhérents"
+                    className="relative w-full"
+                    style={{ height: `${Math.max(0, containerHeight)}px` }}
+                  >
+                    {renderRows.map((rowItem) => {
+                      const member = rowItem.member;
                       const daysRemaining = calculateDaysRemaining(false, member.expirationDate);
                       const remainingText =
                         daysRemaining > 0
@@ -1350,6 +1373,12 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                           isExpanded={expandedMemberIds.has(member.id)}
                           isPinned={pinnedMemberIds.has(member.id)}
                           viewMode="list"
+                          x={0}
+                          y={rowItem.y}
+                          width={listWidth}
+                          height={rowItem.height}
+                          pValue={rowItem.pValue}
+                          eValue={rowItem.eValue}
                           onSelect={() => {
                             setSelectedMemberIds((prev) => {
                               const next = new Set(prev);

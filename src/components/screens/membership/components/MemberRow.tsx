@@ -87,20 +87,27 @@ export const MemberRow: React.FC<MemberRowProps> = ({
   const isGrid = viewMode === 'grid';
   const isPositioned = x !== undefined && y !== undefined;
 
-  // Exact prototype row push math:
-  // H = 72px base row height, G = 8px vertical gap, DH = 150px detail drawer height
-  // Total row container height = (H + G) + (DH + G) * (currentE / 100) = 80 + 158 * (currentE / 100)
-  const eNormalized = clamp(currentE / 100, 0, 1.08);
+  const H = 68;
+  const G = 8;
+  const DH = 176;
+  const B = 36;
+
+  const eNormalized = clamp(currentE / 100, 0, 1.1);
   const calculatedHeight = isGrid
     ? height ?? 172
-    : 72 + 8 + eNormalized * (150 + 8);
+    : (H + G) + eNormalized * (DH + G);
 
   const W = width ?? 1200;
 
-  // Presence spring math from prototype:
-  const p = clamp(pValue / 100, 0, 1.05);
-  const slabOpacity = clamp(p * 1.5 - 0.3, 0, 1);
-  const contentOpacity = clamp((p - 0.5) / 0.4, 0, 1);
+  // Presence spring math from specification:
+  // qv = clamp(p/100, 0, 1.05)
+  // Row slab: top=H*(1-qv)/2, height=max(0,H*qv). Content opacity=clamp((p/100-0.5)/0.4,0,1).
+  // pointer-events only when p/100 > 0.6.
+  const qv = clamp(pValue / 100, 0, 1.05);
+  const slabTop = (H * (1 - qv)) / 2;
+  const slabHeight = Math.max(0, H * qv);
+  const contentOpacity = clamp((pValue / 100 - 0.5) / 0.4, 0, 1);
+  const isPointerInteractive = pValue / 100 > 0.6;
 
   // Status badge colors matching prototype:
   const getStatusClasses = () => {
@@ -133,8 +140,8 @@ export const MemberRow: React.FC<MemberRowProps> = ({
       .slice(0, 2)
       .toUpperCase();
 
-  // Chevron rotation: 0..180deg with spring e
-  const chevronRotation = (currentE / 100) * 180;
+  // Chevron rotation: e * 180deg
+  const chevronRotation = eNormalized * 180;
 
   return (
     <div
@@ -143,7 +150,7 @@ export const MemberRow: React.FC<MemberRowProps> = ({
       data-sel={isSelected ? 'true' : undefined}
       data-open={isOpen ? 'true' : undefined}
       data-expanded={isExpanded ? 'true' : undefined}
-      className={`row rw group relative overflow-hidden transition-[height,opacity] duration-150 select-none ${className}`}
+      className={`row rw group relative overflow-hidden select-none ${className}`}
       style={{
         ...(isPositioned
           ? {
@@ -157,34 +164,37 @@ export const MemberRow: React.FC<MemberRowProps> = ({
               position: 'relative',
               width: '100%',
               height: `${calculatedHeight}px`,
-              marginBottom: '8px',
+              marginBottom: `${G}px`,
             }),
-        opacity: slabOpacity,
-        pointerEvents: p > 0.6 ? 'auto' : 'none',
+        pointerEvents: isPointerInteractive ? 'auto' : 'none',
       }}
     >
-      {/* 1. Main Row Island (.ri) */}
+      {/* 1. Main Row Island (.ri) - H=68px */}
       <div
-        className="ri absolute left-0 right-0 top-0 h-[72px]"
+        className="ri absolute left-0 right-0 top-0 h-[68px]"
         onClick={() => onOpenDetails?.(member.id)}
       >
-        {/* Island Slab (.slab) */}
+        {/* Island Slab (.slab) - z-index: 0, top=H*(1-qv)/2, height=max(0,H*qv) */}
         <div
-          className={`slab absolute inset-0 rounded-[16px] border box-border z-0 transition-[border-color,box-shadow,background-color] duration-150 ${
+          className={`slab absolute inset-x-0 rounded-[16px] border box-border z-0 transition-[border-color,box-shadow,background-color] duration-150 ${
             isOpen
               ? 'bg-[#FBE7DF] dark:bg-[#2A201C] border-[#C9441F]'
               : isSelected
               ? 'bg-white dark:bg-[#1A1A1A] border-[#C9441F] shadow-[0_0_0_1px_#C9441F]'
               : 'bg-white dark:bg-[#1A1A1A] border-[#E4DCD5] dark:border-[#3A3734] group-hover:border-[#D5C9BE] dark:group-hover:border-[#4A4744]'
           }`}
+          style={{
+            top: `${slabTop}px`,
+            height: `${slabHeight}px`,
+          }}
         />
 
-        {/* Row Inner Content (.in) - grid with 130px padding on the right for .rb and .act */}
+        {/* Row Inner Content (.in) - z-index: 2, padding-right: 196px */}
         <div
-          className={`in absolute inset-0 z-[1] cursor-pointer ${
+          className={`in absolute inset-0 z-[2] cursor-pointer ${
             isGrid
-              ? 'p-4 grid grid-cols-[22px_1fr_auto] gap-x-3 gap-y-2.5 content-between'
-              : 'grid grid-cols-[22px_40px_minmax(200px,1.5fr)_minmax(150px,1fr)_100px_150px_110px] gap-3.5 items-center px-4 pr-[130px]'
+              ? 'p-4 grid grid-cols-[22px_1fr_auto] gap-x-3 gap-y-2.5 content-between pr-4'
+              : 'grid grid-cols-[22px_40px_minmax(200px,1.5fr)_minmax(150px,1fr)_100px_150px_110px] gap-3.5 items-center px-4 pr-[196px]'
           }`}
           style={{ opacity: contentOpacity }}
         >
@@ -291,23 +301,22 @@ export const MemberRow: React.FC<MemberRowProps> = ({
           />
         )}
 
-        {/* Drop Down Chevron Button (.rb) - Locked at EXTREME RIGHT: top: 18px, right: 14px, z-index: 10 */}
+        {/* Drop Down Chevron Button (.rb) - 36px round, right: 14px, top: 16px, z-index: 3 */}
         {!isGrid && (
           <button
             type="button"
             data-no-liquid="true"
-            className="rb absolute right-[14px] top-[18px] w-[36px] h-[36px] rounded-[11px] bg-[#F3EDE7] dark:bg-[#2A2A2A] grid place-items-center p-0 border border-[#E6DED6] dark:border-[#3A3734] cursor-pointer z-10 text-[#1B1917] dark:text-[#F3EDE7] hover:scale-[1.12] transition-transform duration-160 shadow-2xs"
+            className="rb absolute right-[14px] top-[16px] w-[36px] h-[36px] rounded-full bg-[#F3EDE7] dark:bg-[#2A2A2A] grid place-items-center p-0 border border-[#E6DED6] dark:border-[#3A3734] cursor-pointer z-[3] text-[#1B1917] dark:text-[#F3EDE7] shadow-2xs"
             style={{
               position: 'absolute',
-              top: '18px',
+              top: '16px',
               right: '14px',
-              left: 'auto',
-              zIndex: 10,
+              zIndex: 3,
               width: '36px',
               height: '36px',
               transform: `rotate(${chevronRotation}deg)`,
             }}
-            aria-expanded={currentE > 50}
+            aria-expanded={isExpanded}
             aria-label={`Aperçu rapide de ${member.name}`}
             onClick={(e) => {
               e.stopPropagation();

@@ -87,4 +87,36 @@ describe('Adherents Spring (Sp) Motion Module', () => {
     expect(clamp(-5, 0, 10)).toBe(0);
     expect(clamp(15, 0, 10)).toBe(10);
   });
+
+  it('exhibits 5-9% overshoot and reaches 90% in 117-150 ms at 60fps across tunes 20..28', () => {
+    // Tunes: row presence 24, row expand 26, modal 28, metric count-up 20
+    const tunes = [20, 24, 26, 28];
+    const FRAME_MS = 16.67;
+
+    tunes.forEach((tune) => {
+      const s = new Sp(0, tune);
+      s.t = 100;
+
+      let maxX = 0;
+      let frame90 = -1;
+
+      for (let f = 1; f <= 120; f++) {
+        s.step(1);
+        if (s.x > maxX) maxX = s.x;
+        if (s.x >= 90 && frame90 === -1) frame90 = f;
+      }
+
+      const overshootPct = maxX - 100;
+      expect(overshootPct).toBeGreaterThanOrEqual(5);
+      expect(overshootPct).toBeLessThanOrEqual(9);
+
+      const timeTo90Ms = frame90 * (1000 / 60);
+      expect(timeTo90Ms).toBeGreaterThanOrEqual(116.5);
+      expect(timeTo90Ms).toBeLessThanOrEqual(150.5);
+      expect(frame90).toBeGreaterThanOrEqual(7);
+      expect(frame90).toBeLessThanOrEqual(9);
+
+      s.destroy();
+    });
+  });
 });

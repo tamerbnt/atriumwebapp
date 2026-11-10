@@ -22,6 +22,7 @@ export interface LiveSegmentedControlProps {
   className?: string;
   style?: React.CSSProperties;
   'aria-label'?: string;
+  fullWidth?: boolean;
 }
 
 const classes = {
@@ -86,6 +87,7 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
       className = '',
       style,
       'aria-label': ariaLabel,
+      fullWidth = false,
     },
     ref
   ) {
@@ -136,6 +138,8 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
       };
 
       refresh();
+      const rafId = requestAnimationFrame(refresh);
+      const timerId = setTimeout(refresh, 60);
       root.setAttribute('data-live', 'true');
 
       let ro: ResizeObserver | undefined;
@@ -153,12 +157,18 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
 
       return () => {
         active = false;
+        cancelAnimationFrame(rafId);
+        clearTimeout(timerId);
         ro?.disconnect();
         controller.dispose();
         controllerRef.current = null;
         root.removeAttribute('data-live');
       };
-    }, [options.length, options.map((o) => `${getOptVal(o)}_${o.count}`).join('|')]);
+    }, [
+      options.length,
+      fullWidth,
+      options.map((o) => `${getOptVal(o)}_${String(o.label)}_${o.count}`).join('|')
+    ]);
 
     // Animate blob when index changes
     useEffect(() => {
@@ -189,7 +199,7 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
         ref={rootRef}
         role="radiogroup"
         aria-label={ariaLabel}
-        className={[classes.root, className].filter(Boolean).join(' ')}
+        className={[classes.root, fullWidth ? 'w-full flex' : '', className].filter(Boolean).join(' ')}
         onKeyDown={handleKeyDown}
         {...sizeProps}
       >
@@ -210,7 +220,11 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
               aria-checked={isChecked}
               aria-label={opt['aria-label'] || (typeof opt.label === 'string' ? opt.label : undefined)}
               disabled={opt.disabled}
-              className={[classes.option, isIconOnly ? classes.iconOnly : ''].filter(Boolean).join(' ')}
+              className={[
+                classes.option,
+                fullWidth ? 'flex-1 justify-center' : '',
+                isIconOnly ? classes.iconOnly : ''
+              ].filter(Boolean).join(' ')}
               tabIndex={isChecked ? 0 : -1}
               onClick={() => handleSelect(val)}
             >

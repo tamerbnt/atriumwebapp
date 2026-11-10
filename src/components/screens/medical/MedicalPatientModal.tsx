@@ -4,6 +4,7 @@ import { useAtriumStore, showToast } from '../../../services/store';
 import { MedicalPatient } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { AtriumButton } from '../../ui/AtriumButton';
 
 interface MedicalPatientModalProps {
@@ -142,12 +143,19 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
                 value={dob}
                 onChange={(e) => setDob(e.target.value)}
               />
-              <LabelSelect
-                label={language === 'ar' ? 'الجنس' : 'Sexe'}
-                value={gender}
-                onChange={(val) => setGender(val as any)}
-                options={genderOptions}
-              />
+              <div>
+                <label className="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1">
+                  {language === 'ar' ? 'الجنس' : 'Sexe'}
+                </label>
+                <LiveSegmentedControl
+                  fullWidth
+                  size="md"
+                  value={gender}
+                  onChange={(val) => setGender(val as any)}
+                  options={genderOptions}
+                  aria-label={language === 'ar' ? 'الجنس' : 'Sexe'}
+                />
+              </div>
               <LabelSelect
                 label={language === 'ar' ? 'فصيلة الدم' : 'Groupe Sanguin'}
                 value={bloodGroup}

@@ -20,13 +20,15 @@
 
 /* Prototype Hover Fan and Row Island Action Styles */
 .rb {
-  position: absolute !important;
-  top: 18px !important;
-  right: 14px !important;
-  left: auto !important;
-  z-index: 10 !important;
-  width: 36px !important;
-  height: 36px !important;
+  position: absolute;
+  top: 16px;
+  right: 14px;
+  z-index: 3;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
   scale: var(--zoom, 1);
   transition: --zoom 160ms cubic-bezier(.24, 1.34, .38, 1);
 }
@@ -34,26 +36,57 @@
   --zoom: 1.12;
 }
 .act {
-  position: absolute !important;
-  top: 18px !important;
-  right: 18px !important;
-  left: auto !important;
-  z-index: 9 !important;
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
   opacity: 0;
   visibility: hidden;
   translate: 0 0;
   scale: 0.6;
   transition: translate 140ms, opacity 100ms, scale 140ms, visibility 0s linear 140ms;
 }
-.row:hover .act, .row:focus-within .act, .rw:hover .act, .rw:focus-within .act, .rw[data-x] .act {
+.row:hover .act,
+.row:focus-within .act,
+.row[data-expanded="true"] .act,
+.row.expanded .act,
+.rw:hover .act,
+.rw:focus-within .act,
+.rw[data-expanded="true"] .act,
+.rw[data-x] .act {
   opacity: 1;
   visibility: visible;
-  translate: calc(var(--i) * -42px - 44px) 0;
+  translate: calc(var(--i) * -40px - 46px) 0;
   scale: var(--zoom, 1);
-  transition: translate 280ms cubic-bezier(.24, 1.34, .38, 1) calc(var(--i) * 45ms),
+  transition: translate 300ms cubic-bezier(.24, 1.34, .38, 1) calc(var(--i) * 45ms),
               opacity 140ms calc(var(--i) * 45ms),
               scale 160ms,
               visibility 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .act, .rb {
+    transition: none !important;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .row:not([data-expanded="true"]):not(.expanded) .act,
+  .rw:not([data-expanded="true"]):not([data-x]) .act {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    translate: 0 !important;
+    pointer-events: none !important;
+  }
+}
+
+.scrim[hidden] {
+  display: none !important;
 }
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
@@ -1968,10 +2001,14 @@ button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]) > *:no
   background: rgba(255, 255, 255, 0.24);
   color: var(--atr-onacc);
 }
-[data-theme="dark"] .d .e .atr-badge {
+[data-theme="dark"] .d .e .atr-badge,
+[data-atrium-theme="dark"] .d .e .atr-badge,
+.dark .d .e .atr-badge {
   background: rgba(255, 255, 255, 0.12);
 }
-[data-theme="dark"] .d .e[aria-checked="true"] .atr-badge {
+[data-theme="dark"] .d .e[aria-checked="true"] .atr-badge,
+[data-atrium-theme="dark"] .d .e[aria-checked="true"] .atr-badge,
+.dark .d .e[aria-checked="true"] .atr-badge {
   background: rgba(0, 0, 0, 0.28);
   color: var(--atr-onacc);
 }

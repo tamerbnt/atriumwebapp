@@ -1242,18 +1242,16 @@ export default function App() {
         </React.Suspense>
       )}
 
-      {isMemberModalOpen && (
-        <React.Suspense fallback={null}>
-          <MemberModal
-            isOpen={isMemberModalOpen}
-            onClose={() => {
-              setIsMemberModalOpen(false);
-              setMemberToEdit(null);
-            }}
-            memberToEdit={memberToEdit}
-          />
-        </React.Suspense>
-      )}
+      <React.Suspense fallback={null}>
+        <MemberModal
+          isOpen={isMemberModalOpen}
+          onClose={() => {
+            setIsMemberModalOpen(false);
+            setMemberToEdit(null);
+          }}
+          memberToEdit={memberToEdit}
+        />
+      </React.Suspense>
 
       {isLeadModalOpen && (
         <React.Suspense fallback={null}>

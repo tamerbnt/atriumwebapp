@@ -19,6 +19,7 @@ import {
 import { Modal } from '../ui/Modal';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect, SelectOption } from '../ui/LabelSelect';
+import { LiveSegmentedControl } from '../ui/live/LiveSegmentedControl';
 import { Button, LiquidButton } from '@/atrium';
 import {
   StaffMember,
@@ -353,15 +354,22 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                 value={age}
                 onChange={(val) => setAge(val)}
               />
-              <LabelSelect
-                field={isAr ? 'الجنس' : isEn ? 'Gender' : 'Genre'}
-                value={gender}
-                options={[
-                  { value: 'male', label: isAr ? 'ذكر' : isEn ? 'Male' : 'Homme' },
-                  { value: 'female', label: isAr ? 'أنثى' : isEn ? 'Female' : 'Femme' },
-                ]}
-                onChange={(val) => setGender(val as 'male' | 'female')}
-              />
+              <div>
+                <label className="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1">
+                  {isAr ? 'الجنس' : isEn ? 'Gender' : 'Genre'}
+                </label>
+                <LiveSegmentedControl
+                  fullWidth
+                  size="md"
+                  value={gender}
+                  options={[
+                    { value: 'male', label: isAr ? 'ذكر' : isEn ? 'Male' : 'Homme' },
+                    { value: 'female', label: isAr ? 'أنثى' : isEn ? 'Female' : 'Femme' },
+                  ]}
+                  onValueChange={(val) => setGender(val as 'male' | 'female')}
+                  aria-label={isAr ? 'الجنس' : isEn ? 'Gender' : 'Genre'}
+                />
+              </div>
             </div>
 
             <div>

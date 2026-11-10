@@ -79,6 +79,15 @@ export const wake = (): void => {
   }
 };
 
+export const TUNES = {
+  rowPresence: 24,
+  rowExpand: 26,
+  modal: 28,
+  bulkBar: 26,
+  toast: 26,
+  metricCountUp: 20,
+} as const;
+
 export class Sp {
   x: number;
   v = 0;
@@ -88,13 +97,21 @@ export class Sp {
   tune: number;
   private listeners = new Set<SpringListener>();
 
-  constructor(x: number, tune = 22) {
+  constructor(x: number, tune = 24) {
     this.x = x;
     this.t = x;
     this.tune = tune;
     this.k = 0.08 + (tune / 100) * 0.16;
     this.d = 0.62 + (tune / 100) * 0.2;
     activeSprings.add(this);
+  }
+
+  get target(): number {
+    return this.t;
+  }
+
+  set target(val: number) {
+    this.setTarget(val);
   }
 
   step(dt: number, reduced = checkReducedMotion()): void {
@@ -108,6 +125,12 @@ export class Sp {
     this.v += (this.t - this.x) * this.k * dt;
     this.v *= Math.pow(this.d, dt);
     this.x += this.v * dt;
+
+    if (this.rest()) {
+      this.snap();
+      return;
+    }
+
     this.notify();
   }
 
@@ -207,4 +230,14 @@ export function useSpring(
   }, []);
 
   return val;
+}
+
+/**
+ * useSpringCount Hook
+ * Metric count-up spring (tune 20 by default).
+ * Returns integer value rounded from spring x.
+ */
+export function useSpringCount(target: number, tune = TUNES.metricCountUp): number {
+  const val = useSpring(target, tune);
+  return Math.round(val);
 }

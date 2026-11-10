@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Member } from '../../../types/index';
 import { calculateDaysRemaining } from '../../../utils/rules';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import {
   createSpring,
   stepSpring,
@@ -298,43 +299,20 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
           </div>
         </div>
 
-        {/* ================= TAB SWITCHER (.ptabs) ================= */}
+        {/* ================= TAB SWITCHER (Atrium Branded Switcher Toggle) ================= */}
         <div className="px-6 py-3 border-b border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/40">
-          <div className="grid grid-cols-3 gap-1 p-1 rounded-[12px] bg-neutral-200/60 dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80">
-            <button
-              type="button"
-              onClick={() => setActiveTab('overview')}
-              className={`h-[34px] rounded-[9px] text-[12.5px] font-semibold transition-all cursor-pointer ${
-                activeTab === 'overview'
-                  ? 'bg-white dark:bg-[#1A1A1A] text-neutral-950 dark:text-white shadow-sm'
-                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
-              }`}
-            >
-              Aperçu & Forfait
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('access')}
-              className={`h-[34px] rounded-[9px] text-[12.5px] font-semibold transition-all cursor-pointer ${
-                activeTab === 'access'
-                  ? 'bg-white dark:bg-[#1A1A1A] text-neutral-950 dark:text-white shadow-sm'
-                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
-              }`}
-            >
-              Accès & Séances
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('billing')}
-              className={`h-[34px] rounded-[9px] text-[12.5px] font-semibold transition-all cursor-pointer ${
-                activeTab === 'billing'
-                  ? 'bg-white dark:bg-[#1A1A1A] text-neutral-950 dark:text-white shadow-sm'
-                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
-              }`}
-            >
-              Ventes & Factures
-            </button>
-          </div>
+          <LiveSegmentedControl
+            size="md"
+            className="w-full flex [&>button]:flex-1"
+            options={[
+              { value: 'overview', label: 'Aperçu & Forfait' },
+              { value: 'access', label: 'Accès & Séances' },
+              { value: 'billing', label: 'Ventes & Factures' },
+            ]}
+            value={activeTab}
+            onValueChange={(val) => setActiveTab(val as any)}
+            aria-label="Navigation dossier adhérent"
+          />
         </div>
 
         {/* ================= SCROLLABLE TAB CONTENT ================= */}

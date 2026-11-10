@@ -40,6 +40,7 @@ export interface RowDetailIslandProps {
 
 export const RowDetailIsland: React.FC<RowDetailIslandProps> = ({
   eValue,
+  rowWidth = 1200,
   contactInfo,
   planInfo,
   notes,
@@ -55,13 +56,27 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = ({
   children,
   className = '',
 }) => {
-  const e = clamp(eValue / 100, 0, 1.08);
-  if (e < 0.02) return null;
+  const H = 68;
+  const G = 8;
+  const DH = 176;
+  const B = 36;
+  const W = Math.max(B, rowWidth || 1200);
 
-  // Content fade and interaction gate matching members2_reference.html:
-  // dtl.style.opacity = cl((e - 0.5) / 0.4, 0, 1);
-  const opacity = clamp((e - 0.45) / 0.4, 0, 1);
-  const isInteractive = e > 0.65;
+  const e = clamp(eValue / 100, 0, 1.1);
+  if (e < 0.01) return null;
+
+  // Island morphing geometry from prototype specification:
+  // left=(W-14-B)(1-e); top=16(1-e)+(H+G)e; width=B+(W-B)e; height=B+(DH-B)e; radius=18+4e;
+  const islandLeft = (W - 14 - B) * (1 - e);
+  const islandTop = 16 * (1 - e) + (H + G) * e;
+  const islandWidth = B + (W - B) * e;
+  const islandHeight = B + (DH - B) * e;
+  const islandRadius = 18 + 4 * e;
+
+  // Content layer: top=H+G, height=DH, opacity=clamp((e-0.55)/0.35,0,1);
+  // only interactive and tabbable when that opacity > 0.6.
+  const opacity = clamp((e - 0.55) / 0.35, 0, 1);
+  const isInteractive = opacity > 0.6;
 
   const defaultActions = [
     ...(onOpenDetails
@@ -129,18 +144,34 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = ({
   const detailActions = actions && actions.length > 0 ? actions : defaultActions;
 
   return (
-    <div
-      className={`dt absolute left-0 right-0 top-[80px] h-[150px] rounded-[14px] bg-white dark:bg-[#1A1A1A] border border-[#E4DCD5] dark:border-[#3A3734] shadow-xs select-text box-border z-[2] transition-opacity duration-150 ${className}`}
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'minmax(130px, 1fr) minmax(150px, 1.1fr) minmax(130px, 1fr) auto',
-        gap: '20px',
-        padding: '14px 20px',
-        opacity: opacity,
-        pointerEvents: isInteractive ? 'auto' : 'none',
-      }}
-      aria-hidden={!isInteractive}
-    >
+    <>
+      {/* 1. Morphing Island Slab (.isl) - z-index: 0 */}
+      <div
+        className="isl absolute bg-white dark:bg-[#1A1A1A] border border-[#E4DCD5] dark:border-[#3A3734] shadow-xs pointer-events-none z-0 box-border transition-[border-color,background-color] duration-150"
+        style={{
+          left: `${islandLeft}px`,
+          top: `${islandTop}px`,
+          width: `${islandWidth}px`,
+          height: `${islandHeight}px`,
+          borderRadius: `${islandRadius}px`,
+        }}
+      />
+
+      {/* 2. Content Layer (.dc) - z-index: 2, top: H+G, height: DH */}
+      <div
+        className={`dc absolute left-0 right-0 z-[2] select-text box-border ${className}`}
+        style={{
+          top: `${H + G}px`,
+          height: `${DH}px`,
+          opacity,
+          pointerEvents: isInteractive ? 'auto' : 'none',
+          display: 'grid',
+          gridTemplateColumns: 'minmax(140px, 1fr) minmax(160px, 1.1fr) minmax(140px, 1fr) auto',
+          gap: '20px',
+          padding: '18px 24px',
+        }}
+        aria-hidden={!isInteractive}
+      >
       {children ? (
         children
       ) : (
@@ -204,9 +235,9 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = ({
                 <span className="truncate">{btn.label}</span>
               </button>
             ))}
-          </div>
         </>
       )}
-    </div>
+      </div>
+    </>
   );
 };

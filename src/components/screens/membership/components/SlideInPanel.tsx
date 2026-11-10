@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { X, ChevronUp, ChevronDown, Trash2 } from 'lucide-react';
 import { clamp, Sp, wake } from '../motion/adherentsMotion';
+import { LiveSegmentedControl } from '../../../ui/live/LiveSegmentedControl';
 
 export interface SlideInTab {
   id: string;
@@ -307,41 +308,17 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
           </div>
         </div>
 
-        {/* Spring Tab Underline Switcher (.ptabs) */}
+        {/* Atrium Branded Switcher Toggle (.ptabs) */}
         {tabs.length > 0 && (
-          <div
-            ref={tabsContainerRef}
-            role="tablist"
-            className="ptabs relative flex mx-6 my-2.5 p-1 rounded-[14px] bg-[#F3EDE7]"
-          >
-            {/* Animated Tab Indicator (#pind) */}
-            <i
-              id="pind"
-              className="absolute top-1 bottom-1 rounded-[10px] bg-[#C9441F] z-0 transition-none pointer-events-none"
-              style={{
-                left: `${indLeft}px`,
-                width: `${Math.max(0, indWidth)}px`,
-              }}
+          <div className="mx-6 my-2.5">
+            <LiveSegmentedControl
+              size="md"
+              className="w-full flex [&>button]:flex-1"
+              options={tabs.map((tab) => ({ value: tab.id, label: tab.label }))}
+              value={activeTab}
+              onValueChange={(val) => onTabChange?.(val)}
+              aria-label="Navigation onglets"
             />
-
-            {tabs.map((tab) => {
-              const isSelected = tab.id === activeTab;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  role="tab"
-                  data-tab-id={tab.id}
-                  aria-selected={isSelected}
-                  onClick={() => onTabChange?.(tab.id)}
-                  className={`relative z-[1] flex-1 h-[38px] border-0 bg-transparent font-semibold text-[13px] rounded-[10px] transition-colors duration-160 cursor-pointer ${
-                    isSelected ? 'text-white' : 'text-[#1B1917] hover:text-[#C9441F]'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
           </div>
         )}
 
