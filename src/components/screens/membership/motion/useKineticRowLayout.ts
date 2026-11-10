@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Sp, clamp, TUNES } from './adherentsMotion';
-import { Member } from '../../../types/index';
+import { Member } from '../../../../types/index';
 
 export const ROW_H = 68;
 export const ROW_G = 8;

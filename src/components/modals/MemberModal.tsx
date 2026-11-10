@@ -346,6 +346,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
         notes: notes.trim(),
       });
 
+      window.dispatchEvent(new CustomEvent('atrium-member-created', { detail: newMember }));
       onCreatedSuccess?.(newMember);
 
       showToast({

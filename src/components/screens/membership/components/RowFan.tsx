@@ -54,18 +54,19 @@ export const RowFan: React.FC<RowFanProps> = ({
   ];
 
   return (
-    <div className={`pointer-events-none ${className}`}>
+    <>
       {fanActions.map((action) => (
         <button
           key={action.id}
           type="button"
           data-no-liquid="true"
+          data-a={action.id}
           style={{ '--i': action.i } as React.CSSProperties}
           className={`act pointer-events-auto border border-[#E6DED6] dark:border-[#3A3734] bg-[#F3EDE7] dark:bg-[#2A2A2A] transition-colors duration-150 ${
             action.isDanger
-              ? 'hover:!bg-[#C9441F] hover:!text-white text-[#1B1917] dark:text-[#EAE3DC]'
+              ? 'd hover:!bg-[#E8643F] hover:!text-[#0A0A0A] text-[#1B1917] dark:text-[#EAE3DC]'
               : 'hover:!bg-[#FBE7DF] hover:!text-[#C9441F] text-[#1B1917] dark:text-[#EAE3DC]'
-          }`}
+          } ${className}`}
           aria-label={action.label}
           title={action.label}
           onClick={(e) => {
@@ -76,6 +77,6 @@ export const RowFan: React.FC<RowFanProps> = ({
           {action.icon}
         </button>
       ))}
-    </div>
+    </>
   );
 };

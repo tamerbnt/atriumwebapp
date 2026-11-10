@@ -63,10 +63,10 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = ({
   const W = Math.max(B, rowWidth || 1200);
 
   const e = clamp(eValue / 100, 0, 1.1);
-  if (e < 0.01) return null;
+  const isHidden = e < 0.01;
 
   // Island morphing geometry from prototype specification:
-  // left=(W-14-B)(1-e); top=16(1-e)+(H+G)e; width=B+(W-B)e; height=B+(DH-B)e; radius=18+4e;
+  // left=(W-14-B)(1-e); top=16(1-e)+(H+G)e; width=B+(W-B)e; height=B+(DH-B)e; radius=18+4e; display none while e < 0.01.
   const islandLeft = (W - 14 - B) * (1 - e);
   const islandTop = 16 * (1 - e) + (H + G) * e;
   const islandWidth = B + (W - B) * e;
@@ -147,8 +147,9 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = ({
     <>
       {/* 1. Morphing Island Slab (.isl) - z-index: 0 */}
       <div
-        className="isl absolute bg-white dark:bg-[#1A1A1A] border border-[#E4DCD5] dark:border-[#3A3734] shadow-xs pointer-events-none z-0 box-border transition-[border-color,background-color] duration-150"
+        className="isl det absolute bg-white dark:bg-[#1A1A1A] border border-[#E4DCD5] dark:border-[#3A3734] shadow-xs pointer-events-none z-0 box-border transition-[border-color,background-color] duration-150"
         style={{
+          display: isHidden ? 'none' : 'block',
           left: `${islandLeft}px`,
           top: `${islandTop}px`,
           width: `${islandWidth}px`,
@@ -161,11 +162,11 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = ({
       <div
         className={`dc absolute left-0 right-0 z-[2] select-text box-border ${className}`}
         style={{
+          display: isHidden ? 'none' : 'grid',
           top: `${H + G}px`,
           height: `${DH}px`,
           opacity,
           pointerEvents: isInteractive ? 'auto' : 'none',
-          display: 'grid',
           gridTemplateColumns: 'minmax(140px, 1fr) minmax(160px, 1.1fr) minmax(140px, 1fr) auto',
           gap: '20px',
           padding: '18px 24px',
@@ -235,6 +236,7 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = ({
                 <span className="truncate">{btn.label}</span>
               </button>
             ))}
+          </div>
         </>
       )}
       </div>

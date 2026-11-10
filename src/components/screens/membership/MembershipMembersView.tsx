@@ -377,6 +377,22 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
     },
   });
 
+  useEffect(() => {
+    const handleCreated = (e: any) => {
+      const newMember = e.detail;
+      if (statusFilter !== 'All' && statusFilter !== newMember?.status) {
+        setStatusFilter('All');
+      }
+      setSearchQuery('');
+      setPlanFilter('All');
+      setGenderFilter('All');
+      setAgeGroupFilter('All');
+      listContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+    };
+    window.addEventListener('atrium-member-created', handleCreated);
+    return () => window.removeEventListener('atrium-member-created', handleCreated);
+  }, [statusFilter]);
+
   // Metric count-up springs (tune 20)
   const animatedActiveCount = useSpringCount(activeMembersCount);
   const animatedExpiringCount = useSpringCount(expiringCount);

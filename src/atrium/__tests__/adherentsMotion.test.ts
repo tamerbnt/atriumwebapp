@@ -119,4 +119,31 @@ describe('Adherents Spring (Sp) Motion Module', () => {
       s.destroy();
     });
   });
+
+  it('rest and snap behaviors across tunes 20, 24, 26, 28', () => {
+    [20, 24, 26, 28].forEach((tune) => {
+      const s = new Sp(0, tune);
+      s.t = 100;
+      expect(s.rest()).toBe(false);
+
+      // Step until settled
+      let f = 0;
+      while (!s.rest() && f < 300) {
+        s.step(1);
+        f++;
+      }
+
+      expect(s.rest()).toBe(true);
+      expect(Math.abs(100 - s.x)).toBeLessThan(0.02);
+      expect(Math.abs(s.v)).toBeLessThan(0.02);
+
+      // Snap resets to exact target
+      s.snap();
+      expect(s.x).toBe(100);
+      expect(s.v).toBe(0);
+      expect(s.rest()).toBe(true);
+
+      s.destroy();
+    });
+  });
 });
