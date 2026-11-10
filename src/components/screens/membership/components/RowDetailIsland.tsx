@@ -133,9 +133,9 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = ({
       className={`dt absolute left-0 right-0 top-[80px] h-[150px] rounded-[14px] bg-white dark:bg-[#1A1A1A] border border-[#E4DCD5] dark:border-[#3A3734] shadow-xs select-text box-border z-[2] transition-opacity duration-150 ${className}`}
       style={{
         display: 'grid',
-        gridTemplateColumns: '1fr 1.2fr 1.2fr auto',
-        gap: '24px',
-        padding: '18px 24px',
+        gridTemplateColumns: 'minmax(130px, 1fr) minmax(150px, 1.1fr) minmax(130px, 1fr) auto',
+        gap: '20px',
+        padding: '14px 20px',
         opacity: opacity,
         pointerEvents: isInteractive ? 'auto' : 'none',
       }}
@@ -146,21 +146,21 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = ({
       ) : (
         <>
           {/* Col 1: Contact */}
-          <div className="flex flex-col min-w-0">
-            <h4 className="m-0 mb-2 font-mono text-[11px] font-bold tracking-widest uppercase text-[#6B635C] dark:text-[#A89F95]">
+          <div className="flex flex-col min-w-0 justify-center">
+            <h4 className="m-0 mb-1.5 font-mono text-[11px] font-bold tracking-widest uppercase text-[#6B635C] dark:text-[#A89F95]">
               Contact
             </h4>
             <p className="m-0 mb-1 font-mono text-[13px] text-[#1B1917] dark:text-[#F3EDE7] font-semibold truncate">
               {contactInfo?.phone || 'Non renseigné'}
             </p>
-            <p className="m-0 text-[13px] text-[#6B635C] dark:text-[#A89F95] truncate">
+            <p className="m-0 text-[12.5px] text-[#6B635C] dark:text-[#A89F95] truncate">
               {contactInfo?.email || 'Sans email'}
             </p>
           </div>
 
           {/* Col 2: Forfait */}
-          <div className="flex flex-col min-w-0">
-            <h4 className="m-0 mb-2 font-mono text-[11px] font-bold tracking-widest uppercase text-[#6B635C] dark:text-[#A89F95]">
+          <div className="flex flex-col min-w-0 justify-center">
+            <h4 className="m-0 mb-1.5 font-mono text-[11px] font-bold tracking-widest uppercase text-[#6B635C] dark:text-[#A89F95]">
               Forfait
             </h4>
             <p className="m-0 mb-1 text-[13px] font-bold text-[#1B1917] dark:text-[#F3EDE7] truncate">
@@ -177,30 +177,31 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = ({
           </div>
 
           {/* Col 3: Notes */}
-          <div className="flex flex-col min-w-0">
-            <h4 className="m-0 mb-2 font-mono text-[11px] font-bold tracking-widest uppercase text-[#6B635C] dark:text-[#A89F95]">
+          <div className="flex flex-col min-w-0 justify-center">
+            <h4 className="m-0 mb-1.5 font-mono text-[11px] font-bold tracking-widest uppercase text-[#6B635C] dark:text-[#A89F95]">
               Notes
             </h4>
-            <p className="m-0 text-[13px] leading-relaxed text-[#6B635C] dark:text-[#A89F95] line-clamp-3 italic">
+            <p className="m-0 text-[12.5px] leading-relaxed text-[#6B635C] dark:text-[#A89F95] line-clamp-3 italic">
               {notes || 'Aucune note sur cet adhérent.'}
             </p>
           </div>
 
-          {/* Col 4: Action cluster (.db) */}
-          <div className="db flex flex-col gap-1.5 justify-end items-end shrink-0">
+          {/* Col 4: Action cluster (.db) - Two column button grid for compact fit */}
+          <div className="db grid grid-cols-2 gap-2 self-center shrink-0">
             {detailActions.map((btn) => (
               <button
                 key={btn.id}
                 type="button"
+                data-no-liquid="true"
                 tabIndex={isInteractive ? 0 : -1}
                 onClick={(e) => {
                   e.stopPropagation();
                   btn.onClick();
                 }}
-                className="h-[30px] px-3 rounded-[9px] border border-[#E6DED6] dark:border-[#3A3734] bg-[#F7F4F1] dark:bg-[#262422] hover:bg-[#1B1917] hover:text-white dark:hover:bg-[#C9441F] dark:hover:text-white text-[#1B1917] dark:text-[#EAE3DC] font-medium text-[12px] flex items-center gap-2 transition-colors duration-140 cursor-pointer shadow-2xs whitespace-nowrap"
+                className="h-[32px] px-3 rounded-[9px] border border-[#E6DED6] dark:border-[#3A3734] bg-[#F7F4F1] dark:bg-[#262422] hover:bg-[#1B1917] hover:text-white dark:hover:bg-[#C9441F] dark:hover:text-white text-[#1B1917] dark:text-[#EAE3DC] font-medium text-[11.5px] flex items-center gap-2 transition-colors duration-140 cursor-pointer shadow-2xs whitespace-nowrap"
               >
                 {btn.icon}
-                <span>{btn.label}</span>
+                <span className="truncate">{btn.label}</span>
               </button>
             ))}
           </div>

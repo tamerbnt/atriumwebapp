@@ -322,6 +322,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
         {/* Expand Chevron Button (.rb) */}
         <button
           type="button"
+          data-no-liquid="true"
           aria-expanded={isExpanded}
           aria-label={`Aperçu rapide de ${memberName}`}
           onClick={(e) => {
@@ -329,10 +330,15 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
             onToggleExpand(e);
           }}
           style={{
+            position: 'absolute',
+            top: '18px',
+            right: '14px',
+            left: 'auto',
+            zIndex: 10,
             transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
             transition: 'transform 240ms cubic-bezier(.2,0,.2,1)',
           }}
-          className="absolute top-[18px] right-[14px] z-[3] w-9 h-9 rounded-[11px] bg-[#F6F3F0] dark:bg-[#2A2A2A] text-neutral-700 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white grid place-items-center transition-colors cursor-pointer border border-neutral-200/50 dark:border-neutral-700"
+          className="rb absolute top-[18px] right-[14px] z-10 w-9 h-9 rounded-[11px] bg-[#F6F3F0] dark:bg-[#2A2A2A] text-neutral-700 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white grid place-items-center transition-colors cursor-pointer border border-neutral-200/50 dark:border-neutral-700"
           title="Aperçu rapide"
         >
           <ChevronDown className="w-4 h-4" />

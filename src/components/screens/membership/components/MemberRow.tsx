@@ -157,7 +157,7 @@ export const MemberRow: React.FC<MemberRowProps> = ({
               position: 'relative',
               width: '100%',
               height: `${calculatedHeight}px`,
-              marginBottom: '0px',
+              marginBottom: '8px',
             }),
         opacity: slabOpacity,
         pointerEvents: p > 0.6 ? 'auto' : 'none',
@@ -291,12 +291,20 @@ export const MemberRow: React.FC<MemberRowProps> = ({
           />
         )}
 
-        {/* Drop Down Chevron Button (.rb) - Locked at EXTREME RIGHT: top: 18px, right: 14px, z-index: 3 */}
+        {/* Drop Down Chevron Button (.rb) - Locked at EXTREME RIGHT: top: 18px, right: 14px, z-index: 10 */}
         {!isGrid && (
           <button
             type="button"
-            className="rb absolute right-[14px] top-[18px] w-[36px] h-[36px] rounded-[11px] bg-[#F3EDE7] dark:bg-[#2A2A2A] grid place-items-center p-0 border border-[#E6DED6] dark:border-[#3A3734] cursor-pointer z-[3] text-[#1B1917] dark:text-[#F3EDE7] hover:scale-[1.12] transition-transform duration-160 shadow-2xs"
+            data-no-liquid="true"
+            className="rb absolute right-[14px] top-[18px] w-[36px] h-[36px] rounded-[11px] bg-[#F3EDE7] dark:bg-[#2A2A2A] grid place-items-center p-0 border border-[#E6DED6] dark:border-[#3A3734] cursor-pointer z-10 text-[#1B1917] dark:text-[#F3EDE7] hover:scale-[1.12] transition-transform duration-160 shadow-2xs"
             style={{
+              position: 'absolute',
+              top: '18px',
+              right: '14px',
+              left: 'auto',
+              zIndex: 10,
+              width: '36px',
+              height: '36px',
               transform: `rotate(${chevronRotation}deg)`,
             }}
             aria-expanded={currentE > 50}

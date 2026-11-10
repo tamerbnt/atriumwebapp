@@ -61,13 +61,15 @@ export const RowFan: React.FC<RowFanProps> = ({
           <button
             key={action.id}
             type="button"
+            data-no-liquid="true"
             style={
               {
                 '--i': i,
                 position: 'absolute',
                 top: '18px',
                 right: '18px',
-                zIndex: 2,
+                left: 'auto',
+                zIndex: 9,
                 width: '36px',
                 height: '36px',
                 borderRadius: '11px',

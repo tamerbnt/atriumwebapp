@@ -148,6 +148,8 @@ export interface Member {
   emergencyContactName?: string;
   emergencyContactPhone?: string;
   notes?: string;
+  balance?: number;
+  balanceLabel?: string;
   segmentData?: Record<string, any>;
   lastVisitDate?: string;
   createdAt: string;
