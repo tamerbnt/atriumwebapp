@@ -553,8 +553,8 @@ export const EducationCohortsView: React.FC = () => {
           </div>
         )}
 
-        {/* Top Metrics Pod Tray (Screenshot_30: bg-[#F8F9FA], rounded-[24px], p-5) */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-3">
+        {/* Top Metrics Pod Tray (Screenshot_30: bg-[#F3EDE7], rounded-[24px], p-5) */}
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
           <div>
             <h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
               {language === 'ar' ? 'طاقة استيعاب الأفواج والبرامج' : language === 'fr' ? 'Capacité & Santé des Cohortes' : 'Capacity & Cohorts Health'}
@@ -631,8 +631,8 @@ export const EducationCohortsView: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom Collection Pod Tray (Screenshot_30: bg-[#F8F9FA], rounded-[24px], p-5) */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Bottom Collection Pod Tray (Screenshot_30: bg-[#F3EDE7], rounded-[24px], p-5) */}
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
           
           {/* Integrated Toolbar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -840,7 +840,7 @@ export const EducationCohortsView: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-5 space-y-6 text-xs">
               {/* Quick Info Grid */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-xl bg-[#F8F9FA] dark:bg-neutral-900/60 border border-[#EDF1F3] dark:border-neutral-800">
+                <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800">
                   <span className="text-[10px] text-neutral-400 block uppercase font-medium">
                     {language === 'ar' ? 'المدرّب / الأستاذ' : language === 'fr' ? 'Formateur' : 'Instructor'}
                   </span>
@@ -848,7 +848,7 @@ export const EducationCohortsView: React.FC = () => {
                     {selectedCohort.instructorName}
                   </span>
                 </div>
-                <div className="p-3 rounded-xl bg-[#F8F9FA] dark:bg-neutral-900/60 border border-[#EDF1F3] dark:border-neutral-800">
+                <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800">
                   <span className="text-[10px] text-neutral-400 block uppercase font-medium">
                     {language === 'ar' ? 'القاعة الدراسية' : language === 'fr' ? 'Salle' : 'Classroom'}
                   </span>
@@ -856,7 +856,7 @@ export const EducationCohortsView: React.FC = () => {
                     {selectedCohort.classroomName || 'Room 1'}
                   </span>
                 </div>
-                <div className="p-3 rounded-xl bg-[#F8F9FA] dark:bg-neutral-900/60 border border-[#EDF1F3] dark:border-neutral-800">
+                <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800">
                   <span className="text-[10px] text-neutral-400 block uppercase font-medium">
                     {language === 'ar' ? 'رسوم الدورة' : language === 'fr' ? 'Frais d\'inscription' : 'Tuition Fee'}
                   </span>
@@ -864,7 +864,7 @@ export const EducationCohortsView: React.FC = () => {
                     {formatMoney(selectedCohort.tuitionFee)}
                   </span>
                 </div>
-                <div className="p-3 rounded-xl bg-[#F8F9FA] dark:bg-neutral-900/60 border border-[#EDF1F3] dark:border-neutral-800">
+                <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800">
                   <span className="text-[10px] text-neutral-400 block uppercase font-medium">
                     {language === 'ar' ? 'المقاعد المحجوزة' : language === 'fr' ? 'Places occupées' : 'Seats Filled'}
                   </span>
@@ -934,7 +934,7 @@ export const EducationCohortsView: React.FC = () => {
                     {cohortEnrolledStudents.map(({ enrollment, student }) => (
                       <div
                         key={enrollment.id}
-                        className="flex items-center justify-between p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-900"
+                        className="flex items-center justify-between p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900"
                       >
                         <div>
                           <span className="font-semibold text-neutral-800 dark:text-neutral-200 block">

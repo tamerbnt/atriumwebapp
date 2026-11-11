@@ -667,7 +667,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
       </div>
 
       {/* Row 1: "Roster & Retention Health" Banner Card matching Screenshot 881 */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
         <div>
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
             {terminology.members} & {language === 'ar' ? 'مؤشرات التجديد' : language === 'fr' ? 'Rétention & Renouvellements' : 'Retention Health'}
@@ -735,7 +735,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
       </div>
 
       {/* Row 2: Members Master Table Group */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
         {/* Unified Header & Tools Row: Title on Left, Search & Filters Middle, Export on Right */}
         <div className="flex flex-wrap items-center justify-between gap-3 w-full">
           {/* Left: Section Title & Count Badge */}
@@ -1219,12 +1219,12 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
         {/* Master Content Area - Full 100% Width Table / Grid */}
         <div className="w-full">
           {/* Table / Grid Container */}
-          <div className="w-full">
+          <div className="w-full overflow-x-auto">
             {viewMode === 'list' ? (
               <div className="w-full flex flex-col">
                 {/* Prototype Header Bar (.lh) */}
                 <div
-                  className="lh w-full grid grid-cols-[22px_40px_minmax(200px,1.5fr)_minmax(150px,1fr)_100px_150px_110px] gap-3.5 items-center px-4 pr-[130px] h-[38px] mb-2.5 bg-white dark:bg-[#18181B] border border-neutral-200/90 dark:border-neutral-800 rounded-[12px] text-[#6B635C] dark:text-[#A89F95] font-semibold text-[12px] uppercase tracking-wider shadow-xs box-border select-none"
+                  className="lh w-full min-w-[940px] grid grid-cols-[22px_40px_minmax(200px,1.4fr)_minmax(180px,1.1fr)_120px_150px_110px] gap-3.5 items-center px-4 pr-[150px] h-[38px] mb-2.5 bg-white dark:bg-[#18181B] border border-neutral-200/90 dark:border-neutral-800 rounded-[12px] text-[#6B635C] dark:text-[#A89F95] font-semibold text-[12px] uppercase tracking-wider shadow-xs box-border select-none"
                   aria-hidden="true"
                 >
                   <button
@@ -1253,7 +1253,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                       }`}
                     />
                   </button>
-                  <span />
+                  <span className="w-[40px]" />
                   <button
                     type="button"
                     onClick={() => {
@@ -1261,12 +1261,11 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                         setMemberSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
                       } else {
                         setMemberSortBy('member');
-                        setMemberSortDir('asc');
                       }
                     }}
-                    className="text-left font-semibold text-[12px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:text-[#C9441F] bg-transparent border-0 p-0 text-inherit"
+                    className="text-left rtl:text-right font-semibold text-[12px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:text-[#C9441F] bg-transparent border-0 p-0 text-inherit whitespace-nowrap truncate min-w-0"
                   >
-                    <span>{terminology.memberSingle}</span>
+                    <span className="truncate">{terminology.memberSingle}</span>
                     {memberSortBy === 'member' && <span>{memberSortDir === 'asc' ? '↑' : '↓'}</span>}
                   </button>
                   <button
@@ -1279,9 +1278,9 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                         setMemberSortDir('asc');
                       }
                     }}
-                    className="text-left font-semibold text-[12px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:text-[#C9441F] bg-transparent border-0 p-0 text-inherit"
+                    className="text-left rtl:text-right font-semibold text-[12px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:text-[#C9441F] bg-transparent border-0 p-0 text-inherit whitespace-nowrap truncate min-w-0"
                   >
-                    <span>{t('member_col_plan', language)}</span>
+                    <span className="truncate">{t('member_col_plan', language)}</span>
                     {memberSortBy === 'plan' && <span>{memberSortDir === 'asc' ? '↑' : '↓'}</span>}
                   </button>
                   <button
@@ -1294,9 +1293,9 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                         setMemberSortDir('asc');
                       }
                     }}
-                    className="text-left font-semibold text-[12px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:text-[#C9441F] bg-transparent border-0 p-0 text-inherit"
+                    className="text-left rtl:text-right font-semibold text-[12px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:text-[#C9441F] bg-transparent border-0 p-0 text-inherit whitespace-nowrap truncate min-w-0"
                   >
-                    <span>{t('member_col_access', language)}</span>
+                    <span className="truncate">{t('member_col_access', language)}</span>
                     {memberSortBy === 'status' && <span>{memberSortDir === 'asc' ? '↑' : '↓'}</span>}
                   </button>
                   <button
@@ -1309,9 +1308,9 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                         setMemberSortDir('asc');
                       }
                     }}
-                    className="text-left font-semibold text-[12px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:text-[#C9441F] bg-transparent border-0 p-0 text-inherit"
+                    className="text-left rtl:text-right font-semibold text-[12px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:text-[#C9441F] bg-transparent border-0 p-0 text-inherit whitespace-nowrap truncate min-w-0"
                   >
-                    <span>{t('member_col_expiration', language)}</span>
+                    <span className="truncate">{t('member_col_expiration', language)}</span>
                     {memberSortBy === 'expiration' && <span>{memberSortDir === 'asc' ? '↑' : '↓'}</span>}
                   </button>
                   <button
@@ -1324,9 +1323,9 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                         setMemberSortDir('asc');
                       }
                     }}
-                    className="text-left font-semibold text-[12px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:text-[#C9441F] bg-transparent border-0 p-0 text-inherit"
+                    className="text-left rtl:text-right font-semibold text-[12px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:text-[#C9441F] bg-transparent border-0 p-0 text-inherit whitespace-nowrap truncate min-w-0"
                   >
-                    <span>{language === 'ar' ? 'الرصيد' : language === 'fr' ? 'Solde' : 'Balance'}</span>
+                    <span className="truncate">{language === 'ar' ? 'الرصيد' : language === 'fr' ? 'Solde' : 'Balance'}</span>
                     {memberSortBy === 'balance' && <span>{memberSortDir === 'asc' ? '↑' : '↓'}</span>}
                   </button>
                 </div>
@@ -1341,7 +1340,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                     ref={listContainerRef}
                     role="list"
                     aria-label="Adhérents"
-                    className="relative w-full"
+                    className="relative w-full min-w-[940px]"
                     style={{ height: `${Math.max(0, containerHeight)}px` }}
                   >
                     {renderRows.map((rowItem) => {

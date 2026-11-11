@@ -343,7 +343,7 @@ export const AppointmentHistoryView: React.FC = () => {
       </div>
 
       {/* TOP METRICS POD TRAY */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-[#E9EEF0] dark:border-neutral-800">
           <div className="flex items-center gap-2">
             <Activity size={18} className="text-[#d4522f]" />
@@ -431,7 +431,7 @@ export const AppointmentHistoryView: React.FC = () => {
       </div>
 
       {/* BOTTOM COLLECTION POD TRAY */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
         {/* Controls Bar: Title + Seek Search + FilterSelect */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>

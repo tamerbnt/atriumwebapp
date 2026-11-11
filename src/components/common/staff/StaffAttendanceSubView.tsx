@@ -131,7 +131,7 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
       {/* Top Action Bar: Exact 40px Standard Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 bg-[#F8F9FA] dark:bg-neutral-700/50 p-1 rounded-xl border border-neutral-200/80 dark:border-neutral-700 h-10">
+          <div className="flex items-center gap-1 bg-[#F3EDE7] dark:bg-neutral-700/50 p-1 rounded-xl border border-neutral-200/80 dark:border-neutral-700 h-10">
             <button
               type="button"
               onClick={() => setCurrentWeekOffset((prev) => prev - 1)}

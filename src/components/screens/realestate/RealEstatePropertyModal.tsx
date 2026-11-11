@@ -284,7 +284,7 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
                 />
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-[#F8F9FA] dark:bg-[#141416] border border-[#EDF1F3] dark:border-[#232328] space-y-3">
+              <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-[#141416] border border-[#E6DED6] dark:border-[#232328] space-y-3">
                 <div className="text-xs font-semibold text-[#d4522f] uppercase">Coordonnées Propriétaire Mandant</div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <LabelInput

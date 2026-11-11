@@ -190,7 +190,7 @@ export const MedicalCertificatesView: React.FC = () => {
       </div>
 
       {/* Top KPI Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
@@ -338,7 +338,7 @@ export const MedicalCertificatesView: React.FC = () => {
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white dark:bg-neutral-900 w-full max-w-lg rounded-[28px] border border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col overflow-hidden">
-            <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-[#F8F9FA] dark:bg-neutral-800/40">
+            <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-[#F3EDE7] dark:bg-neutral-800/40">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
                   <FileBadge size={20} />
@@ -463,7 +463,7 @@ export const MedicalCertificatesView: React.FC = () => {
                   value={clinicalFindings}
                   onChange={(e) => setClinicalFindings(e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-[#F8F9FA] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-hidden"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-[#F3EDE7] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-hidden"
                   required
                 />
               </div>

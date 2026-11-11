@@ -306,7 +306,7 @@ export const MembershipStaffView: React.FC = () => {
       </div>
 
       {/* ROW 1: "WORKFORCE HEALTH" BANNER CARD (EXACT 3-CARD, 124px GRID MATCHING MEMBER SCREEN) */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
         <div>
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
             {isAr
@@ -413,7 +413,7 @@ export const MembershipStaffView: React.FC = () => {
       {/* ROW 3: MASTER COLLECTION POD (EXACT MEMBERSHIPMEMBERSVIEW ROW 2 ARCHITECTURE) */}
       {/* SUB-TAB 1: DIRECTORY & 360° DOSSIER */}
       {foundation.activeSubTab === 'directory' && (
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
           {/* Unified Header & Tools Row: Title on Left, Search & Filters Middle, Export on Right */}
           <div className="flex flex-wrap items-center justify-between gap-3 w-full">
             {/* Left: Section Title & Count Badge */}
@@ -538,9 +538,9 @@ export const MembershipStaffView: React.FC = () => {
         </div>
       )}
 
-      {/* SUB-TAB 2: ATTENDANCE & POINTAGE (WRAPPED IN #F8F9FA POD CONTAINER) */}
+      {/* SUB-TAB 2: ATTENDANCE & POINTAGE (WRAPPED IN #F3EDE7 POD CONTAINER) */}
       {foundation.activeSubTab === 'attendance' && (
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
           <StaffAttendanceSubView
             staffList={foundation.facilityStaff}
             attendanceLogs={foundation.staffAttendanceLogs}
@@ -552,9 +552,9 @@ export const MembershipStaffView: React.FC = () => {
         </div>
       )}
 
-      {/* SUB-TAB 3: SALAIRES & STATUTORY PAYROLL (WRAPPED IN #F8F9FA POD CONTAINER) */}
+      {/* SUB-TAB 3: SALAIRES & STATUTORY PAYROLL (WRAPPED IN #F3EDE7 POD CONTAINER) */}
       {foundation.activeSubTab === 'payroll' && (
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
           <StaffPayrollSubView
             staffList={foundation.facilityStaff}
             payrollRuns={foundation.staffPayrollRuns}
@@ -569,9 +569,9 @@ export const MembershipStaffView: React.FC = () => {
         </div>
       )}
 
-      {/* SUB-TAB 4: HISTORIQUE DES SALAIRES & POINTAGES (WRAPPED IN #F8F9FA POD CONTAINER) */}
+      {/* SUB-TAB 4: HISTORIQUE DES SALAIRES & POINTAGES (WRAPPED IN #F3EDE7 POD CONTAINER) */}
       {foundation.activeSubTab === 'history' && (
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
           <StaffHistorySubView
             staffList={foundation.facilityStaff}
             payrollRuns={foundation.staffPayrollRuns}

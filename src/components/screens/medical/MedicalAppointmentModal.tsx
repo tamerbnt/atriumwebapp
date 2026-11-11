@@ -126,7 +126,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
       <div className="bg-white dark:bg-neutral-900 w-full max-w-lg rounded-[28px] border border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-[#F8F9FA] dark:bg-neutral-800/40">
+        <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-[#F3EDE7] dark:bg-neutral-800/40">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#0D9488]/15 text-[#0D9488] flex items-center justify-center font-bold">
               <Calendar size={20} />
@@ -234,7 +234,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
             required
           />
 
-          <div className="flex items-center justify-between p-3 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700">
+          <div className="flex items-center justify-between p-3 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700">
             <div>
               <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 block">
                 Niveau de Priorité
@@ -264,7 +264,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
             </div>
           </div>
 
-          <div className="p-3 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-2">
+          <div className="p-3 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-2">
             <label className="flex items-center gap-2.5 cursor-pointer select-none">
               <input
                 type="checkbox"

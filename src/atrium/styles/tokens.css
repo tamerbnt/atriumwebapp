@@ -19,11 +19,13 @@
 
 :root,
 [data-atrium-theme='light'] {
-  /* surfaces */
+    /* surfaces */
   --atr-bg: #f7f4f1;
   --atr-card: #ffffff;
   --atr-soft: #ede6e0;
-  --atr-line: #e4dcd5;
+  --atr-line: #E6DED6;
+  --pod: #F3EDE7;
+  --line: #E6DED6;
   /* text */
   --atr-ink: #0a0a0a;
   --atr-mut: #6b645e;
@@ -75,6 +77,8 @@
   --atr-card: #262422;
   --atr-soft: #2d2b29;
   --atr-line: #3a3734;
+  --pod: #232323;
+  --line: #3a3734;
   --atr-ink: #f2ece6;
   --atr-mut: #a79f97;
   --atr-acc: #e8643f; /* the brighter orange used by the logo on dark */

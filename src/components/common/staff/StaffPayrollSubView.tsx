@@ -109,7 +109,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
       {/* Top Controls Bar: Exact 40px Standard Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-[#F8F9FA] dark:bg-neutral-700/50 px-3 rounded-xl border border-neutral-200/80 dark:border-neutral-700 h-10">
+          <div className="flex items-center gap-2 bg-[#F3EDE7] dark:bg-neutral-700/50 px-3 rounded-xl border border-neutral-200/80 dark:border-neutral-700 h-10">
             <Calendar className="w-4 h-4 text-[#d4522f]" />
             <select
               value={selectedMonth}

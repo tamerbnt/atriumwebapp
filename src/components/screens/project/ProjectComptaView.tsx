@@ -567,7 +567,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
       </div>
 
       {/* Canonical 3-Card Top Metrics Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div>
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             Trésorerie Agence & Décaissements Postaux
@@ -624,7 +624,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 
       {/* TAB 1: PAIES VALIDEES DG */}
       {activeTab === 'payroll' && (
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
           <div className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">
@@ -701,7 +701,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 
       {/* TAB 2: BORDEREAUX CCP SFP 01 (UniversalDataCollection) */}
       {activeTab === 'ccp' && (
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
           <div className="p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex items-center justify-between">
             <Seek
               value={ccpSearch}
@@ -797,7 +797,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 
       {/* TAB 3: REMBOURSEMENTS ACHATS (UniversalDataCollection) */}
       {activeTab === 'expenses' && (
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
           <div className="p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex items-center justify-between">
             <Seek
               value={expenseSearch}
@@ -874,7 +874,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 
       {/* TAB 4: STOCK & MOBILIER (UniversalDataCollection) */}
       {activeTab === 'stock' && (
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
           <div className="p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-3 text-xs flex-1 max-w-xl">
               <Seek

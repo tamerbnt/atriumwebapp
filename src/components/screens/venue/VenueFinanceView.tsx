@@ -301,7 +301,7 @@ export const VenueFinanceView: React.FC = () => {
         </div>
 
         {/* Row 1: Top Metrics Pod Tray */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
           <div>
             <h2 className="text-base font-bold text-neutral-900 dark:text-white">
               {isAr ? 'الودائع الضامنة & سيولة الحسابات' : 'Trésorerie & Séquestre des Cautions'}
@@ -497,7 +497,7 @@ export const VenueFinanceView: React.FC = () => {
 
           {/* 390px Side Inspector Drawer */}
           {selectedDeposit && (
-            <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#EDF1F3] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
+            <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
               {/* Inspector Top Header */}
               <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
                 <div className="flex items-center gap-2.5">

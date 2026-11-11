@@ -198,7 +198,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
           >
             {/* Split Inset Metric Card */}
             <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-4">
-              <div className="grid grid-cols-2 gap-4 divide-x rtl:divide-x-reverse divide-[#EDF1F3] dark:divide-neutral-700">
+              <div className="grid grid-cols-2 gap-4 divide-x rtl:divide-x-reverse divide-[#E6DED6] dark:divide-neutral-700">
                 {/* Left Metric: People Inside */}
                 <div className="pr-3 rtl:pr-0 rtl:pl-3 space-y-1">
                   <div className="flex items-center gap-1.5">
@@ -372,7 +372,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
 
               <div className="grid grid-cols-2 gap-3">
                 {/* KPI 1: Churn Rate */}
-                <div className="p-3 rounded-xl bg-[#F8F9FA] dark:bg-neutral-800/80 border border-[#EDF1F3] dark:border-neutral-700/60 flex flex-col justify-between h-20">
+                <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-20">
                   <div className="flex items-center justify-between">
                     <span className="text-[10.5px] font-semibold text-neutral-500 dark:text-neutral-400 truncate">
                       {language === 'ar' ? 'معدل الانسحاب' : language === 'fr' ? 'Taux de Churn' : 'Churn Rate'}
@@ -387,7 +387,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                 </div>
 
                 {/* KPI 2: Peak Occupancy */}
-                <div className="p-3 rounded-xl bg-[#F8F9FA] dark:bg-neutral-800/80 border border-[#EDF1F3] dark:border-neutral-700/60 flex flex-col justify-between h-20">
+                <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-20">
                   <div className="flex items-center justify-between">
                     <span className="text-[10.5px] font-semibold text-neutral-500 dark:text-neutral-400 truncate">
                       {language === 'ar' ? 'ذروة الإشغال' : language === 'fr' ? "Taux d'Occupation Pic" : 'Peak Occupancy'}
@@ -402,7 +402,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                 </div>
 
                 {/* KPI 3: Coaching Conversion */}
-                <div className="p-3 rounded-xl bg-[#F8F9FA] dark:bg-neutral-800/80 border border-[#EDF1F3] dark:border-neutral-700/60 flex flex-col justify-between h-20">
+                <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-20">
                   <div className="flex items-center justify-between">
                     <span className="text-[10.5px] font-semibold text-neutral-500 dark:text-neutral-400 truncate">
                       {language === 'ar' ? 'تحويل التدريب الخاص' : language === 'fr' ? 'Conversion Coaching' : 'Coaching Conversion'}
@@ -417,7 +417,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                 </div>
 
                 {/* KPI 4: Trial Conversion */}
-                <div className="p-3 rounded-xl bg-[#F8F9FA] dark:bg-neutral-800/80 border border-[#EDF1F3] dark:border-neutral-700/60 flex flex-col justify-between h-20">
+                <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-20">
                   <div className="flex items-center justify-between">
                     <span className="text-[10.5px] font-semibold text-neutral-500 dark:text-neutral-400 truncate">
                       {language === 'ar' ? 'تحويل الحصص التجريبية' : language === 'fr' ? 'Conversion Essais' : 'Trial Conversion'}

@@ -425,7 +425,7 @@ export const ContractorDailyLogsView: React.FC = () => {
       </div>
 
       {/* Canonical Top Metrics Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div>
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'مؤشرات التواجد الميداني والأمان الفني' : 'Pointages Météo, Béton & Effectifs Chantier'}
@@ -511,7 +511,7 @@ export const ContractorDailyLogsView: React.FC = () => {
 
       {/* SECTION 1: DAILY LOGS VIEW */}
       {activeSection === 'logs' && (
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
@@ -629,7 +629,7 @@ export const ContractorDailyLogsView: React.FC = () => {
 
             {/* 390px Side Inspector Drawer */}
             {selectedLog && (
-              <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#EDF1F3] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
+              <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
                 {/* Inspector Top Header */}
                 <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
                   <div className="flex items-center gap-2.5">
@@ -866,7 +866,7 @@ export const ContractorDailyLogsView: React.FC = () => {
 
       {/* SECTION 2: CONCRETE POURS & CTC CLEARANCE (CBA 93) */}
       {activeSection === 'concrete' && (
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
@@ -893,7 +893,7 @@ export const ContractorDailyLogsView: React.FC = () => {
               return (
                 <div
                   key={pour.id}
-                  className="bg-white dark:bg-neutral-850 rounded-[20px] p-4 border border-[#EDF1F3] dark:border-neutral-800 shadow-2xs flex flex-col justify-between space-y-3"
+                  className="bg-white dark:bg-neutral-850 rounded-[20px] p-4 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col justify-between space-y-3"
                 >
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
@@ -978,7 +978,7 @@ export const ContractorDailyLogsView: React.FC = () => {
 
       {/* SECTION 3: EQUIPMENT HOURS & FUEL RECONCILIATION */}
       {activeSection === 'equipment' && (
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">

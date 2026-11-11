@@ -327,8 +327,8 @@ export const TradingFinanceView: React.FC = () => {
           </div>
         </div>
 
-        {/* Top Metrics Pod Tray (SurfaceBgElevated: #F8F9FA, CornerRadius 24px) */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        {/* Top Metrics Pod Tray (SurfaceBgElevated: #F3EDE7, CornerRadius 24px) */}
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             
             {/* Card 1: Encaissements Réalisés */}
@@ -407,7 +407,7 @@ export const TradingFinanceView: React.FC = () => {
         </div>
 
         {/* Balance Âgée 4 Tranches Pod Tray */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-3">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">
               {language === 'ar' ? 'تحليل أعمار الديون (Balance Âgée)' : 'Balance Âgée des Créances Commerciales (4 Paliers)'}
@@ -472,8 +472,8 @@ export const TradingFinanceView: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom Collection Pod Tray (SurfaceBgElevated: #F8F9FA) */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Bottom Collection Pod Tray (SurfaceBgElevated: #F3EDE7) */}
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
           
           {/* Controls Bar: Segment Tabs + Seek Search */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">

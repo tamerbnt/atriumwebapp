@@ -192,7 +192,7 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
 
         {/* Live Calculation Result Preview Box */}
         {preview && (
-          <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/60 border border-[#EDF1F3] dark:border-neutral-700/60 space-y-2">
+          <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                 {isAr ? 'النتيجة القانونية المحسوبة:' : 'Calcul Statutaire CPCA Automatique :'}

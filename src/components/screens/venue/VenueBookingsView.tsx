@@ -474,7 +474,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
 
         {/* Row 1: Top Metrics Pod Tray matching Staff Management Screenshot 30 */}
         {!hideHeader && !hideKpis && (
-          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+          <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
           <div>
             <h2 className="text-base font-bold text-neutral-900 dark:text-white">
               {language === 'ar' ? 'سجل الحجوزات & مؤشرات الاستغلال' : language === 'fr' ? 'Réservations & Indicateurs d\'Activité' : 'Bookings Pipeline & Utilization Indicators'}
@@ -537,7 +537,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
       )}
 
         {/* Row 2: Bottom Collection Pod Tray matching Staff Management Screenshot 30 */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
           {/* Integrated Toolbar Row */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             {/* Left: Icon + Title + Count Badge */}

@@ -310,7 +310,7 @@ export const MedicalBillingView: React.FC = () => {
         </div>
 
         {/* Operational View Switcher Tabs */}
-        <div className="flex items-center p-1 rounded-xl bg-[#F8F9FA] dark:bg-neutral-800 border border-[#EDF1F3] dark:border-neutral-700/60 shadow-2xs">
+        <div className="flex items-center p-1 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
           <button
             type="button"
             onClick={() => setBillingMainTab('invoices')}
@@ -370,7 +370,7 @@ export const MedicalBillingView: React.FC = () => {
       </div>
 
       {/* KPI Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div>
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'مؤشرات التحصيل الطبي والتأمين' : 'Indicateurs de Recouvrement & Tiers-Payant'}
@@ -429,7 +429,7 @@ export const MedicalBillingView: React.FC = () => {
 
       {/* TAB 1: Factures & Tiers Payant Collection */}
       {billingMainTab === 'invoices' && (
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
           {/* Table Control Header */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -559,8 +559,8 @@ export const MedicalBillingView: React.FC = () => {
 
             {/* Side Inspector Drawer */}
             {selectedConsultation && (
-              <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#EDF1F3] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
-                <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-800/60 flex items-center justify-between">
+              <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
+                <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-800/60 flex items-center justify-between">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 font-bold text-sm flex items-center justify-center shrink-0 border border-emerald-200/60">
                       <Receipt size={18} />
@@ -754,7 +754,7 @@ export const MedicalBillingView: React.FC = () => {
 
       {/* TAB 2: Bordereau CNAS / Télétransmission Chifa */}
       {billingMainTab === 'bordereau' && (
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-neutral-200 dark:border-neutral-700">
             <div>
               <h2 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
@@ -885,7 +885,7 @@ export const MedicalBillingView: React.FC = () => {
 
       {/* TAB 3: Honoraires Médecins (Doctor Commission Breakdown) */}
       {billingMainTab === 'honoraires' && (
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-neutral-200 dark:border-neutral-700">
             <div>
               <h2 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
@@ -961,7 +961,7 @@ export const MedicalBillingView: React.FC = () => {
 
       {/* TAB 4: Clôture de Caisse Journalière (Secretary Cash Drawer) */}
       {billingMainTab === 'caisse' && (
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-neutral-200 dark:border-neutral-700">
             <div>
               <h2 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
@@ -1068,7 +1068,7 @@ export const MedicalBillingView: React.FC = () => {
 
       {/* Tab 5: Consommables & Stock Médical */}
       {billingMainTab === 'consumables' && (
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs animate-in fade-in duration-150">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs animate-in fade-in duration-150">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h3 className="font-bold text-sm text-neutral-900 dark:text-white flex items-center gap-2">

@@ -238,7 +238,7 @@ export const VenueTimelineView: React.FC = () => {
         </div>
 
         {/* Row 1: Top Metrics Pod Tray */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
           <div>
             <h2 className="text-base font-bold text-neutral-900 dark:text-white">
               {language === 'ar' ? 'المخطط الزمني وإشغال القاعات' : language === 'fr' ? 'Planning des Salles & Occupation' : 'Timeline Matrix & Facility Utilization'}
@@ -314,7 +314,7 @@ export const VenueTimelineView: React.FC = () => {
         ) : (
           <div className="space-y-4">
             {/* Timeline Pod Tray */}
-            <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+            <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
               {/* Toolbar with Date Navigator & Filter Capsules */}
               <div className="flex flex-wrap items-center justify-between gap-3">
                 {/* Date Navigator */}
@@ -443,7 +443,7 @@ export const VenueTimelineView: React.FC = () => {
                       return (
                         <div
                           key={unit.id}
-                          className="flex min-h-[76px] relative group hover:bg-[#F8F9FA]/60 dark:hover:bg-neutral-700/20 transition-colors"
+                          className="flex min-h-[76px] relative group hover:bg-[#F3EDE7]/60 dark:hover:bg-neutral-700/20 transition-colors"
                         >
                           {/* Space Info Cell */}
                           <div className="w-56 sm:w-64 p-3 border-r border-[#E9EEF0] dark:border-neutral-700/80 shrink-0 flex flex-col justify-center">
@@ -570,7 +570,7 @@ export const VenueTimelineView: React.FC = () => {
             </div>
 
             <div className="space-y-3 text-xs">
-              <div className="p-4 bg-[#F8F9FA] dark:bg-neutral-700/40 rounded-2xl border border-[#EDF1F3] dark:border-neutral-700 space-y-2">
+              <div className="p-4 bg-[#F3EDE7] dark:bg-neutral-700/40 rounded-2xl border border-[#E6DED6] dark:border-neutral-700 space-y-2">
                 <div className="flex justify-between">
                   <span className="text-neutral-500">Organisateur:</span>
                   <span className="font-bold text-neutral-900 dark:text-white">{inspectedBooking.renterName}</span>

@@ -185,7 +185,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
           </div>
 
           {/* Fiscal Calculation Breakdown Pod */}
-          <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-[#141416] border border-[#EDF1F3] dark:border-[#232328] space-y-3">
+          <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#141416] border border-[#E6DED6] dark:border-[#232328] space-y-3">
             <div className="flex items-center justify-between text-xs font-semibold text-[#64748B] dark:text-[#A1A1AA] uppercase">
               <span>Décompte Légal de la Quittance</span>
               <span className="flex items-center gap-1 text-[#d4522f]">
@@ -195,12 +195,12 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
             </div>
 
             <div className="space-y-1.5 text-xs">
-              <div className="flex justify-between py-1 border-b border-[#EDF1F3] dark:border-[#232328]">
+              <div className="flex justify-between py-1 border-b border-[#E6DED6] dark:border-[#232328]">
                 <span>Loyer Principal HT + Charges</span>
                 <span className="font-mono font-semibold">{subTotal.toLocaleString()} DZD</span>
               </div>
 
-              <div className="flex justify-between py-1 border-b border-[#EDF1F3] dark:border-[#232328]">
+              <div className="flex justify-between py-1 border-b border-[#E6DED6] dark:border-[#232328]">
                 <span className="flex items-center gap-1">
                   <span>Droit de Timbre Fiscal ({paymentMethod === 'Cash' ? '1% progressif' : 'Exonéré'})</span>
                 </span>

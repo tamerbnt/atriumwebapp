@@ -95,7 +95,7 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
     >
       <form onSubmit={handleSave} className="space-y-4">
         {/* Top Summary Card */}
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/60 border border-[#EDF1F3] dark:border-neutral-700/60 space-y-3">
+        <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-neutral-600 dark:text-neutral-400">
               {isAr ? 'التاريخ والسيولة النظرية المسجلة:' : 'Date d\'Opération & Solde Théorique :'}

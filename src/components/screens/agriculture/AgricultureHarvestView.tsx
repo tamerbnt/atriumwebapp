@@ -594,7 +594,7 @@ export const AgricultureHarvestView: React.FC = () => {
       {activeMode === 'tickets' ? (
         <>
           {/* Canonical 3-Card Top Metrics Pod Tray */}
-          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div>
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'إحصائيات الشحن والإنتاج المباع' : 'Tonnage Expédié & Recettes Agricoles'}
@@ -656,7 +656,7 @@ export const AgricultureHarvestView: React.FC = () => {
       </div>
 
       {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
         {/* Domain Filter Header Strip */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
@@ -1023,7 +1023,7 @@ export const AgricultureHarvestView: React.FC = () => {
       ) : (
         <div className="space-y-6 animate-in fade-in duration-200">
           {/* Pointage 3-Card Top Metrics Pod Tray */}
-          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
             <div>
               <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
                 {isAr ? 'مؤشرات جني المحصول ودفتر حضور التاشرون' : 'Indicateurs de Récolte & Pointage des Tâcherons'}
@@ -1084,7 +1084,7 @@ export const AgricultureHarvestView: React.FC = () => {
           </div>
 
           {/* Muster Roll Pod Tray Enclosing Table */}
-          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">

@@ -69,7 +69,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
     >
       <div className="space-y-5">
         {/* Active Entitlement Status */}
-        <div className="p-4 rounded-[20px] bg-[#F8F9FA] dark:bg-neutral-800/60 border border-[#EDF1F3] dark:border-neutral-700/60 flex items-center justify-between shadow-2xs">
+        <div className="p-4 rounded-[20px] bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-between shadow-2xs">
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">
               {t('settings_license_entitlement', language)}
@@ -136,7 +136,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
         )}
 
         {/* Preset Sample Vouchers */}
-        <div className="pt-2 border-t border-[#EDF1F3] dark:border-neutral-800/80">
+        <div className="pt-2 border-t border-[#E6DED6] dark:border-neutral-800/80">
           <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 block mb-2">
             {t('voucher_preset_title', language)}
           </span>

@@ -257,7 +257,7 @@ export const LogisticsScannerView: React.FC = () => {
       </div>
 
       {/* Active Bag & High-Speed Barcode Scanner Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
         {scanMode === 'Bagging' && activeBag && (
           <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -340,7 +340,7 @@ export const LogisticsScannerView: React.FC = () => {
       {/* Main Grid: Scan History Feed & Scanned Items Collection */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Live Audio / Optical Scan Feed */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-3 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-3 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
               {isAr ? 'سجل المسح الصوتي المباشر' : 'Journal des Scans en Direct'}
@@ -381,7 +381,7 @@ export const LogisticsScannerView: React.FC = () => {
         </div>
 
         {/* Parcels in Current Hub Quai Collection */}
-        <div className="lg:col-span-2 bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div className="lg:col-span-2 bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm font-bold text-neutral-900 dark:text-white">

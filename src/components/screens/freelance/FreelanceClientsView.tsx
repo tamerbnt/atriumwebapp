@@ -607,8 +607,8 @@ export const FreelanceClientsView: React.FC = () => {
           </div>
         )}
 
-        {/* Top Metrics Pod Tray (Screenshot_30: bg-[#F8F9FA], rounded-[24px], p-5) */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-3">
+        {/* Top Metrics Pod Tray (Screenshot_30: bg-[#F3EDE7], rounded-[24px], p-5) */}
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
           <div>
             <h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
               {language === 'ar' ? 'سعة ومؤشرات شبكة العملاء' : language === 'fr' ? 'Capacité & Santé du Portefeuille Clients' : 'Client Roster & Capacity'}
@@ -685,8 +685,8 @@ export const FreelanceClientsView: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom Collection Pod Tray (Screenshot_30: bg-[#F8F9FA], rounded-[24px], p-5) */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Bottom Collection Pod Tray (Screenshot_30: bg-[#F3EDE7], rounded-[24px], p-5) */}
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
           
           {/* Integrated Toolbar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -899,7 +899,7 @@ export const FreelanceClientsView: React.FC = () => {
             {/* Drawer Body */}
             <div className="flex-1 overflow-y-auto p-5 space-y-6 text-xs">
               {/* Contact Information */}
-              <div className="p-4 rounded-xl bg-[#F8F9FA] dark:bg-neutral-900/60 border border-[#EDF1F3] dark:border-neutral-800 space-y-2.5">
+              <div className="p-4 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800 space-y-2.5">
                 <div className="flex items-center gap-2 text-neutral-700 dark:text-neutral-300">
                   <Mail size={13} className="text-neutral-400 shrink-0" />
                   <span className="truncate">{selectedClient.email}</span>

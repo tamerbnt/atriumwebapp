@@ -238,7 +238,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <span className="text-xs font-medium text-gray-500 block mb-1">
@@ -279,7 +279,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
                 </div>
               </div>
 
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="flex justify-between items-center mb-1.5">
                   <span className="text-xs font-medium text-gray-500">
                     {language === 'ar' ? 'إجمالي المبيعات اليوم' : 'Chiffre d’Affaires Aujourd’hui'}
@@ -356,7 +356,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
                 />
               </div>
 
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-xs font-semibold text-gray-700">
                     {language === 'ar' ? 'مبيعات الأسابيع الـ 4 الماضية (دج)' : 'Chiffre d’affaires hebdomadaire'}
@@ -391,7 +391,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="grid grid-cols-3 gap-2 pb-3 border-b border-gray-100">
                   <div>
                     <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'صافي الهامش' : 'Marge Nette'}</span>
@@ -425,7 +425,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
               </div>
 
               {/* 4 KPIs Inset Grid */}
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-xs font-semibold text-gray-700">
                     {language === 'ar' ? 'مؤشرات كفاءة الصندوق' : 'Indicateurs de Performance'}
@@ -433,7 +433,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
                   <Info size={13} className="text-gray-400" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
                     <span className="text-[11px] text-gray-500 block">
                       {language === 'ar' ? 'متوسط السلة' : 'Panier Moyen'}
                     </span>
@@ -447,7 +447,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
                     </div>
                   </div>
 
-                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
                     <span className="text-[11px] text-gray-500 block">
                       {language === 'ar' ? 'نسبة الدفع نقداً' : 'Part Paiement Cash'}
                     </span>
@@ -459,7 +459,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
                     </div>
                   </div>
 
-                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
                     <span className="text-[11px] text-gray-500 block">
                       {language === 'ar' ? 'معدل دوران المخزون' : 'Rotation Stocks'}
                     </span>
@@ -471,7 +471,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
                     </div>
                   </div>
 
-                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
                     <span className="text-[11px] text-gray-500 block">
                       {language === 'ar' ? 'نسبة الإرجاع والإلغاء' : 'Taux d’Annulation'}
                     </span>
@@ -497,7 +497,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
           >
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-semibold text-gray-700">
                       {language === 'ar' ? 'توزيع المبيعات حسب الفئة' : 'Répartition par Catégorie'}
@@ -507,7 +507,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
                   <DonutChart segments={categoryMix} centerLabel={products.length > 0 ? `${products.length} SKUs` : 'Articles'} />
                 </div>
 
-                <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-semibold text-gray-700">
                       {language === 'ar' ? 'أفضل المنتجات حركة' : 'Top Articles Vendus'}

@@ -823,7 +823,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
       </div>
 
       {/* Top Metrics Pod Tray: 3 Inset Cards including Dark Espresso Card */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div>
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {language === 'ar' ? 'مؤشرات تتبع الوقت والإنتاجية' : language === 'fr' ? 'Indicateurs de Temps & Productivité' : 'Time Tracking & Productivity Metrics'}
@@ -895,7 +895,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
       </div>
 
       {/* Time Entries Timesheet Table with UniversalDataCollection */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Clock size={16} className="text-[#d4522f]" />

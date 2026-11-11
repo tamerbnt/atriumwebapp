@@ -432,7 +432,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
       </div>
 
       {/* Roster Controls: 1-Tap All Present + Instant Search */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F8F9FA] dark:bg-neutral-800/40 p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F3EDE7] dark:bg-neutral-800/40 p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800">
         <div className="flex items-center gap-2">
           <button
             type="button"

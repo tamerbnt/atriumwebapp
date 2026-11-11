@@ -198,7 +198,7 @@ export const LegalDashboardView: React.FC = () => {
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <span className="text-xs font-medium text-gray-500 block mb-1">
@@ -239,7 +239,7 @@ export const LegalDashboardView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="flex justify-between items-center mb-1.5">
                   <span className="text-xs font-medium text-gray-500">
                     {language === 'ar' ? 'إجمالي أتعاب المكتب اليوم' : 'Honoraires Encaissés Aujourd’hui'}
@@ -316,7 +316,7 @@ export const LegalDashboardView: React.FC = () => {
                 />
               </div>
 
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-xs font-semibold text-gray-700">
                     {language === 'ar' ? 'عدد الجلسات والمرافعات أسبوعياً' : 'Volume hebdomadaire des audiences plaidées'}
@@ -351,7 +351,7 @@ export const LegalDashboardView: React.FC = () => {
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="grid grid-cols-3 gap-2 pb-3 border-b border-gray-100">
                   <div>
                     <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'صافي الأتعاب' : 'Net Cabinet'}</span>
@@ -385,7 +385,7 @@ export const LegalDashboardView: React.FC = () => {
               </div>
 
               {/* 4 KPIs Inset Grid */}
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-xs font-semibold text-gray-700">
                     {language === 'ar' ? 'مؤشرات الكفاءة القانونية' : 'Indicateurs de Performance'}
@@ -393,7 +393,7 @@ export const LegalDashboardView: React.FC = () => {
                   <Info size={13} className="text-gray-400" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
                     <span className="text-[11px] text-gray-500 block">
                       {language === 'ar' ? 'نسبة كسب القضايا' : 'Taux de Succès'}
                     </span>
@@ -405,7 +405,7 @@ export const LegalDashboardView: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
                     <span className="text-[11px] text-gray-500 block">
                       {language === 'ar' ? 'متوسط مدة الفصل' : 'Durée Moyenne Litige'}
                     </span>
@@ -417,7 +417,7 @@ export const LegalDashboardView: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
                     <span className="text-[11px] text-gray-500 block">
                       {language === 'ar' ? 'نسبة تحصيل الأتعاب' : 'Recouvrement Honoraires'}
                     </span>
@@ -429,7 +429,7 @@ export const LegalDashboardView: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
                     <span className="text-[11px] text-gray-500 block">
                       {language === 'ar' ? 'الالتزام بالمواعيد' : 'Respect Délais CPCA'}
                     </span>
@@ -455,7 +455,7 @@ export const LegalDashboardView: React.FC = () => {
           >
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-semibold text-gray-700">
                       {language === 'ar' ? 'توزيع مجالات الاختصاص' : 'Répartition des Domaines'}
@@ -465,7 +465,7 @@ export const LegalDashboardView: React.FC = () => {
                   <DonutChart segments={practiceAreas} centerLabel={`${activeMatters} Dossiers`} />
                 </div>
 
-                <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-semibold text-gray-700">
                       {language === 'ar' ? 'توزيع القضايا حسب المحامي' : 'Charge par Avocat'}

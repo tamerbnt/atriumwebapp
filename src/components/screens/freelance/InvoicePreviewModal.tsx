@@ -144,7 +144,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
           </div>
 
           {/* Billed To Section */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-[#F8F9FA] dark:bg-neutral-900/40 p-4 rounded-2xl border border-[#EDF1F3] dark:border-neutral-800/80">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-[#F3EDE7] dark:bg-neutral-900/40 p-4 rounded-2xl border border-[#E6DED6] dark:border-neutral-800/80">
             <div>
               <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">
                 {t('free_inv_doc_bill_to', language)}
@@ -242,7 +242,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
 
           {/* Bank Coordinates / Payment Instructions */}
           {invoice.paymentDetails && (
-            <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/60 border border-[#EDF1F3] dark:border-neutral-800 space-y-2">
+            <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
                   <CreditCard size={14} className="text-[#d4522f]" />

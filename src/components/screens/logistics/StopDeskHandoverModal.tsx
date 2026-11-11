@@ -115,7 +115,7 @@ export const StopDeskHandoverModal: React.FC<StopDeskHandoverModalProps> = ({
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 space-y-4 pr-1">
           {/* Recipient Details */}
-          <div className="p-3.5 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/60 border border-[#EDF1F3] dark:border-neutral-700/60 space-y-1">
+          <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-1">
             <div className="text-sm font-bold text-neutral-900 dark:text-white">
               {shipment.recipientName}
             </div>

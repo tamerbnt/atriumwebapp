@@ -114,7 +114,7 @@ export const MedicalLabViewerModal: React.FC<MedicalLabViewerModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
       <div className="bg-white dark:bg-neutral-900 w-full max-w-3xl rounded-[28px] border border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col max-h-[88vh] overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-[#F8F9FA] dark:bg-neutral-800/40">
+        <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-[#F3EDE7] dark:bg-neutral-800/40">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#0D9488]/15 text-[#0D9488] flex items-center justify-center font-bold">
               <Microscope size={20} />
@@ -175,7 +175,7 @@ export const MedicalLabViewerModal: React.FC<MedicalLabViewerModalProps> = ({
                 {patientLabs.map((lab) => (
                   <div
                     key={lab.id}
-                    className="p-5 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-3"
+                    className="p-5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-3"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -275,7 +275,7 @@ export const MedicalLabViewerModal: React.FC<MedicalLabViewerModalProps> = ({
                 />
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-3">
+              <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-3">
                 <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider block">
                   Valeurs Biologiques Mesurées
                 </span>
@@ -312,7 +312,7 @@ export const MedicalLabViewerModal: React.FC<MedicalLabViewerModalProps> = ({
                   value={clinicalConclusion}
                   onChange={(e) => setClinicalConclusion(e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-[#F8F9FA] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-hidden"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-[#F3EDE7] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-hidden"
                   required
                 />
               </div>

@@ -364,7 +364,7 @@ export const FreelanceFinanceView: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-              className="h-[42px] px-4 rounded-[14px] bg-[#F8F9FA] dark:bg-neutral-800 border border-[#EDF1F3] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shadow-2xs"
+              className="h-[42px] px-4 rounded-[14px] bg-[#F3EDE7] dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shadow-2xs"
             >
               <Building2 size={15} className="text-[#d4522f]" />
               <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
@@ -433,7 +433,7 @@ export const FreelanceFinanceView: React.FC = () => {
                     setIsQuickActionsOpen(false);
                     setIsAddExpenseModalOpen(true);
                   }}
-                  className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F8F9FA] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
+                  className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
                 >
                   <div className="w-[30px] h-[30px] rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center shrink-0">
                     <Plus size={15} />
@@ -446,7 +446,7 @@ export const FreelanceFinanceView: React.FC = () => {
                     setIsQuickActionsOpen(false);
                     handleExportCSV();
                   }}
-                  className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F8F9FA] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
+                  className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
                 >
                   <div className="w-[30px] h-[30px] rounded-lg bg-blue-500/15 text-blue-600 flex items-center justify-center shrink-0">
                     <Download size={15} />
@@ -461,7 +461,7 @@ export const FreelanceFinanceView: React.FC = () => {
       </div>
 
       {/* Top Metrics Pod Tray: 3 Inset Cards including Dark Espresso Card */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div>
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {language === 'ar' ? 'ملخص السيولة والتدفقات المالية' : language === 'fr' ? 'Trésorerie & Encaissements Multi-Devises' : 'Cashflow & Revenue Overview'}
@@ -533,7 +533,7 @@ export const FreelanceFinanceView: React.FC = () => {
       </div>
 
       {/* Studio Profit Bridge & Tax Reserve Simulator Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShieldCheck size={16} className="text-[#d4522f]" />
@@ -595,9 +595,9 @@ export const FreelanceFinanceView: React.FC = () => {
       </div>
 
       {/* Bottom Collection Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
         {/* Integrated Toolbar */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-[#EDF1F3] dark:border-neutral-800/60">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-[#E6DED6] dark:border-neutral-800/60">
           <div className="flex items-center gap-2.5 flex-wrap">
             <div className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-700 dark:text-neutral-300">
               <Receipt size={16} />

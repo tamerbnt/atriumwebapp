@@ -189,7 +189,7 @@ export const LogisticsDashboardView: React.FC = () => {
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <span className="text-xs font-medium text-gray-500 block mb-1">
@@ -230,7 +230,7 @@ export const LogisticsDashboardView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="flex justify-between items-center mb-1.5">
                   <span className="text-xs font-medium text-gray-500">
                     {language === 'ar' ? 'معدل إنجاز الجولة اليومية' : 'Objectif de Livraison du Jour'}
@@ -307,7 +307,7 @@ export const LogisticsDashboardView: React.FC = () => {
                 />
               </div>
 
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-xs font-semibold text-gray-700">
                     {language === 'ar' ? 'حجم الطرود الموزعة أسبوعياً' : 'Volume hebdomadaire des colis livrés'}
@@ -342,7 +342,7 @@ export const LogisticsDashboardView: React.FC = () => {
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="grid grid-cols-3 gap-2 pb-3 border-b border-gray-100">
                   <div>
                     <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'صافي التوصيل' : 'Net Livraison'}</span>
@@ -376,7 +376,7 @@ export const LogisticsDashboardView: React.FC = () => {
               </div>
 
               {/* 4 KPIs Inset Grid */}
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-xs font-semibold text-gray-700">
                     {language === 'ar' ? 'مؤشرات الأداء اللوجستي' : 'Indicateurs de Performance'}
@@ -384,7 +384,7 @@ export const LogisticsDashboardView: React.FC = () => {
                   <Info size={13} className="text-gray-400" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
                     <span className="text-[11px] text-gray-500 block">
                       {language === 'ar' ? 'تسليم بالمرة الأولى' : 'Premier Passage'}
                     </span>
@@ -396,7 +396,7 @@ export const LogisticsDashboardView: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
                     <span className="text-[11px] text-gray-500 block">
                       {language === 'ar' ? 'زمن تحويل أموال COD' : 'Délai Versement COD'}
                     </span>
@@ -408,7 +408,7 @@ export const LogisticsDashboardView: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
                     <span className="text-[11px] text-gray-500 block">
                       {language === 'ar' ? 'نسبة الإرجاع (Retour)' : 'Taux de Retour'}
                     </span>
@@ -420,7 +420,7 @@ export const LogisticsDashboardView: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
                     <span className="text-[11px] text-gray-500 block">
                       {language === 'ar' ? 'تكلفة التوصيل لكل كلم' : 'Coût au Km'}
                     </span>
@@ -446,7 +446,7 @@ export const LogisticsDashboardView: React.FC = () => {
           >
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-semibold text-gray-700">
                       {language === 'ar' ? 'توزيع التوصيل حسب المناطق' : 'Répartition Géographique'}
@@ -456,7 +456,7 @@ export const LogisticsDashboardView: React.FC = () => {
                   <DonutChart segments={zoneDistribution} centerLabel={`${(shipments || []).length} Colis`} />
                 </div>
 
-                <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-semibold text-gray-700">
                       {language === 'ar' ? 'إنتاجية السائقين والموزعين' : 'Livraisons par Chauffeur'}

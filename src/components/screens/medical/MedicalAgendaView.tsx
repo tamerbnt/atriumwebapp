@@ -170,7 +170,7 @@ export const MedicalAgendaView: React.FC = () => {
       </div>
 
       {/* Practitioner Filter Capsules & Slot Interval */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs flex flex-wrap items-center justify-between gap-3">
         {/* Doctor Filters */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
           <button
@@ -227,7 +227,7 @@ export const MedicalAgendaView: React.FC = () => {
       {/* Multi-Column Timeline Canvas */}
       <div className="bg-white dark:bg-neutral-900 rounded-[28px] border border-neutral-200 dark:border-neutral-800 overflow-hidden shadow-2xs">
         {/* Table Column Headers */}
-        <div className="grid grid-cols-12 bg-[#F8F9FA] dark:bg-neutral-800/60 border-b border-neutral-200 dark:border-neutral-800">
+        <div className="grid grid-cols-12 bg-[#F3EDE7] dark:bg-neutral-800/60 border-b border-neutral-200 dark:border-neutral-800">
           {/* Time Gutter Header */}
           <div className="col-span-1 p-3.5 text-center text-[11px] font-mono font-bold text-neutral-400 uppercase tracking-wider border-r border-neutral-200 dark:border-neutral-800">
             Heure

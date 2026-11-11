@@ -264,7 +264,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
         {/* Left Column: OF Selector & Safety PPE Checklist (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
           {/* OF Picker Card */}
-          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
                 {isAr ? 'أمر التصنيع المخصص' : 'Sélection Ordre de Fabrication'}
@@ -313,7 +313,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                   {currentOrder.productName}
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#EDF1F3] dark:border-neutral-700 text-xs">
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#E6DED6] dark:border-neutral-700 text-xs">
                   <div>
                     <span className="text-neutral-400 block text-[11px]">{isAr ? 'الهدف' : 'Cible OF'}</span>
                     <span className="font-mono font-bold text-neutral-900 dark:text-white text-sm">
@@ -332,7 +332,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
           </div>
 
           {/* Loi 88-07 Mandatory Safety EPI Checklist */}
-          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShieldCheck size={18} className="text-[#d4522f]" />
@@ -440,7 +440,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
         {/* Right Column: Giant Monospace Timer & Glove-Friendly Action Buttons (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
           {/* Main Giant Stopwatch Display Card */}
-          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[28px] p-6 sm:p-8 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs flex flex-col items-center justify-center text-center space-y-6">
+          <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[28px] p-6 sm:p-8 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs flex flex-col items-center justify-center text-center space-y-6">
             <div className="flex items-center gap-2 text-xs font-semibold text-neutral-500 uppercase tracking-widest">
               <Clock size={16} className="text-[#d4522f]" />
               <span>{isAr ? 'عداد وقت التشغيل النشط' : 'Temps de Cycle Machine'}</span>
@@ -465,7 +465,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
             </div>
 
             {/* Giant Glove-Friendly Action Controls (Minimum height 64px for tablet use) */}
-            <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-[#EDF1F3] dark:border-neutral-700/60">
+            <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-[#E6DED6] dark:border-neutral-700/60">
               {!isRunning ? (
                 <button
                   type="button"

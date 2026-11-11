@@ -62,7 +62,7 @@ export const Modal: React.FC<ModalProps> = ({
         aria-modal="true"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[#EDF1F3] dark:border-neutral-800/80">
+        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[#E6DED6] dark:border-neutral-800/80">
           <div>
             <h2 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
               {title}

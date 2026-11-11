@@ -186,7 +186,7 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({
         </div>
 
         {/* Property Context Banner */}
-        <div className="p-3.5 rounded-2xl bg-[#F8F9FA] dark:bg-[#141416] border border-[#EDF1F3] dark:border-[#232328] mb-5 flex items-center justify-between">
+        <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-[#141416] border border-[#E6DED6] dark:border-[#232328] mb-5 flex items-center justify-between">
           <div>
             <div className="text-xs text-[#64748B] dark:text-[#A1A1AA] uppercase font-semibold">Bien Visité</div>
             <div className="text-sm font-bold text-[#18181B] dark:text-white truncate max-w-md">

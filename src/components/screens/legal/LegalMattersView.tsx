@@ -335,7 +335,7 @@ export const LegalMattersView: React.FC = () => {
       </div>
 
       {/* Main Collection Container */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[28px] p-6 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[28px] p-6 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
         {activeLegalRole === 'notaire_titulaire' ? (
           <UniversalDataCollection<NotaryDeed>
             items={filteredDeeds}
@@ -482,7 +482,7 @@ export const LegalMattersView: React.FC = () => {
             </div>
 
             {/* Financials & Décret 08-243 Breakdown */}
-            <div className="p-3.5 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-700/60 space-y-2 text-xs">
+            <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-900/40 border border-[#E6DED6] dark:border-neutral-700/60 space-y-2 text-xs">
               <span className="font-bold text-neutral-900 dark:text-white block">
                 {isAr ? 'التعريفة الرسمية (المرسوم 08-243):' : 'Décompte Légal Décret 08-243 :'}
               </span>
@@ -583,7 +583,7 @@ export const LegalMattersView: React.FC = () => {
               <p className="text-xs text-neutral-500 mt-0.5">{selectedMatter.courtJurisdiction}</p>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-700/60 space-y-2 text-xs">
+            <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-900/40 border border-[#E6DED6] dark:border-neutral-700/60 space-y-2 text-xs">
               <div className="flex justify-between">
                 <span className="text-neutral-500">{isAr ? 'الموكل' : 'Client'}</span>
                 <span className="font-bold text-neutral-900 dark:text-white">{selectedMatter.clientName}</span>

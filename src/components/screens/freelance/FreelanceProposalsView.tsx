@@ -547,7 +547,7 @@ export const FreelanceProposalsView: React.FC = () => {
       </div>
 
       {/* Top Metrics Pod Tray: 3 Inset Cards including Dark Espresso Card */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div>
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {language === 'ar' ? 'مؤشرات العروض التجارية والفرص التعاقدية' : language === 'fr' ? 'Indicateurs des Devis & Opportunités' : 'Proposals & Deal Pipeline Indicators'}
@@ -619,7 +619,7 @@ export const FreelanceProposalsView: React.FC = () => {
       </div>
 
       {/* Bottom Collection Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
         {/* Batch Selection Toolbar */}
         {selectedProposalIds.size > 0 && (
           <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">

@@ -137,7 +137,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
         <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 space-y-4 pr-1">
           {/* Summary Banner */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="p-3.5 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/60 border border-[#EDF1F3] dark:border-neutral-700/60">
+            <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60">
               <span className="text-[11px] font-medium text-neutral-500 block">
                 {isAr ? 'المبلغ النظري المتوقع' : 'Montant Théorique Attendu'}
               </span>
@@ -146,7 +146,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
               </span>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/60 border border-[#EDF1F3] dark:border-neutral-700/60">
+            <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60">
               <span className="text-[11px] font-medium text-neutral-500 block">
                 {isAr ? 'المبلغ الفعلي المعدود' : 'Total Physique Compté'}
               </span>
@@ -174,7 +174,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
           </div>
 
           {/* Banknote Denominations Counter */}
-          <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/60 border border-[#EDF1F3] dark:border-neutral-700/60 space-y-3">
+          <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3">
             <div className="flex items-center justify-between">
               <h4 className="font-bold text-xs text-neutral-900 dark:text-white uppercase tracking-wider">
                 {isAr ? 'تعداد الأوراق النقدية والقطع (الدينار الجزائري)' : 'Comptage des Billets & Pièces (DZD)'}

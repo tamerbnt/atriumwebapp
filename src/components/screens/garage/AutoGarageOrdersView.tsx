@@ -469,7 +469,7 @@ export const AutoGarageOrdersView: React.FC = () => {
                           className={`p-3 rounded-2xl border transition-all cursor-pointer space-y-2 ${
                             selectedOrder?.id === order.id
                               ? 'bg-[#FDF4F0] dark:bg-neutral-800 border-[#d4522f] shadow-xs'
-                              : 'bg-[#F8F9FA] dark:bg-neutral-800/40 border-neutral-200/60 dark:border-neutral-700/60 hover:border-neutral-400'
+                              : 'bg-[#F3EDE7] dark:bg-neutral-800/40 border-neutral-200/60 dark:border-neutral-700/60 hover:border-neutral-400'
                           }`}
                         >
                           <div className="flex items-center justify-between">

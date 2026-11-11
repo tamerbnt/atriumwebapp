@@ -82,7 +82,7 @@ export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = ({
       </div>
 
       {/* KPI 1: Active In-Service Count */}
-      <div className="bg-[#F8F9FA] dark:bg-[#1C1C1E] p-5 rounded-2xl border border-neutral-200/70 dark:border-neutral-800 flex flex-col justify-between">
+      <div className="bg-[#F3EDE7] dark:bg-[#1C1C1E] p-5 rounded-2xl border border-neutral-200/70 dark:border-neutral-800 flex flex-col justify-between">
         <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-1">
           <span className="text-xs font-medium uppercase tracking-wider">
             {isAr ? 'في الخدمة المباشرة' : isEn ? 'Active Duty' : 'En Poste'}
@@ -109,7 +109,7 @@ export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = ({
       </div>
 
       {/* KPI 2: Today's Shift Attendance Rate */}
-      <div className="bg-[#F8F9FA] dark:bg-[#1C1C1E] p-5 rounded-2xl border border-neutral-200/70 dark:border-neutral-800 flex flex-col justify-between">
+      <div className="bg-[#F3EDE7] dark:bg-[#1C1C1E] p-5 rounded-2xl border border-neutral-200/70 dark:border-neutral-800 flex flex-col justify-between">
         <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-1">
           <span className="text-xs font-medium uppercase tracking-wider">
             {isAr ? 'حضور اليوم' : isEn ? "Today's Attendance" : 'Pointage du Jour'}
@@ -135,7 +135,7 @@ export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = ({
       </div>
 
       {/* KPI 3: Monthly Payroll / Mass (Strict RBAC Masked for non-owners) */}
-      <div className="bg-[#F8F9FA] dark:bg-[#1C1C1E] p-5 rounded-2xl border border-neutral-200/70 dark:border-neutral-800 flex flex-col justify-between">
+      <div className="bg-[#F3EDE7] dark:bg-[#1C1C1E] p-5 rounded-2xl border border-neutral-200/70 dark:border-neutral-800 flex flex-col justify-between">
         <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-1">
           <span className="text-xs font-medium uppercase tracking-wider">
             {isOwnerViewer

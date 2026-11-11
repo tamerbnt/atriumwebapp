@@ -25,7 +25,7 @@ export const DashboardPod: React.FC<DashboardPodProps> = ({
 
   return (
     <div
-      className={`bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4 flex flex-col justify-between ${className}`}
+      className={`bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4 flex flex-col justify-between ${className}`}
     >
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">

@@ -242,7 +242,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({
           {/* TAB 1: INTAKE & ODOMETER */}
           {activeTab === 'intake' && (
             <div className="space-y-5 animate-in fade-in">
-              <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700/80 space-y-4">
+              <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700/80 space-y-4">
                 <LabelSelect
                   label={language === 'ar' ? 'المركبة والماتريكيل' : 'Véhicule & Matricule'}
                   value={selectedVehicleId}

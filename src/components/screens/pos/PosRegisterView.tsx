@@ -1194,7 +1194,7 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
         </div>
 
         {/* TOP METRICS POD TRAY */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#E9EEF0] dark:border-neutral-800">
             <div>
               <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
@@ -1333,7 +1333,7 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
         </div>
 
         {/* BOTTOM WORKSTATION POD TRAY */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
           {/* ========================================================================= */}
           {/* TAB 1: POS REGISTER                                                     */}
           {/* ========================================================================= */}

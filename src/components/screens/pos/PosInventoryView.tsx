@@ -963,8 +963,8 @@ export const PosInventoryView: React.FC = () => {
 
         {(isStaff || activeSubTab === 'inventory') ? (
           <>
-            {/* Top Metrics Pod Tray (SurfaceBgElevated: #F8F9FA, CornerRadius 24px) */}
-            <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+            {/* Top Metrics Pod Tray (SurfaceBgElevated: #F3EDE7, CornerRadius 24px) */}
+            <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {/* Card 1: SKUs & Units */}
                 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
@@ -1048,7 +1048,7 @@ export const PosInventoryView: React.FC = () => {
             </div>
 
             {/* Bottom Collection Pod Tray */}
-            <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+            <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
               {/* Filter and Action Strip */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 {/* Left Title / Icon / Count Anchor */}
@@ -1241,7 +1241,7 @@ export const PosInventoryView: React.FC = () => {
   ) : (
     <div className="space-y-6">
       {/* Purchase KPI Summary Cards Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Card 1: Commandes & Fournisseurs */}
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
@@ -1317,7 +1317,7 @@ export const PosInventoryView: React.FC = () => {
       </div>
 
       {/* Bottom Purchases Collection Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">

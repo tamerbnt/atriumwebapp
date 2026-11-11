@@ -161,7 +161,7 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
           </div>
 
           {/* Cadastre & Concession Loi 10-03 */}
-          <div className="p-3.5 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/80 space-y-3">
+          <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/80 space-y-3">
             <span className="text-[11px] font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider block">
               {isAr ? 'البيانات العقارية والمسح الفلاحي' : 'Régime Foncier & Concession (Loi 10-03)'}
             </span>

@@ -156,7 +156,7 @@ export const RealEstateMandatesView: React.FC = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Elevated Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 p-6 rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800/60 shadow-2xs space-y-6">
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 p-6 rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800/60 shadow-2xs space-y-6">
         {/* Header & Controls */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center gap-3.5">
@@ -431,7 +431,7 @@ export const RealEstateMandatesView: React.FC = () => {
             </div>
 
             {/* Status & Exclusivity Banner */}
-            <div className="p-3.5 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/60 border border-[#EDF1F3] dark:border-neutral-700/60 space-y-1">
+            <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-1">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-neutral-500 dark:text-neutral-400">Statut Juridique:</span>
                 <span className="font-semibold text-emerald-600 dark:text-emerald-400">

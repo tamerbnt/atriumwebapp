@@ -642,7 +642,7 @@ export const AutoGarageBillingView: React.FC = () => {
               </div>
 
               {/* Breakdown Preview */}
-              <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 space-y-2 text-xs font-mono">
+              <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 space-y-2 text-xs font-mono">
                 <div className="flex justify-between text-neutral-500">
                   <span>Main d'œuvre :</span>
                   <span>{formatMoney(orderToSettle.laborCostDzd || 3750, language)}</span>

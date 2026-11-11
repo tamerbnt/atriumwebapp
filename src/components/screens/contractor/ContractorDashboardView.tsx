@@ -184,7 +184,7 @@ export const ContractorDashboardView: React.FC = () => {
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <span className="text-xs font-medium text-gray-500 block mb-1">
@@ -225,7 +225,7 @@ export const ContractorDashboardView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="flex justify-between items-center mb-1.5">
                   <span className="text-xs font-medium text-gray-500">
                     {language === 'ar' ? 'نسبة حضور اليد العاملة اليوم' : 'Taux de Présence Ouvriers'}
@@ -302,7 +302,7 @@ export const ContractorDashboardView: React.FC = () => {
                 />
               </div>
 
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-xs font-semibold text-gray-700">
                     {language === 'ar' ? 'نسبة التقدم الأسبوعي للأشغال (%)' : 'Avancement physique hebdomadaire des lots'}
@@ -337,7 +337,7 @@ export const ContractorDashboardView: React.FC = () => {
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="grid grid-cols-3 gap-2 pb-3 border-b border-gray-100">
                   <div>
                     <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'صافي المقاولة' : 'Marge Nette'}</span>
@@ -371,7 +371,7 @@ export const ContractorDashboardView: React.FC = () => {
               </div>
 
               {/* 4 KPIs Inset Grid */}
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-xs font-semibold text-gray-700">
                     {language === 'ar' ? 'مؤشرات الأداء الميداني BTP' : 'Indicateurs de Pilotage Chantier'}
@@ -379,7 +379,7 @@ export const ContractorDashboardView: React.FC = () => {
                   <Info size={13} className="text-gray-400" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
                     <span className="text-[11px] text-gray-500 block">
                       {language === 'ar' ? 'انحراف الميزانية DQE' : 'Écart Budgétaire DQE'}
                     </span>
@@ -391,7 +391,7 @@ export const ContractorDashboardView: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
                     <span className="text-[11px] text-gray-500 block">
                       {language === 'ar' ? 'إنتاجية اليد العاملة' : 'Productivité Main d’Œuvre'}
                     </span>
@@ -403,7 +403,7 @@ export const ContractorDashboardView: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
                     <span className="text-[11px] text-gray-500 block">
                       {language === 'ar' ? 'مطابقة اختبارات CTC' : 'Conformité Essais CTC'}
                     </span>
@@ -415,7 +415,7 @@ export const ContractorDashboardView: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
                     <span className="text-[11px] text-gray-500 block">
                       {language === 'ar' ? 'أيام بدون حوادث عمل' : 'Jours Sans Accident (HSE)'}
                     </span>
@@ -441,7 +441,7 @@ export const ContractorDashboardView: React.FC = () => {
           >
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-semibold text-gray-700">
                       {language === 'ar' ? 'توزيع مصاريف الورشة' : 'Ventilation des Dépenses'}
@@ -451,7 +451,7 @@ export const ContractorDashboardView: React.FC = () => {
                   <DonutChart segments={siteExpenses} centerLabel={`${activeProjects} Chantiers`} />
                 </div>
 
-                <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-semibold text-gray-700">
                       {language === 'ar' ? 'نسبة الإنجاز حسب الورشة' : 'Avancement DQE par Chantier'}

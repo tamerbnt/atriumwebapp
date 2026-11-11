@@ -492,8 +492,8 @@ export const AppointmentScheduleView: React.FC = () => {
 
         </div>
 
-        {/* Top Metrics Pod Tray (SurfaceBgElevated: #F8F9FA, CornerRadius 24px) */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        {/* Top Metrics Pod Tray (SurfaceBgElevated: #F3EDE7, CornerRadius 24px) */}
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Card 1: Rendez-vous Prévus */}
             <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
@@ -567,8 +567,8 @@ export const AppointmentScheduleView: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom Schedule Pod Tray (SurfaceBgElevated: #F8F9FA) */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Bottom Schedule Pod Tray (SurfaceBgElevated: #F3EDE7) */}
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
           
           {/* Integrated Toolbar: Left Anchor + Controls Bar */}
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">

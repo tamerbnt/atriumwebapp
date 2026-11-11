@@ -580,8 +580,8 @@ export const EducationFinanceView: React.FC = () => {
           </div>
         )}
 
-        {/* Top Metrics Pod Tray (Screenshot_30: bg-[#F8F9FA], rounded-[24px], p-5) */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-3">
+        {/* Top Metrics Pod Tray (Screenshot_30: bg-[#F3EDE7], rounded-[24px], p-5) */}
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
           <div>
             <h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
               {language === 'ar' ? 'مؤشرات التحصيل والذمم المالية' : language === 'fr' ? 'Performance Financière & Recouvrement' : 'Tuition & Receivables Performance'}
@@ -658,8 +658,8 @@ export const EducationFinanceView: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom Collection Pod Tray (Screenshot_30: bg-[#F8F9FA], rounded-[24px], p-5) */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Bottom Collection Pod Tray (Screenshot_30: bg-[#F3EDE7], rounded-[24px], p-5) */}
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
           
           {/* Integrated Toolbar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -837,7 +837,7 @@ export const EducationFinanceView: React.FC = () => {
             </div>
 
             <form onSubmit={handleConfirmPayment} className="space-y-4 text-xs">
-              <div className="p-3.5 rounded-xl bg-[#F8F9FA] dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 space-y-1">
+              <div className="p-3.5 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 space-y-1">
                 <div className="font-bold text-neutral-900 dark:text-white">
                   {selectedEnrollmentForPayment.studentName}
                 </div>
@@ -955,13 +955,13 @@ export const EducationFinanceView: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3.5 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800">
+              <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-800">
                 <span className="text-[11px] text-neutral-400 block mb-0.5">Frais de Scolarité</span>
                 <span className="text-lg font-bold text-neutral-900 dark:text-white tabular-nums">
                   {formatMoney(detailEnrollment.agreedTuition)}
                 </span>
               </div>
-              <div className="p-3.5 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800">
+              <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-800">
                 <span className="text-[11px] text-neutral-400 block mb-0.5">Solde Restant</span>
                 <span className="text-lg font-bold text-rose-600 dark:text-rose-400 tabular-nums">
                   {formatMoney(detailEnrollment.balanceDue)}
@@ -1069,7 +1069,7 @@ export const EducationFinanceView: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-[#F8F9FA] dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 space-y-2 text-xs">
+            <div className="p-4 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 space-y-2 text-xs">
               <div className="flex justify-between">
                 <span className="text-neutral-500">{language === 'ar' ? 'المترشح / المتدرب:' : language === 'fr' ? 'Apprenant :' : 'Learner:'}</span>
                 <span className="font-bold text-neutral-900 dark:text-white">

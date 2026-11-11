@@ -171,7 +171,7 @@ export const MandateModal: React.FC<MandateModalProps> = ({
           </div>
 
           {/* Section 2: Owner Legal Identification (Décret 09-18 Requirement) */}
-          <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-[#141416] border border-[#EDF1F3] dark:border-[#232328] space-y-4">
+          <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#141416] border border-[#E6DED6] dark:border-[#232328] space-y-4">
             <div className="flex items-center gap-2 text-xs font-semibold text-[#d4522f] uppercase tracking-wider">
               <ShieldCheck className="w-4 h-4" />
               <span>Identité Légale du Mandant (Propriétaire)</span>

@@ -200,7 +200,7 @@ export const MembershipFinanceView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-[#F8F9FA] dark:bg-[#1C1C1E] p-5 rounded-2xl border border-neutral-200/70 dark:border-neutral-800 flex flex-col justify-between">
+        <div className="bg-[#F3EDE7] dark:bg-[#1C1C1E] p-5 rounded-2xl border border-neutral-200/70 dark:border-neutral-800 flex flex-col justify-between">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-1">
             <span className="text-xs font-medium uppercase tracking-wider">
               {isAr ? 'متوسط الدخل اليومي' : isEn ? 'Daily Average' : 'Moyenne Journalière'}
@@ -219,7 +219,7 @@ export const MembershipFinanceView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-[#F8F9FA] dark:bg-[#1C1C1E] p-5 rounded-2xl border border-neutral-200/70 dark:border-neutral-800 flex flex-col justify-between">
+        <div className="bg-[#F3EDE7] dark:bg-[#1C1C1E] p-5 rounded-2xl border border-neutral-200/70 dark:border-neutral-800 flex flex-col justify-between">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-1">
             <span className="text-xs font-medium uppercase tracking-wider">
               {isAr ? 'مستحقات غير محصلة' : isEn ? 'Pending Balances' : 'Impayés & Restes à Recouvrer'}
@@ -238,7 +238,7 @@ export const MembershipFinanceView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-[#F8F9FA] dark:bg-[#1C1C1E] p-5 rounded-2xl border border-neutral-200/70 dark:border-neutral-800 flex flex-col justify-between">
+        <div className="bg-[#F3EDE7] dark:bg-[#1C1C1E] p-5 rounded-2xl border border-neutral-200/70 dark:border-neutral-800 flex flex-col justify-between">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-1">
             <span className="text-xs font-medium uppercase tracking-wider">
               {isAr ? 'الفرع الرياضي' : isEn ? 'Facility Branch' : 'Établissement Sportif'}

@@ -124,7 +124,7 @@ export const MedicalOrdonnancePersonalizerModal: React.FC<MedicalOrdonnancePerso
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
       <div className="bg-white dark:bg-neutral-900 w-full max-w-6xl max-h-[92vh] rounded-[28px] border border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between shrink-0 bg-[#F8F9FA] dark:bg-neutral-800/40">
+        <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between shrink-0 bg-[#F3EDE7] dark:bg-neutral-800/40">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
               <Sliders size={20} />
@@ -191,7 +191,7 @@ export const MedicalOrdonnancePersonalizerModal: React.FC<MedicalOrdonnancePerso
           {/* Left Configuration Panel */}
           <div className="col-span-12 lg:col-span-6 p-6 overflow-y-auto space-y-5 border-r border-neutral-200 dark:border-neutral-800">
             {/* 1. Paper Format & Mode Section */}
-            <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/60 space-y-3">
+            <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/60 space-y-3">
               <span className="text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
                 <Printer size={14} className="text-[#d4522f]" />
                 Format de Papier & Mode d'Impression
@@ -321,7 +321,7 @@ export const MedicalOrdonnancePersonalizerModal: React.FC<MedicalOrdonnancePerso
             </div>
 
             {/* 3. Aesthetic Color Accent & Watermark */}
-            <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/60 space-y-3">
+            <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/60 space-y-3">
               <span className="text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
                 <Palette size={14} className="text-[#d4522f]" />
                 Palette de Style & Sécurité
@@ -521,7 +521,7 @@ export const MedicalOrdonnancePersonalizerModal: React.FC<MedicalOrdonnancePerso
         </div>
 
         {/* Footer Actions */}
-        <div className="px-6 py-3.5 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between shrink-0 bg-[#F8F9FA] dark:bg-neutral-800/40">
+        <div className="px-6 py-3.5 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between shrink-0 bg-[#F3EDE7] dark:bg-neutral-800/40">
           <AtriumButton
             variant="ghost"
             onClick={onClose}

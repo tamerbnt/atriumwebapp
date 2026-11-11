@@ -630,7 +630,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                 className="flex-1 flex flex-col justify-between"
               >
                 <div className="space-y-4">
-                  <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm">
+                  <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <span className="text-xs font-medium text-gray-500 dark:text-neutral-400 block mb-1">
@@ -671,7 +671,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm">
+                  <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                     <div className="flex justify-between items-center mb-1.5">
                       <span className="text-xs font-medium text-gray-500 dark:text-neutral-400">
                         {language === 'ar' ? 'نسبة إنجاز مراحل المشاريع' : 'Burn-Down & Avancement Lots'}
@@ -734,7 +734,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                     />
                   </div>
 
-                  <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm">
+                  <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                     <div className="flex justify-between items-center mb-3">
                       <span className="text-xs font-semibold text-gray-700 dark:text-neutral-200">
                         {language === 'ar' ? 'إنجاز المراحل أسبوعياً' : 'Jalons & Livrables clôturés (4 semaines)'}
@@ -797,7 +797,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                   </div>
 
                   {/* 30-day Cash Trajectory Curve */}
-                  <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm">
+                  <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
                         {language === 'ar' ? 'مسار الفوترة والتحصيل (30 يوماً)' : language === 'fr' ? 'Trajectoire Facturation & Recouvrement (30j)' : 'Billing & Collections Trajectory (30d)'}
@@ -819,22 +819,22 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 
                   {/* 4 Inset Domain KPIs */}
                   <div className="grid grid-cols-2 gap-2 pt-1">
-                    <div className="bg-white dark:bg-neutral-800 p-3 rounded-[16px] border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm">
+                    <div className="bg-white dark:bg-neutral-800 p-3 rounded-[16px] border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                       <span className="text-[11px] text-gray-500 dark:text-gray-400 block">{language === 'ar' ? 'نسبة التحصيل' : language === 'fr' ? 'Taux de Recouvrement' : 'Collection Rate'}</span>
                       <span className="text-base font-bold font-mono text-gray-900 dark:text-white tabular-nums">92.4%</span>
                       <span className="text-[10px] text-emerald-600 font-semibold block mt-0.5">{language === 'ar' ? 'ممتاز' : 'Optimal'}</span>
                     </div>
-                    <div className="bg-white dark:bg-neutral-800 p-3 rounded-[16px] border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm">
+                    <div className="bg-white dark:bg-neutral-800 p-3 rounded-[16px] border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                       <span className="text-[11px] text-gray-500 dark:text-gray-400 block">{language === 'ar' ? 'متوسط السداد (DSO)' : language === 'fr' ? 'Délai Paiement Client' : 'Average DSO'}</span>
                       <span className="text-base font-bold font-mono text-gray-900 dark:text-white tabular-nums">28j</span>
                       <span className="text-[10px] text-blue-600 font-semibold block mt-0.5">{language === 'ar' ? 'تحت الهدف' : '< 30 jours'}</span>
                     </div>
-                    <div className="bg-white dark:bg-neutral-800 p-3 rounded-[16px] border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm">
+                    <div className="bg-white dark:bg-neutral-800 p-3 rounded-[16px] border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                       <span className="text-[11px] text-gray-500 dark:text-gray-400 block">{language === 'ar' ? 'انحراف الميزانية' : language === 'fr' ? 'Dérapage Budgétaire' : 'Budget Variance'}</span>
                       <span className="text-base font-bold font-mono text-gray-900 dark:text-white tabular-nums">0.0%</span>
                       <span className="text-[10px] text-emerald-600 font-semibold block mt-0.5">{language === 'ar' ? 'مضبوط' : 'Sous contrôle'}</span>
                     </div>
-                    <div className="bg-white dark:bg-neutral-800 p-3 rounded-[16px] border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm">
+                    <div className="bg-white dark:bg-neutral-800 p-3 rounded-[16px] border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                       <span className="text-[11px] text-gray-500 dark:text-gray-400 block">{language === 'ar' ? 'المشاريع الرابحة' : language === 'fr' ? 'Projets Rentables' : 'Profitable Projects'}</span>
                       <span className="text-base font-bold font-mono text-gray-900 dark:text-white tabular-nums">94%</span>
                       <span className="text-[10px] text-emerald-600 font-semibold block mt-0.5">↗ +4.0%</span>
@@ -854,7 +854,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                 <div className="space-y-4">
                   {/* Two domain intelligence charts */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-3.5 border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm">
+                    <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-3.5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                       <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-2">
                         {language === 'ar' ? 'توزيع ساعات العمل' : language === 'fr' ? 'Répartition Heures / Pôle' : 'Hours by Discipline'}
                       </span>
@@ -868,7 +868,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                         size={110}
                       />
                     </div>
-                    <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-3.5 border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm flex flex-col justify-between">
+                    <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-3.5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm flex flex-col justify-between">
                       <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-2">
                         {language === 'ar' ? 'وتيرة إنجاز المهام (أسبوعياً)' : language === 'fr' ? 'Cadence Livrables / Semaine' : 'Weekly Deliverable Cadence'}
                       </span>
@@ -910,7 +910,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 
       {/* SCREEN 1.2: PORTEFEUILLE PROJETS (UniversalDataCollection) */}
       {currentScreen === 'projects' && (
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
           {/* Domain Filter Header Strip */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>

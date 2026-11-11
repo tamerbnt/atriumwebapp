@@ -671,8 +671,8 @@ export const EducationStudentsView: React.FC = () => {
           </div>
         )}
 
-        {/* Top Metrics Pod Tray (Screenshot_30: bg-[#F8F9FA], rounded-[24px], p-5) */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-3">
+        {/* Top Metrics Pod Tray (Screenshot_30: bg-[#F3EDE7], rounded-[24px], p-5) */}
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
           <div>
             <h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
               {language === 'ar' ? 'مؤشرات الانضباط والتحصيل الدراسي' : language === 'fr' ? 'Effectifs & Assiduité Scolaire' : 'Student Body & Attendance Health'}
@@ -757,8 +757,8 @@ export const EducationStudentsView: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom Collection Pod Tray (Screenshot_30: bg-[#F8F9FA], rounded-[24px], p-5) */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Bottom Collection Pod Tray (Screenshot_30: bg-[#F3EDE7], rounded-[24px], p-5) */}
+        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
           
           {/* Integrated Toolbar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -1025,7 +1025,7 @@ export const EducationStudentsView: React.FC = () => {
                         {studentEnrollments.map((enr) => (
                           <div
                             key={enr.id}
-                            className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-900/60"
+                            className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60"
                           >
                             <div className="flex items-center justify-between mb-1">
                               <span className="font-bold text-neutral-900 dark:text-white">
@@ -1121,7 +1121,7 @@ export const EducationStudentsView: React.FC = () => {
                   {studentEnrollments.map((enr) => (
                     <div
                       key={enr.id}
-                      className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-900/60 space-y-3"
+                      className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-3"
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-neutral-900 dark:text-white">
@@ -1194,7 +1194,7 @@ export const EducationStudentsView: React.FC = () => {
               )}
 
               {activeDrawerTab === 'guardian' && (
-                <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-900/60 space-y-3">
+                <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-neutral-900 dark:text-white">
                       {t('edu_drawer_guardian')}
@@ -1263,7 +1263,7 @@ export const EducationStudentsView: React.FC = () => {
                       {studentCerts.map((c) => (
                         <div
                           key={c.id}
-                          className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-900/60 space-y-1.5"
+                          className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-1.5"
                         >
                           <div className="flex items-center justify-between">
                             <span className="font-bold text-neutral-900 dark:text-white">
@@ -1385,7 +1385,7 @@ export const EducationStudentsView: React.FC = () => {
               )}
 
               {/* Guardian checkbox & inputs */}
-              <div className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-900/60 space-y-3">
+              <div className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-3">
                 <label className="flex items-center gap-2 font-semibold text-neutral-800 dark:text-neutral-200 cursor-pointer">
                   <input
                     type="checkbox"

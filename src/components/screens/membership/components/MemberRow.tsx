@@ -155,9 +155,10 @@ export const MemberRow: React.FC<MemberRowProps> = ({
         ...(isPositioned
           ? {
               position: 'absolute',
-              left: `${x}px`,
+              left: 0,
+              right: 0,
+              width: '100%',
               top: `${y}px`,
-              width: `${Math.max(0, W)}px`,
               height: `${Math.max(0, height ?? calculatedHeight)}px`,
             }
           : {
@@ -189,12 +190,12 @@ export const MemberRow: React.FC<MemberRowProps> = ({
           }}
         />
 
-        {/* Row Inner Content (.in) - z-index: 2, padding-right: 196px */}
+        {/* Row Inner Content (.in) - z-index: 2, padding-right: 150px */}
         <div
           className={`in absolute inset-0 z-[2] cursor-pointer ${
             isGrid
               ? 'p-4 grid grid-cols-[22px_1fr_auto] gap-x-3 gap-y-2.5 content-between pr-4'
-              : 'grid grid-cols-[22px_40px_minmax(200px,1.5fr)_minmax(150px,1fr)_100px_150px_110px] gap-3.5 items-center px-4 pr-[196px]'
+              : 'grid grid-cols-[22px_40px_minmax(200px,1.4fr)_minmax(180px,1.1fr)_120px_150px_110px] gap-3.5 items-center px-4 pr-[150px]'
           }`}
           style={{ opacity: contentOpacity }}
         >
@@ -231,7 +232,7 @@ export const MemberRow: React.FC<MemberRowProps> = ({
           </div>
 
           {/* Column 2: Who (Name + ID & Phone) */}
-          <div className="who flex flex-col min-w-0 text-left">
+          <div className="who flex flex-col min-w-0 text-left rtl:text-right">
             <div className="flex items-center gap-1.5 min-w-0">
               <span className="font-bold text-[14.5px] text-[#1B1917] dark:text-[#F3EDE7] group-hover:text-[#C9441F] transition-colors truncate">
                 {member.name}
@@ -279,7 +280,7 @@ export const MemberRow: React.FC<MemberRowProps> = ({
 
           {/* Column 6: Balance (mono) */}
           <div
-            className={`font-mono text-[12.5px] font-bold truncate ${
+            className={`font-mono text-[12.5px] font-bold truncate text-left rtl:text-right ${
               member.balance === 0
                 ? 'text-[#0B7A45] dark:text-[#3CE085]'
                 : 'text-[#1B1917] dark:text-[#F3EDE7]'

@@ -85,7 +85,7 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
         </div>
 
         {/* Batch Overview Banner */}
-        <div className="p-3.5 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/60 border border-[#EDF1F3] dark:border-neutral-700/60 flex items-center justify-between">
+        <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-between">
           <div>
             <span className="text-[11px] text-neutral-500 block">
               {isAr ? 'المتاجر المشمولة بالدفعة' : 'Commerçants dans le lot'}

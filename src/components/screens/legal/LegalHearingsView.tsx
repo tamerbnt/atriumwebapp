@@ -394,7 +394,7 @@ export const LegalHearingsView: React.FC = () => {
       {/* 2. Elevated Pod Tray (3 KPIs) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* KPI 1: Scheduled Hearings */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-900/60 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800 flex items-center justify-between">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-900/60 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between">
           <div>
             <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
               {isAr ? 'الجلسات المبرمجة' : 'Audiences Fixées'}
@@ -412,7 +412,7 @@ export const LegalHearingsView: React.FC = () => {
         </div>
 
         {/* KPI 2: CPCA Critical Deadlines */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-900/60 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800 flex items-center justify-between">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-900/60 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between">
           <div>
             <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
               {isAr ? 'مواعيد استئناف عاجلة' : 'Délais CPCA Actifs'}
@@ -430,7 +430,7 @@ export const LegalHearingsView: React.FC = () => {
         </div>
 
         {/* KPI 3: Attended & Deliberated */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-900/60 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800 flex items-center justify-between">
+        <div className="bg-[#F3EDE7] dark:bg-neutral-900/60 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between">
           <div>
             <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
               {isAr ? 'قضايا نوقشت / قيد المداولة' : 'Affaires Plaidées & Délibérés'}
@@ -495,7 +495,7 @@ export const LegalHearingsView: React.FC = () => {
             /* Chronological Docket View Grouped by Date */
             <div className="space-y-6">
               {Object.keys(hearingsByDate).length === 0 ? (
-                <div className="p-12 text-center bg-[#F8F9FA] dark:bg-neutral-900/40 rounded-[28px] border border-dashed border-[#E2E8EC] dark:border-neutral-800">
+                <div className="p-12 text-center bg-[#F3EDE7] dark:bg-neutral-900/40 rounded-[28px] border border-dashed border-[#E2E8EC] dark:border-neutral-800">
                   <Gavel size={36} className="mx-auto text-neutral-400 mb-3" />
                   <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
                     {isAr ? 'لا توجد جلسات قضائية مطابقة لمعايير البحث' : 'Aucune audience inscrite à l\'audiencier'}
@@ -508,9 +508,9 @@ export const LegalHearingsView: React.FC = () => {
                 Object.entries(hearingsByDate).map(([date, dateHearings]) => (
                   <div
                     key={date}
-                    className="bg-[#F8F9FA] dark:bg-neutral-900/50 rounded-[28px] p-5 border border-[#EDF1F3] dark:border-neutral-800 shadow-2xs space-y-4"
+                    className="bg-[#F3EDE7] dark:bg-neutral-900/50 rounded-[28px] p-5 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs space-y-4"
                   >
-                    <div className="flex items-center justify-between pb-3 border-b border-[#EDF1F3] dark:border-neutral-800">
+                    <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
                       <div className="flex items-center gap-2">
                         <Calendar size={18} className="text-[#d4522f]" />
                         <h2 className="text-sm font-black text-neutral-900 dark:text-white uppercase tracking-wider">
@@ -658,8 +658,8 @@ export const LegalHearingsView: React.FC = () => {
 
         {/* 5. 390px Inline Side Inspector Drawer */}
         {selectedHearing && (
-          <aside className="w-[390px] shrink-0 bg-[#F8F9FA] dark:bg-neutral-900/70 rounded-[28px] border border-[#EDF1F3] dark:border-neutral-800 p-5 space-y-5 hidden lg:block sticky top-6 self-start shadow-sm">
-            <div className="flex items-center justify-between pb-3 border-b border-[#EDF1F3] dark:border-neutral-800">
+          <aside className="w-[390px] shrink-0 bg-[#F3EDE7] dark:bg-neutral-900/70 rounded-[28px] border border-[#E6DED6] dark:border-neutral-800 p-5 space-y-5 hidden lg:block sticky top-6 self-start shadow-sm">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
               <div className="flex items-center gap-2">
                 <Gavel size={18} className="text-[#d4522f]" />
                 <h3 className="text-sm font-black text-neutral-900 dark:text-white">
@@ -733,7 +733,7 @@ export const LegalHearingsView: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 p-3 bg-white dark:bg-neutral-800 rounded-xl border border-[#EDF1F3] dark:border-neutral-700">
+                <div className="grid grid-cols-2 gap-2 p-3 bg-white dark:bg-neutral-800 rounded-xl border border-[#E6DED6] dark:border-neutral-700">
                   <div>
                     <div className="text-[10px] text-neutral-400">{isAr ? 'تاريخ الجلسة' : 'Date d\'Audience'}</div>
                     <div className="font-bold font-mono text-neutral-900 dark:text-white mt-0.5">
@@ -777,7 +777,7 @@ export const LegalHearingsView: React.FC = () => {
                   <div className="text-[10px] font-bold text-neutral-400 uppercase">
                     {isAr ? 'الهدف من الجلسة' : 'Démarche Procédurale'}
                   </div>
-                  <div className="p-3 bg-white dark:bg-neutral-800 rounded-xl border border-[#EDF1F3] dark:border-neutral-700 mt-1 text-neutral-700 dark:text-neutral-300">
+                  <div className="p-3 bg-white dark:bg-neutral-800 rounded-xl border border-[#E6DED6] dark:border-neutral-700 mt-1 text-neutral-700 dark:text-neutral-300">
                     {selectedHearing.purpose || 'Plaidoirie sur le fond'}
                   </div>
                 </div>
@@ -833,7 +833,7 @@ export const LegalHearingsView: React.FC = () => {
                   <div className="text-[10px] font-bold text-neutral-400 uppercase">
                     {isAr ? 'ملاحظات المحامي' : 'Consignes & Compte-rendu'}
                   </div>
-                  <div className="p-3 bg-white dark:bg-neutral-800 rounded-xl border border-[#EDF1F3] dark:border-neutral-700 mt-1 text-neutral-700 dark:text-neutral-300">
+                  <div className="p-3 bg-white dark:bg-neutral-800 rounded-xl border border-[#E6DED6] dark:border-neutral-700 mt-1 text-neutral-700 dark:text-neutral-300">
                     {selectedHearing.resultSummary || 'En attente d\'audience.'}
                   </div>
                 </div>
@@ -841,7 +841,7 @@ export const LegalHearingsView: React.FC = () => {
             )}
 
             {/* Quick Actions in Drawer */}
-            <div className="pt-3 border-t border-[#EDF1F3] dark:border-neutral-800 flex items-center gap-2">
+            <div className="pt-3 border-t border-[#E6DED6] dark:border-neutral-800 flex items-center gap-2">
               <AtriumButton
                 variant="primary"
                 onClick={() => {
@@ -894,8 +894,8 @@ export const LegalHearingsView: React.FC = () => {
       {/* 7. New Hearing Scheduling Modal */}
       {isNewHearingModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-          <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-lg w-full p-6 shadow-xl border border-[#EDF1F3] dark:border-neutral-800 space-y-5 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-[#EDF1F3] dark:border-neutral-800">
+          <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-lg w-full p-6 shadow-xl border border-[#E6DED6] dark:border-neutral-800 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
               <div className="flex items-center gap-2">
                 <Gavel size={20} className="text-[#d4522f]" />
                 <h3 className="text-base font-bold text-neutral-900 dark:text-white">
@@ -993,7 +993,7 @@ export const LegalHearingsView: React.FC = () => {
                 />
               </div>
 
-              <div className="pt-4 border-t border-[#EDF1F3] dark:border-neutral-800 flex items-center justify-end gap-3">
+              <div className="pt-4 border-t border-[#E6DED6] dark:border-neutral-800 flex items-center justify-end gap-3">
                 <AtriumButton
                   variant="outline"
                   type="button"

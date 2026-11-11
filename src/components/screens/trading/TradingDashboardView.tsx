@@ -196,7 +196,7 @@ export const TradingDashboardView: React.FC = () => {
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <span className="text-xs font-medium text-gray-500 block mb-1">
@@ -237,7 +237,7 @@ export const TradingDashboardView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="flex justify-between items-center mb-1.5">
                   <span className="text-xs font-medium text-gray-500">
                     {language === 'ar' ? 'إجمالي المبيعات اليوم' : 'CA Facturé Aujourd’hui'}
@@ -314,7 +314,7 @@ export const TradingDashboardView: React.FC = () => {
                 />
               </div>
 
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-xs font-semibold text-gray-700">
                     {language === 'ar' ? 'حجم المبيعات الأسبوعية (دج)' : 'Volume hebdomadaire des ventes'}
@@ -349,7 +349,7 @@ export const TradingDashboardView: React.FC = () => {
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="grid grid-cols-3 gap-2 pb-3 border-b border-gray-100">
                   <div>
                     <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'هامش الربح' : 'Marge Nette'}</span>
@@ -383,7 +383,7 @@ export const TradingDashboardView: React.FC = () => {
               </div>
 
               {/* 4 KPIs Inset Grid */}
-              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-xs font-semibold text-gray-700">
                     {language === 'ar' ? 'مؤشرات الأداء التجاري B2B' : 'Ratios de Performance Négoce'}
@@ -391,7 +391,7 @@ export const TradingDashboardView: React.FC = () => {
                   <Info size={13} className="text-gray-400" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
                     <span className="text-[11px] text-gray-500 block">
                       {language === 'ar' ? 'متوسط أجل الدفع (DSO)' : 'DSO Moyen'}
                     </span>
@@ -403,7 +403,7 @@ export const TradingDashboardView: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
                     <span className="text-[11px] text-gray-500 block">
                       {language === 'ar' ? 'نسبة تسليم الطلبيات' : 'Taux de Service'}
                     </span>
@@ -415,7 +415,7 @@ export const TradingDashboardView: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
                     <span className="text-[11px] text-gray-500 block">
                       {language === 'ar' ? 'دوران المخزون' : 'Rotation Stocks'}
                     </span>
@@ -427,7 +427,7 @@ export const TradingDashboardView: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
                     <span className="text-[11px] text-gray-500 block">
                       {language === 'ar' ? 'هامش الربح الإجمالي' : 'Marge Brute'}
                     </span>
@@ -453,7 +453,7 @@ export const TradingDashboardView: React.FC = () => {
           >
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-semibold text-gray-700">
                       {language === 'ar' ? 'توزيع المبيعات حسب الصنف' : 'Mix Familles Produits'}
@@ -463,7 +463,7 @@ export const TradingDashboardView: React.FC = () => {
                   <DonutChart segments={productFamilies} centerLabel={`${totalProducts} SKUs`} />
                 </div>
 
-                <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-semibold text-gray-700">
                       {language === 'ar' ? 'كبار المشترين (حجم الطلبات)' : 'Top Acheteurs B2B'}

@@ -71,7 +71,7 @@ export const NotarySimulatorModal: React.FC<NotarySimulatorModalProps> = ({
         </div>
 
         {/* Results Card */}
-        <div className="p-5 rounded-2xl bg-[#F8F9FA] dark:bg-[#141416] border border-[#EDF1F3] dark:border-[#232328] space-y-4">
+        <div className="p-5 rounded-2xl bg-[#F3EDE7] dark:bg-[#141416] border border-[#E6DED6] dark:border-[#232328] space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-xs uppercase font-bold text-[#d4522f] tracking-wider">
               Décomposition Détaillée de l'Acquisition
@@ -83,7 +83,7 @@ export const NotarySimulatorModal: React.FC<NotarySimulatorModalProps> = ({
 
           <div className="space-y-2 text-xs">
             {/* 1. Droits d'Enregistrement */}
-            <div className="flex justify-between items-center py-2 border-b border-[#EDF1F3] dark:border-[#232328]">
+            <div className="flex justify-between items-center py-2 border-b border-[#E6DED6] dark:border-[#232328]">
               <div>
                 <div className="font-semibold text-[#18181B] dark:text-white">
                   Droits d'Enregistrement (DGI / Trésor Public)
@@ -98,7 +98,7 @@ export const NotarySimulatorModal: React.FC<NotarySimulatorModalProps> = ({
             </div>
 
             {/* 2. Publicité Foncière */}
-            <div className="flex justify-between items-center py-2 border-b border-[#EDF1F3] dark:border-[#232328]">
+            <div className="flex justify-between items-center py-2 border-b border-[#E6DED6] dark:border-[#232328]">
               <div>
                 <div className="font-semibold text-[#18181B] dark:text-white">
                   Taxe de Publicité Foncière (TPF)
@@ -113,7 +113,7 @@ export const NotarySimulatorModal: React.FC<NotarySimulatorModalProps> = ({
             </div>
 
             {/* 3. Honoraires Notaire */}
-            <div className="flex justify-between items-center py-2 border-b border-[#EDF1F3] dark:border-[#232328]">
+            <div className="flex justify-between items-center py-2 border-b border-[#E6DED6] dark:border-[#232328]">
               <div>
                 <div className="font-semibold text-[#18181B] dark:text-white">
                   Émoluments Officiels du Notaire (Décret 08-243)
@@ -133,7 +133,7 @@ export const NotarySimulatorModal: React.FC<NotarySimulatorModalProps> = ({
             </div>
 
             {/* 4. Débours */}
-            <div className="flex justify-between items-center py-2 border-b border-[#EDF1F3] dark:border-[#232328]">
+            <div className="flex justify-between items-center py-2 border-b border-[#E6DED6] dark:border-[#232328]">
               <div>
                 <div className="font-semibold text-[#18181B] dark:text-white">
                   Timbres Fiscaux & Débours Administratifs

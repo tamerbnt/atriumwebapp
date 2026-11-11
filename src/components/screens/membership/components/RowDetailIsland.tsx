@@ -150,9 +150,10 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = ({
         className="isl det absolute bg-white dark:bg-[#1A1A1A] border border-[#E4DCD5] dark:border-[#3A3734] shadow-xs pointer-events-none z-0 box-border transition-[border-color,background-color] duration-150"
         style={{
           display: isHidden ? 'none' : 'block',
-          left: `${islandLeft}px`,
+          left: e >= 0.99 ? 0 : `${islandLeft}px`,
+          right: e >= 0.99 ? 0 : undefined,
+          width: e >= 0.99 ? '100%' : `${islandWidth}px`,
           top: `${islandTop}px`,
-          width: `${islandWidth}px`,
           height: `${islandHeight}px`,
           borderRadius: `${islandRadius}px`,
         }}

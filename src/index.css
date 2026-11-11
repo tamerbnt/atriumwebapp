@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @import "./atrium/styles/tokens.css";
 
+@theme {
+  --color-pod: #F3EDE7;
+  --color-pod-border: #E6DED6;
+}
+
 @property --zoom {
   syntax: '<number>';
   inherits: false;
@@ -144,8 +149,14 @@
     --color-surface-bg: #FFFFFF;
     --color-card-bg: #FFFFFF;
     --color-card-border: #E9EEF0;
-    --color-group-bg: #F8F9FA;
-    --color-group-border: #EDF1F3;
+    --color-group-bg: #F3EDE7;
+    --color-group-border: #E6DED6;
+    --color-pod: #F3EDE7;
+    --color-pod-bg: #F3EDE7;
+    --color-pod-border: #E6DED6;
+    --color-line: #E6DED6;
+    --pod: #F3EDE7;
+    --line: #E6DED6;
     --color-card-dark: #18181B;
 
     /* Text */
@@ -155,7 +166,7 @@
 
     /* Borders & Subtle Dividers */
     --color-border: #E2E8EC;
-    --color-border-subtle: #EDF1F3;
+    --color-border-subtle: #E6DED6;
 
     /* Dock Sidebar (Always Dark Obsidian) */
     --color-dock-bg: #18181B;
@@ -242,6 +253,12 @@
     --color-card-border: #27272A;
     --color-group-bg: #141416;
     --color-group-border: #232328;
+    --color-pod: #141416;
+    --color-pod-bg: #141416;
+    --color-pod-border: #232328;
+    --color-line: #232328;
+    --pod: #141416;
+    --line: #232328;
     --color-card-dark: #09090B;
 
     --color-text-primary: #FAFAFA;
@@ -2215,5 +2232,44 @@ button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]) > *:no
   .c { background: Highlight; forced-color-adjust: none; }
   .l { background: HighlightText; forced-color-adjust: none; }
 }
+
+/* ============================================================
+   Universal Atrium Pod Container Architecture
+   Background: #F3EDE7, Border: 1px #E6DED6 (Light)
+   Background: #141416, Border: 1px #232328 (Dark)
+   Automatic Inheritance Across All Existing & Future Screens
+   ============================================================ */
+
+.pod,
+.atrium-pod,
+[data-pod="true"],
+.dashboard-pod {
+  background-color: var(--color-group-bg, #F3EDE7);
+  border: 1px solid var(--color-group-border, #E6DED6);
+  border-radius: var(--radius-group, 24px);
+}
+
+/* Global inheritance safeguard for any legacy or future screens */
+:root:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .bg-\[\#F8F9FA\],
+:root:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .bg-\[\#f8f9fa\],
+html:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .bg-\[\#F8F9FA\],
+html:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .bg-\[\#f8f9fa\] {
+  background-color: #F3EDE7 !important;
+}
+
+:root:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#EDF1F3\],
+:root:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#edf1f3\],
+html:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#EDF1F3\],
+html:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#edf1f3\] {
+  border-color: #E6DED6 !important;
+}
+
+:root:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .divide-\[\#EDF1F3\],
+:root:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .divide-\[\#edf1f3\],
+html:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .divide-\[\#EDF1F3\],
+html:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .divide-\[\#edf1f3\] {
+  border-color: #E6DED6 !important;
+}
+
 
 

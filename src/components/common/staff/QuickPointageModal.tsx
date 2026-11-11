@@ -132,7 +132,7 @@ export const QuickPointageModal: React.FC<QuickPointageModalProps> = ({
               <div
                 key={member.id}
                 onClick={() => onPunch(member.id, punchType, 'manual')}
-                className="flex items-center justify-between p-2 rounded-xl bg-[#F8F9FA] dark:bg-[#1C1C1E] hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer transition-colors"
+                className="flex items-center justify-between p-2 rounded-xl bg-[#F3EDE7] dark:bg-[#1C1C1E] hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer transition-colors"
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <div className="w-7 h-7 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-xs font-bold text-neutral-700 dark:text-neutral-200 shrink-0">
