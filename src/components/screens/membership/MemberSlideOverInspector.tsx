@@ -236,7 +236,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
         aria-modal="true"
         aria-labelledby="member-drawer-title"
         style={{ transform: 'translateX(100%)' }}
-        className="absolute right-0 top-0 bottom-0 w-[560px] max-w-[100vw] bg-white dark:bg-[#1A1A1A] border-l border-neutral-200/90 dark:border-neutral-800 shadow-[-24px_0_60px_rgba(0,0,0,0.3)] flex flex-col rounded-l-[18px] overflow-hidden"
+        className="absolute right-0 top-0 bottom-0 w-[560px] max-w-[100vw] bg-white dark:bg-[#1A1A1A] border-l border-[#E6DED6] dark:border-neutral-800 shadow-[-24px_0_60px_rgba(0,0,0,0.3)] flex flex-col rounded-l-[18px] overflow-hidden"
       >
         {/* ================= HEADER (.sh) ================= */}
         <div className="flex gap-4 items-center p-6 pb-4 border-b border-neutral-100 dark:border-neutral-800/80">

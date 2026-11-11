@@ -676,7 +676,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Tile 1: Active Member Base — Pure White Card */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
                 {language === 'ar' ? `قاعدة ${terminology.members} النشطة` : language === 'fr' ? `Base active ${terminology.members.toLowerCase()}` : `Active ${terminology.members} Base`}
@@ -693,7 +693,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
           </div>
 
           {/* Tile 2: Customer Spend Volume or Renewal Churn Risk */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
                 {language === 'ar' ? 'تنبيهات انتهاء الاشتراك' : language === 'fr' ? 'Alertes de renouvellement' : 'Renewal & Retention Alert'}
@@ -743,7 +743,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
             <h2 className="text-base font-bold text-neutral-900 dark:text-white tracking-tight">
               {language === 'ar' ? 'قائمة المشتركين' : 'Liste des adhérents'}
             </h2>
-            <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700/70 text-neutral-700 dark:text-neutral-300 shadow-2xs tabular-nums">
+            <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/70 text-neutral-700 dark:text-neutral-300 shadow-2xs tabular-nums">
               {animatedDisplayCount}
             </span>
           </div>
@@ -803,7 +803,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                 className={`h-10 px-3.5 rounded-xl border flex items-center gap-2 text-xs font-semibold cursor-pointer transition-all shadow-2xs select-none ${
                   hasActiveAdvancedFilters || isFilterPopoverOpen
                     ? 'bg-[#FCEEE8] dark:bg-[#d4522f]/15 text-[#d4522f] border-[#d4522f]/40 ring-1 ring-[#d4522f]/20'
-                    : 'bg-white dark:bg-neutral-800 border-[#E9EEF0] dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700/50'
+                    : 'bg-white dark:bg-neutral-800 border-[#E6DED6] dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700/50'
                 }`}
                 title={language === 'ar' ? 'مرشحات متقدمة' : language === 'fr' ? 'Filtres avancés' : 'Advanced Filters'}
                 aria-expanded={isFilterPopoverOpen}
@@ -1224,7 +1224,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               <div className="w-full flex flex-col">
                 {/* Prototype Header Bar (.lh) */}
                 <div
-                  className="lh w-full min-w-[940px] grid grid-cols-[22px_40px_minmax(200px,1.4fr)_minmax(180px,1.1fr)_120px_150px_110px] gap-3.5 items-center px-4 pr-[150px] h-[38px] mb-2.5 bg-white dark:bg-[#18181B] border border-neutral-200/90 dark:border-neutral-800 rounded-[12px] text-[#6B635C] dark:text-[#A89F95] font-semibold text-[12px] uppercase tracking-wider shadow-xs box-border select-none"
+                  className="lh w-full min-w-[940px] grid grid-cols-[22px_40px_minmax(200px,1.4fr)_minmax(180px,1.1fr)_120px_150px_110px] gap-3.5 items-center px-4 pr-[150px] h-[38px] mb-2.5 bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 rounded-[12px] text-[#6B635C] dark:text-[#A89F95] font-semibold text-[12px] uppercase tracking-wider shadow-xs box-border select-none"
                   aria-hidden="true"
                 >
                   <button
@@ -1242,7 +1242,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                     className={`cb w-[22px] h-[22px] rounded-[7px] border-[1.5px] grid place-items-center p-0 transition-colors duration-140 cursor-pointer ${
                       selectedMemberIds.size === sortedMembers.length && sortedMembers.length > 0
                         ? 'bg-[#C9441F] border-[#C9441F] text-white'
-                        : 'bg-white dark:bg-[#262422] border-[#B3A89E] dark:border-[#5A5550] text-transparent hover:border-[#C9441F]'
+                        : 'bg-white dark:bg-[#262422] border-[#E6DED6] dark:border-[#5A5550] text-transparent hover:border-[#C9441F]'
                     }`}
                   >
                     <Check

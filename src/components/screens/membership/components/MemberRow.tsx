@@ -182,7 +182,7 @@ export const MemberRow: React.FC<MemberRowProps> = ({
               ? 'bg-[#FBE7DF] dark:bg-[#2A201C] border-[#C9441F]'
               : isSelected
               ? 'bg-white dark:bg-[#1A1A1A] border-[#C9441F] shadow-[0_0_0_1px_#C9441F]'
-              : 'bg-white dark:bg-[#1A1A1A] border-[#E4DCD5] dark:border-[#3A3734] group-hover:border-[#D5C9BE] dark:group-hover:border-[#4A4744]'
+              : 'bg-white dark:bg-[#1A1A1A] border-[#E6DED6] dark:border-[#3A3734] group-hover:border-[#D5C9BE] dark:group-hover:border-[#4A4744]'
           }`}
           style={{
             top: `${slabTop}px`,
@@ -212,7 +212,7 @@ export const MemberRow: React.FC<MemberRowProps> = ({
             className={`cb w-[22px] h-[22px] rounded-[7px] border-[1.5px] grid place-items-center p-0 transition-colors duration-140 cursor-pointer ${
               isSelected
                 ? 'bg-[#C9441F] border-[#C9441F] text-white'
-                : 'bg-white dark:bg-[#262422] border-[#B3A89E] dark:border-[#5A5550] text-transparent hover:border-[#C9441F]'
+                : 'bg-white dark:bg-[#262422] border-[#E6DED6] dark:border-[#5A5550] text-transparent hover:border-[#C9441F]'
             }`}
           >
             <Check

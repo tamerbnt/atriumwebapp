@@ -8,7 +8,14 @@
   padding: calc(var(--h) * 0.08);
   border: 1px solid var(--atr-line);
   border-radius: var(--r);
-  background: var(--atr-card);
+  background: #FFFFFF;
+}
+
+:global([data-atrium-theme='dark']) .root,
+:global([data-theme='dark']) .root,
+:global(.dark) .root {
+  background: #202022;
+  border-color: #3A3734;
 }
 
 .bl {

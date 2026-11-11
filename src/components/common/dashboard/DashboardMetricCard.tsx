@@ -48,7 +48,7 @@ export const DashboardMetricCard: React.FC<DashboardMetricCardProps> = ({
   return (
     <div
       title={tooltip}
-      className={`bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs min-h-[124px] flex flex-col justify-between ${className}`}
+      className={`bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs min-h-[124px] flex flex-col justify-between ${className}`}
     >
       <div>
         <div className="flex items-center justify-between gap-1">

@@ -147,7 +147,7 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = ({
     <>
       {/* 1. Morphing Island Slab (.isl) - z-index: 0 */}
       <div
-        className="isl det absolute bg-white dark:bg-[#1A1A1A] border border-[#E4DCD5] dark:border-[#3A3734] shadow-xs pointer-events-none z-0 box-border transition-[border-color,background-color] duration-150"
+        className="isl det absolute bg-white dark:bg-[#1A1A1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-xs pointer-events-none z-0 box-border transition-[border-color,background-color] duration-150"
         style={{
           display: isHidden ? 'none' : 'block',
           left: e >= 0.99 ? 0 : `${islandLeft}px`,

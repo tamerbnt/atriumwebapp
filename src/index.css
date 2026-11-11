@@ -800,12 +800,18 @@ div[tabindex],
   padding-top: 6px;
 }
 
-/* no fill: the field is only its outline */
+/* Input field background: #FFFFFF */
 .lbi-box {
   position: relative;
   width: 100%;
-  background: transparent;
+  background: #FFFFFF;
+  border-radius: 12px;
   cursor: text;
+}
+[data-theme="dark"] .lbi-box,
+[data-atrium-theme="dark"] .lbi-box,
+.dark .lbi-box {
+  background: #1C1C1E;
 }
 
 /* ── the outline ──────────────────────────────────────────── */
@@ -2272,8 +2278,20 @@ html:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .bg-\[\
 
 :root:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#EDF1F3\],
 :root:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#edf1f3\],
+:root:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#E9EEF0\],
+:root:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#e9eef0\],
+:root:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#E4DCD5\],
+:root:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#e4dcd5\],
+:root:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#B3A89E\],
+:root:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#b3a89e\],
 html:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#EDF1F3\],
-html:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#edf1f3\] {
+html:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#edf1f3\],
+html:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#E9EEF0\],
+html:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#e9eef0\],
+html:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#E4DCD5\],
+html:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#e4dcd5\],
+html:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#B3A89E\],
+html:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .border-\[\#b3a89e\] {
   border-color: #E6DED6 !important;
 }
 
@@ -2283,6 +2301,17 @@ html:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .divide
 html:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) .divide-\[\#edf1f3\] {
   border-color: #E6DED6 !important;
 }
+
+/* Specific Role Hex Enforcements:
+   - White: #FFFFFF (metric cards, row islands, tabs, inputs, slide-in panel)
+   - Page background: #F3EDE7
+   - Pods: #F3EDE7, with a 1px #E6DED6 border
+   - Main panel and top bar: #FBF8F5 */
+:root:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.lbi-field):not(.sek-field) {
+  background-color: #FFFFFF;
+  border-color: #E6DED6;
+}
+
 
 
 
