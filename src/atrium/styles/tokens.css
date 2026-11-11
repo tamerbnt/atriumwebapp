@@ -19,9 +19,9 @@
 
 :root,
 [data-atrium-theme='light'] {
-    /* surfaces */
-  --atr-bg: #f7f4f1;
-  --atr-card: #ffffff;
+  /* surfaces */
+  --atr-bg: #F3EDE7;
+  --atr-card: #FBF8F5;
   --atr-soft: #ede6e0;
   --atr-line: #E6DED6;
   --pod: #F3EDE7;

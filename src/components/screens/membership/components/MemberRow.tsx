@@ -307,7 +307,7 @@ export const MemberRow: React.FC<MemberRowProps> = ({
           <button
             type="button"
             data-no-liquid="true"
-            className="rb absolute right-[14px] top-[16px] w-[36px] h-[36px] rounded-full bg-[#F3EDE7] dark:bg-[#2A2A2A] grid place-items-center p-0 border border-[#E6DED6] dark:border-[#3A3734] cursor-pointer z-[3] text-[#1B1917] dark:text-[#F3EDE7] shadow-2xs"
+            className="rb absolute right-[14px] top-[16px] w-[36px] h-[36px] rounded-full bg-white dark:bg-[#2A2A2A] grid place-items-center p-0 border border-[#E6DED6] dark:border-[#3A3734] cursor-pointer z-[3] text-[#1B1917] dark:text-[#F3EDE7] shadow-2xs hover:bg-[#FAF7F4] dark:hover:bg-[#333333] transition-colors"
             style={{
               position: 'absolute',
               top: '16px',

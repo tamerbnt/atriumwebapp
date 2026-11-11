@@ -4,6 +4,8 @@
 @theme {
   --color-pod: #F3EDE7;
   --color-pod-border: #E6DED6;
+  --color-main-panel: #FBF8F5;
+  --color-page-bg: #F3EDE7;
 }
 
 @property --zoom {
@@ -113,10 +115,10 @@
     --color-accent-light: #FDF4F0;
 
     /* Atrium Live Controls Token Suite */
-    --atr-bg: #f7f4f1;
-    --atr-card: #ffffff;
+    --atr-bg: #F3EDE7;
+    --atr-card: #FBF8F5;
     --atr-soft: #ede6e0;
-    --atr-line: #e4dcd5;
+    --atr-line: #E6DED6;
     --atr-ink: #0a0a0a;
     --atr-mut: #6b645e;
     --atr-acc: #d4522f;
@@ -145,10 +147,10 @@
     --atr-liq-btn-shadow: 0 4px 20px rgba(213, 83, 47, 0.35);
 
     /* Desktop Outer Window Canvas (Detached Floating Island backdrop) */
-    --color-window-bg: #E8ECEF;
-    --color-surface-bg: #FFFFFF;
-    --color-card-bg: #FFFFFF;
-    --color-card-border: #E9EEF0;
+    --color-window-bg: #F3EDE7;
+    --color-surface-bg: #FBF8F5;
+    --color-card-bg: #FBF8F5;
+    --color-card-border: #E6DED6;
     --color-group-bg: #F3EDE7;
     --color-group-border: #E6DED6;
     --color-pod: #F3EDE7;
@@ -165,7 +167,7 @@
     --color-text-tertiary: #94A3B8;
 
     /* Borders & Subtle Dividers */
-    --color-border: #E2E8EC;
+    --color-border: #E6DED6;
     --color-border-subtle: #E6DED6;
 
     /* Dock Sidebar (Always Dark Obsidian) */
@@ -203,7 +205,7 @@
     --pane-edge: rgba(0, 0, 0, 0.08);
     --board: #ffffff;
     --card: #ffffff;
-    --bg: #e8ecef;
+    --bg: #F3EDE7;
     --wash: 0.06;
     --g-blur: 4px;
     --g-sat: 140%;
@@ -1176,7 +1178,7 @@ div[tabindex],
   width: var(--w);
   height: var(--shut);
   border-radius: var(--sek-r, 9999px);
-  background: var(--color-surface-bg, var(--pane));
+  background: #FFFFFF;
   color: var(--color-text-primary, var(--ink));
   -webkit-backdrop-filter:
     blur(var(--g-blur, 2px)) saturate(var(--g-sat, 150%)) brightness(var(--g-bright, 100%));
@@ -1192,12 +1194,17 @@ div[tabindex],
   overflow: hidden;
 }
 
+[data-theme="dark"] .sek-skin,
+.dark .sek-skin {
+  background: #1C1C1E;
+}
+
 .sek-skin::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  border: 1px solid var(--color-border, var(--pane-edge, rgba(0,0,0,0.08)));
+  border: 1px solid var(--color-border, #E6DED6);
   pointer-events: none;
   z-index: 2;
 }
@@ -1951,9 +1958,15 @@ button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]) > *:no
   display: inline-flex;
   box-sizing: border-box;
   padding: 3px;
-  border: 1px solid var(--atr-line);
+  border: 1px solid var(--atr-line, #E6DED6);
   border-radius: var(--r);
-  background: var(--atr-card);
+  background: #FFFFFF;
+}
+[data-theme="dark"] .d,
+[data-atrium-theme="dark"] .d,
+.dark .d {
+  background: #202022;
+  border-color: #3A3734;
 }
 .d[data-atr-size="sm"] {
   --atr-h: 36px;

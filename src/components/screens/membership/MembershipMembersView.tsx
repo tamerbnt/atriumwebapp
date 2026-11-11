@@ -600,7 +600,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
             <button
               type="button"
               onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-              className="h-10 px-4 rounded-[6px] bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+              className="h-10 px-4 rounded-[6px] bg-white dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shadow-2xs"
             >
               <Home size={16} className="text-[#d4522f]" />
               <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
