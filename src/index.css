@@ -6,6 +6,8 @@
   --color-pod-border: #E6DED6;
   --color-main-panel: #FBF8F5;
   --color-page-bg: #F3EDE7;
+  --font-barlow: 'Barlow Condensed', sans-serif;
+  --font-display: 'Barlow Condensed', sans-serif;
 }
 
 @property --zoom {
@@ -102,6 +104,88 @@
   font-family: 'Sigana Condensed';
   src: url('/fonts/SiganaCondensed.otf') format('opentype');
   font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Local Offline Barlow Condensed Font-Face Suite (Zero Internet Dependency) */
+@font-face {
+  font-family: 'Barlow Condensed';
+  src: url('/fonts/BarlowCondensed-Medium.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Barlow Condensed';
+  src: url('/fonts/BarlowCondensed-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Barlow Condensed';
+  src: url('/fonts/BarlowCondensed-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Barlow Condensed';
+  src: url('/fonts/BarlowCondensed-ExtraBold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Barlow Condensed';
+  src: url('/fonts/BarlowCondensed-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Alias for Barlow_Condensed (matching inline Tailwind arbitrary utility syntax) */
+@font-face {
+  font-family: 'Barlow_Condensed';
+  src: url('/fonts/BarlowCondensed-Medium.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Barlow_Condensed';
+  src: url('/fonts/BarlowCondensed-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Barlow_Condensed';
+  src: url('/fonts/BarlowCondensed-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Barlow_Condensed';
+  src: url('/fonts/BarlowCondensed-ExtraBold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Barlow_Condensed';
+  src: url('/fonts/BarlowCondensed-Black.woff2') format('woff2');
+  font-weight: 900;
   font-style: normal;
   font-display: swap;
 }
@@ -314,6 +398,24 @@
   [dir="rtl"] body,
   [dir="rtl"] {
     font-family: 'Cairo', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    letter-spacing: normal;
+  }
+
+  /* Universal Screen Headers across all 16 categories - Barlow Condensed */
+  h1,
+  .screen-title,
+  .screen-header-title,
+  [data-screen-title="true"] {
+    font-family: 'Barlow Condensed', var(--font-ui), sans-serif;
+    letter-spacing: 0.01em;
+  }
+
+  [dir="rtl"] h1,
+  [dir="rtl"] .screen-title,
+  [dir="rtl"] .screen-header-title,
+  [dir="rtl"] [data-screen-title="true"],
+  :is([dir="rtl"], [dir="rtl"] *) h1 {
+    font-family: 'Cairo', 'Barlow Condensed', sans-serif;
     letter-spacing: normal;
   }
 }

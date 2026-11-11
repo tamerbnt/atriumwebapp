@@ -46,7 +46,7 @@ export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = ({
       {/* Dark Espresso Anchor Card */}
       <div className="bg-[#1F1D1B] text-white p-5 rounded-2xl flex flex-col justify-between shadow-sm relative overflow-hidden">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[11px] font-semibold tracking-wider uppercase text-neutral-400">
+          <span className="text-[12px] font-bold tracking-wider uppercase text-neutral-400 font-['Barlow_Condensed']">
             {categoryTitle || (isAr ? 'فريق العمل' : isEn ? 'Workforce Hub' : 'Effectif Total')}
           </span>
           <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-[#d4522f]">

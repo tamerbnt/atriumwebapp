@@ -125,7 +125,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               <rect x="3" y="14" width="7" height="7" rx="1.5" />
             </svg>
           </div>
-          <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+          <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white font-['Barlow_Condensed']">
             {displayTitle}
           </h1>
         </div>

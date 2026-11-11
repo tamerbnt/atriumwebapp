@@ -177,7 +177,21 @@ export const MembershipFinanceView: React.FC = () => {
   ];
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-6 animate-in fade-in duration-200">
+      {/* Screen Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
+            <DollarSign size={22} />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white font-['Barlow_Condensed']">
+              {isAr ? 'المالية والخزينة' : isEn ? 'Finance & Treasury' : 'Finances & Trésorerie'}
+            </h1>
+          </div>
+        </div>
+      </div>
+
       {/* 4-KPI Elevated Pod Tray */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-[#1F1D1B] text-white p-5 rounded-2xl flex flex-col justify-between shadow-sm relative overflow-hidden">
