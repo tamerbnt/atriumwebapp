@@ -43,6 +43,7 @@ import { useKineticRowLayout } from './motion/useKineticRowLayout';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Button as BrandedAtriumButton, LiquidButton } from '@/atrium';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { LabelSelect } from '../../ui/LabelSelect';
 import { Seek } from '../../ui/Seek';
 import { t } from '../../../utils/i18n';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -116,7 +117,6 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
       return next;
     });
   }, []);
-  const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
   const [panelInitialTab, setPanelInitialTab] = useState<'overview' | 'access' | 'billing'>('overview');
   const panelOpenerRef = useRef<HTMLElement | null>(null);
@@ -698,60 +698,34 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 relative">
-          {/* Facility Selector: 40px Standard Squircle */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-              className="h-10 px-4 rounded-[6px] bg-white dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shadow-2xs"
-            >
-              <Home size={16} className="text-[#d4522f]" />
-              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                {currentBranch?.name || 'Atrium 1'}
-              </span>
-              <ChevronDown
-                size={14}
-                className={`text-neutral-500 transition-transform ${
-                  isFacilityDropdownOpen ? 'rotate-180' : ''
-                }`}
-              />
-            </button>
-
-            {/* Facility Dropdown Menu */}
-            {isFacilityDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                  {t('fast_switch_title', language)}
-                </div>
-                {businesses.map((biz) => {
-                  const isCurrent = biz.id === currentBusinessId;
-                  const matchingBranch = branches.find((b) => b.businessId === biz.id);
-                  return (
-                    <button
-                      key={biz.id}
-                      type="button"
-                      onClick={() => {
-                        switchBusiness(biz.id);
-                        if (matchingBranch) switchBranch(matchingBranch.id);
-                        setIsFacilityDropdownOpen(false);
-                      }}
-                      className={`w-full px-3 py-2 text-left flex items-center justify-between text-xs transition-colors cursor-pointer ${
-                        isCurrent
-                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold'
-                          : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Building2 size={14} className={isCurrent ? 'text-[#d4522f]' : 'text-neutral-400'} />
-                        <span className="truncate">{biz.name}</span>
-                      </div>
-                      {isCurrent && <Check size={14} />}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+        <div className="flex items-end gap-3 relative flex-wrap">
+          {/* Facility Selector: LabelText Combo Box */}
+          <div className="w-[215px] max-w-full">
+            <LabelSelect
+              field="Facility"
+              label={t('fast_switch_title', language)}
+              value={currentBusinessId}
+              onChange={(val) => {
+                const bizId = String(val?.target?.value ?? val);
+                switchBusiness(bizId);
+                const matchingBranch = branches.find((b) => b.businessId === bizId);
+                if (matchingBranch) switchBranch(matchingBranch.id);
+              }}
+              prefix={<Home size={15} className="text-[#d4522f]" />}
+              options={businesses.map((biz) => ({
+                value: biz.id,
+                label: biz.name,
+                icon: (
+                  <Building2
+                    size={14}
+                    className={biz.id === currentBusinessId ? 'text-[#d4522f]' : 'text-neutral-400'}
+                  />
+                ),
+              }))}
+              width="100%"
+              height={40}
+              corner={12}
+            />
           </div>
 
           {/* Add Member Primary Button: Refined 40px Action */}
@@ -1042,7 +1016,8 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                   </div>
                   <LiveSegmentedControl
                     size="sm"
-                    className="w-full flex [&>button]:flex-1"
+                    fullWidth
+                    className="min-w-0 [&>button]:min-w-0 [&>button]:px-2"
                     options={[
                       { value: 'All', label: language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All' },
                       { value: 'Male', label: language === 'ar' ? 'ذكور' : language === 'fr' ? 'Hommes' : 'Male' },
@@ -1183,20 +1158,23 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                       </button>
                     )}
                   </div>
-                  <LiveSegmentedControl
-                    size="sm"
-                    className="w-full flex [&>button]:flex-1 overflow-x-auto"
-                    options={[
-                      { value: 'All', label: t('member_filter_all', language), count: members.length },
-                      { value: 'Active', label: t('member_filter_active', language), count: activeMembersCount },
-                      { value: 'Expiring', label: t('member_filter_expiring', language), count: expiringCount },
-                      { value: 'Expired', label: t('member_filter_expired', language), count: expiredCount },
-                      { value: 'Archived', label: t('member_filter_archived', language), count: archivedCount },
-                    ]}
-                    value={statusFilter}
-                    onValueChange={(val) => setStatusFilter(val as any)}
-                    aria-label={language === 'ar' ? 'حالة الحساب' : 'Statut du compte'}
-                  />
+                  <div className="w-full overflow-x-auto pb-0.5">
+                    <LiveSegmentedControl
+                      size="sm"
+                      fullWidth
+                      className="min-w-max [&>button]:px-2.5"
+                      options={[
+                        { value: 'All', label: t('member_filter_all', language), count: members.length },
+                        { value: 'Active', label: t('member_filter_active', language), count: activeMembersCount },
+                        { value: 'Expiring', label: t('member_filter_expiring', language), count: expiringCount },
+                        { value: 'Expired', label: t('member_filter_expired', language), count: expiredCount },
+                        { value: 'Archived', label: t('member_filter_archived', language), count: archivedCount },
+                      ]}
+                      value={statusFilter}
+                      onValueChange={(val) => setStatusFilter(val as any)}
+                      aria-label={language === 'ar' ? 'حالة الحساب' : 'Statut du compte'}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -1467,7 +1445,9 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
         initialTab={panelInitialTab}
         onClose={closeDetail}
         onSelectMember={(m) => selectMember(m.id)}
-        onEdit={(m) => onEditMember(m, document.activeElement as HTMLElement | null)}
+        onEdit={(m, originEl) =>
+          onEditMember(m, originEl || (document.activeElement as HTMLElement | null))
+        }
         onDelete={(m) => {
           deleteMember(m.id);
           closeDetail();

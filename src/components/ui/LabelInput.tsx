@@ -1,5 +1,5 @@
-import React, { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import React, { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { AlertCircle, Eye, EyeOff } from "lucide-react";
 
 /* ══ Label input ══════════════════════════════════════════
    A field whose label is its placeholder until you are in it.
@@ -20,6 +20,34 @@ const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
 const S = 0.78;
 const IN = 0.75;
+
+function computeRingPaths(W: number, H: number, r: number, lw: number, isRtl: boolean) {
+  const lx = Math.max(12, r + 2);
+  const x0 = isRtl
+    ? Math.max(r * 0.5, W - lx - lw * S - 4)
+    : Math.max(r * 0.5, lx - 4);
+  const x1 = isRtl
+    ? Math.min(W - r * 0.5, W - lx + 4)
+    : Math.min(W - r, lx + lw * S + 4);
+  const a = r - IN;
+  const R = W - IN;
+  const B = H - IN;
+  const mid = W / 2;
+
+  const nm = (x0 + x1) / 2;
+  const gapL = `M${nm},${IN} L${x0},${IN}`;
+  const gapR = `M${nm},${IN} L${x1},${IN}`;
+
+  const right = r > 0
+    ? `M${x1},${IN} L${W - r},${IN} A${a},${a} 0 0 1 ${R},${r} L${R},${H - r} A${a},${a} 0 0 1 ${W - r},${B} L${mid},${B}`
+    : `M${x1},${IN} L${R},${IN} L${R},${B} L${mid},${B}`;
+
+  const left = r > 0
+    ? `M${x0},${IN} L${r},${IN} A${a},${a} 0 0 0 ${IN},${r} L${IN},${H - r} A${a},${a} 0 0 0 ${r},${B} L${mid},${B}`
+    : `M${x0},${IN} L${IN},${IN} L${IN},${B} L${mid},${B}`;
+
+  return { lx, gapL, gapR, right, left };
+}
 
 export interface LabelInputProps {
   field?: string;
@@ -43,6 +71,9 @@ export interface LabelInputProps {
   step?: number | string;
   prefix?: React.ReactNode;
   suffix?: React.ReactNode;
+  inputRef?: React.Ref<HTMLInputElement>;
+  error?: string;
+  errorId?: string;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
@@ -69,44 +100,25 @@ export function LabelInput({
   step,
   prefix,
   suffix,
+  inputRef: externalInputRef,
+  error,
+  errorId,
   onKeyDown,
   onFocus: explicitOnFocus,
   onBlur: explicitOnBlur,
 }: LabelInputProps) {
   const boxRef = useRef<HTMLDivElement | null>(null);
-  const [measuredW, setMeasuredW] = useState<number>(typeof width === "number" ? width : 240);
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const rightPathRef = useRef<SVGPathElement | null>(null);
+  const leftPathRef = useRef<SVGPathElement | null>(null);
+  const gapLPathRef = useRef<SVGPathElement | null>(null);
+  const gapRPathRef = useRef<SVGPathElement | null>(null);
+  const lab = useRef<HTMLLabelElement | null>(null);
+  const input = useRef<HTMLInputElement | null>(null);
 
-  useLayoutEffect(() => {
-    if (typeof width === "number") {
-      setMeasuredW(width);
-      return;
-    }
-    if (boxRef.current) {
-      const rect = boxRef.current.getBoundingClientRect();
-      if (rect.width > 0) {
-        setMeasuredW(Math.round(rect.width));
-      }
-    }
-  }, [width]);
-
-  useEffect(() => {
-    if (typeof width === "number" || !boxRef.current) return;
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.contentRect.width > 0) {
-          setMeasuredW(Math.round(entry.contentRect.width));
-        }
-      }
-    });
-    observer.observe(boxRef.current);
-    return () => observer.disconnect();
-  }, [width]);
-
-  const W = Math.max(80, measuredW);
-  const H = height;
-  const r = clamp(corner, 0, H / 2);
   const generatedId = `lbi-${useId().replace(/:/g, "")}`;
   const id = customId || generatedId;
+  const resolvedErrorId = errorId || `${id}-error`;
 
   const label = explicitLabel || field;
   const isSecret = type === "password" || field.toLowerCase().includes("password") || label.toLowerCase().includes("password");
@@ -115,25 +127,10 @@ export function LabelInput({
   const [internalValue, setInternalValue] = useState("");
   const [show, setShow] = useState(false);
   const [flip, setFlip] = useState(0);
-  const input = useRef<HTMLInputElement | null>(null);
 
   const value = controlledValue !== undefined ? controlledValue : internalValue;
 
   const [quiet] = useState(() => showcase && typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches);
-
-  /* the notch is the label's own width, so it is measured */
-  const lab = useRef<HTMLLabelElement | null>(null);
-  const [lw, setLw] = useState(48);
-  useLayoutEffect(() => {
-    if (lab.current) setLw(lab.current.offsetWidth);
-  }, [label]);
-
-  useEffect(() => {
-    if (controlledValue === undefined) {
-      setInternalValue("");
-      setShow(false);
-    }
-  }, [field, controlledValue]);
 
   const isDateTime =
     type === "date" ||
@@ -149,36 +146,88 @@ export function LabelInput({
 
   const up = focus || isDateTime || (value !== undefined && value !== null && String(value).length > 0);
 
-  /* ── where the label sits, and the gap it leaves ─────────
-     Never inside the corner's curve: the notch has to open on
-     the straight part of the top edge, so a rounder field
-     starts its label further in. In RTL, the notch sits near the right. */
-  const lx = Math.max(12, r + 2);
-  const x0 = isRtl
-    ? Math.max(r * 0.5, W - lx - lw * S - 4)
-    : Math.max(r * 0.5, lx - 4);
-  const x1 = isRtl
-    ? Math.min(W - r * 0.5, W - lx + 4)
-    : Math.min(W - r, lx + lw * S + 4);
-  const a = r - IN;
-  const R = W - IN;
-  const B = H - IN;
-  const mid = W / 2;
+  const H = height;
+  const r = clamp(corner, 0, H / 2);
+  const initialW = Math.max(80, typeof width === "number" ? width : 240);
+  const lastGeomRef = useRef<{ W: number; lw: number }>({ W: initialW, lw: 48 });
 
-  /* the gap, as two halves from its middle to each side */
-  const nm = (x0 + x1) / 2;
-  const gapL = `M${nm},${IN} L${x0},${IN}`;
-  const gapR = `M${nm},${IN} L${x1},${IN}`;
+  const syncGeometry = useRef(() => {});
+  syncGeometry.current = () => {
+    const box = boxRef.current;
+    const svg = svgRef.current;
+    if (!box || !svg) return;
 
-  /* right: from the notch, clockwise, to the bottom middle */
-  const right = r > 0
-    ? `M${x1},${IN} L${W - r},${IN} A${a},${a} 0 0 1 ${R},${r} L${R},${H - r} A${a},${a} 0 0 1 ${W - r},${B} L${mid},${B}`
-    : `M${x1},${IN} L${R},${IN} L${R},${B} L${mid},${B}`;
+    const rawW = typeof width === "number" ? width : box.offsetWidth;
+    if (rawW <= 0) return;
 
-  /* left: from the notch, the other way round, to the same point */
-  const left = r > 0
-    ? `M${x0},${IN} L${r},${IN} A${a},${a} 0 0 0 ${IN},${r} L${IN},${H - r} A${a},${a} 0 0 0 ${r},${B} L${mid},${B}`
-    : `M${x0},${IN} L${IN},${IN} L${IN},${B} L${mid},${B}`;
+    const W = Math.max(80, Math.round(rawW));
+    const measuredLw = lab.current && lab.current.offsetWidth > 0 ? lab.current.offsetWidth : lastGeomRef.current.lw;
+
+    if (lastGeomRef.current.W === W && lastGeomRef.current.lw === measuredLw && svg.getAttribute("viewBox") === `0 0 ${W} ${H}`) {
+      return;
+    }
+
+    lastGeomRef.current = { W, lw: measuredLw };
+    const paths = computeRingPaths(W, H, r, measuredLw, isRtl);
+
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    rightPathRef.current?.setAttribute("d", paths.right);
+    leftPathRef.current?.setAttribute("d", paths.left);
+    gapLPathRef.current?.setAttribute("d", paths.gapL);
+    gapRPathRef.current?.setAttribute("d", paths.gapR);
+  };
+
+  useLayoutEffect(() => {
+    syncGeometry.current();
+  }, [width, height, corner, label, isRtl]);
+
+  useEffect(() => {
+    const box = boxRef.current;
+    if (!box || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => {
+      syncGeometry.current();
+    });
+    observer.observe(box);
+    if (lab.current) observer.observe(lab.current);
+    return () => observer.disconnect();
+  }, [width, label]);
+
+  useEffect(() => {
+    if (controlledValue === undefined) {
+      setInternalValue("");
+      setShow(false);
+    }
+  }, [field, controlledValue]);
+
+  const initialPaths = useMemo(
+    () => computeRingPaths(initialW, H, r, lastGeomRef.current.lw, isRtl),
+    [initialW, H, r, isRtl]
+  );
+
+  const labelSpans = useMemo(() => {
+    if (hasArabic || isRtl) {
+      return label.split(/(\s+)/).map((segment, i) => (
+        <span key={i} style={{ "--i": i, display: "inline-block" } as React.CSSProperties}>
+          {segment === " " ? "\u00A0" : segment}
+        </span>
+      ));
+    }
+    return [...label].map((ch, i) => (
+      <span key={i} style={{ "--i": i } as React.CSSProperties}>
+        {ch === " " ? "\u00A0" : ch}
+      </span>
+    ));
+  }, [label, hasArabic, isRtl]);
+
+  const setInputRefs = (el: HTMLInputElement | null) => {
+    input.current = el;
+    if (!externalInputRef) return;
+    if (typeof externalInputRef === "function") {
+      externalInputRef(el);
+    } else {
+      (externalInputRef as React.MutableRefObject<HTMLInputElement | null>).current = el;
+    }
+  };
 
   const reveal = () => {
     setShow((s) => !s);
@@ -191,7 +240,6 @@ export function LabelInput({
       setInternalValue(val);
     }
     if (!onChange) return;
-    // Provide a hybrid that works as a primitive string AND satisfies (e) => e.target.value
     const hybrid: any = new String(val);
     hybrid.target = e.target;
     hybrid.currentTarget = e.currentTarget;
@@ -210,6 +258,7 @@ export function LabelInput({
       data-focus={focus}
       data-filled={Boolean(value !== undefined && value !== null && String(value).length > 0)}
       data-has-prefix={Boolean(prefix)}
+      data-invalid={Boolean(error)}
       style={{ width: typeof width === "number" ? `${width}px` : width }}
     >
       <div
@@ -218,14 +267,14 @@ export function LabelInput({
           width: typeof width === "number" ? `${width}px` : "100%",
           height: H,
           borderRadius: r,
-          "--lbi-x": `${lx}px`,
+          "--lbi-x": `${initialPaths.lx}px`,
         } as React.CSSProperties}
       >
-        <svg className="lbi-ring" width="100%" height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
-          <path d={right} />
-          <path d={left} />
-          <path className="lbi-gap" d={gapL} pathLength={1} />
-          <path className="lbi-gap" d={gapR} pathLength={1} />
+        <svg ref={svgRef} className="lbi-ring" width="100%" height={H} viewBox={`0 0 ${initialW} ${H}`} aria-hidden="true">
+          <path ref={rightPathRef} d={initialPaths.right} style={error ? { stroke: "#B8321C", strokeWidth: 1.5 } : undefined} />
+          <path ref={leftPathRef} d={initialPaths.left} style={error ? { stroke: "#B8321C", strokeWidth: 1.5 } : undefined} />
+          <path ref={gapLPathRef} className="lbi-gap" d={initialPaths.gapL} pathLength={1} style={error ? { stroke: "#B8321C", strokeWidth: 1.5 } : undefined} />
+          <path ref={gapRPathRef} className="lbi-gap" d={initialPaths.gapR} pathLength={1} style={error ? { stroke: "#B8321C", strokeWidth: 1.5 } : undefined} />
         </svg>
 
         <label
@@ -233,20 +282,9 @@ export function LabelInput({
           htmlFor={id}
           ref={lab}
           dir={isRtl ? "rtl" : "ltr"}
+          style={error ? { color: "#B8321C" } : undefined}
         >
-          {hasArabic || isRtl ? (
-            label.split(/(\s+)/).map((segment, i) => (
-              <span key={i} style={{ "--i": i, display: "inline-block" } as React.CSSProperties}>
-                {segment === " " ? "\u00A0" : segment}
-              </span>
-            ))
-          ) : (
-            [...label].map((ch, i) => (
-              <span key={i} style={{ "--i": i } as React.CSSProperties}>
-                {ch === " " ? "\u00A0" : ch}
-              </span>
-            ))
-          )}
+          {labelSpans}
         </label>
 
         {prefix && (
@@ -256,7 +294,7 @@ export function LabelInput({
         )}
 
         <input
-          ref={input}
+          ref={setInputRefs}
           id={id}
           name={name}
           className="lbi-field"
@@ -278,13 +316,15 @@ export function LabelInput({
           disabled={disabled}
           autoFocus={autoFocus}
           required={required}
+          aria-invalid={Boolean(error) || undefined}
+          aria-describedby={error ? resolvedErrorId : undefined}
           min={min}
           max={max}
           step={step}
           inputMode={quiet ? "none" : undefined}
           style={{
-            paddingLeft: isRtl ? (isSecret ? 48 : suffix ? 44 : (prefix ? 38 : lx)) : (prefix ? 38 : lx),
-            paddingRight: isRtl ? (prefix ? 38 : (isSecret ? 48 : suffix ? 44 : lx)) : (isSecret ? 48 : suffix ? 44 : lx),
+            paddingLeft: isRtl ? (isSecret ? 48 : suffix ? 44 : (prefix ? 38 : initialPaths.lx)) : (prefix ? 38 : initialPaths.lx),
+            paddingRight: isRtl ? (prefix ? 38 : (isSecret ? 48 : suffix ? 44 : initialPaths.lx)) : (isSecret ? 48 : suffix ? 44 : initialPaths.lx),
             textAlign: isRtl ? "right" : "left",
           }}
         />
@@ -309,8 +349,20 @@ export function LabelInput({
           </button>
         )}
       </div>
+
+      {error && (
+        <p
+          id={resolvedErrorId}
+          role="alert"
+          className="mt-1 text-[11.5px] font-medium text-[#B8321C] flex items-center gap-1"
+        >
+          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+          <span>{error}</span>
+        </p>
+      )}
     </div>
   );
 }
 
 export default LabelInput;
+

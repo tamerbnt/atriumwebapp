@@ -296,9 +296,14 @@ export function useSpringCountRef<T extends HTMLElement = HTMLDivElement>(
 
   useEffect(() => {
     const sp = spRef.current!;
+    let lastText = '';
     const draw = () => {
       if (elRef.current) {
-        elRef.current.textContent = `${formatRef.current.prefix}${Math.round(sp.x)}${formatRef.current.suffix}`;
+        const nextText = `${formatRef.current.prefix}${Math.round(sp.x)}${formatRef.current.suffix}`;
+        if (nextText !== lastText) {
+          lastText = nextText;
+          elRef.current.textContent = nextText;
+        }
       }
     };
     const unsub = subscribeFrame(draw);

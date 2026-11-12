@@ -10,6 +10,8 @@ import {
   shouldFinishClosing,
   computeModalTransformOrigin,
   shouldCloseOnScrimMouseUp,
+  registerKineticMemberModalOpener,
+  triggerKineticMemberModal,
 } from './memberModalMotion';
 
 describe('MemberModal Spring Physics, Checkpoints & Lifecycle Math', () => {
@@ -146,5 +148,20 @@ describe('MemberModal Spring Physics, Checkpoints & Lifecycle Math', () => {
     assert.equal(shouldCloseOnScrimMouseUp(false, true, 1300, 1000), false); // dragged from inside dialog
     assert.equal(shouldCloseOnScrimMouseUp(true, false, 1300, 1000), false);
     assert.equal(shouldCloseOnScrimMouseUp(true, true, 1150, 1000), true);
+  });
+
+  it('dispatches and cleans up zero-render kinetic modal trigger handler', () => {
+    assert.equal(triggerKineticMemberModal({ member: null }), false);
+
+    let received: any = undefined;
+    const unsub = registerKineticMemberModalOpener((payload) => {
+      received = payload;
+    });
+
+    assert.equal(triggerKineticMemberModal({ member: { id: 'm1' } }), true);
+    assert.equal(received?.member?.id, 'm1');
+
+    unsub();
+    assert.equal(triggerKineticMemberModal({ member: null }), false);
   });
 });

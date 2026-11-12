@@ -20,9 +20,8 @@ const CommandPaletteModal = React.lazy(() =>
 const VoucherModal = React.lazy(() =>
   import('./components/modals/VoucherModal').then((m) => ({ default: m.VoucherModal }))
 );
-const MemberModal = React.lazy(() =>
-  import('./components/modals/MemberModal').then((m) => ({ default: m.MemberModal }))
-);
+import { MemberModal } from './components/modals/MemberModal';
+import { triggerKineticMemberModal } from './components/modals/memberModalMotion';
 const LeadModal = React.lazy(() =>
   import('./components/modals/LeadModal').then((m) => ({ default: m.LeadModal }))
 );
@@ -282,15 +281,31 @@ export default function App() {
   const memberModalOriginRef = useRef<HTMLElement | null>(null);
 
   const handleOpenAddMember = (originEl?: HTMLElement | null) => {
-    memberModalOriginRef.current =
+    const resolvedOrigin =
       originEl ?? (typeof document !== 'undefined' ? (document.activeElement as HTMLElement | null) : null);
+    if (
+      currentBusiness?.category === 'membership_session' &&
+      activeScreen === 'members' &&
+      triggerKineticMemberModal({ member: null, originElement: resolvedOrigin })
+    ) {
+      return;
+    }
+    memberModalOriginRef.current = resolvedOrigin;
     setMemberToEdit(null);
     setIsMemberModalOpen(true);
   };
 
   const handleOpenEditMember = (member: Member, originEl?: HTMLElement | null) => {
-    memberModalOriginRef.current =
+    const resolvedOrigin =
       originEl ?? (typeof document !== 'undefined' ? (document.activeElement as HTMLElement | null) : null);
+    if (
+      currentBusiness?.category === 'membership_session' &&
+      activeScreen === 'members' &&
+      triggerKineticMemberModal({ member, originElement: resolvedOrigin })
+    ) {
+      return;
+    }
+    memberModalOriginRef.current = resolvedOrigin;
     setMemberToEdit(member);
     setIsMemberModalOpen(true);
   };
@@ -1248,20 +1263,18 @@ export default function App() {
         </React.Suspense>
       )}
 
-      <React.Suspense fallback={null}>
-        <MemberModal
-          isOpen={isMemberModalOpen}
-          onClose={() => {
-            setIsMemberModalOpen(false);
-            setMemberToEdit(null);
-          }}
-          memberToEdit={memberToEdit}
-          useKineticSpring={
-            currentBusiness?.category === 'membership_session' && activeScreen === 'members'
-          }
-          originElement={memberModalOriginRef.current}
-        />
-      </React.Suspense>
+      <MemberModal
+        isOpen={isMemberModalOpen}
+        onClose={() => {
+          setIsMemberModalOpen(false);
+          setMemberToEdit(null);
+        }}
+        memberToEdit={memberToEdit}
+        useKineticSpring={
+          currentBusiness?.category === 'membership_session' && activeScreen === 'members'
+        }
+        originElement={memberModalOriginRef.current}
+      />
 
       {isLeadModalOpen && (
         <React.Suspense fallback={null}>

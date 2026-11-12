@@ -2,6 +2,7 @@ import React, {
   useEffect,
   useId,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -39,198 +40,7 @@ const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const S = 0.82;
 const IN = 0.75;
 
-export const LabelSelect: React.FC<LabelSelectProps> = ({
-  field = 'Select',
-  label: explicitLabel,
-  value: controlledValue,
-  options,
-  onChange,
-  placeholder,
-  searchable = false,
-  disabled = false,
-  required = false,
-  corner = 6,
-  width = '100%',
-  height = 40,
-  className = '',
-  id: customId,
-  name,
-  prefix,
-}) => {
-  const boxRef = useRef<HTMLDivElement | null>(null);
-  const popoverRef = useRef<HTMLDivElement | null>(null);
-  const searchInputRef = useRef<HTMLInputElement | null>(null);
-
-  const [isOpen, setIsOpen] = useState(false);
-  const [openUpward, setOpenUpward] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [highlightedIndex, setHighlightedIndex] = useState(0);
-  const [measuredW, setMeasuredW] = useState<number>(
-    typeof width === 'number' ? width : 240
-  );
-
-  const generatedId = `lbs-${useId().replace(/:/g, '')}`;
-  const id = customId || generatedId;
-  const label = explicitLabel || field;
-
-  // Normalize options into SelectOption shape
-  const normalizedOptions: SelectOption[] = options.map((opt) => {
-    if (typeof opt === 'string' || typeof opt === 'number') {
-      return { value: opt, label: String(opt) };
-    }
-    return opt;
-  });
-
-  const selectedOption = normalizedOptions.find(
-    (opt) => String(opt.value) === String(controlledValue) && String(controlledValue) !== ''
-  );
-
-  // ResizeObserver for dynamic width
-  useLayoutEffect(() => {
-    if (typeof width === 'number') {
-      setMeasuredW(width);
-      return;
-    }
-    if (boxRef.current) {
-      const rect = boxRef.current.getBoundingClientRect();
-      if (rect.width > 0) {
-        setMeasuredW(Math.round(rect.width));
-      }
-    }
-  }, [width]);
-
-  useEffect(() => {
-    if (typeof width === 'number' || !boxRef.current) return;
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.contentRect.width > 0) {
-          setMeasuredW(Math.round(entry.contentRect.width));
-        }
-      }
-    });
-    observer.observe(boxRef.current);
-    return () => observer.disconnect();
-  }, [width]);
-
-  // Notch measurement
-  const lab = useRef<HTMLLabelElement | null>(null);
-  const [lw, setLw] = useState(48);
-  useLayoutEffect(() => {
-    if (lab.current) setLw(lab.current.offsetWidth);
-  }, [label]);
-
-  // Click outside listener
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        boxRef.current &&
-        !boxRef.current.contains(e.target as Node) &&
-        popoverRef.current &&
-        !popoverRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
-        setSearchQuery('');
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen]);
-
-  // Intelligent collision detection to flip upward if near viewport/modal bottom
-  useEffect(() => {
-    if (isOpen && boxRef.current) {
-      const rect = boxRef.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
-      if (spaceBelow < 220 && rect.top > 220) {
-        setOpenUpward(true);
-      } else {
-        setOpenUpward(false);
-      }
-    }
-  }, [isOpen]);
-
-  // Focus search input when popover opens
-  useEffect(() => {
-    if (isOpen && (searchable || normalizedOptions.length >= 6)) {
-      setTimeout(() => {
-        searchInputRef.current?.focus();
-      }, 40);
-    }
-  }, [isOpen, searchable, normalizedOptions.length]);
-
-  // Filter options based on query
-  const filteredOptions = normalizedOptions.filter((opt) => {
-    if (!searchQuery.trim()) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      opt.label.toLowerCase().includes(q) ||
-      (opt.sublabel && opt.sublabel.toLowerCase().includes(q))
-    );
-  });
-
-  const handleSelect = (val: string | number) => {
-    setIsOpen(false);
-    setSearchQuery('');
-    // Emit hybrid compatible with (val: string) and (e: ChangeEvent)
-    const hybrid: any = new String(val);
-    hybrid.target = { value: val, name: name || id };
-    hybrid.currentTarget = { value: val, name: name || id };
-    hybrid.value = val;
-    hybrid.valueOf = () => val;
-    hybrid.toString = () => String(val);
-    onChange(hybrid);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (disabled) return;
-
-    if (!isOpen) {
-      if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
-        e.preventDefault();
-        setIsOpen(true);
-      }
-      return;
-    }
-
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      setIsOpen(false);
-      setSearchQuery('');
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setHighlightedIndex((prev) =>
-        prev < filteredOptions.length - 1 ? prev + 1 : 0
-      );
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setHighlightedIndex((prev) =>
-        prev > 0 ? prev - 1 : filteredOptions.length - 1
-      );
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (filteredOptions[highlightedIndex] && !filteredOptions[highlightedIndex].disabled) {
-        handleSelect(filteredOptions[highlightedIndex].value);
-      }
-    }
-  };
-
-  const W = Math.max(80, measuredW);
-  const H = height;
-  const r = clamp(corner, 0, H / 2);
-  const up = isOpen || selectedOption !== undefined;
-
-  const { language } = useAtriumStore();
-  const defaultPlaceholder = language === 'ar' ? 'اختر...' : language === 'fr' ? 'Sélectionner...' : 'Select...';
-  const defaultSearchPlaceholder = language === 'ar' ? 'بحث في الخيارات...' : language === 'fr' ? 'Rechercher...' : 'Search options...';
-  const noOptionsText = language === 'ar' ? 'لا توجد خيارات مطابقة' : language === 'fr' ? 'Aucune option trouvée' : 'No options found';
-
-  const isRtl =
-    language === 'ar' ||
-    (typeof document !== 'undefined' && document.documentElement.dir === 'rtl') ||
-    /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(label);
-  const hasArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(label);
-
+function computeSelectRingPaths(W: number, H: number, r: number, lw: number, isRtl: boolean) {
   const lx = Math.max(12, r + 2);
   const x0 = isRtl
     ? Math.max(r * 0.5, W - lx - lw * S - 4)
@@ -257,6 +67,238 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
       ? `M${x0},${IN} L${r},${IN} A${a},${a} 0 0 0 ${IN},${r} L${IN},${H - r} A${a},${a} 0 0 0 ${r},${B} L${mid},${B}`
       : `M${x0},${IN} L${IN},${IN} L${IN},${B} L${mid},${B}`;
 
+  return { lx, gapL, gapR, right, left };
+}
+
+export const LabelSelect: React.FC<LabelSelectProps> = ({
+  field = 'Select',
+  label: explicitLabel,
+  value: controlledValue,
+  options,
+  onChange,
+  placeholder,
+  searchable = false,
+  disabled = false,
+  corner = 6,
+  width = '100%',
+  height = 40,
+  className = '',
+  id: customId,
+  name,
+  prefix,
+}) => {
+  const boxRef = useRef<HTMLDivElement | null>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const rightPathRef = useRef<SVGPathElement | null>(null);
+  const leftPathRef = useRef<SVGPathElement | null>(null);
+  const gapLPathRef = useRef<SVGPathElement | null>(null);
+  const gapRPathRef = useRef<SVGPathElement | null>(null);
+  const lab = useRef<HTMLLabelElement | null>(null);
+  const popoverRef = useRef<HTMLDivElement | null>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [openUpward, setOpenUpward] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
+
+  const generatedId = `lbs-${useId().replace(/:/g, '')}`;
+  const id = customId || generatedId;
+  const label = explicitLabel || field;
+
+  const normalizedOptions: SelectOption[] = useMemo(
+    () =>
+      options.map((opt) => {
+        if (typeof opt === 'string' || typeof opt === 'number') {
+          return { value: opt, label: String(opt) };
+        }
+        return opt;
+      }),
+    [options]
+  );
+
+  const selectedOption = normalizedOptions.find(
+    (opt) => String(opt.value) === String(controlledValue) && String(controlledValue) !== ''
+  );
+
+  const { language } = useAtriumStore();
+  const defaultPlaceholder = language === 'ar' ? 'اختر...' : language === 'fr' ? 'Sélectionner...' : 'Select...';
+  const defaultSearchPlaceholder = language === 'ar' ? 'بحث في الخيارات...' : language === 'fr' ? 'Rechercher...' : 'Search options...';
+  const noOptionsText = language === 'ar' ? 'لا توجد خيارات مطابقة' : language === 'fr' ? 'Aucune option trouvée' : 'No options found';
+
+  const isRtl =
+    language === 'ar' ||
+    (typeof document !== 'undefined' && document.documentElement.dir === 'rtl') ||
+    /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(label);
+  const hasArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(label);
+
+  const H = height;
+  const r = clamp(corner, 0, H / 2);
+  const up = isOpen || selectedOption !== undefined;
+  const initialW = Math.max(80, typeof width === 'number' ? width : 240);
+  const lastGeomRef = useRef<{ W: number; lw: number }>({ W: initialW, lw: 48 });
+
+  const syncGeometry = useRef(() => {});
+  syncGeometry.current = () => {
+    const box = boxRef.current;
+    const svg = svgRef.current;
+    if (!box || !svg) return;
+
+    const rawW = typeof width === 'number' ? width : box.offsetWidth;
+    if (rawW <= 0) return;
+
+    const W = Math.max(80, Math.round(rawW));
+    const measuredLw = lab.current && lab.current.offsetWidth > 0 ? lab.current.offsetWidth : lastGeomRef.current.lw;
+
+    if (lastGeomRef.current.W === W && lastGeomRef.current.lw === measuredLw && svg.getAttribute('viewBox') === `0 0 ${W} ${H}`) {
+      return;
+    }
+
+    lastGeomRef.current = { W, lw: measuredLw };
+    const paths = computeSelectRingPaths(W, H, r, measuredLw, isRtl);
+
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    rightPathRef.current?.setAttribute('d', paths.right);
+    leftPathRef.current?.setAttribute('d', paths.left);
+    gapLPathRef.current?.setAttribute('d', paths.gapL);
+    gapRPathRef.current?.setAttribute('d', paths.gapR);
+  };
+
+  useLayoutEffect(() => {
+    syncGeometry.current();
+  }, [width, height, corner, label, isRtl]);
+
+  useEffect(() => {
+    const box = boxRef.current;
+    if (!box || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => {
+      syncGeometry.current();
+    });
+    observer.observe(box);
+    if (lab.current) observer.observe(lab.current);
+    return () => observer.disconnect();
+  }, [width, label]);
+
+  // Click outside listener
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        boxRef.current &&
+        !boxRef.current.contains(e.target as Node) &&
+        popoverRef.current &&
+        !popoverRef.current.contains(e.target as Node)
+      ) {
+        setIsOpen(false);
+        setSearchQuery('');
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
+
+  // Collision detection to flip upward if near viewport or dialog bottom
+  useEffect(() => {
+    if (isOpen && boxRef.current) {
+      const rect = boxRef.current.getBoundingClientRect();
+      const dialog = boxRef.current.closest('[role="dialog"]') as HTMLElement | null;
+      const bottomLimit = dialog ? Math.min(window.innerHeight, dialog.getBoundingClientRect().bottom) : window.innerHeight;
+      const topLimit = dialog ? Math.max(0, dialog.getBoundingClientRect().top) : 0;
+      const spaceBelow = bottomLimit - rect.bottom;
+      const spaceAbove = rect.top - topLimit;
+      if (spaceBelow < 210 && spaceAbove > spaceBelow) {
+        setOpenUpward(true);
+      } else {
+        setOpenUpward(false);
+      }
+    }
+  }, [isOpen]);
+
+  // Focus search input when popover opens
+  useEffect(() => {
+    if (isOpen && (searchable || normalizedOptions.length >= 6)) {
+      const timer = setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 40);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, searchable, normalizedOptions.length]);
+
+  const filteredOptions = normalizedOptions.filter((opt) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      opt.label.toLowerCase().includes(q) ||
+      (opt.sublabel && opt.sublabel.toLowerCase().includes(q))
+    );
+  });
+
+  const handleSelect = (val: string | number) => {
+    setIsOpen(false);
+    setSearchQuery('');
+    const hybrid: any = new String(val);
+    hybrid.target = { value: val, name: name || id };
+    hybrid.currentTarget = { value: val, name: name || id };
+    hybrid.value = val;
+    hybrid.valueOf = () => val;
+    hybrid.toString = () => String(val);
+    onChange(hybrid);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (disabled) return;
+
+    if (!isOpen) {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        setIsOpen(true);
+      }
+      return;
+    }
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsOpen(false);
+      setSearchQuery('');
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlightedIndex((prev) =>
+        prev < filteredOptions.length - 1 ? prev + 1 : 0
+      );
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlightedIndex((prev) =>
+        prev > 0 ? prev - 1 : filteredOptions.length - 1
+      );
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (filteredOptions[highlightedIndex] && !filteredOptions[highlightedIndex].disabled) {
+        handleSelect(filteredOptions[highlightedIndex].value);
+      }
+    }
+  };
+
+  const initialPaths = useMemo(
+    () => computeSelectRingPaths(initialW, H, r, lastGeomRef.current.lw, isRtl),
+    [initialW, H, r, isRtl]
+  );
+
+  const labelSpans = useMemo(() => {
+    if (hasArabic || isRtl) {
+      return label.split(/(\s+)/).map((segment, i) => (
+        <span key={i} style={{ '--i': i, display: 'inline-block' } as React.CSSProperties}>
+          {segment === ' ' ? '\u00A0' : segment}
+        </span>
+      ));
+    }
+    return [...label].map((ch, i) => (
+      <span key={i} style={{ '--i': i } as React.CSSProperties}>
+        {ch === ' ' ? '\u00A0' : ch}
+      </span>
+    ));
+  }, [label, hasArabic, isRtl]);
+
   return (
     <div
       ref={boxRef}
@@ -275,44 +317,31 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
             width: typeof width === 'number' ? `${width}px` : '100%',
             height: H,
             borderRadius: r,
-            '--lbi-x': `${lx}px`,
+            '--lbi-x': `${initialPaths.lx}px`,
           } as React.CSSProperties
         }
       >
-        {/* Animated Notched SVG Border */}
         <svg
+          ref={svgRef}
           className="lbi-ring"
           width="100%"
           height={H}
-          viewBox={`0 0 ${W} ${H}`}
+          viewBox={`0 0 ${initialW} ${H}`}
           aria-hidden="true"
         >
-          <path d={right} />
-          <path d={left} />
-          <path className="lbi-gap" d={gapL} pathLength={1} />
-          <path className="lbi-gap" d={gapR} pathLength={1} />
+          <path ref={rightPathRef} d={initialPaths.right} />
+          <path ref={leftPathRef} d={initialPaths.left} />
+          <path ref={gapLPathRef} className="lbi-gap" d={initialPaths.gapL} pathLength={1} />
+          <path ref={gapRPathRef} className="lbi-gap" d={initialPaths.gapR} pathLength={1} />
         </svg>
 
-        {/* Floating Kinetic Label with Hopping Letters/Words */}
         <label
           className="lbi-label pointer-events-none"
           htmlFor={id}
           ref={lab}
           dir={isRtl ? 'rtl' : 'ltr'}
         >
-          {hasArabic || isRtl ? (
-            label.split(/(\s+)/).map((segment, i) => (
-              <span key={i} style={{ '--i': i, display: 'inline-block' } as React.CSSProperties}>
-                {segment === ' ' ? '\u00A0' : segment}
-              </span>
-            ))
-          ) : (
-            [...label].map((ch, i) => (
-              <span key={i} style={{ '--i': i } as React.CSSProperties}>
-                {ch === ' ' ? '\u00A0' : ch}
-              </span>
-            ))
-          )}
+          {labelSpans}
         </label>
 
         {prefix && (
@@ -321,7 +350,6 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
           </div>
         )}
 
-        {/* Interactive Custom Button Trigger */}
         <button
           type="button"
           id={id}
@@ -331,7 +359,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
           }}
           className="w-full h-full flex items-center justify-between text-left rtl:text-right focus:outline-none cursor-pointer bg-transparent transition-opacity"
           style={{
-            paddingInlineStart: prefix ? 38 : lx,
+            paddingInlineStart: prefix ? 38 : initialPaths.lx,
             paddingInlineEnd: Math.max(10, r),
           }}
           aria-haspopup="listbox"
@@ -366,18 +394,16 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
           />
         </button>
 
-        {/* Floating Spatial Popover Menu */}
         {isOpen && (
           <div
             ref={popoverRef}
-            className={`absolute left-0 right-0 z-50 rounded-xl bg-white dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 shadow-xl overflow-hidden backdrop-blur-md animate-in fade-in zoom-in-95 duration-150 ${
+            className={`absolute left-0 right-0 z-50 rounded-xl bg-white dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 ${
               openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
             }`}
             style={{
               maxHeight: '230px',
             }}
           >
-            {/* Inline Quick Search if searchable or list has >= 6 items */}
             {(searchable || normalizedOptions.length >= 6) && (
               <div className="p-2 border-b border-neutral-100 dark:border-zinc-800 bg-neutral-50/50 dark:bg-zinc-900/50">
                 <div className="relative flex items-center">
@@ -409,7 +435,6 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
               </div>
             )}
 
-            {/* Options List */}
             <ul
               className="py-1 max-h-48 overflow-y-auto focus:outline-none text-xs"
               role="listbox"
@@ -477,3 +502,4 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
 };
 
 export default LabelSelect;
+

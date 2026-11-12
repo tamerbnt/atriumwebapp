@@ -30,7 +30,7 @@ export interface MemberSlideOverInspectorProps {
   initialTab?: 'overview' | 'access' | 'billing';
   onClose: () => void;
   onSelectMember: (member: Member) => void;
-  onEdit: (member: Member) => void;
+  onEdit: (member: Member, originEl?: HTMLElement | null) => void;
   onDelete: (member: Member) => void;
   onCheckIn: (member: Member) => void;
   onRenew: (member: Member) => void;
@@ -142,6 +142,8 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
     prevTabRef.current = activeTab;
   }, [isOpen, activeMember?.id, activeTab]);
 
+  const lastPanelDrawRef = useRef<string>('');
+
   // Draw panel, scrim, tab indicator, and hold-to-delete fill inside shared rAF loop
   const drawPanel = useCallback(() => {
     const pp = ppRef.current;
@@ -149,6 +151,10 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
     const iw = iwRef.current;
     const hold = holdRef.current;
     if (!pp || !ix || !iw || !hold) return;
+
+    const drawKey = `${pp.x}|${pp.t}|${ix.x}|${iw.x}|${hold.x}`;
+    if (drawKey === lastPanelDrawRef.current) return;
+    lastPanelDrawRef.current = drawKey;
 
     const pm = computePanelMetrics(pp.x, pp.t);
     const vis = pm.visible ? 'visible' : 'hidden';
@@ -604,7 +610,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
 
                       <button
                         type="button"
-                        onClick={() => onEdit(activeMember)}
+                        onClick={(e) => onEdit(activeMember, e.currentTarget)}
                         className="flex flex-col items-center gap-2 pt-3.5 px-1.5 pb-3 rounded-[16px] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-white dark:bg-[#262422] text-[var(--atr-ink,#1B1917)] dark:text-[#F2ECE6] text-[12px] font-medium leading-tight text-center cursor-pointer"
                       >
                         <span className="ic w-[38px] h-[38px] rounded-[12px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1E1D1B] grid place-items-center">

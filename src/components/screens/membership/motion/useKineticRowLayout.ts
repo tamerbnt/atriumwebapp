@@ -248,6 +248,25 @@ export function useKineticRowLayout({
   const drawAll = useCallback(() => {
     const mode = viewModeRef.current;
     managedMapRef.current.forEach((r) => {
+      const prev = r.lastApplied;
+      if (
+        prev &&
+        prev.mode === mode &&
+        r.p.rest() &&
+        r.e.rest() &&
+        r.sx.rest() &&
+        r.sy.rest() &&
+        r.sw.rest() &&
+        r.sh.rest() &&
+        prev.x === r.sx.x &&
+        prev.y === r.sy.x &&
+        prev.w === r.sw.x &&
+        prev.h === r.sh.x &&
+        prev.p === r.p.x &&
+        prev.e === r.e.x
+      ) {
+        return;
+      }
       applyRowStyles(r, mode);
     });
   }, []);

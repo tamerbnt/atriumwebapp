@@ -17,6 +17,7 @@ import {
   MODAL_REDUCED_FADE_MS,
   computeMemberModalMetrics,
   computeModalTransformOrigin,
+  registerKineticMemberModalOpener,
   shouldCloseOnScrimMouseUp,
   shouldFinishClosing,
 } from './memberModalMotion';
@@ -53,13 +54,12 @@ export const MemberModal: React.FC<MemberModalProps> = ({
     showToast,
   } = useAtriumStore();
 
+  const getDefaultCardId = () => `RFID-${Math.floor(100000 + Math.random() * 900000)}`;
+  const getTodayIso = () => new Date().toISOString().split('T')[0];
+
   // Preserve displayed edit target while the 130ms closing animation runs
   const [activeMemberToEdit, setActiveMemberToEdit] = useState<Member | null>(memberToEdit ?? null);
-  useEffect(() => {
-    if (isOpen) {
-      setActiveMemberToEdit(memberToEdit ?? null);
-    }
-  }, [isOpen, memberToEdit]);
+  const retainedMemberRef = useRef<Member | null>(memberToEdit ?? null);
 
   // Legacy state path (used ONLY when useKineticSpring === false, outside membership members screen)
   const [legacyHidden, setLegacyHidden] = useState(!isOpen);
@@ -68,15 +68,15 @@ export const MemberModal: React.FC<MemberModalProps> = ({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Form values
+  // Form values (pre-initialized so kinetic "New member" open needs zero form re-renders)
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [planId, setPlanId] = useState('');
-  const [cardId, setCardId] = useState('');
+  const [planId, setPlanId] = useState(() => plans[0]?.id || '');
+  const [cardId, setCardId] = useState(() => getDefaultCardId());
   const [gender, setGender] = useState<Gender>('Male');
-  const [dateOfBirth, setDateOfBirth] = useState('');
-  const [startDate, setStartDate] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('1995-01-01');
+  const [startDate, setStartDate] = useState(() => getTodayIso());
   const [emergencyName, setEmergencyName] = useState('');
   const [emergencyPhone, setEmergencyPhone] = useState('');
   const [source, setSource] = useState('Walk-in');
@@ -98,11 +98,18 @@ export const MemberModal: React.FC<MemberModalProps> = ({
   const focusTimerRef = useRef<number | null>(null);
   const reducedTimerRef = useRef<number | null>(null);
   const scrimMouseDownRef = useRef<boolean>(false);
+  const inertElsRef = useRef<HTMLElement[]>([]);
   const scrollLockRef = useRef<{
     locked: boolean;
     prevOverflow: string;
     prevPaddingRight: string;
   }>({ locked: false, prevOverflow: '', prevPaddingRight: '' });
+
+  // Track whether kinetic form is already clean/prepared for 'create' or a specific member ID
+  const formPreparedKeyRef = useRef<string>('create');
+  const formDirtyRef = useRef<boolean>(false);
+  const prevKineticOpenRef = useRef<boolean>(false);
+  const prevKineticEditIdRef = useRef<string | null>(null);
 
   const isOpenRef = useRef(isOpen);
   isOpenRef.current = isOpen;
@@ -119,6 +126,70 @@ export const MemberModal: React.FC<MemberModalProps> = ({
   if (!springRef.current) {
     springRef.current = new Sp(0, TUNES.modal);
   }
+
+  const applyFormForMember = useCallback(
+    (target: Member | null) => {
+      if (target) {
+        setFullName(target.fullName || '');
+        setEmail(target.email || '');
+        setPhoneNumber(target.phoneNumber || '');
+        setPlanId(target.membershipPlanId || plans[0]?.id || '');
+        setCardId(target.cardId || '');
+        setGender(target.gender || 'Male');
+        setDateOfBirth(target.dateOfBirth || '');
+        setStartDate(target.startDate || '');
+        setEmergencyName(target.emergencyContactName || '');
+        setEmergencyPhone(target.emergencyContactPhone || '');
+        setSource(target.source || 'Walk-in');
+        setNotes(target.notes || '');
+        formPreparedKeyRef.current = target.id;
+      } else {
+        setFullName('');
+        setEmail('');
+        setPhoneNumber('');
+        setPlanId(plans[0]?.id || '');
+        setCardId(getDefaultCardId());
+        setGender('Male');
+        setDateOfBirth('1995-01-01');
+        setStartDate(getTodayIso());
+        setEmergencyName('');
+        setEmergencyPhone('');
+        setSource('Walk-in');
+        setNotes('');
+        formPreparedKeyRef.current = 'create';
+      }
+      formDirtyRef.current = false;
+      setErrors({});
+      setIsSubmitting(false);
+    },
+    [plans]
+  );
+
+  // Synchronous prop-sync for kinetic mode: commits form data BEFORE useLayoutEffect starts open animation
+  if (useKineticSpring) {
+    if (isOpen) {
+      retainedMemberRef.current = memberToEdit ?? null;
+      const targetKey = memberToEdit ? memberToEdit.id : 'create';
+      const isOpeningNow = !prevKineticOpenRef.current;
+      const editChanged = (memberToEdit?.id ?? null) !== prevKineticEditIdRef.current;
+      if (
+        (isOpeningNow || editChanged) &&
+        (formPreparedKeyRef.current !== targetKey || formDirtyRef.current || Boolean(memberToEdit))
+      ) {
+        applyFormForMember(memberToEdit ?? null);
+      }
+    }
+    prevKineticOpenRef.current = isOpen;
+    prevKineticEditIdRef.current = memberToEdit?.id ?? null;
+  }
+
+  // Legacy activeMemberToEdit sync (non-kinetic path only)
+  useEffect(() => {
+    if (useKineticSpring) return;
+    if (isOpen) {
+      setActiveMemberToEdit(memberToEdit ?? null);
+    }
+  }, [useKineticSpring, isOpen, memberToEdit]);
 
   const lockScrollWithoutShift = useCallback(() => {
     if (scrollLockRef.current.locked || typeof document === 'undefined') return;
@@ -146,12 +217,25 @@ export const MemberModal: React.FC<MemberModalProps> = ({
 
   const setBackgroundInert = useCallback((inert: boolean) => {
     if (typeof document === 'undefined') return;
-    const mainAppRoot = document.getElementById('root');
-    if (!mainAppRoot) return;
     if (inert) {
-      mainAppRoot.setAttribute('inert', '');
+      const targets: HTMLElement[] = [];
+      const rootEl = scrimRef.current;
+      Array.from(document.body.children).forEach((child) => {
+        if (!(child instanceof HTMLElement)) return;
+        if (child === rootEl) return;
+        const tag = child.tagName;
+        if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'LINK' || tag === 'TEMPLATE') return;
+        if (!child.hasAttribute('inert')) {
+          child.setAttribute('inert', '');
+          targets.push(child);
+        }
+      });
+      inertElsRef.current = targets;
     } else {
-      mainAppRoot.removeAttribute('inert');
+      inertElsRef.current.forEach((el) => {
+        el.removeAttribute('inert');
+      });
+      inertElsRef.current = [];
     }
   }, []);
 
@@ -180,12 +264,51 @@ export const MemberModal: React.FC<MemberModalProps> = ({
   const restoreTriggerFocus = useCallback(() => {
     const opener = openerRef.current;
     if (opener && opener.isConnected && !scrimRef.current?.contains(opener)) {
-      opener.focus({ preventScroll: true });
-      return;
+      const cs = getComputedStyle(opener);
+      if (cs.visibility !== 'hidden' && cs.display !== 'none') {
+        opener.focus({ preventScroll: true });
+        return;
+      }
+      // If opener was a hover-fan button (.act) that became visibility:hidden after hover left,
+      // focus a visible control on the same row instead of dropping focus to document.body.
+      const rowVisibleControl = opener
+        .closest('.row')
+        ?.querySelector<HTMLElement>('.nm, .rb');
+      if (rowVisibleControl && getComputedStyle(rowVisibleControl).visibility !== 'hidden') {
+        rowVisibleControl.focus({ preventScroll: true });
+        return;
+      }
     }
     const fallback = document.querySelector<HTMLElement>('[data-action="add-member"]');
     fallback?.focus({ preventScroll: true });
   }, []);
+
+  const measureDialogLayoutOrigin = useCallback(
+    (root: HTMLDivElement, dialog: HTMLDivElement, triggerEl: HTMLElement | null): string => {
+      let dRect: { left: number; top: number; width: number; height: number };
+      if (dialog.offsetParent === root || dialog.offsetParent === document.body) {
+        dRect = {
+          left: dialog.offsetLeft,
+          top: dialog.offsetTop,
+          width: dialog.offsetWidth,
+          height: dialog.offsetHeight,
+        };
+      } else {
+        const prevTransform = dialog.style.transform;
+        dialog.style.transform = 'none';
+        dRect = dialog.getBoundingClientRect();
+        dialog.style.transform = prevTransform;
+      }
+      const tRect = triggerEl && triggerEl.isConnected ? triggerEl.getBoundingClientRect() : null;
+      return computeModalTransformOrigin(
+        tRect,
+        dRect,
+        window.innerWidth,
+        window.innerHeight
+      );
+    },
+    []
+  );
 
   const finishKineticClosing = useCallback(() => {
     const root = scrimRef.current;
@@ -198,6 +321,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
     }
     if (root) {
       root.hidden = true;
+      root.removeAttribute('data-settled');
       root.style.opacity = '0';
       root.style.pointerEvents = 'none';
       root.style.transition = '';
@@ -209,7 +333,14 @@ export const MemberModal: React.FC<MemberModalProps> = ({
       dialog.style.willChange = '';
     }
     lifecycleRef.current = 'closed';
-  }, []);
+    if (!isOpenRef.current) {
+      const hadRetained = retainedMemberRef.current !== null;
+      retainedMemberRef.current = null;
+      if (hadRetained || formPreparedKeyRef.current !== 'create' || formDirtyRef.current) {
+        applyFormForMember(null);
+      }
+    }
+  }, [applyFormForMember]);
 
   const startKineticOpen = useCallback(() => {
     const root = scrimRef.current;
@@ -241,13 +372,16 @@ export const MemberModal: React.FC<MemberModalProps> = ({
     if (state === 'closing') {
       // Re-entrancy: retarget mid-close keeping current dp.x and dp.v
       lifecycleRef.current = 'opening';
+      lockScrollWithoutShift();
+      setBackgroundInert(true);
+
       root.hidden = false;
+      root.removeAttribute('data-settled');
+      root.classList.remove('backdrop-blur-xs');
       root.style.pointerEvents = 'auto';
       root.style.willChange = 'opacity';
       dialog.style.willChange = reduced ? '' : 'transform';
-      root.classList.remove('backdrop-blur-xs');
-      lockScrollWithoutShift();
-      setBackgroundInert(true);
+      dialog.style.transformOrigin = measureDialogLayoutOrigin(root, dialog, openerRef.current);
 
       if (reduced) {
         dialog.style.transform = 'scale(1)';
@@ -258,6 +392,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
           if (lifecycleRef.current === 'opening') {
             root.style.willChange = '';
             root.style.transition = '';
+            root.setAttribute('data-settled', 'true');
             lifecycleRef.current = 'open';
             if (touch) focusFirstField();
           }
@@ -268,35 +403,23 @@ export const MemberModal: React.FC<MemberModalProps> = ({
         wake();
       }
     } else {
-      // Fresh open from closed state
+      // Fresh open from closed state (single layout pass)
       lifecycleRef.current = 'opening';
-      root.hidden = false;
-      root.style.transition = '';
-      root.style.opacity = '0';
-      root.classList.remove('backdrop-blur-xs');
-
-      // Measure unscaled dialog layout at scale(1) before first animation frame
-      dialog.style.transform = 'none';
-      const dRect = dialog.getBoundingClientRect();
-      const triggerEl = openerRef.current;
-      const tRect = triggerEl && triggerEl.isConnected ? triggerEl.getBoundingClientRect() : null;
-      dialog.style.transformOrigin = computeModalTransformOrigin(
-        tRect,
-        dRect,
-        window.innerWidth,
-        window.innerHeight
-      );
-
-      dialog.style.transform = reduced ? 'scale(1)' : 'scale(0.72)';
-      root.style.willChange = 'opacity';
-      dialog.style.willChange = reduced ? '' : 'transform';
-      root.style.pointerEvents = 'auto';
-
-      // Force style flush so initial scale(0.72) & opacity(0) commit before target=100
-      void root.offsetWidth;
-
       lockScrollWithoutShift();
       setBackgroundInert(true);
+
+      root.removeAttribute('data-settled');
+      root.classList.remove('backdrop-blur-xs');
+      root.style.transition = '';
+      root.style.opacity = '0';
+      root.style.willChange = 'opacity';
+      root.style.pointerEvents = 'auto';
+      dialog.style.willChange = reduced ? '' : 'transform';
+      dialog.style.transform = reduced ? 'scale(1)' : 'scale(0.72)';
+
+      root.hidden = false;
+      // measureDialogLayoutOrigin reads dialog.offsetLeft/offsetTop, flushing initial hidden->visible + scale(0.72) once
+      dialog.style.transformOrigin = measureDialogLayoutOrigin(root, dialog, openerRef.current);
 
       if (reduced) {
         root.style.transition = `opacity ${MODAL_REDUCED_FADE_MS}ms linear`;
@@ -309,6 +432,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
           if (lifecycleRef.current === 'opening') {
             root.style.willChange = '';
             root.style.transition = '';
+            root.setAttribute('data-settled', 'true');
             lifecycleRef.current = 'open';
             if (touch) focusFirstField();
           }
@@ -329,7 +453,14 @@ export const MemberModal: React.FC<MemberModalProps> = ({
         }
       }, MODAL_FOCUS_DELAY_MS);
     }
-  }, [clearTimers, focusFirstField, isTouchDevice, lockScrollWithoutShift, setBackgroundInert]);
+  }, [
+    clearTimers,
+    focusFirstField,
+    isTouchDevice,
+    lockScrollWithoutShift,
+    measureDialogLayoutOrigin,
+    setBackgroundInert,
+  ]);
 
   const startKineticClose = useCallback(() => {
     const root = scrimRef.current;
@@ -345,6 +476,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
 
     // Stop blocking underlying UI and remove backdrop blur immediately on close start
     root.style.pointerEvents = 'none';
+    root.removeAttribute('data-settled');
     root.classList.remove('backdrop-blur-xs');
 
     // Unlock background & scroll BEFORE returning focus so trigger inside #root is focusable
@@ -392,6 +524,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
       const dialog = dialogRef.current;
       const s = springRef.current;
       if (!root || !dialog || !s) return;
+      if (state === 'open' && s.rest()) return;
 
       const metrics = computeMemberModalMetrics(s.x, false);
       root.style.opacity = String(metrics.opacity);
@@ -412,7 +545,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
         dialog.style.transform = 'scale(1)';
         root.style.willChange = '';
         dialog.style.willChange = '';
-        root.classList.add('backdrop-blur-xs');
+        root.setAttribute('data-settled', 'true');
         lifecycleRef.current = 'open';
         if (isTouchDevice()) {
           focusFirstField();
@@ -430,7 +563,23 @@ export const MemberModal: React.FC<MemberModalProps> = ({
     };
   }, [useKineticSpring, finishKineticClosing, focusFirstField, isTouchDevice]);
 
-  // Trigger kinetic open/close synchronously before paint when isOpen changes
+  // Initialize closed DOM baseline on mount when kinetic spring is active
+  useLayoutEffect(() => {
+    if (!useKineticSpring || isOpenRef.current) return;
+    const root = scrimRef.current;
+    const dialog = dialogRef.current;
+    if (root) {
+      root.hidden = true;
+      root.removeAttribute('data-settled');
+      root.style.opacity = '0';
+      root.style.pointerEvents = 'none';
+    }
+    if (dialog) {
+      dialog.style.transform = checkReducedMotion() ? 'scale(1)' : 'scale(0.72)';
+    }
+  }, [useKineticSpring]);
+
+  // Trigger kinetic open/close synchronously before paint when isOpen prop changes
   useLayoutEffect(() => {
     if (!useKineticSpring) return;
     if (isOpen) {
@@ -439,6 +588,24 @@ export const MemberModal: React.FC<MemberModalProps> = ({
       startKineticClose();
     }
   }, [useKineticSpring, isOpen, startKineticOpen, startKineticClose]);
+
+  // Zero-re-render imperative opener subscription for kinetic mode
+  useEffect(() => {
+    if (!useKineticSpring) return;
+    return registerKineticMemberModalOpener(({ member, originElement: reqOrigin }) => {
+      originPropRef.current = reqOrigin ?? null;
+      const targetMember = (member as Member | null) ?? null;
+      retainedMemberRef.current = targetMember;
+
+      if (targetMember) {
+        applyFormForMember(targetMember);
+      } else if (formPreparedKeyRef.current !== 'create' || formDirtyRef.current) {
+        applyFormForMember(null);
+      }
+
+      startKineticOpen();
+    });
+  }, [useKineticSpring, applyFormForMember, startKineticOpen]);
 
   // Legacy subscription (ONLY used when useKineticSpring === false)
   useEffect(() => {
@@ -527,44 +694,15 @@ export const MemberModal: React.FC<MemberModalProps> = ({
     }
   }, [useKineticSpring, legacyHidden, setBackgroundInert]);
 
-  // Populate or reset form fields
+  // Populate or reset form fields (non-kinetic path only; kinetic path syncs pre-paint and resets after close)
   useEffect(() => {
-    if (!isOpen) return;
-
-    if (memberToEdit) {
-      setFullName(memberToEdit.fullName || '');
-      setEmail(memberToEdit.email || '');
-      setPhoneNumber(memberToEdit.phoneNumber || '');
-      setPlanId(memberToEdit.membershipPlanId || plans[0]?.id || '');
-      setCardId(memberToEdit.cardId || '');
-      setGender(memberToEdit.gender || 'Male');
-      setDateOfBirth(memberToEdit.dateOfBirth || '');
-      setStartDate(memberToEdit.startDate || '');
-      setEmergencyName(memberToEdit.emergencyContactName || '');
-      setEmergencyPhone(memberToEdit.emergencyContactPhone || '');
-      setSource(memberToEdit.source || 'Walk-in');
-      setNotes(memberToEdit.notes || '');
-    } else {
-      setFullName('');
-      setEmail('');
-      setPhoneNumber('');
-      setPlanId(plans[0]?.id || '');
-      setCardId(`RFID-${Math.floor(100000 + Math.random() * 900000)}`);
-      setGender('Male');
-      setDateOfBirth('1995-01-01');
-      setStartDate(new Date().toISOString().split('T')[0]);
-      setEmergencyName('');
-      setEmergencyPhone('');
-      setSource('Walk-in');
-      setNotes('');
-    }
-    setErrors({});
-    setIsSubmitting(false);
-  }, [isOpen, memberToEdit, plans]);
+    if (useKineticSpring || !isOpen) return;
+    applyFormForMember(memberToEdit ?? null);
+  }, [useKineticSpring, isOpen, memberToEdit, applyFormForMember]);
 
   // Keyboard navigation: single-level Escape close & Tab trap inside dialog
-  useEffect(() => {
-    if (!isOpen) return;
+  useLayoutEffect(() => {
+    if (!useKineticSpring && !isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (useKineticSpring) {
@@ -574,6 +712,9 @@ export const MemberModal: React.FC<MemberModalProps> = ({
       }
 
       if (e.key === 'Escape') {
+        if (useKineticSpring && dialogRef.current?.querySelector('[role="listbox"]')) {
+          return;
+        }
         e.preventDefault();
         if (useKineticSpring) {
           e.stopImmediatePropagation();
@@ -588,7 +729,13 @@ export const MemberModal: React.FC<MemberModalProps> = ({
           dialogRef.current.querySelectorAll<HTMLElement>(
             'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
           )
-        ).filter((el) => !el.hasAttribute('disabled') && el.tabIndex >= 0 && el.offsetParent !== null);
+        ).filter(
+          (el) =>
+            !el.hasAttribute('disabled') &&
+            el.tabIndex >= 0 &&
+            el.offsetParent !== null &&
+            !el.closest('[hidden], [inert]')
+        );
         if (focusable.length === 0) return;
 
         const first = focusable[0];
@@ -640,6 +787,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
     }
 
     if (Object.keys(newErrors).length > 0) {
+      formDirtyRef.current = true;
       setErrors(newErrors);
       if (newErrors.fullName) {
         nameInputRef.current?.focus();
@@ -649,6 +797,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
       return;
     }
 
+    formDirtyRef.current = true;
     setIsSubmitting(true);
 
     const selectedPlan = plans.find((p) => p.id === planId) || plans[0];
@@ -657,7 +806,9 @@ export const MemberModal: React.FC<MemberModalProps> = ({
     const expDate = new Date(start.getTime() + durationDays * 24 * 60 * 60 * 1000);
     const expirationDate = expDate.toISOString().split('T')[0];
 
-    const targetEdit = activeMemberToEdit || memberToEdit;
+    const targetEdit = useKineticSpring
+      ? (retainedMemberRef.current || memberToEdit)
+      : (activeMemberToEdit || memberToEdit);
     if (targetEdit) {
       const prevData = { ...targetEdit };
       const updatedFields: Partial<Member> = {
@@ -733,7 +884,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
     ? computeMemberModalMetrics(legacyVal, false)
     : null;
 
-  const displayedEdit = useKineticSpring ? activeMemberToEdit : memberToEdit;
+  const displayedEdit = useKineticSpring ? retainedMemberRef.current : memberToEdit;
 
   const modalContent = (
     <div
@@ -774,7 +925,11 @@ export const MemberModal: React.FC<MemberModalProps> = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby="member-modal-title"
-        className="member-modal-dialog dialog relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-[28px] bg-white dark:bg-[#1A1A1A] p-6 shadow-[0_24px_64px_rgba(0,0,0,0.35)] border border-[#E9EEF0] dark:border-neutral-800 text-left select-text"
+        className={`member-modal-dialog dialog relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-[28px] bg-white dark:bg-[#1A1A1A] p-6 border border-[#E9EEF0] dark:border-neutral-800 text-left select-text ${
+          useKineticSpring
+            ? 'shadow-[0_18px_48px_rgba(0,0,0,0.28)]'
+            : 'shadow-[0_24px_64px_rgba(0,0,0,0.35)]'
+        }`}
         style={
           useKineticSpring
             ? undefined
@@ -824,84 +979,135 @@ export const MemberModal: React.FC<MemberModalProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Full Name Field */}
-              <div>
-                <label
-                  htmlFor="member-fullName"
-                  className="block text-[11px] font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mb-1"
-                >
-                  {t('modal_name', language)} *
-                </label>
-                <input
-                  ref={nameInputRef}
-                  id="member-fullName"
-                  name="fullName"
-                  type="text"
-                  required
-                  aria-invalid={Boolean(errors.fullName)}
-                  aria-describedby={errors.fullName ? 'fullName-error' : undefined}
-                  value={fullName}
-                  onChange={(e) => {
-                    setFullName(e.target.value);
-                    if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: undefined }));
-                  }}
-                  className={`w-full h-10 px-3 rounded-xl border text-sm font-medium transition-colors bg-white dark:bg-[#262422] text-[#1B1917] dark:text-[#F3EDE7] focus:outline-none ${
-                    errors.fullName
-                      ? 'border-[#B8321C] focus:border-[#B8321C] ring-1 ring-[#B8321C]'
-                      : 'border-[#E4DCD5] dark:border-[#3A3734] focus:border-[#C9441F]'
-                  }`}
-                  placeholder="ex: Amira Belkacem"
-                />
-                {errors.fullName && (
-                  <p
-                    id="fullName-error"
-                    role="alert"
-                    className="mt-1 text-[11.5px] font-medium text-[#B8321C] flex items-center gap-1"
+              {useKineticSpring ? (
+                <div>
+                  <LabelInput
+                    inputRef={nameInputRef}
+                    id="member-fullName"
+                    name="fullName"
+                    field="FullName"
+                    label={`${t('modal_name', language)} *`}
+                    required
+                    value={fullName}
+                    error={errors.fullName}
+                    errorId="fullName-error"
+                    onChange={(val) => {
+                      formDirtyRef.current = true;
+                      setFullName(String(val));
+                      if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: undefined }));
+                    }}
+                    width="100%"
+                    height={40}
+                    corner={12}
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label
+                    htmlFor="member-fullName"
+                    className="block text-[11px] font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mb-1"
                   >
-                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                    <span>{errors.fullName}</span>
-                  </p>
-                )}
-              </div>
+                    {t('modal_name', language)} *
+                  </label>
+                  <input
+                    ref={nameInputRef}
+                    id="member-fullName"
+                    name="fullName"
+                    type="text"
+                    required
+                    aria-invalid={Boolean(errors.fullName)}
+                    aria-describedby={errors.fullName ? 'fullName-error' : undefined}
+                    value={fullName}
+                    onChange={(e) => {
+                      formDirtyRef.current = true;
+                      setFullName(e.target.value);
+                      if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: undefined }));
+                    }}
+                    className={`w-full h-10 px-3 rounded-xl border text-sm font-medium transition-colors bg-white dark:bg-[#262422] text-[#1B1917] dark:text-[#F3EDE7] focus:outline-none ${
+                      errors.fullName
+                        ? 'border-[#B8321C] focus:border-[#B8321C] ring-1 ring-[#B8321C]'
+                        : 'border-[#E4DCD5] dark:border-[#3A3734] focus:border-[#C9441F]'
+                    }`}
+                    placeholder="ex: Amira Belkacem"
+                  />
+                  {errors.fullName && (
+                    <p
+                      id="fullName-error"
+                      role="alert"
+                      className="mt-1 text-[11.5px] font-medium text-[#B8321C] flex items-center gap-1"
+                    >
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{errors.fullName}</span>
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Email Field */}
-              <div>
-                <label
-                  htmlFor="member-email"
-                  className="block text-[11px] font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mb-1"
-                >
-                  {t('modal_email', language)} *
-                </label>
-                <input
-                  ref={emailInputRef}
-                  id="member-email"
-                  name="email"
-                  type="email"
-                  required
-                  aria-invalid={Boolean(errors.email)}
-                  aria-describedby={errors.email ? 'email-error' : undefined}
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
-                  }}
-                  className={`w-full h-10 px-3 rounded-xl border text-sm font-medium transition-colors bg-white dark:bg-[#262422] text-[#1B1917] dark:text-[#F3EDE7] focus:outline-none ${
-                    errors.email
-                      ? 'border-[#B8321C] focus:border-[#B8321C] ring-1 ring-[#B8321C]'
-                      : 'border-[#E4DCD5] dark:border-[#3A3734] focus:border-[#C9441F]'
-                  }`}
-                  placeholder="contact@domaine.com"
-                />
-                {errors.email && (
-                  <p
-                    id="email-error"
-                    role="alert"
-                    className="mt-1 text-[11.5px] font-medium text-[#B8321C] flex items-center gap-1"
+              {useKineticSpring ? (
+                <div>
+                  <LabelInput
+                    inputRef={emailInputRef}
+                    id="member-email"
+                    name="email"
+                    type="email"
+                    field="Email"
+                    label={`${t('modal_email', language)} *`}
+                    required
+                    value={email}
+                    error={errors.email}
+                    errorId="email-error"
+                    onChange={(val) => {
+                      formDirtyRef.current = true;
+                      setEmail(String(val));
+                      if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+                    }}
+                    width="100%"
+                    height={40}
+                    corner={12}
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label
+                    htmlFor="member-email"
+                    className="block text-[11px] font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mb-1"
                   >
-                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                    <span>{errors.email}</span>
-                  </p>
-                )}
-              </div>
+                    {t('modal_email', language)} *
+                  </label>
+                  <input
+                    ref={emailInputRef}
+                    id="member-email"
+                    name="email"
+                    type="email"
+                    required
+                    aria-invalid={Boolean(errors.email)}
+                    aria-describedby={errors.email ? 'email-error' : undefined}
+                    value={email}
+                    onChange={(e) => {
+                      formDirtyRef.current = true;
+                      setEmail(e.target.value);
+                      if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+                    }}
+                    className={`w-full h-10 px-3 rounded-xl border text-sm font-medium transition-colors bg-white dark:bg-[#262422] text-[#1B1917] dark:text-[#F3EDE7] focus:outline-none ${
+                      errors.email
+                        ? 'border-[#B8321C] focus:border-[#B8321C] ring-1 ring-[#B8321C]'
+                        : 'border-[#E4DCD5] dark:border-[#3A3734] focus:border-[#C9441F]'
+                    }`}
+                    placeholder="contact@domaine.com"
+                  />
+                  {errors.email && (
+                    <p
+                      id="email-error"
+                      role="alert"
+                      className="mt-1 text-[11.5px] font-medium text-[#B8321C] flex items-center gap-1"
+                    >
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{errors.email}</span>
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Phone Field */}
               <div>
@@ -909,7 +1115,10 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                   field="Phone"
                   label={t('modal_phone', language)}
                   value={phoneNumber}
-                  onChange={setPhoneNumber}
+                  onChange={(val) => {
+                    formDirtyRef.current = true;
+                    setPhoneNumber(val);
+                  }}
                   type="tel"
                   width="100%"
                   height={40}
@@ -918,145 +1127,192 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               </div>
 
               {/* Gender and Birth Date */}
-              <div className="grid grid-cols-2 gap-2 items-end">
-                <div>
-                  <label className="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1">
-                    {t('member_field_gender', language)}
-                  </label>
-                  <LiveSegmentedControl
-                    fullWidth
-                    size="md"
+              <div className="grid grid-cols-2 gap-2 items-start">
+                {useKineticSpring ? (
+                  <LabelSelect
+                    field="Gender"
+                    label={t('member_field_gender', language)}
                     value={gender}
-                    onValueChange={(val) => setGender(val as Gender)}
+                    onChange={(val) => {
+                      formDirtyRef.current = true;
+                      setGender((val?.target?.value ?? val) as Gender);
+                    }}
                     options={[
                       { value: 'Male', label: t('member_gender_male', language) },
                       { value: 'Female', label: t('member_gender_female', language) },
                       { value: 'Other', label: t('member_gender_other', language) },
                     ]}
-                    aria-label={t('member_field_gender', language)}
+                    width="100%"
+                    height={40}
+                    corner={12}
                   />
-                </div>
+                ) : (
+                  <div>
+                    <label className="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1">
+                      {t('member_field_gender', language)}
+                    </label>
+                    <LiveSegmentedControl
+                      fullWidth
+                      size="md"
+                      value={gender}
+                      onValueChange={(val) => {
+                        formDirtyRef.current = true;
+                        setGender(val as Gender);
+                      }}
+                      options={[
+                        { value: 'Male', label: t('member_gender_male', language) },
+                        { value: 'Female', label: t('member_gender_female', language) },
+                        { value: 'Other', label: t('member_gender_other', language) },
+                      ]}
+                      aria-label={t('member_field_gender', language)}
+                    />
+                  </div>
+                )}
 
                 <LabelInput
                   field="BirthDate"
                   label={t('member_field_birth_date', language)}
                   type="date"
                   value={dateOfBirth}
-                  onChange={setDateOfBirth}
+                  onChange={(val) => {
+                    formDirtyRef.current = true;
+                    setDateOfBirth(val);
+                  }}
                   width="100%"
                   height={40}
                   corner={12}
                 />
               </div>
             </div>
-          </div>
-
-          {/* Section 2: Membership Plan */}
-          <div className="space-y-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-              {t('member_section_membership', language)}
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <LabelSelect
-                field="PlanPackage"
-                label={`${t('member_field_plan_package', language)} *`}
-                value={planId}
-                onChange={(val) => setPlanId(val?.target?.value ?? val)}
-                options={plans.map((p) => ({
-                  value: p.id,
-                  label: p.name,
-                  sublabel: `${p.durationDays} j · ${p.price.toLocaleString()} DZD`,
-                }))}
-                width="100%"
-                height={40}
-                corner={12}
-              />
-
-              <LabelInput
-                field="StartDate"
-                label={t('member_field_start_date', language)}
-                type="date"
-                value={startDate}
-                onChange={setStartDate}
-                width="100%"
-                height={40}
-                corner={12}
-              />
-
-              <LabelInput
-                field="CardId"
-                label={t('member_field_rfid_card', language)}
-                value={cardId}
-                onChange={setCardId}
-                placeholder="RFID-XXXXXX"
-                width="100%"
-                height={40}
-                corner={12}
-              />
-            </div>
-          </div>
-
-          {/* Section 3: Emergency & Notes */}
-          <div className="space-y-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-              {t('member_section_emergency', language)}
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <LabelInput
-                field="EmergencyContact"
-                label={t('member_field_emergency_contact', language)}
-                value={emergencyName}
-                onChange={setEmergencyName}
-                placeholder="Nom du proche"
-                width="100%"
-                height={40}
-                corner={12}
-              />
-
-              <LabelInput
-                field="EmergencyPhone"
-                label={t('member_field_emergency_phone', language)}
-                type="tel"
-                value={emergencyPhone}
-                onChange={setEmergencyPhone}
-                placeholder="+213 555 00 00 00"
-                width="100%"
-                height={40}
-                corner={12}
-              />
-
-              <LabelSelect
-                field="AcquisitionChannel"
-                label={t('member_field_acquisition', language)}
-                value={source}
-                onChange={(val) => setSource(val?.target?.value ?? val)}
-                options={[
-                  { value: 'Walk-in', label: 'Passage direct' },
-                  { value: 'Instagram', label: 'Instagram' },
-                  { value: 'Facebook', label: 'Facebook' },
-                  { value: 'Referral', label: 'Parrainage' },
-                  { value: 'Website', label: 'Site web' },
-                  { value: 'VIP Partner', label: 'Partenaire' },
-                ]}
-                width="100%"
-                height={40}
-                corner={12}
-              />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                {t('member_field_private_notes', language)}
-              </label>
-              <textarea
-                rows={2}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Notes médicales, objectifs ou restrictions..."
-                className="w-full p-2.5 text-sm border rounded-xl border-[#E4DCD5] dark:border-[#3A3734] bg-white dark:bg-[#262422] text-neutral-900 dark:text-white focus:outline-none focus:border-[#C9441F] resize-none"
-              />
+            {/* Section 2: Membership Plan */}
+            <div className="space-y-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+                {t('member_section_membership', language)}
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <LabelSelect
+                  field="PlanPackage"
+                  label={`${t('member_field_plan_package', language)} *`}
+                  value={planId}
+                  onChange={(val) => {
+                    formDirtyRef.current = true;
+                    setPlanId(val?.target?.value ?? val);
+                  }}
+                  options={plans.map((p) => ({
+                    value: p.id,
+                    label: p.name,
+                    sublabel: `${p.durationDays} j · ${p.price.toLocaleString()} DZD`,
+                  }))}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+
+                <LabelInput
+                  field="StartDate"
+                  label={t('member_field_start_date', language)}
+                  type="date"
+                  value={startDate}
+                  onChange={(val) => {
+                    formDirtyRef.current = true;
+                    setStartDate(val);
+                  }}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+
+                <LabelInput
+                  field="CardId"
+                  label={t('member_field_rfid_card', language)}
+                  value={cardId}
+                  onChange={(val) => {
+                    formDirtyRef.current = true;
+                    setCardId(val);
+                  }}
+                  placeholder="RFID-XXXXXX"
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+              </div>
             </div>
-          </div>
+
+            {/* Section 3: Emergency & Notes */}
+            <div className="space-y-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+                {t('member_section_emergency', language)}
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <LabelInput
+                  field="EmergencyContact"
+                  label={t('member_field_emergency_contact', language)}
+                  value={emergencyName}
+                  onChange={(val) => {
+                    formDirtyRef.current = true;
+                    setEmergencyName(val);
+                  }}
+                  placeholder="Nom du proche"
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+
+                <LabelInput
+                  field="EmergencyPhone"
+                  label={t('member_field_emergency_phone', language)}
+                  type="tel"
+                  value={emergencyPhone}
+                  onChange={(val) => {
+                    formDirtyRef.current = true;
+                    setEmergencyPhone(val);
+                  }}
+                  placeholder="+213 555 00 00 00"
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+
+                <LabelSelect
+                  field="AcquisitionChannel"
+                  label={t('member_field_acquisition', language)}
+                  value={source}
+                  onChange={(val) => {
+                    formDirtyRef.current = true;
+                    setSource(val?.target?.value ?? val);
+                  }}
+                  options={[
+                    { value: 'Walk-in', label: 'Passage direct' },
+                    { value: 'Instagram', label: 'Instagram' },
+                    { value: 'Facebook', label: 'Facebook' },
+                    { value: 'Referral', label: 'Parrainage' },
+                    { value: 'Website', label: 'Site web' },
+                    { value: 'VIP Partner', label: 'Partenaire' },
+                  ]}
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                  {t('member_field_private_notes', language)}
+                </label>
+                <textarea
+                  rows={2}
+                  value={notes}
+                  onChange={(e) => {
+                    formDirtyRef.current = true;
+                    setNotes(e.target.value);
+                  }}
+                  placeholder="Notes médicales, objectifs ou restrictions..."
+                  className="w-full p-2.5 text-sm border rounded-xl border-[#E4DCD5] dark:border-[#3A3734] bg-white dark:bg-[#262422] text-neutral-900 dark:text-white focus:outline-none focus:border-[#C9441F] resize-none"
+                />
+              </div>
+            </div>
 
           {/* Footer Actions */}
           <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">

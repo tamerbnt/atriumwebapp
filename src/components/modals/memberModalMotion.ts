@@ -106,3 +106,27 @@ export function shouldCloseOnScrimMouseUp(
   if (!mousedownOnScrim || !mouseupOnScrim) return false;
   return nowMs - openedAtMs >= MODAL_SCRIM_CLICK_GUARD_MS;
 }
+
+export interface KineticMemberModalTriggerPayload<T = any> {
+  member: T | null;
+  originElement?: HTMLElement | null;
+}
+
+type KineticModalHandler = (payload: KineticMemberModalTriggerPayload) => void;
+let kineticModalHandler: KineticModalHandler | null = null;
+
+export function registerKineticMemberModalOpener(handler: KineticModalHandler): () => void {
+  kineticModalHandler = handler;
+  return () => {
+    if (kineticModalHandler === handler) {
+      kineticModalHandler = null;
+    }
+  };
+}
+
+export function triggerKineticMemberModal(payload: KineticMemberModalTriggerPayload): boolean {
+  if (!kineticModalHandler) return false;
+  kineticModalHandler(payload);
+  return true;
+}
+

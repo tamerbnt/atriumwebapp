@@ -261,6 +261,8 @@
 
 .member-modal-dialog {
   contain: layout paint;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .scrim-inspector {
