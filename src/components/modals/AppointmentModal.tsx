@@ -76,6 +76,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
   // Sync state when opening modal
   useEffect(() => {
+    if (!isOpen) return;
     if (appointment) {
       setSelectedClientId(appointment.clientId);
       setWalkinName(appointment.clientName);

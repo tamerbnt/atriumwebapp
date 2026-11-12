@@ -27,33 +27,131 @@
   }
 }
 
-/* Prototype Hover Fan and Row Island Action Styles */
+/* Adherents Kinetic Row, Hover Fan, Grid Morph & Panel Styles */
+.th-adherents {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 22px minmax(200px, 1fr) 190px 120px 155px 105px;
+  gap: 16px;
+  align-items: center;
+  height: 40px;
+  max-height: 52px;
+  padding: 0 176px 0 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  overflow: hidden;
+  transition: max-height 220ms cubic-bezier(.24, 1.34, .38, 1),
+              opacity 160ms ease,
+              margin-top 220ms cubic-bezier(.24, 1.34, .38, 1),
+              border-width 160ms ease;
+}
+.th-adherents[data-v="g"] {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  border-width: 0;
+  pointer-events: none;
+}
+
+.rows {
+  position: relative;
+}
+.row {
+  position: absolute;
+  left: 0;
+  top: 0;
+  contain: layout style;
+  will-change: transform;
+}
+.slab {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-radius: 16px;
+  border-width: 1px;
+  border-style: solid;
+  box-sizing: border-box;
+  z-index: 0;
+  transition: box-shadow 160ms, border-color 160ms;
+}
+.row:hover .slab {
+  border-color: #D5C9BE;
+}
+.dark .row:hover .slab,
+[data-theme="dark"] .row:hover .slab {
+  border-color: #544F4A;
+}
+
+.in {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 22px minmax(200px, 1fr) 190px 120px 155px 105px;
+  gap: 16px;
+  align-items: center;
+  padding: 0 176px 0 14px;
+  box-sizing: border-box;
+}
+.rows[data-v="g"] .in {
+  grid-template-columns: 22px 1fr auto;
+  grid-template-areas:
+    "cb who st"
+    "fm fm fm"
+    "dt dt sd";
+  padding: 16px;
+  gap: 10px 12px;
+  align-content: space-between;
+}
+.rows[data-v="g"] .c-cb { grid-area: cb; }
+.rows[data-v="g"] .c-who { grid-area: who; }
+.rows[data-v="g"] .c-st { grid-area: st; }
+.rows[data-v="g"] .c-fm { grid-area: fm; }
+.rows[data-v="g"] .c-dt { grid-area: dt; }
+.rows[data-v="g"] .c-sd { grid-area: sd; text-align: right; align-self: end; }
+
+[dir="rtl"] .in {
+  padding: 0 14px 0 176px;
+}
+[dir="rtl"] .th-adherents {
+  padding: 0 14px 0 176px;
+}
+[dir="rtl"] .rows[data-v="g"] .in {
+  padding: 16px;
+}
+[dir="rtl"] .rows[data-v="g"] .c-sd {
+  text-align: left;
+}
+
 .rb {
   position: absolute;
-  top: 16px;
-  right: 14px;
+  top: 12px;
+  right: 12px;
   z-index: 3;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   display: grid;
   place-items: center;
+  padding: 0;
   scale: var(--zoom, 1);
   transition: --zoom 160ms cubic-bezier(.24, 1.34, .38, 1);
 }
-.rb:hover, .act:hover {
+.rb:hover,
+.act:hover {
   --zoom: 1.12;
 }
 .act {
   position: absolute;
-  top: 18px;
-  right: 18px;
+  top: 15px;
+  right: 15px;
   z-index: 2;
   width: 32px;
   height: 32px;
   border-radius: 50%;
   display: grid;
   place-items: center;
+  padding: 0;
   opacity: 0;
   visibility: hidden;
   translate: 0 0;
@@ -61,13 +159,7 @@
   transition: translate 140ms, opacity 100ms, scale 140ms, visibility 0s linear 140ms;
 }
 .row:hover .act,
-.row:focus-within .act,
-.row[data-expanded="true"] .act,
-.row.expanded .act,
-.rw:hover .act,
-.rw:focus-within .act,
-.rw[data-expanded="true"] .act,
-.rw[data-x] .act {
+.row:focus-within .act {
   opacity: 1;
   visibility: visible;
   translate: calc(var(--i) * -40px - 46px) 0;
@@ -77,25 +169,111 @@
               scale 160ms,
               visibility 0s;
 }
+.act:hover {
+  background: var(--atr-hl, #FBE7DF);
+  color: var(--atr-acc, #C9441F);
+}
+.act.d:hover {
+  background: var(--atr-acc, #C9441F) !important;
+  color: #ffffff !important;
+}
+
+[dir="rtl"] .rb {
+  right: auto;
+  left: 12px;
+}
+[dir="rtl"] .act {
+  right: auto;
+  left: 15px;
+}
+[dir="rtl"] .row:hover .act,
+[dir="rtl"] .row:focus-within .act {
+  translate: calc(var(--i) * 40px + 46px) 0;
+}
+
+.rows[data-v="g"] .act,
+.rows[data-v="g"] .rb,
+.rows[data-v="g"] .det,
+.rows[data-v="g"] .dc {
+  display: none !important;
+}
+
+.pb section {
+  margin-top: 18px;
+  animation: up 0.5s cubic-bezier(.24, 1.34, .38, 1) both;
+  animation-delay: calc(var(--k, 0) * 55ms);
+}
+.pb h3 {
+  margin: 0 0 10px;
+  font: 700 11px 'Space Mono', ui-monospace, monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--atr-mut, #6B635C);
+}
+.qa button {
+  scale: var(--zoom, 1);
+  transition: --zoom 160ms cubic-bezier(.24, 1.34, .38, 1), background-color 160ms;
+}
+.qa button:hover {
+  --zoom: 1.04;
+  background-color: var(--atr-hl, #FBE7DF);
+}
+.qa button:active {
+  --zoom: 0.97;
+}
+.bar2 i {
+  transition: width 0.7s cubic-bezier(.24, 1.34, .38, 1);
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .act, .rb {
+  .act,
+  .rb,
+  .slab,
+  .th-adherents,
+  .qa button,
+  .bar2 i {
     transition: none !important;
+  }
+  .pb section {
+    animation: none !important;
   }
 }
 
 @media (hover: none) and (pointer: coarse) {
-  .row:not([data-expanded="true"]):not(.expanded) .act,
-  .rw:not([data-expanded="true"]):not([data-x]) .act {
+  .row:not([data-expanded="true"]) .act {
     opacity: 0 !important;
     visibility: hidden !important;
     translate: 0 !important;
     pointer-events: none !important;
   }
+  .row[data-expanded="true"] .act {
+    opacity: 1;
+    visibility: visible;
+    translate: calc(var(--i) * -40px - 46px) 0;
+    scale: 1;
+  }
 }
 
-.scrim[hidden] {
+.scrim[hidden],
+.member-modal-root[hidden] {
   display: none !important;
+}
+
+.member-modal-dialog {
+  contain: layout paint;
+}
+
+.scrim-inspector {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+.pnl-inspector {
+  visibility: hidden;
+  transform: translateX(620px);
+  will-change: transform;
 }
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
@@ -432,12 +610,21 @@
 
 /* Standard Firefox & Modern CSS */
 html,
-body,
-* {
+body {
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
-  transition: scrollbar-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   -webkit-overflow-scrolling: touch;
+}
+.main,
+[data-scroll-container],
+main,
+aside,
+.overflow-y-auto,
+.overflow-x-auto,
+.overflow-auto,
+.scr {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
 }
 
 html {
@@ -508,6 +695,10 @@ div[tabindex],
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+}
+
+.scr {
+  scroll-behavior: auto;
 }
 
 

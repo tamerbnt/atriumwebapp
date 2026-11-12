@@ -35,24 +35,24 @@ import { useAtriumStore } from '../../../services/store';
 import { Member, MemberStatus } from '../../../types/index';
 import { calculateDaysRemaining, formatMoney, localizeStatus } from '../../../utils/rules';
 import { AppointmentModal } from '../../modals/AppointmentModal';
-import { Seek } from '../../ui/Seek';
-import { ActionNode } from '../../ui/ActionNode';
-import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { MemberRow, MemberRowData } from './components/MemberRow';
 import { FloatingBulkBar } from './components/FloatingBulkBar';
 import { MemberSlideOverInspector } from './MemberSlideOverInspector';
-import { useSpringCount } from './motion/adherentsMotion';
+import { useSpringCountRef } from './motion/adherentsMotion';
 import { useKineticRowLayout } from './motion/useKineticRowLayout';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Button as BrandedAtriumButton, LiquidButton } from '@/atrium';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { Seek } from '../../ui/Seek';
 import { t } from '../../../utils/i18n';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
+const MEMBER_COLLATOR = new Intl.Collator(undefined, { sensitivity: 'base' });
+
 export interface MembershipMembersViewProps {
-  onAddMember: () => void;
-  onEditMember: (member: Member) => void;
+  onAddMember: (originEl?: HTMLElement | null) => void;
+  onEditMember: (member: Member, originEl?: HTMLElement | null) => void;
 }
 
 export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
@@ -104,21 +104,23 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
   const [memberSortBy, setMemberSortBy] = useState<string>('member');
   const [memberSortDir, setMemberSortDir] = useState<'asc' | 'desc'>('asc');
 
-  const toggleExpandMember = (id: string) => {
+  const toggleExpandMember = useCallback((id: string | number) => {
+    const key = String(id);
     setExpandedMemberIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
+      if (next.has(key)) {
+        next.delete(key);
       } else {
-        next.add(id);
+        next.add(key);
       }
       return next;
     });
-  };
+  }, []);
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
-  const [saveNoteSuccess, setSaveNoteSuccess] = useState(false);
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
-  const [gymDrawerTab, setGymDrawerTab] = useState<'history' | 'sales' | 'bookings'>('history');
+  const [panelInitialTab, setPanelInitialTab] = useState<'overview' | 'access' | 'billing'>('overview');
+  const panelOpenerRef = useRef<HTMLElement | null>(null);
+  const lastSelectedIdxRef = useRef<number>(-1);
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
   const filterPopoverRef = useRef<HTMLDivElement | null>(null);
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -212,13 +214,50 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
     return Array.from(map.values());
   }, [plans, members]);
 
-  // Desktop sample members matching screenshot amira and saraa
+  // Cached days-remaining lookup + single-pass counts for O(N) 1000+ member scalability
+  const daysRemainingByDate = useMemo(() => {
+    const cache = new Map<string, number>();
+    for (let i = 0; i < members.length; i++) {
+      const exp = members[i].expirationDate || '';
+      if (!cache.has(exp)) {
+        cache.set(exp, calculateDaysRemaining(false, exp));
+      }
+    }
+    return cache;
+  }, [members]);
+
+  const { activeMembersCount, expiringCount, expiredCount, archivedCount } = useMemo(() => {
+    let active = 0;
+    let expiring = 0;
+    let expired = 0;
+    let archived = 0;
+    for (let i = 0; i < members.length; i++) {
+      const m = members[i];
+      if (m.status === 'Active') active++;
+      else if (m.status === 'Expired') expired++;
+      else if (m.status === 'Banned' || m.status === 'Suspended') archived++;
+      const d = daysRemainingByDate.get(m.expirationDate || '') ?? 999;
+      if (d <= 14 && d > 0) expiring++;
+    }
+    return {
+      activeMembersCount: active,
+      expiringCount: expiring,
+      expiredCount: expired,
+      archivedCount: archived,
+    };
+  }, [members, daysRemainingByDate]);
+
+  // Desktop sample members
   const displayMembers = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
     return members.filter((member) => {
       if (statusFilter !== 'All') {
         if (statusFilter === 'Active' && member.status !== 'Active') return false;
         if (statusFilter === 'Expired' && member.status !== 'Expired') return false;
-        if (statusFilter === 'Expiring' && calculateDaysRemaining(false, member.expirationDate) > 14) return false;
+        if (statusFilter === 'Expiring') {
+          const d = daysRemainingByDate.get(member.expirationDate || '') ?? calculateDaysRemaining(false, member.expirationDate);
+          if (d > 14) return false;
+        }
         if (statusFilter === 'Archived' && member.status !== 'Banned' && member.status !== 'Suspended') return false;
       }
       if (planFilter !== 'All') {
@@ -234,8 +273,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
       if (ageGroupFilter !== 'All') {
         if (!matchesAgeGroup(member.dateOfBirth, ageGroupFilter)) return false;
       }
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
+      if (q) {
         if (
           !member.fullName.toLowerCase().includes(q) &&
           !member.phoneNumber.includes(q) &&
@@ -246,8 +284,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
       }
       return true;
     });
-  }, [members, statusFilter, planFilter, genderFilter, ageGroupFilter, searchQuery]);
-
+  }, [members, daysRemainingByDate, statusFilter, planFilter, genderFilter, ageGroupFilter, searchQuery]);
 
   const customerSalesMetrics = useMemo(() => {
     const memberSalesMap: Record<string, number> = {};
@@ -261,22 +298,6 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
     const purchasingCount = Object.keys(memberSalesMap).length;
     return { memberSalesMap, totalSpend, purchasingCount };
   }, [sales]);
-
-  const activeMembersCount = useMemo(() => {
-    return members.filter((m) => m.status === 'Active').length;
-  }, [members]);
-
-  const expiringCount = useMemo(() => {
-    return members.filter((m) => calculateDaysRemaining(false, m.expirationDate) <= 14 && calculateDaysRemaining(false, m.expirationDate) > 0).length;
-  }, [members]);
-
-  const expiredCount = useMemo(() => {
-    return members.filter((m) => m.status === 'Expired').length;
-  }, [members]);
-
-  const archivedCount = useMemo(() => {
-    return members.filter((m) => m.status === 'Banned' || m.status === 'Suspended').length;
-  }, [members]);
 
   const quickStatusOptions = useMemo(() => [
     { value: 'All', label: t('member_filter_all', language), count: members.length },
@@ -317,19 +338,27 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
       if (aPinned !== bPinned) return bPinned - aPinned;
 
       if (memberSortBy === 'member') {
-        const comp = a.fullName.localeCompare(b.fullName);
+        const comp = MEMBER_COLLATOR.compare(a.fullName, b.fullName);
         return memberSortDir === 'asc' ? comp : -comp;
       }
       if (memberSortBy === 'plan') {
-        const comp = (a.membershipPlanName || '').localeCompare(b.membershipPlanName || '');
+        const comp = MEMBER_COLLATOR.compare(a.membershipPlanName || '', b.membershipPlanName || '');
         return memberSortDir === 'asc' ? comp : -comp;
       }
       if (memberSortBy === 'status') {
-        const comp = a.status.localeCompare(b.status);
+        const comp = MEMBER_COLLATOR.compare(a.status, b.status);
         return memberSortDir === 'asc' ? comp : -comp;
       }
       if (memberSortBy === 'expiration') {
-        const comp = (a.expirationDate || '').localeCompare(b.expirationDate || '');
+        const ea = a.expirationDate || '';
+        const eb = b.expirationDate || '';
+        const comp = ea < eb ? -1 : ea > eb ? 1 : 0;
+        return memberSortDir === 'asc' ? comp : -comp;
+      }
+      if (memberSortBy === 'balance') {
+        const balA = Number((a as any).balance || 0);
+        const balB = Number((b as any).balance || 0);
+        const comp = balA - balB;
         return memberSortDir === 'asc' ? comp : -comp;
       }
       return 0;
@@ -337,45 +366,240 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
     return list;
   }, [displayMembers, pinnedMemberIds, memberSortBy, memberSortDir]);
 
-  // Kinetic absolute row layout and physics management
-  const listContainerRef = useRef<HTMLDivElement | null>(null);
-  const [listWidth, setListWidth] = useState(1200);
+  // Kinetic absolute row & grid morph layout (direct DOM refs on single shared rAF loop)
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const rowsElRef = useRef<HTMLDivElement | null>(null);
+  const filterKey = `${statusFilter}|${planFilter}|${genderFilter}|${ageGroupFilter}|${searchQuery}`;
 
-  useEffect(() => {
-    if (!listContainerRef.current) return;
-    const updateWidth = () => {
-      if (listContainerRef.current) {
-        const w = listContainerRef.current.clientWidth;
-        if (w > 0) setListWidth(w);
-      }
-    };
-    updateWidth();
-    const ro = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.contentRect.width > 0) {
-          setListWidth(entry.contentRect.width);
-        }
-      }
+  const handlePruneSelection = useCallback((hiddenIds: string[]) => {
+    if (hiddenIds.length === 0) return;
+    setSelectedMemberIds((prev) => {
+      let changed = false;
+      hiddenIds.forEach((id) => {
+        if (prev.has(id)) changed = true;
+      });
+      if (!changed) return prev;
+      const next = new Set(prev);
+      hiddenIds.forEach((id) => next.delete(id));
+      return next;
     });
-    ro.observe(listContainerRef.current);
-    return () => ro.disconnect();
   }, []);
 
-  const { renderRows, containerHeight, hasVisibleRows } = useKineticRowLayout({
+  const handleFilterScrollReset = useCallback(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: 'auto' });
+      scrollContainerRef.current.scrollTop = 0;
+    }
+    const outerScroll = scrollContainerRef.current?.closest('main, [data-scroll-container]');
+    if (outerScroll) {
+      outerScroll.scrollTo({ top: 0, behavior: 'auto' });
+    }
+  }, []);
+
+  const { renderedRows, registerRowRefs } = useKineticRowLayout({
     matchingMembers: sortedMembers,
     expandedMemberIds,
-    onPruneSelection: (hiddenIds) => {
-      setSelectedMemberIds((prev) => {
+    viewMode,
+    filterKey,
+    rowsElRef,
+    scrollContainerRef,
+    openMemberId: isDetailOpen ? selectedMember?.id ?? null : null,
+    onPruneSelection: handlePruneSelection,
+    onFilterChange: handleFilterScrollReset,
+  });
+
+  const memberRowDataMap = useMemo(() => {
+    const map = new Map<string, MemberRowData>();
+    for (let i = 0; i < renderedRows.length; i++) {
+      const member = renderedRows[i].member;
+      const daysRemaining = calculateDaysRemaining(false, member.expirationDate);
+      const remainingText =
+        daysRemaining > 0
+          ? `${daysRemaining} j restants`
+          : daysRemaining === 0
+          ? 'Expire aujourd’hui'
+          : 'Expiré';
+      const isBlocked =
+        member.status === 'Suspended' ||
+        member.status === 'Banned' ||
+        Boolean((member as any).isBlocked);
+      const isExp = member.status === 'Expired' || daysRemaining <= 0;
+
+      map.set(member.id, {
+        id: member.id,
+        name: member.fullName || 'Adhérent',
+        phone: member.phoneNumber || '',
+        email: member.email || '',
+        planName: member.membershipPlanName || 'Full Access Monthly',
+        status: isBlocked ? 'Bloqué' : isExp ? 'Expiré' : 'Actif',
+        statusVariant: isBlocked ? 'blocked' : isExp ? 'expired' : 'active',
+        expiryDate: member.expirationDate || 'Non spécifié',
+        daysRemainingLabel: remainingText,
+        balance: (member as any).balance || 0,
+        balanceLabel: (member as any).balance
+          ? `${Math.round((member as any).balance).toLocaleString()} DZD`
+          : 'Soldé',
+        avatarColor: getMemberInitialsColor(member.fullName),
+        remainingSessions: (member as any).remainingSessions ?? 24,
+        notes: member.notes,
+        isBlocked,
+      });
+    }
+    return map;
+  }, [renderedRows]);
+
+  // Lookup refs for stable memoized row callbacks
+  const sortedMembersRef = useRef(sortedMembers);
+  sortedMembersRef.current = sortedMembers;
+  const membersByIdRef = useRef(new Map<string, Member>());
+  membersByIdRef.current = useMemo(() => {
+    const map = new Map<string, Member>();
+    members.forEach((m) => map.set(m.id, m));
+    return map;
+  }, [members]);
+
+  const handleSelectRow = useCallback((id: string | number, e: React.MouseEvent) => {
+    const key = String(id);
+    const list = sortedMembersRef.current;
+    const idx = list.findIndex((m) => m.id === key);
+    setSelectedMemberIds((prev) => {
+      const next = new Set(prev);
+      if (e.shiftKey && lastSelectedIdxRef.current > -1 && idx > -1) {
+        const start = Math.min(lastSelectedIdxRef.current, idx);
+        const end = Math.max(lastSelectedIdxRef.current, idx);
+        for (let i = start; i <= end; i++) {
+          next.add(list[i].id);
+        }
+      } else if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+    if (idx > -1) lastSelectedIdxRef.current = idx;
+  }, []);
+
+  const handleOpenRowDetails = useCallback(
+    (id: string | number, originEl?: HTMLElement | null) => {
+      panelOpenerRef.current = originEl || (document.activeElement as HTMLElement | null);
+      setPanelInitialTab('overview');
+      selectMember(String(id));
+    },
+    [selectMember]
+  );
+
+  const handleEditRow = useCallback(
+    (id: string | number, originEl?: HTMLElement | null) => {
+      const m = membersByIdRef.current.get(String(id));
+      if (m) onEditMember(m, originEl);
+    },
+    [onEditMember]
+  );
+
+  const handleMessageRow = useCallback(
+    (id: string | number) => {
+      const m = membersByIdRef.current.get(String(id));
+      if (!m) return;
+      if (m.email) {
+        window.location.href = `mailto:${m.email}`;
+      } else {
+        showToast({
+          type: 'info',
+          title: 'Email draft',
+          message: `No email address for ${m.fullName}`,
+        });
+      }
+    },
+    [showToast]
+  );
+
+  const handleDeleteRow = useCallback(
+    (id: string | number) => {
+      const m = membersByIdRef.current.get(String(id));
+      if (!m) return;
+      deleteMember(m.id);
+      showToast({
+        type: 'info',
+        title: 'Adhérent supprimé',
+        message: `${m.fullName} a été retiré.`,
+      });
+    },
+    [deleteMember, showToast]
+  );
+
+  const handleRenewRow = useCallback(
+    (id: string | number) => {
+      const m = membersByIdRef.current.get(String(id));
+      if (!m) return;
+      const currentExp = new Date(m.expirationDate || new Date().toISOString());
+      const newExp = new Date(currentExp.getTime() + 30 * 864e5).toISOString().split('T')[0];
+      updateMember(m.id, { expirationDate: newExp, status: 'Active' });
+      showToast({
+        type: 'success',
+        title: 'Abonnement renouvelé',
+        message: `${m.fullName} prolongé jusqu'au ${newExp}`,
+      });
+    },
+    [updateMember, showToast]
+  );
+
+  const handleArchiveRow = useCallback(
+    (id: string | number) => {
+      const m = membersByIdRef.current.get(String(id));
+      if (!m) return;
+      updateMember(m.id, { status: 'Suspended' });
+      showToast({
+        type: 'info',
+        title: 'Adhérent archivé',
+        message: `${m.fullName} archivé (suspendu).`,
+      });
+    },
+    [updateMember, showToast]
+  );
+
+  const handleToggleStatusRow = useCallback(
+    (id: string | number) => {
+      const m = membersByIdRef.current.get(String(id));
+      if (!m) return;
+      const isBlocked = m.status === 'Suspended' || m.status === 'Banned' || Boolean((m as any).isBlocked);
+      const newStatus: MemberStatus = isBlocked ? 'Active' : 'Suspended';
+      updateMember(m.id, { status: newStatus });
+      showToast({
+        type: isBlocked ? 'success' : 'info',
+        title: isBlocked ? 'Badge réactivé' : 'Badge gelé',
+        message: `${m.fullName}: ${isBlocked ? 'Accès rétabli' : 'Accès temporairement suspendu'}`,
+      });
+    },
+    [updateMember, showToast]
+  );
+
+  const handleTogglePinRow = useCallback(
+    (id: string | number) => {
+      const key = String(id);
+      const m = membersByIdRef.current.get(key);
+      setPinnedMemberIds((prev) => {
         const next = new Set(prev);
-        hiddenIds.forEach((id) => next.delete(id));
+        if (next.has(key)) {
+          next.delete(key);
+          if (m) showToast({ type: 'info', title: 'Détaché', message: `${m.fullName} n'est plus épinglé` });
+        } else {
+          next.add(key);
+          if (m) showToast({ type: 'success', title: 'Épinglé', message: `${m.fullName} épinglé en tête de liste` });
+        }
         return next;
       });
     },
-    onFilterChange: () => {
-      // Scroll list to top on filter change
-      listContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    [showToast]
+  );
+
+  const handlePayRow = useCallback(
+    (id: string | number) => {
+      setPanelInitialTab('billing');
+      selectMember(String(id));
     },
-  });
+    [selectMember]
+  );
 
   useEffect(() => {
     const handleCreated = (e: any) => {
@@ -387,141 +611,21 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
       setPlanFilter('All');
       setGenderFilter('All');
       setAgeGroupFilter('All');
-      listContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTop = 0;
+      }
     };
     window.addEventListener('atrium-member-created', handleCreated);
     return () => window.removeEventListener('atrium-member-created', handleCreated);
   }, [statusFilter]);
 
-  // Metric count-up springs (tune 20)
-  const animatedActiveCount = useSpringCount(activeMembersCount);
-  const animatedExpiringCount = useSpringCount(expiringCount);
-  const animatedDisplayCount = useSpringCount(displayMembers.length);
-
-  const memberColumns = useMemo<ColumnDefinition<Member>[]>(() => [
-    {
-      key: 'member',
-      header: terminology.memberSingle,
-      width: '3.2*',
-      sortable: true,
-      renderCell: (member) => {
-        const avatarColor = getMemberInitialsColor(member.fullName);
-        return (
-          <div className="flex items-center gap-3 min-w-0 pr-2">
-            <div
-              style={{ backgroundColor: avatarColor }}
-              className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-xs shrink-0 shadow-2xs"
-            >
-              {member.fullName.charAt(0).toUpperCase()}
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-neutral-900 dark:text-white capitalize truncate">
-                  {member.fullName.toLowerCase()}
-                </span>
-                {pinnedMemberIds.has(member.id) && (
-                  <span className="text-[10px] text-amber-500 font-bold flex items-center gap-0.5">
-                    📌 VIP
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-2 mt-0.5 text-[11px] text-neutral-400 font-mono">
-                <span>ID: {member.cardId?.replace('RFID-', '') || '46466446'}</span>
-                {member.phoneNumber && (
-                  <>
-                    <span>·</span>
-                    <span className="hover:text-[#d4522f] transition-colors">{member.phoneNumber}</span>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'plan',
-      header: t('member_col_plan', language),
-      width: '1.8*',
-      sortable: true,
-      renderCell: (member) => (
-        <div className="text-center">
-          <span className="inline-block px-3 py-0.5 rounded-full bg-[#FDF4F0] dark:bg-neutral-700/80 text-[#d4522f] text-[11px] font-bold border border-[#F5E2D8] dark:border-neutral-600 truncate max-w-[130px]">
-            {member.membershipPlanName || 'Standard'}
-          </span>
-        </div>
-      ),
-    },
-    {
-      key: 'status',
-      header: t('member_col_access', language),
-      width: '1.6*',
-      sortable: true,
-      renderCell: (member) => {
-        const isAct = member.status === 'Active';
-        const isFroz = member.status === 'Frozen';
-        return (
-          <div className="text-center">
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold border ${
-                isAct
-                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200/60'
-                  : isFroz
-                  ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-200/60'
-                  : 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border-rose-200/60'
-              }`}
-            >
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${
-                  isAct
-                    ? 'bg-emerald-500 animate-[live-heartbeat_1.2s_infinite]'
-                    : isFroz
-                    ? 'bg-blue-500'
-                    : 'bg-rose-500'
-                }`}
-              />
-              {localizeStatus(member.status, language)}
-            </span>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'expiration',
-      header: currentBusiness.category === 'appointment_service' ? t('salon_col_package_val', language) : t('member_col_expiration', language),
-      width: '1.8*',
-      sortable: true,
-      renderCell: (member) => {
-        const daysLeft = calculateDaysRemaining(false, member.expirationDate);
-        const isExpiringSoon = daysLeft <= 14 && daysLeft > 0;
-        return (
-          <div className="text-right pr-2">
-            <div className="font-mono text-xs font-semibold text-neutral-800 dark:text-neutral-200 tabular-nums">
-              {member.expirationDate || 'N/A'}
-            </div>
-            <div className={`text-[10px] ${isExpiringSoon ? 'text-amber-600 font-bold' : 'text-neutral-400'}`}>
-              {daysLeft > 0 ? `${daysLeft}d remaining` : 'Expired'}
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'balance',
-      header: language === 'ar' ? 'الرصيد' : language === 'fr' ? 'Solde' : 'Balance',
-      width: '1.4*',
-      sortable: true,
-      renderCell: (member) => {
-        const matchedPlan = plans.find((p) => p.id === member.membershipPlanId);
-        const priceDisplay = matchedPlan ? formatMoney(matchedPlan.price.amount) : '1,500.00 DA';
-        return (
-          <div className="text-right font-mono font-bold text-xs text-neutral-900 dark:text-white tabular-nums pr-2">
-            {priceDisplay}
-          </div>
-        );
-      },
-    },
-  ], [terminology.memberSingle, language, pinnedMemberIds, currentBusiness.category, plans]);
+  // Zero-re-render DOM-ref metric count-up springs (tune 20)
+  const activeCountRef = useSpringCountRef<HTMLDivElement>(activeMembersCount);
+  const expiringChipCountRef = useSpringCountRef<HTMLSpanElement>(expiringCount);
+  const expiringBigCountRef = useSpringCountRef<HTMLDivElement>(expiringCount);
+  const inflowChipCountRef = useSpringCountRef<HTMLSpanElement>(displayMembers.length, { prefix: '+' });
+  const inflowBigCountRef = useSpringCountRef<HTMLDivElement>(displayMembers.length, { prefix: '+' });
+  const listBadgeCountRef = useSpringCountRef<HTMLSpanElement>(displayMembers.length);
 
   const handleExportCSV = () => {
     const headers = [
@@ -655,7 +759,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
             variant="primary"
             size="md"
             data-action="add-member"
-            onClick={onAddMember}
+            onClick={(e) => onAddMember(e.currentTarget)}
             icon={<Plus size={16} strokeWidth={2.2} />}
             className="px-4 font-semibold shadow-xs"
           >
@@ -687,8 +791,8 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                 </span>
               </div>
             </div>
-            <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
-              {animatedActiveCount}
+            <div ref={activeCountRef} className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
+              {activeMembersCount}
             </div>
           </div>
 
@@ -700,12 +804,12 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded-full">
-                  {animatedExpiringCount} {language === 'ar' ? 'تنتهي قريباً (<14j)' : language === 'fr' ? 'expirent sous 14j' : 'expiring (<14d)'}
+                  <span ref={expiringChipCountRef}>{expiringCount}</span> {language === 'ar' ? 'تنتهي قريباً (<14j)' : language === 'fr' ? 'expirent sous 14j' : 'expiring (<14d)'}
                 </span>
               </div>
             </div>
-            <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
-              {animatedExpiringCount}
+            <div ref={expiringBigCountRef} className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
+              {expiringCount}
             </div>
           </div>
 
@@ -716,12 +820,12 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                 {language === 'ar' ? 'الوافدون الجدد شهرياً' : language === 'fr' ? 'Adhésions du mois' : 'Monthly Inflow'}
               </span>
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
-                +{animatedDisplayCount} {terminology.members.toLowerCase()}
+                <span ref={inflowChipCountRef}>+{displayMembers.length}</span>&nbsp;{terminology.members.toLowerCase()}
               </span>
             </div>
             <div>
-              <div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
-                +{animatedDisplayCount}
+              <div ref={inflowBigCountRef} className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
+                +{displayMembers.length}
               </div>
               <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
@@ -743,8 +847,11 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
             <h2 className="text-base font-bold text-neutral-900 dark:text-white tracking-tight">
               {language === 'ar' ? 'قائمة المشتركين' : 'Liste des adhérents'}
             </h2>
-            <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/70 text-neutral-700 dark:text-neutral-300 shadow-2xs tabular-nums">
-              {animatedDisplayCount}
+            <span
+              ref={listBadgeCountRef}
+              className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/70 text-neutral-700 dark:text-neutral-300 shadow-2xs tabular-nums"
+            >
+              {displayMembers.length}
             </span>
           </div>
 
@@ -1216,449 +1323,151 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
           </div>
         )}
 
-        {/* Master Content Area - Full 100% Width Table / Grid */}
+        {/* Master Content Area - Persistent Kinetic Row/Grid Morph Canvas */}
         <div className="w-full">
-          {/* Table / Grid Container */}
           <div className="w-full overflow-x-auto">
-            {viewMode === 'list' ? (
-              <div className="w-full flex flex-col">
-                {/* Prototype Header Bar (.lh) */}
-                <div
-                  className="lh w-full min-w-[940px] grid grid-cols-[22px_40px_minmax(200px,1.4fr)_minmax(180px,1.1fr)_120px_150px_110px] gap-3.5 items-center px-4 pr-[150px] h-[38px] mb-2.5 bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 rounded-[12px] text-[#6B635C] dark:text-[#A89F95] font-semibold text-[12px] uppercase tracking-wider shadow-xs box-border select-none"
-                  aria-hidden="true"
+            <div className="w-full flex flex-col min-w-[940px]">
+              {/* Collapsible Header Bar (.th-adherents) — smoothly collapses in Grid View */}
+              <div
+                className="th th-adherents bg-white dark:bg-[#1C1B1A] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[var(--atr-ink,#1B1917)] dark:text-[#EAE3DC] box-border select-none"
+                data-v={viewMode === 'grid' ? 'g' : 'l'}
+                aria-hidden={viewMode === 'grid'}
+              >
+                <button
+                  type="button"
+                  role="checkbox"
+                  tabIndex={viewMode === 'grid' ? -1 : 0}
+                  aria-checked={
+                    selectedMemberIds.size === 0
+                      ? 'false'
+                      : selectedMemberIds.size === sortedMembers.length && sortedMembers.length > 0
+                      ? 'true'
+                      : 'mixed'
+                  }
+                  aria-label="Tout sélectionner"
+                  onClick={() => {
+                    if (selectedMemberIds.size === sortedMembers.length) {
+                      setSelectedMemberIds(new Set());
+                    } else {
+                      setSelectedMemberIds(new Set(sortedMembers.map((m) => m.id)));
+                    }
+                  }}
+                  className={`cb w-[22px] h-[22px] rounded-[7px] border-[1.5px] grid place-items-center p-0 cursor-pointer ${
+                    selectedMemberIds.size === sortedMembers.length && sortedMembers.length > 0
+                      ? 'bg-[var(--atr-acc,#C9441F)] border-[var(--atr-acc,#C9441F)] text-white'
+                      : 'bg-white dark:bg-[#262422] border-[#B3A89E] dark:border-[#5A5550] text-transparent hover:border-[var(--atr-acc,#C9441F)]'
+                  }`}
                 >
-                  <button
-                    type="button"
-                    role="checkbox"
-                    aria-checked={selectedMemberIds.size === sortedMembers.length && sortedMembers.length > 0}
-                    aria-label="Tout sélectionner"
-                    onClick={() => {
-                      if (selectedMemberIds.size === sortedMembers.length) {
-                        setSelectedMemberIds(new Set());
-                      } else {
-                        setSelectedMemberIds(new Set(sortedMembers.map((m) => m.id)));
-                      }
-                    }}
-                    className={`cb w-[22px] h-[22px] rounded-[7px] border-[1.5px] grid place-items-center p-0 transition-colors duration-140 cursor-pointer ${
-                      selectedMemberIds.size === sortedMembers.length && sortedMembers.length > 0
-                        ? 'bg-[#C9441F] border-[#C9441F] text-white'
-                        : 'bg-white dark:bg-[#262422] border-[#E6DED6] dark:border-[#5A5550] text-transparent hover:border-[#C9441F]'
+                  <Check
+                    className={`w-3.5 h-3.5 stroke-[3] transition-opacity duration-120 ${
+                      selectedMemberIds.size > 0 ? 'opacity-100 text-white' : 'opacity-0'
                     }`}
-                  >
-                    <Check
-                      className={`w-3.5 h-3.5 stroke-[3] transition-opacity duration-120 ${
-                        selectedMemberIds.size === sortedMembers.length && sortedMembers.length > 0
-                          ? 'opacity-100 text-white'
-                          : 'opacity-0'
-                      }`}
-                    />
-                  </button>
-                  <span className="w-[40px]" />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (memberSortBy === 'member') {
-                        setMemberSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-                      } else {
-                        setMemberSortBy('member');
-                      }
-                    }}
-                    className="text-left rtl:text-right font-semibold text-[12px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:text-[#C9441F] bg-transparent border-0 p-0 text-inherit whitespace-nowrap truncate min-w-0"
-                  >
-                    <span className="truncate">{terminology.memberSingle}</span>
-                    {memberSortBy === 'member' && <span>{memberSortDir === 'asc' ? '↑' : '↓'}</span>}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (memberSortBy === 'plan') {
-                        setMemberSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-                      } else {
-                        setMemberSortBy('plan');
-                        setMemberSortDir('asc');
-                      }
-                    }}
-                    className="text-left rtl:text-right font-semibold text-[12px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:text-[#C9441F] bg-transparent border-0 p-0 text-inherit whitespace-nowrap truncate min-w-0"
-                  >
-                    <span className="truncate">{t('member_col_plan', language)}</span>
-                    {memberSortBy === 'plan' && <span>{memberSortDir === 'asc' ? '↑' : '↓'}</span>}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (memberSortBy === 'status') {
-                        setMemberSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-                      } else {
-                        setMemberSortBy('status');
-                        setMemberSortDir('asc');
-                      }
-                    }}
-                    className="text-left rtl:text-right font-semibold text-[12px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:text-[#C9441F] bg-transparent border-0 p-0 text-inherit whitespace-nowrap truncate min-w-0"
-                  >
-                    <span className="truncate">{t('member_col_access', language)}</span>
-                    {memberSortBy === 'status' && <span>{memberSortDir === 'asc' ? '↑' : '↓'}</span>}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (memberSortBy === 'expiration') {
-                        setMemberSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-                      } else {
-                        setMemberSortBy('expiration');
-                        setMemberSortDir('asc');
-                      }
-                    }}
-                    className="text-left rtl:text-right font-semibold text-[12px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:text-[#C9441F] bg-transparent border-0 p-0 text-inherit whitespace-nowrap truncate min-w-0"
-                  >
-                    <span className="truncate">{t('member_col_expiration', language)}</span>
-                    {memberSortBy === 'expiration' && <span>{memberSortDir === 'asc' ? '↑' : '↓'}</span>}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (memberSortBy === 'balance') {
-                        setMemberSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-                      } else {
-                        setMemberSortBy('balance');
-                        setMemberSortDir('asc');
-                      }
-                    }}
-                    className="text-left rtl:text-right font-semibold text-[12px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:text-[#C9441F] bg-transparent border-0 p-0 text-inherit whitespace-nowrap truncate min-w-0"
-                  >
-                    <span className="truncate">{language === 'ar' ? 'الرصيد' : language === 'fr' ? 'Solde' : 'Balance'}</span>
-                    {memberSortBy === 'balance' && <span>{memberSortDir === 'asc' ? '↑' : '↓'}</span>}
-                  </button>
+                  />
+                </button>
+                {[
+                  { key: 'member', label: terminology.memberSingle },
+                  { key: 'plan', label: t('member_col_plan', language) },
+                  { key: 'status', label: t('member_col_access', language) },
+                  { key: 'expiration', label: t('member_col_expiration', language) },
+                  { key: 'balance', label: language === 'ar' ? 'الرصيد' : language === 'fr' ? 'Solde' : 'Balance' },
+                ].map((col) => {
+                  const isOn = memberSortBy === col.key;
+                  const dir = memberSortDir;
+                  return (
+                    <button
+                      key={col.key}
+                      type="button"
+                      data-k={col.key}
+                      data-on={isOn ? 'true' : undefined}
+                      tabIndex={viewMode === 'grid' ? -1 : 0}
+                      aria-sort={isOn ? (dir === 'asc' ? 'ascending' : 'descending') : 'none'}
+                      onClick={() => {
+                        if (memberSortBy === col.key) {
+                          setMemberSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+                        } else {
+                          setMemberSortBy(col.key);
+                          setMemberSortDir('asc');
+                        }
+                      }}
+                      className="text-left rtl:text-right font-medium text-[13px] flex items-center gap-2 cursor-pointer hover:text-[var(--atr-acc,#C9441F)] bg-transparent border-0 p-0 text-inherit whitespace-nowrap truncate min-w-0"
+                    >
+                      <span className="truncate">{col.label}</span>
+                      <i
+                        className={`not-italic text-[10px] px-1.5 py-0.5 rounded-[6px] ${
+                          isOn
+                            ? 'bg-[var(--atr-hl,#FBE7DF)] text-[var(--atr-acc,#C9441F)]'
+                            : 'bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#2B2927] text-[var(--atr-mut,#6B635C)]'
+                        }`}
+                      >
+                        {isOn ? (dir === 'asc' ? '↑' : '↓') : '↕'}
+                      </i>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Scrollable Kinetic Rows/Cards Canvas (.scr -> .rows[data-v]) */}
+              <div
+                ref={scrollContainerRef}
+                className="scr relative mt-2.5 overflow-y-auto overflow-x-hidden pr-1 pb-[70px] max-h-[640px]"
+              >
+                <div
+                  ref={rowsElRef}
+                  role="list"
+                  aria-label="Adhérents"
+                  data-v={viewMode === 'grid' ? 'g' : 'l'}
+                  className="rows relative w-full"
+                >
+                  {renderedRows.map((rowItem) => {
+                    const member = rowItem.member;
+                    const memberRowData = memberRowDataMap.get(member.id)!;
+
+                    return (
+                      <MemberRow
+                        key={member.id}
+                        member={memberRowData}
+                        isSelected={selectedMemberIds.has(member.id)}
+                        isOpen={isDetailOpen && selectedMember?.id === member.id}
+                        isExpanded={expandedMemberIds.has(member.id)}
+                        isPinned={pinnedMemberIds.has(member.id)}
+                        registerRowRefs={registerRowRefs}
+                        onSelect={handleSelectRow}
+                        onToggleExpand={toggleExpandMember}
+                        onOpenDetails={handleOpenRowDetails}
+                        onEdit={handleEditRow}
+                        onMessage={handleMessageRow}
+                        onDelete={handleDeleteRow}
+                        onRenew={handleRenewRow}
+                        onArchive={handleArchiveRow}
+                        onToggleStatus={handleToggleStatusRow}
+                        onTogglePin={handleTogglePinRow}
+                        onPay={handlePayRow}
+                      />
+                    );
+                  })}
                 </div>
 
-                {/* List of Member Rows */}
-                {renderRows.length === 0 ? (
+                {sortedMembers.length === 0 && (
                   <p className="empty text-center text-[#6B635C] dark:text-[#A89F95] py-10">
-                    Aucun adhérent ne correspond. Effacez la recherche ou changez de filtre.
+                    Aucun adhérent ne correspond. Modifiez la recherche ou les filtres.
                   </p>
-                ) : (
-                  <div
-                    ref={listContainerRef}
-                    role="list"
-                    aria-label="Adhérents"
-                    className="relative w-full min-w-[940px]"
-                    style={{ height: `${Math.max(0, containerHeight)}px` }}
-                  >
-                    {renderRows.map((rowItem) => {
-                      const member = rowItem.member;
-                      const daysRemaining = calculateDaysRemaining(false, member.expirationDate);
-                      const remainingText =
-                        daysRemaining > 0
-                          ? `${daysRemaining} j restants`
-                          : daysRemaining === 0
-                          ? 'Expire aujourd’hui'
-                          : 'Expiré';
-                      const isBlocked =
-                        member.status === 'Suspended' ||
-                        member.status === 'Banned' ||
-                        Boolean((member as any).isBlocked);
-                      const isExp = member.status === 'Expired' || daysRemaining <= 0;
-
-                      const memberRowData: MemberRowData = {
-                        id: member.id,
-                        name: member.fullName || 'Adhérent',
-                        phone: member.phoneNumber || '',
-                        email: member.email || '',
-                        planName: member.membershipPlanName || 'Full Access Monthly',
-                        status: isBlocked ? 'Bloqué' : isExp ? 'Expiré' : 'Actif',
-                        statusVariant: isBlocked ? 'blocked' : isExp ? 'expired' : 'active',
-                        expiryDate: member.expirationDate || 'Non spécifié',
-                        daysRemainingLabel: remainingText,
-                        balance: (member as any).balance || 0,
-                        balanceLabel: (member as any).balance
-                          ? `${Math.round((member as any).balance).toLocaleString()} DZD`
-                          : 'Soldé',
-                        avatarColor: getMemberInitialsColor(member.fullName),
-                        remainingSessions: (member as any).remainingSessions || 24,
-                        notes: member.notes,
-                        isBlocked: isBlocked,
-                        isPinned: pinnedMemberIds.has(member.id),
-                      };
-
-                      return (
-                        <MemberRow
-                          key={member.id}
-                          member={memberRowData}
-                          isSelected={selectedMemberIds.has(member.id)}
-                          isOpen={isDetailOpen && selectedMember?.id === member.id}
-                          isExpanded={expandedMemberIds.has(member.id)}
-                          isPinned={pinnedMemberIds.has(member.id)}
-                          viewMode="list"
-                          x={0}
-                          y={rowItem.y}
-                          width={listWidth}
-                          height={rowItem.height}
-                          pValue={rowItem.pValue}
-                          eValue={rowItem.eValue}
-                          onSelect={() => {
-                            setSelectedMemberIds((prev) => {
-                              const next = new Set(prev);
-                              if (next.has(member.id)) next.delete(member.id);
-                              else next.add(member.id);
-                              return next;
-                            });
-                          }}
-                          onToggleExpand={() => toggleExpandMember(member.id)}
-                          onOpenDetails={() => selectMember(member.id)}
-                          onEdit={() => onEditMember(member)}
-                          onMessage={() => {
-                            if (member.email) {
-                              window.location.href = `mailto:${member.email}`;
-                            } else {
-                              showToast({
-                                type: 'info',
-                                title: 'Email draft',
-                                message: `No email address for ${member.fullName}`,
-                              });
-                            }
-                          }}
-                          onDelete={() => {
-                            if (window.confirm(`Delete ${member.fullName}?`)) {
-                              deleteMember(member.id);
-                              showToast({
-                                type: 'info',
-                                title: 'Member Removed',
-                                message: `${member.fullName} has been removed.`,
-                              });
-                            }
-                          }}
-                          onRenew={() => {
-                            const daysToAdd = 30;
-                            const currentExp = new Date(member.expirationDate || new Date().toISOString());
-                            const newExp = new Date(currentExp.getTime() + daysToAdd * 864e5).toISOString().split('T')[0];
-                            updateMember(member.id, { expirationDate: newExp, status: 'Active' });
-                            showToast({
-                              type: 'success',
-                              title: 'Abonnement renouvelé',
-                              message: `${member.fullName} prolongé jusqu'au ${newExp}`,
-                            });
-                          }}
-                          onArchive={() => {
-                            updateMember(member.id, { status: 'Suspended' });
-                            showToast({
-                              type: 'info',
-                              title: 'Member Archived',
-                              message: `${member.fullName} archivé (suspendu).`,
-                            });
-                          }}
-                          onToggleStatus={() => {
-                            const newStatus: MemberStatus = isBlocked ? 'Active' : 'Suspended';
-                            updateMember(member.id, { status: newStatus });
-                            showToast({
-                              type: isBlocked ? 'success' : 'info',
-                              title: isBlocked ? 'Badge réactivé' : 'Badge gelé',
-                              message: `${member.fullName}: ${isBlocked ? 'Accès rétabli' : 'Accès temporairement suspendu'}`,
-                            });
-                          }}
-                          onTogglePin={() => {
-                            setPinnedMemberIds((prev) => {
-                              const next = new Set(prev);
-                              if (next.has(member.id)) {
-                                next.delete(member.id);
-                                showToast({
-                                  type: 'info',
-                                  title: 'Détaché',
-                                  message: `${member.fullName} n'est plus épinglé`,
-                                });
-                              } else {
-                                next.add(member.id);
-                                showToast({
-                                  type: 'success',
-                                  title: 'Épinglé',
-                                  message: `${member.fullName} épinglé en tête de liste`,
-                                });
-                              }
-                              return next;
-                            });
-                          }}
-                          onPay={() => {
-                            selectMember(member.id);
-                            setGymDrawerTab('sales');
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
                 )}
               </div>
-            ) : (
-              <UniversalDataCollection<Member>
-                items={sortedMembers}
-                keyExtractor={(m) => m.id}
-                defaultViewMode={viewMode}
-                viewMode={viewMode}
-                onViewModeChange={setViewMode}
-                showViewToggle={false}
-                columns={memberColumns}
-              isLoading={isSyncing || networkMode === 'force_skeleton'}
-              isOffline={networkMode === 'offline'}
-              isTimedOut={isSyncTimeout}
-              lastSyncedAt={lastSyncedAt}
-              onRetrySync={retryCloudSync}
-              renderCard={(member) => {
-                const avatarColor = getMemberInitialsColor(member.fullName);
-                const matchedPlan = plans.find((p) => p.id === member.membershipPlanId);
-                const priceDisplay = matchedPlan ? formatMoney(matchedPlan.price.amount) : '1,500.00 DA';
-                const daysLeft = calculateDaysRemaining(false, member.expirationDate);
-
-                return (
-                  <div className="flex flex-col items-center justify-center w-full">
-                    {/* 96x96px Avatar circle with bold initials */}
-                    <div
-                      style={{ backgroundColor: avatarColor }}
-                      className="w-24 h-24 rounded-full flex items-center justify-center text-white text-[32px] font-bold shadow-md mb-4 select-none"
-                    >
-                      {member.fullName.charAt(0).toUpperCase()}
-                    </div>
-
-                    {/* Member Full Name */}
-                    <div className="text-base font-bold text-neutral-900 dark:text-white capitalize text-center truncate max-w-[220px]">
-                      {member.fullName.toLowerCase()}
-                    </div>
-
-                    {/* Plan Badge Pill */}
-                    <div className="mt-1.5 inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-[#FDF4F0] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700">
-                      {member.membershipPlanName || 'Standard'}
-                    </div>
-
-                    {/* Contact & RFID Detail */}
-                    <div className="mt-3 w-full pt-3 border-t border-neutral-100 dark:border-neutral-800/80 space-y-1.5 text-xs text-center text-neutral-500 dark:text-neutral-400">
-                      <div className="font-mono text-[11px] text-neutral-400">
-                        RFID: {member.cardId?.replace('RFID-', '') || '46466446'}
-                      </div>
-                      {member.phoneNumber && (
-                        <div className="truncate font-mono text-[11px] hover:text-[#d4522f] transition-colors">
-                          {member.phoneNumber}
-                        </div>
-                      )}
-                      <div className="flex items-center justify-between text-[11px] pt-1">
-                        <span className="font-semibold text-neutral-700 dark:text-neutral-300">
-                          {daysLeft > 0 ? `${daysLeft}d left` : 'Expired'}
-                        </span>
-                        <span className="font-mono font-bold text-[#d4522f] tabular-nums">
-                          {priceDisplay}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              }}
-              onItemClick={(member) => selectMember(member.id)}
-              onViewDetails={(member) => selectMember(member.id)}
-              onEdit={(member) => onEditMember(member)}
-              onToggleStatus={(member) => {
-                const nextStatus: MemberStatus = member.status === 'Active' ? 'Frozen' : 'Active';
-                updateMember(member.id, { status: nextStatus });
-                showToast({
-                  type: 'info',
-                  title: `${member.fullName}: ${localizeStatus(nextStatus, language)}`,
-                  message: `Status updated to ${nextStatus}`,
-                });
-              }}
-              onTogglePin={(member) => {
-                setPinnedMemberIds((prev) => {
-                  const next = new Set(prev);
-                  if (next.has(member.id)) {
-                    next.delete(member.id);
-                  } else {
-                    next.add(member.id);
-                  }
-                  return next;
-                });
-              }}
-              onDelete={(member) => {
-                if (window.confirm(`Delete ${member.fullName}?`)) {
-                  deleteMember(member.id);
-                  showToast({
-                    type: 'info',
-                    title: 'Member Removed',
-                    message: `${member.fullName} has been removed.`,
-                  });
-                }
-              }}
-              customActions={(member) => [
-                {
-                  id: 'checkin',
-                  label: t('member_drawer_quick_checkin', language),
-                  icon: <Check size={14} />,
-                  color: '#10B981',
-                  tooltip: 'Quick Turnstile Check-in',
-                  onClick: (e) => {
-                    e.stopPropagation();
-                    updateMember(member.id, {
-                      lastVisitDate: new Date().toISOString().split('T')[0],
-                    });
-                    showToast({
-                      type: 'success',
-                      title: t('toast_checkin_granted_title', language),
-                      message: `${member.fullName} (${member.cardId || 'Access Granted'}) : ${t('toast_checkin_granted_msg', language)}`,
-                      category: currentBusiness?.category,
-                      action: {
-                        label: language === 'ar' ? 'معاينة' : language === 'fr' ? 'Consulter' : 'Inspect',
-                        onClick: () => selectMember(member.id),
-                      },
-                    });
-                  },
-                },
-              ]}
-              selectedIds={selectedMemberIds}
-              onSelectionChange={setSelectedMemberIds}
-              bulkSecondaryAction={{
-                label: language === 'ar' ? 'تفعيل المشتركين' : language === 'fr' ? 'Activer sélection' : 'Activate Selected',
-                icon: <Check size={13} />,
-                onClick: (ids) => {
-                  ids.forEach((id) => updateMember(id, { status: 'Active' }));
-                  showToast({
-                    type: 'success',
-                    title: language === 'ar' ? 'تم التحديث' : 'Mise à jour effectuée',
-                    message: `${ids.size} ${language === 'ar' ? 'مشتركين تم تفعيلهم' : 'adhérents activés'}.`,
-                  });
-                },
-                variant: 'primary',
-              }}
-              onBulkDelete={(ids) => {
-                ids.forEach((id) => deleteMember(id));
-                showToast({
-                  type: 'info',
-                  title: language === 'ar' ? 'حذف المشتركين' : 'Adhérents supprimés',
-                  message: `${ids.size} ${language === 'ar' ? 'مشتركين تم حذفهم' : 'adhérents retirés'}.`,
-                });
-              }}
-              isPinned={(member) => pinnedMemberIds.has(member.id)}
-              isActive={(member) => member.status === 'Active'}
-              sortBy={memberSortBy}
-              sortDirection={memberSortDir}
-              onSortChange={(key) => {
-                if (memberSortBy === key) {
-                  setMemberSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-                } else {
-                  setMemberSortBy(key);
-                  setMemberSortDir('asc');
-                }
-              }}
-              emptyTitle={language === 'ar' ? 'لا يوجد مشتركون' : language === 'fr' ? 'Aucun adhérent trouvé' : 'No members found'}
-              emptyDescription={language === 'ar' ? 'جرب تغيير معايير البحث أو إضافة مشترك جديد' : language === 'fr' ? 'Essayez de modifier vos filtres ou ajoutez un nouvel adhérent' : 'Try adjusting your search filters or add a new member'}
-              emptyIcon={<Users size={32} className="text-[#d4522f]" />}
-              primaryActionLabel={`${t('action_add', language)} ${terminology.memberSingle}`}
-              onAddFirstItem={onAddMember}
-            />
-          )}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
 
-      {/* Atrium 560px Kinetic Slide-Over Inspector with Shallow Water Wave Physics */}
+      {/* Atrium 560px Floating Card Slide-In Panel */}
       <MemberSlideOverInspector
         isOpen={isDetailOpen && Boolean(selectedMember)}
         member={selectedMember}
         allMembers={sortedMembers}
+        openerElement={panelOpenerRef.current}
+        initialTab={panelInitialTab}
         onClose={closeDetail}
         onSelectMember={(m) => selectMember(m.id)}
-        onEdit={(m) => onEditMember(m)}
+        onEdit={(m) => onEditMember(m, document.activeElement as HTMLElement | null)}
         onDelete={(m) => {
           deleteMember(m.id);
           closeDetail();
@@ -1711,7 +1520,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
         }
       />
 
-      {/* Floating Batch Actions Bar (Prototype FloatingBulkBar with spring scale/translate) */}
+      {/* Floating Batch Actions Bar */}
       <FloatingBulkBar
         selectedCount={selectedMemberIds.size}
         onClear={() => setSelectedMemberIds(new Set())}
@@ -1743,20 +1552,18 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
           });
         }}
         onDelete={() => {
-          if (window.confirm(`Supprimer ${selectedMemberIds.size} adhérents?`)) {
-            selectedMemberIds.forEach((id) => deleteMember(id));
-            setSelectedMemberIds(new Set());
-            showToast({
-              type: 'info',
-              title: 'Suppression groupée',
-              message: `Adhérents supprimés.`,
-            });
-          }
+          selectedMemberIds.forEach((id) => deleteMember(id));
+          setSelectedMemberIds(new Set());
+          showToast({
+            type: 'info',
+            title: 'Suppression groupée',
+            message: 'Adhérents supprimés.',
+          });
         }}
       />
 
       {/* Appointment Booking Modal */}
-      {selectedMember && (
+      {isBookModalOpen && selectedMember && (
         <AppointmentModal
           isOpen={isBookModalOpen}
           onClose={() => setIsBookModalOpen(false)}

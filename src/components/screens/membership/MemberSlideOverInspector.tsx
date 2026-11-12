@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
   X,
@@ -9,30 +9,25 @@ import {
   Lock,
   Unlock,
   RotateCcw,
+  Phone,
+  Mail,
   Copy,
   Check,
   Trash2,
-  Receipt,
   Plus,
   ShieldCheck,
 } from 'lucide-react';
 import { Member } from '../../../types/index';
 import { calculateDaysRemaining } from '../../../utils/rules';
-import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
-import {
-  createSpring,
-  stepSpring,
-  isSpringCalm,
-  clamp,
-  formatDec,
-  createWaveVessel,
-  WaveVessel,
-} from './kineticPhysics';
+import { Sp, TUNES, subscribeFrame, wake } from './motion/adherentsMotion';
+import { clamp, computePanelMetrics } from './motion/adherentsMath';
 
 export interface MemberSlideOverInspectorProps {
   isOpen: boolean;
   member: Member | null;
   allMembers: Member[];
+  openerElement?: HTMLElement | null;
+  initialTab?: 'overview' | 'access' | 'billing';
   onClose: () => void;
   onSelectMember: (member: Member) => void;
   onEdit: (member: Member) => void;
@@ -44,10 +39,18 @@ export interface MemberSlideOverInspectorProps {
   showToast: (msg: string) => void;
 }
 
+const TABS: Array<{ id: 'overview' | 'access' | 'billing'; label: string }> = [
+  { id: 'overview', label: 'Aperçu & Forfait' },
+  { id: 'access', label: 'Accès & Séances' },
+  { id: 'billing', label: 'Ventes & Factures' },
+];
+
 export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> = ({
   isOpen,
   member,
   allMembers,
+  openerElement,
+  initialTab = 'overview',
   onClose,
   onSelectMember,
   onEdit,
@@ -58,155 +61,379 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
   onUpdateNotes,
   showToast,
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'access' | 'billing'>('overview');
-  const [notesText, setNotesText] = useState(member?.notes || '');
+  const [activeTab, setActiveTab] = useState<'overview' | 'access' | 'billing'>(initialTab);
+  const [notesText, setNotesText] = useState('');
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [entranceEpoch, setEntranceEpoch] = useState(0);
 
-  // Sync notes when member changes
-  useEffect(() => {
-    if (member) {
-      setNotesText(member.notes || '');
-    }
-  }, [member?.id, member?.notes]);
+  // Retain the last displayed member during close bounce so content stays visible until settled
+  const retainedMemberRef = useRef<Member | null>(member);
+  if (member) {
+    retainedMemberRef.current = member;
+  }
+  const activeMember = member || retainedMemberRef.current;
 
-  // Drawer slide spring (x: 0 -> 1)
-  const drawerSpring = useRef(createSpring(isOpen ? 1 : 0, 160, 0.65));
-  const drawerPanelRef = useRef<HTMLDivElement>(null);
-  const backdropRef = useRef<HTMLDivElement>(null);
+  // DOM refs for direct rAF style writes (zero per-frame React state updates)
+  const scrimRef = useRef<HTMLDivElement | null>(null);
+  const panelRef = useRef<HTMLElement | null>(null);
+  const pindRef = useRef<HTMLElement | null>(null);
+  const tabBtnRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const closeBtnRef = useRef<HTMLButtonElement | null>(null);
+  const barFillRef = useRef<HTMLElement | null>(null);
+  const holdFillRef = useRef<HTMLSpanElement | null>(null);
+  const holdLabelRef = useRef<HTMLSpanElement | null>(null);
+  const holdTextWrapRef = useRef<HTMLSpanElement | null>(null);
 
-  // Liquid wave vessels for remaining days and sessions
-  const v1Ref = useRef<WaveVessel>(createWaveVessel(0.6));
-  const v2Ref = useRef<WaveVessel>(createWaveVessel(0.8));
-  const [v1Path, setV1Path] = useState('');
-  const [v2Path, setV2Path] = useState('');
-
-  // Hold-to-delete spring physics
-  const holdSpring = useRef(createSpring(0, 40, 0.85));
+  const openerRef = useRef<HTMLElement | null>(null);
   const isHoldingRef = useRef(false);
-  const holdBtnRef = useRef<HTMLButtonElement>(null);
-  const [holdProgress, setHoldProgress] = useState(0);
+  const isOpenRef = useRef(isOpen);
+  isOpenRef.current = isOpen;
 
-  // Animation RAF loop with sleep governor
-  const rafId = useRef<number>(0);
+  // Panel springs on shared loop
+  const ppRef = useRef<Sp | null>(null);
+  const ixRef = useRef<Sp | null>(null);
+  const iwRef = useRef<Sp | null>(null);
+  const holdRef = useRef<Sp | null>(null);
 
-  // Update wave levels when member changes
+  if (!ppRef.current) {
+    ppRef.current = new Sp(0, TUNES.panel);
+    ixRef.current = new Sp(0, TUNES.tabIndicator);
+    iwRef.current = new Sp(0, TUNES.tabIndicator);
+    holdRef.current = new Sp(0, 22);
+  }
+
+  const wasOpenRef = useRef(false);
+  const prevMemberIdRef = useRef<string | null>(null);
+  const prevTabRef = useRef(activeTab);
+
+  // Compute progress percentage for sessions bar
+  const planName = activeMember?.membershipPlanName || (activeMember as any)?.membershipType || 'Standard Plan';
+  const totalPlanSessions =
+    planName.toLowerCase().includes('year') || planName.toLowerCase().includes('annual')
+      ? 365
+      : planName.toLowerCase().includes('trimest') || planName.toLowerCase().includes('quarter')
+      ? 90
+      : planName.toLowerCase().includes('10')
+      ? 10
+      : 30;
+  const remainingSessions = activeMember?.remainingSessions ?? 24;
+  const sessionPct = clamp((remainingSessions / Math.max(1, totalPlanSessions)) * 100, 0, 100);
+
+  // Sync notes text when member changes
   useEffect(() => {
-    if (!member) return;
-    const expDate = member.expirationDate || (member as any).expiryDate;
-    const days = calculateDaysRemaining(false, expDate);
-    const planName = member.membershipPlanName || (member as any).membershipType || '';
-    const planDays = planName.toLowerCase().includes('year') ? 365 : planName.toLowerCase().includes('quarter') ? 90 : 30;
-    const daysRatio = clamp(days / planDays, 0, 1);
-    const sessions = member.remainingSessions ?? 24;
-    const sessionsRatio = clamp(sessions / 30, 0, 1);
+    if (activeMember) {
+      setNotesText(activeMember.notes || '');
+    }
+  }, [activeMember?.id, activeMember?.notes]);
 
-    v1Ref.current.level.t = daysRatio;
-    v2Ref.current.level.t = sessionsRatio;
-    v1Ref.current.poke(30);
-    v2Ref.current.poke(30);
-  }, [member?.id, member?.expirationDate, (member as any)?.expiryDate]);
-
+  // Trigger entrance epoch ONLY on open, tab change, or prev/next member change
   useEffect(() => {
-    drawerSpring.current.t = isOpen ? 1 : 0;
+    const curId = activeMember?.id ?? null;
+    const justOpened = isOpen && !wasOpenRef.current;
+    const switchedMember = isOpen && curId !== prevMemberIdRef.current;
+    const switchedTab = isOpen && activeTab !== prevTabRef.current;
 
-    let isRunning = true;
-    const tick = () => {
-      if (!isRunning) return;
+    if (justOpened || switchedMember || switchedTab) {
+      setEntranceEpoch((n) => n + 1);
+    }
 
-      // 1. Drawer slide spring
-      stepSpring(drawerSpring.current, 1 / 120);
-      const x = clamp(drawerSpring.current.x, 0, 1);
-      if (drawerPanelRef.current) {
-        drawerPanelRef.current.style.transform = `translateX(${(1 - x) * 100}%)`;
+    wasOpenRef.current = isOpen;
+    prevMemberIdRef.current = curId;
+    prevTabRef.current = activeTab;
+  }, [isOpen, activeMember?.id, activeTab]);
+
+  // Draw panel, scrim, tab indicator, and hold-to-delete fill inside shared rAF loop
+  const drawPanel = useCallback(() => {
+    const pp = ppRef.current;
+    const ix = ixRef.current;
+    const iw = iwRef.current;
+    const hold = holdRef.current;
+    if (!pp || !ix || !iw || !hold) return;
+
+    const pm = computePanelMetrics(pp.x, pp.t);
+    const vis = pm.visible ? 'visible' : 'hidden';
+
+    if (panelRef.current) {
+      panelRef.current.style.visibility = vis;
+      panelRef.current.style.transform = `translateX(${pm.translateX}px)`;
+    }
+
+    if (scrimRef.current) {
+      scrimRef.current.style.visibility = vis;
+      scrimRef.current.style.opacity = String(pm.scrimOpacity);
+      scrimRef.current.style.pointerEvents = pp.t > 0 ? 'auto' : 'none';
+    }
+
+    if (pindRef.current) {
+      pindRef.current.style.left = `${ix.x}px`;
+      pindRef.current.style.width = `${Math.max(0, iw.x)}px`;
+    }
+
+    // Hold-to-delete spring fill
+    const hp = clamp(hold.x / 100, 0, 1);
+    if (holdFillRef.current) {
+      holdFillRef.current.style.clipPath = `inset(${(1 - hp) * 100}% 0 0 0)`;
+    }
+    if (holdTextWrapRef.current) {
+      holdTextWrapRef.current.style.color = hp > 0.4 ? '#FFFFFF' : '';
+    }
+    if (holdLabelRef.current) {
+      const nextText = hp > 0.1 ? 'Maintenez…' : 'Maintenir pour supprimer';
+      if (holdLabelRef.current.textContent !== nextText) {
+        holdLabelRef.current.textContent = nextText;
       }
-      if (backdropRef.current) {
-        backdropRef.current.style.opacity = formatDec(x);
+    }
+
+    if (isHoldingRef.current && hp >= 0.96 && activeMember) {
+      isHoldingRef.current = false;
+      hold.t = 0;
+      hold.x = 0;
+      hold.v = 0;
+      onDelete(activeMember);
+      onClose();
+    }
+  }, [activeMember, onClose, onDelete]);
+
+  useLayoutEffect(() => {
+    const unsub = subscribeFrame(drawPanel);
+    drawPanel();
+    return () => {
+      unsub();
+    };
+  }, [drawPanel]);
+
+  // Open / close orchestration matching Section B exact order
+  useEffect(() => {
+    const pp = ppRef.current;
+    const ix = ixRef.current;
+    const iw = iwRef.current;
+    if (!pp || !ix || !iw) return;
+
+    if (isOpen && activeMember) {
+      openerRef.current = openerElement || (document.activeElement as HTMLElement | null);
+      if (initialTab && initialTab !== activeTab) {
+        setActiveTab(initialTab);
       }
 
-      // 2. Liquid wave vessels
-      v1Ref.current.tick(1 / 120);
-      v2Ref.current.tick(1 / 120);
-      setV1Path(v1Ref.current.computeSvgPath(44, 64));
-      setV2Path(v2Ref.current.computeSvgPath(44, 64));
+      if (panelRef.current) {
+        panelRef.current.setAttribute('aria-hidden', 'false');
+      }
 
-      // 3. Hold to delete progress
-      holdSpring.current.t = isHoldingRef.current ? 1 : 0;
-      stepSpring(holdSpring.current, 1 / 120);
-      const hp = clamp(holdSpring.current.x, 0, 1.02);
-      setHoldProgress(hp);
-
-      if (isHoldingRef.current && hp > 0.96) {
-        isHoldingRef.current = false;
-        holdSpring.current.x = 0;
-        holdSpring.current.t = 0;
-        if (member) {
-          onDelete(member);
-          onClose();
+      // Snap tab indicator when opening from closed state
+      const activeBtn = tabBtnRefs.current[activeTab];
+      if (activeBtn) {
+        ix.t = activeBtn.offsetLeft;
+        iw.t = activeBtn.offsetWidth;
+        if (pp.x < 1) {
+          ix.snap();
+          iw.snap();
         }
       }
 
-      // Check if animation is settled
-      const isDrawerSettled = isSpringCalm(drawerSpring.current);
-      const isV1Settled = v1Ref.current.isSettled();
-      const isV2Settled = v2Ref.current.isSettled();
-      const isHoldSettled = isSpringCalm(holdSpring.current) && !isHoldingRef.current;
+      pp.setTarget(100);
+      drawPanel();
+      wake();
 
-      if (!isDrawerSettled || !isV1Settled || !isV2Settled || !isHoldSettled || isOpen) {
-        rafId.current = requestAnimationFrame(tick);
+      const focusTimer = setTimeout(() => {
+        closeBtnRef.current?.focus();
+      }, 40);
+
+      return () => clearTimeout(focusTimer);
+    } else {
+      pp.setTarget(0);
+      if (panelRef.current) {
+        panelRef.current.setAttribute('aria-hidden', 'true');
       }
-    };
+      drawPanel();
+      wake();
 
-    cancelAnimationFrame(rafId.current);
-    rafId.current = requestAnimationFrame(tick);
+      if (openerRef.current && openerRef.current.isConnected) {
+        openerRef.current.focus();
+      }
+    }
+  }, [isOpen, activeMember?.id]);
 
+  // Sync tab indicator springs on tab changes & resize
+  useLayoutEffect(() => {
+    const pp = ppRef.current;
+    const ix = ixRef.current;
+    const iw = iwRef.current;
+    if (!pp || !ix || !iw) return;
+
+    const btn = tabBtnRefs.current[activeTab];
+    if (btn) {
+      ix.setTarget(btn.offsetLeft);
+      iw.setTarget(btn.offsetWidth);
+      if (pp.x < 1) {
+        ix.snap();
+        iw.snap();
+      }
+      drawPanel();
+      wake();
+    }
+  }, [activeTab, isOpen, drawPanel]);
+
+  // Progress bar .bar2 next-rAF fill on open / tab change / prev-next
+  useEffect(() => {
+    if (!isOpen || activeTab !== 'overview') return;
+    const fillEl = barFillRef.current;
+    if (!fillEl) return;
+    fillEl.style.width = '0%';
+    let innerRaf = 0;
+    const outerRaf = requestAnimationFrame(() => {
+      innerRaf = requestAnimationFrame(() => {
+        if (barFillRef.current) {
+          barFillRef.current.style.width = `${sessionPct}%`;
+        }
+      });
+    });
     return () => {
-      isRunning = false;
-      cancelAnimationFrame(rafId.current);
+      cancelAnimationFrame(outerRaf);
+      cancelAnimationFrame(innerRaf);
     };
-  }, [isOpen, member?.id]);
+  }, [entranceEpoch, isOpen, activeTab]);
 
-  if (!isOpen && isSpringCalm(drawerSpring.current) && drawerSpring.current.x <= 0.01) {
-    return null;
-  }
+  // Update progress bar width dynamically when sessions change in-place without replaying sections
+  useEffect(() => {
+    if (!isOpen || activeTab !== 'overview') return;
+    if (barFillRef.current) {
+      barFillRef.current.style.width = `${sessionPct}%`;
+    }
+  }, [sessionPct, isOpen, activeTab]);
 
-  if (!member) return null;
+  // Prev / Next step through filtered+sorted list
+  const currentIndex = activeMember
+    ? allMembers.findIndex((m) => m.id === activeMember.id)
+    : -1;
+  const hasPrev = currentIndex > 0;
+  const hasNext = currentIndex >= 0 && currentIndex < allMembers.length - 1;
 
-  // Calculate member relative days
-  const memberName = member.fullName || (member as any).name || 'Adhérent';
-  const memberPhone = member.phoneNumber || (member as any).phone || '';
-  const memberExp = member.expirationDate || (member as any).expiryDate || '';
-  const memberPlan = member.membershipPlanName || (member as any).membershipType || 'Standard Plan';
-  const daysRemaining = calculateDaysRemaining(false, memberExp);
-  const remainingDaysDisplay =
-    daysRemaining > 0
-      ? `${daysRemaining} jours`
-      : daysRemaining === 0
-      ? 'Expire aujourd’hui'
-      : 'Expiré';
-  const remainingSessions = member.remainingSessions ?? 24;
-  const isBlocked = member.status === 'Suspended' || member.status === 'Banned' || Boolean((member as any).isBlocked);
-
-  // Previous / Next Member Navigation
-  const currentIndex = allMembers.findIndex((m) => m.id === member.id);
-  const handleStep = (delta: number) => {
-    if (allMembers.length < 2) return;
-    const nextIndex = (currentIndex + delta + allMembers.length) % allMembers.length;
-    onSelectMember(allMembers[nextIndex]);
-  };
-
-  // Copy helper
-  const handleCopy = (text: string, fieldKey: string) => {
-    try {
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(text);
+  const handleStep = useCallback(
+    (delta: -1 | 1) => {
+      if (allMembers.length === 0 || currentIndex < 0) return;
+      const nextIdx = clamp(currentIndex + delta, 0, allMembers.length - 1);
+      const nextMember = allMembers[nextIdx];
+      if (nextMember && nextMember.id !== activeMember?.id) {
+        onSelectMember(nextMember);
       }
-    } catch {}
-    setCopiedField(fieldKey);
-    showToast(`Copié : ${text}`);
-    setTimeout(() => setCopiedField(null), 2000);
-  };
+    },
+    [allMembers, currentIndex, activeMember?.id, onSelectMember]
+  );
 
-  const memberInitials = memberName
+  // Keyboard navigation: Esc closes, ArrowUp/Down steps, Tab focus trap inside .pnl
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        // Defer only to genuinely visible higher-z modal dialogs
+        const otherModals = document.querySelectorAll('[role="dialog"][aria-modal="true"]');
+        let hasHigherDialog = false;
+        otherModals.forEach((d) => {
+          if (d === panelRef.current) return;
+          const cs = getComputedStyle(d);
+          const z = parseInt(cs.zIndex || '0', 10) || 0;
+          if (
+            cs.display !== 'none' &&
+            cs.visibility !== 'hidden' &&
+            parseFloat(cs.opacity || '1') > 0 &&
+            d.getAttribute('aria-hidden') !== 'true' &&
+            z >= 52
+          ) {
+            hasHigherDialog = true;
+          }
+        });
+        if (hasHigherDialog) return;
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+        return;
+      }
+
+      const tag = (document.activeElement?.tagName || '').toUpperCase();
+      if (!/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) {
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          handleStep(-1);
+          return;
+        }
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          handleStep(1);
+          return;
+        }
+      }
+
+      if (e.key === 'Tab' && panelRef.current) {
+        const focusables = Array.from(
+          panelRef.current.querySelectorAll<HTMLElement>(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          )
+        ).filter(
+          (el) => !el.hasAttribute('disabled') && el.tabIndex >= 0 && el.offsetParent !== null
+        );
+        if (focusables.length === 0) return;
+
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const insidePanel = panelRef.current.contains(document.activeElement);
+
+        if (!insidePanel) {
+          e.preventDefault();
+          first.focus();
+          return;
+        }
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [isOpen, onClose, handleStep]);
+
+  // Destroy springs on unmount
+  useEffect(() => {
+    return () => {
+      ppRef.current?.destroy();
+      ixRef.current?.destroy();
+      iwRef.current?.destroy();
+      holdRef.current?.destroy();
+      ppRef.current = null;
+      ixRef.current = null;
+      iwRef.current = null;
+      holdRef.current = null;
+    };
+  }, []);
+
+  if (typeof document === 'undefined') return null;
+
+  const memberName = activeMember?.fullName || (activeMember as any)?.name || 'Adhérent';
+  const memberPhone = activeMember?.phoneNumber || (activeMember as any)?.phone || '';
+  const memberEmail = activeMember?.email || '';
+  const memberExp = activeMember?.expirationDate || (activeMember as any)?.expiryDate || '';
+  const daysRemaining = activeMember ? calculateDaysRemaining(false, memberExp) : 0;
+  const isBlocked = Boolean(
+    activeMember &&
+      (activeMember.status === 'Suspended' ||
+        activeMember.status === 'Banned' ||
+        (activeMember as any).isBlocked)
+  );
+  const statusLabel = isBlocked ? 'Bloqué' : daysRemaining <= 0 || activeMember?.status === 'Expired' ? 'Expiré' : 'Actif';
+  const statusPillCls = isBlocked
+    ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+    : statusLabel === 'Expiré'
+    ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+    : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+
+  const balanceAmount = Math.round((activeMember as any)?.balance || 0);
+
+  const initials = memberName
     .split(' ')
     .filter(Boolean)
     .map((w: string) => w[0])
@@ -214,545 +441,521 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
     .slice(0, 2)
     .toUpperCase();
 
+  const handleCopy = (text: string, fieldKey: string) => {
+    try {
+      navigator.clipboard?.writeText(text);
+    } catch {
+      // ignore clipboard errors
+    }
+    setCopiedField(fieldKey);
+    showToast(`Copié : ${text}`);
+    setTimeout(() => setCopiedField(null), 1800);
+  };
+
   return createPortal(
-    <div
-      className="fixed inset-0 z-50 overflow-hidden font-sans select-none"
-      style={{
-        pointerEvents: isOpen ? 'auto' : 'none',
-      }}
-    >
-      {/* Frosted / Dim Backdrop */}
+    <>
+      {/* Full-Screen Frosted Scrim (.scrim) */}
       <div
-        ref={backdropRef}
-        onClick={onClose}
-        className="absolute inset-0 bg-[#0A0806]/50 dark:bg-black/60 transition-opacity duration-200"
-        style={{ opacity: 0 }}
+        ref={scrimRef}
+        className="scrim scrim-inspector fixed inset-0 z-[50] bg-[#1B1917]/34 backdrop-blur-[6px]"
+        onMouseDown={onClose}
+        aria-hidden="true"
       />
 
-      {/* 560px Slide-Over Panel (.sp) */}
+      {/* Floating Card Slide-In Panel (.pnl) */}
       <aside
-        ref={drawerPanelRef}
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
+        aria-hidden={!isOpen}
         aria-labelledby="member-drawer-title"
-        style={{ transform: 'translateX(100%)' }}
-        className="absolute right-0 top-0 bottom-0 w-[560px] max-w-[100vw] bg-white dark:bg-[#1A1A1A] border-l border-[#E6DED6] dark:border-neutral-800 shadow-[-24px_0_60px_rgba(0,0,0,0.3)] flex flex-col rounded-l-[18px] overflow-hidden"
+        className="pnl pnl-inspector fixed right-[14px] top-[14px] bottom-[14px] w-[560px] max-w-[calc(100vw-28px)] z-[51] rounded-[30px] bg-white dark:bg-[#1E1D1B] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[var(--atr-ink,#1B1917)] dark:text-[#F2ECE6] shadow-[-20px_0_60px_rgba(0,0,0,0.22)] flex flex-col overflow-hidden font-sans select-none"
       >
-        {/* ================= HEADER (.sh) ================= */}
-        <div className="flex gap-4 items-center p-6 pb-4 border-b border-neutral-100 dark:border-neutral-800/80">
-          {/* 56px Avatar */}
-          <div className="w-14 h-14 rounded-[16px] bg-[#E8643F] text-white font-bold text-[22px] font-['Barlow_Condensed'] grid place-items-center uppercase tracking-wider shrink-0 shadow-sm">
-            {memberInitials}
-          </div>
-
-          {/* Member Name & Badges */}
-          <div className="flex-1 min-w-0">
-            <h2
-              id="member-drawer-title"
-              className="m-0 font-bold text-[32px] leading-tight font-['Barlow_Condensed'] uppercase tracking-wide text-neutral-900 dark:text-neutral-100 truncate"
-            >
-              {memberName}
-            </h2>
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <span className="inline-block px-2.5 py-0.5 rounded-[8px] bg-[#E8643F]/10 border border-[#E8643F]/30 text-[#E8643F] dark:text-[#F4A07F] text-[12px] font-medium truncate">
-                {memberPlan}
+        {activeMember && (
+          <>
+            {/* HEADER (.ph) */}
+            <div className="ph flex gap-4 items-start px-[26px] pt-[26px] pb-[18px]">
+              <span
+                className="pav w-[68px] h-[68px] rounded-[22px] bg-[var(--atr-acc,#C9441F)] text-white font-bold text-[28px] grid place-items-center shrink-0 shadow-sm"
+                aria-hidden="true"
+              >
+                {initials}
               </span>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[6px] text-[11px] font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
-                <ShieldCheck className="w-3 h-3" />
-                Adhérent vérifié
-              </span>
-            </div>
-            <small className="block mt-1 font-mono text-[11.5px] text-neutral-500 dark:text-neutral-400">
-              ID: RFID-{member.id.slice(0, 8).toUpperCase()}
-            </small>
-          </div>
 
-          {/* Header Controls: Prev, Next, Close */}
-          <div className="flex items-center gap-1.5 self-start shrink-0">
-            <button
-              type="button"
-              onClick={() => handleStep(-1)}
-              aria-label="Adhérent précédent"
-              title="Adhérent précédent"
-              className="w-9 h-9 rounded-[10px] border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 grid place-items-center transition-colors cursor-pointer"
-            >
-              <ChevronUp className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => handleStep(1)}
-              aria-label="Adhérent suivant"
-              title="Adhérent suivant"
-              className="w-9 h-9 rounded-[10px] border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 grid place-items-center transition-colors cursor-pointer"
-            >
-              <ChevronDown className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Fermer"
-              title="Fermer"
-              className="w-9 h-9 rounded-[10px] border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/30 dark:hover:text-rose-400 text-neutral-700 dark:text-neutral-300 grid place-items-center transition-colors cursor-pointer ml-1"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* ================= TAB SWITCHER (Atrium Branded Switcher Toggle) ================= */}
-        <div className="px-6 py-3 border-b border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/40">
-          <LiveSegmentedControl
-            size="md"
-            className="w-full flex [&>button]:flex-1"
-            options={[
-              { value: 'overview', label: 'Aperçu & Forfait' },
-              { value: 'access', label: 'Accès & Séances' },
-              { value: 'billing', label: 'Ventes & Factures' },
-            ]}
-            value={activeTab}
-            onValueChange={(val) => setActiveTab(val as any)}
-            aria-label="Navigation dossier adhérent"
-          />
-        </div>
-
-        {/* ================= SCROLLABLE TAB CONTENT ================= */}
-        <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-5 select-text">
-          {/* TAB 1: APERÇU & FORFAIT */}
-          {activeTab === 'overview' && (
-            <>
-              {/* 4 Quick Action Tiles (.tl4) */}
-              <div>
-                <h3 className="m-0 mb-2.5 font-semibold text-[12px] font-['Barlow_Condensed'] tracking-wider uppercase text-neutral-500 dark:text-neutral-400">
-                  Actions rapides
-                </h3>
-                <div className="grid grid-cols-4 gap-2.5">
-                  {/* Action 1: Enregistrer passage (Primary Orange) */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onCheckIn(member);
-                      v2Ref.current.poke(40);
-                    }}
-                    className="flex flex-col items-center justify-center gap-2 h-[84px] rounded-[14px] bg-[#E8643F] text-white hover:bg-[#d4522f] transition-colors p-2 text-center cursor-pointer shadow-sm group"
-                  >
-                    <UserCheck className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    <span className="text-[11.5px] font-semibold leading-tight">
-                      Enregistrer passage
-                    </span>
-                  </button>
-
-                  {/* Action 2: Modifier */}
-                  <button
-                    type="button"
-                    onClick={() => onEdit(member)}
-                    className="flex flex-col items-center justify-center gap-2 h-[84px] rounded-[14px] bg-white dark:bg-[#202020] border border-neutral-200 dark:border-neutral-700 hover:border-[#E8643F] text-neutral-800 dark:text-neutral-200 transition-colors p-2 text-center cursor-pointer"
-                  >
-                    <Pencil className="w-5 h-5 text-[#E8643F]" />
-                    <span className="text-[11.5px] font-medium leading-tight">
-                      Modifier
-                    </span>
-                  </button>
-
-                  {/* Action 3: Bloquer / Débloquer badge */}
-                  <button
-                    type="button"
-                    onClick={() => onToggleBlock(member)}
-                    className="flex flex-col items-center justify-center gap-2 h-[84px] rounded-[14px] bg-white dark:bg-[#202020] border border-neutral-200 dark:border-neutral-700 hover:border-amber-500 text-neutral-800 dark:text-neutral-200 transition-colors p-2 text-center cursor-pointer"
-                  >
-                    {isBlocked ? (
-                      <Unlock className="w-5 h-5 text-emerald-500" />
-                    ) : (
-                      <Lock className="w-5 h-5 text-amber-500" />
-                    )}
-                    <span className="text-[11.5px] font-medium leading-tight">
-                      {isBlocked ? 'Débloquer badge' : 'Bloquer badge'}
-                    </span>
-                  </button>
-
-                  {/* Action 4: Renouveler abonnement */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onRenew(member);
-                      v1Ref.current.poke(40);
-                    }}
-                    className="flex flex-col items-center justify-center gap-2 h-[84px] rounded-[14px] bg-white dark:bg-[#202020] border border-neutral-200 dark:border-neutral-700 hover:border-[#E8643F] text-neutral-800 dark:text-neutral-200 transition-colors p-2 text-center cursor-pointer"
-                  >
-                    <RotateCcw className="w-5 h-5 text-[#E8643F]" />
-                    <span className="text-[11.5px] font-medium leading-tight">
-                      Renouveler abonnement
-                    </span>
-                  </button>
-                </div>
-              </div>
-
-              {/* 2 Dynamic Liquid Wave Vessels (.sub) */}
-              <div className="flex gap-5 p-4 rounded-[14px] bg-[#F6F3F0] dark:bg-[#232323] border border-neutral-200/80 dark:border-neutral-800 items-center">
-                {/* Vessel 1: Jours restants */}
-                <div className="flex items-center gap-3.5 flex-1">
-                  <svg
-                    className="w-[44px] h-[64px] shrink-0"
-                    viewBox="0 0 44 64"
-                    aria-hidden="true"
-                  >
-                    <defs>
-                      <clipPath id="vessel-clip-1">
-                        <rect x="1" y="1" width="42" height="62" rx="6" />
-                      </clipPath>
-                    </defs>
-                    <g clipPath="url(#vessel-clip-1)">
-                      <path
-                        className="fill-[#E8643F]"
-                        d={v1Path || 'M0 64L0 32L44 32L44 64Z'}
-                      />
-                    </g>
-                    <rect
-                      x="1"
-                      y="1"
-                      width="42"
-                      height="62"
-                      rx="6"
-                      className="fill-none stroke-neutral-400 dark:stroke-neutral-600 stroke-[1.5]"
-                    />
-                  </svg>
-                  <div>
-                    <small className="block text-neutral-500 dark:text-neutral-400 text-[12px]">
-                      Jours restants
-                    </small>
-                    <b className="block font-bold text-[30px] leading-tight font-['Barlow_Condensed'] text-neutral-900 dark:text-neutral-100">
-                      {remainingDaysDisplay}
-                    </b>
-                  </div>
-                </div>
-
-                {/* Vertical Divider */}
-                <div className="w-[1px] h-12 bg-neutral-300 dark:bg-neutral-700" />
-
-                {/* Vessel 2: Séances restantes */}
-                <div className="flex items-center gap-3.5 flex-1">
-                  <svg
-                    className="w-[44px] h-[64px] shrink-0"
-                    viewBox="0 0 44 64"
-                    aria-hidden="true"
-                  >
-                    <defs>
-                      <clipPath id="vessel-clip-2">
-                        <rect x="1" y="1" width="42" height="62" rx="6" />
-                      </clipPath>
-                    </defs>
-                    <g clipPath="url(#vessel-clip-2)">
-                      <path
-                        className="fill-[#E8643F]"
-                        d={v2Path || 'M0 64L0 20L44 20L44 64Z'}
-                      />
-                    </g>
-                    <rect
-                      x="1"
-                      y="1"
-                      width="42"
-                      height="62"
-                      rx="6"
-                      className="fill-none stroke-neutral-400 dark:stroke-neutral-600 stroke-[1.5]"
-                    />
-                  </svg>
-                  <div>
-                    <small className="block text-neutral-500 dark:text-neutral-400 text-[12px]">
-                      Séances restantes
-                    </small>
-                    <b className="block font-bold text-[30px] leading-tight font-['Barlow_Condensed'] text-neutral-900 dark:text-neutral-100">
-                      {remainingSessions} séances
-                    </b>
-                  </div>
-                </div>
-              </div>
-
-              {/* Plan Summary Card (.cardp) */}
-              <div className="rounded-[14px] bg-[#F6F3F0] dark:bg-[#232323] border border-neutral-200/80 dark:border-neutral-800 px-4 py-2">
-                <div className="flex justify-between items-center py-2.5 border-b border-neutral-200/70 dark:border-neutral-800 text-[13px]">
-                  <span className="text-neutral-500 dark:text-neutral-400">
-                    Formule d’abonnement
+              <div className="pt flex-1 min-w-0">
+                <h2
+                  id="member-drawer-title"
+                  className="m-0 mb-2 font-bold text-[26px] leading-[1.1] tracking-tight text-[var(--atr-ink,#1B1917)] dark:text-[#F2ECE6] truncate"
+                >
+                  {memberName}
+                </h2>
+                <div className="pills flex gap-1.5 flex-wrap">
+                  <span className="pill inline-flex items-center px-2.5 py-[3px] rounded-full text-[12px] font-medium bg-[var(--atr-hl,#FBE7DF)] dark:bg-[#2C1D18] text-[var(--atr-acc,#C9441F)] dark:text-[#FF8D7A] border border-[#F3C9BA] dark:border-[#52291F] truncate max-w-full">
+                    {planName}
                   </span>
-                  <b className="text-neutral-900 dark:text-neutral-100 font-semibold">
-                    {memberPlan}
-                  </b>
-                </div>
-                <div className="flex justify-between items-center py-2.5 border-b border-neutral-200/70 dark:border-neutral-800 text-[13px]">
-                  <span className="text-neutral-500 dark:text-neutral-400">
-                    Date d’échéance
+                  <span className={`pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[12px] font-medium ${statusPillCls}`}>
+                    <i className="w-1.5 h-1.5 rounded-full bg-current" />
+                    {statusLabel}
                   </span>
-                  <b className="font-mono text-neutral-900 dark:text-neutral-100 font-semibold">
-                    {memberExp || 'Non spécifiée'}
-                  </b>
+                  {!isBlocked && (
+                    <span className="pill inline-flex items-center gap-1 px-2.5 py-[3px] rounded-full text-[12px] font-medium bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]">
+                      <ShieldCheck className="w-3 h-3" />
+                      Vérifié
+                    </span>
+                  )}
                 </div>
-                <div className="flex justify-between items-center py-2.5 text-[13px]">
-                  <span className="text-neutral-500 dark:text-neutral-400">Solde</span>
-                  <b className="font-mono text-neutral-900 dark:text-neutral-100 font-semibold">
-                    {Math.round((member as any).balance || 0).toLocaleString()} DZD
-                  </b>
-                </div>
+                <small className="block mt-2 font-mono text-[11px] text-[var(--atr-mut,#6B635C)]">
+                  ID: RFID-{activeMember.id.slice(0, 8).toUpperCase()}
+                </small>
               </div>
 
-              {/* Contact & Accès with Copy Buttons */}
-              <div>
-                <h3 className="m-0 mb-2 font-semibold text-[12px] font-['Barlow_Condensed'] tracking-wider uppercase text-neutral-500 dark:text-neutral-400">
-                  Contact & accès
-                </h3>
-                <div className="rounded-[14px] bg-[#F6F3F0] dark:bg-[#232323] border border-neutral-200/80 dark:border-neutral-800 px-4 py-2">
-                  {/* Phone */}
-                  <div className="flex justify-between items-center py-2 border-b border-neutral-200/70 dark:border-neutral-800 text-[13px]">
-                    <span className="font-mono text-neutral-800 dark:text-neutral-200">
-                      {memberPhone || 'Non renseigné'}
-                    </span>
-                    {memberPhone && (
-                      <button
-                        type="button"
-                        onClick={() => handleCopy(memberPhone, 'phone')}
-                        className="w-8 h-8 rounded-[8px] hover:bg-[#E8643F]/15 grid place-items-center text-neutral-500 hover:text-[#E8643F] transition-colors cursor-pointer"
-                        title="Copier le téléphone"
-                      >
-                        {copiedField === 'phone' ? (
-                          <Check className="w-4 h-4 text-emerald-500" />
-                        ) : (
-                          <Copy className="w-4 h-4" />
-                        )}
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Email */}
-                  <div className="flex justify-between items-center py-2 border-b border-neutral-200/70 dark:border-neutral-800 text-[13px]">
-                    <span className="text-neutral-800 dark:text-neutral-200 truncate">
-                      {member.email || 'Sans email'}
-                    </span>
-                    {member.email && (
-                      <button
-                        type="button"
-                        onClick={() => handleCopy(member.email, 'email')}
-                        className="w-8 h-8 rounded-[8px] hover:bg-[#E8643F]/15 grid place-items-center text-neutral-500 hover:text-[#E8643F] transition-colors cursor-pointer"
-                        title="Copier l'email"
-                      >
-                        {copiedField === 'email' ? (
-                          <Check className="w-4 h-4 text-emerald-500" />
-                        ) : (
-                          <Copy className="w-4 h-4" />
-                        )}
-                      </button>
-                    )}
-                  </div>
-
-                  {/* RFID Identifier */}
-                  <div className="flex justify-between items-center py-2 text-[13px]">
-                    <span className="font-mono text-[12px] text-neutral-500 dark:text-neutral-400">
-                      RFID UID: {member.id.slice(0, 12)}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => handleCopy(member.id, 'rfid')}
-                      className="w-8 h-8 rounded-[8px] hover:bg-[#E8643F]/15 grid place-items-center text-neutral-500 hover:text-[#E8643F] transition-colors cursor-pointer"
-                      title="Copier le tag RFID"
-                    >
-                      {copiedField === 'rfid' ? (
-                        <Check className="w-4 h-4 text-emerald-500" />
-                      ) : (
-                        <Copy className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Notes du personnel */}
-              <div>
-                <h3 className="m-0 mb-2 font-semibold text-[12px] font-['Barlow_Condensed'] tracking-wider uppercase text-neutral-500 dark:text-neutral-400">
-                  Notes du personnel
-                </h3>
-                <textarea
-                  value={notesText}
-                  onChange={(e) => setNotesText(e.target.value)}
-                  onBlur={() => {
-                    if (member) {
-                      onUpdateNotes(member.id, notesText.trim());
-                      showToast('Note enregistrée');
-                    }
-                  }}
-                  placeholder="Ajouter une note relative à cet adhérent…"
-                  rows={3}
-                  className="w-full p-3 rounded-[12px] bg-[#F6F3F0] dark:bg-[#232323] border border-neutral-200/80 dark:border-neutral-800 text-[13.5px] text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:border-[#E8643F] resize-none"
-                />
-              </div>
-            </>
-          )}
-
-          {/* TAB 2: ACCÈS & SÉANCES */}
-          {activeTab === 'access' && (
-            <div className="flex flex-col gap-3">
-              <h3 className="m-0 font-semibold text-[12px] font-['Barlow_Condensed'] tracking-wider uppercase text-neutral-500 dark:text-neutral-400">
-                Passages récents au portique
-              </h3>
-
-              <div className="flex flex-col gap-2">
-                {[
-                  {
-                    gate: 'Entrée portique A (Principal)',
-                    time: 'Aujourd’hui · 18:42',
-                    status: 'Autorisé',
-                  },
-                  {
-                    gate: 'Entrée portique A (Principal)',
-                    time: 'Il y a 2 jours · 07:58',
-                    status: 'Autorisé',
-                  },
-                  {
-                    gate: 'Entrée portique B (Musculation)',
-                    time: 'Il y a 4 jours · 17:10',
-                    status: 'Autorisé',
-                  },
-                  {
-                    gate: 'Entrée portique A (Principal)',
-                    time: 'Il y a 6 jours · 19:05',
-                    status: 'Autorisé',
-                  },
-                ].map((entry, idx) => (
-                  <div
-                    key={idx}
-                    className="flex justify-between items-center p-3 rounded-[12px] bg-[#F6F3F0] dark:bg-[#232323] border border-neutral-200/80 dark:border-neutral-800 text-[13px]"
-                  >
-                    <div>
-                      <b className="block text-neutral-900 dark:text-neutral-100 font-semibold">
-                        {entry.gate}
-                      </b>
-                      <small className="block font-mono text-[11.5px] text-neutral-500 dark:text-neutral-400">
-                        {entry.time}
-                      </small>
-                    </div>
-                    <span className="px-2 py-0.5 rounded-[6px] text-[11px] font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
-                      {entry.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3: VENTES & FACTURES */}
-          {activeTab === 'billing' && (
-            <div className="flex flex-col gap-3">
-              <div className="flex justify-between items-center">
-                <h3 className="m-0 font-semibold text-[12px] font-['Barlow_Condensed'] tracking-wider uppercase text-neutral-500 dark:text-neutral-400">
-                  Factures & Cotisations
-                </h3>
+              <div className="pnav flex gap-1.5 shrink-0">
                 <button
                   type="button"
-                  onClick={() => showToast(`Nouvelle facture pour ${member.fullName}`)}
-                  className="h-8 px-3 rounded-[8px] bg-[#E8643F] hover:bg-[#d4522f] text-white font-medium text-[12px] flex items-center gap-1.5 transition-colors cursor-pointer"
+                  disabled={!hasPrev}
+                  onClick={() => handleStep(-1)}
+                  aria-label="Adhérent précédent"
+                  title="Adhérent précédent"
+                  className="w-[34px] h-[34px] rounded-full border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-white dark:bg-[#262422] grid place-items-center p-0 text-[var(--atr-ink,#1B1917)] dark:text-[#F2ECE6] hover:not-disabled:bg-[var(--atr-hl,#FBE7DF)] disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer transition-colors"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  Créer une facture
+                  <ChevronUp className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  disabled={!hasNext}
+                  onClick={() => handleStep(1)}
+                  aria-label="Adhérent suivant"
+                  title="Adhérent suivant"
+                  className="w-[34px] h-[34px] rounded-full border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-white dark:bg-[#262422] grid place-items-center p-0 text-[var(--atr-ink,#1B1917)] dark:text-[#F2ECE6] hover:not-disabled:bg-[var(--atr-hl,#FBE7DF)] disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+                <button
+                  ref={closeBtnRef}
+                  type="button"
+                  onClick={onClose}
+                  aria-label="Fermer la fiche"
+                  title="Fermer"
+                  className="w-[34px] h-[34px] rounded-full border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-white dark:bg-[#262422] grid place-items-center p-0 text-[var(--atr-ink,#1B1917)] dark:text-[#F2ECE6] hover:bg-[var(--atr-hl,#FBE7DF)] cursor-pointer transition-colors"
+                >
+                  <X className="w-4 h-4" />
                 </button>
               </div>
-
-              <div className="flex flex-col gap-2">
-                {[
-                  {
-                    ref: 'Facture 0412 · Abonnement',
-                    date: member.expirationDate || '2026-11-05',
-                    amount: '6,500 DZD',
-                  },
-                  {
-                    ref: 'Facture 0388 · Boisson / Boutique',
-                    date: '2026-10-18',
-                    amount: '400 DZD',
-                  },
-                  {
-                    ref: 'Facture 0351 · Renouvellement',
-                    date: '2026-10-05',
-                    amount: '6,500 DZD',
-                  },
-                ].map((inv, idx) => (
-                  <div
-                    key={idx}
-                    className="flex justify-between items-center p-3 rounded-[12px] bg-[#F6F3F0] dark:bg-[#232323] border border-neutral-200/80 dark:border-neutral-800 text-[13px]"
-                  >
-                    <div>
-                      <b className="block text-neutral-900 dark:text-neutral-100 font-semibold">
-                        {inv.ref}
-                      </b>
-                      <small className="block font-mono text-[11.5px] text-neutral-500 dark:text-neutral-400">
-                        {inv.date}
-                      </small>
-                    </div>
-                    <span className="font-mono font-semibold text-neutral-800 dark:text-neutral-200">
-                      {inv.amount}
-                    </span>
-                  </div>
-                ))}
-              </div>
             </div>
-          )}
-        </div>
 
-        {/* ================= FOOTER (.sf) ================= */}
-        <div className="flex justify-between items-center p-4 px-6 border-t border-neutral-100 dark:border-neutral-800 bg-white dark:bg-[#1A1A1A]">
-          {/* Spring "Hold to Delete" Button */}
-          <button
-            ref={holdBtnRef}
-            type="button"
-            onPointerDown={() => {
-              isHoldingRef.current = true;
-            }}
-            onPointerUp={() => {
-              isHoldingRef.current = false;
-            }}
-            onPointerLeave={() => {
-              isHoldingRef.current = false;
-            }}
-            onPointerCancel={() => {
-              isHoldingRef.current = false;
-            }}
-            onClick={(e) => {
-              // Immediate confirmation on keyboard activation
-              if (e.detail === 0 && member) {
-                onDelete(member);
-                onClose();
-              }
-            }}
-            aria-label="Maintenir pour supprimer l'adhérent"
-            className="relative overflow-hidden h-10 px-4 rounded-[12px] border border-rose-500/40 text-rose-600 dark:text-rose-400 font-medium text-[13px] flex items-center gap-2 cursor-pointer transition-colors bg-rose-50/40 dark:bg-rose-950/20"
-          >
-            {/* Red progressive fill clip-path */}
-            <span
-              className="absolute inset-0 bg-[#C0283D] pointer-events-none transition-none"
-              style={{
-                clipPath: `inset(${(1 - holdProgress) * 100}% 0 0 0)`,
-              }}
-            />
-            {/* Button text on top */}
-            <span
-              className="relative z-10 flex items-center gap-2 transition-colors"
-              style={{
-                color: holdProgress > 0.4 ? '#FFFFFF' : undefined,
-              }}
+            {/* TABS WITH DUAL-SPRING INDICATOR (.ptabs) */}
+            <div
+              className="ptabs relative flex mx-[26px] p-1 rounded-[14px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422]"
+              role="tablist"
+              aria-label="Sections du dossier adhérent"
             >
-              <Trash2 className="w-4 h-4" />
-              <span>
-                {holdProgress > 0.1
-                  ? 'Maintenez…'
-                  : 'Maintenir pour supprimer'}
-              </span>
-            </span>
-          </button>
+              <i
+                ref={pindRef}
+                aria-hidden="true"
+                className="absolute top-1 bottom-1 rounded-[10px] bg-[var(--atr-acc,#C9441F)] z-0 pointer-events-none"
+                style={{ left: '4px', width: '0px' }}
+              />
+              {TABS.map((tab) => {
+                const isSelected = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    ref={(el) => {
+                      tabBtnRefs.current[tab.id] = el;
+                    }}
+                    type="button"
+                    role="tab"
+                    data-t={tab.id}
+                    aria-selected={isSelected}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`relative z-[1] flex-1 h-[38px] border-0 bg-transparent font-semibold text-[13px] rounded-[10px] transition-colors duration-160 cursor-pointer ${
+                      isSelected
+                        ? 'text-white'
+                        : 'text-[var(--atr-ink,#1B1917)] dark:text-[#EAE3DC]'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
 
-          {/* Close button */}
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-10 px-6 rounded-[12px] bg-[#E8643F] hover:bg-[#d4522f] text-white font-semibold text-[13.5px] transition-colors cursor-pointer shadow-sm"
-          >
-            Fermer
-          </button>
-        </div>
+            {/* SCROLLABLE BODY (.pb) WITH REPLAYABLE SECTION ENTRANCES */}
+            <div
+              key={entranceEpoch}
+              role="tabpanel"
+              className="pb flex-1 overflow-y-auto px-[26px] pt-1.5 pb-[18px] select-text"
+            >
+              {activeTab === 'overview' && (
+                <>
+                  <section style={{ '--k': 0 } as React.CSSProperties}>
+                    <h3>Actions rapides</h3>
+                    <div className="qa grid grid-cols-4 gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => onCheckIn(activeMember)}
+                        className="flex flex-col items-center gap-2 pt-3.5 px-1.5 pb-3 rounded-[16px] border border-[#F3C9BA] dark:border-[#52291F] bg-[var(--atr-hl,#FBE7DF)] dark:bg-[#2C1D18] text-[var(--atr-acc,#C9441F)] dark:text-[#FF8D7A] text-[12px] font-medium leading-tight text-center cursor-pointer"
+                      >
+                        <span className="ic w-[38px] h-[38px] rounded-[12px] bg-white dark:bg-[#1E1D1B] grid place-items-center">
+                          <UserCheck className="w-[18px] h-[18px]" />
+                        </span>
+                        <span>Enregistrer présence</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => onEdit(activeMember)}
+                        className="flex flex-col items-center gap-2 pt-3.5 px-1.5 pb-3 rounded-[16px] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-white dark:bg-[#262422] text-[var(--atr-ink,#1B1917)] dark:text-[#F2ECE6] text-[12px] font-medium leading-tight text-center cursor-pointer"
+                      >
+                        <span className="ic w-[38px] h-[38px] rounded-[12px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1E1D1B] grid place-items-center">
+                          <Pencil className="w-[18px] h-[18px]" />
+                        </span>
+                        <span>Modifier</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => onToggleBlock(activeMember)}
+                        className="flex flex-col items-center gap-2 pt-3.5 px-1.5 pb-3 rounded-[16px] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-white dark:bg-[#262422] text-[var(--atr-ink,#1B1917)] dark:text-[#F2ECE6] text-[12px] font-medium leading-tight text-center cursor-pointer"
+                      >
+                        <span className="ic w-[38px] h-[38px] rounded-[12px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1E1D1B] grid place-items-center">
+                          {isBlocked ? (
+                            <Unlock className="w-[18px] h-[18px] text-[var(--atr-ok,#0B7A45)]" />
+                          ) : (
+                            <Lock className="w-[18px] h-[18px] text-amber-500" />
+                          )}
+                        </span>
+                        <span>{isBlocked ? 'Débloquer badge' : 'Bloquer badge'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => onRenew(activeMember)}
+                        className="flex flex-col items-center gap-2 pt-3.5 px-1.5 pb-3 rounded-[16px] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-white dark:bg-[#262422] text-[var(--atr-ink,#1B1917)] dark:text-[#F2ECE6] text-[12px] font-medium leading-tight text-center cursor-pointer"
+                      >
+                        <span className="ic w-[38px] h-[38px] rounded-[12px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1E1D1B] grid place-items-center">
+                          <RotateCcw className="w-[18px] h-[18px]" />
+                        </span>
+                        <span>Renouveler abonnement</span>
+                      </button>
+                    </div>
+                  </section>
+
+                  <section style={{ '--k': 1 } as React.CSSProperties}>
+                    <div className="card rounded-[18px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
+                      <div className="kv flex justify-between items-center gap-3 py-[11px] border-b border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[13px]">
+                        <span className="text-[var(--atr-mut,#6B635C)]">Formule d’abonnement</span>
+                        <b className="font-mono text-[13px] text-right">{planName}</b>
+                      </div>
+                      <div className="kv flex justify-between items-center gap-3 py-[11px] border-b border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[13px]">
+                        <span className="text-[var(--atr-mut,#6B635C)]">Date d’échéance</span>
+                        <b className="font-mono text-[13px] text-right">{memberExp || 'Non spécifiée'}</b>
+                      </div>
+                      <div className="kv flex justify-between items-center gap-3 py-[11px] border-b border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[13px]">
+                        <span className="text-[var(--atr-mut,#6B635C)]">Jours restants</span>
+                        <b
+                          className="font-mono text-[13px] text-right"
+                          style={{
+                            color:
+                              daysRemaining < 0
+                                ? 'var(--atr-danger, #B8321C)'
+                                : daysRemaining < 14
+                                ? 'var(--atr-acc, #C9441F)'
+                                : 'var(--atr-ok, #0B7A45)',
+                          }}
+                        >
+                          {daysRemaining < 0 ? `Expiré (${-daysRemaining}j)` : `${daysRemaining} jours`}
+                        </b>
+                      </div>
+                      <div className="kv flex justify-between items-center gap-3 py-[11px] text-[13px]">
+                        <span className="text-[var(--atr-mut,#6B635C)]">Séances restantes</span>
+                        <b className="font-mono text-[13px] text-right text-[var(--atr-ok,#0B7A45)] dark:text-[#5BE3A3]">
+                          {remainingSessions} séances
+                        </b>
+                      </div>
+                      <div className="bar2 h-[8px] rounded-[4px] bg-[var(--atr-line,#E6DED6)] dark:bg-[#3A3734] overflow-hidden mt-0.5 mb-3">
+                        <i
+                          ref={barFillRef}
+                          className="block h-full rounded-[4px] bg-[var(--atr-ok,#0B7A45)] dark:bg-[#5BE3A3]"
+                          style={{ width: '0%' }}
+                        />
+                      </div>
+                    </div>
+                  </section>
+
+                  <section style={{ '--k': 2 } as React.CSSProperties}>
+                    <h3>Contact &amp; accès</h3>
+                    <div className="card rounded-[18px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
+                      <div className="kv flex justify-between items-center gap-3 py-[11px] border-b border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[13px]">
+                        <span className="text-[var(--atr-mut,#6B635C)] flex items-center gap-2">
+                          <Phone className="w-[15px] h-[15px]" />
+                          Téléphone
+                        </span>
+                        <span className="flex items-center gap-2">
+                          <b className="font-mono text-[13px]">{memberPhone || 'Non renseigné'}</b>
+                          {memberPhone && (
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(memberPhone, 'phone')}
+                              className="w-7 h-7 rounded-[8px] border-0 bg-transparent hover:bg-[var(--atr-hl,#FBE7DF)] grid place-items-center text-[var(--atr-mut,#6B635C)] hover:text-[var(--atr-acc,#C9441F)] cursor-pointer"
+                              aria-label="Copier le téléphone"
+                            >
+                              {copiedField === 'phone' ? <Check className="w-3.5 h-3.5 text-[var(--atr-ok,#0B7A45)]" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
+                          )}
+                        </span>
+                      </div>
+                      <div className="kv flex justify-between items-center gap-3 py-[11px] text-[13px]">
+                        <span className="text-[var(--atr-mut,#6B635C)] flex items-center gap-2">
+                          <Mail className="w-[15px] h-[15px]" />
+                          E-mail
+                        </span>
+                        <span className="flex items-center gap-2 min-w-0">
+                          <b className="font-mono text-[13px] truncate">{memberEmail || '—'}</b>
+                          {memberEmail && (
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(memberEmail, 'email')}
+                              className="w-7 h-7 rounded-[8px] border-0 bg-transparent hover:bg-[var(--atr-hl,#FBE7DF)] grid place-items-center text-[var(--atr-mut,#6B635C)] hover:text-[var(--atr-acc,#C9441F)] cursor-pointer"
+                              aria-label="Copier l'e-mail"
+                            >
+                              {copiedField === 'email' ? <Check className="w-3.5 h-3.5 text-[var(--atr-ok,#0B7A45)]" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section style={{ '--k': 3 } as React.CSSProperties}>
+                    <h3>Notes du personnel</h3>
+                    <textarea
+                      aria-label="Notes du personnel"
+                      value={notesText}
+                      onChange={(e) => setNotesText(e.target.value)}
+                      onBlur={() => {
+                        if (activeMember && notesText.trim() !== (activeMember.notes || '').trim()) {
+                          onUpdateNotes(activeMember.id, notesText.trim());
+                          showToast('Notes enregistrées');
+                        }
+                      }}
+                      placeholder="Ajouter une note relative à cet adhérent…"
+                      className="w-full box-border min-h-[84px] rounded-[16px] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-3.5 py-3 text-[13px] text-[var(--atr-ink,#1B1917)] dark:text-[#F2ECE6] resize-y"
+                    />
+                  </section>
+                </>
+              )}
+
+              {activeTab === 'access' && (
+                <>
+                  <section style={{ '--k': 0 } as React.CSSProperties}>
+                    <h3>Badge &amp; portique</h3>
+                    <div className="card rounded-[18px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
+                      <div className="kv flex justify-between items-center gap-3 py-[11px] border-b border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[13px]">
+                        <span className="text-[var(--atr-mut,#6B635C)]">Badge</span>
+                        <b className="font-mono text-[13px]">RFID-{activeMember.id.slice(0, 8).toUpperCase()}</b>
+                      </div>
+                      <div className="kv flex justify-between items-center gap-3 py-[11px] border-b border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[13px]">
+                        <span className="text-[var(--atr-mut,#6B635C)]">Statut</span>
+                        <span className={`pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[12px] font-medium ${statusPillCls}`}>
+                          <i className="w-1.5 h-1.5 rounded-full bg-current" />
+                          {statusLabel}
+                        </span>
+                      </div>
+                      <div className="kv flex justify-between items-center gap-3 py-[11px] text-[13px]">
+                        <span className="text-[var(--atr-mut,#6B635C)]">Séances restantes</span>
+                        <b className="font-mono text-[13px]">{remainingSessions}</b>
+                      </div>
+                    </div>
+                    <div className="h-2.5" />
+                    <button
+                      type="button"
+                      onClick={() => onToggleBlock(activeMember)}
+                      className="wide w-full h-[42px] border-0 rounded-[12px] bg-[#1B1917] dark:bg-[#F2ECE6] text-white dark:text-[#1B1917] font-semibold text-[13.5px] cursor-pointer"
+                    >
+                      {isBlocked ? 'Débloquer le badge' : 'Bloquer le badge'}
+                    </button>
+                  </section>
+
+                  <section style={{ '--k': 1 } as React.CSSProperties}>
+                    <h3>Passages récents</h3>
+                    <div className="card rounded-[18px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
+                      {[
+                        { gate: 'Portique A (Principal)', time: 'Aujourd’hui · 18:42', ok: !isBlocked },
+                        { gate: 'Portique B (Musculation)', time: 'Il y a 2 jours · 07:55', ok: true },
+                        { gate: 'Portique A (Principal)', time: 'Il y a 4 jours · 19:10', ok: true },
+                        { gate: 'Portique B (Musculation)', time: 'Il y a 7 jours · 12:31', ok: true },
+                      ].map((p, idx) => (
+                        <div
+                          key={idx}
+                          className="li flex justify-between items-center py-[11px] border-b last:border-b-0 border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[13px]"
+                        >
+                          <span>
+                            <span className="font-medium block">{p.gate}</span>
+                            <small className="font-mono text-[11px] text-[var(--atr-mut,#6B635C)]">{p.time}</small>
+                          </span>
+                          <span
+                            className={`pill px-2.5 py-[3px] rounded-full text-[12px] font-medium ${
+                              p.ok
+                                ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
+                                : 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
+                            }`}
+                          >
+                            {p.ok ? 'Accepté' : 'Refusé'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section style={{ '--k': 2 } as React.CSSProperties}>
+                    <button
+                      type="button"
+                      onClick={() => onCheckIn(activeMember)}
+                      className="wide w-full h-[42px] border-0 rounded-[12px] bg-[var(--atr-acc,#C9441F)] text-white font-semibold text-[13.5px] cursor-pointer"
+                    >
+                      Enregistrer une présence
+                    </button>
+                  </section>
+                </>
+              )}
+
+              {activeTab === 'billing' && (
+                <>
+                  <section style={{ '--k': 0 } as React.CSSProperties}>
+                    <h3>Solde à régler</h3>
+                    <div className="card rounded-[18px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-3.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
+                      <div
+                        className="big font-mono font-bold text-[36px] my-1"
+                        style={{
+                          color: balanceAmount > 0 ? 'var(--atr-acc, #C9441F)' : 'var(--atr-ok, #0B7A45)',
+                        }}
+                      >
+                        {balanceAmount > 0 ? `${balanceAmount.toLocaleString('en-US')} DZD` : 'Soldé'}
+                      </div>
+                      {balanceAmount > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => showToast(`Solde encaissé pour ${memberName}`)}
+                          className="wide mt-2 w-full h-[42px] border-0 rounded-[12px] bg-[var(--atr-acc,#C9441F)] text-white font-semibold text-[13.5px] cursor-pointer"
+                        >
+                          Encaisser le solde
+                        </button>
+                      )}
+                    </div>
+                  </section>
+
+                  <section style={{ '--k': 1 } as React.CSSProperties}>
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="!m-0">Factures</h3>
+                      <button
+                        type="button"
+                        onClick={() => showToast(`Nouvelle facture pour ${memberName}`)}
+                        className="h-8 px-3 rounded-[9px] border-0 bg-[var(--atr-acc,#C9441F)] text-white font-semibold text-[12px] flex items-center gap-1 cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Nouvelle
+                      </button>
+                    </div>
+                    <div className="card rounded-[18px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
+                      {[
+                        {
+                          ref: `F-26-${activeMember.id.slice(0, 4).toUpperCase()} · ${planName}`,
+                          date: memberExp || '2026-11-05',
+                          amount: balanceAmount > 0 ? `${balanceAmount.toLocaleString('en-US')} DZD` : '6,500 DZD',
+                          paid: balanceAmount === 0,
+                        },
+                        {
+                          ref: `F-26-PREV · Renouvellement`,
+                          date: '2026-10-05',
+                          amount: '6,500 DZD',
+                          paid: true,
+                        },
+                      ].map((inv, idx) => (
+                        <div
+                          key={idx}
+                          className="li flex justify-between items-center py-[11px] border-b last:border-b-0 border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[13px] gap-2"
+                        >
+                          <span>
+                            <span className="font-medium block">{inv.ref}</span>
+                            <small className="font-mono text-[11px] text-[var(--atr-mut,#6B635C)]">{inv.date}</small>
+                          </span>
+                          <span className="flex items-center gap-2 shrink-0">
+                            <b className="font-mono text-[12px]">{inv.amount}</b>
+                            <span
+                              className={`pill px-2 py-[2px] rounded-full text-[11px] font-medium ${
+                                inv.paid
+                                  ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
+                                  : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
+                              }`}
+                            >
+                              {inv.paid ? 'Payée' : 'À régler'}
+                            </span>
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                </>
+              )}
+            </div>
+
+            {/* FOOTER (.pf) */}
+            <div className="pf flex justify-between items-center px-[26px] py-4 border-t border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
+              <button
+                type="button"
+                onPointerDown={() => {
+                  isHoldingRef.current = true;
+                  holdRef.current?.setTarget(100);
+                  wake();
+                }}
+                onPointerUp={() => {
+                  isHoldingRef.current = false;
+                  holdRef.current?.setTarget(0);
+                  wake();
+                }}
+                onPointerLeave={() => {
+                  isHoldingRef.current = false;
+                  holdRef.current?.setTarget(0);
+                  wake();
+                }}
+                onPointerCancel={() => {
+                  isHoldingRef.current = false;
+                  holdRef.current?.setTarget(0);
+                  wake();
+                }}
+                onClick={(e) => {
+                  if (e.detail === 0 && activeMember) {
+                    onDelete(activeMember);
+                    onClose();
+                  }
+                }}
+                aria-label="Maintenir pour supprimer l'adhérent"
+                className="relative overflow-hidden h-10 px-4 rounded-[12px] border border-[#F5BDB3] dark:border-[#5C2B24] text-[var(--atr-danger,#B8321C)] dark:text-[#FF8D7A] font-semibold text-[13px] flex items-center gap-2 cursor-pointer bg-[#FDE4DF]/45 dark:bg-[#3D1E1A]/40"
+              >
+                <span
+                  ref={holdFillRef}
+                  className="absolute inset-0 bg-[#C0283D] pointer-events-none"
+                  style={{ clipPath: 'inset(100% 0 0 0)' }}
+                />
+                <span ref={holdTextWrapRef} className="relative z-10 flex items-center gap-2">
+                  <Trash2 className="w-4 h-4" />
+                  <span ref={holdLabelRef}>Maintenir pour supprimer</span>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={onClose}
+                className="fer h-[44px] px-7 border-0 rounded-[12px] bg-[var(--atr-acc,#C9441F)] hover:opacity-95 text-white font-semibold text-[14px] cursor-pointer"
+              >
+                Fermer
+              </button>
+            </div>
+          </>
+        )}
       </aside>
-    </div>,
+    </>,
     document.body
   );
 };

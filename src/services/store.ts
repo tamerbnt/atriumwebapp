@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Account,
   AccountSubscription,
@@ -1258,18 +1258,51 @@ export function useAtriumStore() {
   const deviceQuota = checkQuota((state.devices || []).length, plan?.maxDevices || 1);
   const staffQuota = checkQuota((state.staff || []).length, plan?.maxStaff || 1);
 
-  // Scoped lists
-  const currentMembers = (state.members || []).filter((m) => m.facilityId === state.currentBranchId);
-  const currentLeads = (state.leads || []).filter((l) => l.facilityId === state.currentBranchId);
-  const currentProducts = (state.products || []).filter((p) => p.facilityId === state.currentBranchId);
-  const currentStaff = (state.staff || []).filter((s) => s.facilityId === state.currentBranchId);
-  const currentSales = (state.sales || []).filter((s) => s.facilityId === state.currentBranchId);
-  const currentSchedule = (state.schedule || []).filter((sc) => sc.facilityId === state.currentBranchId);
-  const currentPlans = (state.plansByBranch && state.plansByBranch[state.currentBranchId]) || EMPTY_PLANS;
-  const currentAppointments = (state.appointments || []).filter((a) => a.facilityId === state.currentBranchId);
-  const currentServices = (state.servicesCatalog || []).filter((s) => s.facilityId === state.currentBranchId);
-  const currentParkedOrders = (state.parkedOrders || []).filter((p) => p.facilityId === state.currentBranchId);
-  const currentStockMovements = (state.stockMovements || []).filter((sm) => sm.facilityId === state.currentBranchId);
+  // Scoped lists (memoized per branch + slice reference to keep consumers render-stable)
+  const currentMembers = useMemo(
+    () => (state.members || []).filter((m) => m.facilityId === state.currentBranchId),
+    [state.members, state.currentBranchId]
+  );
+  const currentLeads = useMemo(
+    () => (state.leads || []).filter((l) => l.facilityId === state.currentBranchId),
+    [state.leads, state.currentBranchId]
+  );
+  const currentProducts = useMemo(
+    () => (state.products || []).filter((p) => p.facilityId === state.currentBranchId),
+    [state.products, state.currentBranchId]
+  );
+  const currentStaff = useMemo(
+    () => (state.staff || []).filter((s) => s.facilityId === state.currentBranchId),
+    [state.staff, state.currentBranchId]
+  );
+  const currentSales = useMemo(
+    () => (state.sales || []).filter((s) => s.facilityId === state.currentBranchId),
+    [state.sales, state.currentBranchId]
+  );
+  const currentSchedule = useMemo(
+    () => (state.schedule || []).filter((sc) => sc.facilityId === state.currentBranchId),
+    [state.schedule, state.currentBranchId]
+  );
+  const currentPlans = useMemo(
+    () => (state.plansByBranch && state.plansByBranch[state.currentBranchId]) || EMPTY_PLANS,
+    [state.plansByBranch, state.currentBranchId]
+  );
+  const currentAppointments = useMemo(
+    () => (state.appointments || []).filter((a) => a.facilityId === state.currentBranchId),
+    [state.appointments, state.currentBranchId]
+  );
+  const currentServices = useMemo(
+    () => (state.servicesCatalog || []).filter((s) => s.facilityId === state.currentBranchId),
+    [state.servicesCatalog, state.currentBranchId]
+  );
+  const currentParkedOrders = useMemo(
+    () => (state.parkedOrders || []).filter((p) => p.facilityId === state.currentBranchId),
+    [state.parkedOrders, state.currentBranchId]
+  );
+  const currentStockMovements = useMemo(
+    () => (state.stockMovements || []).filter((sm) => sm.facilityId === state.currentBranchId),
+    [state.stockMovements, state.currentBranchId]
+  );
   const currentFreelanceClients = (() => {
     const list = state.freelanceClients || [];
     const direct = list.filter((c) => c.facilityId === state.currentBranchId);

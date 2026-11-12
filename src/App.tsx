@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAtriumStore } from './services/store';
 import { Member } from './types/index';
 import { AppShell } from '@/atrium';
@@ -279,12 +279,18 @@ export default function App() {
     setIsMobileSidebarOpen(false);
   }, [activeScreen]);
 
-  const handleOpenAddMember = () => {
+  const memberModalOriginRef = useRef<HTMLElement | null>(null);
+
+  const handleOpenAddMember = (originEl?: HTMLElement | null) => {
+    memberModalOriginRef.current =
+      originEl ?? (typeof document !== 'undefined' ? (document.activeElement as HTMLElement | null) : null);
     setMemberToEdit(null);
     setIsMemberModalOpen(true);
   };
 
-  const handleOpenEditMember = (member: Member) => {
+  const handleOpenEditMember = (member: Member, originEl?: HTMLElement | null) => {
+    memberModalOriginRef.current =
+      originEl ?? (typeof document !== 'undefined' ? (document.activeElement as HTMLElement | null) : null);
     setMemberToEdit(member);
     setIsMemberModalOpen(true);
   };
@@ -1250,6 +1256,10 @@ export default function App() {
             setMemberToEdit(null);
           }}
           memberToEdit={memberToEdit}
+          useKineticSpring={
+            currentBusiness?.category === 'membership_session' && activeScreen === 'members'
+          }
+          originElement={memberModalOriginRef.current}
         />
       </React.Suspense>
 
