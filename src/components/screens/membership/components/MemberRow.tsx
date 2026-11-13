@@ -78,8 +78,12 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
 
   useEffect(() => {
     if (isExpanded) {
-      setDetailMounted(true);
-      return;
+      if (detailMounted) return;
+      // Delay keeping detail alive for collapse fade until after initial expand spring kicks off
+      const timer = setTimeout(() => {
+        setDetailMounted(true);
+      }, 280);
+      return () => clearTimeout(timer);
     }
     if (!detailMounted) return;
     const timer = setTimeout(() => {
@@ -90,9 +94,6 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
 
   useLayoutEffect(() => {
     if (!registerRowRefs) return;
-    const dcButtons = dcRef.current
-      ? (Array.from(dcRef.current.querySelectorAll('button')) as HTMLButtonElement[])
-      : [];
     registerRowRefs(memberIdStr, {
       rowEl: rowRef.current,
       slabEl: slabRef.current,
@@ -100,12 +101,12 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
       detEl: detRef.current,
       dcEl: dcRef.current,
       rbEl: rbRef.current,
-      dcButtons,
+      dcButtons: [],
     });
     return () => {
       registerRowRefs(memberIdStr, null);
     };
-  }, [memberIdStr, registerRowRefs, shouldRenderDetail]);
+  }, [memberIdStr, registerRowRefs]);
 
   const getStatusClasses = () => {
     const s = member.status.toLowerCase();

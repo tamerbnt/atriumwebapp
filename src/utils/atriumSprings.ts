@@ -501,7 +501,13 @@ export class SegmentedBlobController implements SpringBody {
       const g = this.geo[i];
       const span = g[1] - g[0];
       const cov = span > 0 ? clamp((Math.min(rightEdge, g[1]) - Math.max(leftEdge, g[0])) / span, 0, 1) : 0;
-      const color = `color-mix(in srgb, var(--atr-onacc) ${fmt(cov * 100)}%, var(--atr-ink))`;
+      const pct = Math.round(cov * 50) * 2;
+      const color =
+        pct <= 0
+          ? 'var(--atr-ink)'
+          : pct >= 100
+          ? 'var(--atr-onacc)'
+          : `color-mix(in srgb, var(--atr-onacc) ${pct}%, var(--atr-ink))`;
       if (color !== this.lastColors[i]) {
         this.opts[i].style.color = color;
         this.lastColors[i] = color;

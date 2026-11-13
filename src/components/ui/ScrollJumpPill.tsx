@@ -127,19 +127,23 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
     targetEventElement.addEventListener('scroll', onScrollOrResize, { passive: true });
     window.addEventListener('resize', onScrollOrResize, { passive: true });
 
-    // ResizeObserver tracks dynamic content additions, filtered lists, or table resizing
+    // ResizeObserver tracks dynamic content height changes
     let ro: ResizeObserver | undefined;
     if (typeof ResizeObserver !== 'undefined') {
       ro = new ResizeObserver(() => onScrollOrResize());
       ro.observe(container);
+      if (container.firstElementChild) {
+        ro.observe(container.firstElementChild);
+      }
     }
 
-    // MutationObserver watches only childList additions/removals (e.g. bulk toolbar open/close)
-    // NEVER watch attributes/style/class to avoid feedback loops with spring transforms
+    // MutationObserver watches only childList additions/removals outside .rows (e.g. bulk toolbar open/close)
     const observer = new MutationObserver((mutations) => {
       let shouldUpdate = false;
       for (const m of mutations) {
         if (m.type === 'childList') {
+          const targetEl = m.target as HTMLElement | null;
+          if (targetEl?.closest?.('.rows')) continue;
           shouldUpdate = true;
           break;
         }
@@ -210,7 +214,7 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
         onClick={handleScrollJump}
         aria-label={label}
         title={label}
-        className="group relative flex items-center justify-center h-10 min-w-10 px-2 group-hover:ps-2.5 group-hover:pe-4 group-focus-visible:ps-2.5 group-focus-visible:pe-4 rounded-full bg-white/95 dark:bg-neutral-900/95 text-neutral-800 dark:text-neutral-100 border border-neutral-200/90 dark:border-neutral-700/90 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.12),0_4px_8px_-2px_rgba(0,0,0,0.06)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] backdrop-blur-md hover:border-[#d4522f]/80 hover:shadow-[0_10px_28px_-4px_rgba(212,82,47,0.25)] hover:scale-[1.04] active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4522f] overflow-hidden"
+        className="group relative flex items-center justify-center h-10 min-w-10 px-2 group-hover:ps-2.5 group-hover:pe-4 group-focus-visible:ps-2.5 group-focus-visible:pe-4 rounded-full bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-100 border border-neutral-200/90 dark:border-neutral-700/90 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.12),0_4px_8px_-2px_rgba(0,0,0,0.06)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] hover:border-[#d4522f]/80 hover:shadow-[0_10px_28px_-4px_rgba(212,82,47,0.25)] hover:scale-[1.04] active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4522f] overflow-hidden"
       >
         {/* Animated Direction Arrow Icon */}
         <span

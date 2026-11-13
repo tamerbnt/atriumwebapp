@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAtriumStore } from './services/store';
 import { Member } from './types/index';
 import { AppShell } from '@/atrium';
@@ -279,13 +279,17 @@ export default function App() {
   }, [activeScreen]);
 
   const memberModalOriginRef = useRef<HTMLElement | null>(null);
+  const businessCategoryRef = useRef(currentBusiness?.category);
+  businessCategoryRef.current = currentBusiness?.category;
+  const activeScreenRef = useRef(activeScreen);
+  activeScreenRef.current = activeScreen;
 
-  const handleOpenAddMember = (originEl?: HTMLElement | null) => {
+  const handleOpenAddMember = useCallback((originEl?: HTMLElement | null) => {
     const resolvedOrigin =
       originEl ?? (typeof document !== 'undefined' ? (document.activeElement as HTMLElement | null) : null);
     if (
-      currentBusiness?.category === 'membership_session' &&
-      activeScreen === 'members' &&
+      businessCategoryRef.current === 'membership_session' &&
+      activeScreenRef.current === 'members' &&
       triggerKineticMemberModal({ member: null, originElement: resolvedOrigin })
     ) {
       return;
@@ -293,14 +297,14 @@ export default function App() {
     memberModalOriginRef.current = resolvedOrigin;
     setMemberToEdit(null);
     setIsMemberModalOpen(true);
-  };
+  }, []);
 
-  const handleOpenEditMember = (member: Member, originEl?: HTMLElement | null) => {
+  const handleOpenEditMember = useCallback((member: Member, originEl?: HTMLElement | null) => {
     const resolvedOrigin =
       originEl ?? (typeof document !== 'undefined' ? (document.activeElement as HTMLElement | null) : null);
     if (
-      currentBusiness?.category === 'membership_session' &&
-      activeScreen === 'members' &&
+      businessCategoryRef.current === 'membership_session' &&
+      activeScreenRef.current === 'members' &&
       triggerKineticMemberModal({ member, originElement: resolvedOrigin })
     ) {
       return;
@@ -308,7 +312,12 @@ export default function App() {
     memberModalOriginRef.current = resolvedOrigin;
     setMemberToEdit(member);
     setIsMemberModalOpen(true);
-  };
+  }, []);
+
+  const handleCloseMemberModal = useCallback(() => {
+    setIsMemberModalOpen(false);
+    setMemberToEdit(null);
+  }, []);
 
   const isFreelance = currentBusiness?.category === 'freelance_solo';
   const isProjectMilestone = currentBusiness?.category === 'project_milestone';
@@ -1265,10 +1274,7 @@ export default function App() {
 
       <MemberModal
         isOpen={isMemberModalOpen}
-        onClose={() => {
-          setIsMemberModalOpen(false);
-          setMemberToEdit(null);
-        }}
+        onClose={handleCloseMemberModal}
         memberToEdit={memberToEdit}
         useKineticSpring={
           currentBusiness?.category === 'membership_session' && activeScreen === 'members'

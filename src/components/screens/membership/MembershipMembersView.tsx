@@ -50,13 +50,508 @@ import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 const MEMBER_COLLATOR = new Intl.Collator(undefined, { sensitivity: 'base' });
+const ANIM_PULSE_DOT_STYLE: React.CSSProperties = { willChange: 'opacity', contain: 'strict' };
+const EXPORT_BTN_STYLE: React.CSSProperties = { height: '40px', maxHeight: '40px', width: '148px' };
+
+const getMemberAge = (dobString?: string): number | null => {
+  if (!dobString) return null;
+  const dob = new Date(dobString);
+  if (isNaN(dob.getTime())) return null;
+  const now = new Date();
+  let age = now.getFullYear() - dob.getFullYear();
+  const m = now.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) {
+    age--;
+  }
+  return age >= 0 ? age : null;
+};
+
+const matchesAgeGroup = (dobString: string | undefined, group: string): boolean => {
+  if (group === 'All') return true;
+  const age = getMemberAge(dobString);
+  if (group === 'unspecified') return age === null;
+  if (age === null) return false;
+  if (group === 'under18') return age < 18;
+  if (group === '18-25') return age >= 18 && age <= 25;
+  if (group === '26-40') return age >= 26 && age <= 40;
+  if (group === '41-60') return age >= 41 && age <= 60;
+  if (group === 'over60') return age > 60;
+  return true;
+};
+
+const getMemberInitialsColor = (name: string) => {
+  const ch = name ? name[0].toLowerCase() : '';
+  if (ch === 'a') return '#D946EF';
+  if (ch === 's') return '#2563EB';
+  if (ch === 'y') return '#d4522f';
+  if (ch === 'n') return '#10B981';
+  if (ch === 'r') return '#06B6D4';
+  return '#8B5CF6';
+};
+
+interface MembersHeaderBarProps {
+  title: string;
+  facilityLabel: string;
+  currentBusinessId: string;
+  facilityOptions: Array<{ value: string; label: string; icon: React.ReactNode }>;
+  onFacilityChange: (val: any) => void;
+  addLabel: string;
+  onAddMember: (originEl?: HTMLElement | null) => void;
+}
+
+const MembersHeaderBar: React.FC<MembersHeaderBarProps> = React.memo(({
+  title,
+  facilityLabel,
+  currentBusinessId,
+  facilityOptions,
+  onFacilityChange,
+  addLabel,
+  onAddMember,
+}) => (
+  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="flex items-center gap-3.5">
+      <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
+        <Users size={22} />
+      </div>
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+          {title}
+        </h1>
+      </div>
+    </div>
+
+    <div className="flex items-end gap-3 relative flex-wrap">
+      <div className="w-[215px] max-w-full">
+        <LabelSelect
+          field="Facility"
+          label={facilityLabel}
+          value={currentBusinessId}
+          onChange={onFacilityChange}
+          prefix={<Home size={15} className="text-[#d4522f]" />}
+          options={facilityOptions}
+          width="100%"
+          height={40}
+          corner={12}
+        />
+      </div>
+
+      <AtriumButton
+        variant="primary"
+        size="md"
+        data-action="add-member"
+        onClick={(e) => onAddMember(e.currentTarget)}
+        icon={<Plus size={16} strokeWidth={2.2} />}
+        className="px-4 font-semibold shadow-xs"
+      >
+        <span className="text-xs sm:text-sm font-semibold">
+          {addLabel}
+        </span>
+      </AtriumButton>
+    </div>
+  </div>
+));
+MembersHeaderBar.displayName = 'MembersHeaderBar';
+
+interface MembersKpiBannerProps {
+  membersLabel: string;
+  membersLower: string;
+  language: 'en' | 'fr' | 'ar';
+  activeMembersCount: number;
+  expiringCount: number;
+  displayCount: number;
+  activeCountRef: React.RefObject<HTMLDivElement | null>;
+  expiringChipCountRef: React.RefObject<HTMLSpanElement | null>;
+  expiringBigCountRef: React.RefObject<HTMLDivElement | null>;
+  inflowChipCountRef: React.RefObject<HTMLSpanElement | null>;
+  inflowBigCountRef: React.RefObject<HTMLDivElement | null>;
+}
+
+const MembersKpiBanner: React.FC<MembersKpiBannerProps> = React.memo(({
+  membersLabel,
+  membersLower,
+  language,
+  activeMembersCount,
+  expiringCount,
+  displayCount,
+  activeCountRef,
+  expiringChipCountRef,
+  expiringBigCountRef,
+  inflowChipCountRef,
+  inflowBigCountRef,
+}) => (
+  <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+    <div>
+      <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+        {membersLabel} & {language === 'ar' ? 'مؤشرات التجديد' : language === 'fr' ? 'Rétention & Renouvellements' : 'Retention Health'}
+      </h2>
+    </div>
+
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+        <div>
+          <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+            {language === 'ar' ? `قاعدة ${membersLabel} النشطة` : language === 'fr' ? `Base active ${membersLower}` : `Active ${membersLabel} Base`}
+          </span>
+          <div className="mt-1">
+            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+              ↗ 100% {language === 'ar' ? 'نشط' : language === 'fr' ? 'Actifs' : 'Active'}
+            </span>
+          </div>
+        </div>
+        <div ref={activeCountRef} className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
+          {activeMembersCount}
+        </div>
+      </div>
+
+      <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+        <div>
+          <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+            {language === 'ar' ? 'تنبيهات انتهاء الاشتراك' : language === 'fr' ? 'Alertes de renouvellement' : 'Renewal & Retention Alert'}
+          </span>
+          <div className="mt-1">
+            <span className="text-[10px] font-bold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded-full">
+              <span ref={expiringChipCountRef}>{expiringCount}</span> {language === 'ar' ? 'تنتهي قريباً (<14j)' : language === 'fr' ? 'expirent sous 14j' : 'expiring (<14d)'}
+            </span>
+          </div>
+        </div>
+        <div ref={expiringBigCountRef} className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
+          {expiringCount}
+        </div>
+      </div>
+
+      <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-medium text-neutral-300">
+            {language === 'ar' ? 'الوافدون الجدد شهرياً' : language === 'fr' ? 'Adhésions du mois' : 'Monthly Inflow'}
+          </span>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+            <span ref={inflowChipCountRef}>+{displayCount}</span>&nbsp;{membersLower}
+          </span>
+        </div>
+        <div>
+          <div ref={inflowBigCountRef} className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
+            +{displayCount}
+          </div>
+          <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse shrink-0" style={ANIM_PULSE_DOT_STYLE} />
+            <span>
+              {language === 'ar' ? 'باقات وحسابات جديدة هذا الشهر' : language === 'fr' ? 'Nouveaux forfaits et profils ce mois-ci' : 'New packages & client profiles this month'}
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+));
+MembersKpiBanner.displayName = 'MembersKpiBanner';
+
+interface MembersFilterModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  filterPopoverRef: React.RefObject<HTMLDivElement | null>;
+  language: 'en' | 'fr' | 'ar';
+  displayCount: number;
+  totalMembersCount: number;
+  membersLower: string;
+  membersUpper: string;
+  hasActiveAdvancedFilters: boolean;
+  onResetFilters: () => void;
+  genderFilter: 'All' | 'Male' | 'Female' | 'Other';
+  onChangeGender: (val: 'All' | 'Male' | 'Female' | 'Other') => void;
+  ageGroupFilter: 'All' | 'under18' | '18-25' | '26-40' | '41-60' | 'over60' | 'unspecified';
+  onChangeAgeGroup: (val: 'All' | 'under18' | '18-25' | '26-40' | '41-60' | 'over60' | 'unspecified') => void;
+  ageGroupCounts: Record<string, number>;
+  planFilter: string;
+  onChangePlan: (val: string) => void;
+  dynamicAvailablePlans: Array<{ id: string; name: string; price: number }>;
+  planCounts: Map<string, number>;
+  statusFilter: 'All' | 'Active' | 'Expiring' | 'Expired' | 'Archived';
+  onChangeStatus: (val: 'All' | 'Active' | 'Expiring' | 'Expired' | 'Archived') => void;
+  extendedStatusOptions: Array<{ value: string; label: string; count: number }>;
+  genderFilterOptions: Array<{ value: string; label: string }>;
+}
+
+const MembersFilterModal: React.FC<MembersFilterModalProps> = React.memo(({
+  isOpen,
+  onClose,
+  filterPopoverRef,
+  language,
+  displayCount,
+  totalMembersCount,
+  membersLower,
+  membersUpper,
+  hasActiveAdvancedFilters,
+  onResetFilters,
+  genderFilter,
+  onChangeGender,
+  ageGroupFilter,
+  onChangeAgeGroup,
+  ageGroupCounts,
+  planFilter,
+  onChangePlan,
+  dynamicAvailablePlans,
+  planCounts,
+  statusFilter,
+  onChangeStatus,
+  extendedStatusOptions,
+  genderFilterOptions,
+}) => {
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 bg-black/45 dark:bg-black/70 animate-in fade-in duration-150"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-label={language === 'ar' ? 'مرشحات متقدمة' : language === 'fr' ? 'Filtres avancés' : 'Advanced Filters'}
+    >
+      <div
+        ref={filterPopoverRef}
+        className="w-full max-w-lg max-h-[85vh] bg-white dark:bg-[#18181B] rounded-[26px] border border-black/8 dark:border-white/10 shadow-[0_18px_48px_rgba(0,0,0,0.22)] p-5 sm:p-6 space-y-4 animate-in zoom-in-95 duration-150 text-neutral-900 dark:text-white overflow-hidden flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between pb-3.5 border-b border-neutral-100 dark:border-neutral-800 shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-[#d4522f]/20 flex items-center justify-center text-[#d4522f] shadow-2xs">
+              <SlidersHorizontal size={16} />
+            </div>
+            <div>
+              <span className="text-sm font-bold text-neutral-900 dark:text-white tracking-tight block">
+                {language === 'ar' ? 'مرشحات متقدمة' : language === 'fr' ? 'Filtres avancés' : 'Advanced Filters'}
+              </span>
+              <span className="text-xs text-neutral-400">
+                {displayCount} {membersLower}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {hasActiveAdvancedFilters && (
+              <button
+                type="button"
+                onClick={onResetFilters}
+                className="text-xs font-semibold text-[#d4522f] hover:underline flex items-center gap-1 cursor-pointer transition-colors px-2 py-1 rounded-md"
+              >
+                <RotateCcw size={12} />
+                <span>{language === 'ar' ? 'إعادة ضبط' : language === 'fr' ? 'Réinitialiser' : 'Reset'}</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-8 h-8 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 flex items-center justify-center cursor-pointer transition-colors"
+              aria-label="Close filters"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-4 overflow-y-auto pr-1 max-h-[58vh] -mr-1">
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                {language === 'ar' ? 'الجنس' : language === 'fr' ? 'Sexe / Genre' : 'Gender'}
+              </label>
+              {genderFilter !== 'All' && (
+                <button
+                  type="button"
+                  onClick={() => onChangeGender('All')}
+                  className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer"
+                >
+                  {language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All'}
+                </button>
+              )}
+            </div>
+            <LiveSegmentedControl
+              size="sm"
+              fullWidth
+              className="min-w-0 [&>button]:min-w-0 [&>button]:px-2"
+              options={genderFilterOptions}
+              value={genderFilter}
+              onValueChange={(val) => onChangeGender(val as any)}
+              aria-label={language === 'ar' ? 'الجنس' : 'Sexe'}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                {language === 'ar' ? 'الفئات العمرية' : language === 'fr' ? "Tranches d'âge" : 'Age Groups'}
+              </label>
+              {ageGroupFilter !== 'All' && (
+                <button
+                  type="button"
+                  onClick={() => onChangeAgeGroup('All')}
+                  className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer"
+                >
+                  {language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All'}
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+              {[
+                { val: 'All', label: language === 'ar' ? 'جميع الأعمار' : language === 'fr' ? 'Tous les âges' : 'All Ages' },
+                { val: 'under18', label: '< 18 ans' },
+                { val: '18-25', label: '18 - 25 ans' },
+                { val: '26-40', label: '26 - 40 ans' },
+                { val: '41-60', label: '41 - 60 ans' },
+                { val: 'over60', label: '> 60 ans' },
+              ].map((ag) => {
+                const isSelected = ageGroupFilter === ag.val;
+                const count = ageGroupCounts[ag.val] ?? 0;
+                return (
+                  <button
+                    key={ag.val}
+                    type="button"
+                    onClick={() => onChangeAgeGroup(ag.val as any)}
+                    className={`h-9 px-2.5 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${
+                      isSelected
+                        ? 'bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs'
+                        : 'bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/40'
+                    }`}
+                  >
+                    <span className="truncate">{ag.label}</span>
+                    <span className="text-[10px] font-mono opacity-70 tabular-nums ml-1">
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                {t('member_filter_plan_label', language)}
+              </label>
+              {planFilter !== 'All' && (
+                <button
+                  type="button"
+                  onClick={() => onChangePlan('All')}
+                  className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer"
+                >
+                  {language === 'ar' ? 'عرض الكل' : language === 'fr' ? 'Toutes' : 'Show All'}
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-40 overflow-y-auto pr-1">
+              <button
+                type="button"
+                onClick={() => onChangePlan('All')}
+                className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${
+                  planFilter === 'All'
+                    ? 'bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs'
+                    : 'bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
+                }`}
+              >
+                <span className="truncate">{t('member_filter_all_plans', language)}</span>
+                <span className="text-[10px] font-mono opacity-70 tabular-nums ml-1">
+                  {totalMembersCount}
+                </span>
+              </button>
+              {dynamicAvailablePlans.map((p) => {
+                const isSelected = planFilter === p.id || planFilter === p.name;
+                const count = planCounts.get(p.id) ?? 0;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => onChangePlan(p.id)}
+                    className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${
+                      isSelected
+                        ? 'bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs'
+                        : 'bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
+                    }`}
+                  >
+                    <div className="min-w-0 text-left rtl:text-right">
+                      <div className="truncate font-semibold">{p.name}</div>
+                      {p.price > 0 && (
+                        <div className="text-[10px] text-neutral-400 font-mono">
+                          {formatMoney(p.price)}
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-[10px] font-mono opacity-70 tabular-nums ml-2 shrink-0">
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                {language === 'ar' ? 'حالة الحساب والوصول' : language === 'fr' ? 'Statut du compte' : 'Account Status'}
+              </label>
+              {statusFilter !== 'All' && (
+                <button
+                  type="button"
+                  onClick={() => onChangeStatus('All')}
+                  className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer"
+                >
+                  {language === 'ar' ? 'إعادة ضبط' : language === 'fr' ? 'Réinitialiser' : 'Reset'}
+                </button>
+              )}
+            </div>
+            <div className="w-full overflow-x-auto pb-0.5">
+              <LiveSegmentedControl
+                size="sm"
+                fullWidth
+                className="min-w-max [&>button]:px-2.5"
+                options={extendedStatusOptions}
+                value={statusFilter}
+                onValueChange={(val) => onChangeStatus(val as any)}
+                aria-label={language === 'ar' ? 'حالة الحساب' : 'Statut du compte'}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center gap-2 shrink-0">
+          {hasActiveAdvancedFilters && (
+            <BrandedAtriumButton
+              tone="soft"
+              size={40}
+              onClick={onResetFilters}
+              className="font-semibold text-xs"
+            >
+              <span>{language === 'ar' ? 'إعادة ضبط' : language === 'fr' ? 'Réinitialiser' : 'Reset'}</span>
+            </BrandedAtriumButton>
+          )}
+          <BrandedAtriumButton
+            tone="accent"
+            size={40}
+            onClick={onClose}
+            className="flex-1 font-semibold text-xs"
+          >
+            <span>
+              {language === 'ar'
+                ? `عرض ${displayCount} من ${membersUpper}`
+                : language === 'fr'
+                ? `Afficher ${displayCount} ${membersLower}`
+                : `Show ${displayCount} ${membersUpper}`}
+            </span>
+          </BrandedAtriumButton>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+});
+MembersFilterModal.displayName = 'MembersFilterModal';
 
 export interface MembershipMembersViewProps {
   onAddMember: (originEl?: HTMLElement | null) => void;
   onEditMember: (member: Member, originEl?: HTMLElement | null) => void;
 }
 
-export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
+export const MembershipMembersView: React.FC<MembershipMembersViewProps> = React.memo(({
   onAddMember,
   onEditMember,
 }) => {
@@ -125,36 +620,13 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
   const filterPopoverRef = useRef<HTMLDivElement | null>(null);
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
 
-  // Helper to compute age from birthdate
-  const getMemberAge = (dobString?: string): number | null => {
-    if (!dobString) return null;
-    const dob = new Date(dobString);
-    if (isNaN(dob.getTime())) return null;
-    const now = new Date();
-    let age = now.getFullYear() - dob.getFullYear();
-    const m = now.getMonth() - dob.getMonth();
-    if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) {
-      age--;
-    }
-    return age >= 0 ? age : null;
-  };
-
-  const matchesAgeGroup = (dobString: string | undefined, group: string): boolean => {
-    if (group === 'All') return true;
-    const age = getMemberAge(dobString);
-    if (group === 'unspecified') return age === null;
-    if (age === null) return false;
-    if (group === 'under18') return age < 18;
-    if (group === '18-25') return age >= 18 && age <= 25;
-    if (group === '26-40') return age >= 26 && age <= 40;
-    if (group === '41-60') return age >= 41 && age <= 60;
-    if (group === 'over60') return age > 60;
-    return true;
-  };
-
-  const toggleFilterPopover = () => {
+  const toggleFilterPopover = useCallback(() => {
     setIsFilterPopoverOpen((prev) => !prev);
-  };
+  }, []);
+
+  const closeFilterPopover = useCallback(() => {
+    setIsFilterPopoverOpen(false);
+  }, []);
 
   useEffect(() => {
     if (!isFilterPopoverOpen) return;
@@ -185,16 +657,14 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
     (ageGroupFilter !== 'All' ? 1 : 0) +
     (statusFilter === 'Expired' || statusFilter === 'Archived' ? 1 : 0);
 
-  const handleResetFilters = () => {
+  const handleResetFilters = useCallback(() => {
     setPlanFilter('All');
     setGenderFilter('All');
     setAgeGroupFilter('All');
-    if (statusFilter === 'Expired' || statusFilter === 'Archived') {
-      setStatusFilter('All');
-    }
+    setStatusFilter((prev) => (prev === 'Expired' || prev === 'Archived' ? 'All' : prev));
     setSearchQuery('');
     setIsFilterPopoverOpen(false);
-  };
+  }, []);
 
   // Dynamic distinct plans derived directly from current catalog and members
   const dynamicAvailablePlans = useMemo(() => {
@@ -286,49 +756,117 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
     });
   }, [members, daysRemainingByDate, statusFilter, planFilter, genderFilter, ageGroupFilter, searchQuery]);
 
-  const customerSalesMetrics = useMemo(() => {
-    const memberSalesMap: Record<string, number> = {};
-    let totalSpend = 0;
-    sales.forEach((s) => {
-      if (s.memberId) {
-        memberSalesMap[s.memberId] = (memberSalesMap[s.memberId] || 0) + s.totalAmount;
-        totalSpend += s.totalAmount;
+  const { ageGroupCounts, planCounts } = useMemo(() => {
+    const ag: Record<string, number> = {
+      All: members.length,
+      under18: 0,
+      '18-25': 0,
+      '26-40': 0,
+      '41-60': 0,
+      over60: 0,
+      unspecified: 0,
+    };
+    const pc = new Map<string, number>();
+    for (let i = 0; i < members.length; i++) {
+      const m = members[i];
+      const age = getMemberAge(m.dateOfBirth);
+      if (age === null) ag.unspecified++;
+      else if (age < 18) ag.under18++;
+      else if (age <= 25) ag['18-25']++;
+      else if (age <= 40) ag['26-40']++;
+      else if (age <= 60) ag['41-60']++;
+      else ag.over60++;
+
+      if (m.membershipPlanId) {
+        pc.set(m.membershipPlanId, (pc.get(m.membershipPlanId) || 0) + 1);
       }
-    });
-    const purchasingCount = Object.keys(memberSalesMap).length;
-    return { memberSalesMap, totalSpend, purchasingCount };
-  }, [sales]);
-
-  const quickStatusOptions = useMemo(() => [
-    { value: 'All', label: t('member_filter_all', language), count: members.length },
-    { value: 'Active', label: t('member_filter_active', language), count: activeMembersCount },
-    { value: 'Expiring', label: t('member_filter_expiring', language), count: expiringCount },
-  ], [language, members.length, activeMembersCount, expiringCount]);
-
-  const toggleSelectAll = () => {
-    if (selectedIds.length === displayMembers.length) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(displayMembers.map((m) => m.id));
+      if (m.membershipPlanName && m.membershipPlanName !== m.membershipPlanId) {
+        pc.set(m.membershipPlanName, (pc.get(m.membershipPlanName) || 0) + 1);
+      }
     }
-  };
-
-  const toggleSelectOne = (id: string) => {
-    if (selectedIds.includes(id)) {
-      setSelectedIds(selectedIds.filter((item) => item !== id));
-    } else {
-      setSelectedIds([...selectedIds, id]);
+    for (let i = 0; i < dynamicAvailablePlans.length; i++) {
+      const p = dynamicAvailablePlans[i];
+      if (!pc.has(p.id) && pc.has(p.name)) {
+        pc.set(p.id, pc.get(p.name)!);
+      }
     }
-  };
+    return { ageGroupCounts: ag, planCounts: pc };
+  }, [members, dynamicAvailablePlans]);
 
-  const getMemberInitialsColor = (name: string) => {
-    if (name.toLowerCase().startsWith('a')) return '#D946EF'; // Magenta amira
-    if (name.toLowerCase().startsWith('s')) return '#2563EB'; // Blue saraa
-    if (name.toLowerCase().startsWith('y')) return '#d4522f'; // Terracotta
-    if (name.toLowerCase().startsWith('n')) return '#10B981'; // Green
-    if (name.toLowerCase().startsWith('r')) return '#06B6D4'; // Cyan
-    return '#8B5CF6'; // Purple
-  };
+  const quickStatusOptions = useMemo(
+    () => [
+      {
+        value: 'All',
+        label: language === 'ar' ? 'جميع المشتركين' : language === 'fr' ? 'Tous les adhérents' : 'All Members',
+        count: members.length,
+      },
+      {
+        value: 'Active',
+        label: language === 'ar' ? 'اشتراكات نشطة' : language === 'fr' ? 'Abonnements actifs' : 'Active Members',
+        count: activeMembersCount,
+      },
+      {
+        value: 'Expiring',
+        label: language === 'ar' ? 'قيد التجديد (<14j)' : language === 'fr' ? 'À renouveler (<14j)' : 'Expiring (<14d)',
+        count: expiringCount,
+      },
+    ],
+    [language, members.length, activeMembersCount, expiringCount]
+  );
+
+  const extendedStatusOptions = useMemo(
+    () => [
+      { value: 'All', label: t('member_filter_all', language), count: members.length },
+      { value: 'Active', label: t('member_filter_active', language), count: activeMembersCount },
+      { value: 'Expiring', label: t('member_filter_expiring', language), count: expiringCount },
+      { value: 'Expired', label: t('member_filter_expired', language), count: expiredCount },
+      { value: 'Archived', label: t('member_filter_archived', language), count: archivedCount },
+    ],
+    [language, members.length, activeMembersCount, expiringCount, expiredCount, archivedCount]
+  );
+
+  const genderFilterOptions = useMemo(
+    () => [
+      { value: 'All', label: language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All' },
+      { value: 'Male', label: language === 'ar' ? 'ذكور' : language === 'fr' ? 'Hommes' : 'Male' },
+      { value: 'Female', label: language === 'ar' ? 'إناث' : language === 'fr' ? 'Femmes' : 'Female' },
+      { value: 'Other', label: language === 'ar' ? 'آخر' : language === 'fr' ? 'Autre' : 'Other' },
+    ],
+    [language]
+  );
+
+  const viewSwitcherOptions = useMemo(
+    () => [
+      { value: 'list', icon: <List className="w-4 h-4" />, 'aria-label': 'List View' },
+      { value: 'grid', icon: <LayoutGrid className="w-4 h-4" />, 'aria-label': 'Grid View' },
+    ],
+    []
+  );
+
+  const facilityOptions = useMemo(
+    () =>
+      businesses.map((biz) => ({
+        value: biz.id,
+        label: biz.name,
+        icon: (
+          <Building2
+            size={14}
+            className={biz.id === currentBusinessId ? 'text-[#d4522f]' : 'text-neutral-400'}
+          />
+        ),
+      })),
+    [businesses, currentBusinessId]
+  );
+
+  const handleFacilityChange = useCallback(
+    (val: any) => {
+      const bizId = String(val?.target?.value ?? val);
+      switchBusiness(bizId);
+      const matchingBranch = branches.find((b) => b.businessId === bizId);
+      if (matchingBranch) switchBranch(matchingBranch.id);
+    },
+    [switchBusiness, switchBranch, branches]
+  );
 
   const sortedMembers = useMemo(() => {
     const list = [...displayMembers];
@@ -386,13 +924,13 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
   }, []);
 
   const handleFilterScrollReset = useCallback(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({ top: 0, behavior: 'auto' });
-      scrollContainerRef.current.scrollTop = 0;
+    const scr = scrollContainerRef.current;
+    if (scr && scr.scrollTop > 0) {
+      scr.scrollTop = 0;
     }
-    const outerScroll = scrollContainerRef.current?.closest('main, [data-scroll-container]');
-    if (outerScroll) {
-      outerScroll.scrollTo({ top: 0, behavior: 'auto' });
+    const outerScroll = scr?.closest('main, [data-scroll-container]') as HTMLElement | null;
+    if (outerScroll && outerScroll.scrollTop > 0) {
+      outerScroll.scrollTop = 0;
     }
   }, []);
 
@@ -408,11 +946,15 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
     onFilterChange: handleFilterScrollReset,
   });
 
+  const lastRowDataMapRef = useRef<Map<string, MemberRowData>>(new Map());
+
   const memberRowDataMap = useMemo(() => {
     const map = new Map<string, MemberRowData>();
-    for (let i = 0; i < renderedRows.length; i++) {
-      const member = renderedRows[i].member;
-      const daysRemaining = calculateDaysRemaining(false, member.expirationDate);
+    for (let i = 0; i < members.length; i++) {
+      const member = members[i];
+      const daysRemaining =
+        daysRemainingByDate.get(member.expirationDate || '') ??
+        calculateDaysRemaining(false, member.expirationDate);
       const remainingText =
         daysRemaining > 0
           ? `${daysRemaining} j restants`
@@ -425,7 +967,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
         Boolean((member as any).isBlocked);
       const isExp = member.status === 'Expired' || daysRemaining <= 0;
 
-      map.set(member.id, {
+      const rowData: MemberRowData = {
         id: member.id,
         name: member.fullName || 'Adhérent',
         phone: member.phoneNumber || '',
@@ -443,10 +985,12 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
         remainingSessions: (member as any).remainingSessions ?? 24,
         notes: member.notes,
         isBlocked,
-      });
+      };
+      map.set(member.id, rowData);
+      lastRowDataMapRef.current.set(member.id, rowData);
     }
     return map;
-  }, [renderedRows]);
+  }, [members, daysRemainingByDate]);
 
   // Lookup refs for stable memoized row callbacks
   const sortedMembersRef = useRef(sortedMembers);
@@ -619,6 +1163,138 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
     return () => window.removeEventListener('atrium-member-created', handleCreated);
   }, [statusFilter]);
 
+  // Memoized Inspector & Bulk Bar callbacks so child React.memo components never churn on filter/expand/hover
+  const handleInspectorSelectMember = useCallback(
+    (m: Member) => selectMember(m.id),
+    [selectMember]
+  );
+
+  const handleInspectorEdit = useCallback(
+    (m: Member, originEl?: HTMLElement | null) =>
+      onEditMember(m, originEl || (document.activeElement as HTMLElement | null)),
+    [onEditMember]
+  );
+
+  const handleInspectorDelete = useCallback(
+    (m: Member) => {
+      deleteMember(m.id);
+      closeDetail();
+      showToast({
+        type: 'info',
+        title: 'Adhérent supprimé',
+        message: `${m.fullName} a été supprimé.`,
+      });
+    },
+    [deleteMember, closeDetail, showToast]
+  );
+
+  const handleInspectorCheckIn = useCallback(
+    (m: Member) => {
+      checkInMember(m.id);
+      showToast({
+        type: 'success',
+        title: 'Passage enregistré',
+        message: `Accès autorisé pour ${m.fullName}`,
+      });
+    },
+    [checkInMember, showToast]
+  );
+
+  const handleInspectorRenew = useCallback(
+    (m: Member) => {
+      const daysToAdd =
+        m.membershipPlanName?.toLowerCase().includes('trimest') ||
+        m.membershipPlanName?.toLowerCase().includes('quarter')
+          ? 90
+          : 30;
+      const currentExp = new Date(m.expirationDate || new Date().toISOString());
+      const newExp = new Date(currentExp.getTime() + daysToAdd * 864e5).toISOString().split('T')[0];
+      updateMember(m.id, { expirationDate: newExp, status: 'Active' });
+      showToast({
+        type: 'success',
+        title: 'Abonnement renouvelé',
+        message: `${m.fullName} prolongé jusqu'au ${newExp}`,
+      });
+    },
+    [updateMember, showToast]
+  );
+
+  const handleInspectorToggleBlock = useCallback(
+    (m: Member) => {
+      const isCurrentlyBlocked =
+        m.status === 'Suspended' || m.status === 'Banned' || Boolean((m as any).isBlocked);
+      const nextStatus: MemberStatus = isCurrentlyBlocked ? 'Active' : 'Suspended';
+      updateMember(m.id, { status: nextStatus, isBlocked: !isCurrentlyBlocked } as any);
+      showToast({
+        type: 'info',
+        title: !isCurrentlyBlocked ? 'Badge bloqué' : 'Badge débloqué',
+        message: `Badge de ${m.fullName} ${!isCurrentlyBlocked ? 'bloqué' : 'débloqué'}.`,
+      });
+    },
+    [updateMember, showToast]
+  );
+
+  const handleInspectorUpdateNotes = useCallback(
+    (id: string, notes: string) => updateMember(id, { notes }),
+    [updateMember]
+  );
+
+  const handleInspectorToast = useCallback(
+    (msg: string) =>
+      showToast({
+        type: 'info',
+        title: 'Notification',
+        message: msg,
+      }),
+    [showToast]
+  );
+
+  const selectedMemberIdsRef = useRef(selectedMemberIds);
+  selectedMemberIdsRef.current = selectedMemberIds;
+
+  const handleBulkClear = useCallback(() => setSelectedMemberIds(new Set()), []);
+
+  const handleBulkRenew = useCallback(() => {
+    const ids = selectedMemberIdsRef.current;
+    ids.forEach((id) => {
+      const m = membersByIdRef.current.get(id);
+      if (m) {
+        const currentExp = new Date(m.expirationDate || new Date().toISOString());
+        const newExp = new Date(currentExp.getTime() + 30 * 864e5).toISOString().split('T')[0];
+        updateMember(m.id, { expirationDate: newExp, status: 'Active' });
+      }
+    });
+    showToast({
+      type: 'success',
+      title: 'Renouvellement groupé',
+      message: `${ids.size} adhérents renouvelés.`,
+    });
+  }, [updateMember, showToast]);
+
+  const handleBulkArchive = useCallback(() => {
+    const ids = selectedMemberIdsRef.current;
+    ids.forEach((id) => {
+      updateMember(id, { status: 'Suspended' });
+    });
+    setSelectedMemberIds(new Set());
+    showToast({
+      type: 'info',
+      title: 'Archivage groupé',
+      message: `${ids.size} adhérents archivés.`,
+    });
+  }, [updateMember, showToast]);
+
+  const handleBulkDelete = useCallback(() => {
+    const ids = selectedMemberIdsRef.current;
+    ids.forEach((id) => deleteMember(id));
+    setSelectedMemberIds(new Set());
+    showToast({
+      type: 'info',
+      title: 'Suppression groupée',
+      message: 'Adhérents supprimés.',
+    });
+  }, [deleteMember, showToast]);
+
   // Zero-re-render DOM-ref metric count-up springs (tune 20)
   const activeCountRef = useSpringCountRef<HTMLDivElement>(activeMembersCount);
   const expiringChipCountRef = useSpringCountRef<HTMLSpanElement>(expiringCount);
@@ -627,7 +1303,11 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
   const inflowBigCountRef = useSpringCountRef<HTMLDivElement>(displayMembers.length, { prefix: '+' });
   const listBadgeCountRef = useSpringCountRef<HTMLSpanElement>(displayMembers.length);
 
-  const handleExportCSV = () => {
+  const displayMembersRef = useRef(displayMembers);
+  displayMembersRef.current = displayMembers;
+
+  const handleExportCSV = useCallback(() => {
+    const list = displayMembersRef.current;
     const headers = [
       language === 'ar' ? 'الاسم الكامل' : language === 'fr' ? 'Nom complet' : 'Full Name',
       language === 'ar' ? 'معرف البطاقة' : language === 'fr' ? 'Identifiant carte' : 'Card ID',
@@ -638,7 +1318,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
       language === 'ar' ? 'البريد الإلكتروني' : language === 'fr' ? 'E-mail' : 'Email',
       language === 'ar' ? 'تاريخ الانتهاء' : language === 'fr' ? 'Date d\'expiration' : 'Expiration Date',
     ];
-    const rows = displayMembers.map((m) => [
+    const rows = list.map((m) => [
       `"${m.fullName}"`,
       `"${m.cardId || ''}"`,
       `"${m.membershipPlanName || (language === 'ar' ? 'القياسية' : language === 'fr' ? 'Standard' : 'Standard')}"`,
@@ -656,7 +1336,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
+  }, [language]);
 
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
@@ -685,132 +1365,31 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200 relative">
-      {/* Row 0: Top Header matching Desktop Screenshot 881 */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
-            <Users size={22} />
-          </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
-              {terminology.members}
-            </h1>
-          </div>
-        </div>
+      {/* Row 0: Top Header */}
+      <MembersHeaderBar
+        title={terminology.members}
+        facilityLabel={t('fast_switch_title', language)}
+        currentBusinessId={currentBusinessId}
+        facilityOptions={facilityOptions}
+        onFacilityChange={handleFacilityChange}
+        addLabel={`${t('action_add', language)} ${terminology.memberSingle}`}
+        onAddMember={onAddMember}
+      />
 
-        <div className="flex items-end gap-3 relative flex-wrap">
-          {/* Facility Selector: LabelText Combo Box */}
-          <div className="w-[215px] max-w-full">
-            <LabelSelect
-              field="Facility"
-              label={t('fast_switch_title', language)}
-              value={currentBusinessId}
-              onChange={(val) => {
-                const bizId = String(val?.target?.value ?? val);
-                switchBusiness(bizId);
-                const matchingBranch = branches.find((b) => b.businessId === bizId);
-                if (matchingBranch) switchBranch(matchingBranch.id);
-              }}
-              prefix={<Home size={15} className="text-[#d4522f]" />}
-              options={businesses.map((biz) => ({
-                value: biz.id,
-                label: biz.name,
-                icon: (
-                  <Building2
-                    size={14}
-                    className={biz.id === currentBusinessId ? 'text-[#d4522f]' : 'text-neutral-400'}
-                  />
-                ),
-              }))}
-              width="100%"
-              height={40}
-              corner={12}
-            />
-          </div>
-
-          {/* Add Member Primary Button: Refined 40px Action */}
-          <AtriumButton
-            variant="primary"
-            size="md"
-            data-action="add-member"
-            onClick={(e) => onAddMember(e.currentTarget)}
-            icon={<Plus size={16} strokeWidth={2.2} />}
-            className="px-4 font-semibold shadow-xs"
-          >
-            <span className="text-xs sm:text-sm font-semibold">
-              {t('action_add', language)} {terminology.memberSingle}
-            </span>
-          </AtriumButton>
-        </div>
-      </div>
-
-      {/* Row 1: "Roster & Retention Health" Banner Card matching Screenshot 881 */}
-      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
-        <div>
-          <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-            {terminology.members} & {language === 'ar' ? 'مؤشرات التجديد' : language === 'fr' ? 'Rétention & Renouvellements' : 'Retention Health'}
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Tile 1: Active Member Base — Pure White Card */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-            <div>
-              <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                {language === 'ar' ? `قاعدة ${terminology.members} النشطة` : language === 'fr' ? `Base active ${terminology.members.toLowerCase()}` : `Active ${terminology.members} Base`}
-              </span>
-              <div className="mt-1">
-                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                  ↗ 100% {language === 'ar' ? 'نشط' : language === 'fr' ? 'Actifs' : 'Active'}
-                </span>
-              </div>
-            </div>
-            <div ref={activeCountRef} className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
-              {activeMembersCount}
-            </div>
-          </div>
-
-          {/* Tile 2: Customer Spend Volume or Renewal Churn Risk */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-            <div>
-              <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                {language === 'ar' ? 'تنبيهات انتهاء الاشتراك' : language === 'fr' ? 'Alertes de renouvellement' : 'Renewal & Retention Alert'}
-              </span>
-              <div className="mt-1">
-                <span className="text-[10px] font-bold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded-full">
-                  <span ref={expiringChipCountRef}>{expiringCount}</span> {language === 'ar' ? 'تنتهي قريباً (<14j)' : language === 'fr' ? 'expirent sous 14j' : 'expiring (<14d)'}
-                </span>
-              </div>
-            </div>
-            <div ref={expiringBigCountRef} className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
-              {expiringCount}
-            </div>
-          </div>
-
-          {/* Tile 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) — Monthly Inflow & Retention */}
-          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-neutral-300">
-                {language === 'ar' ? 'الوافدون الجدد شهرياً' : language === 'fr' ? 'Adhésions du mois' : 'Monthly Inflow'}
-              </span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
-                <span ref={inflowChipCountRef}>+{displayMembers.length}</span>&nbsp;{terminology.members.toLowerCase()}
-              </span>
-            </div>
-            <div>
-              <div ref={inflowBigCountRef} className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
-                +{displayMembers.length}
-              </div>
-              <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
-                <span>
-                  {language === 'ar' ? 'باقات وحسابات جديدة هذا الشهر' : language === 'fr' ? 'Nouveaux forfaits et profils ce mois-ci' : 'New packages & client profiles this month'}
-                </span>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Row 1: "Roster & Retention Health" Banner Card */}
+      <MembersKpiBanner
+        membersLabel={terminology.members}
+        membersLower={terminology.members.toLowerCase()}
+        language={language}
+        activeMembersCount={activeMembersCount}
+        expiringCount={expiringCount}
+        displayCount={displayMembers.length}
+        activeCountRef={activeCountRef}
+        expiringChipCountRef={expiringChipCountRef}
+        expiringBigCountRef={expiringBigCountRef}
+        inflowChipCountRef={inflowChipCountRef}
+        inflowBigCountRef={inflowBigCountRef}
+      />
 
       {/* Row 2: Members Master Table Group */}
       <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
@@ -848,27 +1427,11 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               className="shrink-0 !rounded-xl"
             />
 
-            {/* Streamlined Quick Status Tabs (Official Atrium Branded Switcher Toggle with live counter badges) */}
+            {/* Streamlined Quick Status Tabs */}
             <div className="shrink-0">
               <LiveSegmentedControl
                 size="md"
-                options={[
-                  {
-                    value: 'All',
-                    label: language === 'ar' ? 'جميع المشتركين' : language === 'fr' ? 'Tous les adhérents' : 'All Members',
-                    count: members.length,
-                  },
-                  {
-                    value: 'Active',
-                    label: language === 'ar' ? 'اشتراكات نشطة' : language === 'fr' ? 'Abonnements actifs' : 'Active Members',
-                    count: activeMembersCount,
-                  },
-                  {
-                    value: 'Expiring',
-                    label: language === 'ar' ? 'قيد التجديد (<14j)' : language === 'fr' ? 'À renouveler (<14j)' : 'Expiring (<14d)',
-                    count: expiringCount,
-                  },
-                ]}
+                options={quickStatusOptions}
                 value={statusFilter === 'Expired' || statusFilter === 'Archived' ? 'All' : statusFilter}
                 onValueChange={(val) => setStatusFilter(val as any)}
                 aria-label={language === 'ar' ? 'تصفية المشتركين' : 'Filtre des adhérents'}
@@ -911,10 +1474,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
             {/* View Switcher: List | Grid (40px standard squircle) */}
             <LiveSegmentedControl
               size="md"
-              options={[
-                { value: 'list', icon: <List className="w-4 h-4" />, 'aria-label': 'List View' },
-                { value: 'grid', icon: <LayoutGrid className="w-4 h-4" />, 'aria-label': 'Grid View' },
-              ]}
+              options={viewSwitcherOptions}
               value={viewMode}
               onValueChange={(val) => setViewMode(val as any)}
               aria-label="View Switcher"
@@ -938,277 +1498,37 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               title={t('members_export_csv', language)}
               aria-label={t('members_export_csv', language)}
               className="shrink-0 !h-10 !max-h-10 !rounded-xl"
-              style={{ height: '40px', maxHeight: '40px', width: '148px' }}
+              style={EXPORT_BTN_STYLE}
             />
           </div>
         </div>
 
-        {/* Centered Apple-Style Filters Modal Sheet with Frosted Backdrop */}
-        {isFilterPopoverOpen && createPortal(
-          <div
-            className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 bg-black/40 dark:bg-black/70 backdrop-blur-md animate-in fade-in duration-200"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setIsFilterPopoverOpen(false);
-            }}
-            role="dialog"
-            aria-modal="true"
-            aria-label={language === 'ar' ? 'مرشحات متقدمة' : language === 'fr' ? 'Filtres avancés' : 'Advanced Filters'}
-          >
-            <div
-              ref={filterPopoverRef}
-              className="w-full max-w-lg max-h-[85vh] bg-white/95 dark:bg-[#18181B]/95 backdrop-blur-2xl rounded-[26px] border border-black/5 dark:border-white/10 shadow-2xl p-5 sm:p-6 space-y-4 animate-in zoom-in-95 duration-150 text-neutral-900 dark:text-white overflow-hidden flex flex-col"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header: Title, Total Matches, Reset & Close */}
-              <div className="flex items-center justify-between pb-3.5 border-b border-neutral-100 dark:border-neutral-800 shrink-0">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-[#d4522f]/20 flex items-center justify-center text-[#d4522f] shadow-2xs">
-                    <SlidersHorizontal size={16} />
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-neutral-900 dark:text-white tracking-tight block">
-                      {language === 'ar' ? 'مرشحات متقدمة' : language === 'fr' ? 'Filtres avancés' : 'Advanced Filters'}
-                    </span>
-                    <span className="text-xs text-neutral-400">
-                      {displayMembers.length} {terminology.members.toLowerCase()}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {hasActiveAdvancedFilters && (
-                    <button
-                      type="button"
-                      onClick={handleResetFilters}
-                      className="text-xs font-semibold text-[#d4522f] hover:underline flex items-center gap-1 cursor-pointer transition-colors px-2 py-1 rounded-md"
-                    >
-                      <RotateCcw size={12} />
-                      <span>{language === 'ar' ? 'إعادة ضبط' : language === 'fr' ? 'Réinitialiser' : 'Reset'}</span>
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setIsFilterPopoverOpen(false)}
-                    className="w-8 h-8 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 flex items-center justify-center cursor-pointer transition-colors"
-                    aria-label="Close filters"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Scrollable Filters Body (Apple Inset Groups with Atrium Terracotta Styling) */}
-              <div className="space-y-4 overflow-y-auto pr-1 max-h-[58vh] -mr-1">
-                {/* Section 1: Gender (Atrium Branded Switcher Toggle) */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                      {language === 'ar' ? 'الجنس' : language === 'fr' ? 'Sexe / Genre' : 'Gender'}
-                    </label>
-                    {genderFilter !== 'All' && (
-                      <button
-                        type="button"
-                        onClick={() => setGenderFilter('All')}
-                        className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer"
-                      >
-                        {language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All'}
-                      </button>
-                    )}
-                  </div>
-                  <LiveSegmentedControl
-                    size="sm"
-                    fullWidth
-                    className="min-w-0 [&>button]:min-w-0 [&>button]:px-2"
-                    options={[
-                      { value: 'All', label: language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All' },
-                      { value: 'Male', label: language === 'ar' ? 'ذكور' : language === 'fr' ? 'Hommes' : 'Male' },
-                      { value: 'Female', label: language === 'ar' ? 'إناث' : language === 'fr' ? 'Femmes' : 'Female' },
-                      { value: 'Other', label: language === 'ar' ? 'آخر' : language === 'fr' ? 'Autre' : 'Other' },
-                    ]}
-                    value={genderFilter}
-                    onValueChange={(val) => setGenderFilter(val as any)}
-                    aria-label={language === 'ar' ? 'الجنس' : 'Sexe'}
-                  />
-                </div>
-
-                {/* Section 2: Age Groups (Apple Inset Grouped Tiles) */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                      {language === 'ar' ? 'الفئات العمرية' : language === 'fr' ? "Tranches d'âge" : 'Age Groups'}
-                    </label>
-                    {ageGroupFilter !== 'All' && (
-                      <button
-                        type="button"
-                        onClick={() => setAgeGroupFilter('All')}
-                        className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer"
-                      >
-                        {language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All'}
-                      </button>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-                    {[
-                      { val: 'All', label: language === 'ar' ? 'جميع الأعمار' : language === 'fr' ? 'Tous les âges' : 'All Ages' },
-                      { val: 'under18', label: '< 18 ans' },
-                      { val: '18-25', label: '18 - 25 ans' },
-                      { val: '26-40', label: '26 - 40 ans' },
-                      { val: '41-60', label: '41 - 60 ans' },
-                      { val: 'over60', label: '> 60 ans' },
-                    ].map((ag) => {
-                      const isSelected = ageGroupFilter === ag.val;
-                      const count = members.filter((m) => matchesAgeGroup(m.dateOfBirth, ag.val)).length;
-                      return (
-                        <button
-                          key={ag.val}
-                          type="button"
-                          onClick={() => setAgeGroupFilter(ag.val as any)}
-                          className={`h-9 px-2.5 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-all ${
-                            isSelected
-                              ? 'bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs'
-                              : 'bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/40'
-                          }`}
-                        >
-                          <span className="truncate">{ag.label}</span>
-                          <span className="text-[10px] font-mono opacity-70 tabular-nums ml-1">
-                            {count}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Section 3: Dynamic Membership Plans (Dynamic to Catalog and Database) */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                      {t('member_filter_plan_label', language)}
-                    </label>
-                    {planFilter !== 'All' && (
-                      <button
-                        type="button"
-                        onClick={() => setPlanFilter('All')}
-                        className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer"
-                      >
-                        {language === 'ar' ? 'عرض الكل' : language === 'fr' ? 'Toutes' : 'Show All'}
-                      </button>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-40 overflow-y-auto pr-1">
-                    <button
-                      type="button"
-                      onClick={() => setPlanFilter('All')}
-                      className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-all ${
-                        planFilter === 'All'
-                          ? 'bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs'
-                          : 'bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
-                      }`}
-                    >
-                      <span className="truncate">{t('member_filter_all_plans', language)}</span>
-                      <span className="text-[10px] font-mono opacity-70 tabular-nums ml-1">
-                        {members.length}
-                      </span>
-                    </button>
-                    {dynamicAvailablePlans.map((p) => {
-                      const isSelected = planFilter === p.id || planFilter === p.name;
-                      const count = members.filter(
-                        (m) => m.membershipPlanId === p.id || m.membershipPlanName === p.name
-                      ).length;
-                      return (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => setPlanFilter(p.id)}
-                          className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-all ${
-                            isSelected
-                              ? 'bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs'
-                              : 'bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
-                          }`}
-                        >
-                          <div className="min-w-0 text-left rtl:text-right">
-                            <div className="truncate font-semibold">{p.name}</div>
-                            {p.price > 0 && (
-                              <div className="text-[10px] text-neutral-400 font-mono">
-                                {formatMoney(p.price)}
-                              </div>
-                            )}
-                          </div>
-                          <span className="text-[10px] font-mono opacity-70 tabular-nums ml-2 shrink-0">
-                            {count}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Section 4: Extended Status Filter (Atrium Branded Switcher Toggle) */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                      {language === 'ar' ? 'حالة الحساب والوصول' : language === 'fr' ? 'Statut du compte' : 'Account Status'}
-                    </label>
-                    {statusFilter !== 'All' && (
-                      <button
-                        type="button"
-                        onClick={() => setStatusFilter('All')}
-                        className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer"
-                      >
-                        {language === 'ar' ? 'إعادة ضبط' : language === 'fr' ? 'Réinitialiser' : 'Reset'}
-                      </button>
-                    )}
-                  </div>
-                  <div className="w-full overflow-x-auto pb-0.5">
-                    <LiveSegmentedControl
-                      size="sm"
-                      fullWidth
-                      className="min-w-max [&>button]:px-2.5"
-                      options={[
-                        { value: 'All', label: t('member_filter_all', language), count: members.length },
-                        { value: 'Active', label: t('member_filter_active', language), count: activeMembersCount },
-                        { value: 'Expiring', label: t('member_filter_expiring', language), count: expiringCount },
-                        { value: 'Expired', label: t('member_filter_expired', language), count: expiredCount },
-                        { value: 'Archived', label: t('member_filter_archived', language), count: archivedCount },
-                      ]}
-                      value={statusFilter}
-                      onValueChange={(val) => setStatusFilter(val as any)}
-                      aria-label={language === 'ar' ? 'حالة الحساب' : 'Statut du compte'}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Action: Reset & Confirmation Button with Branded Atrium Buttons */}
-              <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center gap-2 shrink-0">
-                {hasActiveAdvancedFilters && (
-                  <BrandedAtriumButton
-                    tone="soft"
-                    size={40}
-                    onClick={handleResetFilters}
-                    className="font-semibold text-xs"
-                  >
-                    <span>{language === 'ar' ? 'إعادة ضبط' : language === 'fr' ? 'Réinitialiser' : 'Reset'}</span>
-                  </BrandedAtriumButton>
-                )}
-                <BrandedAtriumButton
-                  tone="accent"
-                  size={40}
-                  onClick={() => setIsFilterPopoverOpen(false)}
-                  className="flex-1 font-semibold text-xs"
-                >
-                  <span>
-                    {language === 'ar'
-                      ? `عرض ${displayMembers.length} من ${terminology.members}`
-                      : language === 'fr'
-                      ? `Afficher ${displayMembers.length} ${terminology.members.toLowerCase()}`
-                      : `Show ${displayMembers.length} ${terminology.members}`}
-                  </span>
-                </BrandedAtriumButton>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
+        {/* Centered Filters Modal Sheet (Memoized, no stacked backdrop blurs) */}
+        <MembersFilterModal
+          isOpen={isFilterPopoverOpen}
+          onClose={closeFilterPopover}
+          filterPopoverRef={filterPopoverRef}
+          language={language}
+          displayCount={displayMembers.length}
+          totalMembersCount={members.length}
+          membersLower={terminology.members.toLowerCase()}
+          membersUpper={terminology.members}
+          hasActiveAdvancedFilters={hasActiveAdvancedFilters}
+          onResetFilters={handleResetFilters}
+          genderFilter={genderFilter}
+          onChangeGender={setGenderFilter}
+          ageGroupFilter={ageGroupFilter}
+          onChangeAgeGroup={setAgeGroupFilter}
+          ageGroupCounts={ageGroupCounts}
+          planFilter={planFilter}
+          onChangePlan={setPlanFilter}
+          dynamicAvailablePlans={dynamicAvailablePlans}
+          planCounts={planCounts}
+          statusFilter={statusFilter}
+          onChangeStatus={setStatusFilter}
+          extendedStatusOptions={extendedStatusOptions}
+          genderFilterOptions={genderFilterOptions}
+        />
 
         {/* Active Filter Capsules (Progressive Disclosure Sub-Row) */}
         {hasActiveAdvancedFilters && (
@@ -1398,7 +1718,9 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                 >
                   {renderedRows.map((rowItem) => {
                     const member = rowItem.member;
-                    const memberRowData = memberRowDataMap.get(member.id)!;
+                    const memberRowData =
+                      memberRowDataMap.get(member.id) ?? lastRowDataMapRef.current.get(member.id);
+                    if (!memberRowData) return null;
 
                     return (
                       <MemberRow
@@ -1444,102 +1766,24 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
         openerElement={panelOpenerRef.current}
         initialTab={panelInitialTab}
         onClose={closeDetail}
-        onSelectMember={(m) => selectMember(m.id)}
-        onEdit={(m, originEl) =>
-          onEditMember(m, originEl || (document.activeElement as HTMLElement | null))
-        }
-        onDelete={(m) => {
-          deleteMember(m.id);
-          closeDetail();
-          showToast({
-            type: 'info',
-            title: 'Adhérent supprimé',
-            message: `${m.fullName} a été supprimé.`,
-          });
-        }}
-        onCheckIn={(m) => {
-          checkInMember(m.id);
-          showToast({
-            type: 'success',
-            title: 'Passage enregistré',
-            message: `Accès autorisé pour ${m.fullName}`,
-          });
-        }}
-        onRenew={(m) => {
-          const daysToAdd =
-            m.membershipPlanName?.toLowerCase().includes('trimest') ||
-            m.membershipPlanName?.toLowerCase().includes('quarter')
-              ? 90
-              : 30;
-          const currentExp = new Date(m.expirationDate || new Date().toISOString());
-          const newExp = new Date(currentExp.getTime() + daysToAdd * 864e5).toISOString().split('T')[0];
-          updateMember(m.id, { expirationDate: newExp, status: 'Active' });
-          showToast({
-            type: 'success',
-            title: 'Abonnement renouvelé',
-            message: `${m.fullName} prolongé jusqu'au ${newExp}`,
-          });
-        }}
-        onToggleBlock={(m) => {
-          const isCurrentlyBlocked = m.status === 'Suspended' || m.status === 'Banned' || Boolean((m as any).isBlocked);
-          const nextStatus: MemberStatus = isCurrentlyBlocked ? 'Active' : 'Suspended';
-          updateMember(m.id, { status: nextStatus, isBlocked: !isCurrentlyBlocked } as any);
-          showToast({
-            type: 'info',
-            title: !isCurrentlyBlocked ? 'Badge bloqué' : 'Badge débloqué',
-            message: `Badge de ${m.fullName} ${!isCurrentlyBlocked ? 'bloqué' : 'débloqué'}.`,
-          });
-        }}
-        onUpdateNotes={(id, notes) => updateMember(id, { notes })}
-        showToast={(msg) =>
-          showToast({
-            type: 'info',
-            title: 'Notification',
-            message: msg,
-          })
-        }
+        onSelectMember={handleInspectorSelectMember}
+        onEdit={handleInspectorEdit}
+        onDelete={handleInspectorDelete}
+        onCheckIn={handleInspectorCheckIn}
+        onRenew={handleInspectorRenew}
+        onToggleBlock={handleInspectorToggleBlock}
+        onUpdateNotes={handleInspectorUpdateNotes}
+        showToast={handleInspectorToast}
       />
 
       {/* Floating Batch Actions Bar */}
       <FloatingBulkBar
         selectedCount={selectedMemberIds.size}
-        onClear={() => setSelectedMemberIds(new Set())}
+        onClear={handleBulkClear}
         onExport={handleExportCSV}
-        onRenew={() => {
-          selectedMemberIds.forEach((id) => {
-            const m = members.find((x) => x.id === id);
-            if (m) {
-              const currentExp = new Date(m.expirationDate || new Date().toISOString());
-              const newExp = new Date(currentExp.getTime() + 30 * 864e5).toISOString().split('T')[0];
-              updateMember(m.id, { expirationDate: newExp, status: 'Active' });
-            }
-          });
-          showToast({
-            type: 'success',
-            title: 'Renouvellement groupé',
-            message: `${selectedMemberIds.size} adhérents renouvelés.`,
-          });
-        }}
-        onArchive={() => {
-          selectedMemberIds.forEach((id) => {
-            updateMember(id, { status: 'Suspended' });
-          });
-          setSelectedMemberIds(new Set());
-          showToast({
-            type: 'info',
-            title: 'Archivage groupé',
-            message: `${selectedMemberIds.size} adhérents archivés.`,
-          });
-        }}
-        onDelete={() => {
-          selectedMemberIds.forEach((id) => deleteMember(id));
-          setSelectedMemberIds(new Set());
-          showToast({
-            type: 'info',
-            title: 'Suppression groupée',
-            message: 'Adhérents supprimés.',
-          });
-        }}
+        onRenew={handleBulkRenew}
+        onArchive={handleBulkArchive}
+        onDelete={handleBulkDelete}
       />
 
       {/* Appointment Booking Modal */}
@@ -1555,7 +1799,9 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
       )}
     </div>
   );
-};
+});
+
+MembershipMembersView.displayName = 'MembershipMembersView';
 
 export const MembersScreen = MembershipMembersView;
 export type MembersScreenProps = MembershipMembersViewProps;

@@ -18,7 +18,7 @@ export interface RowFanProps {
   className?: string;
 }
 
-export const RowFan: React.FC<RowFanProps> = ({
+export const RowFan: React.FC<RowFanProps> = React.memo(({
   onEdit,
   onMessage,
   onDelete,
@@ -76,4 +76,5 @@ export const RowFan: React.FC<RowFanProps> = ({
       ))}
     </>
   );
-};
+});
+RowFan.displayName = 'RowFan';

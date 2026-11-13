@@ -1,4 +1,4 @@
-import React, { forwardRef, useRef, useState, useEffect, useImperativeHandle } from 'react';
+import React, { forwardRef, useRef, useState, useEffect, useLayoutEffect, useImperativeHandle } from 'react';
 import { SegmentedBlobController } from '../../../utils/atriumSprings';
 import { LiveButtonSize } from './LiveButton';
 
@@ -75,7 +75,7 @@ function getSizeProps(size?: LiveButtonSize | 'sm' | 'md' | 'lg' | number, style
   };
 }
 
-export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedControlProps>(
+export const LiveSegmentedControl = React.memo(forwardRef<HTMLDivElement, LiveSegmentedControlProps>(
   function LiveSegmentedControl(
     {
       options,
@@ -122,8 +122,8 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
       onChange?.(val);
     };
 
-    // Initialize controller and resize observer
-    useEffect(() => {
+    // Initialize controller and resize observer (single pre-paint measure + ResizeObserver)
+    useLayoutEffect(() => {
       const root = rootRef.current;
       const blob = blobRef.current;
       if (!root || !blob) return;
@@ -138,8 +138,6 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
       };
 
       refresh();
-      const rafId = requestAnimationFrame(refresh);
-      const timerId = setTimeout(refresh, 60);
       root.setAttribute('data-live', 'true');
 
       let ro: ResizeObserver | undefined;
@@ -149,7 +147,12 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
       }
 
       let active = true;
-      if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
+      if (
+        typeof document !== 'undefined' &&
+        document.fonts &&
+        document.fonts.status !== 'loaded' &&
+        document.fonts.ready
+      ) {
         document.fonts.ready.then(() => {
           if (active) refresh();
         });
@@ -157,8 +160,6 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
 
       return () => {
         active = false;
-        cancelAnimationFrame(rafId);
-        clearTimeout(timerId);
         ro?.disconnect();
         controller.dispose();
         controllerRef.current = null;
@@ -237,6 +238,6 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
       </div>
     );
   }
-);
+));
 
 LiveSegmentedControl.displayName = 'LiveSegmentedControl';

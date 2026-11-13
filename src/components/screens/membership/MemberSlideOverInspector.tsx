@@ -45,7 +45,7 @@ const TABS: Array<{ id: 'overview' | 'access' | 'billing'; label: string }> = [
   { id: 'billing', label: 'Ventes & Factures' },
 ];
 
-export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> = ({
+export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> = React.memo(({
   isOpen,
   member,
   allMembers,
@@ -64,7 +64,6 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
   const [activeTab, setActiveTab] = useState<'overview' | 'access' | 'billing'>(initialTab);
   const [notesText, setNotesText] = useState('');
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [entranceEpoch, setEntranceEpoch] = useState(0);
 
   // Retain the last displayed member during close bounce so content stays visible until settled
   const retainedMemberRef = useRef<Member | null>(member);
@@ -105,6 +104,22 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
   const wasOpenRef = useRef(false);
   const prevMemberIdRef = useRef<string | null>(null);
   const prevTabRef = useRef(activeTab);
+  const entranceEpochRef = useRef(0);
+
+  // Compute entrance epoch synchronously during render (eliminates second mount pass on open/tab/step)
+  {
+    const curId = activeMember?.id ?? null;
+    const justOpened = isOpen && !wasOpenRef.current;
+    const switchedMember = isOpen && curId !== prevMemberIdRef.current;
+    const switchedTab = isOpen && activeTab !== prevTabRef.current;
+    if (justOpened || switchedMember || switchedTab) {
+      entranceEpochRef.current += 1;
+    }
+    wasOpenRef.current = isOpen;
+    prevMemberIdRef.current = curId;
+    prevTabRef.current = activeTab;
+  }
+  const entranceEpoch = entranceEpochRef.current;
 
   // Compute progress percentage for sessions bar
   const planName = activeMember?.membershipPlanName || (activeMember as any)?.membershipType || 'Standard Plan';
@@ -126,23 +141,11 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
     }
   }, [activeMember?.id, activeMember?.notes]);
 
-  // Trigger entrance epoch ONLY on open, tab change, or prev/next member change
-  useEffect(() => {
-    const curId = activeMember?.id ?? null;
-    const justOpened = isOpen && !wasOpenRef.current;
-    const switchedMember = isOpen && curId !== prevMemberIdRef.current;
-    const switchedTab = isOpen && activeTab !== prevTabRef.current;
-
-    if (justOpened || switchedMember || switchedTab) {
-      setEntranceEpoch((n) => n + 1);
-    }
-
-    wasOpenRef.current = isOpen;
-    prevMemberIdRef.current = curId;
-    prevTabRef.current = activeTab;
-  }, [isOpen, activeMember?.id, activeTab]);
-
-  const lastPanelDrawRef = useRef<string>('');
+  const lastPanelKeyRef = useRef<string>('');
+  const lastIndKeyRef = useRef<string>('');
+  const lastHoldQRef = useRef<number>(-1);
+  const panelWillChangeRef = useRef<boolean>(false);
+  const indWillChangeRef = useRef<boolean>(false);
 
   // Draw panel, scrim, tab indicator, and hold-to-delete fill inside shared rAF loop
   const drawPanel = useCallback(() => {
@@ -152,41 +155,70 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
     const hold = holdRef.current;
     if (!pp || !ix || !iw || !hold) return;
 
-    const drawKey = `${pp.x}|${pp.t}|${ix.x}|${iw.x}|${hold.x}`;
-    if (drawKey === lastPanelDrawRef.current) return;
-    lastPanelDrawRef.current = drawKey;
-
+    // 1. Panel + Scrim (only when pp moves or target changes)
     const pm = computePanelMetrics(pp.x, pp.t);
+    const txQ = Math.round(pm.translateX * 2) / 2;
+    const opQ = Math.round(pm.scrimOpacity * 100) / 100;
     const vis = pm.visible ? 'visible' : 'hidden';
+    const ptr = pp.t > 0 ? 'auto' : 'none';
+    const panelKey = `${vis}|${txQ}|${opQ}|${ptr}`;
 
-    if (panelRef.current) {
-      panelRef.current.style.visibility = vis;
-      panelRef.current.style.transform = `translateX(${pm.translateX}px)`;
+    const isPanelMoving = !pp.rest();
+    if (isPanelMoving !== panelWillChangeRef.current) {
+      panelWillChangeRef.current = isPanelMoving;
+      if (panelRef.current) panelRef.current.style.willChange = isPanelMoving ? 'transform' : '';
+      if (scrimRef.current) scrimRef.current.style.willChange = isPanelMoving ? 'opacity' : '';
     }
 
-    if (scrimRef.current) {
-      scrimRef.current.style.visibility = vis;
-      scrimRef.current.style.opacity = String(pm.scrimOpacity);
-      scrimRef.current.style.pointerEvents = pp.t > 0 ? 'auto' : 'none';
+    if (panelKey !== lastPanelKeyRef.current) {
+      lastPanelKeyRef.current = panelKey;
+      if (panelRef.current) {
+        panelRef.current.style.visibility = vis;
+        panelRef.current.style.transform = `translate3d(${txQ}px, 0, 0)`;
+      }
+      if (scrimRef.current) {
+        scrimRef.current.style.visibility = vis;
+        scrimRef.current.style.opacity = String(opQ);
+        scrimRef.current.style.pointerEvents = ptr;
+      }
     }
 
-    if (pindRef.current) {
-      pindRef.current.style.left = `${ix.x}px`;
-      pindRef.current.style.width = `${Math.max(0, iw.x)}px`;
+    // 2. Tab indicator (only when ix/iw move)
+    const ixQ = Math.round(ix.x * 2) / 2;
+    const iwQ = Math.round(Math.max(0, iw.x) * 2) / 2;
+    const indKey = `${ixQ}|${iwQ}`;
+    const isIndMoving = !ix.rest() || !iw.rest();
+    if (isIndMoving !== indWillChangeRef.current) {
+      indWillChangeRef.current = isIndMoving;
+      if (pindRef.current) {
+        pindRef.current.style.willChange = isIndMoving ? 'transform' : '';
+      }
+    }
+    if (indKey !== lastIndKeyRef.current) {
+      lastIndKeyRef.current = indKey;
+      if (pindRef.current) {
+        pindRef.current.style.transform = `translate3d(${ixQ}px, 0, 0)`;
+        pindRef.current.style.width = `${iwQ}px`;
+      }
     }
 
-    // Hold-to-delete spring fill
+    // 3. Hold-to-delete spring fill (only when hold moves)
     const hp = clamp(hold.x / 100, 0, 1);
-    if (holdFillRef.current) {
-      holdFillRef.current.style.clipPath = `inset(${(1 - hp) * 100}% 0 0 0)`;
-    }
-    if (holdTextWrapRef.current) {
-      holdTextWrapRef.current.style.color = hp > 0.4 ? '#FFFFFF' : '';
-    }
-    if (holdLabelRef.current) {
-      const nextText = hp > 0.1 ? 'Maintenez…' : 'Maintenir pour supprimer';
-      if (holdLabelRef.current.textContent !== nextText) {
-        holdLabelRef.current.textContent = nextText;
+    const holdQ = Math.round(hp * 100);
+    if (holdQ !== lastHoldQRef.current) {
+      lastHoldQRef.current = holdQ;
+      const pctInset = Math.max(0, 100 - holdQ);
+      if (holdFillRef.current) {
+        holdFillRef.current.style.clipPath = holdQ === 0 ? 'inset(100% 0 0 0)' : `inset(${pctInset}% 0 0 0)`;
+      }
+      if (holdTextWrapRef.current) {
+        holdTextWrapRef.current.style.color = hp > 0.4 ? '#FFFFFF' : '';
+      }
+      if (holdLabelRef.current) {
+        const nextText = hp > 0.1 ? 'Maintenez…' : 'Maintenir pour supprimer';
+        if (holdLabelRef.current.textContent !== nextText) {
+          holdLabelRef.current.textContent = nextText;
+        }
       }
     }
 
@@ -208,8 +240,8 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
     };
   }, [drawPanel]);
 
-  // Open / close orchestration matching Section B exact order
-  useEffect(() => {
+  // Open / close orchestration matching Section B exact order (pre-paint for <17ms frame-0)
+  useLayoutEffect(() => {
     const pp = ppRef.current;
     const ix = ixRef.current;
     const iw = iwRef.current;
@@ -241,7 +273,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
       wake();
 
       const focusTimer = setTimeout(() => {
-        closeBtnRef.current?.focus();
+        closeBtnRef.current?.focus({ preventScroll: true });
       }, 40);
 
       return () => clearTimeout(focusTimer);
@@ -254,7 +286,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
       wake();
 
       if (openerRef.current && openerRef.current.isConnected) {
-        openerRef.current.focus();
+        openerRef.current.focus({ preventScroll: true });
       }
     }
   }, [isOpen, activeMember?.id]);
@@ -279,17 +311,17 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
     }
   }, [activeTab, isOpen, drawPanel]);
 
-  // Progress bar .bar2 next-rAF fill on open / tab change / prev-next
+  // Progress bar .bar2 next-rAF GPU scaleX fill on open / tab change / prev-next
   useEffect(() => {
     if (!isOpen || activeTab !== 'overview') return;
     const fillEl = barFillRef.current;
     if (!fillEl) return;
-    fillEl.style.width = '0%';
+    fillEl.style.transform = 'scaleX(0)';
     let innerRaf = 0;
     const outerRaf = requestAnimationFrame(() => {
       innerRaf = requestAnimationFrame(() => {
         if (barFillRef.current) {
-          barFillRef.current.style.width = `${sessionPct}%`;
+          barFillRef.current.style.transform = `scaleX(${sessionPct / 100})`;
         }
       });
     });
@@ -299,11 +331,11 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
     };
   }, [entranceEpoch, isOpen, activeTab]);
 
-  // Update progress bar width dynamically when sessions change in-place without replaying sections
+  // Update progress bar scale dynamically when sessions change in-place without replaying sections
   useEffect(() => {
     if (!isOpen || activeTab !== 'overview') return;
     if (barFillRef.current) {
-      barFillRef.current.style.width = `${sessionPct}%`;
+      barFillRef.current.style.transform = `scaleX(${sessionPct / 100})`;
     }
   }, [sessionPct, isOpen, activeTab]);
 
@@ -337,13 +369,19 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
         let hasHigherDialog = false;
         otherModals.forEach((d) => {
           if (d === panelRef.current) return;
+          if (
+            d.hasAttribute('hidden') ||
+            (d as HTMLElement).hidden ||
+            d.getAttribute('aria-hidden') === 'true'
+          ) {
+            return;
+          }
           const cs = getComputedStyle(d);
           const z = parseInt(cs.zIndex || '0', 10) || 0;
           if (
             cs.display !== 'none' &&
             cs.visibility !== 'hidden' &&
             parseFloat(cs.opacity || '1') > 0 &&
-            d.getAttribute('aria-hidden') !== 'true' &&
             z >= 52
           ) {
             hasHigherDialog = true;
@@ -460,10 +498,10 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
 
   return createPortal(
     <>
-      {/* Full-Screen Frosted Scrim (.scrim) */}
+      {/* Full-Screen Scrim (.scrim) */}
       <div
         ref={scrimRef}
-        className="scrim scrim-inspector fixed inset-0 z-[50] bg-[#1B1917]/34 backdrop-blur-[6px]"
+        className="scrim scrim-inspector fixed inset-0 z-[50] bg-[#1B1917]/38"
         onMouseDown={onClose}
         aria-hidden="true"
       />
@@ -475,7 +513,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
         aria-modal="true"
         aria-hidden={!isOpen}
         aria-labelledby="member-drawer-title"
-        className="pnl pnl-inspector fixed right-[14px] top-[14px] bottom-[14px] w-[560px] max-w-[calc(100vw-28px)] z-[51] rounded-[30px] bg-white dark:bg-[#1E1D1B] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[var(--atr-ink,#1B1917)] dark:text-[#F2ECE6] shadow-[-20px_0_60px_rgba(0,0,0,0.22)] flex flex-col overflow-hidden font-sans select-none"
+        className="pnl pnl-inspector fixed right-[14px] top-[14px] bottom-[14px] w-[560px] max-w-[calc(100vw-28px)] z-[51] rounded-[30px] bg-white dark:bg-[#1E1D1B] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[var(--atr-ink,#1B1917)] dark:text-[#F2ECE6] shadow-[-12px_0_28px_rgba(0,0,0,0.16)] flex flex-col overflow-hidden font-sans select-none"
       >
         {activeMember && (
           <>
@@ -558,8 +596,8 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
               <i
                 ref={pindRef}
                 aria-hidden="true"
-                className="absolute top-1 bottom-1 rounded-[10px] bg-[var(--atr-acc,#C9441F)] z-0 pointer-events-none"
-                style={{ left: '4px', width: '0px' }}
+                className="absolute top-1 bottom-1 left-0 rounded-[10px] bg-[var(--atr-acc,#C9441F)] z-0 pointer-events-none"
+                style={{ width: '0px', transform: 'translate3d(4px, 0, 0)' }}
               />
               {TABS.map((tab) => {
                 const isSelected = activeTab === tab.id;
@@ -682,8 +720,8 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                       <div className="bar2 h-[8px] rounded-[4px] bg-[var(--atr-line,#E6DED6)] dark:bg-[#3A3734] overflow-hidden mt-0.5 mb-3">
                         <i
                           ref={barFillRef}
-                          className="block h-full rounded-[4px] bg-[var(--atr-ok,#0B7A45)] dark:bg-[#5BE3A3]"
-                          style={{ width: '0%' }}
+                          className="block w-full h-full rounded-[4px] bg-[var(--atr-ok,#0B7A45)] dark:bg-[#5BE3A3] origin-left rtl:origin-right"
+                          style={{ transform: 'scaleX(0)' }}
                         />
                       </div>
                     </div>
@@ -964,4 +1002,6 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
     </>,
     document.body
   );
-};
+});
+
+MemberSlideOverInspector.displayName = 'MemberSlideOverInspector';

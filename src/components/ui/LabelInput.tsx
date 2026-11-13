@@ -1,5 +1,6 @@
 import React, { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, Eye, EyeOff } from "lucide-react";
+import { enqueueLabelWrite, cancelLabelGeometryTask } from "./labelGeometryQueue";
 
 /* ══ Label input ══════════════════════════════════════════
    A field whose label is its placeholder until you are in it.
@@ -150,6 +151,29 @@ export function LabelInput({
   const r = clamp(corner, 0, H / 2);
   const initialW = Math.max(80, typeof width === "number" ? width : 240);
   const lastGeomRef = useRef<{ W: number; lw: number }>({ W: initialW, lw: 48 });
+  const measuredBoxWRef = useRef<number>(0);
+  const measuredLabWRef = useRef<number>(0);
+
+  const commitSvgPaths = useRef(() => {});
+  commitSvgPaths.current = () => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const rawW = typeof width === "number" ? width : measuredBoxWRef.current;
+    if (rawW <= 0) return;
+    const W = Math.max(80, Math.round(rawW));
+    const lw = measuredLabWRef.current > 0 ? measuredLabWRef.current : lastGeomRef.current.lw;
+    if (lastGeomRef.current.W === W && lastGeomRef.current.lw === lw && svg.getAttribute("viewBox") === `0 0 ${W} ${H}`) {
+      return;
+    }
+    lastGeomRef.current = { W, lw };
+    const paths = computeRingPaths(W, H, r, lw, isRtl);
+
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    rightPathRef.current?.setAttribute("d", paths.right);
+    leftPathRef.current?.setAttribute("d", paths.left);
+    gapLPathRef.current?.setAttribute("d", paths.gapL);
+    gapRPathRef.current?.setAttribute("d", paths.gapR);
+  };
 
   const syncGeometry = useRef(() => {});
   syncGeometry.current = () => {
@@ -159,22 +183,11 @@ export function LabelInput({
 
     const rawW = typeof width === "number" ? width : box.offsetWidth;
     if (rawW <= 0) return;
-
-    const W = Math.max(80, Math.round(rawW));
-    const measuredLw = lab.current && lab.current.offsetWidth > 0 ? lab.current.offsetWidth : lastGeomRef.current.lw;
-
-    if (lastGeomRef.current.W === W && lastGeomRef.current.lw === measuredLw && svg.getAttribute("viewBox") === `0 0 ${W} ${H}`) {
-      return;
+    measuredBoxWRef.current = rawW;
+    if (lab.current && lab.current.offsetWidth > 0) {
+      measuredLabWRef.current = lab.current.offsetWidth;
     }
-
-    lastGeomRef.current = { W, lw: measuredLw };
-    const paths = computeRingPaths(W, H, r, measuredLw, isRtl);
-
-    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-    rightPathRef.current?.setAttribute("d", paths.right);
-    leftPathRef.current?.setAttribute("d", paths.left);
-    gapLPathRef.current?.setAttribute("d", paths.gapL);
-    gapRPathRef.current?.setAttribute("d", paths.gapR);
+    commitSvgPaths.current();
   };
 
   useLayoutEffect(() => {
@@ -183,13 +196,28 @@ export function LabelInput({
 
   useEffect(() => {
     const box = boxRef.current;
+    const labelEl = lab.current;
     if (!box || typeof ResizeObserver === "undefined") return;
-    const observer = new ResizeObserver(() => {
-      syncGeometry.current();
+    const queuedWrite = () => commitSvgPaths.current();
+    const observer = new ResizeObserver((entries) => {
+      for (let i = 0; i < entries.length; i++) {
+        const entry = entries[i];
+        const w = Math.round(entry.borderBoxSize?.[0]?.inlineSize ?? entry.contentRect.width);
+        if (w <= 0) continue;
+        if (entry.target === box) {
+          measuredBoxWRef.current = w;
+        } else if (entry.target === labelEl) {
+          measuredLabWRef.current = w;
+        }
+      }
+      enqueueLabelWrite(queuedWrite);
     });
     observer.observe(box);
-    if (lab.current) observer.observe(lab.current);
-    return () => observer.disconnect();
+    if (labelEl) observer.observe(labelEl);
+    return () => {
+      cancelLabelGeometryTask(queuedWrite);
+      observer.disconnect();
+    };
   }, [width, label]);
 
   useEffect(() => {

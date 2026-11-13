@@ -49,7 +49,7 @@ const DC_CONTROLLED_BASE_STYLE: React.CSSProperties = {
   padding: '16px 22px',
 };
 
-export const RowDetailIsland: React.FC<RowDetailIslandProps> = ({
+export const RowDetailIsland: React.FC<RowDetailIslandProps> = React.memo(({
   eValue = 0,
   rowWidth = 1200,
   contactInfo,
@@ -267,4 +267,6 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = ({
       </div>
     </>
   );
-};
+});
+
+RowDetailIsland.displayName = 'RowDetailIsland';

@@ -47,6 +47,7 @@ interface AppliedCache {
   p: number;
   e: number;
   mode: 'list' | 'grid';
+  moving: boolean;
 }
 
 interface ManagedRow {
@@ -60,6 +61,8 @@ interface ManagedRow {
   sh: Sp;
   fresh: boolean;
   isMatching: boolean;
+  slabFull: boolean;
+  willChangeActive: boolean;
   refs: RowDomRefs;
   lastDcTabIndex: number | null;
   lastApplied: AppliedCache | null;
@@ -77,16 +80,29 @@ export interface UseKineticRowLayoutOptions {
   onFilterChange?: () => void;
 }
 
+const qHalf = (v: number): number => Math.round(v * 2) / 2;
+const qTenth = (v: number): number => Math.round(v * 10) / 10;
+const qHundredth = (v: number): number => Math.round(v * 100) / 100;
+
 function applyRowStyles(r: ManagedRow, viewMode: 'list' | 'grid'): void {
-  const { rowEl, slabEl, innEl, detEl, dcEl, rbEl, dcButtons } = r.refs;
+  const { rowEl, slabEl, innEl, detEl, dcEl, rbEl } = r.refs;
   if (!rowEl) return;
 
-  const rx = r.sx.x;
-  const ry = r.sy.x;
-  const rw = r.sw.x;
-  const rh = r.sh.x;
-  const rp = r.p.x;
-  const re = r.e.x;
+  const rx = qHalf(r.sx.x);
+  const ry = qHalf(r.sy.x);
+  const rw = qHalf(Math.max(0, r.sw.x));
+  const rh = qHalf(Math.max(0, r.sh.x));
+  const rp = qTenth(r.p.x);
+  const re = qTenth(r.e.x);
+  const isMoving = !(
+    r.p.rest() &&
+    r.e.rest() &&
+    r.sx.rest() &&
+    r.sy.rest() &&
+    r.sw.rest() &&
+    r.sh.rest()
+  );
+
   const prev = r.lastApplied;
 
   if (
@@ -97,7 +113,8 @@ function applyRowStyles(r: ManagedRow, viewMode: 'list' | 'grid'): void {
     prev.h === rh &&
     prev.p === rp &&
     prev.e === re &&
-    prev.mode === viewMode
+    prev.mode === viewMode &&
+    prev.moving === isMoving
   ) {
     return;
   }
@@ -111,53 +128,65 @@ function applyRowStyles(r: ManagedRow, viewMode: 'list' | 'grid'): void {
     prev.h !== rh ||
     prev.mode !== viewMode;
 
-  r.lastApplied = { x: rx, y: ry, w: rw, h: rh, p: rp, e: re, mode: viewMode };
+  r.lastApplied = { x: rx, y: ry, w: rw, h: rh, p: rp, e: re, mode: viewMode, moving: isMoving };
 
-  const w = Math.max(0, rw);
-  const h = Math.max(0, rh);
-  const geom = computeRowVisualGeometry(rp, re, w, h, viewMode);
+  if (r.willChangeActive !== isMoving) {
+    r.willChangeActive = isMoving;
+    rowEl.style.willChange = isMoving ? 'transform' : '';
+  }
+
+  const geom = computeRowVisualGeometry(rp, re, rw, rh, viewMode);
 
   if (posChanged || !prev || prev.p !== rp) {
     const st = rowEl.style;
     if (!prev || prev.x !== rx || prev.y !== ry) {
       st.transform = `translate3d(${rx}px, ${ry}px, 0)`;
     }
-    if (!prev || prev.w !== rw) st.width = `${w}px`;
-    if (!prev || prev.h !== rh) st.height = `${h}px`;
+    if (!prev || prev.w !== rw) st.width = `${rw}px`;
+    if (!prev || prev.h !== rh) st.height = `${rh}px`;
     if (!prev || prev.p !== rp) st.pointerEvents = geom.pointerInteractive ? 'auto' : 'none';
   }
 
   if (!visChanged) return;
 
-  if (slabEl && (!prev || prev.p !== rp || prev.h !== rh)) {
-    slabEl.style.top = `${geom.slabTop}px`;
-    slabEl.style.height = `${geom.slabHeight}px`;
+  if (slabEl) {
+    if (rp === 100) {
+      if (!r.slabFull) {
+        r.slabFull = true;
+        slabEl.style.top = '0px';
+        slabEl.style.height = '100%';
+      }
+    } else if (!prev || prev.p !== rp || prev.h !== rh || r.slabFull) {
+      r.slabFull = false;
+      slabEl.style.top = `${qHalf(geom.slabTop)}px`;
+      slabEl.style.height = `${qHalf(geom.slabHeight)}px`;
+    }
   }
 
   if (innEl && (!prev || prev.p !== rp)) {
-    innEl.style.opacity = String(geom.innerOpacity);
+    innEl.style.opacity = String(qHundredth(geom.innerOpacity));
   }
 
   if (rbEl && (!prev || prev.e !== re || prev.p !== rp)) {
-    rbEl.style.rotate = `${geom.chevronRotateDeg}deg`;
-    rbEl.style.opacity = String(geom.innerOpacity);
+    rbEl.style.rotate = `${qTenth(geom.chevronRotateDeg)}deg`;
+    rbEl.style.opacity = String(qHundredth(geom.innerOpacity));
   }
 
-  if (detEl && (!prev || prev.e !== re || prev.w !== rw || prev.mode !== viewMode || geom.islandVisible)) {
+  if (detEl && (!prev || prev.e !== re || prev.w !== rw || prev.mode !== viewMode)) {
     const d = detEl.style;
     if (!geom.islandVisible) {
       if (d.display !== 'none') d.display = 'none';
     } else {
-      d.display = 'block';
-      d.left = `${geom.islandLeft}px`;
-      d.top = `${geom.islandTop}px`;
-      d.width = `${geom.islandWidth}px`;
-      d.height = `${geom.islandHeight}px`;
-      d.borderRadius = `${geom.islandRadius}px`;
+      if (d.display !== 'block') d.display = 'block';
+      d.left = `${qHalf(geom.islandLeft)}px`;
+      d.top = `${qHalf(geom.islandTop)}px`;
+      d.width = `${qHalf(geom.islandWidth)}px`;
+      d.height = `${qHalf(geom.islandHeight)}px`;
+      d.borderRadius = `${qTenth(geom.islandRadius)}px`;
     }
   }
 
-  if (dcEl && (!prev || prev.e !== re || prev.mode !== viewMode || geom.islandVisible)) {
+  if (dcEl && (!prev || prev.e !== re || prev.mode !== viewMode)) {
     const dc = dcEl.style;
     if (!geom.islandVisible) {
       if (dc.display !== 'none') {
@@ -165,10 +194,8 @@ function applyRowStyles(r: ManagedRow, viewMode: 'list' | 'grid'): void {
         dc.pointerEvents = 'none';
       }
     } else {
-      dc.display = 'grid';
-      dc.top = `${geom.detailTop}px`;
-      dc.height = `${geom.detailHeight}px`;
-      dc.opacity = String(geom.detailOpacity);
+      if (dc.display !== 'grid') dc.display = 'grid';
+      dc.opacity = String(qHundredth(geom.detailOpacity));
       dc.pointerEvents = geom.detailInteractive ? 'auto' : 'none';
     }
 
@@ -176,8 +203,15 @@ function applyRowStyles(r: ManagedRow, viewMode: 'list' | 'grid'): void {
     if (r.lastDcTabIndex !== nextTabIdx) {
       r.lastDcTabIndex = nextTabIdx;
       dcEl.setAttribute('aria-hidden', nextTabIdx === 0 ? 'false' : 'true');
-      for (let i = 0; i < dcButtons.length; i++) {
-        dcButtons[i].tabIndex = nextTabIdx;
+      const buttons =
+        r.refs.dcButtons.length > 0
+          ? r.refs.dcButtons
+          : (Array.from(dcEl.querySelectorAll('button')) as HTMLButtonElement[]);
+      if (buttons.length > 0) {
+        r.refs.dcButtons = buttons;
+        for (let i = 0; i < buttons.length; i++) {
+          buttons[i].tabIndex = nextTabIdx;
+        }
       }
     }
   }
@@ -207,6 +241,8 @@ export function useKineticRowLayout({
 
   const focusedIdRef = useRef<string | null>(null);
   const containerWidthRef = useRef<number>(1200);
+  const scrollTopRef = useRef<number>(0);
+  const viewportHRef = useRef<number>(640);
   const isInitialPaintRef = useRef<boolean>(true);
   const prevFilterKeyRef = useRef<string>(filterKey);
 
@@ -233,8 +269,8 @@ export function useKineticRowLayout({
       if (!scr) {
         return { minY: -Infinity, maxY: Infinity, hasScroller: false };
       }
-      const scrollTop = scr.scrollTop || 0;
-      const viewportH = Math.max(480, scr.clientHeight || 640);
+      const scrollTop = scrollTopRef.current;
+      const viewportH = viewportHRef.current;
       return {
         minY: scrollTop - WINDOW_OVERSCAN_PX - hysteresis,
         maxY: scrollTop + viewportH + WINDOW_OVERSCAN_PX + hysteresis,
@@ -249,21 +285,24 @@ export function useKineticRowLayout({
     const mode = viewModeRef.current;
     managedMapRef.current.forEach((r) => {
       const prev = r.lastApplied;
-      if (
-        prev &&
-        prev.mode === mode &&
+      const allRest =
         r.p.rest() &&
         r.e.rest() &&
         r.sx.rest() &&
         r.sy.rest() &&
         r.sw.rest() &&
-        r.sh.rest() &&
-        prev.x === r.sx.x &&
-        prev.y === r.sy.x &&
-        prev.w === r.sw.x &&
-        prev.h === r.sh.x &&
-        prev.p === r.p.x &&
-        prev.e === r.e.x
+        r.sh.rest();
+      if (
+        prev &&
+        prev.mode === mode &&
+        allRest &&
+        !prev.moving &&
+        prev.x === qHalf(r.sx.x) &&
+        prev.y === qHalf(r.sy.x) &&
+        prev.w === qHalf(Math.max(0, r.sw.x)) &&
+        prev.h === qHalf(Math.max(0, r.sh.x)) &&
+        prev.p === qTenth(r.p.x) &&
+        prev.e === qTenth(r.e.x)
       ) {
         return;
       }
@@ -358,6 +397,8 @@ export function useKineticRowLayout({
     if (!r) return;
     if (refs) {
       r.refs = refs;
+      r.slabFull = false;
+      r.willChangeActive = false;
       r.lastDcTabIndex = null;
       r.lastApplied = null;
       applyRowStyles(r, viewModeRef.current);
@@ -371,6 +412,8 @@ export function useKineticRowLayout({
         rbEl: null,
         dcButtons: [],
       };
+      r.slabFull = false;
+      r.willChangeActive = false;
       r.lastApplied = null;
     }
   }, []);
@@ -413,6 +456,8 @@ export function useKineticRowLayout({
             sh: new Sp(tgt.h, TUNES.rowPosition),
             fresh: false,
             isMatching: true,
+            slabFull: false,
+            willChangeActive: false,
             refs: {
               rowEl: null,
               slabEl: null,
@@ -554,6 +599,8 @@ export function useKineticRowLayout({
             sh: new Sp(startPos.h, TUNES.rowPosition),
             fresh: Boolean(isNewMatch || initialLoad),
             isMatching: true,
+            slabFull: false,
+            willChangeActive: false,
             refs: {
               rowEl: null,
               slabEl: null,
@@ -667,12 +714,16 @@ export function useKineticRowLayout({
     };
   }, [rowsElRef]);
 
-  // rAF-coalesced scroll listener for smooth O(visible) virtualization
+  // rAF-coalesced scroll & viewport height cache (zero forced layout reads inside rAF)
   useEffect(() => {
     const scr = scrollContainerRef?.current;
     if (!scr) return;
+    scrollTopRef.current = scr.scrollTop || 0;
+    viewportHRef.current = Math.max(480, scr.clientHeight || 640);
+
     let scrollRaf = 0;
     const onScroll = () => {
+      scrollTopRef.current = scr.scrollTop || 0;
       if (scrollRaf) return;
       scrollRaf = requestAnimationFrame(() => {
         scrollRaf = 0;
@@ -680,8 +731,24 @@ export function useKineticRowLayout({
       });
     };
     scr.addEventListener('scroll', onScroll, { passive: true });
+
+    let ro: ResizeObserver | undefined;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const nextH = Math.max(480, Math.round(entry.contentRect.height) || 640);
+          if (nextH !== viewportHRef.current) {
+            viewportHRef.current = nextH;
+            syncWindowOnScroll();
+          }
+        }
+      });
+      ro.observe(scr);
+    }
+
     return () => {
       scr.removeEventListener('scroll', onScroll);
+      ro?.disconnect();
       if (scrollRaf) cancelAnimationFrame(scrollRaf);
     };
   }, [scrollContainerRef, syncWindowOnScroll]);

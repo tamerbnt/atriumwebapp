@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
-import { useAtriumStore } from "../../services/store";
+import { useAtriumSelector } from "../../services/store";
 
 /* ══ Seek ═════════════════════════════════════════════════
    A search icon that becomes a search field, as one object.
@@ -41,7 +41,7 @@ export const Seek: React.FC<SeekProps> = ({
   onSearch,
   autoFocusOnOpen = true,
 }) => {
-  const { language } = useAtriumStore();
+  const language = useAtriumSelector((s) => s.language);
   const defaultPlaceholder = language === 'ar' ? 'بحث...' : language === 'fr' ? 'Rechercher...' : 'Search...';
   const effectivePlaceholder = placeholder !== undefined ? placeholder : defaultPlaceholder;
   const [isOpen, setIsOpen] = useState(Boolean(value && value.length > 0));
@@ -172,6 +172,7 @@ export const Seek: React.FC<SeekProps> = ({
         {/* Clickable search icon lens button */}
         <button
           type="button"
+          data-no-liquid="true"
           onClick={(e) => {
             e.stopPropagation();
             handleToggle();
@@ -230,6 +231,7 @@ export const Seek: React.FC<SeekProps> = ({
         {!isOpen && (
           <button
             type="button"
+            data-no-liquid="true"
             className="sek-hit"
             onClick={(e) => {
               e.stopPropagation();

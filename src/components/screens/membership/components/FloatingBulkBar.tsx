@@ -26,6 +26,8 @@ export const FloatingBulkBar: React.FC<FloatingBulkBarProps> = ({
 }) => {
   const barRef = useRef<HTMLDivElement | null>(null);
   const springRef = useRef<Sp | null>(null);
+  const lastDrawKeyRef = useRef<string>('');
+  const willChangeActiveRef = useRef<boolean>(false);
 
   if (!springRef.current) {
     springRef.current = new Sp(selectedCount > 0 ? 100 : 0, TUNES.bulkBar);
@@ -35,10 +37,23 @@ export const FloatingBulkBar: React.FC<FloatingBulkBarProps> = ({
     const el = barRef.current;
     const sp = springRef.current;
     if (!el || !sp) return;
+    const moving = !sp.rest();
+    const xQ = Math.round(sp.x * 10) / 10;
+    const key = `${xQ}|${sp.t}|${moving ? 1 : 0}`;
+    if (key === lastDrawKeyRef.current) return;
+    lastDrawKeyRef.current = key;
+
+    if (willChangeActiveRef.current !== moving) {
+      willChangeActiveRef.current = moving;
+      el.style.willChange = moving ? 'transform, opacity' : '';
+    }
+
     const m = computeBulkBarMetrics(sp.x, sp.t);
     el.style.visibility = m.visible ? 'visible' : 'hidden';
-    el.style.opacity = String(m.opacity);
-    el.style.transform = `translate(-50%, ${m.translateY}px) scale(${m.scale})`;
+    el.style.opacity = String(Math.round(m.opacity * 100) / 100);
+    el.style.transform = `translate3d(-50%, ${Math.round(m.translateY * 2) / 2}px, 0) scale(${
+      Math.round(m.scale * 1000) / 1000
+    })`;
   };
 
   useLayoutEffect(() => {

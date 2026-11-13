@@ -27,6 +27,8 @@ import {
 export { clamp, TUNES, ROW_H, ROW_G, ROW_DH, ROW_B, CARD_H };
 
 let isReducedMotionOverride: boolean | null = null;
+let cachedReducedMotion: boolean | null = null;
+let reducedMotionListenerBound = false;
 
 export const setReducedMotionOverride = (override: boolean | null): void => {
   isReducedMotionOverride = override;
@@ -34,8 +36,22 @@ export const setReducedMotionOverride = (override: boolean | null): void => {
 
 export const checkReducedMotion = (): boolean => {
   if (isReducedMotionOverride !== null) return isReducedMotionOverride;
+  if (cachedReducedMotion !== null) return cachedReducedMotion;
   if (typeof window !== 'undefined' && window.matchMedia) {
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    cachedReducedMotion = mq.matches;
+    if (!reducedMotionListenerBound) {
+      reducedMotionListenerBound = true;
+      const onChange = (e: MediaQueryListEvent) => {
+        cachedReducedMotion = e.matches;
+      };
+      if (typeof mq.addEventListener === 'function') {
+        mq.addEventListener('change', onChange);
+      } else if (typeof (mq as any).addListener === 'function') {
+        (mq as any).addListener(onChange);
+      }
+    }
+    return cachedReducedMotion;
   }
   return false;
 };
@@ -95,7 +111,11 @@ export const frame = (timestamp: number): void => {
   }
 
   if (allRest) {
-    activeSprings.forEach((s) => s.snap());
+    activeSprings.forEach((s) => {
+      if (s.x !== s.t || s.v !== 0) {
+        s.snap();
+      }
+    });
     notifyFrameSubscribers();
     notifyCleanupSubscribers();
     prevTime = 0;
@@ -106,7 +126,11 @@ export const frame = (timestamp: number): void => {
 
 export const wake = (): void => {
   if (checkReducedMotion()) {
-    activeSprings.forEach((s) => s.snap());
+    activeSprings.forEach((s) => {
+      if (s.x !== s.t || s.v !== 0) {
+        s.snap();
+      }
+    });
     notifyFrameSubscribers();
     notifyCleanupSubscribers();
     prevTime = 0;
@@ -145,6 +169,7 @@ export class Sp {
   }
 
   step(dt: number, reduced = checkReducedMotion()): void {
+    if (this.x === this.t && this.v === 0) return;
     if (reduced) {
       this.x = this.t;
       this.v = 0;
@@ -287,6 +312,8 @@ export function useSpringCountRef<T extends HTMLElement = HTMLDivElement>(
   const initialZero = options?.initialZero ?? true;
 
   const spRef = useRef<Sp | null>(null);
+  const lastTextRef = useRef<string>('');
+  const lastRoundedRef = useRef<number>(Number.NaN);
   const formatRef = useRef({ prefix, suffix });
   formatRef.current = { prefix, suffix };
 
@@ -296,14 +323,15 @@ export function useSpringCountRef<T extends HTMLElement = HTMLDivElement>(
 
   useEffect(() => {
     const sp = spRef.current!;
-    let lastText = '';
     const draw = () => {
-      if (elRef.current) {
-        const nextText = `${formatRef.current.prefix}${Math.round(sp.x)}${formatRef.current.suffix}`;
-        if (nextText !== lastText) {
-          lastText = nextText;
-          elRef.current.textContent = nextText;
-        }
+      if (!elRef.current) return;
+      const rounded = Math.round(sp.x);
+      if (rounded === lastRoundedRef.current && lastTextRef.current !== '') return;
+      lastRoundedRef.current = rounded;
+      const nextText = `${formatRef.current.prefix}${rounded}${formatRef.current.suffix}`;
+      if (nextText !== lastTextRef.current) {
+        lastTextRef.current = nextText;
+        elRef.current.textContent = nextText;
       }
     };
     const unsub = subscribeFrame(draw);

@@ -8,7 +8,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useAtriumStore } from "../../services/store";
+import { useAtriumSelector, shallowEqualObjects, dismissToast } from "../../services/store";
 import { BusinessCategory, ToastType } from "../../types/index";
 
 export type ToastKind = ToastType;
@@ -47,7 +47,10 @@ export const ToastStack: React.FC<ToastStackProps> = ({
   gap = 10,
   corner = 20,
 }) => {
-  const { toasts, dismissToast, language } = useAtriumStore();
+  const { toasts, language } = useAtriumSelector(
+    (s) => ({ toasts: s.toasts, language: s.language }),
+    shallowEqualObjects
+  );
   const [isHovered, setIsHovered] = useState(false);
   const [isExpandedManual, setIsExpandedManual] = useState(false);
 
@@ -113,7 +116,6 @@ export const ToastStack: React.FC<ToastStackProps> = ({
               <motion.div
                 key={toast.id}
                 role="status"
-                layout
                 initial={{ opacity: 0, y: -20, scale: 0.92 }}
                 animate={{
                   opacity,

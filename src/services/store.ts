@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   Account,
   AccountSubscription,
@@ -783,7 +783,18 @@ let globalState: AppState = backfillTraceability((() => {
 
 const listeners = new Set<Listener>();
 
-function notify() {
+let persistTimer: ReturnType<typeof setTimeout> | null = null;
+let lastPersistedSnapshot: AppState = globalState;
+let hasPendingPersist = false;
+
+export function flushAtriumPersist(): void {
+  if (persistTimer !== null) {
+    clearTimeout(persistTimer);
+    persistTimer = null;
+  }
+  if (!hasPendingPersist) return;
+  hasPendingPersist = false;
+  lastPersistedSnapshot = globalState;
   try {
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(globalState));
@@ -791,7 +802,379 @@ function notify() {
   } catch (e) {
     console.warn('Failed to persist state', e);
   }
+}
+
+function isOnlyToastsChanged(prev: AppState, next: AppState): boolean {
+  if (prev === next) return true;
+  const keys = Object.keys(next) as (keyof AppState)[];
+  for (let i = 0; i < keys.length; i++) {
+    const k = keys[i];
+    if (k === 'toasts') continue;
+    if (prev[k] !== next[k]) return false;
+  }
+  return true;
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', flushAtriumPersist);
+  window.addEventListener('beforeunload', flushAtriumPersist);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      flushAtriumPersist();
+    }
+  });
+}
+
+function notify(immediatePersist = false) {
+  if (!isOnlyToastsChanged(lastPersistedSnapshot, globalState)) {
+    hasPendingPersist = true;
+    if (immediatePersist) {
+      flushAtriumPersist();
+    } else if (persistTimer === null && typeof window !== 'undefined') {
+      persistTimer = window.setTimeout(() => {
+        persistTimer = null;
+        flushAtriumPersist();
+      }, 160);
+    }
+  }
   listeners.forEach((l) => l());
+}
+
+export function shallowEqualObjects<T extends Record<string, any>>(a: T, b: T): boolean {
+  if (Object.is(a, b)) return true;
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false;
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+  if (keysA.length !== keysB.length) return false;
+  for (let i = 0; i < keysA.length; i++) {
+    const k = keysA[i];
+    if (!Object.prototype.hasOwnProperty.call(b, k) || !Object.is(a[k], b[k])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+export function useAtriumSelector<T>(
+  selector: (state: AppState) => T,
+  isEqual: (a: T, b: T) => boolean = Object.is
+): T {
+  const selectorRef = useRef(selector);
+  selectorRef.current = selector;
+  const isEqualRef = useRef(isEqual);
+  isEqualRef.current = isEqual;
+
+  const [selected, setSelected] = useState<T>(() => selectorRef.current(globalState));
+  const selectedRef = useRef(selected);
+  selectedRef.current = selected;
+
+  useEffect(() => {
+    const checkAndSync = () => {
+      const next = selectorRef.current(globalState);
+      if (!isEqualRef.current(selectedRef.current, next)) {
+        selectedRef.current = next;
+        setSelected(next);
+      }
+    };
+    listeners.add(checkAndSync);
+    checkAndSync();
+    return () => {
+      listeners.delete(checkAndSync);
+    };
+  }, []);
+
+  return selected;
+}
+
+export function selectCurrentBusinessFromState(state: AppState) {
+  return (
+    (state.businesses && state.businesses.find((b) => b.id === state.currentBusinessId)) ||
+    (state.businesses && state.businesses[0]) ||
+    INITIAL_BUSINESSES[0]
+  );
+}
+
+export function selectCurrentBranchFromState(state: AppState) {
+  return (
+    (state.branches && state.branches.find((b) => b.id === state.currentBranchId)) ||
+    (state.branches && state.branches[0]) ||
+    INITIAL_BRANCHES[0]
+  );
+}
+
+export function selectCurrentPlansFromState(state: AppState) {
+  return (state.plansByBranch && state.plansByBranch[state.currentBranchId]) || EMPTY_PLANS;
+}
+
+export { getCategoryTerminology };
+
+function getTraceContextFromGlobal() {
+  const branchManager = (globalState.staff || []).find(
+    (s) =>
+      (s.branchId === globalState.currentBranchId || s.facilityId === globalState.currentBranchId) &&
+      ['owner', 'manager', 'admin', 'agencydirector'].includes((s.role || '').toLowerCase())
+  );
+  const activeStaffId =
+    globalState.currentUser?.id ||
+    branchManager?.id ||
+    (globalState.staff && globalState.staff.length > 0 ? globalState.staff[0].id : undefined);
+
+  return {
+    accountId: globalState.account.id,
+    businessId: globalState.currentBusinessId,
+    branchId: globalState.currentBranchId,
+    staffId: activeStaffId,
+    tenantId: globalState.account.id,
+    facilityId: globalState.currentBranchId,
+  };
+}
+
+export function switchFacilityAction(businessId: string, branchId?: string) {
+  const targetBranches = globalState.branches.filter((b) => b.businessId === businessId);
+  const targetBranchId = branchId || (targetBranches[0]?.id ?? globalState.branches[0].id);
+  const targetBusiness = globalState.businesses.find((b) => b.id === businessId);
+
+  let nextScreen = globalState.activeScreen;
+  if (targetBusiness?.category === 'pos_inventory') {
+    if (nextScreen === 'scheduler' || nextScreen === 'registrations') {
+      nextScreen = 'shop';
+    }
+  } else if (targetBusiness?.category === 'freelance_solo') {
+    if (nextScreen === 'history') {
+      nextScreen = 'dashboard';
+    }
+  } else if (targetBusiness?.category === 'appointment_service') {
+    if (nextScreen === 'registrations') {
+      nextScreen = 'scheduler';
+    }
+  }
+
+  const prevBusinessId = globalState.currentBusinessId;
+  const prevBranchId = globalState.currentBranchId;
+
+  globalState = {
+    ...globalState,
+    currentBusinessId: businessId,
+    currentBranchId: targetBranchId,
+    activeScreen: nextScreen,
+    selectedMemberId: null,
+    isDetailOpen: false,
+  };
+  notify();
+
+  showToast({
+    type: 'info',
+    title: 'Facility Switched',
+    message: `Active workspace changed to ${targetBusiness?.name || 'facility'}.`,
+    category: targetBusiness?.category,
+    action: {
+      label: 'Undo Switch',
+      onClick: () => {
+        switchFacilityAction(prevBusinessId, prevBranchId);
+      },
+    },
+  });
+}
+
+export function switchBusinessAction(businessId: string) {
+  switchFacilityAction(businessId);
+}
+
+export function switchBranchAction(branchId: string) {
+  switchFacilityAction(globalState.currentBusinessId, branchId);
+}
+
+export function selectMemberAction(memberId: string | null) {
+  if (
+    globalState.selectedMemberId === memberId &&
+    globalState.isDetailOpen === (memberId !== null)
+  ) {
+    return;
+  }
+  globalState = {
+    ...globalState,
+    selectedMemberId: memberId,
+    isDetailOpen: memberId !== null,
+  };
+  notify();
+}
+
+export function closeDetailAction() {
+  if (!globalState.isDetailOpen) return;
+  globalState = { ...globalState, isDetailOpen: false };
+  notify();
+}
+
+export function addMemberAction(
+  newMember: Omit<Member, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'updatedAt'>
+) {
+  const trace = getTraceContextFromGlobal();
+  const member: Member = {
+    ...trace,
+    ...newMember,
+    id: `mem_${Date.now()}`,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  globalState = {
+    ...globalState,
+    members: [member, ...globalState.members],
+    selectedMemberId: member.id,
+    isDetailOpen: true,
+  };
+  notify();
+
+  const currentBiz = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
+  const cat = currentBiz?.category || 'membership_session';
+  const lang = globalState.language || 'fr';
+  const terms = getCategoryTerminology(cat, lang);
+
+  showToast({
+    type: 'success',
+    title: `${terms.memberSingle} : ${t('toast_member_enrolled_title', lang)}`,
+    message: `${member.fullName} ${t('toast_member_enrolled_msg', lang)} ${member.membershipPlanName || 'Standard'}.`,
+    category: cat,
+    action: {
+      label: t('nav_members', lang),
+      onClick: () => {
+        globalState = {
+          ...globalState,
+          selectedMemberId: member.id,
+          isDetailOpen: true,
+          activeScreen: 'members',
+        };
+        notify();
+      },
+    },
+  });
+
+  if (isSupabaseConfigured()) {
+    memberService.createMember(member).catch((err) => {
+      console.warn('[store] Failed to save member to Supabase:', err);
+    });
+  }
+
+  return member;
+}
+
+export function updateMemberAction(id: string, updates: Partial<Member>) {
+  const target = globalState.members.find((m) => m.id === id);
+  globalState = {
+    ...globalState,
+    members: globalState.members.map((m) =>
+      m.id === id ? { ...m, ...updates, updatedAt: new Date().toISOString() } : m
+    ),
+  };
+  notify();
+
+  const currentBiz = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
+  const cat = currentBiz?.category || 'membership_session';
+  const lang = globalState.language || 'fr';
+  showToast({
+    type: 'info',
+    title: t('toast_profile_updated_title', lang),
+    message: `${updates.fullName || target?.fullName || 'Record'} : ${t('toast_profile_updated_msg', lang)}`,
+    category: cat,
+  });
+
+  if (isSupabaseConfigured()) {
+    if (target) {
+      memberService.updateMember({ ...target, ...updates }).catch((err) => {
+        console.warn('[store] Failed to update member in Supabase:', err);
+      });
+    }
+  }
+}
+
+export function deleteMemberAction(id: string) {
+  const target = globalState.members.find((m) => m.id === id);
+  globalState = {
+    ...globalState,
+    members: globalState.members.filter((m) => m.id !== id),
+    selectedMemberId: globalState.selectedMemberId === id ? null : globalState.selectedMemberId,
+    isDetailOpen: globalState.selectedMemberId === id ? false : globalState.isDetailOpen,
+  };
+  notify();
+
+  const currentBiz = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
+  const cat = currentBiz?.category || 'membership_session';
+  const lang = globalState.language || 'fr';
+  const terms = getCategoryTerminology(cat, lang);
+  showToast({
+    type: 'warning',
+    title: `${terms.memberSingle} : ${t('toast_member_removed_title', lang)}`,
+    message: `${target?.fullName || 'Record'} ${t('toast_member_removed_msg', lang)}`,
+    category: cat,
+  });
+
+  if (isSupabaseConfigured()) {
+    memberService.deleteMember(id).catch((err) => {
+      console.warn('[store] Failed to delete member in Supabase:', err);
+    });
+  }
+}
+
+export function checkInMemberAction(id: string) {
+  const member = globalState.members.find((m) => m.id === id);
+  if (!member) return;
+
+  const currentBiz = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
+  const cat = currentBiz?.category || 'membership_session';
+  const lang = globalState.language || 'fr';
+
+  if (member.status === 'Banned' || member.status === 'Suspended' || member.status === 'Frozen') {
+    showToast({
+      type: 'error',
+      title: t('toast_checkin_blocked_title', lang),
+      message: `${member.fullName}: ${t('toast_checkin_blocked_msg', lang)}`,
+      category: cat,
+    });
+    return;
+  }
+
+  const daysLeft = calculateDaysRemaining(false, member.expirationDate);
+  const isExpiredDate = member.expirationDate ? new Date(member.expirationDate).getTime() < Date.now() : false;
+  if (daysLeft <= 0 || member.status === 'Expired' || isExpiredDate) {
+    showToast({
+      type: 'warning',
+      title: t('toast_checkin_expired_title', lang),
+      message: `${member.fullName}: ${t('toast_checkin_expired_msg', lang)}`,
+      category: cat,
+    });
+    return;
+  }
+
+  if (member.remainingSessions !== undefined && member.remainingSessions <= 0) {
+    showToast({
+      type: 'warning',
+      title: t('toast_checkin_expired_title', lang),
+      message: `${member.fullName}: ${t('toast_checkin_quota_exhausted', lang)}`,
+      category: cat,
+    });
+    return;
+  }
+
+  const updatedSessions = member.remainingSessions !== undefined ? Math.max(0, member.remainingSessions - 1) : undefined;
+  globalState = {
+    ...globalState,
+    members: globalState.members.map((m) =>
+      m.id === id
+        ? {
+            ...m,
+            remainingSessions: updatedSessions !== undefined ? updatedSessions : m.remainingSessions,
+            updatedAt: new Date().toISOString(),
+          }
+        : m
+    ),
+  };
+  notify();
+
+  showToast({
+    type: 'success',
+    title: t('toast_checkin_granted_title', lang),
+    message: `${member.fullName} (${member.cardId || 'RFID'}): ${t('toast_checkin_granted_msg', lang)}`,
+    category: cat,
+  });
 }
 
 const EMPTY_PLANS: MembershipPlan[] = [];

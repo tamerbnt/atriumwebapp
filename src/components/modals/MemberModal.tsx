@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { X, AlertCircle } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
@@ -36,7 +36,7 @@ export interface MemberModalProps {
   originElement?: HTMLElement | null;
 }
 
-export const MemberModal: React.FC<MemberModalProps> = ({
+export const MemberModal: React.FC<MemberModalProps> = React.memo(({
   isOpen,
   onClose,
   memberToEdit,
@@ -194,7 +194,11 @@ export const MemberModal: React.FC<MemberModalProps> = ({
   const lockScrollWithoutShift = useCallback(() => {
     if (scrollLockRef.current.locked || typeof document === 'undefined') return;
     const docEl = document.documentElement;
+    // Skip root style mutation when documentElement already has no scrollable overflow (e.g. AppShell h-screen overflow-hidden)
     const scrollbarW = Math.max(0, window.innerWidth - docEl.clientWidth);
+    if (scrollbarW === 0 && docEl.scrollHeight <= docEl.clientHeight) {
+      return;
+    }
     scrollLockRef.current = {
       locked: true,
       prevOverflow: docEl.style.overflow,
@@ -215,8 +219,13 @@ export const MemberModal: React.FC<MemberModalProps> = ({
     scrollLockRef.current.locked = false;
   }, []);
 
+  const useKineticRef = useRef(useKineticSpring);
+  useKineticRef.current = useKineticSpring;
+
   const setBackgroundInert = useCallback((inert: boolean) => {
     if (typeof document === 'undefined') return;
+    const attr = useKineticRef.current ? 'aria-hidden' : 'inert';
+    const val = useKineticRef.current ? 'true' : '';
     if (inert) {
       const targets: HTMLElement[] = [];
       const rootEl = scrimRef.current;
@@ -225,8 +234,8 @@ export const MemberModal: React.FC<MemberModalProps> = ({
         if (child === rootEl) return;
         const tag = child.tagName;
         if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'LINK' || tag === 'TEMPLATE') return;
-        if (!child.hasAttribute('inert')) {
-          child.setAttribute('inert', '');
+        if (!child.hasAttribute(attr)) {
+          child.setAttribute(attr, val);
           targets.push(child);
         }
       });
@@ -234,6 +243,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
     } else {
       inertElsRef.current.forEach((el) => {
         el.removeAttribute('inert');
+        el.removeAttribute('aria-hidden');
       });
       inertElsRef.current = [];
     }
@@ -513,6 +523,8 @@ export const MemberModal: React.FC<MemberModalProps> = ({
     }
   }, [clearTimers, finishKineticClosing, restoreTriggerFocus, setBackgroundInert, unlockScroll]);
 
+  const lastModalDrawKeyRef = useRef<string>('');
+
   // Kinetic rAF frame & cleanup subscriptions (DOM refs only, zero React renders)
   useEffect(() => {
     if (!useKineticSpring) return;
@@ -527,8 +539,14 @@ export const MemberModal: React.FC<MemberModalProps> = ({
       if (state === 'open' && s.rest()) return;
 
       const metrics = computeMemberModalMetrics(s.x, false);
-      root.style.opacity = String(metrics.opacity);
-      dialog.style.transform = metrics.transform;
+      const opQ = Math.round(metrics.opacity * 100) / 100;
+      const scQ = Math.round(metrics.scale * 1000) / 1000;
+      const drawKey = `${opQ}|${scQ}`;
+      if (drawKey === lastModalDrawKeyRef.current) return;
+      lastModalDrawKeyRef.current = drawKey;
+
+      root.style.opacity = String(opQ);
+      dialog.style.transform = `scale(${scQ})`;
     };
 
     const cleanModal = () => {
@@ -541,6 +559,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
 
       if (state === 'opening' && s.t === 100 && s.rest()) {
         s.snap();
+        lastModalDrawKeyRef.current = '1|1';
         root.style.opacity = '1';
         dialog.style.transform = 'scale(1)';
         root.style.willChange = '';
@@ -551,6 +570,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
           focusFirstField();
         }
       } else if (state === 'closing' && shouldFinishClosing(s.x, s.t)) {
+        lastModalDrawKeyRef.current = '';
         finishKineticClosing();
       }
     };
@@ -886,6 +906,37 @@ export const MemberModal: React.FC<MemberModalProps> = ({
 
   const displayedEdit = useKineticSpring ? retainedMemberRef.current : memberToEdit;
 
+  const genderOptions = useMemo(
+    () => [
+      { value: 'Male', label: t('member_gender_male', language) },
+      { value: 'Female', label: t('member_gender_female', language) },
+      { value: 'Other', label: t('member_gender_other', language) },
+    ],
+    [language]
+  );
+
+  const planOptions = useMemo(
+    () =>
+      plans.map((p) => ({
+        value: p.id,
+        label: p.name,
+        sublabel: `${p.durationDays} j · ${p.price.toLocaleString()} DZD`,
+      })),
+    [plans]
+  );
+
+  const sourceOptions = useMemo(
+    () => [
+      { value: 'Walk-in', label: 'Passage direct' },
+      { value: 'Instagram', label: 'Instagram' },
+      { value: 'Facebook', label: 'Facebook' },
+      { value: 'Referral', label: 'Parrainage' },
+      { value: 'Website', label: 'Site web' },
+      { value: 'VIP Partner', label: 'Partenaire' },
+    ],
+    []
+  );
+
   const modalContent = (
     <div
       ref={scrimRef}
@@ -1137,11 +1188,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                       formDirtyRef.current = true;
                       setGender((val?.target?.value ?? val) as Gender);
                     }}
-                    options={[
-                      { value: 'Male', label: t('member_gender_male', language) },
-                      { value: 'Female', label: t('member_gender_female', language) },
-                      { value: 'Other', label: t('member_gender_other', language) },
-                    ]}
+                    options={genderOptions}
                     width="100%"
                     height={40}
                     corner={12}
@@ -1159,11 +1206,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                         formDirtyRef.current = true;
                         setGender(val as Gender);
                       }}
-                      options={[
-                        { value: 'Male', label: t('member_gender_male', language) },
-                        { value: 'Female', label: t('member_gender_female', language) },
-                        { value: 'Other', label: t('member_gender_other', language) },
-                      ]}
+                      options={genderOptions}
                       aria-label={t('member_field_gender', language)}
                     />
                   </div>
@@ -1200,11 +1243,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                     formDirtyRef.current = true;
                     setPlanId(val?.target?.value ?? val);
                   }}
-                  options={plans.map((p) => ({
-                    value: p.id,
-                    label: p.name,
-                    sublabel: `${p.durationDays} j · ${p.price.toLocaleString()} DZD`,
-                  }))}
+                  options={planOptions}
                   width="100%"
                   height={40}
                   corner={12}
@@ -1283,14 +1322,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                     formDirtyRef.current = true;
                     setSource(val?.target?.value ?? val);
                   }}
-                  options={[
-                    { value: 'Walk-in', label: 'Passage direct' },
-                    { value: 'Instagram', label: 'Instagram' },
-                    { value: 'Facebook', label: 'Facebook' },
-                    { value: 'Referral', label: 'Parrainage' },
-                    { value: 'Website', label: 'Site web' },
-                    { value: 'VIP Partner', label: 'Partenaire' },
-                  ]}
+                  options={sourceOptions}
                   width="100%"
                   height={40}
                   corner={12}
@@ -1344,4 +1376,6 @@ export const MemberModal: React.FC<MemberModalProps> = ({
   return typeof document !== 'undefined'
     ? createPortal(modalContent, document.body)
     : null;
-};
+});
+
+MemberModal.displayName = 'MemberModal';
