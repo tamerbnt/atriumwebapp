@@ -75,7 +75,7 @@ export const VenueRentersView: React.FC<any> = () => {
 		}, 400);
 	};
 	const [isBookingModalOpen, setIsBookingModalOpen] = React.useState(false);
-	const [bookingRenterId, setBookingRenterId] = React.useState(void 0);
+	const [bookingRenterId, setBookingRenterId] = React.useState<any>(void 0);
 	const [fullName, setFullName] = React.useState("");
 	const [companyName, setCompanyName] = React.useState("");
 	const [email, setEmail] = React.useState("");

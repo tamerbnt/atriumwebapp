@@ -48,7 +48,7 @@ export const MedicalBillingView: React.FC<any> = () => {
 	const [sortDir, setSortDir] = React.useState("desc");
 	const [selectedIds, setSelectedIds] = React.useState(/* @__PURE__ */ new Set());
 	const [pinnedIds, setPinnedIds] = React.useState(/* @__PURE__ */ new Set(["cons_02"]));
-	const [selectedConsultation, setSelectedConsultation] = React.useState(() => consultations[0] || null);
+	const [selectedConsultation, setSelectedConsultation] = React.useState<any>(() => consultations[0] || null);
 	const [activeInspectorTab, setActiveInspectorTab] = React.useState("decompte");
 	const [paymentMethod, setPaymentMethod] = React.useState("Cash");
 	const [countedCash, setCountedCash] = React.useState("24500");

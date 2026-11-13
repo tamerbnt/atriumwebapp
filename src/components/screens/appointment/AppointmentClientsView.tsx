@@ -119,8 +119,8 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({ 
 				const q = searchQuery.toLowerCase();
 				const matchesName = client.fullName.toLowerCase().includes(q);
 				const matchesPhone = (client.phoneNumber || "").toLowerCase().includes(q);
-				const matchesAllergies = (client.segmentData?.allergies || []).some((a) => a.toLowerCase().includes(q));
-				const matchesFormula = (client.segmentData?.colorFormulas || []).some((f) => f.formula.toLowerCase().includes(q));
+				const matchesAllergies = (client.segmentData?.allergies || []).some((a: any) => a.toLowerCase().includes(q));
+				const matchesFormula = (client.segmentData?.colorFormulas || []).some((f: any) => f.formula.toLowerCase().includes(q));
 				if (!matchesName && !matchesPhone && !matchesAllergies && !matchesFormula) return false;
 			}
 			return true;
@@ -647,7 +647,7 @@ Validé (
 <span>Alertes & Contre-indications Cosmétiques</span>
 </div>
 {inspectingClient.segmentData?.allergies && inspectingClient.segmentData.allergies.length > 0 ? /* @__PURE__ */ <div className="flex items-center gap-2 flex-wrap pt-1">
-{inspectingClient.segmentData.allergies.map((all, idx) => /* @__PURE__ */ <span key={idx} className="px-2.5 py-1 text-xs font-semibold bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 rounded-lg">
+{inspectingClient.segmentData.allergies.map((all: any, idx: number) => /* @__PURE__ */ <span key={idx} className="px-2.5 py-1 text-xs font-semibold bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 rounded-lg">
 {"⚠️ "}
 {all}
 </span>)}
@@ -677,7 +677,7 @@ Historique des Recettes (
 {inspectingClient.segmentData?.colorFormulas?.length || 0}
 )
 </h3>
-{(inspectingClient.segmentData?.colorFormulas || []).map((f) => /* @__PURE__ */ <div key={f.id} className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 space-y-1.5 shadow-2xs">
+{(inspectingClient.segmentData?.colorFormulas || []).map((f: any) => /* @__PURE__ */ <div key={f.id} className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 space-y-1.5 shadow-2xs">
 <div className="flex items-center justify-between text-xs font-semibold">
 <span className="font-mono text-[#d4522f] font-bold">{f.formula}</span>
 <span className="text-[11px] text-neutral-400 font-mono">{f.date}</span>

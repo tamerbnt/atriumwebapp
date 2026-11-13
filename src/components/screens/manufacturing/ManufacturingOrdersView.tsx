@@ -542,7 +542,7 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
 </span>
 </div>
 <div className="space-y-1.5">
-{b.components.map((c, i) => /* @__PURE__ */ <div key={i} className="p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+{b.components.map((c: any, i: number) => /* @__PURE__ */ <div key={i} className="p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
 <span className="text-neutral-700 dark:text-neutral-300 truncate max-w-[190px]">{c.rawProductName}</span>
 <span className="font-mono text-neutral-500">
 {c.quantity}
@@ -580,7 +580,7 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
 {isOrderModalOpen && /* @__PURE__ */ <ManufacturingOrderModal isOpen={isOrderModalOpen} onClose={() => {
 					setIsOrderModalOpen(false);
 					setOrderToEdit(null);
-				}} boms={boms} orderToEdit={orderToEdit} onSave={(o) => {
+				}} boms={boms} orderToEdit={orderToEdit} onSave={(o: any) => {
 					if (orderToEdit) {
 						updateOrder(o);
 						if (selectedOrder?.id === o.id) setSelectedOrder(o);

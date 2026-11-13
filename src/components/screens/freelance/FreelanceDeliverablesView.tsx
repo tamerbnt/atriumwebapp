@@ -49,7 +49,7 @@ import { SkeletonKanbanPipeline } from '../../ui/skeleton/StructuralSkeletons';
 
 
 
-const STAGE_KEYS = {
+const STAGE_KEYS: Record<string, string> = {
 	Briefing: "free_deliv_stage_briefing",
 	InProgress: "free_deliv_stage_in_progress",
 	ClientReview: "free_deliv_stage_review",
@@ -124,7 +124,7 @@ export const FreelanceDeliverablesView: React.FC<any> = () => {
 		return freelanceProjects.filter((p) => p.id === selectedProjectId);
 	}, [freelanceProjects, selectedProjectId]);
 	const flattenedDeliverables = React.useMemo(() => {
-		const list = [];
+		const list: any[] = [];
 		activeProjects.forEach((project) => {
 			project.deliverables.forEach((deliv) => {
 				if (!searchQuery.trim() || deliv.title.toLowerCase().includes(searchQuery.toLowerCase()) || deliv.description?.toLowerCase().includes(searchQuery.toLowerCase()) || project.title.toLowerCase().includes(searchQuery.toLowerCase()) || project.clientName.toLowerCase().includes(searchQuery.toLowerCase())) list.push({
@@ -163,8 +163,8 @@ export const FreelanceDeliverablesView: React.FC<any> = () => {
 			clientName: client?.name || "Client",
 			title: newProjectData.title,
 			description: newProjectData.description,
-			pricingModel: newProjectData.pricingModel,
-			currency: newProjectData.currency,
+			pricingModel: newProjectData.pricingModel as PricingModel,
+			currency: newProjectData.currency as CurrencyCode,
 			budget: Number(newProjectData.budget),
 			estimatedHours: Number(newProjectData.estimatedHours),
 			stage: "InProgress",
@@ -178,7 +178,7 @@ export const FreelanceDeliverablesView: React.FC<any> = () => {
 		startTimer(project.clientId, project.clientName, project.id, project.title, `${deliv.title} - Working sprint`, deliv.id, deliv.title, true, false);
 	};
 	const flatDeliverablesList = React.useMemo(() => {
-		const list = [];
+		const list: any[] = [];
 		activeProjects.forEach((project) => {
 			project.deliverables.forEach((deliv) => {
 				if (!searchQuery.trim() || deliv.title.toLowerCase().includes(searchQuery.toLowerCase()) || deliv.description?.toLowerCase().includes(searchQuery.toLowerCase()) || project.title.toLowerCase().includes(searchQuery.toLowerCase()) || project.clientName.toLowerCase().includes(searchQuery.toLowerCase())) list.push({

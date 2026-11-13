@@ -154,7 +154,7 @@ Importation, Exportation & Distribution de Matériaux de Construction et Équipe
 </tr>
 </thead>
 <tbody className="divide-y divide-stone-200">
-{doc.items.map((item, idx) => /* @__PURE__ */ <tr key={item.id || idx} className="text-[11px]">
+{doc.items.map((item: any, idx: number) => /* @__PURE__ */ <tr key={item.id || idx} className="text-[11px]">
 <td className="py-2 px-3 text-center text-stone-400 font-mono">{idx + 1}</td>
 <td className="py-2 px-3">
 <div className="font-bold text-stone-900">{item.description}</div>

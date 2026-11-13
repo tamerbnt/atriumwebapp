@@ -19,7 +19,7 @@ const NotarySimulatorModal = ({ isOpen, onClose, defaultPriceDzd = 2e7, property
 	const [propertyType, setPropertyType] = React.useState("Residential");
 	const [deboursDzd, setDeboursDzd] = React.useState(25e3);
 	if (!isOpen) return null;
-	const sim = calculateNotaryClosingCosts(priceDzd, propertyType, deboursDzd);
+	const sim = calculateNotaryClosingCosts(priceDzd, propertyType as any, deboursDzd);
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
 <div className="relative w-full max-w-2xl bg-white dark:bg-[#18181B] rounded-[28px] shadow-2xl border border-[#E9EEF0] dark:border-[#27272A] p-6 md:p-8 my-8 text-[#18181B] dark:text-[#FAFAFA]">
 <div className="flex items-center justify-between pb-4 border-b border-[#E2E8EC] dark:border-[#27272A] mb-5">

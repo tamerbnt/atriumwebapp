@@ -18,7 +18,7 @@ interface MandateModalProps {
 
 const MandateModal = ({ isOpen, onClose, onSave, properties, selectedProperty }) => {
 	const [propertyId, setPropertyId] = React.useState(selectedProperty?.id || (properties[0]?.id ?? ""));
-	const activeProp = properties.find((p) => p.id === propertyId) || selectedProperty || properties[0];
+	const activeProp = properties.find((p: any) => p.id === propertyId) || selectedProperty || properties[0];
 	const [mandateType, setMandateType] = React.useState("Vente_Simple");
 	const [ownerFullName, setOwnerFullName] = React.useState(activeProp?.ownerName || "");
 	const [ownerPhone, setOwnerPhone] = React.useState(activeProp?.ownerPhone || "");
@@ -38,10 +38,10 @@ const MandateModal = ({ isOpen, onClose, onSave, properties, selectedProperty })
 	const start = new Date(startDate);
 	start.setMonth(start.getMonth() + Number(durationMonths));
 	const endDate = start.toISOString().split("T")[0];
-	const commissionCalc = calculateMandateCommission(askingPriceDzd, commissionMode, commissionRatePercent);
+	const commissionCalc = calculateMandateCommission(askingPriceDzd, commissionMode as any, commissionRatePercent);
 	const handlePropertyChange = (newPropId: any) => {
 		setPropertyId(newPropId);
-		const chosen = properties.find((p) => p.id === newPropId);
+		const chosen = properties.find((p: any) => p.id === newPropId);
 		if (chosen) {
 			setOwnerFullName(chosen.ownerName);
 			setOwnerPhone(chosen.ownerPhone);
@@ -103,7 +103,7 @@ const MandateModal = ({ isOpen, onClose, onSave, properties, selectedProperty })
 </div>
 <form onSubmit={handleSubmit} className="space-y-6">
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-<LabelSelect label="Bien Immobilier Rattaché" value={propertyId} onChange={(val) => handlePropertyChange(val)} options={properties.map((p) => ({
+<LabelSelect label="Bien Immobilier Rattaché" value={propertyId} onChange={(val) => handlePropertyChange(val)} options={properties.map((p: any) => ({
 								value: p.id,
 								label: `${p.title} (${p.cityWilaya})`
 							}))} />

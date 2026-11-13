@@ -162,7 +162,7 @@ mm
 			minWidth: "150px",
 			align: "center",
 			renderCell: (bat: any) => {
-				const badge = {
+				const badge = ({
 					approved: {
 						label: "Validé BAT",
 						bg: "bg-emerald-100 dark:bg-emerald-950/60",
@@ -178,7 +178,7 @@ mm
 						bg: "bg-amber-100 dark:bg-amber-950/60",
 						text: "text-amber-800 dark:text-amber-300"
 					}
-				}[bat.approvalStatus] || {
+				} as Record<string, any>)[bat.approvalStatus] || {
 					label: bat.approvalStatus,
 					bg: "bg-zinc-100",
 					text: "text-zinc-600"
@@ -206,8 +206,8 @@ mm
 			projectTitle: selectedProject.title,
 			printOrderId: selectedOrderId || void 0,
 			title: artworkTitle.endsWith(".pdf") ? artworkTitle : `${artworkTitle}_v${nextVersion}.pdf`,
-			fileFormat,
-			colorSpace,
+			fileFormat: fileFormat as any,
+			colorSpace: colorSpace as any,
 			resolutionDpi: Number(resolutionDpi) || 300,
 			bleedMm: 3,
 			hasBleedIncluded,

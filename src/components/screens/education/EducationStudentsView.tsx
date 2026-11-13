@@ -144,7 +144,7 @@ export const EducationStudentsView: React.FC<any> = () => {
 				guardianPhone: formData.isMinor ? formData.guardianPhone : void 0,
 				guardianRelation: formData.isMinor ? formData.guardianRelation : void 0,
 				schoolGrade: formData.schoolGrade || void 0,
-				status: formData.status,
+				status: formData.status as any,
 				notes: formData.notes || void 0
 			});
 			if (selectedStudent?.id === studentToEdit.id) setSelectedStudent({
@@ -156,7 +156,7 @@ export const EducationStudentsView: React.FC<any> = () => {
 				guardianPhone: formData.isMinor ? formData.guardianPhone : void 0,
 				guardianRelation: formData.isMinor ? formData.guardianRelation : void 0,
 				schoolGrade: formData.schoolGrade || void 0,
-				status: formData.status,
+				status: formData.status as any,
 				notes: formData.notes || void 0
 			});
 		} else {
@@ -168,7 +168,7 @@ export const EducationStudentsView: React.FC<any> = () => {
 				guardianPhone: formData.isMinor ? formData.guardianPhone : void 0,
 				guardianRelation: formData.isMinor ? formData.guardianRelation : void 0,
 				schoolGrade: formData.schoolGrade || void 0,
-				status: formData.status,
+				status: formData.status as any,
 				attendanceRatePercent: 100,
 				notes: formData.notes || void 0
 			});
@@ -647,7 +647,7 @@ export const EducationStudentsView: React.FC<any> = () => {
 								label: language === "ar" ? "تفعيل الطلبة" : language === "fr" ? "Activer sélection" : "Activate Selected",
 								icon: /* @__PURE__ */ <Check size={13} />,
 								onClick: (ids: any) => {
-									ids.forEach((id) => updateEduStudent(id, { status: "Active" }));
+									ids.forEach((id: any) => updateEduStudent(id, { status: "Active" }));
 									showToast?.({
 										type: "success",
 										title: language === "ar" ? "تم التحديث" : "Mise à jour",

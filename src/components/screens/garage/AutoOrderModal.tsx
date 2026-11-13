@@ -37,7 +37,7 @@ const AutoOrderModal = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
 	const [isOdometerReplaced, setIsOdometerReplaced] = React.useState(false);
 	const [fuelLevel, setFuelLevel] = React.useState("50");
 	const [isVehicleDirty, setIsVehicleDirty] = React.useState(false);
-	const [accessories, setAccessories] = React.useState({
+	const [accessories, setAccessories] = React.useState<Record<string, boolean>>({
 		spareWheel: true,
 		jackAndKit: true,
 		carteGrise: true,
@@ -54,11 +54,11 @@ const AutoOrderModal = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
 	const [assignedBayId, setAssignedBayId] = React.useState(bays[0]?.id || "bay_01");
 	const [technician, setTechnician] = React.useState("Karim (Chef Atelier)");
 	const [isClientSigned, setIsClientSigned] = React.useState(false);
-	const activeVehicle = vehicles.find((v) => v.id === selectedVehicleId) || vehicles[0];
+	const activeVehicle = vehicles.find((v: any) => v.id === selectedVehicleId) || vehicles[0];
 	React.useEffect(() => {
 		if (activeVehicle) {
 			setCurrentMileage(String(activeVehicle.mileageKm || 5e4));
-			const freeBay = bays.find((b) => !b.isOccupied);
+			const freeBay = bays.find((b: any) => !b.isOccupied);
 			if (freeBay) setAssignedBayId(freeBay.id);
 		}
 	}, [selectedVehicleId]);
@@ -94,7 +94,7 @@ const AutoOrderModal = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
 			showToast(language === "ar" ? `العداد المدخل (${enteredKm} كم) أقل من المسجل سابقاً (${activeVehicle.lastServiceKm} كم)` : `Kilométrage saisi (${enteredKm} km) inférieur au dernier relevé (${activeVehicle.lastServiceKm} km)`, "error");
 			return;
 		}
-		const assignedBay = bays.find((b) => b.id === assignedBayId);
+		const assignedBay = bays.find((b: any) => b.id === assignedBayId);
 		const newOrder = {
 			id: `ro_${Date.now()}`,
 			orderNumber: `OR-2026-${Math.floor(1e3 + Math.random() * 9e3)}`,
@@ -125,11 +125,11 @@ const AutoOrderModal = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
 		showToast(language === "ar" ? `تم فتح أمر التصليح (${newOrder.orderNumber}) وفحص الاستلام` : `Ordre de réparation (${newOrder.orderNumber}) et fiche d'entrée créés`, "success");
 		onClose();
 	};
-	const vehicleOptions = vehicles.map((v) => ({
+	const vehicleOptions = vehicles.map((v: any) => ({
 		value: v.id,
 		label: `${v.plateNumber} — ${v.brand} ${v.model} (${v.ownerName}${v.fleetName ? ` · ${v.fleetName}` : ""})`
 	}));
-	const bayOptions = bays.map((b) => ({
+	const bayOptions = bays.map((b: any) => ({
 		value: b.id,
 		label: `${b.name} ${b.isOccupied ? "(Occupé)" : "(Libre)"}`
 	}));

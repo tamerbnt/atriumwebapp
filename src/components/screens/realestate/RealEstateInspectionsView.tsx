@@ -442,7 +442,7 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
 </div>
 </div>}
 </div>
-{isBonDeVisiteModalOpen && /* @__PURE__ */ <BonDeVisiteModal isOpen={isBonDeVisiteModalOpen} onClose={() => setIsBonDeVisiteModalOpen(false)} properties={properties} onSave={(visit) => {
+{isBonDeVisiteModalOpen && /* @__PURE__ */ <BonDeVisiteModal isOpen={isBonDeVisiteModalOpen} onClose={() => setIsBonDeVisiteModalOpen(false)} properties={properties} onSave={(visit: any) => {
 							addVisit(visit);
 							showToast(isAr ? "تم توثيق وصل المعاينة بنجاح" : "Bon de visite certifié avec géolocalisation", "success");
 							setIsBonDeVisiteModalOpen(false);

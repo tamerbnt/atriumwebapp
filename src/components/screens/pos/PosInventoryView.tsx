@@ -190,7 +190,7 @@ export const PosInventoryView: React.FC<any> = () => {
 		b2bSuppliers
 	]);
 	const categories = React.useMemo(() => {
-		const set = /* @__PURE__ */ new Set();
+		const set = /* @__PURE__ */ new Set<string>();
 		products.forEach((p) => {
 			if (p.category) set.add(p.category);
 		});
@@ -1217,7 +1217,7 @@ j paiement
 </form>
 </Modal>
 <B2bEntityModal isOpen={isSupplierModalOpen} onClose={() => setIsSupplierModalOpen(false)} entityType="supplier" onSaved={(sup) => {
-						const supName = "supplierName" in sup ? sup.supplierName : "companyName" in sup ? sup.companyName : sup.clientName || "";
+						const supName = "supplierName" in sup ? sup.supplierName : "companyName" in sup ? sup.companyName : (sup as any).clientName || "";
 						showToast({
 							type: "success",
 							title: language === "ar" ? "مورد جديد" : "Nouveau Fournisseur",

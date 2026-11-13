@@ -48,7 +48,7 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 	const [ticketForPrint, setTicketForPrint] = React.useState<any>(null);
 	const playTallyBeep = () => {
 		try {
-			const ctx = new (window.AudioContext || window.webkitAudioContext)();
+			const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
 			const osc = ctx.createOscillator();
 			const gain = ctx.createGain();
 			osc.type = "sine";
@@ -88,7 +88,7 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 	const [cratesCount, setCratesCount] = React.useState("250");
 	const [unitPrice, setUnitPrice] = React.useState("75");
 	const [market, setMarket] = React.useState("Marché de Gros des Eucalyptus, Alger");
-	const [selectedTicket, setSelectedTicket] = React.useState(() => {
+	const [selectedTicket, setSelectedTicket] = React.useState<any>(() => {
 		return harvestTickets[0] || null;
 	});
 	const [activeTab, setActiveTab] = React.useState("ticket");

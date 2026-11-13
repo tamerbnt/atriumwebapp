@@ -95,7 +95,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
 			qrHash: `CERT-${certType.slice(0, 4).toUpperCase()}-${Date.now().toString().slice(-4)}-DZ`,
 			isSigned: true
 		};
-		addCertificate(newCert);
+		addCertificate(newCert as any);
 		setIsCreateModalOpen(false);
 	};
 	const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({

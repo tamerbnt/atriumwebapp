@@ -56,13 +56,13 @@ export const LegalTrustView: React.FC<any> = () => {
 	const { matters, updateMatter, escrowAccounts, updateEscrowAccount, scfEntries, addSCFEntry, cashReceipts, addCashReceipt, dailyClosure, updateDailyClosure } = useLegalData();
 	const [selectedMatter, setSelectedMatter] = React.useState<any>(null);
 	const [carpaTab, setCarpaTab] = React.useState("sequestre");
-	const [selectedEscrow, setSelectedEscrow] = React.useState(() => escrowAccounts[0] || null);
+	const [selectedEscrow, setSelectedEscrow] = React.useState<any>(() => escrowAccounts[0] || null);
 	const [escrowTab, setEscrowTab] = React.useState("double_lock");
 	const [cadastralVolume, setCadastralVolume] = React.useState("");
 	const [cadastralNumber, setCadastralNumber] = React.useState("");
 	const [notaryPin, setNotaryPin] = React.useState("");
 	const [releaseAmount, setReleaseAmount] = React.useState(0);
-	const [selectedSCFEntry, setSelectedSCFEntry] = React.useState(() => scfEntries[0] || null);
+	const [selectedSCFEntry, setSelectedSCFEntry] = React.useState<any>(() => scfEntries[0] || null);
 	const [scfJournalFilter, setScfJournalFilter] = React.useState("ALL");
 	const [isSCFModalOpen, setIsSCFModalOpen] = React.useState(false);
 	const [scfLibelle, setScfLibelle] = React.useState("");
@@ -72,7 +72,7 @@ export const LegalTrustView: React.FC<any> = () => {
 	const [scfTvaRate, setScfTvaRate] = React.useState(19);
 	const [isClosureModalOpen, setIsClosureModalOpen] = React.useState(false);
 	const [isNewReceiptModalOpen, setIsNewReceiptModalOpen] = React.useState(false);
-	const [selectedReceipt, setSelectedReceipt] = React.useState(() => cashReceipts[0] || null);
+	const [selectedReceipt, setSelectedReceipt] = React.useState<any>(() => cashReceipts[0] || null);
 	const [receiptClientName, setReceiptClientName] = React.useState("");
 	const [receiptMatterTitle, setReceiptMatterTitle] = React.useState("");
 	const [receiptAmountHt, setReceiptAmountHt] = React.useState(5e4);
@@ -115,7 +115,7 @@ export const LegalTrustView: React.FC<any> = () => {
 			notes: `Déblocage de séquestre post-publicité foncière (${selectedEscrow.cadastralClearanceProof?.volume})`
 		};
 		const newBalance = selectedEscrow.currentBalanceDzd - amountToRelease;
-		const updated = {
+		const updated: any = {
 			...selectedEscrow,
 			currentBalanceDzd: newBalance,
 			totalDisbursedDzd: selectedEscrow.totalDisbursedDzd + amountToRelease,
@@ -164,7 +164,7 @@ export const LegalTrustView: React.FC<any> = () => {
 			showToast(balancing.error || "Erreur d'équilibrage", "error");
 			return;
 		}
-		const newEntry = {
+		const newEntry: any = {
 			id: `scf_${Date.now()}`,
 			accountId: "acc_01",
 			businessId: "biz_legal",
@@ -198,7 +198,7 @@ export const LegalTrustView: React.FC<any> = () => {
 		const ttc = ht + tva;
 		const stamp = calculateArticle317Stamp(ttc, "especes");
 		const netCollected = ttc + stamp;
-		const newRc = {
+		const newRc: any = {
 			id: `cr_${Date.now()}`,
 			accountId: "acc_01",
 			businessId: "biz_legal",
@@ -491,7 +491,7 @@ export const LegalTrustView: React.FC<any> = () => {
 </div>}
 {escrowTab === "transactions" && /* @__PURE__ */ <div className="space-y-3">
 <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider block">Mouvements Bancaires & Trésor</span>
-{selectedEscrow.transactions.map((tx) => /* @__PURE__ */ <div key={tx.id} className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 space-y-1 bg-white dark:bg-neutral-900">
+{selectedEscrow.transactions.map((tx: any) => /* @__PURE__ */ <div key={tx.id} className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 space-y-1 bg-white dark:bg-neutral-900">
 <div className="flex items-center justify-between font-mono">
 <span className="text-[10px] text-neutral-400">{tx.date}</span>
 <span className={`text-xs font-bold ${tx.type === "deposit_received" ? "text-emerald-600" : "text-blue-600"}`}>
@@ -715,7 +715,7 @@ export const LegalTrustView: React.FC<any> = () => {
 </div>
 <div className="space-y-2">
 <span className="text-[10px] uppercase font-bold text-neutral-400 block">Ventilation des Lignes Comptables</span>
-{selectedSCFEntry.lines.map((l) => /* @__PURE__ */ <div key={l.id} className="p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 space-y-1">
+{selectedSCFEntry.lines.map((l: any) => /* @__PURE__ */ <div key={l.id} className="p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 space-y-1">
 <div className="flex items-center justify-between">
 <span className="font-mono font-bold text-xs text-[#d4522f]">{l.accountNumber}</span>
 <div className="font-mono text-xs font-bold">

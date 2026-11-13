@@ -90,7 +90,7 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 		allCommercialDocs
 	]);
 	const handleItemChange = (index: any, field: any, value: any) => {
-		setItems((prev) => {
+		setItems((prev: any) => {
 			const next = [...prev];
 			const target = {
 				...next[index],
@@ -111,7 +111,7 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 	const handleProductSelect = (index: any, prodId: any) => {
 		const prod = products.find((p) => p.id === prodId);
 		if (!prod) return;
-		setItems((prev) => {
+		setItems((prev: any) => {
 			const next = [...prev];
 			const unitPrice = prod.price?.amount || 0;
 			const tva = prod.taxRate ?? 19;
@@ -133,7 +133,7 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 	};
 	const addItemRow = () => {
 		const newId = `item_${Date.now()}_${items.length + 1}`;
-		setItems((prev) => [...prev, {
+		setItems((prev: any) => [...prev, {
 			id: newId,
 			productId: "",
 			description: "",
@@ -149,7 +149,7 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 	};
 	const removeItemRow = (index: any) => {
 		if (items.length <= 1) return;
-		setItems((prev) => prev.filter((_, i) => i !== index));
+		setItems((prev: any) => prev.filter((_: any, i: any) => i !== index));
 	};
 	const calculations = React.useMemo(() => {
 		return calculateCommercialTotals({
@@ -171,7 +171,7 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 			alert(t("trading_composer_alert_select_client"));
 			return;
 		}
-		if (items.length === 0 || items.every((it) => !it.description)) {
+		if (items.length === 0 || items.every((it: any) => !it.description)) {
 			alert(t("trading_composer_alert_add_item"));
 			return;
 		}
@@ -193,7 +193,7 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 			paymentMethod,
 			paymentTerms,
 			status: targetStatus,
-			items: items.filter((it) => it.description.trim() !== ""),
+			items: items.filter((it: any) => it.description.trim() !== ""),
 			totalHtRaw: calculations.totalHtRaw,
 			generalDiscountPercent,
 			totalHtFinal: calculations.totalHtFinal,
@@ -209,14 +209,14 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 			includeStampSignature
 		};
 		if (isEdit && editingDoc) {
-			updateCommercialDoc(editingDoc.id, docPayload);
+			updateCommercialDoc(editingDoc.id, docPayload as any);
 			if (onSaved) onSaved({
 				...editingDoc,
 				...docPayload,
 				updatedAt: (/* @__PURE__ */ new Date()).toISOString()
 			});
 		} else {
-			const created = createCommercialDoc(docPayload);
+			const created = createCommercialDoc(docPayload as any);
 			if (onSaved) onSaved(created);
 		}
 		onClose();
@@ -404,7 +404,7 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 </tr>
 </thead>
 <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
-{items.map((item, idx) => /* @__PURE__ */ <tr key={item.id} className="hover:bg-stone-50/50 dark:hover:bg-stone-800/30">
+{items.map((item: any, idx: number) => /* @__PURE__ */ <tr key={item.id} className="hover:bg-stone-50/50 dark:hover:bg-stone-800/30">
 <td className="p-2 space-y-1">
 <select className="w-full text-xs rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-stone-800 dark:text-stone-200 focus:outline-hidden focus:border-[#d4522f]" value={item.productId || ""} onChange={(e) => handleProductSelect(idx, e.target.value)}>
 <option value="">-- Choisir dans le catalogue --</option>

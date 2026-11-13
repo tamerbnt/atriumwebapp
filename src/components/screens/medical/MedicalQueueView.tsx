@@ -52,7 +52,7 @@ export const MedicalQueueView: React.FC<any> = () => {
 	const [sortDir, setSortDir] = React.useState("desc");
 	const [selectedIds, setSelectedIds] = React.useState(/* @__PURE__ */ new Set());
 	const [pinnedIds, setPinnedIds] = React.useState(/* @__PURE__ */ new Set(["cons_01"]));
-	const [selectedConsultation, setSelectedConsultation] = React.useState(() => consultations[0] || null);
+	const [selectedConsultation, setSelectedConsultation] = React.useState<any>(() => consultations[0] || null);
 	const [activeInspectorTab, setActiveInspectorTab] = React.useState("fiche");
 	const [isConsultModalOpen, setIsConsultModalOpen] = React.useState(false);
 	const [quickNote, setQuickNote] = React.useState("");

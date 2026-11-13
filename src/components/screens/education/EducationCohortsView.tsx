@@ -218,7 +218,7 @@ export const EducationCohortsView: React.FC<any> = () => {
 			tuitionFee: formData.tuitionFee,
 			currency: "DZD",
 			scheduleSummary: formData.scheduleSummary,
-			status: formData.status,
+			status: formData.status as any,
 			syllabusMilestones: [
 				{
 					title: "Orientation & Core Fundamentals",
@@ -646,7 +646,7 @@ export const EducationCohortsView: React.FC<any> = () => {
 {language === "ar" ? "مراحل ومحاور المنهاج" : language === "fr" ? "Progression du programme" : "Syllabus Milestones & Progress"}
 </h3>
 <div className="space-y-2">
-{selectedCohort.syllabusMilestones?.map((milestone, idx) => /* @__PURE__ */ <div key={idx} onClick={() => handleToggleMilestone(selectedCohort.id, idx)} className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${milestone.completed ? "border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/30 dark:bg-emerald-950/20" : "border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"}`}>
+{selectedCohort.syllabusMilestones?.map((milestone: any, idx: number) => /* @__PURE__ */ <div key={idx} onClick={() => handleToggleMilestone(selectedCohort.id, idx)} className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${milestone.completed ? "border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/30 dark:bg-emerald-950/20" : "border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"}`}>
 <button type="button" className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 ${milestone.completed ? "bg-emerald-600 text-white" : "border border-neutral-300 dark:border-neutral-700"}`}>{milestone.completed && /* @__PURE__ */ <Check size={12} />}</button>
 <div className="min-w-0">
 <span className={`font-semibold text-xs block ${milestone.completed ? "text-neutral-500 dark:text-neutral-400 line-through" : "text-neutral-900 dark:text-white"}`}>{milestone.title}</span>

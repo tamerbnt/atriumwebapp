@@ -60,7 +60,7 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 	const [vehiclePlate, setVehiclePlate] = React.useState("01452-120-16");
 	const [zoneWilaya, setZoneWilaya] = React.useState("Alger Est & Centre");
 	const [status, setStatus] = React.useState("Dispatched");
-	const [selectedManifest, setSelectedManifest] = React.useState(() => {
+	const [selectedManifest, setSelectedManifest] = React.useState<any>(() => {
 		return manifests[0] || null;
 	});
 	const [activeTab, setActiveTab] = React.useState("manifest");
@@ -93,7 +93,7 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 		const unassignedShipments = shipments.filter((s) => s.status === "ReceivedAtHub" || s.status === "Sorted");
 		const count = manifestToEdit ? manifestToEdit.totalShipmentsCount : unassignedShipments.length || 5;
 		const codTotal = manifestToEdit ? manifestToEdit.totalCodExpectedDzd : unassignedShipments.reduce((acc, s) => acc + s.codAmountDzd, 0) || 45e3;
-		const payload = {
+		const payload: any = {
 			id: manifestToEdit?.id || `man_${Date.now()}`,
 			accountId: manifestToEdit?.accountId || "acc_01",
 			businessId: currentBusiness?.id || "biz_logistics",
@@ -422,7 +422,7 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 								label: isAr ? "إغلاق المسارات" : "Clôturer tournées",
 								icon: /* @__PURE__ */ <CheckCircle2 size={14} />,
 								onClick: (ids: any) => {
-									ids.forEach((id) => {
+									ids.forEach((id: any) => {
 										const m = manifests.find((item) => item.id === id);
 										if (m) handleCloseTournee(m);
 									});

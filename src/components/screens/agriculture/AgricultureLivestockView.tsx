@@ -67,8 +67,8 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 	const [milkProduction, setMilkProduction] = React.useState("25.0");
 	const [healthStatus, setHealthStatus] = React.useState("Healthy");
 	const [notes, setNotes] = React.useState("Vaccination à jour. Bon état corporel.");
-	const [selectedAnimal, setSelectedAnimal] = React.useState(() => livestock[0] || null);
-	const [selectedMilking, setSelectedMilking] = React.useState(() => milkingRecords[0] || null);
+	const [selectedAnimal, setSelectedAnimal] = React.useState<any>(() => livestock[0] || null);
+	const [selectedMilking, setSelectedMilking] = React.useState<any>(() => milkingRecords[0] || null);
 	const [inspectorTab, setInspectorTab] = React.useState("fiche");
 	const openCreateModal = () => {
 		setAnimalToEdit(null);
@@ -106,7 +106,7 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 			showToast(isAr ? "يرجى إدخال رقم الحلقة / الترقيم" : "Veuillez saisir le numéro de boucle", "error");
 			return;
 		}
-		const payload = {
+		const payload: any = {
 			id: animalToEdit?.id || `ani_${Date.now()}`,
 			accountId: animalToEdit?.accountId || "acc_01",
 			businessId: currentBusiness?.id || "biz_agri",

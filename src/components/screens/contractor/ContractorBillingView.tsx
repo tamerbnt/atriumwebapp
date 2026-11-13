@@ -45,7 +45,7 @@ export const ContractorBillingView: React.FC<any> = () => {
 	const [sortDir, setSortDir] = React.useState("desc");
 	const [selectedIds, setSelectedIds] = React.useState(/* @__PURE__ */ new Set());
 	const [pinnedIds, setPinnedIds] = React.useState(/* @__PURE__ */ new Set());
-	const [selectedDgp, setSelectedDgp] = React.useState(() => dgps[0] || null);
+	const [selectedDgp, setSelectedDgp] = React.useState<any>(() => dgps[0] || null);
 	const [activeInspectorTab, setActiveInspectorTab] = React.useState("decompte");
 	const [isModalOpen, setIsModalOpen] = React.useState(false);
 	const [isPrintModalOpen, setIsPrintModalOpen] = React.useState(false);
@@ -125,7 +125,7 @@ export const ContractorBillingView: React.FC<any> = () => {
 			penaltiesDeductedDzd: penDzd,
 			vatRatePercent: vatPercent
 		});
-		const newDgp = {
+		const newDgp: any = {
 			id: `dgp_${Date.now()}`,
 			accountId: "acc_01",
 			businessId: currentBusiness?.id || "biz_contractor",

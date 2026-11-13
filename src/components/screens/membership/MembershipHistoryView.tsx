@@ -202,7 +202,7 @@ export const MembershipHistoryView: React.FC<any> = () => {
 			width: "2.5*",
 			minWidth: "180px",
 			renderCell: (sale: any) => /* @__PURE__ */ <div className="flex items-center gap-1.5 flex-wrap">
-{sale.items.slice(0, 3).map((it, idx) => /* @__PURE__ */ <span key={idx} className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[11px] font-medium text-neutral-700 dark:text-neutral-300">
+{sale.items.slice(0, 3).map((it: any, idx: number) => /* @__PURE__ */ <span key={idx} className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[11px] font-medium text-neutral-700 dark:text-neutral-300">
 {it.quantity}
 {"x "}
 {it.productName}
@@ -436,7 +436,7 @@ export const MembershipHistoryView: React.FC<any> = () => {
 </div>
 </div>
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-2.5 rounded-xl space-y-1 text-xs">
-{sale.items.map((it, idx) => /* @__PURE__ */ <div key={idx} className="flex justify-between text-[11px] text-neutral-600 dark:text-neutral-300">
+{sale.items.map((it: any, idx: number) => /* @__PURE__ */ <div key={idx} className="flex justify-between text-[11px] text-neutral-600 dark:text-neutral-300">
 <span className="truncate max-w-[150px]">
 {it.quantity}
 {"x "}
@@ -552,7 +552,7 @@ export const MembershipHistoryView: React.FC<any> = () => {
 )
 </span>
 <div className="border border-neutral-200 dark:border-neutral-800 rounded-2xl divide-y divide-neutral-200 dark:divide-neutral-800 overflow-hidden">
-{selectedSale.items.map((item, idx) => /* @__PURE__ */ <div key={idx} className="p-3.5 flex justify-between items-center bg-white dark:bg-neutral-800/40">
+{selectedSale.items.map((item: any, idx: number) => /* @__PURE__ */ <div key={idx} className="p-3.5 flex justify-between items-center bg-white dark:bg-neutral-800/40">
 <div>
 <div className="font-bold text-neutral-900 dark:text-white">{item.productName}</div>
 <div className="text-[11px] text-neutral-400 tabular-nums mt-0.5">
@@ -617,7 +617,7 @@ export const MembershipHistoryView: React.FC<any> = () => {
 <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-200 flex items-start gap-2.5">
 <AlertCircle size={16} className="text-amber-600 shrink-0 mt-0.5" />
 <span>
-{language === "ar" ? `سيؤدي الاسترجاع إلى إعادة جميع الأصناف (${selectedSale.items.reduce((s, i) => s + i.quantity, 0)}) إلى مخزون الفرع المتاح وتوثيق العملية في سجل التدقيق.` : language === "fr" ? `Ce remboursement réintégrera l'ensemble des ${selectedSale.items.reduce((s, i) => s + i.quantity, 0)} articles au stock du magasin et tracera l'opération.` : `Refunding will return all ${selectedSale.items.reduce((s, i) => s + i.quantity, 0)} items back to available branch stock and create an audit log.`}
+{language === "ar" ? `سيؤدي الاسترجاع إلى إعادة جميع الأصناف (${selectedSale.items.reduce((s: any, i: any) => s + i.quantity, 0)}) إلى مخزون الفرع المتاح وتوثيق العملية في سجل التدقيق.` : language === "fr" ? `Ce remboursement réintégrera l'ensemble des ${selectedSale.items.reduce((s: any, i: any) => s + i.quantity, 0)} articles au stock du magasin et tracera l'opération.` : `Refunding will return all ${selectedSale.items.reduce((s: any, i: any) => s + i.quantity, 0)} items back to available branch stock and create an audit log.`}
 </span>
 </div>
 <div>

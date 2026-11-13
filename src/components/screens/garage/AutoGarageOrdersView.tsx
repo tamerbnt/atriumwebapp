@@ -60,7 +60,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
 	const [isRequisitionModalOpen, setIsRequisitionModalOpen] = React.useState(false);
 	const [selectedPartId, setSelectedPartId] = React.useState("");
 	const [selectedPartQty, setSelectedPartQty] = React.useState("1");
-	const [selectedOrder, setSelectedOrder] = React.useState(() => orders[0] || null);
+	const [selectedOrder, setSelectedOrder] = React.useState<any>(() => orders[0] || null);
 	const [activeTab, setActiveTab] = React.useState("ordre");
 	const filteredOrders = React.useMemo(() => {
 		return orders.filter((o) => {
@@ -111,7 +111,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
 		const currentIndex = sequence.indexOf(order.status);
 		if (currentIndex >= 0 && currentIndex < sequence.length - 1) {
 			const next = sequence[currentIndex + 1];
-			updateOrderStatus(order.id, next);
+			updateOrderStatus(order.id, next as any);
 			if (selectedOrder?.id === order.id) setSelectedOrder({
 				...order,
 				status: next
@@ -361,7 +361,7 @@ P
 								label: isAr ? "تقديم المرحلة للمحدد" : "Avancer étape atelier",
 								icon: /* @__PURE__ */ <ArrowRight size={14} />,
 								onClick: (ids: any) => {
-									ids.forEach((id) => {
+									ids.forEach((id: any) => {
 										const ord = orders.find((o) => o.id === id);
 										if (ord) handleNextStatus(ord);
 									});
@@ -480,7 +480,7 @@ Carburant
 )
 </span>
 {(selectedOrder.damageMarkers || []).length === 0 ? /* @__PURE__ */ <p className="text-[11px] text-neutral-400 italic">Véhicule admis sans dommages carrosserie notés.</p> : /* @__PURE__ */ <ul className="space-y-1">
-{selectedOrder.damageMarkers?.map((dm, i) => /* @__PURE__ */ <li key={dm.id} className="text-[11px] text-neutral-600 dark:text-neutral-300 flex items-center gap-1.5">
+{selectedOrder.damageMarkers?.map((dm: any, i: any) => /* @__PURE__ */ <li key={dm.id} className="text-[11px] text-neutral-600 dark:text-neutral-300 flex items-center gap-1.5">
 <span className="w-4 h-4 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-[9px] font-bold">{i + 1}</span>
 <span className="capitalize font-semibold">{dm.damageType}</span>
 <span className="text-neutral-400">
@@ -502,7 +502,7 @@ Carburant
 {selectedOrder.partsUsed.length === 0 ? /* @__PURE__ */ <div className="p-8 text-center text-neutral-400 italic border border-dashed rounded-2xl">
 Aucune pièce réquisitionnée pour le moment. Cliquez sur "Sortir Pièce" pour ajouter des pièces du magasin.
 </div> : /* @__PURE__ */ <div className="space-y-2">
-{selectedOrder.partsUsed.map((p) => /* @__PURE__ */ <div key={p.id} className="p-2.5 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-neutral-200/60 dark:border-neutral-700 space-y-1">
+{selectedOrder.partsUsed.map((p: any) => /* @__PURE__ */ <div key={p.id} className="p-2.5 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-neutral-200/60 dark:border-neutral-700 space-y-1">
 <div className="flex items-center justify-between">
 <span className="font-semibold text-neutral-900 dark:text-white truncate max-w-[200px]">{p.name}</span>
 <span className="font-mono text-neutral-500 font-bold">
@@ -545,9 +545,9 @@ x
 											label: "Essai dynamique sur route & freinage",
 											done: false
 										}
-									]).map((item) => /* @__PURE__ */ <label key={item.id} className="flex items-center gap-2 p-2 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-neutral-200/60 dark:border-neutral-700 cursor-pointer">
+									]).map((item: any) => /* @__PURE__ */ <label key={item.id} className="flex items-center gap-2 p-2 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-neutral-200/60 dark:border-neutral-700 cursor-pointer">
 <input type="checkbox" checked={item.done} onChange={() => {
-												const updated = (selectedOrder.technicianChecklist || []).map((c) => c.id === item.id ? {
+												const updated = (selectedOrder.technicianChecklist || []).map((c: any) => c.id === item.id ? {
 													...c,
 													done: !c.done
 												} : c);
@@ -580,7 +580,7 @@ x
 </div>}
 </div>
 </aside>}
-<AutoOrderModal isOpen={isOrderModalOpen} onClose={() => setIsOrderModalOpen(false)} vehicles={vehicles} bays={bays} onSave={(newOrder) => {
+<AutoOrderModal isOpen={isOrderModalOpen} onClose={() => setIsOrderModalOpen(false)} vehicles={vehicles} bays={bays} onSave={(newOrder: any) => {
 					addOrder(newOrder);
 					setSelectedOrder(newOrder);
 				}} />

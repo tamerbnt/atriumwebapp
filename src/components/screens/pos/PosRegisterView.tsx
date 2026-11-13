@@ -58,7 +58,7 @@ interface CartItem {
 
 const playBeep = (freq = 880, duration = .08) => {
 	try {
-		const ctx = new (window.AudioContext || window.webkitAudioContext)();
+		const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
 		const osc = ctx.createOscillator();
 		const gain = ctx.createGain();
 		osc.type = "sine";
@@ -130,7 +130,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 	const [formUnit, setFormUnit] = React.useState("pcs");
 	const [formTaxRate, setFormTaxRate] = React.useState(19);
 	const categories = React.useMemo(() => {
-		const set = /* @__PURE__ */ new Set();
+		const set = /* @__PURE__ */ new Set<string>();
 		products.forEach((p) => {
 			if (p.category) set.add(p.category);
 		});
@@ -365,7 +365,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 			width: "3*",
 			minWidth: "200px",
 			renderCell: (po: any) => /* @__PURE__ */ <div className="flex items-center gap-1.5 flex-wrap">
-{po.items.slice(0, 3).map((it, idx) => /* @__PURE__ */ <span key={idx} className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[11px] font-medium text-neutral-700 dark:text-neutral-300">
+{po.items.slice(0, 3).map((it: any, idx: number) => /* @__PURE__ */ <span key={idx} className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[11px] font-medium text-neutral-700 dark:text-neutral-300">
 {it.quantity}
 {"x "}
 {it.productName}
@@ -634,12 +634,12 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 			return;
 		}
 		const customer = members.find((m) => m.id === selectedCustomerId);
-		const sale = processSale(cart, checkoutMode === "split" ? "Split" : singlePaymentMethod, selectedCustomerId || void 0, checkoutNotes.trim() || void 0, {
+		const sale = processSale(cart, (checkoutMode === "split" ? "Split" : singlePaymentMethod) as any, selectedCustomerId || void 0, checkoutNotes.trim() || void 0, {
 			subtotal: cartSubtotal,
 			discount: discountAmount,
 			discountAmount,
 			taxAmount,
-			payments: checkoutMode === "split" ? splitPayments.filter((p) => p.amount > 0) : void 0,
+			payments: (checkoutMode === "split" ? splitPayments.filter((p) => p.amount > 0) : void 0) as any,
 			amountTendered: singlePaymentMethod === "Cash" ? numericAmountTendered : cartTotal,
 			changeGiven: changeDue,
 			cashierName: selectedCashierName,
@@ -1656,7 +1656,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </div>}
 </div>
 <div className="py-2 space-y-1 border-b border-dashed border-neutral-400 text-[11px]">
-{completedSale.items.map((it, idx) => /* @__PURE__ */ <div key={idx} className="flex justify-between">
+{completedSale.items.map((it: any, idx: number) => /* @__PURE__ */ <div key={idx} className="flex justify-between">
 <span>
 {it.quantity}
 {"x "}

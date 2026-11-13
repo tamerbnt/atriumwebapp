@@ -60,7 +60,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 	const [minThreshold, setMinThreshold] = React.useState("3");
 	const [unitCostDzd, setUnitCostDzd] = React.useState("180000");
 	const [warehouseLocation, setWarehouseLocation] = React.useState("Dépôt Bois - Rack A-01");
-	const [selectedMaterial, setSelectedMaterial] = React.useState(() => materials[0] || null);
+	const [selectedMaterial, setSelectedMaterial] = React.useState<any>(() => materials[0] || null);
 	const [activeDrawerTab, setActiveDrawerTab] = React.useState("fiche");
 	const [isVoucherModalOpen, setIsVoucherModalOpen] = React.useState(false);
 	const [voucherType, setVoucherType] = React.useState("BonDeSortie");
@@ -168,7 +168,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 			if (selectedMaterial?.id === updated.id) setSelectedMaterial(updated);
 			showToast(isAr ? "تم تحديث بطاقة المادة الأولية" : "Fiche matière première mise à jour", "success");
 		} else {
-			const newItem = {
+			const newItem: any = {
 				id: `raw_${Date.now()}`,
 				accountId: "acc_01",
 				businessId: "biz_manufacturing",
@@ -201,7 +201,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 		const unitCost = mat.unitCostPmpDzd;
 		const totalVal = qty * unitCost;
 		const prefix = voucherType === "BonDeSortie" ? "BSM" : voucherType === "BonDeReception" ? "BR" : "BT";
-		const newVoucher = {
+		const newVoucher: any = {
 			id: `v_${Date.now()}`,
 			accountId: "acc_01",
 			businessId: "biz_manufacturing",
@@ -745,7 +745,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 </tr>
 </thead>
 <tbody className="divide-y divide-neutral-200">
-{printableVoucher.items.map((item, idx) => /* @__PURE__ */ <tr key={idx}>
+{printableVoucher.items.map((item: any, idx: number) => /* @__PURE__ */ <tr key={idx}>
 <td className="p-2 font-medium">{item.materialName}</td>
 <td className="p-2 text-center font-mono font-bold">
 {item.quantity}

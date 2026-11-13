@@ -502,7 +502,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
 										e.stopPropagation();
 										setPrintedBooking(b);
 									}
-								}]} isPinned={(b) => pinnedBookingIds.has(b.id)} selectedIds={selectedBookingIds} onSelectionChange={setSelectedBookingIds} viewMode={controlledViewMode} showViewToggle={showViewToggle !== void 0 ? showViewToggle : true} showCalendarToggle={!!onSwitchToTimeline} onViewModeChange={(m) => {
+								}]} isPinned={(b) => pinnedBookingIds.has(b.id)} selectedIds={selectedBookingIds} onSelectionChange={setSelectedBookingIds} viewMode={controlledViewMode} showViewToggle={showViewToggle !== void 0 ? showViewToggle : true} showCalendarToggle={!!onSwitchToTimeline} onViewModeChange={(m: any) => {
 									if (onViewModeChange) onViewModeChange(m);
 									else if (m === "calendar" && onSwitchToTimeline) onSwitchToTimeline();
 								}} bulkSecondaryAction={{

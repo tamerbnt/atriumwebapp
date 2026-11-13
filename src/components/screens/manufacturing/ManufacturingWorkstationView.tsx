@@ -147,7 +147,7 @@ export const ManufacturingWorkstationView: React.FC<any> = () => {
 			scrapQuantity: (currentOrder.scrapQuantity || 0) + scrapQty,
 			status: updatedProduced >= currentOrder.targetQuantity ? "Completed" : "InProduction"
 		};
-		updateOrder(updatedOrder);
+		updateOrder(updatedOrder as any);
 		setIsFinishModalOpen(false);
 		setElapsedSeconds(0);
 		setSessionStartTime(null);

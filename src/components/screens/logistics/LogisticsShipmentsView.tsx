@@ -552,7 +552,7 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
 {isHandoverModalOpen && shipmentForHandover && /* @__PURE__ */ <StopDeskHandoverModal isOpen={isHandoverModalOpen} onClose={() => {
 					setIsHandoverModalOpen(false);
 					setShipmentForHandover(null);
-				}} shipment={shipmentForHandover} onConfirmDelivery={(id, idNumber) => {
+				}} shipment={shipmentForHandover} onConfirmDelivery={(id: any, idNumber: any) => {
 					updateShipmentStatus(id, "Delivered");
 					if (selectedShipment?.id === id) setSelectedShipment({
 						...selectedShipment,

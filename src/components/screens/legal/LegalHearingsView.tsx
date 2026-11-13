@@ -270,7 +270,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 		];
 	};
 	if (showSkeleton && (hearings.length === 0 || networkMode === "force_skeleton")) return /* @__PURE__ */ <SkeletonCollectionScreen kpiCount={3} isTimedOut={isTimedOut} onRetry={retryCloudSync} />;
-	const hearingsByDate = filteredHearings.reduce((acc, h) => {
+	const hearingsByDate = filteredHearings.reduce<Record<string, any[]>>((acc, h) => {
 		const key = h.hearingDate || "Non datée";
 		if (!acc[key]) acc[key] = [];
 		acc[key].push(h);
@@ -372,7 +372,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 <p className="text-xs text-neutral-400 mt-1">
 {isAr ? "قم ببرمجة جلسة جديدة أو تعديل معايير التصفية" : "Cliquez sur \"Nouvelle Audience\" pour inscrire une date."}
 </p>
-</div> : Object.entries(hearingsByDate).map(([date, dateHearings]) => /* @__PURE__ */ <div key={date} className="bg-[#F3EDE7] dark:bg-neutral-900/50 rounded-[28px] p-5 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs space-y-4">
+</div> : Object.entries(hearingsByDate).map(([date, dateHearings]: [string, any[]]) => /* @__PURE__ */ <div key={date} className="bg-[#F3EDE7] dark:bg-neutral-900/50 rounded-[28px] p-5 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs space-y-4">
 <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
 <div className="flex items-center gap-2">
 <Calendar size={18} className="text-[#d4522f]" />
@@ -386,7 +386,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 <span className="text-[11px] text-neutral-400 font-mono">{dateHearings[0]?.courtName}</span>
 </div>
 <div className="grid grid-cols-1 gap-3">
-{dateHearings.map((h) => /* @__PURE__ */ <div key={h.id} onClick={() => setSelectedHearing(h)} className={`p-4 rounded-2xl bg-white dark:bg-neutral-800 border transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${selectedHearing?.id === h.id ? "border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm" : "border-[#E9EEF0] dark:border-neutral-700 hover:border-[#d4522f]/50"}`}>
+{dateHearings.map((h: any) => /* @__PURE__ */ <div key={h.id} onClick={() => setSelectedHearing(h)} className={`p-4 rounded-2xl bg-white dark:bg-neutral-800 border transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${selectedHearing?.id === h.id ? "border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm" : "border-[#E9EEF0] dark:border-neutral-700 hover:border-[#d4522f]/50"}`}>
 <div className="flex items-start gap-3 min-w-0">
 <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-600">
 <span className="text-xs font-mono font-black">{h.hearingTime || "09:00"}</span>

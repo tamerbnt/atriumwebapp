@@ -596,17 +596,17 @@ export const MedicalPatientsView: React.FC<any> = () => {
 <rect x="0" y="30" width="320" height="45" fill="rgba(16, 185, 129, 0.08)" />
 <line x1="0" y1="50" x2="320" y2="50" stroke="rgba(0,0,0,0.06)" strokeDasharray="3 3" />
 {history.length > 1 ? /* @__PURE__ */ <>
-<polyline fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={history.map((pt, idx) => {
+<polyline fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={history.map((pt: any, idx: number) => {
 																					const x = idx / (history.length - 1) * 300 + 10;
 																					const y = 90 - ((pt.systolicBp ?? pt.systolic ?? 120) - 90) / 80 * 70;
 																					return `${x},${Math.max(10, Math.min(90, y))}`;
 																				}).join(" ")} />
-<polyline fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" points={history.map((pt, idx) => {
+<polyline fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" points={history.map((pt: any, idx: number) => {
 																					const x = idx / (history.length - 1) * 300 + 10;
 																					const y = 90 - ((pt.diastolicBp ?? pt.diastolic ?? 80) - 50) / 60 * 60;
 																					return `${x},${Math.max(20, Math.min(90, y))}`;
 																				}).join(" ")} />
-{history.map((pt, idx) => {
+{history.map((pt: any, idx: number) => {
 																				const x = idx / (history.length - 1) * 300 + 10;
 																				const sys = pt.systolicBp ?? pt.systolic ?? 120;
 																				const dia = pt.diastolicBp ?? pt.diastolic ?? 80;
@@ -621,7 +621,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
 </svg>
 </div>
 <div className="mt-2 space-y-1">
-{history.slice(-3).reverse().map((h, i) => /* @__PURE__ */ <div key={i} className="flex items-center justify-between text-[11px] py-1 border-b border-neutral-100 dark:border-neutral-800 last:border-0 font-mono">
+{history.slice(-3).reverse().map((h: any, i: number) => /* @__PURE__ */ <div key={i} className="flex items-center justify-between text-[11px] py-1 border-b border-neutral-100 dark:border-neutral-800 last:border-0 font-mono">
 <span className="text-neutral-400">{h.date}</span>
 <span className="font-bold text-neutral-800 dark:text-neutral-200">
 {h.systolicBp}
@@ -758,7 +758,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
 <span>{language === "ar" ? "الحساسيات الدوائية" : "Allergies Médicamenteuses"}</span>
 </div>
 {selectedPatient.allergies && selectedPatient.allergies.length > 0 ? /* @__PURE__ */ <div className="flex flex-wrap gap-1.5 pt-1">
-{selectedPatient.allergies.map((allergy, i) => /* @__PURE__ */ <span key={i} className="px-2.5 py-1 rounded-md bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300 font-bold text-xs">
+{selectedPatient.allergies.map((allergy: any, i: number) => /* @__PURE__ */ <span key={i} className="px-2.5 py-1 rounded-md bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300 font-bold text-xs">
 {"⚠️ "}
 {allergy}
 </span>)}
@@ -772,7 +772,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
 <span>{language === "ar" ? "الأمراض المزمنة" : "Pathologies Chroniques"}</span>
 </div>
 {selectedPatient.chronicConditions && selectedPatient.chronicConditions.length > 0 ? /* @__PURE__ */ <div className="space-y-1.5 pt-1">
-{selectedPatient.chronicConditions.map((cond, i) => /* @__PURE__ */ <div key={i} className="p-2 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 font-medium text-neutral-800 dark:text-neutral-200">
+{selectedPatient.chronicConditions.map((cond: any, i: number) => /* @__PURE__ */ <div key={i} className="p-2 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 font-medium text-neutral-800 dark:text-neutral-200">
 {"• "}
 {cond}
 </div>)}
@@ -860,7 +860,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
 {isLabModalOpen && selectedPatient && /* @__PURE__ */ <MedicalLabViewerModal isOpen={isLabModalOpen} patient={selectedPatient} labRecords={labRecords} practitioners={practitioners} onClose={() => {
 					setIsLabModalOpen(false);
 					setSelectedLabRecord(null);
-				}} onAddLabRecord={(newRec) => {
+				}} onAddLabRecord={(newRec: any) => {
 					addLabRecord(newRec);
 					setIsLabModalOpen(false);
 					setSelectedLabRecord(null);

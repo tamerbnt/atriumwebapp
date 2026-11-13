@@ -265,7 +265,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 			minWidth: "150px",
 			align: "center",
 			renderCell: (eq: any) => {
-				const b = {
+				const b = ({
 					in_warehouse: {
 						label: "En Stock Agence",
 						bg: "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300",
@@ -286,7 +286,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 						bg: "bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300",
 						text: ""
 					}
-				}[eq.currentStatus] || {
+				} as Record<string, any>)[eq.currentStatus] || {
 					label: eq.currentStatus,
 					bg: "bg-zinc-100 text-zinc-700"
 				};

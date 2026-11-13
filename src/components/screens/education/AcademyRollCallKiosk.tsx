@@ -78,7 +78,7 @@ export const AcademyRollCallKiosk: React.FC<any> = () => {
 		if (!activeSession) return;
 		const existingRecords = eduQuickAttendance.filter((r) => r.sessionId === activeSession.id);
 		if (existingRecords.length > 0) {
-			const initialMap = {};
+			const initialMap: Record<string, any> = {};
 			let locked = false;
 			let lastLockedTime = "";
 			let staffSig = "";
@@ -98,7 +98,7 @@ export const AcademyRollCallKiosk: React.FC<any> = () => {
 			}) : null);
 			setLockedByStaff(staffSig || currentUser?.fullName || "Professeur");
 		} else {
-			const defaultMap = {};
+			const defaultMap: Record<string, any> = {};
 			enrolledStudents.forEach((s) => {
 				defaultMap[s.id] = { status: "present" };
 			});
@@ -138,7 +138,7 @@ export const AcademyRollCallKiosk: React.FC<any> = () => {
 	}, [enrolledStudents, attendanceMap]);
 	const handleMarkAllPresent = () => {
 		if (isSessionLocked) return;
-		const updated = {};
+		const updated: Record<string, any> = {};
 		enrolledStudents.forEach((s) => {
 			updated[s.id] = { status: "present" };
 		});

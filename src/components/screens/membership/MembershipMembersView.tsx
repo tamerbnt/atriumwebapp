@@ -98,11 +98,11 @@ const getMemberInitialsColor = (name: any) => {
 	return "#8B5CF6";
 };
 
-const MembersHeaderBar = React.memo(({ title, addLabel, onAddMember }) => /* @__PURE__ */ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+const MembersHeaderBar = React.memo(({ title, addLabel, onAddMember }: any) => /* @__PURE__ */ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 <div className="flex items-center gap-3.5">
-<div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200"><Users size={22} /></div>
+<div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-white"><Users size={22} /></div>
 <div>
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{title}</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-['Barlow_Condensed',sans-serif] rtl:font-sans font-extrabold uppercase rtl:normal-case leading-none rtl:leading-tight tracking-[0.01em] rtl:tracking-normal text-black dark:text-white">{title}</h1>
 </div>
 </div>
 <div className="flex items-end gap-3 relative flex-wrap">
@@ -112,9 +112,9 @@ const MembersHeaderBar = React.memo(({ title, addLabel, onAddMember }) => /* @__
 
 MembersHeaderBar.displayName = "MembersHeaderBar";
 
-const MembersKpiBanner = React.memo(({ membersLabel, membersLower, language, activeMembersCount, expiringCount, displayCount, activeCountRef, expiringChipCountRef, expiringBigCountRef, inflowChipCountRef, inflowBigCountRef }) => /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+const MembersKpiBanner = React.memo(({ membersLabel, membersLower, language, activeMembersCount, expiringCount, displayCount, activeCountRef, expiringChipCountRef, expiringBigCountRef, inflowChipCountRef, inflowBigCountRef }: any) => /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">
+<h2 className="text-base font-bold text-black dark:text-white">
 {membersLabel}
 {" & "}
 {language === "ar" ? "مؤشرات التجديد" : language === "fr" ? "Rétention & Renouvellements" : "Retention Health"}
@@ -123,7 +123,7 @@ const MembersKpiBanner = React.memo(({ membersLabel, membersLower, language, act
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? `قاعدة ${membersLabel} النشطة` : language === "fr" ? `Base active ${membersLower}` : `Active ${membersLabel} Base`}
 </span>
 <div className="mt-1">
@@ -133,11 +133,11 @@ const MembersKpiBanner = React.memo(({ membersLabel, membersLower, language, act
 </span>
 </div>
 </div>
-<div ref={activeCountRef} className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">{activeMembersCount}</div>
+<div ref={activeCountRef} className="text-3xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">{activeMembersCount}</div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "تنبيهات انتهاء الاشتراك" : language === "fr" ? "Alertes de renouvellement" : "Renewal & Retention Alert"}
 </span>
 <div className="mt-1">
@@ -148,11 +148,11 @@ const MembersKpiBanner = React.memo(({ membersLabel, membersLower, language, act
 </span>
 </div>
 </div>
-<div ref={expiringBigCountRef} className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">{expiringCount}</div>
+<div ref={expiringBigCountRef} className="text-3xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">{expiringCount}</div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">
+<span className="text-[11px] font-medium text-white/80">
 {language === "ar" ? "الوافدون الجدد شهرياً" : language === "fr" ? "Adhésions du mois" : "Monthly Inflow"}
 </span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
@@ -160,16 +160,16 @@ const MembersKpiBanner = React.memo(({ membersLabel, membersLower, language, act
 +
 {displayCount}
 </span>
-{" "}
+{" "}
 {membersLower}
 </span>
 </div>
 <div>
-<div ref={inflowBigCountRef} className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
+<div ref={inflowBigCountRef} className="text-2xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans text-[#FB923C] tabular-nums">
 +
 {displayCount}
 </div>
-<p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+<p className="text-[11px] text-white/60 mt-0.5 flex items-center gap-1.5">
 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse shrink-0" style={ANIM_PULSE_DOT_STYLE} />
 <span>
 {language === "ar" ? "باقات وحسابات جديدة هذا الشهر" : language === "fr" ? "Nouveaux forfaits et profils ce mois-ci" : "New packages & client profiles this month"}
@@ -182,20 +182,20 @@ const MembersKpiBanner = React.memo(({ membersLabel, membersLower, language, act
 
 MembersKpiBanner.displayName = "MembersKpiBanner";
 
-const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, language, displayCount, totalMembersCount, membersLower, membersUpper, hasActiveAdvancedFilters, onResetFilters, genderFilter, onChangeGender, ageGroupFilter, onChangeAgeGroup, ageGroupCounts, planFilter, onChangePlan, dynamicAvailablePlans, planCounts, statusFilter, onChangeStatus, extendedStatusOptions, genderFilterOptions }) => {
+const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, language, displayCount, totalMembersCount, membersLower, membersUpper, hasActiveAdvancedFilters, onResetFilters, genderFilter, onChangeGender, ageGroupFilter, onChangeAgeGroup, ageGroupCounts, planFilter, onChangePlan, dynamicAvailablePlans, planCounts, statusFilter, onChangeStatus, extendedStatusOptions, genderFilterOptions }: any) => {
 	if (!isOpen) return null;
 	return createPortal(/* @__PURE__ */ <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 bg-black/45 dark:bg-black/70 animate-in fade-in duration-150" onClick={(e) => {
 			if (e.target === e.currentTarget) onClose();
 		}} role="dialog" aria-modal="true" aria-label={language === "ar" ? "مرشحات متقدمة" : language === "fr" ? "Filtres avancés" : "Advanced Filters"}>
-<div ref={filterPopoverRef} className="w-full max-w-lg max-h-[85vh] bg-white dark:bg-[#18181B] rounded-[26px] border border-black/8 dark:border-white/10 shadow-[0_18px_48px_rgba(0,0,0,0.22)] p-5 sm:p-6 space-y-4 animate-in zoom-in-95 duration-150 text-neutral-900 dark:text-white overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+<div ref={filterPopoverRef} className="w-full max-w-lg max-h-[85vh] bg-white dark:bg-[#18181B] rounded-[26px] border border-black/8 dark:border-white/10 shadow-[0_18px_48px_rgba(0,0,0,0.22)] p-5 sm:p-6 space-y-4 animate-in zoom-in-95 duration-150 text-black dark:text-white overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
 <div className="flex items-center justify-between pb-3.5 border-b border-neutral-100 dark:border-neutral-800 shrink-0">
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-[#d4522f]/20 flex items-center justify-center text-[#d4522f] shadow-2xs"><SlidersHorizontal size={16} /></div>
 <div>
-<span className="text-sm font-bold text-neutral-900 dark:text-white tracking-tight block">
+<span className="text-sm font-bold text-black dark:text-white tracking-tight block">
 {language === "ar" ? "مرشحات متقدمة" : language === "fr" ? "Filtres avancés" : "Advanced Filters"}
 </span>
-<span className="text-xs text-neutral-400">
+<span className="text-xs text-black/55 dark:text-white/55">
 {displayCount}
 {" "}
 {membersLower}
@@ -209,20 +209,20 @@ const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, lang
 {language === "ar" ? "إعادة ضبط" : language === "fr" ? "Réinitialiser" : "Reset"}
 </span>
 </button>}
-<button type="button" onClick={onClose} className="w-8 h-8 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 flex items-center justify-center cursor-pointer transition-colors" aria-label="Close filters"><X size={16} /></button>
+<button type="button" onClick={onClose} className="w-8 h-8 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white flex items-center justify-center cursor-pointer transition-colors" aria-label="Close filters"><X size={16} /></button>
 </div>
 </div>
 <div className="space-y-4 overflow-y-auto pr-1 max-h-[58vh] -mr-1">
 <div className="space-y-1.5">
 <div className="flex items-center justify-between">
-<label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">{language === "ar" ? "الجنس" : language === "fr" ? "Sexe / Genre" : "Gender"}</label>
+<label className="text-[11px] font-bold uppercase tracking-wider text-black/70 dark:text-white/75">{language === "ar" ? "الجنس" : language === "fr" ? "Sexe / Genre" : "Gender"}</label>
 {genderFilter !== "All" && /* @__PURE__ */ <button type="button" onClick={() => onChangeGender("All")} className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer">{language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All"}</button>}
 </div>
 <LiveSegmentedControl size="sm" fullWidth className="min-w-0 [&>button]:min-w-0 [&>button]:px-2" options={genderFilterOptions} value={genderFilter} onValueChange={(val) => onChangeGender(val)} aria-label={language === "ar" ? "الجنس" : "Sexe"} />
 </div>
 <div className="space-y-1.5">
 <div className="flex items-center justify-between">
-<label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+<label className="text-[11px] font-bold uppercase tracking-wider text-black/70 dark:text-white/75">
 {language === "ar" ? "الفئات العمرية" : language === "fr" ? "Tranches d'âge" : "Age Groups"}
 </label>
 {ageGroupFilter !== "All" && /* @__PURE__ */ <button type="button" onClick={() => onChangeAgeGroup("All")} className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer">{language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All"}</button>}
@@ -256,7 +256,7 @@ const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, lang
 								].map((ag) => {
 									const isSelected = ageGroupFilter === ag.val;
 									const count = ageGroupCounts[ag.val] ?? 0;
-									return /* @__PURE__ */ <button key={ag.val} type="button" onClick={() => onChangeAgeGroup(ag.val)} className={`h-9 px-2.5 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${isSelected ? "bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs" : "bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/40"}`}>
+									return /* @__PURE__ */ <button key={ag.val} type="button" onClick={() => onChangeAgeGroup(ag.val)} className={`h-9 px-2.5 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${isSelected ? "bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs" : "bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-700/40"}`}>
 <span className="truncate">{ag.label}</span>
 <span className="text-[10px] font-mono opacity-70 tabular-nums ml-1">{count}</span>
 </button>;
@@ -265,21 +265,21 @@ const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, lang
 </div>
 <div className="space-y-1.5">
 <div className="flex items-center justify-between">
-<label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">{t("member_filter_plan_label", language)}</label>
+<label className="text-[11px] font-bold uppercase tracking-wider text-black/70 dark:text-white/75">{t("member_filter_plan_label", language)}</label>
 {planFilter !== "All" && /* @__PURE__ */ <button type="button" onClick={() => onChangePlan("All")} className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer">{language === "ar" ? "عرض الكل" : language === "fr" ? "Toutes" : "Show All"}</button>}
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-40 overflow-y-auto pr-1">
-<button type="button" onClick={() => onChangePlan("All")} className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${planFilter === "All" ? "bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs" : "bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/50"}`}>
+<button type="button" onClick={() => onChangePlan("All")} className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${planFilter === "All" ? "bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs" : "bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-700/50"}`}>
 <span className="truncate">{t("member_filter_all_plans", language)}</span>
 <span className="text-[10px] font-mono opacity-70 tabular-nums ml-1">{totalMembersCount}</span>
 </button>
-{dynamicAvailablePlans.map((p) => {
+{dynamicAvailablePlans.map((p: any) => {
 									const isSelected = planFilter === p.id || planFilter === p.name;
 									const count = planCounts.get(p.id) ?? 0;
-									return /* @__PURE__ */ <button key={p.id} type="button" onClick={() => onChangePlan(p.id)} className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${isSelected ? "bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs" : "bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/50"}`}>
+									return /* @__PURE__ */ <button key={p.id} type="button" onClick={() => onChangePlan(p.id)} className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${isSelected ? "bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs" : "bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-700/50"}`}>
 <div className="min-w-0 text-left rtl:text-right">
 <div className="truncate font-semibold">{p.name}</div>
-{p.price > 0 && /* @__PURE__ */ <div className="text-[10px] text-neutral-400 font-mono">{formatMoney(p.price)}</div>}
+{p.price > 0 && /* @__PURE__ */ <div className="text-[10px] text-black/55 dark:text-white/55 font-mono">{formatMoney(p.price)}</div>}
 </div>
 <span className="text-[10px] font-mono opacity-70 tabular-nums ml-2 shrink-0">{count}</span>
 </button>;
@@ -288,7 +288,7 @@ const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, lang
 </div>
 <div className="space-y-1.5">
 <div className="flex items-center justify-between">
-<label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+<label className="text-[11px] font-bold uppercase tracking-wider text-black/70 dark:text-white/75">
 {language === "ar" ? "حالة الحساب والوصول" : language === "fr" ? "Statut du compte" : "Account Status"}
 </label>
 {statusFilter !== "All" && /* @__PURE__ */ <button type="button" onClick={() => onChangeStatus("All")} className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer">
@@ -301,16 +301,16 @@ const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, lang
 </div>
 </div>
 <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center gap-2 shrink-0">
-{hasActiveAdvancedFilters && /* @__PURE__ */ <Button tone="soft" size={40} onClick={onResetFilters} className="font-semibold text-xs">
+{hasActiveAdvancedFilters && <BrandedAtriumButton tone="soft" size={40} onClick={onResetFilters} className="font-semibold text-xs">
 <span>
 {language === "ar" ? "إعادة ضبط" : language === "fr" ? "Réinitialiser" : "Reset"}
 </span>
-</Button>}
-<Button tone="accent" size={40} onClick={onClose} className="flex-1 font-semibold text-xs">
+</BrandedAtriumButton>}
+<BrandedAtriumButton tone="accent" size={40} onClick={onClose} className="flex-1 font-semibold text-xs">
 <span>
 {language === "ar" ? `عرض ${displayCount} من ${membersUpper}` : language === "fr" ? `Afficher ${displayCount} ${membersLower}` : `Show ${displayCount} ${membersUpper}`}
 </span>
-</Button>
+</BrandedAtriumButton>
 </div>
 </div>
 </div>, document.body);
@@ -326,14 +326,14 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 	const [isSearchActive, setIsSearchActive] = React.useState(false);
 	const [searchQuery, setSearchQuery] = React.useState("");
 	const [planFilter, setPlanFilter] = React.useState("All");
-	const [viewMode, setViewMode] = React.useState("list");
+	const [viewMode, setViewMode] = React.useState<"list" | "grid">("list");
 	const [selectedIds, setSelectedIds] = React.useState<any[]>([]);
-	const [selectedMemberIds, setSelectedMemberIds] = React.useState(/* @__PURE__ */ new Set());
-	const [pinnedMemberIds, setPinnedMemberIds] = React.useState(/* @__PURE__ */ new Set());
-	const [expandedMemberIds, setExpandedMemberIds] = React.useState(/* @__PURE__ */ new Set());
+	const [selectedMemberIds, setSelectedMemberIds] = React.useState<Set<string>>(() => /* @__PURE__ */ new Set());
+	const [pinnedMemberIds, setPinnedMemberIds] = React.useState<Set<string>>(() => /* @__PURE__ */ new Set());
+	const [expandedMemberIds, setExpandedMemberIds] = React.useState<Set<string>>(() => /* @__PURE__ */ new Set());
 	const [memberSortBy, setMemberSortBy] = React.useState("member");
-	const [memberSortDir, setMemberSortDir] = React.useState("asc");
-	const toggleExpandMember = React.useCallback((id) => {
+	const [memberSortDir, setMemberSortDir] = React.useState<"asc" | "desc">("asc");
+	const toggleExpandMember = React.useCallback((id: any) => {
 		const key = String(id);
 		setExpandedMemberIds((prev) => {
 			const next = new Set(prev);
@@ -343,7 +343,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 		});
 	}, []);
 	const [isBookModalOpen, setIsBookModalOpen] = React.useState(false);
-	const [panelInitialTab, setPanelInitialTab] = React.useState("overview");
+	const [panelInitialTab, setPanelInitialTab] = React.useState<"overview" | "access" | "billing">("overview");
 	const panelOpenerRef = React.useRef<any>(null);
 	const lastSelectedIdxRef = React.useRef(-1);
 	const [isFilterPopoverOpen, setIsFilterPopoverOpen] = React.useState(false);
@@ -615,16 +615,16 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 	const scrollContainerRef = React.useRef<any>(null);
 	const rowsElRef = React.useRef<any>(null);
 	const filterKey = `${statusFilter}|${planFilter}|${genderFilter}|${ageGroupFilter}|${searchQuery}`;
-	const handlePruneSelection = React.useCallback((hiddenIds) => {
+	const handlePruneSelection = React.useCallback((hiddenIds: any[]) => {
 		if (hiddenIds.length === 0) return;
 		setSelectedMemberIds((prev) => {
 			let changed = false;
-			hiddenIds.forEach((id) => {
+			hiddenIds.forEach((id: any) => {
 				if (prev.has(id)) changed = true;
 			});
 			if (!changed) return prev;
 			const next = new Set(prev);
-			hiddenIds.forEach((id) => next.delete(id));
+			hiddenIds.forEach((id: any) => next.delete(id));
 			return next;
 		});
 	}, []);
@@ -652,7 +652,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 			const member = members[i];
 			const daysRemaining = daysRemainingByDate.get(member.expirationDate || "") ?? calculateDaysRemaining(false, member.expirationDate);
 			const remainingText = daysRemaining > 0 ? `${daysRemaining} j restants` : daysRemaining === 0 ? "Expire aujourd’hui" : "Expiré";
-			const isBlocked = member.status === "Suspended" || member.status === "Banned" || Boolean(member.isBlocked);
+			const isBlocked = member.status === "Suspended" || member.status === "Banned" || Boolean((member as any).isBlocked);
 			const isExp = member.status === "Expired" || daysRemaining <= 0;
 			const rowData = {
 				id: member.id,
@@ -684,7 +684,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 		members.forEach((m) => map.set(m.id, m));
 		return map;
 	}, [members]);
-	const handleSelectRow = React.useCallback((id, e) => {
+	const handleSelectRow = React.useCallback((id: any, e: any) => {
 		const key = String(id);
 		const list = sortedMembersRef.current;
 		const idx = list.findIndex((m) => m.id === key);
@@ -700,16 +700,16 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 		});
 		if (idx > -1) lastSelectedIdxRef.current = idx;
 	}, []);
-	const handleOpenRowDetails = React.useCallback((id, originEl) => {
+	const handleOpenRowDetails = React.useCallback((id: any, originEl: any) => {
 		panelOpenerRef.current = originEl || document.activeElement;
 		setPanelInitialTab("overview");
 		selectMember(String(id));
 	}, [selectMember]);
-	const handleEditRow = React.useCallback((id, originEl) => {
+	const handleEditRow = React.useCallback((id: any, originEl: any) => {
 		const m = membersByIdRef.current.get(String(id));
 		if (m) onEditMember(m, originEl);
 	}, [onEditMember]);
-	const handleMessageRow = React.useCallback((id) => {
+	const handleMessageRow = React.useCallback((id: any) => {
 		const m = membersByIdRef.current.get(String(id));
 		if (!m) return;
 		if (m.email) window.location.href = `mailto:${m.email}`;
@@ -719,7 +719,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 			message: `No email address for ${m.fullName}`
 		});
 	}, [showToast]);
-	const handleDeleteRow = React.useCallback((id) => {
+	const handleDeleteRow = React.useCallback((id: any) => {
 		const m = membersByIdRef.current.get(String(id));
 		if (!m) return;
 		deleteMember(m.id);
@@ -729,7 +729,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 			message: `${m.fullName} a été retiré.`
 		});
 	}, [deleteMember, showToast]);
-	const handleRenewRow = React.useCallback((id) => {
+	const handleRenewRow = React.useCallback((id: any) => {
 		const m = membersByIdRef.current.get(String(id));
 		if (!m) return;
 		const currentExp = new Date(m.expirationDate || (/* @__PURE__ */ new Date()).toISOString());
@@ -744,7 +744,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 			message: `${m.fullName} prolongé jusqu'au ${newExp}`
 		});
 	}, [updateMember, showToast]);
-	const handleArchiveRow = React.useCallback((id) => {
+	const handleArchiveRow = React.useCallback((id: any) => {
 		const m = membersByIdRef.current.get(String(id));
 		if (!m) return;
 		updateMember(m.id, { status: "Suspended" });
@@ -754,10 +754,10 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 			message: `${m.fullName} archivé (suspendu).`
 		});
 	}, [updateMember, showToast]);
-	const handleToggleStatusRow = React.useCallback((id) => {
+	const handleToggleStatusRow = React.useCallback((id: any) => {
 		const m = membersByIdRef.current.get(String(id));
 		if (!m) return;
-		const isBlocked = m.status === "Suspended" || m.status === "Banned" || Boolean(m.isBlocked);
+		const isBlocked = m.status === "Suspended" || m.status === "Banned" || Boolean((m as any).isBlocked);
 		const newStatus = isBlocked ? "Active" : "Suspended";
 		updateMember(m.id, { status: newStatus });
 		showToast({
@@ -766,7 +766,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 			message: `${m.fullName}: ${isBlocked ? "Accès rétabli" : "Accès temporairement suspendu"}`
 		});
 	}, [updateMember, showToast]);
-	const handleTogglePinRow = React.useCallback((id) => {
+	const handleTogglePinRow = React.useCallback((id: any) => {
 		const key = String(id);
 		const m = membersByIdRef.current.get(key);
 		setPinnedMemberIds((prev) => {
@@ -789,7 +789,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 			return next;
 		});
 	}, [showToast]);
-	const handlePayRow = React.useCallback((id) => {
+	const handlePayRow = React.useCallback((id: any) => {
 		setPanelInitialTab("billing");
 		selectMember(String(id));
 	}, [selectMember]);
@@ -806,9 +806,9 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 		window.addEventListener("atrium-member-created", handleCreated);
 		return () => window.removeEventListener("atrium-member-created", handleCreated);
 	}, [statusFilter]);
-	const handleInspectorSelectMember = React.useCallback((m) => selectMember(m.id), [selectMember]);
-	const handleInspectorEdit = React.useCallback((m, originEl) => onEditMember(m, originEl || document.activeElement), [onEditMember]);
-	const handleInspectorDelete = React.useCallback((m) => {
+	const handleInspectorSelectMember = React.useCallback((m: any) => selectMember(m.id), [selectMember]);
+	const handleInspectorEdit = React.useCallback((m: any, originEl: any) => onEditMember(m, originEl || document.activeElement), [onEditMember]);
+	const handleInspectorDelete = React.useCallback((m: any) => {
 		deleteMember(m.id);
 		closeDetail();
 		showToast({
@@ -821,7 +821,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 		closeDetail,
 		showToast
 	]);
-	const handleInspectorCheckIn = React.useCallback((m) => {
+	const handleInspectorCheckIn = React.useCallback((m: any) => {
 		checkInMember(m.id);
 		showToast({
 			type: "success",
@@ -829,7 +829,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 			message: `Accès autorisé pour ${m.fullName}`
 		});
 	}, [checkInMember, showToast]);
-	const handleInspectorRenew = React.useCallback((m) => {
+	const handleInspectorRenew = React.useCallback((m: any) => {
 		const daysToAdd = m.membershipPlanName?.toLowerCase().includes("trimest") || m.membershipPlanName?.toLowerCase().includes("quarter") ? 90 : 30;
 		const currentExp = new Date(m.expirationDate || (/* @__PURE__ */ new Date()).toISOString());
 		const newExp = new Date(currentExp.getTime() + daysToAdd * 864e5).toISOString().split("T")[0];
@@ -843,21 +843,21 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 			message: `${m.fullName} prolongé jusqu'au ${newExp}`
 		});
 	}, [updateMember, showToast]);
-	const handleInspectorToggleBlock = React.useCallback((m) => {
+	const handleInspectorToggleBlock = React.useCallback((m: any) => {
 		const isCurrentlyBlocked = m.status === "Suspended" || m.status === "Banned" || Boolean(m.isBlocked);
 		const nextStatus = isCurrentlyBlocked ? "Active" : "Suspended";
 		updateMember(m.id, {
 			status: nextStatus,
 			isBlocked: !isCurrentlyBlocked
-		});
+		} as any);
 		showToast({
 			type: "info",
 			title: !isCurrentlyBlocked ? "Badge bloqué" : "Badge débloqué",
 			message: `Badge de ${m.fullName} ${!isCurrentlyBlocked ? "bloqué" : "débloqué"}.`
 		});
 	}, [updateMember, showToast]);
-	const handleInspectorUpdateNotes = React.useCallback((id, notes) => updateMember(id, { notes }), [updateMember]);
-	const handleInspectorToast = React.useCallback((msg) => showToast({
+	const handleInspectorUpdateNotes = React.useCallback((id: any, notes: any) => updateMember(id, { notes }), [updateMember]);
+	const handleInspectorToast = React.useCallback((msg: any) => showToast({
 		type: "info",
 		title: "Notification",
 		message: msg
@@ -980,8 +980,8 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div className="flex flex-wrap items-center justify-between gap-3 w-full">
 <div className="flex items-center gap-2.5 shrink-0">
-<h2 className="text-base font-bold text-neutral-900 dark:text-white tracking-tight">{language === "ar" ? "قائمة المشتركين" : "Liste des adhérents"}</h2>
-<span ref={listBadgeCountRef} className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/70 text-neutral-700 dark:text-neutral-300 shadow-2xs tabular-nums">{displayMembers.length}</span>
+<h2 className="text-base font-bold text-black dark:text-white tracking-tight">{language === "ar" ? "قائمة المشتركين" : "Liste des adhérents"}</h2>
+<span ref={listBadgeCountRef} className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/70 text-black/75 dark:text-white/80 shadow-2xs tabular-nums">{displayMembers.length}</span>
 </div>
 <div aria-live="polite" className="sr-only">
 {displayMembers.length === 0 ? "Aucun adhérent ne correspond" : `${displayMembers.length} adhérent${displayMembers.length > 1 ? "s" : ""} trouvé${displayMembers.length > 1 ? "s" : ""}`}
@@ -992,16 +992,16 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 <LiveSegmentedControl size="md" options={quickStatusOptions} value={statusFilter === "Expired" || statusFilter === "Archived" ? "All" : statusFilter} onValueChange={(val) => setStatusFilter(val)} aria-label={language === "ar" ? "تصفية المشتركين" : "Filtre des adhérents"} />
 </div>
 <div className="relative shrink-0">
-<button ref={filterButtonRef} type="button" onClick={toggleFilterPopover} className={`h-10 px-3.5 rounded-xl border flex items-center gap-2 text-xs font-semibold cursor-pointer transition-all shadow-2xs select-none ${hasActiveAdvancedFilters || isFilterPopoverOpen ? "bg-[#FCEEE8] dark:bg-[#d4522f]/15 text-[#d4522f] border-[#d4522f]/40 ring-1 ring-[#d4522f]/20" : "bg-white dark:bg-neutral-800 border-[#E6DED6] dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700/50"}`} title={language === "ar" ? "مرشحات متقدمة" : language === "fr" ? "Filtres avancés" : "Advanced Filters"} aria-expanded={isFilterPopoverOpen}>
-<SlidersHorizontal size={15} className={hasActiveAdvancedFilters ? "text-[#d4522f]" : "text-neutral-500"} />
+<button ref={filterButtonRef} type="button" onClick={toggleFilterPopover} className={`h-10 px-3.5 rounded-xl border flex items-center gap-2 text-xs font-semibold cursor-pointer transition-all shadow-2xs select-none ${hasActiveAdvancedFilters || isFilterPopoverOpen ? "bg-[#FCEEE8] dark:bg-[#d4522f]/15 text-[#d4522f] border-[#d4522f]/40 ring-1 ring-[#d4522f]/20" : "bg-white dark:bg-neutral-800 border-[#E6DED6] dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-neutral-50 dark:hover:bg-neutral-700/50"}`} title={language === "ar" ? "مرشحات متقدمة" : language === "fr" ? "Filtres avancés" : "Advanced Filters"} aria-expanded={isFilterPopoverOpen}>
+<SlidersHorizontal size={15} className={hasActiveAdvancedFilters ? "text-[#d4522f]" : "text-black/70 dark:text-white/75"} />
 <span>{language === "ar" ? "مرشحات" : language === "fr" ? "Filtres" : "Filters"}</span>
 {activeFiltersCount > 0 && /* @__PURE__ */ <span className="w-5 h-5 rounded-md text-[10px] font-bold flex items-center justify-center bg-[#d4522f] text-white tabular-nums">{activeFiltersCount}</span>}
-<ChevronDown size={13} className={`transition-transform duration-200 text-neutral-400 ${isFilterPopoverOpen ? "rotate-180" : ""}`} />
+<ChevronDown size={13} className={`transition-transform duration-200 text-black/55 dark:text-white/55 ${isFilterPopoverOpen ? "rotate-180" : ""}`} />
 </button>
 </div>
 </div>
 <div className="flex items-center gap-2 shrink-0">
-<LiveSegmentedControl size="md" options={viewSwitcherOptions} value={viewMode} onValueChange={(val) => setViewMode(val)} aria-label="View Switcher" />
+<LiveSegmentedControl size="md" options={viewSwitcherOptions} value={viewMode} onValueChange={(val) => setViewMode(val as "list" | "grid")} aria-label="View Switcher" />
 <LiquidButton kind="export" size={40} tone="accent" labels={{
 										idle: language === "ar" ? "تصدير" : language === "fr" ? "Exporter" : "Export",
 										busy: language === "ar" ? "جاري التصدير" : language === "fr" ? "Exportation..." : "Exporting...",
@@ -1015,7 +1015,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 </div>
 <MembersFilterModal isOpen={isFilterPopoverOpen} onClose={closeFilterPopover} filterPopoverRef={filterPopoverRef} language={language} displayCount={displayMembers.length} totalMembersCount={members.length} membersLower={terminology.members.toLowerCase()} membersUpper={terminology.members} hasActiveAdvancedFilters={hasActiveAdvancedFilters} onResetFilters={handleResetFilters} genderFilter={genderFilter} onChangeGender={setGenderFilter} ageGroupFilter={ageGroupFilter} onChangeAgeGroup={setAgeGroupFilter} ageGroupCounts={ageGroupCounts} planFilter={planFilter} onChangePlan={setPlanFilter} dynamicAvailablePlans={dynamicAvailablePlans} planCounts={planCounts} statusFilter={statusFilter} onChangeStatus={setStatusFilter} extendedStatusOptions={extendedStatusOptions} genderFilterOptions={genderFilterOptions} />
 {hasActiveAdvancedFilters && /* @__PURE__ */ <div className="flex items-center gap-2 flex-wrap pt-0.5 text-xs">
-<span className="text-neutral-400 font-medium text-[11px]">
+<span className="text-black/55 dark:text-white/55 font-medium text-[11px]">
 {language === "ar" ? "المرشحات النشطة:" : language === "fr" ? "Filtres actifs:" : "Active filters:"}
 </span>
 {genderFilter !== "All" && /* @__PURE__ */ <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
@@ -1024,7 +1024,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 {": "}
 {genderFilter === "Male" ? language === "ar" ? "ذكور" : "Hommes" : genderFilter === "Female" ? language === "ar" ? "إناث" : "Femmes" : language === "ar" ? "آخر" : "Autre"}
 </span>
-<button type="button" onClick={() => setGenderFilter("All")} className="hover:text-neutral-900 dark:hover:text-white transition-colors cursor-pointer" title="Supprimer filtre" aria-label="Remove gender filter"><X size={12} /></button>
+<button type="button" onClick={() => setGenderFilter("All")} className="hover:text-black dark:hover:text-white transition-colors cursor-pointer" title="Supprimer filtre" aria-label="Remove gender filter"><X size={12} /></button>
 </span>}
 {ageGroupFilter !== "All" && /* @__PURE__ */ <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
 <span>
@@ -1032,7 +1032,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 {": "}
 {ageGroupFilter === "under18" ? "< 18 ans" : ageGroupFilter === "18-25" ? "18 - 25 ans" : ageGroupFilter === "26-40" ? "26 - 40 ans" : ageGroupFilter === "41-60" ? "41 - 60 ans" : ageGroupFilter === "over60" ? "> 60 ans" : "Tous"}
 </span>
-<button type="button" onClick={() => setAgeGroupFilter("All")} className="hover:text-neutral-900 dark:hover:text-white transition-colors cursor-pointer" title="Supprimer filtre" aria-label="Remove age filter"><X size={12} /></button>
+<button type="button" onClick={() => setAgeGroupFilter("All")} className="hover:text-black dark:hover:text-white transition-colors cursor-pointer" title="Supprimer filtre" aria-label="Remove age filter"><X size={12} /></button>
 </span>}
 {planFilter !== "All" && /* @__PURE__ */ <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
 <span>
@@ -1040,7 +1040,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 {": "}
 {dynamicAvailablePlans.find((p) => p.id === planFilter)?.name || plans.find((p) => p.id === planFilter)?.name || planFilter}
 </span>
-<button type="button" onClick={() => setPlanFilter("All")} className="hover:text-neutral-900 dark:hover:text-white transition-colors cursor-pointer" title="Supprimer filtre" aria-label="Remove filter"><X size={12} /></button>
+<button type="button" onClick={() => setPlanFilter("All")} className="hover:text-black dark:hover:text-white transition-colors cursor-pointer" title="Supprimer filtre" aria-label="Remove filter"><X size={12} /></button>
 </span>}
 {(statusFilter === "Expired" || statusFilter === "Archived") && /* @__PURE__ */ <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
 <span>
@@ -1048,9 +1048,9 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 {": "}
 {localizeStatus(statusFilter, language)}
 </span>
-<button type="button" onClick={() => setStatusFilter("All")} className="hover:text-neutral-900 dark:hover:text-white transition-colors cursor-pointer" title="Supprimer filtre" aria-label="Remove filter"><X size={12} /></button>
+<button type="button" onClick={() => setStatusFilter("All")} className="hover:text-black dark:hover:text-white transition-colors cursor-pointer" title="Supprimer filtre" aria-label="Remove filter"><X size={12} /></button>
 </span>}
-<button type="button" onClick={handleResetFilters} className="text-[11px] font-semibold text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 underline cursor-pointer ml-1">
+<button type="button" onClick={handleResetFilters} className="text-[11px] font-semibold text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white underline cursor-pointer ml-1">
 {language === "ar" ? "إعادة تعيين الكل" : language === "fr" ? "Effacer tout" : "Reset all"}
 </button>
 </div>}

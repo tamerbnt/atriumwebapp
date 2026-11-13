@@ -47,7 +47,7 @@ const MedicalAppointmentModal = ({ isOpen, onClose, practitioners, patients, onS
 	const handlePatientSelect = (pId: any) => {
 		setSelectedPatientId(pId);
 		if (pId) {
-			const found = patients.find((p) => p.id === pId);
+			const found = patients.find((p: any) => p.id === pId);
 			if (found) {
 				setPatientName(found.fullName);
 				setPatientPhone(found.phone);
@@ -64,10 +64,10 @@ const MedicalAppointmentModal = ({ isOpen, onClose, practitioners, patients, onS
 			setErrorMsg("Veuillez renseigner le nom du patient.");
 			return;
 		}
-		const doctor = practitioners.find((p) => p.id === doctorId);
+		const doctor = practitioners.find((p: any) => p.id === doctorId);
 		const newStart = toMinutes(startTime);
 		const newEnd = newStart + durationMinutes;
-		const conflictingSlot = existingAppointments.find((apt) => {
+		const conflictingSlot = existingAppointments.find((apt: any) => {
 			if (apt.date !== date || apt.doctorId !== doctorId) return false;
 			if (apt.status === "Cancelled" || apt.status === "NoShow") return false;
 			const aptStart = toMinutes(apt.startTime);
@@ -116,14 +116,14 @@ const MedicalAppointmentModal = ({ isOpen, onClose, practitioners, patients, onS
 <AlertTriangle size={16} />
 <span>{errorMsg}</span>
 </div>}
-<LabelSelect label="Médecin / Spécialiste" value={doctorId} onChange={(val) => setDoctorId(val)} options={practitioners.map((p) => ({
+<LabelSelect label="Médecin / Spécialiste" value={doctorId} onChange={(val) => setDoctorId(val)} options={practitioners.map((p: any) => ({
 							value: p.id,
 							label: `${p.fullName} (${p.specialty} · ${p.roomNumber})`
 						}))} />
 <LabelSelect label="Dossier Patient Existant (ou saisir nouveau)" value={selectedPatientId} onChange={handlePatientSelect} options={[{
 							value: "",
 							label: "— Nouveau patient (saisie libre) —"
-						}, ...patients.map((p) => ({
+						}, ...patients.map((p: any) => ({
 							value: p.id,
 							label: `${p.fullName} (${p.phone})`
 						}))]} />

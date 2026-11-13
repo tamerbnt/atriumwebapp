@@ -179,9 +179,9 @@ export const FreelanceFinanceView: React.FC<any> = () => {
 		addFreelanceExpense({
 			vendor,
 			description,
-			category,
+			category: category as any,
 			amount: Number(amount),
-			currency,
+			currency: currency as any,
 			date: (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
 			isTaxDeductible
 		});

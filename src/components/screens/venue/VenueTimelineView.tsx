@@ -42,8 +42,8 @@ export const VenueTimelineView: React.FC<any> = () => {
 	const [selectedTypeFilter, setSelectedTypeFilter] = React.useState("All");
 	const [isBookingModalOpen, setIsBookingModalOpen] = React.useState(false);
 	const [isCloudSyncModalOpen, setIsCloudSyncModalOpen] = React.useState(false);
-	const [modalInitialUnitId, setModalInitialUnitId] = React.useState(void 0);
-	const [modalInitialHour, setModalInitialHour] = React.useState(void 0);
+	const [modalInitialUnitId, setModalInitialUnitId] = React.useState<any>(void 0);
+	const [modalInitialHour, setModalInitialHour] = React.useState<any>(void 0);
 	const [inspectedBooking, setInspectedBooking] = React.useState<any>(null);
 	const [viewMode, setViewMode] = React.useState("calendar");
 	const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = React.useState(false);

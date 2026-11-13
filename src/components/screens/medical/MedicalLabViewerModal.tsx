@@ -28,7 +28,7 @@ interface MedicalLabViewerModalProps {
 
 
 const MedicalLabViewerModal = ({ isOpen, onClose, patient, labRecords, practitioners, onAddLabRecord }) => {
-	const patientLabs = labRecords.filter((l) => l.patientId === patient.id);
+	const patientLabs = labRecords.filter((l: any) => l.patientId === patient.id);
 	const [activeTab, setActiveTab] = React.useState("list");
 	const [testCategory, setTestCategory] = React.useState("Biochimie Sanguine");
 	const [doctorId, setDoctorId] = React.useState(practitioners[0]?.id || "");
@@ -40,7 +40,7 @@ const MedicalLabViewerModal = ({ isOpen, onClose, patient, labRecords, practitio
 	if (!isOpen) return null;
 	const handleCreateLab = (e: any) => {
 		e.preventDefault();
-		const doc = practitioners.find((p) => p.id === doctorId);
+		const doc = practitioners.find((p: any) => p.id === doctorId);
 		const glyNum = parseFloat(glycemieVal) || 1;
 		const creatNum = parseFloat(creatinineVal) || 10;
 		const hbaNum = parseFloat(hbA1cVal) || 6;
@@ -123,7 +123,7 @@ Bilans (
 </div>
 <div className="p-6 overflow-y-auto flex-1">
 {activeTab === "list" ? patientLabs.length > 0 ? /* @__PURE__ */ <div className="space-y-4">
-{patientLabs.map((lab) => /* @__PURE__ */ <div key={lab.id} className="p-5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-3">
+{patientLabs.map((lab: any) => /* @__PURE__ */ <div key={lab.id} className="p-5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-3">
 <div className="flex items-center justify-between">
 <div className="flex items-center gap-2">
 <span className="font-bold text-xs text-neutral-900 dark:text-white">{lab.testCategory}</span>
@@ -149,7 +149,7 @@ Bilans (
 </tr>
 </thead>
 <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700 font-mono">
-{lab.parameters.map((param, i) => /* @__PURE__ */ <tr key={i} className="hover:bg-neutral-50/50">
+{lab.parameters.map((param: any, i: number) => /* @__PURE__ */ <tr key={i} className="hover:bg-neutral-50/50">
 <td className="py-2 px-3 font-sans font-semibold text-neutral-800 dark:text-neutral-200">{param.name}</td>
 <td className="py-2 px-3 font-bold text-neutral-900 dark:text-white">
 {param.value}
@@ -207,7 +207,7 @@ Rapport d'Imagerie (
 										label: "Inflammatoire & Cardiaque"
 									}
 								]} />
-<LabelSelect label="Médecin Prescripteur" value={doctorId} onChange={(val) => setDoctorId(val)} options={practitioners.map((p) => ({
+<LabelSelect label="Médecin Prescripteur" value={doctorId} onChange={(val) => setDoctorId(val)} options={practitioners.map((p: any) => ({
 									value: p.id,
 									label: p.fullName
 								}))} />

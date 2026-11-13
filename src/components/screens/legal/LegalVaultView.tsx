@@ -53,7 +53,7 @@ interface VaultItem {
 export const LegalVaultView: React.FC<any> = () => {
 	const { language, activeLegalRole, isSyncing, networkMode, retryCloudSync } = useAtriumStore();
 	const isAr = language === "ar";
-	const [vaultItems, setVaultItems] = React.useState(() => {
+	const [vaultItems, setVaultItems] = React.useState<any[]>(() => {
 		try {
 			const saved = localStorage.getItem("atrium_legal_vault_v2");
 			if (saved) return JSON.parse(saved);
@@ -93,10 +93,10 @@ export const LegalVaultView: React.FC<any> = () => {
 		return "avocat";
 	}, [activeLegalRole]);
 	const roleScopedItems = React.useMemo(() => {
-		return vaultItems.filter((i) => i.roleScope === targetScope || i.roleScope === "avocat");
+		return vaultItems.filter((i: any) => i.roleScope === targetScope || i.roleScope === "avocat");
 	}, [vaultItems, targetScope]);
 	const filteredItems = React.useMemo(() => {
-		return roleScopedItems.filter((item) => {
+		return roleScopedItems.filter((item: any) => {
 			if (categoryFilter !== "All" && item.category !== categoryFilter) return false;
 			if (searchQuery.trim()) {
 				const q = searchQuery.toLowerCase();
@@ -148,7 +148,7 @@ export const LegalVaultView: React.FC<any> = () => {
 			officialSealNumber: vaultToEdit?.officialSealNumber || `SEAL-${Math.floor(1e3 + Math.random() * 9e3)}`
 		};
 		if (vaultToEdit) {
-			const updated = vaultItems.map((item) => item.id === payload.id ? payload : item);
+			const updated = vaultItems.map((item: any) => item.id === payload.id ? payload : item);
 			saveVault(updated);
 			if (selectedItem?.id === payload.id) setSelectedItem(payload);
 			showToast(isAr ? "تم تحديث بيانات الوثيقة بالخزينة" : "Pièce mise à jour au coffre-fort", "success");
@@ -170,7 +170,7 @@ export const LegalVaultView: React.FC<any> = () => {
 		showToast(pinnedIds.has(item.id) ? isAr ? "تم إلغاء التثبيت" : "Pièce désépinglée" : isAr ? "تم تثبيت الوثيقة" : "Pièce épinglée", "info");
 	};
 	const handleDelete = (item: any) => {
-		const updated = vaultItems.filter((i) => i.id !== item.id);
+		const updated = vaultItems.filter((i: any) => i.id !== item.id);
 		saveVault(updated);
 		if (selectedItem?.id === item.id) setSelectedItem(null);
 		showToast(isAr ? "تم سحب الوثيقة من الخزينة" : "Pièce retirée du coffre-fort", "success");

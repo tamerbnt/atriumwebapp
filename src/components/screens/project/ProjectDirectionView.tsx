@@ -243,7 +243,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 			sortable: true,
 			align: "center",
 			renderCell: (proj: any) => {
-				const badge = {
+				const badge = ({
 					framing: {
 						label: "Cahier des charges",
 						bg: "bg-zinc-100 dark:bg-zinc-800",
@@ -279,7 +279,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 						bg: "bg-zinc-100 dark:bg-zinc-800",
 						text: "text-zinc-500"
 					}
-				}[proj.status] || {
+				} as Record<string, any>)[proj.status] || {
 					label: proj.status,
 					bg: "bg-zinc-100",
 					text: "text-zinc-700"

@@ -97,8 +97,8 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 	const handleRemoveItemRow = (index: any) => {
 		setItems(items.filter((_, i) => i !== index));
 	};
-	const handleItemChange = (index: any, field: any, value: any) => {
-		const updated = [...items];
+	const handleItemChange = (index: number, field: "description" | "quantity" | "unitRate", value: any) => {
+		const updated: any[] = [...items];
 		updated[index][field] = value;
 		setItems(updated);
 	};
@@ -125,7 +125,7 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 			issueDate: (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
 			dueDate,
 			status: "Sent",
-			currency,
+			currency: currency as CurrencyCode,
 			taxPercent: Number(taxPercent),
 			subtotal,
 			taxAmount: taxAmt,

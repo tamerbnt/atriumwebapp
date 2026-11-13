@@ -492,7 +492,7 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
 {selectedProperty.amenities && /* @__PURE__ */ <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-1.5">
 <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">{language === "ar" ? "المرافق والتجهيزات" : "Équipements & Prestations"}</div>
 <div className="flex flex-wrap gap-1.5 pt-1">
-{selectedProperty.amenities.map((a, i) => /* @__PURE__ */ <span key={i} className="px-2 py-0.5 rounded bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 text-[11px] font-medium text-neutral-700 dark:text-neutral-300">
+{selectedProperty.amenities.map((a: any, i: number) => /* @__PURE__ */ <span key={i} className="px-2 py-0.5 rounded bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 text-[11px] font-medium text-neutral-700 dark:text-neutral-300">
 {"✓ "}
 {a}
 </span>)}
@@ -570,7 +570,7 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
 {isPropertyModalOpen && /* @__PURE__ */ <RealEstatePropertyModal isOpen={isPropertyModalOpen} onClose={() => {
 					setIsPropertyModalOpen(false);
 					setPropertyToEdit(null);
-				}} propertyToEdit={propertyToEdit} onSave={(p) => {
+				}} propertyToEdit={propertyToEdit} onSave={(p: any) => {
 					if (propertyToEdit) {
 						updateProperty(p);
 						if (selectedProperty?.id === p.id) setSelectedProperty(p);
@@ -585,7 +585,7 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
 {isLeaseModalOpen && leaseProperty && /* @__PURE__ */ <RealEstateLeaseModal isOpen={isLeaseModalOpen} onClose={() => {
 					setIsLeaseModalOpen(false);
 					setLeaseProperty(null);
-				}} properties={[leaseProperty]} onSave={(lease) => {
+				}} properties={[leaseProperty]} onSave={(lease: any) => {
 					addLease(lease);
 					const updated = {
 						...leaseProperty,

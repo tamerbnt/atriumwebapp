@@ -45,7 +45,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 	const [sortDir, setSortDir] = React.useState("desc");
 	const [selectedIds, setSelectedIds] = React.useState(/* @__PURE__ */ new Set());
 	const [pinnedIds, setPinnedIds] = React.useState(/* @__PURE__ */ new Set(["rx_01"]));
-	const [selectedRx, setSelectedRx] = React.useState(() => prescriptions[0] || null);
+	const [selectedRx, setSelectedRx] = React.useState<any>(() => prescriptions[0] || null);
 	const [activeTab, setActiveTab] = React.useState("posologie");
 	const [isPersonalizerOpen, setIsPersonalizerOpen] = React.useState(false);
 	const [activeDoctorId, setActiveDoctorId] = React.useState(practitioners[0]?.id || "dr_01");
@@ -78,7 +78,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 	}, [patients, compPatientId]);
 	const allergyAlerts = React.useMemo(() => {
 		if (!selectedPatientForComp?.allergies) return [];
-		const alerts = [];
+		const alerts: string[] = [];
 		compItems.forEach((it) => {
 			const warning = checkDrugAllergy(it.drugName, selectedPatientForComp.allergies || []);
 			if (warning) alerts.push(warning);
@@ -483,7 +483,7 @@ LISTE DES SPÉCIALITÉS DÉLIVRÉES (
 {selectedRx.items.length}
 )
 </div>
-{selectedRx.items.map((item, idx) => /* @__PURE__ */ <div key={idx} className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-1.5">
+{selectedRx.items.map((item: any, idx: number) => /* @__PURE__ */ <div key={idx} className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-1.5">
 <div className="flex justify-between items-center">
 <span className="font-bold text-neutral-900 dark:text-white text-xs">
 {idx + 1}
@@ -548,7 +548,7 @@ j
 </div>
 <div className="space-y-2 mb-6">
 <div className="font-serif italic font-bold text-xs underline mb-1">Ordonnance :</div>
-{selectedRx.items.map((it, idx) => /* @__PURE__ */ <div key={idx} className="pl-2 border-l-2 border-neutral-200 text-[11px]">
+{selectedRx.items.map((it: any, idx: number) => /* @__PURE__ */ <div key={idx} className="pl-2 border-l-2 border-neutral-200 text-[11px]">
 <div className="font-bold text-neutral-800">
 {"- "}
 {it.drugName}
@@ -624,7 +624,7 @@ Renouveler / Dupliquer traitement
 </div>
 </div>
 </>}
-{isPersonalizerOpen && /* @__PURE__ */ <MedicalOrdonnancePersonalizerModal isOpen={isPersonalizerOpen} practitioners={practitioners} doctorConfigs={doctorConfigs} initialDoctorId={activeDoctorId} onSaveConfig={(docId, updated) => {
+{isPersonalizerOpen && /* @__PURE__ */ <MedicalOrdonnancePersonalizerModal isOpen={isPersonalizerOpen} practitioners={practitioners} doctorConfigs={doctorConfigs} initialDoctorId={activeDoctorId} onSaveConfig={(docId: any, updated: any) => {
 					updateDoctorConfig(docId, updated);
 					setIsPersonalizerOpen(false);
 					showToast("Paramètres de l'ordonnance enregistrés", "success");

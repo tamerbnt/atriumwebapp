@@ -165,7 +165,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 			minWidth: "120px",
 			align: "center",
 			renderCell: (m: any) => {
-				const b = {
+				const b = ({
 					live_today: {
 						label: "En direct",
 						bg: "bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300",
@@ -181,7 +181,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 						bg: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300",
 						text: ""
 					}
-				}[m.status] || {
+				} as Record<string, any>)[m.status] || {
 					label: m.status,
 					bg: "bg-zinc-100 text-zinc-700"
 				};
@@ -258,7 +258,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 			missionId: selectedMission.id,
 			missionCode: selectedMission.code,
 			title: expenseTitle,
-			category: expenseCategory,
+			category: expenseCategory as any,
 			amountDzd: Number(expenseAmount) || 1e3,
 			declaredByUserId: "talent_02",
 			declaredByUserName: "Sofiane Ryad (Superviseur)",

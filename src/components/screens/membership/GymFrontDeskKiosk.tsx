@@ -46,7 +46,7 @@ export const GymFrontDeskKiosk: React.FC<any> = () => {
 	}, [lastCheckInResult, isWalkInModalOpen]);
 	const playChime = (type: any) => {
 		try {
-			const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+			const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
 			const osc = audioCtx.createOscillator();
 			const gain = audioCtx.createGain();
 			osc.connect(gain);
@@ -129,7 +129,7 @@ export const GymFrontDeskKiosk: React.FC<any> = () => {
 			remainingSessionsAfter: remainingAfter,
 			checkInMethod: "barcode_scanner"
 		};
-		addMemberCheckIn(checkInLog);
+		addMemberCheckIn(checkInLog as any);
 		setLastCheckInResult({
 			status,
 			message,
@@ -171,7 +171,7 @@ export const GymFrontDeskKiosk: React.FC<any> = () => {
 			timbreFiscalDzd: timbre,
 			issuedAt: (/* @__PURE__ */ new Date()).toISOString()
 		};
-		addWalkInTicket(ticket);
+		addWalkInTicket(ticket as any);
 		setLastPrintedTicket(ticket);
 		setIsWalkInModalOpen(false);
 		setWalkInName("");

@@ -55,7 +55,7 @@ export const ContractorBoqView: React.FC<any> = () => {
 	const [plannedQty, setPlannedQty] = React.useState("100");
 	const [unitPrice, setUnitPrice] = React.useState("3500");
 	const [targetProjectId, setTargetProjectId] = React.useState(projects[0]?.id || selectedProjectId);
-	const [selectedItem, setSelectedItem] = React.useState(() => {
+	const [selectedItem, setSelectedItem] = React.useState<any>(() => {
 		return boqItems[0] || null;
 	});
 	const [activeTab, setActiveTab] = React.useState("poste");
@@ -89,7 +89,7 @@ export const ContractorBoqView: React.FC<any> = () => {
 		}
 		const qty = parseFloat(plannedQty) || 0;
 		const price = parseFloat(unitPrice) || 0;
-		const payload = {
+		const payload: any = {
 			id: itemToEdit?.id || `boq_${Date.now()}`,
 			accountId: itemToEdit?.accountId || "acc_01",
 			businessId: currentBusiness?.id || "biz_contractor",

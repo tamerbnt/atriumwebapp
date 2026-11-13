@@ -533,7 +533,7 @@ export const EducationAdmissionsView: React.FC<any> = () => {
 <span>{t("edu_btn_convert_student")}</span>
 </button> : stage.id !== "Enrolled" ? /* @__PURE__ */ <button type="button" onClick={() => {
 																const nextIndex = stages.findIndex((s) => s.id === stage.id) + 1;
-																if (nextIndex < stages.length) updateAdmissionStage(lead.id, stages[nextIndex].id);
+																if (nextIndex < stages.length) updateAdmissionStage(lead.id, stages[nextIndex].id as any);
 															}} className="w-full py-1 text-center text-[10px] font-semibold text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer">
 <span>Move Next</span>
 <ArrowRight size={11} className="rtl:rotate-180" />

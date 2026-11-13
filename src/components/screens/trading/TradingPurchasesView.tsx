@@ -55,7 +55,7 @@ export const TradingPurchasesView: React.FC<any> = () => {
 		paymentMethod: "Virement bancaire",
 		paymentTerms: "30 jours",
 		status: p.status === "Received" ? "Delivered" : "Validated",
-		items: p.items.map((it) => ({
+		items: p.items.map((it: any) => ({
 			id: it.id,
 			productId: it.productId,
 			description: it.description,

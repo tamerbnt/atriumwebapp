@@ -197,7 +197,7 @@ m
 			minWidth: "160px",
 			sortable: true,
 			renderCell: (apt: any) => /* @__PURE__ */ <div className="flex items-center gap-2 min-w-0">
-<div className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-bold text-[10px] flex items-center justify-center shrink-0">{apt.staffName.split(" ").map((n) => n[0]).join("")}</div>
+<div className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-bold text-[10px] flex items-center justify-center shrink-0">{apt.staffName.split(" ").map((n: any) => n[0]).join("")}</div>
 <span className="text-xs text-neutral-700 dark:text-neutral-300 font-medium truncate">{apt.staffName}</span>
 </div>
 		},
@@ -263,7 +263,7 @@ m
 		});
 		setTimeout(() => setCheckoutToast(null), 4e3);
 	};
-	const handleOpenAddModal = (time: any, staffId: any) => {
+	const handleOpenAddModal = (time: any, staffId?: any) => {
 		setActiveAppointment(null);
 		setSlotPrefill({
 			date: selectedDate,
@@ -479,7 +479,7 @@ Ref #
 </div>
 </div>
 <div className="w-full">
-<UniversalDataCollection items={sortedDayAppointments} keyExtractor={(apt) => apt.id} viewMode={viewMode} defaultViewMode="calendar" showCalendarToggle onViewModeChange={(m) => setViewMode(m)} renderCalendarView={() => /* @__PURE__ */ <div className="bg-white dark:bg-neutral-800 rounded-[20px] border border-[#E9EEF0] dark:border-neutral-700/80 shadow-2xs overflow-hidden">
+<UniversalDataCollection items={sortedDayAppointments} keyExtractor={(apt: any) => apt.id} viewMode={viewMode} defaultViewMode="calendar" showCalendarToggle onViewModeChange={(m: any) => setViewMode(m)} renderCalendarView={() => /* @__PURE__ */ <div className="bg-white dark:bg-neutral-800 rounded-[20px] border border-[#E9EEF0] dark:border-neutral-700/80 shadow-2xs overflow-hidden">
 <div className="overflow-x-auto">
 <div className="min-w-[760px]">
 <div className="grid grid-cols-[100px_repeat(auto-fit,minmax(200px,1fr))] border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-900/80">

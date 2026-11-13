@@ -71,7 +71,7 @@ export const VenueInventoryView: React.FC<any> = () => {
 		}, 400);
 	};
 	const [isBookingModalOpen, setIsBookingModalOpen] = React.useState(false);
-	const [selectedUnitForBooking, setSelectedUnitForBooking] = React.useState(void 0);
+	const [selectedUnitForBooking, setSelectedUnitForBooking] = React.useState<any>(void 0);
 	const [name, setName] = React.useState("");
 	const [code, setCode] = React.useState("");
 	const [type, setType] = React.useState("Hall");
@@ -169,7 +169,7 @@ export const VenueInventoryView: React.FC<any> = () => {
 		if (unitToEdit) updateRentableUnit(unitToEdit.id, {
 			name: name.trim(),
 			code: code.trim().toUpperCase(),
-			type,
+			type: type as any,
 			capacity: Number(capacity) || 10,
 			surfaceAreaSqm: Number(surfaceAreaSqm) || 50,
 			hourlyRate: Number(hourlyRate) || 0,
@@ -181,7 +181,7 @@ export const VenueInventoryView: React.FC<any> = () => {
 		else createRentableUnit({
 			name: name.trim(),
 			code: code.trim().toUpperCase() || `ROOM-${Date.now().toString().slice(-4)}`,
-			type,
+			type: type as any,
 			capacity: Number(capacity) || 10,
 			surfaceAreaSqm: Number(surfaceAreaSqm) || 50,
 			hourlyRate: Number(hourlyRate) || 0,
@@ -645,7 +645,7 @@ export const VenueInventoryView: React.FC<any> = () => {
 <div>
 <span className="font-bold text-[11px] text-neutral-600 dark:text-neutral-400 block mb-1.5 uppercase">Équipements & Installations</span>
 <div className="flex flex-wrap gap-1">
-{activeUnit.amenities.map((a, i) => /* @__PURE__ */ <span key={i} className="px-2 py-0.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-[11px] font-medium">
+{activeUnit.amenities.map((a: any, i: number) => /* @__PURE__ */ <span key={i} className="px-2 py-0.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-[11px] font-medium">
 {"✓ "}
 {a}
 </span>)}

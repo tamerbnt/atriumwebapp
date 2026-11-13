@@ -55,8 +55,8 @@ export const AgricultureCyclesView: React.FC<any> = () => {
 	const [cycleToEdit, setCycleToEdit] = React.useState<any>(null);
 	const [isTreatmentModalOpen, setIsTreatmentModalOpen] = React.useState(false);
 	const [treatmentToEdit, setTreatmentToEdit] = React.useState<any>(null);
-	const [selectedCycle, setSelectedCycle] = React.useState(() => cropCycles[0] || null);
-	const [selectedTreatment, setSelectedTreatment] = React.useState(() => treatmentLogs[0] || null);
+	const [selectedCycle, setSelectedCycle] = React.useState<any>(() => cropCycles[0] || null);
+	const [selectedTreatment, setSelectedTreatment] = React.useState<any>(() => treatmentLogs[0] || null);
 	const [inspectorTab, setInspectorTab] = React.useState("details");
 	const parcelNameMap = React.useMemo(() => {
 		const map = /* @__PURE__ */ new Map();

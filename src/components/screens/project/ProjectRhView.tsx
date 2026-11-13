@@ -100,7 +100,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 			tenantId: "acc_01",
 			facilityId: "branch_agency_main",
 			fullName,
-			gender,
+			gender: gender as any,
 			birthDate: "2002-01-01",
 			age: Number(age) || 22,
 			phone,

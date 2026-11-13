@@ -58,7 +58,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 	const [sellingPriceDzd, setSellingPriceDzd] = React.useState("6500");
 	const [locationBin, setLocationBin] = React.useState("Rayon A-01");
 	const [compatibility, setCompatibility] = React.useState("Renault, Dacia, Peugeot");
-	const [selectedPart, setSelectedPart] = React.useState(() => {
+	const [selectedPart, setSelectedPart] = React.useState<any>(() => {
 		return parts[0] || null;
 	});
 	const [activeTab, setActiveTab] = React.useState("fiche");
@@ -96,7 +96,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 			showToast(isAr ? "يرجى إدخال اسم القطعة ورمز SKU" : "Veuillez saisir le nom et le SKU", "error");
 			return;
 		}
-		const payload = {
+		const payload: any = {
 			id: partToEdit?.id || `part_${Date.now()}`,
 			accountId: partToEdit?.accountId || "acc_01",
 			businessId: currentBusiness?.id || "biz_garage",
@@ -602,7 +602,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 {activeTab === "mouvements" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
 <p className="text-neutral-500 text-[11px]">Modèles et motorisations compatibles avec cette référence :</p>
 <div className="space-y-1.5">
-{selectedPart.compatibility && selectedPart.compatibility.length > 0 ? selectedPart.compatibility.map((c, i) => /* @__PURE__ */ <div key={i} className="p-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
+{selectedPart.compatibility && selectedPart.compatibility.length > 0 ? selectedPart.compatibility.map((c: any, i: any) => /* @__PURE__ */ <div key={i} className="p-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
 <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
 <span>{c}</span>
 </div>) : /* @__PURE__ */ <div className="text-neutral-400 text-center py-4">Référence universelle / adaptable standard</div>}

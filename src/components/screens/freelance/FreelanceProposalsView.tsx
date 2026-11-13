@@ -49,7 +49,19 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 	const [isDraftModalOpen, setIsDraftModalOpen] = React.useState(false);
 	const [proposalToEdit, setProposalToEdit] = React.useState<any>(null);
 	const [proposalToDelete, setProposalToDelete] = React.useState<any>(null);
-	const [editFormData, setEditFormData] = React.useState({
+	const [editFormData, setEditFormData] = React.useState<{
+		clientName: string;
+		clientCompany: string;
+		clientEmail: string;
+		title: string;
+		overview: string;
+		scopeItems: string[];
+		pricingModel: string;
+		proposedBudget: number;
+		currency: string;
+		estimatedTimelineWeeks: number;
+		validUntil: string;
+	}>({
 		clientName: "",
 		clientCompany: "",
 		clientEmail: "",
@@ -131,9 +143,9 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 			title: formData.title,
 			overview: formData.overview,
 			scopeItems: formData.scopeItems.filter((s) => s.trim().length > 0),
-			pricingModel: formData.pricingModel,
+			pricingModel: formData.pricingModel as PricingModel,
 			proposedBudget: Number(formData.proposedBudget),
-			currency: formData.currency,
+			currency: formData.currency as CurrencyCode,
 			estimatedTimelineWeeks: Number(formData.estimatedTimelineWeeks),
 			validUntil: formData.validUntil,
 			status: "Pending"
@@ -166,9 +178,9 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 			title: editFormData.title,
 			overview: editFormData.overview,
 			scopeItems: editFormData.scopeItems.filter((s) => s.trim().length > 0),
-			pricingModel: editFormData.pricingModel,
+			pricingModel: editFormData.pricingModel as PricingModel,
 			proposedBudget: Number(editFormData.proposedBudget),
-			currency: editFormData.currency,
+			currency: editFormData.currency as CurrencyCode,
 			estimatedTimelineWeeks: Number(editFormData.estimatedTimelineWeeks),
 			validUntil: editFormData.validUntil
 		});
@@ -178,7 +190,7 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 		try {
 			convertProposalToProject(proposalId);
 			setScreen("scheduler");
-		} catch (err) {
+		} catch (err: any) {
 			console.error("Error converting proposal:", err?.message || err);
 		}
 	};

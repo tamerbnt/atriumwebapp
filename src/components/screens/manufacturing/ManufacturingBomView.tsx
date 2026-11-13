@@ -54,7 +54,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
 	const [unit, setUnit] = React.useState("Unité");
 	const [laborHours, setLaborHours] = React.useState("10");
 	const [estimatedCost, setEstimatedCost] = React.useState("80000");
-	const [selectedBom, setSelectedBom] = React.useState(() => {
+	const [selectedBom, setSelectedBom] = React.useState<any>(() => {
 		return boms[0] || null;
 	});
 	const [activeTab, setActiveTab] = React.useState("fiche");
@@ -501,7 +501,7 @@ h
 </div>
 </div>}
 {activeTab === "composants" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150 max-h-[360px] overflow-y-auto pr-1">
-{(selectedBom.components || []).map((c, i) => /* @__PURE__ */ <div key={i} className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1">
+{(selectedBom.components || []).map((c: any, i: any) => /* @__PURE__ */ <div key={i} className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1">
 <div className="flex items-center justify-between">
 <span className="font-semibold text-neutral-900 dark:text-white text-[11px]">{c.rawProductName}</span>
 <span className="font-mono font-bold text-neutral-900 dark:text-white">{formatMoney(c.quantity * c.unitCostDzd)}</span>
@@ -525,7 +525,7 @@ h
 <div className="flex justify-between items-center">
 <span className="text-neutral-500">Matières Premières:</span>
 <span className="font-mono font-bold text-neutral-900 dark:text-white">
-{formatMoney((selectedBom.components || []).reduce((acc, c) => acc + c.quantity * c.unitCostDzd, 0))}
+{formatMoney((selectedBom.components || []).reduce((acc: any, c: any) => acc + c.quantity * c.unitCostDzd, 0))}
 </span>
 </div>
 <div className="flex justify-between items-center">

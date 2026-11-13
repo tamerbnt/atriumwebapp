@@ -240,9 +240,9 @@ export const EducationFinanceView: React.FC<any> = () => {
 			minWidth: "150px",
 			renderCell: (enr: any) => {
 				const insts = enr.installments || [];
-				insts.filter((i) => i.isPaid).length;
+				insts.filter((i: any) => i.isPaid).length;
 				return /* @__PURE__ */ <div className="flex items-center gap-1.5 flex-wrap">
-{insts.length > 0 ? insts.map((inst, idx) => /* @__PURE__ */ <span key={idx} title={`${formatMoney(inst.amount)} - Échéance ${inst.dueDate} (${inst.isPaid ? "Payée" : "En attente"})`} className={`px-1.5 py-0.5 rounded text-[10px] font-semibold tabular-nums border ${inst.isPaid ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800" : "bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:border-neutral-700"}`}>
+{insts.length > 0 ? insts.map((inst: any, idx: number) => /* @__PURE__ */ <span key={idx} title={`${formatMoney(inst.amount)} - Échéance ${inst.dueDate} (${inst.isPaid ? "Payée" : "En attente"})`} className={`px-1.5 py-0.5 rounded text-[10px] font-semibold tabular-nums border ${inst.isPaid ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800" : "bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:border-neutral-700"}`}>
 V
 {idx + 1}
 {": "}
@@ -518,7 +518,7 @@ V
 {selectedEnrollmentForPayment.installments && selectedEnrollmentForPayment.installments.length > 0 && /* @__PURE__ */ <div className="space-y-1.5">
 <label className="text-[11px] font-semibold text-neutral-600 dark:text-neutral-400">Sélectionner l'échéance à solder</label>
 <div className="grid grid-cols-2 gap-2">
-{selectedEnrollmentForPayment.installments.map((inst, idx) => /* @__PURE__ */ <button key={idx} type="button" onClick={() => {
+{selectedEnrollmentForPayment.installments.map((inst: any, idx: number) => /* @__PURE__ */ <button key={idx} type="button" onClick={() => {
 											setSelectedInstallmentIndex(idx);
 											setPaymentAmount(inst.isPaid ? 0 : inst.amount);
 										}} className={`p-2 rounded-xl border text-left rtl:text-right transition-colors cursor-pointer ${selectedInstallmentIndex === idx ? "bg-[#FCEEE8] dark:bg-neutral-800 border-[#d4522f] text-[#d4522f] font-bold" : "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300"}`}>
@@ -582,7 +582,7 @@ V
 <div className="space-y-3">
 <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500">Échéancier des versements</h3>
 <div className="space-y-2">
-{detailEnrollment.installments?.map((inst, idx) => /* @__PURE__ */ <div key={idx} className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs">
+{detailEnrollment.installments?.map((inst: any, idx: number) => /* @__PURE__ */ <div key={idx} className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs">
 <div>
 <div className="font-semibold text-neutral-900 dark:text-white">
 Versement #

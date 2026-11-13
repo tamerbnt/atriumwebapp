@@ -50,7 +50,7 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 	const [isLeaseModalOpen, setIsLeaseModalOpen] = React.useState(false);
 	const [isQuittanceModalOpen, setIsQuittanceModalOpen] = React.useState(false);
 	const [leaseForQuittance, setLeaseForQuittance] = React.useState<any>(null);
-	const [selectedLease, setSelectedLease] = React.useState(() => {
+	const [selectedLease, setSelectedLease] = React.useState<any>(() => {
 		return leases[0] || null;
 	});
 	const [activeTab, setActiveTab] = React.useState("bail");
@@ -533,7 +533,7 @@ Clauses particulières, état des lieux d'entrée et interdictions (sous-locatio
 </div>}
 </div>
 </div>
-<RealEstateLeaseModal isOpen={isLeaseModalOpen} onClose={() => setIsLeaseModalOpen(false)} properties={properties} onSave={(newLease) => {
+<RealEstateLeaseModal isOpen={isLeaseModalOpen} onClose={() => setIsLeaseModalOpen(false)} properties={properties} onSave={(newLease: any) => {
 					addLease(newLease);
 					setSelectedLease(newLease);
 					setIsLeaseModalOpen(false);

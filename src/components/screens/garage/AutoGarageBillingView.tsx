@@ -119,7 +119,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
 			issuedAt: (/* @__PURE__ */ new Date()).toISOString(),
 			isPaid: true
 		};
-		createInvoice(newInvoice);
+		createInvoice(newInvoice as any);
 		const updatedOrder = {
 			...orderToSettle,
 			status: "Delivered",
@@ -128,7 +128,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
 			billingType,
 			invoiceId: newInvoice.id
 		};
-		updateOrder(updatedOrder);
+		updateOrder(updatedOrder as any);
 		setIsPaymentModalOpen(false);
 		setActivePrintInvoice(newInvoice);
 		setIsPrintModalOpen(true);

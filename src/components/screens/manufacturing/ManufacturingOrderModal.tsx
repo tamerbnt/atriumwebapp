@@ -46,7 +46,7 @@ const ManufacturingOrderModal = ({ isOpen, onClose, boms, onSave, orderToEdit })
 		}
 	}, [orderToEdit, boms]);
 	const selectedBom = React.useMemo(() => {
-		return boms.find((b) => b.id === bomId) || boms[0] || null;
+		return boms.find((b: any) => b.id === bomId) || boms[0] || null;
 	}, [boms, bomId]);
 	const parsedQty = parseInt(quantity, 10) || 1;
 	const stockCheck = React.useMemo(() => {
@@ -97,7 +97,7 @@ const ManufacturingOrderModal = ({ isOpen, onClose, boms, onSave, orderToEdit })
 		});
 		onClose();
 	};
-	const bomOptions = boms.map((b) => ({
+	const bomOptions = boms.map((b: any) => ({
 		value: b.id,
 		label: `${b.finishedProductName} (${b.bomCode})`
 	}));

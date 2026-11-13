@@ -55,7 +55,7 @@ const MedicalOrdonnancePersonalizerModal = ({ isOpen, onClose, practitioners, do
 	React.useEffect(() => {
 		if (doctorConfigs[selectedDoctorId]) setFormData(doctorConfigs[selectedDoctorId]);
 		else {
-			const doc = practitioners.find((p) => p.id === selectedDoctorId);
+			const doc = practitioners.find((p: any) => p.id === selectedDoctorId);
 			setFormData({
 				doctorId: selectedDoctorId,
 				doctorName: doc?.fullName || "Dr. Médecin Praticien",
@@ -124,7 +124,7 @@ Configurez l'en-tête, le papier pré-imprimé, le cachet officiel et les mentio
 </div>
 <div className="px-6 py-2.5 bg-neutral-100/70 dark:bg-neutral-800/60 border-b border-neutral-200 dark:border-neutral-800 flex items-center gap-2 overflow-x-auto shrink-0">
 <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider shrink-0 mr-1">Médecin:</span>
-{practitioners.map((p) => {
+{practitioners.map((p: any) => {
 						const isSelected = p.id === selectedDoctorId;
 						return /* @__PURE__ */ <button key={p.id} onClick={() => setSelectedDoctorId(p.id)} className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${isSelected ? "bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-xs border border-neutral-300 dark:border-neutral-600" : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"}`}>
 <span className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />

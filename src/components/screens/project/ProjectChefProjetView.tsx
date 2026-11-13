@@ -154,7 +154,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 			declaredByUserName: "K. Yacine (CDP)",
 			declaredByRole: "chef_projet",
 			title: purchaseTitle,
-			category: purchaseCategory,
+			category: purchaseCategory as any,
 			amountDzd: Number(purchaseAmount),
 			receiptPhotoUrl: "https://images.unsplash.com/photo-1554415707-9e49fe74a64c?w=500&auto=format&fit=crop&q=80",
 			fiscalNif: "001916001234567",
@@ -282,7 +282,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 			width: "2.5*",
 			minWidth: "220px",
 			renderCell: (order: any) => /* @__PURE__ */ <div className="text-xs text-zinc-600 dark:text-zinc-400 space-y-0.5">
-{order.items.slice(0, 2).map((it, idx) => /* @__PURE__ */ <div key={idx} className="truncate">
+{order.items.slice(0, 2).map((it: any, idx: number) => /* @__PURE__ */ <div key={idx} className="truncate">
 {"• "}
 {it.quantity}
 {"x "}
@@ -311,7 +311,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 			minWidth: "150px",
 			align: "center",
 			renderCell: (order: any) => {
-				const badge = {
+				const badge = ({
 					sent_to_crea: {
 						label: "Transmis Créa",
 						bg: "bg-blue-100 dark:bg-blue-950/60",
@@ -332,7 +332,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 						bg: "bg-emerald-100 dark:bg-emerald-950/60",
 						text: "text-emerald-700 dark:text-emerald-300"
 					}
-				}[order.status] || {
+				} as Record<string, any>)[order.status] || {
 					label: order.status,
 					bg: "bg-zinc-100",
 					text: "text-zinc-700"

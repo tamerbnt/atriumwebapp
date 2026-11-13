@@ -293,7 +293,7 @@ export const FreelanceTimeTrackerView: React.FC<any> = () => {
 				}
 			});
 			setScreen("shop");
-		} catch (err) {
+		} catch (err: any) {
 			console.error("Error billing hours:", err?.message || err);
 		}
 	};

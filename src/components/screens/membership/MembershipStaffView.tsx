@@ -118,7 +118,7 @@ export const MembershipStaffView: React.FC<any> = () => {
 			header: isAr ? "حالة العمل" : isEn ? "Duty Status" : "Statut Présence",
 			accessorKey: "status",
 			cell: (member: any) => {
-				const isPresent = member.isClockedInToday || member.attendanceLogs?.some((l) => (l.timestamp || "").slice(0, 10) === (/* @__PURE__ */ new Date()).toISOString().slice(0, 10) && l.type === "in");
+				const isPresent = member.isClockedInToday || member.attendanceLogs?.some((l: any) => (l.timestamp || "").slice(0, 10) === (/* @__PURE__ */ new Date()).toISOString().slice(0, 10) && l.type === "in");
 				return /* @__PURE__ */ <div className="flex items-center gap-2">
 <span className={`w-2 h-2 rounded-full ${member.status === "active" ? isPresent ? "bg-emerald-500 ring-4 ring-emerald-100 dark:ring-emerald-950" : "bg-emerald-500" : member.status === "on_leave" ? "bg-amber-500" : member.status === "frozen" ? "bg-rose-500" : "bg-neutral-400"}`} />
 <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200">
@@ -240,7 +240,7 @@ export const MembershipStaffView: React.FC<any> = () => {
 </div>
 </div>
 <div className="flex items-center">
-<LiveSegmentedControl value={foundation.activeSubTab} onValueChange={(val) => foundation.setActiveSubTab(val)} size="md" options={[
+<LiveSegmentedControl value={foundation.activeSubTab} onValueChange={(val) => foundation.setActiveSubTab(val as any)} size="md" options={[
 						{
 							value: "directory",
 							label: isAr ? "دليل الفريق" : isEn ? "Staff Directory" : "Annuaire & RH",
@@ -276,7 +276,7 @@ export const MembershipStaffView: React.FC<any> = () => {
 <div className="flex items-center gap-2.5 min-w-0 flex-wrap">
 <Seek value={foundation.searchQuery} onChange={foundation.setSearchQuery} placeholder={isAr ? "بحث بالاسم، الهاتف، البادج..." : isEn ? "Search staff, phone, token..." : "Rechercher collaborateur..."} shutSize={40} openWidth={240} className="shrink-0 !rounded-xl" />
 <div className="shrink-0">
-<LiveSegmentedControl size="md" value={foundation.statusFilter} onValueChange={(val) => foundation.setStatusFilter(val)} options={quickStatusOptions} aria-label="Staff Status Filter" />
+<LiveSegmentedControl size="md" value={foundation.statusFilter} onValueChange={(val) => foundation.setStatusFilter(val as any)} options={quickStatusOptions} aria-label="Staff Status Filter" />
 </div>
 <button type="button" onClick={() => foundation.setIsPointageScannerOpen(true)} className="h-10 px-3.5 rounded-xl border flex items-center gap-2 text-xs font-semibold cursor-pointer transition-all shadow-2xs bg-white dark:bg-neutral-800 border-[#E9EEF0] dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700/50" title={isAr ? "كشك البصمة / البادج السريع" : "Ouvrir Kiosk Pointage RFID / PIN"}>
 <QrCode size={15} className="text-[#d4522f]" />
@@ -292,7 +292,7 @@ export const MembershipStaffView: React.FC<any> = () => {
 									value: "grid",
 									icon: /* @__PURE__ */ <LayoutGrid className="w-4 h-4" />,
 									"aria-label": "Grid View"
-								}]} value={foundation.viewMode} onValueChange={(val) => foundation.setViewMode(val)} aria-label="View Switcher" />
+								}]} value={foundation.viewMode} onValueChange={(val) => foundation.setViewMode(val as any)} aria-label="View Switcher" />
 <LiquidButton kind="export" size={40} tone="accent" labels={{
 									idle: isAr ? "تصدير" : isEn ? "Export" : "Exporter",
 									busy: isAr ? "جاري التصدير" : isEn ? "Exporting..." : "Exportation...",

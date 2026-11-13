@@ -372,6 +372,6 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 						}}>Imprimer Contrat de Mandat</AtriumButton>
 </div>
 </div>}
-{isMandateModalOpen && /* @__PURE__ */ <MandateModal isOpen={isMandateModalOpen} onClose={() => setIsMandateModalOpen(false)} onSave={(newMnd) => addMandate(newMnd)} properties={properties} />}
+{isMandateModalOpen && /* @__PURE__ */ <MandateModal isOpen={isMandateModalOpen} onClose={() => setIsMandateModalOpen(false)} onSave={(newMnd: any) => addMandate(newMnd)} properties={properties} />}
 </div>;
 };

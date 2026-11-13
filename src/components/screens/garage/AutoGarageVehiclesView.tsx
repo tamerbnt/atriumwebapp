@@ -56,7 +56,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 	const [vehicleToEdit, setVehicleToEdit] = React.useState<any>(null);
 	const [isOrderModalOpen, setIsOrderModalOpen] = React.useState(false);
 	const [orderVehicle, setOrderVehicle] = React.useState<any>(null);
-	const [selectedVehicle, setSelectedVehicle] = React.useState(() => vehicles[0] || null);
+	const [selectedVehicle, setSelectedVehicle] = React.useState<any>(() => vehicles[0] || null);
 	const [activeTab, setActiveTab] = React.useState("fiche");
 	const [inspectorNotes, setInspectorNotes] = React.useState("");
 	const [noteSaved, setNoteSaved] = React.useState(false);
@@ -628,7 +628,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 </div>}
 </div>}
 {activeTab === "orders" && /* @__PURE__ */ <div className="space-y-2 text-xs">
-{(vehicleOrdersMap.get(selectedVehicle.plateNumber) || []).length > 0 ? (vehicleOrdersMap.get(selectedVehicle.plateNumber) || []).map((o) => /* @__PURE__ */ <div key={o.id} className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-1.5">
+{(vehicleOrdersMap.get(selectedVehicle.plateNumber) || []).length > 0 ? (vehicleOrdersMap.get(selectedVehicle.plateNumber) || []).map((o: any) => /* @__PURE__ */ <div key={o.id} className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-1.5">
 <div className="flex items-center justify-between">
 <span className="font-bold text-neutral-900 dark:text-white">{o.orderNumber}</span>
 <span className="text-[10px] text-neutral-400 font-mono">{new Date(o.intakeDate).toLocaleDateString()}</span>
@@ -707,7 +707,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 {isOrderModalOpen && orderVehicle && /* @__PURE__ */ <AutoOrderModal isOpen={isOrderModalOpen} onClose={() => {
 					setIsOrderModalOpen(false);
 					setOrderVehicle(null);
-				}} vehicles={[orderVehicle]} onSave={(order) => {
+				}} vehicles={[orderVehicle]} onSave={(order: any) => {
 					addOrder(order);
 					setIsOrderModalOpen(false);
 					setOrderVehicle(null);

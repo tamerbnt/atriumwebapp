@@ -48,7 +48,7 @@ export const AgricultureParcelsView: React.FC<any> = () => {
 	const [sortDir, setSortDir] = React.useState("asc");
 	const [isParcelModalOpen, setIsParcelModalOpen] = React.useState(false);
 	const [parcelToEdit, setParcelToEdit] = React.useState<any>(null);
-	const [selectedParcel, setSelectedParcel] = React.useState(() => {
+	const [selectedParcel, setSelectedParcel] = React.useState<any>(() => {
 		return parcels.find((p) => p.id === selectedParcelId) || parcels[0] || null;
 	});
 	const [activeTab, setActiveTab] = React.useState("agronomy");

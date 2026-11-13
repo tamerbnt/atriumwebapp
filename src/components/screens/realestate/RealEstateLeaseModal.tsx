@@ -28,7 +28,7 @@ const RealEstateLeaseModal = ({ isOpen, onClose, properties, onSave }) => {
 	if (!isOpen) return null;
 	const handleSubmit = (e: any) => {
 		e.preventDefault();
-		const prop = properties.find((p) => p.id === propertyId) || properties[0];
+		const prop = properties.find((p: any) => p.id === propertyId) || properties[0];
 		if (!tenantName.trim() || !prop) {
 			showToast("Veuillez renseigner le locataire et sélectionner un bien", "error");
 			return;
@@ -54,7 +54,7 @@ const RealEstateLeaseModal = ({ isOpen, onClose, properties, onSave }) => {
 		showToast(language === "ar" ? "تم تحرير عقد الكراء بنجاح" : "Bail de location établi avec succès", "success");
 		onClose();
 	};
-	const propOptions = properties.map((p) => ({
+	const propOptions = properties.map((p: any) => ({
 		value: p.id,
 		label: `${p.title} (${p.cityWilaya})`
 	}));

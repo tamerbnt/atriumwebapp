@@ -153,7 +153,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 			status: validation.isConforming ? "Passed7D" : "NonConforming",
 			createdAt: (/* @__PURE__ */ new Date()).toISOString()
 		};
-		addConcretePour(newPour);
+		addConcretePour(newPour as any);
 		setIsConcreteModalOpen(false);
 		setPourElement("");
 		setPourSlip("");
@@ -184,7 +184,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 			operatorName: eqOperator.trim(),
 			createdAt: (/* @__PURE__ */ new Date()).toISOString()
 		};
-		addEquipmentLog(newLog);
+		addEquipmentLog(newLog as any);
 		setIsEquipmentModalOpen(false);
 		showToast(anomaly.isAnomaly ? isAr ? "تم تسجيل الآلية مع تنبيه استهلاك غير طبيعي للوقود" : "Pointage enregistré avec alerte surconsommation gasoil" : isAr ? "تم تسجيل ساعات عمل الآلية والوقود" : "Heures et consommation gasoil enregistrées avec succès", anomaly.isAnomaly ? "warning" : "success");
 	};
@@ -410,7 +410,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 									header: isAr ? "العتاد" : "Engins sur Site",
 									width: "170px",
 									renderCell: (log: any) => /* @__PURE__ */ <div className="flex flex-wrap gap-1">
-{log.equipmentOnSite.slice(0, 2).map((eq, i) => /* @__PURE__ */ <span key={i} className="bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded text-[10px] text-neutral-600 dark:text-neutral-400 font-medium">{eq}</span>)}
+{log.equipmentOnSite.slice(0, 2).map((eq: any, i: number) => /* @__PURE__ */ <span key={i} className="bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded text-[10px] text-neutral-600 dark:text-neutral-400 font-medium">{eq}</span>)}
 {log.equipmentOnSite.length > 2 && /* @__PURE__ */ <span className="text-[10px] text-neutral-400 font-mono">
 +
 {log.equipmentOnSite.length - 2}
@@ -517,7 +517,7 @@ Parc d'Engins Mobilisés (
 )
 </span>
 <div className="space-y-1.5">
-{selectedLog.equipmentOnSite.map((eq, i) => /* @__PURE__ */ <div key={i} className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
+{selectedLog.equipmentOnSite.map((eq: any, i: number) => /* @__PURE__ */ <div key={i} className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
 <div className="flex items-center gap-2">
 <Truck size={14} className="text-[#d4522f]" />
 <span className="font-medium text-neutral-800 dark:text-neutral-200">{eq}</span>
