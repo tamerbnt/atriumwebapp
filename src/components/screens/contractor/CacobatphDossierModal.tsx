@@ -15,7 +15,7 @@ interface CacobatphDossierModalProps {
 
 
 
-const CacobatphDossierModal = ({ isOpen, onClose, project, dailyLog }) => {
+export const CacobatphDossierModal: React.FC<CacobatphDossierModalProps> = ({ isOpen, onClose, project, dailyLog }) => {
 	const { language } = useAtriumStore();
 	const isAr = language === "ar";
 	const [onmBulletin, setOnmBulletin] = React.useState(dailyLog?.onmBulletinReference || "ONM-METEO-DZ-2026-8841");
@@ -41,14 +41,14 @@ const CacobatphDossierModal = ({ isOpen, onClose, project, dailyLog }) => {
 <div className="flex items-center gap-2">
 <div className="w-8 h-8 rounded-lg bg-blue-500/15 text-blue-600 flex items-center justify-center font-bold"><Cloud size={18} /></div>
 <div>
-<h3 className="font-bold text-sm text-neutral-900 dark:text-white">
+<h3 className="font-bold text-sm text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isAr ? "ملف التصريح بالتوقف عن العمل بسبب سوء الأحوال الجوية (CACOBATPH)" : "Dossier d'Arrêt Intempéries CACOBATPH (Délai Légal 48h)"}
 </h3>
 </div>
 </div>
 <div className="flex items-center gap-2">
 <AtriumButton variant="primary" onClick={handlePrint} icon={<Printer size={15} />}>{isAr ? "طباعة الملف" : "Imprimer Bordereau"}</AtriumButton>
-<button type="button" onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
+<button type="button" onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
 </div>
 </div>
 <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-start gap-3 print:hidden">
@@ -62,18 +62,18 @@ const CacobatphDossierModal = ({ isOpen, onClose, project, dailyLog }) => {
 </p>
 </div>
 </div>
-<div className="p-5 border border-neutral-300 dark:border-neutral-700 rounded-xl bg-white text-neutral-900 text-xs space-y-5 font-sans">
+<div className="p-5 border border-neutral-300 dark:border-neutral-700 rounded-xl bg-white text-black text-xs space-y-5 font-sans">
 <div className="text-center space-y-1 border-b border-neutral-300 pb-3">
 <p className="font-bold text-xs uppercase tracking-wide">CAISSE NATIONALE DES CONGÉS PAYÉS ET DU CHÔMAGE-INTEMPÉRIES DU BTPH</p>
-<p className="text-[10px] text-neutral-600 font-semibold">
+<p className="text-[10px] text-black/75 font-semibold">
 الصندوق الوطني للعطل المدفوعة الأجر والبطالة الناجمة عن سوء الأحوال الجوية لقطاعات البناء والأشغال العمومية
 </p>
 <div className="text-xs font-bold text-[#d4522f] pt-1">DÉCLARATION D'ARRÊT DE CHANTIER POUR INTEMPÉRIES</div>
 </div>
 <div className="grid grid-cols-2 gap-3 text-[11px]">
 <div className="space-y-1 p-2.5 bg-neutral-50 rounded-lg border border-neutral-200">
-<span className="font-bold text-neutral-600 uppercase text-[10px]">Chantier & Entreprise</span>
-<div className="font-bold text-neutral-900">{project?.projectName || "Chantier Réalisation"}</div>
+<span className="font-bold text-black/75 uppercase text-[10px]">Chantier & Entreprise</span>
+<div className="font-bold text-black">{project?.projectName || "Chantier Réalisation"}</div>
 <div>
 {"Lieu: "}
 {project?.siteLocation || "Alger"}
@@ -87,7 +87,7 @@ const CacobatphDossierModal = ({ isOpen, onClose, project, dailyLog }) => {
 </div>
 </div>
 <div className="space-y-1 p-2.5 bg-neutral-50 rounded-lg border border-neutral-200">
-<span className="font-bold text-neutral-600 uppercase text-[10px]">Justificatif Météorologique</span>
+<span className="font-bold text-black/75 uppercase text-[10px]">Justificatif Météorologique</span>
 <div>
 {"Date d'arrêt: "}
 {dailyLog?.date || (/* @__PURE__ */ new Date()).toISOString().split("T")[0]}
@@ -97,7 +97,7 @@ const CacobatphDossierModal = ({ isOpen, onClose, project, dailyLog }) => {
 {stoppageHours}
 {" heures consécutives"}
 </div>
-<div className="font-mono text-neutral-800">
+<div className="font-mono text-black">
 {"N° Bulletin ONM: "}
 {onmBulletin}
 </div>
@@ -114,7 +114,7 @@ const CacobatphDossierModal = ({ isOpen, onClose, project, dailyLog }) => {
 </div>
 </div>
 <div className="space-y-1.5">
-<span className="font-bold text-neutral-700 text-[11px] flex items-center gap-1.5">
+<span className="font-bold text-black/75 text-[11px] flex items-center gap-1.5">
 <Users size={14} />
 État nominatif sommaire des travailleurs en chômage-intempéries (
 {workerCount}
@@ -122,7 +122,7 @@ const CacobatphDossierModal = ({ isOpen, onClose, project, dailyLog }) => {
 </span>
 <table className="w-full border-collapse border border-neutral-300 text-[10px]">
 <thead>
-<tr className="bg-neutral-100 font-bold text-neutral-700">
+<tr className="bg-neutral-100 font-bold text-black/75">
 <th className="border border-neutral-300 p-1.5 text-left">N° Immatriculation CNAS</th>
 <th className="border border-neutral-300 p-1.5 text-left">Nom & Prénom</th>
 <th className="border border-neutral-300 p-1.5 text-left">Qualification</th>
@@ -162,12 +162,12 @@ h
 </div>
 <div className="grid grid-cols-2 gap-4 pt-4 border-t border-neutral-300 text-center text-[10px]">
 <div className="p-2 border border-neutral-200 rounded-lg h-24 flex flex-col justify-between">
-<span className="font-bold text-neutral-600 uppercase">Pour l'Entreprise de BTPH</span>
-<p className="text-[9px] text-neutral-400">Nom, Signature & Cachet de l'Employeur</p>
+<span className="font-bold text-black/75 uppercase">Pour l'Entreprise de BTPH</span>
+<p className="text-[9px] text-black/55">Nom, Signature & Cachet de l'Employeur</p>
 </div>
 <div className="p-2 border border-neutral-200 rounded-lg h-24 flex flex-col justify-between">
-<span className="font-bold text-neutral-600 uppercase">Visa de l'Inspection du Travail / BET</span>
-<p className="text-[9px] text-neutral-400">Confirmation de l'arrêt effectif des travaux</p>
+<span className="font-bold text-black/75 uppercase">Visa de l'Inspection du Travail / BET</span>
+<p className="text-[9px] text-black/55">Confirmation de l'arrêt effectif des travaux</p>
 </div>
 </div>
 </div>

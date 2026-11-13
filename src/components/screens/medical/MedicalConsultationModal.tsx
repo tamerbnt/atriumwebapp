@@ -133,13 +133,13 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
             <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
               <Stethoscope size={16} />
             </div>
-            <h3 className="font-bold text-sm text-neutral-900 dark:text-white">
+            <h3 className="font-bold text-sm text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {language === 'ar' ? 'فحص واستشارة جديدة' : 'Nouvelle Consultation & Triage'}
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
           >
             <X size={16} />
           </button>
@@ -176,7 +176,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
 
             {/* Urgency Level Triage */}
             <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700">
-              <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+              <span className="text-xs font-semibold text-black dark:text-white">
                 {language === 'ar' ? 'درجة الإلحاح / الفرز' : 'Priorité Triage'}
               </span>
               <div className="flex items-center gap-1.5">
@@ -192,7 +192,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
                           : lvl === 'Prioritaire'
                           ? 'bg-[#d4522f] text-white shadow-xs'
                           : 'bg-[#0D9488] text-white shadow-xs'
-                        : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                        : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
                     }`}
                   >
                     {lvl}

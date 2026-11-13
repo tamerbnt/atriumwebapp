@@ -124,7 +124,7 @@ export const TradingSalesView: React.FC<any> = () => {
 				const typeBadge = doc.type === "facture" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400" : doc.type === "bl" ? "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-400" : doc.type === "devis" ? "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-400" : doc.type === "commande" ? "bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-400" : "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-400";
 				return /* @__PURE__ */ <div className="flex items-center gap-2">
 <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono uppercase ${typeBadge}`}>{doc.type.slice(0, 3)}</span>
-<span className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100">{doc.docNumber}</span>
+<span className="font-mono font-bold text-xs text-black dark:text-white">{doc.docNumber}</span>
 </div>;
 			}
 		},
@@ -133,8 +133,8 @@ export const TradingSalesView: React.FC<any> = () => {
 			header: t("trading_sales_col_date_due", "Date & Échéance"),
 			width: "130px",
 			renderCell: (doc: any) => /* @__PURE__ */ <div className="text-xs font-mono">
-<div className="text-neutral-800 dark:text-neutral-200">{doc.date}</div>
-{doc.dueDate && /* @__PURE__ */ <div className="text-[10px] text-neutral-400">
+<div className="text-black dark:text-white">{doc.date}</div>
+{doc.dueDate && /* @__PURE__ */ <div className="text-[10px] text-black/55 dark:text-white/55">
 {"Éch: "}
 {doc.dueDate}
 </div>}
@@ -145,8 +145,8 @@ export const TradingSalesView: React.FC<any> = () => {
 			header: t("trading_sales_col_client", "Client Destinataire"),
 			minWidth: "220px",
 			renderCell: (doc: any) => /* @__PURE__ */ <div className="text-xs">
-<span className="font-bold text-neutral-900 dark:text-neutral-100 block">{doc.clientName}</span>
-<span className="text-[10px] text-neutral-400 font-mono">
+<span className="font-bold text-black dark:text-white block">{doc.clientName}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
 {"NIF: "}
 {doc.clientNif || "Non renseigné"}
 </span>
@@ -156,13 +156,13 @@ export const TradingSalesView: React.FC<any> = () => {
 			key: "ht",
 			header: t("trading_sales_col_total_ht", "Total H.T."),
 			width: "140px",
-			renderCell: (doc: any) => /* @__PURE__ */ <span className="text-xs font-mono font-semibold text-neutral-700 dark:text-neutral-300 tabular-nums">{formatMoney(doc.totalHtFinal || doc.totalHtRaw || 0)}</span>
+			renderCell: (doc: any) => /* @__PURE__ */ <span className="text-xs font-mono font-semibold text-black/70 dark:text-white/75 tabular-nums">{formatMoney(doc.totalHtFinal || doc.totalHtRaw || 0)}</span>
 		},
 		{
 			key: "netToPay",
 			header: t("trading_sales_col_net_to_pay", "Net à Payer (TTC)"),
 			width: "150px",
-			renderCell: (doc: any) => /* @__PURE__ */ <span className="text-xs font-mono font-bold text-neutral-900 dark:text-white tabular-nums">{formatMoney(doc.netToPay)}</span>
+			renderCell: (doc: any) => /* @__PURE__ */ <span className="text-xs font-mono font-bold text-black dark:text-white tabular-nums">{formatMoney(doc.netToPay)}</span>
 		},
 		{
 			key: "status",
@@ -172,7 +172,7 @@ export const TradingSalesView: React.FC<any> = () => {
 				const isPaid = doc.status === "Paid";
 				const isDelivered = doc.status === "Delivered";
 				const isValidated = doc.status === "Validated";
-				return /* @__PURE__ */ <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${isPaid ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300" : isDelivered ? "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300" : isValidated ? "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300" : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"}`}>{doc.status}</span>;
+				return /* @__PURE__ */ <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${isPaid ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300" : isDelivered ? "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300" : isValidated ? "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300" : "bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75"}`}>{doc.status}</span>;
 			}
 		},
 		{
@@ -183,11 +183,11 @@ export const TradingSalesView: React.FC<any> = () => {
 <button onClick={(e) => {
 							e.stopPropagation();
 							setPrintDoc(doc);
-						}} title={t("action_print", "Imprimer")} className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"><Printer size={14} /></button>
+						}} title={t("action_print", "Imprimer")} className="p-1.5 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"><Printer size={14} /></button>
 <button onClick={(e) => {
 							e.stopPropagation();
 							handleEdit(doc);
-						}} title={t("action_edit", "Modifier")} className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"><Edit size={14} /></button>
+						}} title={t("action_edit", "Modifier")} className="p-1.5 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"><Edit size={14} /></button>
 {doc.type === "devis" && /* @__PURE__ */ <button onClick={(e) => {
 							e.stopPropagation();
 							handleConvert(doc);
@@ -199,7 +199,7 @@ export const TradingSalesView: React.FC<any> = () => {
 <button onClick={(e) => {
 							e.stopPropagation();
 							setDeleteTarget(doc);
-						}} title={t("action_delete", "Supprimer")} className="p-1.5 text-neutral-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"><Trash2 size={14} /></button>
+						}} title={t("action_delete", "Supprimer")} className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"><Trash2 size={14} /></button>
 </div>
 		}
 	];
@@ -240,7 +240,7 @@ export const TradingSalesView: React.FC<any> = () => {
 <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><FileText size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{t("trading_sales_title", "Cycle des Ventes & Facturation B2B")}</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("trading_sales_title", "Cycle des Ventes & Facturation B2B")}</h1>
 <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4522f]/15 text-[#d4522f] border border-[#d4522f]/30">
 {commercialDocs.length}
 {" "}
@@ -259,19 +259,19 @@ export const TradingSalesView: React.FC<any> = () => {
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">{language === "ar" ? "إجمالي المبيعات المفوترة HT" : "Facturation Nette H.T."}</span>
+<span className="text-xs font-semibold text-black/55 dark:text-white/75">{language === "ar" ? "إجمالي المبيعات المفوترة HT" : "Facturation Nette H.T."}</span>
 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#d4522f]/10 text-[#d4522f]">
 {metrics.invoicesCount}
 {" factures"}
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">{formatMoney(metrics.totalInvoicedHt)}</div>
-<div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(metrics.totalInvoicedHt)}</div>
+<div className="flex items-center gap-1.5 text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 <CheckCircle2 size={13} className="text-emerald-500" />
 <span>
 {"Taux de recouvrement: "}
-<strong className="font-mono text-neutral-800 dark:text-neutral-200">
+<strong className="font-mono text-black dark:text-white">
 {metrics.recoveryRate.toFixed(0)}
 %
 </strong>
@@ -281,15 +281,15 @@ export const TradingSalesView: React.FC<any> = () => {
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">{language === "ar" ? "سندات التسليم غير المفوترة" : "BLs Livrés Non Facturés"}</span>
+<span className="text-xs font-semibold text-black/55 dark:text-white/75">{language === "ar" ? "سندات التسليم غير المفوترة" : "BLs Livrés Non Facturés"}</span>
 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
 {metrics.unbilledBlCount}
 {" en attente"}
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">{formatMoney(metrics.unbilledBlAmount)}</div>
-<div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(metrics.unbilledBlAmount)}</div>
+<div className="flex items-center gap-1.5 text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 <Truck size={13} className="text-blue-500" />
 <span>Convertibles en factures groupées</span>
 </div>
@@ -306,13 +306,13 @@ export const TradingSalesView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">{formatMoney(metrics.totalUnpaidAmount)}</div>
-<div className="flex items-center justify-between text-[11px] text-stone-400 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(metrics.totalUnpaidAmount)}</div>
+<div className="flex items-center justify-between text-[11px] text-white/75 mt-0.5">
 <span className="flex items-center gap-1">
 <Clock size={12} className="text-[#FB923C]" />
 <span>Échéances commerciales ouvertes</span>
 </span>
-<span className="font-mono text-stone-300">TTC</span>
+<span className="font-mono text-white/80">TTC</span>
 </div>
 </div>
 <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#FB923C]/5 rounded-full blur-2xl pointer-events-none" />
@@ -324,7 +324,7 @@ export const TradingSalesView: React.FC<any> = () => {
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><FileText size={18} /></div>
 <div className="flex items-center gap-2">
-<span className="text-sm font-bold text-neutral-900 dark:text-white">{t("trading_sales_docs_register", "Registre des Ventes")}</span>
+<span className="text-sm font-bold text-black dark:text-white">{t("trading_sales_docs_register", "Registre des Ventes")}</span>
 <span className="text-xs px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f] font-semibold font-mono">{filteredDocs.length}</span>
 </div>
 </div>
@@ -332,32 +332,38 @@ export const TradingSalesView: React.FC<any> = () => {
 <LiveSegmentedControl size="sm" value={activeTab} onValueChange={(val) => setActiveTab(val)} options={[
 										{
 											value: "all",
-											label: t("trading_doc_all", "Toutes les Pièces"),
+											label: t("trading_doc_all", "Toutes"),
+											tooltip: language === "ar" ? "جميع المستندات التجارية" : language === "fr" ? "Toutes les Pièces" : "All commercial documents",
 											count: tabCounts.all
 										},
 										{
 											value: "devis",
 											label: t("trading_doc_devis", "Devis"),
+											tooltip: language === "ar" ? "عروض الأسعار" : language === "fr" ? "Devis commerciaux" : "Commercial quotes",
 											count: tabCounts.devis
 										},
 										{
 											value: "commande",
 											label: t("trading_doc_commande", "Commandes"),
+											tooltip: language === "ar" ? "طلبيات الزبائن" : language === "fr" ? "Commandes clients" : "Customer orders",
 											count: tabCounts.commande
 										},
 										{
 											value: "bl",
-											label: t("trading_doc_bl", "Livraisons (BL)"),
+											label: t("trading_doc_bl", "Livraisons"),
+											tooltip: language === "ar" ? "سندات التسليم (BL)" : language === "fr" ? "Bons de Livraison (BL)" : "Delivery notes (BL)",
 											count: tabCounts.bl
 										},
 										{
 											value: "facture",
-											label: t("trading_doc_facture", "Factures Fiscales"),
+											label: t("trading_doc_facture", "Factures"),
+											tooltip: language === "ar" ? "الفواتير الجبائية" : language === "fr" ? "Factures Fiscales" : "Tax invoices",
 											count: tabCounts.facture
 										},
 										{
 											value: "avoir",
 											label: t("trading_doc_avoir", "Avoirs"),
+											tooltip: language === "ar" ? "إشعارات دائنة" : language === "fr" ? "Factures d'Avoir" : "Credit notes",
 											count: tabCounts.avoir
 										}
 									]} />
@@ -387,12 +393,12 @@ export const TradingSalesView: React.FC<any> = () => {
 									});
 								}} renderCard={(doc) => /* @__PURE__ */ <div className="p-4 border border-neutral-200 dark:border-neutral-700 rounded-xl space-y-2">
 <div className="flex items-center justify-between">
-<span className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100">{doc.docNumber}</span>
+<span className="font-mono font-bold text-xs text-black dark:text-white">{doc.docNumber}</span>
 <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-[#d4522f]/10 text-[#d4522f]">{doc.type.toUpperCase()}</span>
 </div>
-<p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">{doc.clientName}</p>
+<p className="text-xs font-semibold text-black dark:text-white">{doc.clientName}</p>
 <div className="flex justify-between text-xs font-mono pt-2 border-t border-neutral-100 dark:border-neutral-700">
-<span className="text-neutral-500">
+<span className="text-black/55 dark:text-white/55">
 {t("trading_sales_col_net_to_pay", "Net")}
 {" :"}
 </span>

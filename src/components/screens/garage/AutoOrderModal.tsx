@@ -29,7 +29,7 @@ interface AutoOrderModalProps {
 
 
 
-const AutoOrderModal = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
+export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
 	const { language, showToast } = useAtriumStore();
 	const [activeTab, setActiveTab] = React.useState("intake");
 	const [selectedVehicleId, setSelectedVehicleId] = React.useState(vehicles[0]?.id || "");
@@ -139,12 +139,12 @@ const AutoOrderModal = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-2xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center"><Car size={20} /></div>
 <div>
-<h3 className="font-bold text-base text-neutral-900 dark:text-white">
+<h3 className="font-bold text-base text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {language === "ar" ? "استلام مركبة جديدة وأمر تصليح (OR)" : "Fiche d'Entrée Atelier & Ordre de Réparation"}
 </h3>
 </div>
 </div>
-<button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
+<button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
 </div>
 <div className="flex items-center gap-1 px-6 pt-3 border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-x-auto">
 {[
@@ -168,7 +168,7 @@ const AutoOrderModal = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
 							label: language === "ar" ? "4. الموافقة والتوقيع" : "4. Accord & Signature",
 							icon: /* @__PURE__ */ <PenTool size={14} />
 						}
-					].map((t) => /* @__PURE__ */ <button key={t.id} type="button" onClick={() => setActiveTab(t.id)} className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold rounded-t-xl border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === t.id ? "border-[#d4522f] text-[#d4522f] bg-[#d4522f]/5" : "border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-300"}`}>
+					].map((t) => /* @__PURE__ */ <button key={t.id} type="button" onClick={() => setActiveTab(t.id)} className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold rounded-t-xl border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === t.id ? "border-[#d4522f] text-[#d4522f] bg-[#d4522f]/5" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>
 {t.icon}
 <span>{t.label}</span>
 {t.id === "walkaround" && damageMarkers.length > 0 && /* @__PURE__ */ <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white text-[10px] flex items-center justify-center font-mono">{damageMarkers.length}</span>}
@@ -180,22 +180,22 @@ const AutoOrderModal = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
 <LabelSelect label={language === "ar" ? "المركبة والماتريكيل" : "Véhicule & Matricule"} value={selectedVehicleId} onChange={setSelectedVehicleId} options={vehicleOptions} />
 {activeVehicle && /* @__PURE__ */ <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-white dark:bg-neutral-900 p-3 rounded-xl border border-neutral-200/60 dark:border-neutral-800">
 <div>
-<span className="text-neutral-400 block">{language === "ar" ? "المالك" : "Propriétaire"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{activeVehicle.ownerName}</span>
+<span className="text-black/55 dark:text-white/55 block">{language === "ar" ? "المالك" : "Propriétaire"}</span>
+<span className="font-semibold text-black dark:text-white">{activeVehicle.ownerName}</span>
 </div>
 <div>
-<span className="text-neutral-400 block">{language === "ar" ? "الهاتف" : "Téléphone"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 font-mono">{activeVehicle.ownerPhone}</span>
+<span className="text-black/55 dark:text-white/55 block">{language === "ar" ? "الهاتف" : "Téléphone"}</span>
+<span className="font-semibold text-black dark:text-white font-mono">{activeVehicle.ownerPhone}</span>
 </div>
 <div>
-<span className="text-neutral-400 block">{language === "ar" ? "آخر صيانة" : "Dernier Entretien"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 font-mono">
+<span className="text-black/55 dark:text-white/55 block">{language === "ar" ? "آخر صيانة" : "Dernier Entretien"}</span>
+<span className="font-semibold text-black dark:text-white font-mono">
 {activeVehicle.lastServiceKm?.toLocaleString() || "—"}
 {" km"}
 </span>
 </div>
 <div>
-<span className="text-neutral-400 block">{language === "ar" ? "الحساب" : "Type Compte"}</span>
+<span className="text-black/55 dark:text-white/55 block">{language === "ar" ? "الحساب" : "Type Compte"}</span>
 <span className="font-semibold text-[#d4522f]">{activeVehicle.isFleet ? `Flotte: ${activeVehicle.fleetName}` : "Particulier"}</span>
 </div>
 </div>}
@@ -203,7 +203,7 @@ const AutoOrderModal = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 <div className="space-y-2">
 <LabelInput label={language === "ar" ? "العداد الفعلي عند الدخول (كم)" : "Kilométrage actuel compteur (km)"} type="number" value={currentMileage} onChange={(e) => setCurrentMileage(e.target.value)} required />
-<label className="flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400 cursor-pointer pt-1">
+<label className="flex items-center gap-2 text-xs text-black/70 dark:text-white/75 cursor-pointer pt-1">
 <input type="checkbox" checked={isOdometerReplaced} onChange={(e) => setIsOdometerReplaced(e.target.checked)} className="rounded text-[#d4522f] focus:ring-[#d4522f]" />
 <span>
 {language === "ar" ? "العداد مستبدل أو معاد للصفر" : "Compteur remplacé ou remis à zéro"}
@@ -211,7 +211,7 @@ const AutoOrderModal = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
 </label>
 </div>
 <div className="space-y-1.5">
-<label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 flex items-center justify-between">
+<label className="text-xs font-semibold text-black/70 dark:text-white/75 flex items-center justify-between">
 <span className="flex items-center gap-1.5">
 <Fuel size={14} className="text-[#d4522f]" />
 {language === "ar" ? "مستوى الوقود" : "Niveau de carburant"}
@@ -228,13 +228,13 @@ const AutoOrderModal = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
 												"50",
 												"75",
 												"100"
-											].map((lvl) => /* @__PURE__ */ <button key={lvl} type="button" onClick={() => setFuelLevel(lvl)} className={`py-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer text-center ${fuelLevel === lvl ? "bg-[#d4522f] text-white border-[#d4522f] shadow-xs" : "bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400"}`}>{lvl === "0" ? "Vide" : lvl === "100" ? "Plein" : `${lvl}%`}</button>)}
+											].map((lvl) => /* @__PURE__ */ <button key={lvl} type="button" onClick={() => setFuelLevel(lvl)} className={`py-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer text-center ${fuelLevel === lvl ? "bg-[#d4522f] text-white border-[#d4522f] shadow-xs" : "bg-neutral-50 dark:bg-neutral-800 text-black/70 dark:text-white/75 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400"}`}>{lvl === "0" ? "Vide" : lvl === "100" ? "Plein" : `${lvl}%`}</button>)}
 </div>
 </div>
 </div>
 <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700/80 space-y-3">
 <div className="flex items-center justify-between">
-<span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+<span className="text-xs font-bold text-black dark:text-white">
 {language === "ar" ? "الملحقات والأغراض المسلمة في المركبة" : "Accessoires & Objets à Bord"}
 </span>
 <label className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-800 cursor-pointer">
@@ -271,7 +271,7 @@ const AutoOrderModal = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
 													...prev,
 													[item.key]: e.target.checked
 												}))} className="rounded text-[#d4522f] focus:ring-[#d4522f]" />
-<span className="text-neutral-700 dark:text-neutral-300">{item.label}</span>
+<span className="text-black/70 dark:text-white/75">{item.label}</span>
 </label>)}
 </div>
 </div>
@@ -284,7 +284,7 @@ const AutoOrderModal = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
 											"rear",
 											"left",
 											"right"
-										].map((view) => /* @__PURE__ */ <button key={view} type="button" onClick={() => setActiveCarView(view)} className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${activeCarView === view ? "bg-[#d4522f] text-white shadow-xs" : "bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700"}`}>
+										].map((view) => /* @__PURE__ */ <button key={view} type="button" onClick={() => setActiveCarView(view)} className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${activeCarView === view ? "bg-[#d4522f] text-white shadow-xs" : "bg-white dark:bg-neutral-900 text-black/70 dark:text-white/75 border border-neutral-200 dark:border-neutral-700"}`}>
 {view === "front" ? "Face Avant" : view === "rear" ? "Face Arrière" : view === "left" ? "Côté Gauche" : "Côté Droit"}
 </button>)}
 </div>
@@ -335,27 +335,27 @@ const AutoOrderModal = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
 													left: `${marker.xPercent}%`,
 													top: `${marker.yPercent}%`
 												}} className="absolute -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#d4522f] text-white text-xs font-bold font-mono flex items-center justify-center border-2 border-white shadow-lg animate-in zoom-in" title={`${marker.damageType} (${marker.severity})`}>{idx + 1}</div>)}
-<div className="absolute bottom-3 left-4 text-[11px] text-neutral-400 bg-black/60 px-2.5 py-1 rounded-full backdrop-blur-xs">
+<div className="absolute bottom-3 left-4 text-[11px] text-white/75 bg-black/60 px-2.5 py-1 rounded-full backdrop-blur-xs">
 {language === "ar" ? "انقر على الصورة لإضافة نقطة خدش/صدمة" : "Cliquez sur le schéma pour consigner un dommage"}
 </div>
 </div>
 </div>
 <div className="space-y-2">
-<span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+<span className="text-xs font-bold text-black/70 dark:text-white/75">
 {language === "ar" ? "العيوب المرصودة في الفحص الأولي" : "Dommages & anomalies répertoriés"}
 {" ("}
 {damageMarkers.length}
 )
 </span>
-{damageMarkers.length === 0 ? /* @__PURE__ */ <p className="text-xs text-neutral-400 italic">
+{damageMarkers.length === 0 ? /* @__PURE__ */ <p className="text-xs text-black/55 dark:text-white/55 italic">
 {language === "ar" ? "لم يتم تسجيل أي خدوش. انقر على المخطط أعلاه لتحديد الأضرار." : "Aucun dommage répertorié. Cliquez sur le schéma ci-dessus pour ajouter des repères."}
 </p> : /* @__PURE__ */ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-36 overflow-y-auto">
 {damageMarkers.map((m, idx) => /* @__PURE__ */ <div key={m.id} className="flex items-center justify-between p-2.5 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-neutral-200/60 dark:border-neutral-700 text-xs">
 <div className="flex items-center gap-2">
 <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-[10px] font-bold">{idx + 1}</span>
 <div>
-<span className="font-semibold text-neutral-900 dark:text-white capitalize">{m.damageType}</span>
-<span className="text-neutral-400 ml-1.5 capitalize">
+<span className="font-semibold text-black dark:text-white capitalize">{m.damageType}</span>
+<span className="text-black/55 dark:text-white/55 ml-1.5 capitalize">
 (
 {m.view}
 {" · "}
@@ -364,7 +364,7 @@ const AutoOrderModal = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
 </span>
 </div>
 </div>
-<button type="button" onClick={() => removeMarker(m.id)} className="text-neutral-400 hover:text-rose-500 p-1"><Trash2 size={13} /></button>
+<button type="button" onClick={() => removeMarker(m.id)} className="text-black/55 dark:text-white/55 hover:text-rose-500 p-1"><Trash2 size={13} /></button>
 </div>)}
 </div>}
 </div>
@@ -394,10 +394,10 @@ const AutoOrderModal = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
 											]} />
 </div>
 <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700/80 space-y-2 text-xs">
-<span className="font-bold text-neutral-800 dark:text-neutral-200 block">
+<span className="font-bold text-black dark:text-white block">
 {language === "ar" ? "معايير الفحص الأولي للورشة" : "Protocole d'admission & sécurité atelier"}
 </span>
-<ul className="list-disc list-inside text-neutral-500 space-y-1">
+<ul className="list-disc list-inside text-black/55 dark:text-white/55 space-y-1">
 <li>
 {language === "ar" ? "فحص رقم الهيكل (VIN) على الشاسيه ومطابقته مع البطاقة الرمادية" : "Vérification du numéro de châssis (VIN) sous pare-brise"}
 </li>
@@ -418,13 +418,13 @@ const AutoOrderModal = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
 {language === "ar" ? "عقد استلام وحراسة قانونية (المادة 581 من القانون المدني)" : "Conditions Contradictoires de Dépôt & Garde (Art. 581 Code Civil)"}
 </span>
 </div>
-<p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+<p className="text-xs text-black/70 dark:text-white/75 leading-relaxed">
 {language === "ar" ? "يصرح الزبون ومسؤول الاستقبال بصحة فحص الهيكل، مستوى الوقود والعداد المدونين أعلاه. الورشة مسؤولة عن حراسة المركبة طيلة فترة التصليح ضمن حدود الأضرار المبينة في هذا الأمر." : "Le propriétaire et le chef d'atelier attestent de l'exactitude de l'état descriptif, du kilométrage et de la jauge carburant consignés ci-dessus. L'atelier assume la garde juridique du véhicule dans les strictes limites de la présente fiche d'entrée."}
 </p>
 </div>
 <div className="p-5 rounded-2xl bg-white dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 space-y-4">
 <div className="flex items-center justify-between">
-<span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
+<span className="text-xs font-bold text-black dark:text-white flex items-center gap-2">
 <PenTool size={14} className="text-[#d4522f]" />
 {language === "ar" ? "توقيع الزبون على الشاشة أو إقرار الاستلام" : "Signature client sur écran & accord contradictoire"}
 </span>
@@ -435,13 +435,13 @@ const AutoOrderModal = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
 </div>
 <div onClick={() => setIsClientSigned(true)} className={`w-full h-28 rounded-2xl border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors ${isClientSigned ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-400" : "bg-neutral-50 dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700 hover:border-[#d4522f]"}`}>
 {isClientSigned ? /* @__PURE__ */ <div className="text-center space-y-1">
-<span className="font-serif italic text-xl text-neutral-800 dark:text-white font-bold">{activeVehicle.ownerName}</span>
-<p className="text-[10px] text-neutral-400 font-mono">
+<span className="font-serif italic text-xl text-black dark:text-white font-bold">{activeVehicle.ownerName}</span>
+<p className="text-[10px] text-black/55 dark:text-white/55 font-mono">
 {(/* @__PURE__ */ new Date()).toLocaleString()}
 {" · Signature Numérique Reçue"}
 </p>
-</div> : /* @__PURE__ */ <div className="text-center text-xs text-neutral-400 space-y-1">
-<PenTool size={20} className="mx-auto text-neutral-300" />
+</div> : /* @__PURE__ */ <div className="text-center text-xs text-black/55 dark:text-white/55 space-y-1">
+<PenTool size={20} className="mx-auto text-black/55 dark:text-white/55" />
 <span>
 {language === "ar" ? "انقر هنا لتسجيل توقيع الزبون الرقمي" : "Cliquez ici pour apposer la signature du client sur verre"}
 </span>

@@ -170,11 +170,11 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 			cell: (l: any) => /* @__PURE__ */ <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0"><Key size={16} /></div>
 <div>
-<div className="font-semibold text-xs text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5 line-clamp-1">
+<div className="font-semibold text-xs text-black dark:text-white flex items-center gap-1.5 line-clamp-1">
 {l.propertyTitle}
 {pinnedIds.has(l.id) && /* @__PURE__ */ <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />}
 </div>
-<div className="text-[10px] text-neutral-400">
+<div className="text-[10px] text-black/55 dark:text-white/55">
 {"Du "}
 {l.startDate}
 {" au "}
@@ -190,8 +190,8 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 			sortable: true,
 			minWidth: "170px",
 			cell: (l: any) => /* @__PURE__ */ <div>
-<div className="font-semibold text-xs text-neutral-900 dark:text-neutral-100">{l.tenantName}</div>
-<div className="text-[10px] text-neutral-400">{l.tenantPhone}</div>
+<div className="font-semibold text-xs text-black dark:text-white">{l.tenantName}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">{l.tenantPhone}</div>
 </div>
 		},
 		{
@@ -200,7 +200,7 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 			accessorKey: "monthlyRentDzd",
 			sortable: true,
 			minWidth: "130px",
-			cell: (l: any) => /* @__PURE__ */ <div className="font-mono font-bold text-xs text-neutral-900 dark:text-white">{formatMoney(l.monthlyRentDzd)}</div>
+			cell: (l: any) => /* @__PURE__ */ <div className="font-mono font-bold text-xs text-black dark:text-white">{formatMoney(l.monthlyRentDzd)}</div>
 		},
 		{
 			id: "securityDeposit",
@@ -208,7 +208,7 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 			accessorKey: "securityDepositDzd",
 			sortable: true,
 			minWidth: "130px",
-			cell: (l: any) => /* @__PURE__ */ <div className="font-mono text-xs text-neutral-700 dark:text-neutral-300">{formatMoney(l.securityDepositDzd)}</div>
+			cell: (l: any) => /* @__PURE__ */ <div className="font-mono text-xs text-black/70 dark:text-white/75">{formatMoney(l.securityDepositDzd)}</div>
 		},
 		{
 			id: "status",
@@ -216,7 +216,7 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 			accessorKey: "status",
 			sortable: true,
 			minWidth: "110px",
-			cell: (l: any) => /* @__PURE__ */ <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${l.status === "Active" ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-400"}`}>{l.status === "Active" ? "Actif" : "Clôturé"}</span>
+			cell: (l: any) => /* @__PURE__ */ <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${l.status === "Active" ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-neutral-100 text-black/70 border-neutral-200 dark:bg-neutral-800 dark:text-white/75"}`}>{l.status === "Active" ? "Actif" : "Clôturé"}</span>
 		}
 	];
 	const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
@@ -251,7 +251,7 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Key size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{isAr ? "عقود الكراء والاتفاقيات" : "Baux & Contrats de Location"}</h1>
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{isAr ? "عقود الكراء والاتفاقيات" : "Baux & Contrats de Location"}</h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
 {leases.length}
 {" "}
@@ -267,15 +267,15 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "التزامات الإيجار والضمانات المالية" : "Engagements Locatifs & Cautions Déposées"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "عقود الإيجار السارية" : "Baux Actifs en Cours"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "عقود الإيجار السارية" : "Baux Actifs en Cours"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">{activeLeases}</div>
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{activeLeases}</div>
 <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">
 {"100% "}
 {isAr ? "موثقة قانونياً" : "conformes et signés"}
@@ -283,19 +283,19 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "مجموع الودائع الضامنة (Cautions)" : "Dépôts de Garantie Séquestrés"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "مجموع الودائع الضامنة (Cautions)" : "Dépôts de Garantie Séquestrés"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-mono tabular-nums">{formatMoney(totalDeposits)}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">{isAr ? "ودائع في الحساب الضامن" : "Comptes séquestre agence"}</p>
+<div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalDeposits)}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">{isAr ? "ودائع في الحساب الضامن" : "Comptes séquestre agence"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{isAr ? "الكتلة الإيجارية الشهرية" : "Quittancement Mensuel"}</span>
+<span className="text-[11px] font-medium text-white/80">{isAr ? "الكتلة الإيجارية الشهرية" : "Quittancement Mensuel"}</span>
 <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">Loyers Encaissés</span>
 </div>
 <div>
-<div className="text-2xl font-black text-white font-mono tabular-nums">{formatMoney(totalMonthlyRent)}</div>
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalMonthlyRent)}</div>
 <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
 <CheckCircle2 size={11} />
 {activeLeases}
@@ -309,34 +309,39 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "سجل عقود الإيجار والالتزامات" : "Registre des Baux & Contrats de Location"}
 </h2>
 </div>
 <LiveSegmentedControl size="sm" value={statusFilter} onValueChange={(val) => setStatusFilter(val)} options={[
 							{
 								value: "All",
-								label: isAr ? "جميع العقود" : "Tous les baux",
+								label: isAr ? "الكل" : language === "fr" ? "Tous" : "All",
+								tooltip: isAr ? "جميع العقود" : language === "fr" ? "Tous les baux" : "All leases",
 								count: leaseCounts.all
 							},
 							{
 								value: "Active",
-								label: isAr ? "عقود سارية" : "Baux actifs",
+								label: isAr ? "سارية" : language === "fr" ? "Actifs" : "Active",
+								tooltip: isAr ? "عقود سارية" : language === "fr" ? "Baux actifs" : "Active leases",
 								count: leaseCounts.active
 							},
 							{
 								value: "Renew",
-								label: isAr ? "تجديد < 30 يوم" : "Renouvellement < 30j",
+								label: isAr ? "تجديد" : language === "fr" ? "Renouveler" : "Renew",
+								tooltip: isAr ? "تجديد < 30 يوم" : language === "fr" ? "Renouvellement < 30j" : "Renewal < 30 days",
 								count: leaseCounts.renew
 							},
 							{
 								value: "Terminated",
-								label: isAr ? "عقود مفسوخة" : "Baux résiliés",
+								label: isAr ? "مفسوخة" : language === "fr" ? "Résiliés" : "Terminated",
+								tooltip: isAr ? "عقود مفسوخة" : language === "fr" ? "Baux résiliés" : "Terminated leases",
 								count: leaseCounts.terminated
 							},
 							{
 								value: "Caution",
-								label: isAr ? "الودائع الضامنة" : "Cautions séquestre",
+								label: isAr ? "ودائع" : language === "fr" ? "Cautions" : "Deposits",
+								tooltip: isAr ? "الودائع الضامنة" : language === "fr" ? "Cautions séquestre" : "Escrow deposits",
 								count: leaseCounts.caution
 							}
 						]} aria-label="Real Estate Lease Filter" />
@@ -346,22 +351,25 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 <UniversalDataCollection data={filteredLeases} columns={columns} keyExtractor={(l) => l.id} searchQuery={searchQuery} onSearchChange={setSearchQuery} searchPlaceholder={isAr ? "بحث بالعقار، المستأجر، الهاتف..." : "Rechercher par bien, locataire, téléphone..."} filterValue={statusFilter} onFilterChange={setStatusFilter} filterOptions={[
 								{
 									value: "All",
-									label: isAr ? "جميع العقود" : "Tous les baux"
+									label: isAr ? "الكل" : language === "fr" ? "Tous" : "All",
+									tooltip: isAr ? "جميع العقود" : language === "fr" ? "Tous les baux" : "All leases"
 								},
 								{
 									value: "Active",
-									label: "Baux Actifs"
+									label: isAr ? "سارية" : language === "fr" ? "Actifs" : "Active",
+									tooltip: isAr ? "عقود سارية" : language === "fr" ? "Baux Actifs" : "Active leases"
 								},
 								{
 									value: "Terminated",
-									label: "Baux Clôturés"
+									label: isAr ? "مغلقة" : language === "fr" ? "Clôturés" : "Closed",
+									tooltip: isAr ? "عقود مغلقة" : language === "fr" ? "Baux Clôturés" : "Closed leases"
 								}
 							]} viewMode={viewMode} onViewModeChange={setViewMode} selectedIds={selectedIds} onSelectionChange={setSelectedIds} pinnedIds={pinnedIds} onPinToggle={handlePin} sortBy={sortBy} sortDir={sortDir} onSortChange={(field, dir) => {
 								setSortBy(field);
 								setSortDir(dir);
 							}} onItemClick={(l) => {
 								setSelectedLease(l);
-							}} onDelete={handleDelete} emptyIcon={<Key size={32} className="text-neutral-400" />} emptyTitle={isAr ? "لا توجد عقود كراء" : "Aucun bail trouvé"} emptyDescription={searchQuery ? isAr ? "لا توجد نتائج مطابقة لبحثك" : "Aucun résultat ne correspond à votre recherche" : isAr ? "قم بتحرير أول عقد إيجار للبدء" : "Créez votre premier contrat de bail"} customActions={[{
+							}} onDelete={handleDelete} emptyIcon={<Key size={32} className="text-black/55 dark:text-white/55" />} emptyTitle={isAr ? "لا توجد عقود كراء" : "Aucun bail trouvé"} emptyDescription={searchQuery ? isAr ? "لا توجد نتائج مطابقة لبحثك" : "Aucun résultat ne correspond à votre recherche" : isAr ? "قم بتحرير أول عقد إيجار للبدء" : "Créez votre premier contrat de bail"} customActions={[{
 								id: "receipt",
 								label: isAr ? "إصدار مخالصة" : "Quittance de Loyer",
 								icon: /* @__PURE__ */ <FileText size={14} />,
@@ -377,11 +385,11 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 {formatMoney(l.monthlyRentDzd)}
 {" /mois"}
 </span>
-<span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${l.status === "Active" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"}`}>{l.status === "Active" ? "Actif" : "Clôturé"}</span>
+<span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${l.status === "Active" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : "bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75"}`}>{l.status === "Active" ? "Actif" : "Clôturé"}</span>
 </div>
 <div>
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white line-clamp-1">{l.propertyTitle}</h3>
-<div className="text-xs text-neutral-500 font-medium mt-0.5">
+<h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">{l.propertyTitle}</h3>
+<div className="text-xs text-black/55 dark:text-white/55 font-medium mt-0.5">
 {"Locataire: "}
 {l.tenantName}
 {" ("}
@@ -389,14 +397,14 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 )
 </div>
 </div>
-<div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-neutral-500">
+<div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-black/55 dark:text-white/55">
 <span>
 {"Période: "}
 {l.startDate}
 {" → "}
 {l.endDate}
 </span>
-<span className="font-mono text-neutral-700 dark:text-neutral-300">
+<span className="font-mono text-black/70 dark:text-white/75">
 {"Caution: "}
 {formatMoney(l.securityDepositDzd)}
 </span>
@@ -409,16 +417,16 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold"><Key size={18} /></div>
 <div>
 <div className="flex items-center gap-1.5">
-<span className="font-bold text-xs text-neutral-900 dark:text-white">
+<span className="font-bold text-xs text-black dark:text-white">
 {"Bail "}
 {selectedLease.id}
 </span>
-<span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${selectedLease.status === "Active" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"}`}>{selectedLease.status}</span>
+<span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${selectedLease.status === "Active" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : "bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75"}`}>{selectedLease.status}</span>
 </div>
-<p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 line-clamp-1">{selectedLease.propertyTitle}</p>
+<p className="text-xs font-semibold text-black/70 dark:text-white/75 line-clamp-1">{selectedLease.propertyTitle}</p>
 </div>
 </div>
-<button onClick={() => setSelectedLease(null)} className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800"><X size={16} /></button>
+<button onClick={() => setSelectedLease(null)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"><X size={16} /></button>
 </div>
 <div className="flex items-center gap-1.5 flex-wrap">
 <button onClick={() => handleEmitReceipt(selectedLease)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-orange-50 text-[#d4522f] hover:bg-orange-100 dark:bg-orange-950/40 dark:hover:bg-orange-900/60 transition-colors">
@@ -432,37 +440,37 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 <button onClick={() => handleDelete(selectedLease)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 transition-colors ml-auto"><Trash2 size={12} /></button>
 </div>
 <div className="flex border-b border-neutral-100 dark:border-neutral-800 gap-1 text-xs">
-<button onClick={() => setActiveTab("bail")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "bail" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "العقد" : "Dossier Bail"}</button>
-<button onClick={() => setActiveTab("finance")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "finance" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "المالية" : "Finances"}</button>
-<button onClick={() => setActiveTab("quittances")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "quittances" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "المخالصات" : "Quittances"}</button>
-<button onClick={() => setActiveTab("notes")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "البنود" : "Clauses"}</button>
+<button onClick={() => setActiveTab("bail")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "bail" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "العقد" : "Dossier Bail"}</button>
+<button onClick={() => setActiveTab("finance")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "finance" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "المالية" : "Finances"}</button>
+<button onClick={() => setActiveTab("quittances")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "quittances" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "المخالصات" : "Quittances"}</button>
+<button onClick={() => setActiveTab("notes")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "البنود" : "Clauses"}</button>
 </div>
 {activeTab === "bail" && /* @__PURE__ */ <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Bien loué:</span>
-<span className="font-semibold text-neutral-900 dark:text-white truncate max-w-[190px]">{selectedLease.propertyTitle}</span>
+<span className="text-black/55 dark:text-white/55">Bien loué:</span>
+<span className="font-semibold text-black dark:text-white truncate max-w-[190px]">{selectedLease.propertyTitle}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Locataire:</span>
-<span className="font-semibold text-neutral-900 dark:text-white">{selectedLease.tenantName}</span>
+<span className="text-black/55 dark:text-white/55">Locataire:</span>
+<span className="font-semibold text-black dark:text-white">{selectedLease.tenantName}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Téléphone:</span>
-<span className="font-mono text-neutral-800 dark:text-neutral-200">{selectedLease.tenantPhone}</span>
+<span className="text-black/55 dark:text-white/55">Téléphone:</span>
+<span className="font-mono text-black dark:text-white">{selectedLease.tenantPhone}</span>
 </div>
 </div>
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Date d'effet:</span>
-<span className="font-mono text-neutral-800 dark:text-neutral-200">{selectedLease.startDate}</span>
+<span className="text-black/55 dark:text-white/55">Date d'effet:</span>
+<span className="font-mono text-black dark:text-white">{selectedLease.startDate}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Échéance de fin:</span>
-<span className="font-mono text-neutral-800 dark:text-neutral-200">{selectedLease.endDate}</span>
+<span className="text-black/55 dark:text-white/55">Échéance de fin:</span>
+<span className="font-mono text-black dark:text-white">{selectedLease.endDate}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Périodicité:</span>
+<span className="text-black/55 dark:text-white/55">Périodicité:</span>
 <span className="font-semibold text-[#d4522f]">{selectedLease.paymentFrequency}</span>
 </div>
 </div>
@@ -470,15 +478,15 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 {activeTab === "finance" && /* @__PURE__ */ <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Loyer mensuel:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">{formatMoney(selectedLease.monthlyRentDzd)}</span>
+<span className="text-black/55 dark:text-white/55">Loyer mensuel:</span>
+<span className="font-mono font-bold text-black dark:text-white">{formatMoney(selectedLease.monthlyRentDzd)}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Caution de garantie:</span>
-<span className="font-mono text-neutral-800 dark:text-neutral-200 font-semibold">{formatMoney(selectedLease.securityDepositDzd)}</span>
+<span className="text-black/55 dark:text-white/55">Caution de garantie:</span>
+<span className="font-mono text-black dark:text-white font-semibold">{formatMoney(selectedLease.securityDepositDzd)}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Honoraires d'agence:</span>
+<span className="text-black/55 dark:text-white/55">Honoraires d'agence:</span>
 <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">{formatMoney(selectedLease.agencyCommissionDzd || 0)}</span>
 </div>
 </div>
@@ -492,16 +500,16 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 {q.paymentMethod}
 </span>
 </div>
-<div className="flex justify-between items-center text-neutral-600 dark:text-neutral-300">
+<div className="flex justify-between items-center text-black/70 dark:text-white/75">
 <span>
 {"Période: Mois "}
 {q.periodMonth}
 /
 {q.periodYear}
 </span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">{formatMoney(q.totalCollectedDzd)}</span>
+<span className="font-mono font-bold text-black dark:text-white">{formatMoney(q.totalCollectedDzd)}</span>
 </div>
-<div className="flex justify-between text-[10px] text-neutral-400">
+<div className="flex justify-between text-[10px] text-black/55 dark:text-white/55">
 <span>
 {"Timbre fiscal: "}
 {formatMoney(q.timbreFiscalDzd)}
@@ -512,14 +520,14 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 </span>
 </div>
 </div>)}
-{quittances.filter((q) => q.leaseId === selectedLease.id).length === 0 && /* @__PURE__ */ <div className="text-center py-4 text-neutral-400 text-xs">Aucune quittance émise pour ce bail.</div>}
+{quittances.filter((q) => q.leaseId === selectedLease.id).length === 0 && /* @__PURE__ */ <div className="text-center py-4 text-black/55 dark:text-white/55 text-xs">Aucune quittance émise pour ce bail.</div>}
 <button onClick={() => handleEmitReceipt(selectedLease)} className="w-full py-2.5 rounded-xl bg-[#d4522f] text-white hover:bg-[#a86246] font-semibold text-xs shadow-xs transition-colors">+ Encaisser Loyer & Émettre Quittance</button>
 </div>}
 {activeTab === "notes" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
-<p className="text-neutral-500 text-[11px]">
+<p className="text-black/55 dark:text-white/55 text-[11px]">
 Clauses particulières, état des lieux d'entrée et interdictions (sous-location, animaux) :
 </p>
-<textarea rows={6} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} placeholder="Noter les conditions spécifiques d'entretien chaudière, taxe d'habitation..." className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none" />
+<textarea rows={6} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} placeholder="Noter les conditions spécifiques d'entretien chaudière, taxe d'habitation..." className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none" />
 <button onClick={handleSaveNotes} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#d4522f] text-white hover:bg-[#a86246] transition-colors font-medium text-xs shadow-xs">
 {noteSaved ? /* @__PURE__ */ <>
 <Check size={14} />

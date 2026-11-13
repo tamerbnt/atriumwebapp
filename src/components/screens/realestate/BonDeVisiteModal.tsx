@@ -14,7 +14,7 @@ interface BonDeVisiteModalProps {
 
 
 
-const BonDeVisiteModal = ({ isOpen, onClose, onSave, properties, selectedProperty }) => {
+export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({ isOpen, onClose, onSave, properties, selectedProperty }) => {
 	const activeProp = selectedProperty || properties[0];
 	const [clientFullName, setClientFullName] = React.useState("");
 	const [clientPhone, setClientPhone] = React.useState("");
@@ -129,21 +129,21 @@ const BonDeVisiteModal = ({ isOpen, onClose, onSave, properties, selectedPropert
 		onClose();
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-<div className="relative w-full max-w-2xl bg-white dark:bg-[#18181B] rounded-[28px] shadow-2xl border border-[#E9EEF0] dark:border-[#27272A] p-6 md:p-8 my-8 text-[#18181B] dark:text-[#FAFAFA]">
+<div className="relative w-full max-w-2xl bg-white dark:bg-[#18181B] rounded-[28px] shadow-2xl border border-[#E9EEF0] dark:border-[#27272A] p-6 md:p-8 my-8 text-black dark:text-[#FAFAFA]">
 <div className="flex items-center justify-between pb-4 border-b border-[#E2E8EC] dark:border-[#27272A] mb-5">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Shield className="w-5 h-5" /></div>
 <div>
-<h2 className="text-xl font-bold tracking-tight">Bon de Visite Numérique Certifié</h2>
+<h2 className="text-xl font-bold tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">Bon de Visite Numérique Certifié</h2>
 </div>
 </div>
-<button onClick={onClose} className="p-2 rounded-xl text-[#64748B] hover:text-[#18181B] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"><X className="w-5 h-5" /></button>
+<button onClick={onClose} className="p-2 rounded-xl text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"><X className="w-5 h-5" /></button>
 </div>
 <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-[#141416] border border-[#E6DED6] dark:border-[#232328] mb-5 flex items-center justify-between">
 <div>
-<div className="text-xs text-[#64748B] dark:text-[#A1A1AA] uppercase font-semibold">Bien Visité</div>
-<div className="text-sm font-bold text-[#18181B] dark:text-white truncate max-w-md">{activeProp?.title}</div>
-<div className="text-xs text-[#64748B] dark:text-[#A1A1AA]">
+<div className="text-xs text-black/70 dark:text-[#A1A1AA] uppercase font-semibold">Bien Visité</div>
+<div className="text-sm font-bold text-black dark:text-white truncate max-w-md">{activeProp?.title}</div>
+<div className="text-xs text-black/70 dark:text-[#A1A1AA]">
 {activeProp?.address}
 {" ("}
 {activeProp?.cityWilaya}
@@ -151,7 +151,7 @@ const BonDeVisiteModal = ({ isOpen, onClose, onSave, properties, selectedPropert
 </div>
 </div>
 <div className="text-right">
-<div className="text-xs text-[#64748B] dark:text-[#A1A1AA]">Prix Annoncé</div>
+<div className="text-xs text-black/70 dark:text-[#A1A1AA]">Prix Annoncé</div>
 <div className="text-sm font-bold font-mono text-[#d4522f]">
 {activeProp?.priceDzd.toLocaleString()}
 {" DZD"}
@@ -168,9 +168,9 @@ const BonDeVisiteModal = ({ isOpen, onClose, onSave, properties, selectedPropert
 <div className="flex items-center gap-2.5">
 <MapPin className="w-4 h-4 text-[#d4522f]" />
 <div className="text-xs">
-<span className="font-semibold text-[#18181B] dark:text-white">Géolocalisation d'Intervention:</span>
+<span className="font-semibold text-black dark:text-white">Géolocalisation d'Intervention:</span>
 {" "}
-{isGpsLoading ? /* @__PURE__ */ <span className="text-[#d4522f] animate-pulse">Recherche signal satellite GPS...</span> : gpsLatitude ? /* @__PURE__ */ <span className="font-mono text-[#64748B] dark:text-[#A1A1AA]">
+{isGpsLoading ? /* @__PURE__ */ <span className="text-[#d4522f] animate-pulse">Recherche signal satellite GPS...</span> : gpsLatitude ? /* @__PURE__ */ <span className="font-mono text-black/70 dark:text-[#A1A1AA]">
 {gpsLatitude}
 {"° N, "}
 {gpsLongitude}
@@ -184,23 +184,23 @@ m)
 </div>
 <div className="space-y-1.5">
 <div className="flex items-center justify-between text-xs">
-<span className="font-semibold text-[#18181B] dark:text-white">Signature Tactile de l'Acquéreur (Sur l'écran)</span>
-<button type="button" onClick={clearSignature} className="flex items-center gap-1 text-[#64748B] hover:text-[#d4522f] transition-colors">
+<span className="font-semibold text-black dark:text-white">Signature Tactile de l'Acquéreur (Sur l'écran)</span>
+<button type="button" onClick={clearSignature} className="flex items-center gap-1 text-black/70 dark:text-white/75 hover:text-[#d4522f] transition-colors">
 <RotateCcw className="w-3.5 h-3.5" />
 <span>Effacer</span>
 </button>
 </div>
 <div className="relative rounded-2xl border-2 border-dashed border-[#E2E8EC] dark:border-[#27272A] bg-white dark:bg-[#141416] overflow-hidden">
 <canvas ref={canvasRef} width={560} height={140} className="w-full h-[140px] touch-none cursor-crosshair" onMouseDown={startDrawing} onMouseMove={draw} onMouseUp={stopDrawing} onMouseLeave={stopDrawing} onTouchStart={startDrawing} onTouchMove={draw} onTouchEnd={stopDrawing} />
-{!hasSignature && /* @__PURE__ */ <div className="absolute inset-0 pointer-events-none flex items-center justify-center text-xs text-[#94A3B8]">Signez avec le doigt ou le stylet ici</div>}
+{!hasSignature && /* @__PURE__ */ <div className="absolute inset-0 pointer-events-none flex items-center justify-center text-xs text-black/55 dark:text-white/55">Signez avec le doigt ou le stylet ici</div>}
 </div>
-<p className="text-[11px] text-[#64748B] dark:text-[#A1A1AA] leading-relaxed">
+<p className="text-[11px] text-black/70 dark:text-[#A1A1AA] leading-relaxed">
 * En signant, le client reconnaît avoir visité le bien par l'entremise de l'agence Atrium et s'interdit de traiter directement avec le vendeur pendant 12 mois.
 </p>
 </div>
 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 <div>
-<label className="block text-xs font-semibold text-[#18181B] dark:text-white mb-1.5">Impression de Visite</label>
+<label className="block text-xs font-semibold text-black dark:text-white mb-1.5">Impression de Visite</label>
 <select value={clientImpression} onChange={(e) => setClientImpression(e.target.value)} className="w-full px-3.5 py-2.5 rounded-xl border border-[#E2E8EC] dark:border-[#27272A] bg-white dark:bg-[#141416] text-xs font-medium focus:ring-2 focus:ring-[#d4522f]">
 <option value="Interested">Très Intéressé (Candidat Solide)</option>
 <option value="NeedsNegotiation">Intéressé sous réserve de négociation</option>

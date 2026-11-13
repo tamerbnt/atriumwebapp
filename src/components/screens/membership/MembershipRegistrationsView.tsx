@@ -35,6 +35,7 @@ import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { localizeStatus } from '../../../utils/rules';
+import { compactFilterLabel } from '../../../utils/filterLexicon';
 import { t } from '../../../utils/i18n';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -205,11 +206,11 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 {isPinned && /* @__PURE__ */ <span className="w-1.5 h-6 rounded-full bg-[#d4522f] shrink-0" title="Pinned" />}
 <Avatar name={lead.fullName} size={36} />
 <div className="min-w-0">
-<div className="text-sm font-bold text-neutral-900 dark:text-white truncate flex items-center gap-1.5">
+<div className="text-sm font-bold text-black dark:text-white truncate flex items-center gap-1.5">
 <span>{lead.fullName}</span>
 {isPinned && /* @__PURE__ */ <Pin size={11} className="text-[#d4522f] shrink-0" />}
 </div>
-<div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+<div className="text-xs text-black/55 dark:text-white/75 truncate">
 {lead.phoneNumber}
 {" · "}
 {lead.email}
@@ -224,8 +225,8 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 			width: "1.8*",
 			sortable: true,
 			renderCell: (lead: any) => /* @__PURE__ */ <div>
-<span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">{lead.source}</span>
-{lead.notes && /* @__PURE__ */ <span className="block text-[11px] text-neutral-400 truncate max-w-xs mt-0.5">{lead.notes}</span>}
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">{lead.source}</span>
+{lead.notes && /* @__PURE__ */ <span className="block text-[11px] text-black/55 dark:text-white/55 truncate max-w-xs mt-0.5">{lead.notes}</span>}
 </div>
 		},
 		{
@@ -235,7 +236,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 			sortable: true,
 			renderCell: (lead: any) => /* @__PURE__ */ <div>
 <span className="inline-block px-2.5 py-0.5 rounded-full bg-[#FDF4F0] dark:bg-neutral-800 text-[#d4522f] text-xs font-bold border border-[#F5E2D8] dark:border-neutral-700">{lead.preferredPlanName || plans[0]?.name || "Standard Package"}</span>
-{lead.preferredStartDate && /* @__PURE__ */ <span className="block text-[11px] text-neutral-400 mt-0.5">
+{lead.preferredStartDate && /* @__PURE__ */ <span className="block text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 {language === "ar" ? "بدء: " : language === "fr" ? "Début : " : "Start: "}
 {lead.preferredStartDate}
 </span>}
@@ -246,7 +247,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 			header: language === "ar" ? "تاريخ التقديم" : language === "fr" ? "Date de soumission" : "Submission Date",
 			width: "1.4*",
 			sortable: true,
-			renderCell: (lead: any) => /* @__PURE__ */ <span className="text-xs text-neutral-500 dark:text-neutral-400 tabular-nums">{new Date(lead.createdAt).toLocaleDateString()}</span>
+			renderCell: (lead: any) => /* @__PURE__ */ <span className="text-xs text-black/55 dark:text-white/75 tabular-nums">{new Date(lead.createdAt).toLocaleDateString()}</span>
 		},
 		{
 			key: "status",
@@ -272,8 +273,8 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 <UserCheck size={13} />
 <span>{language === "ar" ? "اعتماد" : language === "fr" ? "Valider" : "Convert"}</span>
 </button>
-<button type="button" onClick={() => updateLeadStatus(lead.id, "Declined")} className="h-7 w-7 rounded-full flex items-center justify-center text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors cursor-pointer" title={language === "ar" ? "رفض الطلب" : language === "fr" ? "Refuser le dossier" : "Decline Lead"}><X size={14} /></button>
-</> : /* @__PURE__ */ <button type="button" onClick={() => setSelectedLead(lead)} className="h-7 px-2.5 rounded-full border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-1 cursor-pointer transition-colors">
+<button type="button" onClick={() => updateLeadStatus(lead.id, "Declined")} className="h-7 w-7 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors cursor-pointer" title={language === "ar" ? "رفض الطلب" : language === "fr" ? "Refuser le dossier" : "Decline Lead"}><X size={14} /></button>
+</> : /* @__PURE__ */ <button type="button" onClick={() => setSelectedLead(lead)} className="h-7 px-2.5 rounded-full border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-1 cursor-pointer transition-colors">
 <Eye size={12} />
 <span>{language === "ar" ? "معاينة" : language === "fr" ? "Fiche" : "View"}</span>
 </button>}
@@ -315,9 +316,9 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200 relative">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 <div className="flex items-center gap-3.5">
-<div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200"><ClipboardList size={22} /></div>
+<div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-white"><ClipboardList size={22} /></div>
 <div>
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{terminology.registration}</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">{terminology.registration}</h1>
 </div>
 </div>
 <div className="flex items-center gap-3 relative flex-wrap sm:flex-nowrap">
@@ -326,12 +327,12 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">{t("reg_pipeline_health_title", language)}</h2>
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("reg_pipeline_health_title", language)}</h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">{t("reg_active_intake_label", language)}</span>
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">{t("reg_active_intake_label", language)}</span>
 <div className="mt-1">
 <span className="text-[10px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/40 px-2 py-0.5 rounded-full">
 {"↗ "}
@@ -341,27 +342,27 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 </span>
 </div>
 </div>
-<div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">{pendingCount}</div>
+<div className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{pendingCount}</div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">{t("reg_converted_members_label", language)}</span>
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">{t("reg_converted_members_label", language)}</span>
 <div className="mt-1">
 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
 {language === "ar" ? "تحويل مؤكد" : language === "fr" ? "Conversion réussie" : "Converted"}
 </span>
 </div>
 </div>
-<div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">{approvedCount}</div>
+<div className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{approvedCount}</div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{t("reg_intake_sla_label", language)}</span>
+<span className="text-[11px] font-medium text-white/80">{t("reg_intake_sla_label", language)}</span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">{"< 15 min"}</span>
 </div>
 <div>
-<div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">{"< 15 min"}</div>
-<p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+<div className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{"< 15 min"}</div>
+<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
 <span>
 {language === "ar" ? "بوابة التسجيل الذاتي وموقع الجوال" : language === "fr" ? "Borne libre-service & web mobile" : "Self-service Kiosk & Mobile Web"}
@@ -374,51 +375,57 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div className="flex flex-wrap items-center justify-between gap-3">
 <div className="flex items-center gap-2">
-<ClipboardList size={16} className="text-neutral-500" />
-<span className="text-sm font-bold text-neutral-900 dark:text-white">
+<ClipboardList size={16} className="text-black/55 dark:text-white/55" />
+<span className="text-sm font-bold text-black dark:text-white">
 {terminology.registration}
 {" "}
 {t("reg_requests_title", language)}
 </span>
-<span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">{filteredLeads.length}</span>
+<span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums ml-1">{filteredLeads.length}</span>
 </div>
 <div className="flex flex-wrap items-center gap-2.5 ml-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={language === "ar" ? "بحث باسم المتقدم، الهاتف، البريد..." : language === "fr" ? "Rechercher nom, tél, e-mail..." : "Search applicant name, phone, email..."} shutSize={36} openWidth={240} />
-<LiveSegmentedControl size="sm" value={statusFilter} onValueChange={(val) => setStatusFilter(val)} options={[
+								<LiveSegmentedControl size="sm" value={statusFilter} onValueChange={(val) => setStatusFilter(val)} options={[
 									{
 										value: "All",
 										label: t("member_filter_all", language),
+										tooltip: language === "ar" ? "جميع طلبات التسجيل" : language === "fr" ? "Toutes les demandes d'inscription" : "All registration requests",
 										count: leads.length
 									},
 									{
 										value: "Pending",
-										label: language === "ar" ? "قيد الانتظار" : language === "fr" ? "En attente" : "Pending",
+										label: language === "ar" ? "منتظر" : language === "fr" ? "Attente" : "Pending",
+										tooltip: language === "ar" ? "قيد الانتظار للمراجعة" : language === "fr" ? "Demandes en attente de validation" : "Pending review",
 										count: pendingCount
 									},
 									{
 										value: "Approved",
 										label: language === "ar" ? "معتمد" : language === "fr" ? "Approuvé" : "Approved",
+										tooltip: language === "ar" ? "الطلبات المعتمدة" : language === "fr" ? "Demandes approuvées" : "Approved requests",
 										count: approvedCount
 									},
 									{
 										value: "Declined",
 										label: language === "ar" ? "مرفوض" : language === "fr" ? "Refusé" : "Declined",
+										tooltip: language === "ar" ? "الطلبات المرفوضة" : language === "fr" ? "Demandes refusées" : "Declined requests",
 										count: declinedCount
 									}
 								]} aria-label="Registrations Status Filter" />
 <LabelSelect field="Plan" label={t("member_filter_plan_label", language)} value={planFilter} onChange={(val) => setPlanFilter(val?.target?.value ?? String(val))} options={[{
 									value: "All",
-									label: t("member_filter_all_plans", language)
+									label: t("member_filter_all_plans", language),
+									tooltip: language === "ar" ? "جميع الاشتراكات" : language === "fr" ? "Toutes les formules" : "All membership plans"
 								}, ...plans.map((p) => ({
 									value: p.id,
-									label: p.name
+									label: compactFilterLabel(p.name).label,
+									tooltip: p.name
 								}))]} width={160} height={36} corner={18} />
 <AtriumButton type="button" variant="secondary" onClick={handleExportCSV} icon={<Download size={13} />} title="Download CSV export">
 <span>
 {language === "ar" ? "تصدير البيانات" : language === "fr" ? "Exporter les données" : "Export Data"}
 </span>
 </AtriumButton>
-<button type="button" onClick={toggleFullscreen} className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors shadow-2xs" title="Toggle Fullscreen"><Maximize2 size={13} /></button>
+<button type="button" onClick={toggleFullscreen} className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer transition-colors shadow-2xs" title="Toggle Fullscreen"><Maximize2 size={13} /></button>
 </div>
 </div>
 <UniversalDataCollection items={sortedLeads} keyExtractor={(lead) => lead.id} viewMode={viewMode} onViewModeChange={setViewMode} columns={leadColumns} isLoading={isSyncing || networkMode === "force_skeleton"} isOffline={networkMode === "offline"} isTimedOut={isSyncTimeout} lastSyncedAt={lastSyncedAt} onRetrySync={retryCloudSync} selectedIds={selectedLeadIds} onSelectionChange={setSelectedLeadIds} bulkSecondaryAction={{
@@ -438,22 +445,22 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 {isPinned && /* @__PURE__ */ <div className="absolute top-3 left-3 text-[#d4522f]" title="Pinned lead"><Pin size={12} className="fill-[#d4522f]" /></div>}
 <div className="flex items-center justify-between mb-3 pl-4">
 <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${lead.status === "Approved" ? "bg-emerald-50 text-emerald-700" : lead.status === "Declined" ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-700"}`}>{localizeStatus(lead.status, language)}</span>
-<span className="text-[11px] text-neutral-400 tabular-nums">{new Date(lead.createdAt).toLocaleDateString()}</span>
+<span className="text-[11px] text-black/55 dark:text-white/55 tabular-nums">{new Date(lead.createdAt).toLocaleDateString()}</span>
 </div>
 <div className="flex items-center gap-3 mb-3">
 <Avatar name={lead.fullName} size={42} />
 <div className="min-w-0 flex-1">
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white truncate">{lead.fullName}</h3>
-<p className="text-xs text-neutral-500 truncate">{lead.phoneNumber}</p>
+<h3 className="text-sm font-bold text-black dark:text-white truncate">{lead.fullName}</h3>
+<p className="text-xs text-black/55 dark:text-white/55 truncate">{lead.phoneNumber}</p>
 </div>
 </div>
-<div className="text-xs space-y-1 mb-4 text-neutral-600 dark:text-neutral-400 pt-2 border-t border-neutral-100 dark:border-neutral-700/60">
+<div className="text-xs space-y-1 mb-4 text-black/70 dark:text-white/75 pt-2 border-t border-neutral-100 dark:border-neutral-700/60">
 <div className="flex justify-between">
-<span className="text-neutral-400">{language === "ar" ? "الباقة:" : language === "fr" ? "Formule :" : "Plan:"}</span>
+<span className="text-black/55 dark:text-white/55">{language === "ar" ? "الباقة:" : language === "fr" ? "Formule :" : "Plan:"}</span>
 <span className="font-bold text-[#d4522f] truncate max-w-[140px]">{lead.preferredPlanName || plans[0]?.name || "Standard Package"}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">{language === "ar" ? "المصدر:" : language === "fr" ? "Source :" : "Source:"}</span>
+<span className="text-black/55 dark:text-white/55">{language === "ar" ? "المصدر:" : language === "fr" ? "Source :" : "Source:"}</span>
 <span className="truncate max-w-[140px]">{lead.source}</span>
 </div>
 </div>
@@ -463,7 +470,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 {language === "ar" ? "اعتماد وتحويل" : language === "fr" ? "Valider" : "Convert"}
 </span>
 </AtriumButton>
-<button type="button" onClick={() => updateLeadStatus(lead.id, "Declined")} className="h-7 w-7 rounded-lg border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-neutral-500 hover:text-rose-600 flex items-center justify-center transition-colors cursor-pointer"><X size={14} /></button>
+<button type="button" onClick={() => updateLeadStatus(lead.id, "Declined")} className="h-7 w-7 rounded-lg border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-black/55 dark:text-white/55 hover:text-rose-600 flex items-center justify-center transition-colors cursor-pointer"><X size={14} /></button>
 </div> : /* @__PURE__ */ <AtriumButton type="button" variant="secondary" size="xs" onClick={(e) => {
 										e.stopPropagation();
 										setSelectedLead(lead);
@@ -479,45 +486,45 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 <div className="px-6 py-5 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
 <div className="flex items-center gap-2">
 <ClipboardList size={17} className="text-[#d4522f]" />
-<span className="text-sm font-bold text-neutral-900 dark:text-white">
+<span className="text-sm font-bold text-black dark:text-white">
 {language === "ar" ? "معاينة ملف المرشح" : language === "fr" ? "Fiche du prospect" : "Prospect Dossier Inspector"}
 </span>
 </div>
-<button type="button" onClick={() => setSelectedLead(null)} className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 cursor-pointer"><X size={18} /></button>
+<button type="button" onClick={() => setSelectedLead(null)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"><X size={18} /></button>
 </div>
 <div className="flex-1 overflow-y-auto p-6 space-y-6 text-xs">
 <div className="p-5 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700/80 flex items-center gap-4">
 <Avatar name={selectedLead.fullName} size={50} />
 <div>
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">{selectedLead.fullName}</h3>
+<h3 className="text-base font-bold text-black dark:text-white">{selectedLead.fullName}</h3>
 <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold mt-1 ${selectedLead.status === "Approved" ? "bg-emerald-50 text-emerald-700" : selectedLead.status === "Declined" ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-700"}`}>{localizeStatus(selectedLead.status, language)}</span>
 </div>
 </div>
 <div className="space-y-3">
-<span className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
+<span className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
 {language === "ar" ? "معلومات الاتصال والتفاصيل" : language === "fr" ? "Contact & Détails" : "Contact & Details"}
 </span>
 <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-2.5">
 <div className="flex items-center gap-2.5">
 <Phone size={14} className="text-[#d4522f]" />
-<span className="text-neutral-800 dark:text-neutral-200 font-semibold">{selectedLead.phoneNumber}</span>
+<span className="text-black dark:text-white font-semibold">{selectedLead.phoneNumber}</span>
 </div>
 <div className="flex items-center gap-2.5">
 <Mail size={14} className="text-[#d4522f]" />
-<span className="text-neutral-800 dark:text-neutral-200 font-semibold">{selectedLead.email}</span>
+<span className="text-black dark:text-white font-semibold">{selectedLead.email}</span>
 </div>
 <div className="flex items-center gap-2.5">
 <Calendar size={14} className="text-[#d4522f]" />
-<span className="text-neutral-800 dark:text-neutral-200">
+<span className="text-black dark:text-white">
 {language === "ar" ? "تاريخ البدء المطلوب:" : language === "fr" ? "Début souhaité :" : "Requested start:"}
 {" "}
-<strong className="text-neutral-900 dark:text-white">
+<strong className="text-black dark:text-white">
 {selectedLead.preferredStartDate || (language === "ar" ? "فوري" : language === "fr" ? "Immédiat" : "Immediate")}
 </strong>
 </span>
 </div>
-{selectedLead.notes && /* @__PURE__ */ <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700 text-neutral-500">
-<span className="font-semibold text-neutral-700 dark:text-neutral-300">
+{selectedLead.notes && /* @__PURE__ */ <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700 text-black/55 dark:text-white/55">
+<span className="font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "الملاحظات:" : language === "fr" ? "Remarques :" : "Notes:"}
 </span>
 {" "}
@@ -530,7 +537,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 <span className="text-xs font-bold text-[#d4522f]">
 {language === "ar" ? "الباقة المفضلة" : language === "fr" ? "Formule préférée" : "Preferred Plan"}
 </span>
-<div className="text-sm font-black text-neutral-900 dark:text-white mt-0.5">{selectedLead.preferredPlanName || plans[0]?.name || "Standard Package"}</div>
+<div className="text-sm font-black text-black dark:text-white mt-0.5">{selectedLead.preferredPlanName || plans[0]?.name || "Standard Package"}</div>
 </div>
 <span className="text-base font-black text-[#d4522f] tabular-nums">
 {"1 500 "}
@@ -564,21 +571,21 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 {conversionLead && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-3.5 rounded-2xl bg-neutral-100 dark:bg-neutral-800/60 text-xs space-y-1">
 <div>
-<strong className="text-neutral-900 dark:text-white">
+<strong className="text-black dark:text-white">
 {language === "ar" ? "المتقدم:" : language === "fr" ? "Candidat :" : "Applicant:"}
 </strong>
 {" "}
 {conversionLead.fullName}
 </div>
 <div>
-<strong className="text-neutral-900 dark:text-white">{language === "ar" ? "الهاتف:" : language === "fr" ? "Téléphone :" : "Phone:"}</strong>
+<strong className="text-black dark:text-white">{language === "ar" ? "الهاتف:" : language === "fr" ? "Téléphone :" : "Phone:"}</strong>
 {" "}
 {conversionLead.phoneNumber}
 {" · "}
 {conversionLead.email}
 </div>
 <div>
-<strong className="text-neutral-900 dark:text-white">{language === "ar" ? "القناة:" : language === "fr" ? "Canal :" : "Source:"}</strong>
+<strong className="text-black dark:text-white">{language === "ar" ? "القناة:" : language === "fr" ? "Canal :" : "Source:"}</strong>
 {" "}
 {conversionLead.source}
 </div>

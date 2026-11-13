@@ -37,7 +37,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
               SFP01
             </div>
             <div>
-              <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">
+              <h3 className="font-semibold text-black dark:text-white text-sm font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {t('pm_ccp_modal_title')}
               </h3>
             </div>
@@ -53,7 +53,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             </AtriumButton>
             <button
               onClick={onClose}
-              className="p-1.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-lg transition-colors cursor-pointer"
+              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white rounded-lg transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -62,14 +62,14 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
 
         {/* Official Postal Slip Document Canvas */}
         <div className="p-6 overflow-y-auto bg-zinc-100/60 dark:bg-zinc-950/40 flex justify-center">
-          <div className="w-full max-w-2xl bg-amber-50/70 dark:bg-zinc-900 border-2 border-dashed border-amber-300 dark:border-zinc-700 rounded-xl p-6 shadow-sm text-zinc-800 dark:text-zinc-200 font-sans print:shadow-none print:border-solid print:border-black">
+          <div className="w-full max-w-2xl bg-amber-50/70 dark:bg-zinc-900 border-2 border-dashed border-amber-300 dark:border-zinc-700 rounded-xl p-6 shadow-sm text-black font-sans print:shadow-none print:border-solid print:border-black">
             {/* Header Stamp */}
             <div className="flex justify-between items-start border-b-2 border-zinc-800 dark:border-zinc-300 pb-3 mb-4">
               <div>
-                <p className="font-bold text-xs uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                <p className="font-bold text-xs uppercase tracking-wider text-black/75">
                   {t('pm_ccp_republic')}
                 </p>
-                <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                <p className="text-xs font-semibold text-black">
                   {t('pm_ccp_ministry')}
                 </p>
                 <p className="text-xs font-bold text-[#d4522f] mt-0.5">
@@ -80,28 +80,28 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
                 <span className="inline-block border-2 border-zinc-800 dark:border-zinc-200 px-3 py-1 font-mono font-bold text-xs rounded">
                   SFP 01
                 </span>
-                <p className="text-[10px] text-zinc-500 mt-1">{t('pm_ccp_edition')}</p>
+                <p className="text-[10px] text-black/55 mt-1">{t('pm_ccp_edition')}</p>
               </div>
             </div>
 
             {/* Financial Amount & CCP Grid */}
             <div className="grid grid-cols-3 gap-3 mb-4">
               <div className="col-span-2 p-3 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-300 dark:border-zinc-700">
-                <span className="text-[10px] uppercase font-semibold text-zinc-500 block">
+                <span className="text-[10px] uppercase font-semibold text-black/55 block">
                   {t('pm_ccp_beneficiary_name')}
                 </span>
-                <span className="font-bold text-base text-zinc-900 dark:text-zinc-100 block">
+                <span className="font-bold text-base text-black block">
                   {slip.beneficiaryName}
                 </span>
-                <span className="text-xs text-zinc-500 block mt-0.5">
+                <span className="text-xs text-black/55 block mt-0.5">
                   {t('pm_compta_wilaya_label')} {slip.wilayaName}
                 </span>
               </div>
               <div className="p-3 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-300 dark:border-zinc-700 text-right">
-                <span className="text-[10px] uppercase font-semibold text-zinc-500 block">
+                <span className="text-[10px] uppercase font-semibold text-black/55 block">
                   {t('pm_ccp_amount_digits')}
                 </span>
-                <span className="font-mono font-extrabold text-lg text-emerald-700 dark:text-emerald-400 tabular-nums">
+                <span className="font-mono font-extrabold text-lg text-emerald-700 tabular-nums">
                   {slip.amountDzd.toLocaleString()} DA
                 </span>
               </div>
@@ -110,15 +110,15 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             {/* CCP Account Box */}
             <div className="p-3 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-300 dark:border-zinc-700 mb-4 flex items-center justify-between">
               <div>
-                <span className="text-[10px] uppercase font-semibold text-zinc-500 block">
+                <span className="text-[10px] uppercase font-semibold text-black/55 block">
                   {t('pm_ccp_account_number')}
                 </span>
-                <span className="font-mono font-black text-xl tracking-widest text-zinc-900 dark:text-zinc-100 tabular-nums">
+                <span className="font-mono font-black text-xl tracking-widest text-black tabular-nums">
                   {slip.ccpNumber}
                 </span>
               </div>
               <div className="text-right">
-                <span className="text-[10px] uppercase font-semibold text-zinc-500 block">
+                <span className="text-[10px] uppercase font-semibold text-black/55 block">
                   {t('pm_ccp_key')}
                 </span>
                 <span className="font-mono font-black text-xl text-[#d4522f] tracking-wider tabular-nums">
@@ -129,20 +129,20 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
 
             {/* Legal Amount in Words: French */}
             <div className="mb-3 p-3 bg-white/80 dark:bg-zinc-800/80 rounded-lg border border-zinc-200 dark:border-zinc-700">
-              <span className="text-[10px] uppercase font-semibold text-zinc-500 block mb-0.5">
+              <span className="text-[10px] uppercase font-semibold text-black/55 block mb-0.5">
                 {t('pm_ccp_words_fr')}
               </span>
-              <p className="font-serif italic text-sm text-zinc-900 dark:text-zinc-100 leading-snug">
+              <p className="font-serif italic text-sm text-black leading-snug">
                 « {slip.amountInWordsFr} »
               </p>
             </div>
 
             {/* Legal Amount in Words: Arabic */}
             <div className="mb-4 p-3 bg-white/80 dark:bg-zinc-800/80 rounded-lg border border-zinc-200 dark:border-zinc-700 text-right" dir="rtl">
-              <span className="text-[10px] uppercase font-semibold text-zinc-500 block mb-0.5">
+              <span className="text-[10px] uppercase font-semibold text-black/55 block mb-0.5">
                 {t('pm_ccp_words_ar')}
               </span>
-              <p className="font-serif text-sm font-semibold text-zinc-900 dark:text-zinc-100 leading-snug">
+              <p className="font-serif text-sm font-semibold text-black leading-snug">
                 « {slip.amountInWordsAr} »
               </p>
             </div>
@@ -150,19 +150,19 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             {/* Transaction Reference & Signatures */}
             <div className="grid grid-cols-2 gap-4 pt-3 border-t border-zinc-300 dark:border-zinc-700 text-xs">
               <div>
-                <span className="text-[10px] uppercase text-zinc-500 block">{t('pm_ccp_purpose')}</span>
-                <p className="font-medium text-zinc-800 dark:text-zinc-200">{slip.transactionReference}</p>
+                <span className="text-[10px] uppercase text-black/55 block">{t('pm_ccp_purpose')}</span>
+                <p className="font-medium text-black">{slip.transactionReference}</p>
                 <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-                  <span className="text-[10px] text-zinc-400 block">{t('pm_ccp_signature_order')}</span>
-                  <div className="h-12 flex items-center gap-1.5 text-zinc-400 text-xs italic">
+                  <span className="text-[10px] text-black/55 block">{t('pm_ccp_signature_order')}</span>
+                  <div className="h-12 flex items-center gap-1.5 text-black/55 text-xs italic">
                     <ShieldCheck className="w-4 h-4 text-emerald-600" />
                     <span>{t('pm_ccp_signed_dg')}</span>
                   </div>
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-[10px] uppercase text-zinc-500 block">{t('pm_ccp_postal_reserved')}</span>
-                <div className="h-24 border border-zinc-300 dark:border-zinc-700 rounded bg-white/50 dark:bg-zinc-900/50 flex items-center justify-center text-[10px] text-zinc-400 mt-1">
+                <span className="text-[10px] uppercase text-black/55 block">{t('pm_ccp_postal_reserved')}</span>
+                <div className="h-24 border border-zinc-300 dark:border-zinc-700 rounded bg-white/50 dark:bg-zinc-900/50 flex items-center justify-center text-[10px] text-black/55 mt-1">
                   {t('pm_ccp_post_stamp_box')}
                 </div>
               </div>
@@ -171,14 +171,14 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-500 bg-zinc-50 dark:bg-zinc-800/50">
+        <div className="px-6 py-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs text-black/55 dark:text-white/55 bg-zinc-50 dark:bg-zinc-800/50">
           <div className="flex items-center gap-2">
             <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
             <span>{t('pm_ccp_compliance_footer')}</span>
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 text-xs font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
+            className="px-4 py-1.5 text-xs font-medium text-black/70 hover:text-black dark:text-white/75 dark:hover:text-white transition-colors"
           >
             {t('common_close')}
           </button>

@@ -5,6 +5,7 @@ import { LivePopoverPanel, popoverClasses } from './LivePopoverPanel';
 export interface SelectOption {
   value: string;
   label: React.ReactNode;
+  tooltip?: string;
   description?: React.ReactNode;
   icon?: React.ReactNode;
   disabled?: boolean;
@@ -83,6 +84,7 @@ export function LiveSelect({
         disabled={disabled}
         className={className}
         style={style}
+        title={selectedOption?.tooltip || (typeof selectedOption?.description === 'string' ? selectedOption.description : undefined)}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={`${ariaLabel || 'Select'}${selectedOption ? `: ${typeof selectedOption.label === 'string' ? selectedOption.label : selectedOption.value}` : ''}`}
@@ -107,6 +109,7 @@ export function LiveSelect({
       >
         {options.map((opt) => {
           const isSelected = opt.value === currentValue;
+          const desc = opt.description ?? opt.tooltip;
           return (
             <button
               key={opt.value}
@@ -116,13 +119,14 @@ export function LiveSelect({
               data-atr-item=""
               tabIndex={-1}
               disabled={opt.disabled}
+              title={opt.tooltip || (typeof opt.description === 'string' ? opt.description : undefined)}
               className={popoverClasses.item}
               onClick={() => handleSelect(opt.value)}
             >
               {opt.icon}
               <span className={popoverClasses.text}>
                 <b>{opt.label}</b>
-                {opt.description && <small>{opt.description}</small>}
+                {desc && <small>{desc}</small>}
               </span>
               {isSelected && <i className={popoverClasses.mark} aria-hidden="true" />}
             </button>

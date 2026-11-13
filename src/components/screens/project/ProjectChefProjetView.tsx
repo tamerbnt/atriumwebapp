@@ -44,10 +44,6 @@ interface ProjectChefProjetViewProps {
 
 
 
-const import_react = /* @__PURE__ */ __toESM(require_react(), 1);
-
-const import_jsx_runtime = require_jsx_runtime();
-
 export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ initialTab }) => {
 	const { t, language, isRtl } = useTranslation();
 	const { currentBranch, branches, switchBranch, pmProjects, pmMilestones, pmCollateralCatalog, pmPrintOrders, pmBatDeliverables, pmExpenses, pmEquipmentStock, addPmPrintOrder, batchUpdatePmPrintOrderStatus, batchDeletePmPrintOrders, reviewPmBatDeliverable, batchReviewPmBatDeliverables, batchDeletePmBatDeliverables, addPmExpense, batchDeletePmExpenses, resetPmMockData, activePmSubScreen, setActivePmSubScreen, showToast, isSyncing, networkMode, retryCloudSync, lastSyncedAt } = useAtriumStore();
@@ -217,8 +213,8 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 			renderCell: (item: any) => /* @__PURE__ */ <div className="flex items-center gap-3">
 <img src={item.imageUrl} alt={item.title} className="w-10 h-10 rounded-xl object-cover shrink-0 border border-zinc-200 dark:border-zinc-800" />
 <div className="min-w-0">
-<div className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs truncate max-w-[200px]">{item.title}</div>
-<div className="text-[11px] text-zinc-400 font-mono">
+<div className="font-semibold text-black dark:text-white text-xs truncate max-w-[200px]">{item.title}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
 {item.sku}
 {" · "}
 {item.category}
@@ -231,7 +227,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 			header: "Format & Spécifications",
 			width: "1.5*",
 			minWidth: "160px",
-			renderCell: (item: any) => /* @__PURE__ */ <div className="text-xs text-zinc-600 dark:text-zinc-400 font-mono">{item.dimensions}</div>
+			renderCell: (item: any) => /* @__PURE__ */ <div className="text-xs text-black/70 dark:text-white/75 font-mono">{item.dimensions}</div>
 		},
 		{
 			key: "cost",
@@ -239,7 +235,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 			width: "1.2*",
 			minWidth: "130px",
 			align: "right",
-			renderCell: (item: any) => /* @__PURE__ */ <div className="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{formatMoney(item.unitCostDzd, "DZD")}</div>
+			renderCell: (item: any) => /* @__PURE__ */ <div className="font-mono text-xs font-bold text-black dark:text-white tabular-nums">{formatMoney(item.unitCostDzd, "DZD")}</div>
 		},
 		{
 			key: "actions",
@@ -268,10 +264,10 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 								else next.add(order.id);
 								return next;
 							});
-						}} className={`p-1 rounded-lg transition-colors cursor-pointer ${isPinned ? "text-[#d4522f] bg-[#d4522f]/10" : "text-zinc-300 hover:text-zinc-500"}`}><Pin className={`w-3.5 h-3.5 ${isPinned ? "fill-current" : ""}`} /></button>
+						}} className={`p-1 rounded-lg transition-colors cursor-pointer ${isPinned ? "text-[#d4522f] bg-[#d4522f]/10" : "text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}><Pin className={`w-3.5 h-3.5 ${isPinned ? "fill-current" : ""}`} /></button>
 <div>
-<div className="font-mono font-bold text-xs text-zinc-900 dark:text-zinc-100">{order.orderNumber}</div>
-<div className="text-[11px] text-zinc-500 truncate max-w-[170px]">{order.projectTitle}</div>
+<div className="font-mono font-bold text-xs text-black dark:text-white">{order.orderNumber}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 truncate max-w-[170px]">{order.projectTitle}</div>
 </div>
 </div>;
 			}
@@ -281,14 +277,14 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 			header: "Détails des Articles POSM",
 			width: "2.5*",
 			minWidth: "220px",
-			renderCell: (order: any) => /* @__PURE__ */ <div className="text-xs text-zinc-600 dark:text-zinc-400 space-y-0.5">
+			renderCell: (order: any) => /* @__PURE__ */ <div className="text-xs text-black/70 dark:text-white/75 space-y-0.5">
 {order.items.slice(0, 2).map((it: any, idx: number) => /* @__PURE__ */ <div key={idx} className="truncate">
 {"• "}
 {it.quantity}
 {"x "}
 {it.itemTitle}
 </div>)}
-{order.items.length > 2 && /* @__PURE__ */ <div className="text-[10px] text-zinc-400 italic">
+{order.items.length > 2 && /* @__PURE__ */ <div className="text-[10px] text-black/55 dark:text-white/55 italic">
 {"+ "}
 {order.items.length - 2}
 {" autre(s) référence(s)"}
@@ -302,7 +298,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 			minWidth: "150px",
 			sortable: true,
 			align: "right",
-			renderCell: (order: any) => /* @__PURE__ */ <div className="font-mono font-bold text-xs text-zinc-900 dark:text-zinc-100 tabular-nums">{formatMoney(order.totalCostDzd, "DZD")}</div>
+			renderCell: (order: any) => /* @__PURE__ */ <div className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">{formatMoney(order.totalCostDzd, "DZD")}</div>
 		},
 		{
 			key: "status",
@@ -335,7 +331,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 				} as Record<string, any>)[order.status] || {
 					label: order.status,
 					bg: "bg-zinc-100",
-					text: "text-zinc-700"
+					text: "text-black/70 dark:text-white/75"
 				};
 				return /* @__PURE__ */ <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badge.bg} ${badge.text}`}>{badge.label}</span>;
 			}
@@ -394,10 +390,10 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 <div>
 <div className="flex items-center gap-2">
 <span className="text-xs font-semibold uppercase tracking-wider text-[#d4522f]">Chef de Projet</span>
-<span className="text-zinc-400">·</span>
-<span className="text-xs text-zinc-500">Coordination & Suivi Print</span>
+<span className="text-black/55 dark:text-white/55">·</span>
+<span className="text-xs text-black/55 dark:text-white/55">Coordination & Suivi Print</span>
 </div>
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-zinc-900 dark:text-zinc-100">
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {activeTab === "portfolio" ? "Pilotage Projets & Alertes" : activeTab === "catalog" ? "Catalogue Supports POSM" : activeTab === "orders" ? "Commandes Imprimeur & BAT" : activeTab === "bat" ? "Revue BAT Bon à Tirer" : "Dépenses & Achats Terrain"}
 </h1>
 </div>
@@ -410,14 +406,14 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {language === "ar" ? "مؤشرات التنسيق الميداني والإنتاج الطباعي" : language === "fr" ? "Indicateurs de Coordination & Production Print" : "Coordination & Print Production Metrics"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "المشاريع الخاضعة للمتابعة" : language === "fr" ? "Campagnes Supervisées" : "Supervised Projects"}
 </span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
@@ -427,15 +423,15 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 </span>
 </div>
 <div>
-<div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">{pmProjects.length}</div>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+<div className="text-2xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{pmProjects.length}</div>
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
 {language === "ar" ? "مخططات الإنتاج قيد الإنجاز" : "plannings opérationnels en cours"}
 </p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "أوامر الطباعة ومراجعة BAT" : language === "fr" ? "Commandes Print & BAT" : "Print Orders & BAT"}
 </span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
@@ -445,12 +441,12 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 </span>
 </div>
 <div>
-<div className="text-2xl font-black text-blue-600 dark:text-blue-400 tabular-nums font-mono">
+<div className="text-2xl font-black text-blue-600 dark:text-blue-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {pmBatDeliverables.filter((b) => b.approvalStatus === "pending_review").length}
 {" "}
 {language === "ar" ? "BAT بانتظار التأشير" : "BAT en attente"}
 </div>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
 {pmPrintOrders.length}
 {" "}
 {language === "ar" ? "طلبيات طباعة في المطبعة" : "commandes POSM transmises"}
@@ -459,7 +455,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">
+<span className="text-[11px] font-medium text-white/80">
 {language === "ar" ? "المشتريات الميدانية (Slide 11)" : language === "fr" ? "Dépenses Terrain Consommées" : "Field Expenses Spent"}
 </span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
@@ -469,8 +465,8 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 </span>
 </div>
 <div>
-<div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">{formatMoney(totalExpensesSpent, "DZD")}</div>
-<p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+<div className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalExpensesSpent, "DZD")}</div>
+<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
 <span>
 {language === "ar" ? `سقف المشروع: ${formatMoney(fieldExpensesLimit, "DZD")}` : `Plafond : ${formatMoney(fieldExpensesLimit, "DZD")}`}
@@ -483,34 +479,39 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {language === "ar" ? "سير العمليات ومخطط الإنتاج والتنفيذ" : "Matrice de Déploiement & Pipeline Opérationnel"}
 </h2>
 </div>
 <LiveSegmentedControl size="sm" value={activeTab} onValueChange={(val) => setActiveTab(val)} options={[
 								{
 									value: "portfolio",
-									label: language === "ar" ? "المشاريع" : "Pilotage",
+									label: language === "ar" ? "المشاريع" : language === "fr" ? "Pilotage" : "Projects",
+									tooltip: language === "ar" ? "متابعة المشاريع والتنفيذ" : language === "fr" ? "Pilotage du portefeuille" : "Portfolio oversight",
 									count: pmProjects.length
 								},
 								{
 									value: "catalog",
-									label: language === "ar" ? "كتالوج POSM" : "Catalogue POSM",
+									label: language === "ar" ? "الكتالوج" : language === "fr" ? "Catalogue" : "Catalog",
+									tooltip: language === "ar" ? "كتالوج POSM والدعائم" : language === "fr" ? "Catalogue POSM & PLV" : "POSM & print catalog",
 									count: pmCollateralCatalog.length
 								},
 								{
 									value: "orders",
-									label: language === "ar" ? "الطباعة" : "Commandes Print",
+									label: language === "ar" ? "الطباعة" : language === "fr" ? "Commandes" : "Orders",
+									tooltip: language === "ar" ? "طلبات الطباعة" : language === "fr" ? "Commandes Print" : "Print orders",
 									count: pmPrintOrders.length
 								},
 								{
 									value: "bat",
-									label: language === "ar" ? "مراجعة BAT" : "Revue BAT",
+									label: language === "ar" ? "الاعتماد" : language === "fr" ? "BAT" : "Proofs",
+									tooltip: language === "ar" ? "مراجعة BAT" : language === "fr" ? "Revue BAT" : "Artwork proofs review",
 									count: pmBatDeliverables.length
 								},
 								{
 									value: "expenses",
-									label: language === "ar" ? "المصاريف" : "Dépenses",
+									label: language === "ar" ? "المصاريف" : language === "fr" ? "Dépenses" : "Expenses",
+									tooltip: language === "ar" ? "مصاريف المشروع" : language === "fr" ? "Dépenses terrain" : "Project expenses",
 									count: pmExpenses.length
 								}
 							]} aria-label="Project Chef de Projet Stages Filter" />
@@ -519,18 +520,18 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 <div>
 <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">Contrôle des Plafonds Dépenses Terrain (Slide 6 & 11)</span>
-<h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mt-0.5">{selectedProject?.title}</h2>
-<div className="text-xs text-zinc-500">
+<h2 className="text-lg font-bold text-black dark:text-white mt-0.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans">{selectedProject?.title}</h2>
+<div className="text-xs text-black/55 dark:text-white/55">
 {"Client : "}
-<span className="font-semibold text-zinc-700 dark:text-zinc-300">{selectedProject?.clientName}</span>
+<span className="font-semibold text-black/70 dark:text-white/75">{selectedProject?.clientName}</span>
 {" · Plafond autorisé : "}
 <span className="font-mono font-bold">{formatMoney(selectedProject?.maxFieldExpensesDzd || 0, "DZD")}</span>
 </div>
 </div>
 <div className="w-full sm:w-64 space-y-1.5">
 <div className="flex justify-between text-xs font-semibold">
-<span className="text-zinc-500">Consommé Terrain :</span>
-<span className={`font-mono tabular-nums ${isOverThreshold ? "text-red-600 font-bold" : "text-zinc-900 dark:text-zinc-100"}`}>
+<span className="text-black/55 dark:text-white/55">Consommé Terrain :</span>
+<span className={`font-mono tabular-nums ${isOverThreshold ? "text-red-600 font-bold" : "text-black dark:text-white"}`}>
 {formatMoney(totalExpensesSpent, "DZD")}
 {" ("}
 {burnRatePercent}
@@ -550,13 +551,13 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 								return /* @__PURE__ */ <div key={p.id} onClick={() => setSelectedProjectId(p.id)} className={`p-5 rounded-2xl border transition-all cursor-pointer shadow-xs ${selectedProject?.id === p.id ? "border-[#d4522f] bg-[#d4522f]/5 dark:bg-[#d4522f]/10 ring-1 ring-[#d4522f]" : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300"}`}>
 <div className="flex items-start justify-between gap-2 mb-2">
 <span className="text-[11px] font-bold text-[#d4522f] uppercase truncate">{p.clientName}</span>
-<span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">{p.status}</span>
+<span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-black/70 dark:text-white/75">{p.status}</span>
 </div>
-<h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-2 truncate">{p.title}</h3>
-<div className="space-y-1 text-xs text-zinc-500">
+<h3 className="text-sm font-bold text-black dark:text-white mb-2 truncate">{p.title}</h3>
+<div className="space-y-1 text-xs text-black/55 dark:text-white/55">
 <div className="flex justify-between">
 <span>Plafond Global:</span>
-<span className="font-mono font-bold text-zinc-800 dark:text-zinc-200">{formatMoney(p.budgetCapDzd, "DZD")}</span>
+<span className="font-mono font-bold text-black dark:text-white">{formatMoney(p.budgetCapDzd, "DZD")}</span>
 </div>
 <div className="flex justify-between">
 <span>Dépenses Terrain:</span>
@@ -581,27 +582,32 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 <FilterSelect label="Catégorie" value={catalogCategory} onChange={(val) => setCatalogCategory(typeof val === "string" ? val : val.target?.value || val)} options={[
 										{
 											value: "all",
-											label: "Toutes les catégories"
+											label: language === "ar" ? "الكل" : language === "fr" ? "Toutes" : "All",
+											tooltip: language === "ar" ? "جميع الفئات" : language === "fr" ? "Toutes les catégories" : "All categories"
 										},
 										{
 											value: "stand",
-											label: "Stands & Comptoirs"
+											label: language === "ar" ? "منصات" : language === "fr" ? "Stands" : "Booths",
+											tooltip: language === "ar" ? "منصات ومكاتب عرض" : language === "fr" ? "Stands & Comptoirs" : "Booths & counters"
 										},
 										{
 											value: "display",
-											label: "Totems & Roll-ups"
+											label: language === "ar" ? "حوامل" : language === "fr" ? "Totems" : "Displays",
+											tooltip: language === "ar" ? "أعمدة ولافتات" : language === "fr" ? "Totems & Roll-ups" : "Totems & roll-ups"
 										},
 										{
 											value: "print",
-											label: "Flyers & Affiches"
+											label: language === "ar" ? "مطبوعات" : language === "fr" ? "Imprimés" : "Print",
+											tooltip: language === "ar" ? "منشورات وملصقات" : language === "fr" ? "Flyers & Affiches" : "Flyers & posters"
 										},
 										{
 											value: "textile",
-											label: "Textiles & Casquettes"
+											label: language === "ar" ? "ألبسة" : language === "fr" ? "Textiles" : "Apparel",
+											tooltip: language === "ar" ? "ملابس وقبعات" : language === "fr" ? "Textiles & Casquettes" : "Apparel & caps"
 										}
 									]} />
 </div>
-<div className="text-xs text-zinc-500 font-semibold">
+<div className="text-xs text-black/55 dark:text-white/55 font-semibold">
 {filteredCatalog.length}
 {" support(s) configuré(s)"}
 </div>
@@ -609,18 +615,18 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 <UniversalDataCollection items={filteredCatalog} keyExtractor={(i) => i.id} defaultViewMode="grid" columns={catalogColumns} renderCard={(item) => /* @__PURE__ */ <div className="flex flex-col justify-between h-full space-y-3">
 <div className="space-y-2">
 <img src={item.imageUrl} alt={item.title} className="w-full h-36 rounded-xl object-cover border border-zinc-100 dark:border-zinc-800" />
-<div className="flex items-center justify-between text-[11px] text-zinc-400 font-mono">
+<div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55 font-mono">
 <span>{item.sku}</span>
 <span className="uppercase text-[#d4522f] font-bold">{item.category}</span>
 </div>
-<h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 line-clamp-1">{item.title}</h3>
-<p className="text-xs text-zinc-500 font-mono">
+<h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">{item.title}</h3>
+<p className="text-xs text-black/55 dark:text-white/55 font-mono">
 {"Format : "}
 {item.dimensions}
 </p>
 </div>
 <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
-<span className="font-mono font-bold text-sm text-zinc-900 dark:text-zinc-100 tabular-nums">{formatMoney(item.unitCostDzd, "DZD")}</span>
+<span className="font-mono font-bold text-sm text-black dark:text-white tabular-nums">{formatMoney(item.unitCostDzd, "DZD")}</span>
 <AtriumButton type="button" size="xs" variant="primary" icon={<Plus className="w-3.5 h-3.5" />} onClick={() => handleAddToCart(item)}>Commander</AtriumButton>
 </div>
 </div>} />
@@ -632,27 +638,32 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 <FilterSelect label="Statut" value={ordersStatusFilter} onChange={(val) => setOrdersStatusFilter(typeof val === "string" ? val : val.target?.value || val)} options={[
 											{
 												value: "all",
-												label: "Tous les statuts"
+												label: language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All",
+												tooltip: language === "ar" ? "جميع الحالات" : language === "fr" ? "Tous les statuts" : "All statuses"
 											},
 											{
 												value: "sent_to_crea",
-												label: "Transmis Créa"
+												label: language === "ar" ? "التصميم" : language === "fr" ? "Créa" : "Studio",
+												tooltip: language === "ar" ? "محال إلى التصميم" : language === "fr" ? "Transmis Créa" : "Sent to creative studio"
 											},
 											{
 												value: "bat_in_progress",
-												label: "BAT en cours"
+												label: language === "ar" ? "مراجعة" : language === "fr" ? "BAT" : "Proofing",
+												tooltip: language === "ar" ? "BAT قيد الإنجاز" : language === "fr" ? "BAT en cours" : "Proofing in progress"
 											},
 											{
 												value: "sent_to_printer",
-												label: "Chez l'Imprimeur"
+												label: language === "ar" ? "المطبعة" : language === "fr" ? "Imprimeur" : "Printer",
+												tooltip: language === "ar" ? "لدى المطبعة" : language === "fr" ? "Chez l'Imprimeur" : "At printer"
 											},
 											{
 												value: "printed",
-												label: "Imprimé & Livré"
+												label: language === "ar" ? "مطبوع" : language === "fr" ? "Livré" : "Delivered",
+												tooltip: language === "ar" ? "مطبوع ومُسلّم" : language === "fr" ? "Imprimé & Livré" : "Printed & delivered"
 											}
 										]} />
 </div>
-<button onClick={handleExportOrdersCsv} className="px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer">
+<button onClick={handleExportOrdersCsv} className="px-3 py-1.5 text-xs font-semibold text-black/70 dark:text-white/75 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer">
 <Download className="w-3.5 h-3.5" />
 <span>Export CSV</span>
 </button>
@@ -663,7 +674,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 {selectedOrderIds.size}
 {" commande(s) sélectionnée(s)"}
 </span>
-<button type="button" onClick={() => setSelectedOrderIds(/* @__PURE__ */ new Set())} className="text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 underline cursor-pointer">Désélectionner</button>
+<button type="button" onClick={() => setSelectedOrderIds(/* @__PURE__ */ new Set())} className="text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white underline cursor-pointer">Désélectionner</button>
 </div>
 <div className="flex items-center gap-2">
 <button type="button" onClick={() => {
@@ -691,12 +702,12 @@ Supprimer
 									}
 								}} selectedIds={selectedOrderIds} onSelectionChange={setSelectedOrderIds} renderCard={(order) => /* @__PURE__ */ <div className="flex flex-col justify-between h-full space-y-3">
 <div>
-<div className="flex items-center justify-between text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100 mb-1">
+<div className="flex items-center justify-between text-xs font-mono font-bold text-black dark:text-white mb-1">
 <span>{order.orderNumber}</span>
-<span className="text-zinc-500 font-normal">{order.status}</span>
+<span className="text-black/55 dark:text-white/55 font-normal">{order.status}</span>
 </div>
-<h4 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{order.projectTitle}</h4>
-<div className="text-xs text-zinc-500 mt-2 space-y-1">
+<h4 className="text-sm font-semibold text-black dark:text-white">{order.projectTitle}</h4>
+<div className="text-xs text-black/55 dark:text-white/55 mt-2 space-y-1">
 {order.items.map((it, idx) => /* @__PURE__ */ <div key={idx}>
 {"• "}
 {it.quantity}
@@ -706,8 +717,8 @@ Supprimer
 </div>
 </div>
 <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center text-xs">
-<span className="text-zinc-400">Total :</span>
-<span className="font-mono font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{formatMoney(order.totalCostDzd, "DZD")}</span>
+<span className="text-black/55 dark:text-white/55">Total :</span>
+<span className="font-mono font-bold text-black dark:text-white tabular-nums">{formatMoney(order.totalCostDzd, "DZD")}</span>
 </div>
 </div>} />
 </div>}
@@ -734,8 +745,8 @@ Valider Bon à Tirer (
 {bat.approvalStatus === "approved" ? "Bon à Tirer Validé" : bat.approvalStatus === "revision_requested" ? "Corrections Demandées" : "En Attente de Revue"}
 </span>
 </div>
-<h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">{bat.title}</h3>
-<div className="flex items-center gap-3 text-xs text-zinc-500 font-mono">
+<h3 className="text-sm font-bold text-black dark:text-white truncate">{bat.title}</h3>
+<div className="flex items-center gap-3 text-xs text-black/55 dark:text-white/55 font-mono">
 <span>{bat.colorSpace}</span>
 <span>·</span>
 <span>
@@ -757,7 +768,7 @@ mm
 <button type="button" onClick={() => {
 												setActiveBatId(bat.id);
 												setIsCorrectionModalOpen(true);
-											}} className="px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 rounded-xl transition-colors cursor-pointer">Demander Révision</button>
+											}} className="px-3 py-1.5 text-xs font-semibold text-black/70 dark:text-white/75 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 rounded-xl transition-colors cursor-pointer">Demander Révision</button>
 <button type="button" onClick={() => handleApproveBat(bat.id)} className="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-colors cursor-pointer">Valider BAT</button>
 </div>
 </div>)}
@@ -767,7 +778,7 @@ mm
 <div className="lg:col-span-7 space-y-4">
 <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex items-center justify-between">
 <Seek value={expenseSearch} onChange={setExpenseSearch} placeholder="Rechercher par titre de dépense..." openWidth={300} shutSize={38} />
-<span className="text-xs text-zinc-500 font-semibold">
+<span className="text-xs text-black/55 dark:text-white/55 font-semibold">
 {projectExpenses.length}
 {" dépense(s) pour ce projet"}
 </span>
@@ -777,10 +788,10 @@ mm
 <div className="space-y-1">
 <div className="flex items-center gap-2">
 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">{exp.category}</span>
-<span className="font-semibold text-xs text-zinc-900 dark:text-zinc-100">{exp.title}</span>
+<span className="font-semibold text-xs text-black dark:text-white">{exp.title}</span>
 {exp.hasFiscalInvoice && /* @__PURE__ */ <span className="text-[10px] text-emerald-600 font-bold">Facture Fiscale</span>}
 </div>
-<div className="text-[11px] text-zinc-400">
+<div className="text-[11px] text-black/55 dark:text-white/55">
 {"Par "}
 {exp.declaredByUserName}
 {" · Statut : "}
@@ -788,8 +799,8 @@ mm
 </div>
 </div>
 <div className="flex items-center gap-3 shrink-0">
-<span className="font-mono font-bold text-sm text-zinc-900 dark:text-zinc-100 tabular-nums">{formatMoney(exp.amountDzd, "DZD")}</span>
-{exp.receiptPhotoUrl && /* @__PURE__ */ <button type="button" onClick={() => setSelectedReceiptUrl(exp.receiptPhotoUrl || null)} className="p-1.5 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 cursor-pointer" title="Voir le justificatif"><Eye className="w-4 h-4" /></button>}
+<span className="font-mono font-bold text-sm text-black dark:text-white tabular-nums">{formatMoney(exp.amountDzd, "DZD")}</span>
+{exp.receiptPhotoUrl && /* @__PURE__ */ <button type="button" onClick={() => setSelectedReceiptUrl(exp.receiptPhotoUrl || null)} className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer" title="Voir le justificatif"><Eye className="w-4 h-4" /></button>}
 </div>
 </div>)}
 </div>
@@ -797,8 +808,8 @@ mm
 <div className="lg:col-span-5 p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
 <div>
 <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">Déclaration d'Achat Terrain (Slide 11)</span>
-<h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mt-0.5">Saisie Immédiate & Codage Stock</h3>
-<p className="text-xs text-zinc-500">Génère automatiquement une référence d'immobilisation indirecte pour l'agence.</p>
+<h3 className="text-base font-bold text-black dark:text-white mt-0.5">Saisie Immédiate & Codage Stock</h3>
+<p className="text-xs text-black/55 dark:text-white/55">Génère automatiquement une référence d'immobilisation indirecte pour l'agence.</p>
 </div>
 {purchaseSuccessMessage && /* @__PURE__ */ <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-300">{purchaseSuccessMessage}</div>}
 <form onSubmit={handleDeclarePurchase} className="space-y-4">
@@ -807,15 +818,18 @@ mm
 <FilterSelect label="Nature de l'Achat" value={purchaseCategory} onChange={(val) => setPurchaseCategory(typeof val === "string" ? val : val.target?.value || val)} options={[
 												{
 													value: "materials",
-													label: "Matériel & Mobilier Stand"
+													label: language === "ar" ? "معدات" : language === "fr" ? "Matériel" : "Equipment",
+													tooltip: language === "ar" ? "معدات وأثاث المنصة" : language === "fr" ? "Matériel & Mobilier Stand" : "Booth equipment & furniture"
 												},
 												{
 													value: "catering",
-													label: "Restauration Animateurs"
+													label: language === "ar" ? "إطعام" : language === "fr" ? "Restauration" : "Catering",
+													tooltip: language === "ar" ? "إطعام المنشطين" : language === "fr" ? "Restauration Animateurs" : "Promoter catering"
 												},
 												{
 													value: "transport",
-													label: "Carburant & Transport"
+													label: language === "ar" ? "نقل" : language === "fr" ? "Transport" : "Transport",
+													tooltip: language === "ar" ? "وقود ونقل" : language === "fr" ? "Carburant & Transport" : "Fuel & transport"
 												}
 											]} />
 <AtriumButton type="submit" variant="primary" className="w-full" icon={<Plus className="w-4 h-4" />}>Déclarer & Imputer au Projet</AtriumButton>
@@ -826,21 +840,21 @@ mm
 <div className="w-full max-w-md bg-white dark:bg-zinc-900 h-full p-6 flex flex-col justify-between shadow-2xl border-l border-zinc-200 dark:border-zinc-800">
 <div className="space-y-4">
 <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
-<h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+<h3 className="text-base font-bold text-black dark:text-white flex items-center gap-2">
 <ShoppingBag className="w-5 h-5 text-[#d4522f]" />
 Bon de Commande Impression
 </h3>
 <button type="button" onClick={() => setIsCartOpen(false)} className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"><X className="w-4 h-4" /></button>
 </div>
 <div className="space-y-1">
-<span className="text-xs text-zinc-400">Campagne Associée :</span>
-<div className="font-bold text-xs text-zinc-900 dark:text-zinc-100">{selectedProject?.title}</div>
+<span className="text-xs text-black/55 dark:text-white/55">Campagne Associée :</span>
+<div className="font-bold text-xs text-black dark:text-white">{selectedProject?.title}</div>
 </div>
 <div className="space-y-2 overflow-y-auto max-h-[50vh] pr-1">
-{cartItems.length === 0 ? /* @__PURE__ */ <div className="py-8 text-center text-xs text-zinc-400">Le panier est vide. Sélectionnez des supports dans le catalogue.</div> : cartItems.map((ci) => /* @__PURE__ */ <div key={ci.item.id} className="p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl flex items-center justify-between gap-3 text-xs">
+{cartItems.length === 0 ? /* @__PURE__ */ <div className="py-8 text-center text-xs text-black/55 dark:text-white/55">Le panier est vide. Sélectionnez des supports dans le catalogue.</div> : cartItems.map((ci) => /* @__PURE__ */ <div key={ci.item.id} className="p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl flex items-center justify-between gap-3 text-xs">
 <div className="min-w-0">
-<div className="font-semibold text-zinc-900 dark:text-zinc-100 truncate">{ci.item.title}</div>
-<div className="text-[11px] text-zinc-500 font-mono">
+<div className="font-semibold text-black dark:text-white truncate">{ci.item.title}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
 {formatMoney(ci.item.unitCostDzd, "DZD")}
 {" / unité"}
 </div>
@@ -867,13 +881,13 @@ Bon de Commande Impression
 {isCorrectionModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
 <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
 <div className="flex items-center justify-between">
-<h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+<h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
 <MessageSquare className="w-4 h-4 text-[#d4522f]" />
 Demande de Correction BAT
 </h3>
 <button type="button" onClick={() => setIsCorrectionModalOpen(false)} className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"><X className="w-4 h-4" /></button>
 </div>
-<textarea rows={4} value={correctionNote} onChange={(e) => setCorrectionNote(e.target.value)} placeholder="Indiquez les modifications requises (ex: logo client flou, fond perdu insuffisant, coquille dans le texte légal)..." className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#d4522f]" />
+<textarea rows={4} value={correctionNote} onChange={(e) => setCorrectionNote(e.target.value)} placeholder="Indiquez les modifications requises (ex: logo client flou, fond perdu insuffisant, coquille dans le texte légal)..." className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]" />
 <div className="flex justify-end gap-2">
 <AtriumButton type="button" variant="ghost" size="sm" onClick={() => setIsCorrectionModalOpen(false)}>Annuler</AtriumButton>
 <AtriumButton type="button" variant="primary" size="sm" onClick={handleRequestRevision}>Envoyer au Studio Créa</AtriumButton>
@@ -883,7 +897,7 @@ Demande de Correction BAT
 {selectedReceiptUrl && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
 <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
 <div className="flex items-center justify-between">
-<h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+<h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
 <Receipt className="w-4 h-4 text-[#d4522f]" />
 Justificatif d'Achat Terrain
 </h3>
@@ -891,7 +905,7 @@ Justificatif d'Achat Terrain
 </div>
 <img src={selectedReceiptUrl} alt="Justificatif" className="w-full h-72 object-cover rounded-xl" />
 <div className="flex justify-end">
-<button type="button" onClick={() => setSelectedReceiptUrl(null)} className="px-4 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 rounded-xl cursor-pointer">Fermer</button>
+<button type="button" onClick={() => setSelectedReceiptUrl(null)} className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-zinc-100 dark:bg-zinc-800 rounded-xl cursor-pointer">Fermer</button>
 </div>
 </div>
 </div>}

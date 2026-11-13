@@ -200,10 +200,10 @@ export const PosOrdersView: React.FC = () => {
       sortable: true,
       renderCell: (s) => (
         <div>
-          <span className="font-mono font-bold text-xs text-neutral-900 dark:text-white block">
+          <span className="font-mono font-bold text-xs text-black dark:text-white block">
             #{s.id.slice(-6).toUpperCase()}
           </span>
-          <span className="text-[10px] text-neutral-400 font-mono block">
+          <span className="text-[10px] text-black/55 dark:text-white/55 font-mono block">
             {new Date(s.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </span>
         </div>
@@ -216,11 +216,11 @@ export const PosOrdersView: React.FC = () => {
       sortable: true,
       renderCell: (s) => (
         <div>
-          <div className="font-bold text-xs text-neutral-900 dark:text-white truncate">
+          <div className="font-bold text-xs text-black dark:text-white truncate">
             {s.memberName || t('shop_receipt_walkin')}
           </div>
           {s.customerPhone && (
-            <div className="text-[10px] text-neutral-400 font-mono truncate">
+            <div className="text-[10px] text-black/55 dark:text-white/55 font-mono truncate">
               {s.customerPhone}
             </div>
           )}
@@ -236,13 +236,13 @@ export const PosOrdersView: React.FC = () => {
           {s.items.slice(0, 2).map((it, idx) => (
             <span
               key={idx}
-              className="text-[11px] text-neutral-600 dark:text-neutral-300 font-medium bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded"
+              className="text-[11px] text-black/70 dark:text-white/75 font-medium bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded"
             >
               {it.quantity}x {it.productName.split('(')[0].trim()}
             </span>
           ))}
           {s.items.length > 2 && (
-            <span className="text-[10px] font-bold text-neutral-400">
+            <span className="text-[10px] font-bold text-black/55 dark:text-white/55">
               +{s.items.length - 2}
             </span>
           )}
@@ -273,7 +273,7 @@ export const PosOrdersView: React.FC = () => {
             ) : (
               <Coins size={14} className="text-[#d4522f] shrink-0" />
             )}
-            <span className="font-medium text-neutral-800 dark:text-neutral-200 truncate">
+            <span className="font-medium text-black dark:text-white truncate">
               {label}
             </span>
           </div>
@@ -286,7 +286,7 @@ export const PosOrdersView: React.FC = () => {
       width: '140px',
       sortable: true,
       renderCell: (s) => (
-        <span className="font-mono font-bold text-xs text-neutral-900 dark:text-white tabular-nums">
+        <span className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">
           {formatMoney(s.totalAmount)}
         </span>
       ),
@@ -325,7 +325,7 @@ export const PosOrdersView: React.FC = () => {
               e.stopPropagation();
               setSelectedSaleForReceipt(s);
             }}
-            className="h-8 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-200 flex items-center gap-1 cursor-pointer transition-colors"
+            className="h-8 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-semibold text-black/70 dark:text-white flex items-center gap-1 cursor-pointer transition-colors"
             title="Ticket Thermique 80mm"
           >
             <Printer size={13} className="text-[#d4522f]" />
@@ -338,7 +338,7 @@ export const PosOrdersView: React.FC = () => {
                 e.stopPropagation();
                 setSelectedSaleForRefund(s);
               }}
-              className="h-8 px-2 rounded-lg text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer transition-colors"
+              className="h-8 px-2 rounded-lg text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer transition-colors"
               title="Refund / Avoir"
             >
               <RotateCcw size={13} />
@@ -358,10 +358,10 @@ export const PosOrdersView: React.FC = () => {
       sortable: true,
       renderCell: (po) => (
         <div>
-          <span className="font-bold text-xs text-neutral-900 dark:text-white block">
+          <span className="font-bold text-xs text-black dark:text-white block">
             {po.referenceName}
           </span>
-          <span className="text-[10px] text-neutral-400 font-mono">
+          <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
             {new Date(po.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {((po as any).cashierName || 'Caisse')}
           </span>
         </div>
@@ -376,13 +376,13 @@ export const PosOrdersView: React.FC = () => {
           {po.items.slice(0, 3).map((it, idx) => (
             <span
               key={idx}
-              className="px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-[10px] font-medium text-neutral-700 dark:text-neutral-300"
+              className="px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-[10px] font-medium text-black/70 dark:text-white/75"
             >
               {it.quantity}x {it.productName}
             </span>
           ))}
           {po.items.length > 3 && (
-            <span className="text-[10px] font-bold text-neutral-400">
+            <span className="text-[10px] font-bold text-black/55 dark:text-white/55">
               +{po.items.length - 3}
             </span>
           )}
@@ -424,7 +424,7 @@ export const PosOrdersView: React.FC = () => {
               e.stopPropagation();
               deleteParkedOrder(po.id);
             }}
-            className="h-8 px-2 rounded-xl text-neutral-400 hover:text-rose-500 cursor-pointer"
+            className="h-8 px-2 rounded-xl text-black/55 dark:text-white/55 hover:text-rose-500 cursor-pointer"
             title="Supprimer le ticket"
           >
             <Trash2 size={14} />
@@ -506,7 +506,7 @@ export const PosOrdersView: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+                <h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
                   {language === 'ar' ? 'سجل الطلبات والمبيعات' : language === 'fr' ? 'Commandes & Tickets de Caisse' : 'Sales Ledger & Orders'}
                 </h1>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4522f]/15 text-[#d4522f] border border-[#d4522f]/30">
@@ -546,7 +546,7 @@ export const PosOrdersView: React.FC = () => {
             {/* Card 1: Volume Brut des Ventes */}
             <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                <span className="text-xs font-semibold text-black/55 dark:text-white/75">
                   {language === 'ar' ? 'إجمالي المبيعات الإجمالي' : 'Volume Brut des Ventes'}
                 </span>
                 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#d4522f]/10 text-[#d4522f]">
@@ -554,12 +554,12 @@ export const PosOrdersView: React.FC = () => {
                 </span>
               </div>
               <div>
-                <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
+                <div className="text-2xl lg:text-3xl font-extrabold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
                   {formatMoney(salesKpis.totalGross)}
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
+                <div className="flex items-center gap-1.5 text-[11px] text-black/55 dark:text-white/55 mt-0.5">
                   <Receipt size={13} className="text-[#d4522f]" />
-                  <span>Ticket moyen: <strong className="font-mono text-neutral-800 dark:text-neutral-200">{salesKpis.completedCount > 0 ? formatMoney(Math.round(salesKpis.totalGross / salesKpis.completedCount)) : '0 DA'}</strong></span>
+                  <span>Ticket moyen: <strong className="font-mono text-black dark:text-white">{salesKpis.completedCount > 0 ? formatMoney(Math.round(salesKpis.totalGross / salesKpis.completedCount)) : '0 DA'}</strong></span>
                 </div>
               </div>
             </div>
@@ -567,7 +567,7 @@ export const PosOrdersView: React.FC = () => {
             {/* Card 2: Tickets en Attente & Retours */}
             <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                <span className="text-xs font-semibold text-black/55 dark:text-white/75">
                   {language === 'ar' ? 'التذاكر المعلقة والمرتجعات' : 'Tickets en Attente & Avoirs'}
                 </span>
                 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
@@ -575,10 +575,10 @@ export const PosOrdersView: React.FC = () => {
                 </span>
               </div>
               <div>
-                <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
+                <div className="text-2xl lg:text-3xl font-extrabold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
                   {formatMoney(salesKpis.totalRefunded)}
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
+                <div className="flex items-center gap-1.5 text-[11px] text-black/55 dark:text-white/55 mt-0.5">
                   <RotateCcw size={13} className="text-rose-500" />
                   <span>{salesKpis.refundedCount} avoirs traités</span>
                 </div>
@@ -596,15 +596,15 @@ export const PosOrdersView: React.FC = () => {
                 </span>
               </div>
               <div>
-                <div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">
+                <div className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
                   {formatMoney(salesKpis.netRevenue)}
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-stone-400 mt-0.5">
+                <div className="flex items-center justify-between text-[11px] text-white/75 mt-0.5">
                   <span className="flex items-center gap-1">
                     <TrendingUp size={12} className="text-[#FB923C]" />
                     <span>Déduction faite des avoirs clients</span>
                   </span>
-                  <span className="font-mono text-stone-300">DZD</span>
+                  <span className="font-mono text-white/80">DZD</span>
                 </div>
               </div>
 
@@ -626,7 +626,7 @@ export const PosOrdersView: React.FC = () => {
                 <Receipt size={18} />
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-neutral-900 dark:text-white">
+                <span className="text-sm font-bold text-black dark:text-white">
                   {language === 'ar' ? 'سجل تذاكر المبيعات' : 'Grand Livre des Encaissements'}
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#d4522f]/10 text-[#d4522f]">
@@ -644,13 +644,15 @@ export const PosOrdersView: React.FC = () => {
                 options={[
                   {
                     value: 'sales',
-                    label: language === 'ar' ? 'المبيعات' : 'Encaissés',
+                    label: language === 'ar' ? 'المبيعات' : language === 'fr' ? 'Encaissés' : 'Sales',
+                    tooltip: language === 'ar' ? 'المبيعات المحصلة' : language === 'fr' ? 'Commandes encaissées' : 'Completed sales',
                     icon: <Receipt size={14} />,
                     count: branchSales.length,
                   },
                   {
                     value: 'parked',
-                    label: language === 'ar' ? 'المعلقة' : 'En Pause',
+                    label: language === 'ar' ? 'المعلقة' : language === 'fr' ? 'Pause' : 'Parked',
+                    tooltip: language === 'ar' ? 'الطلبيات الموضوعة في الانتظار' : language === 'fr' ? 'Commandes mises en pause' : 'Parked orders on hold',
                     icon: <PauseCircle size={14} />,
                     count: parkedOrders.length,
                   },
@@ -664,9 +666,21 @@ export const PosOrdersView: React.FC = () => {
                   value={dateFilter}
                   onValueChange={(val) => setDateFilter(val as any)}
                   options={[
-                    { value: 'all', label: language === 'ar' ? 'الكل' : 'Tous' },
-                    { value: 'today', label: language === 'ar' ? 'اليوم' : 'Aujourd’hui' },
-                    { value: '7days', label: language === 'ar' ? '7 أيام' : '7 jours' },
+                    {
+                      value: 'all',
+                      label: language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All',
+                      tooltip: language === 'ar' ? 'كل الفترات' : language === 'fr' ? 'Toutes les dates' : 'All dates',
+                    },
+                    {
+                      value: 'today',
+                      label: language === 'ar' ? 'اليوم' : language === 'fr' ? 'Aujourd’hui' : 'Today',
+                      tooltip: language === 'ar' ? 'مبيعات اليوم' : language === 'fr' ? "Ventes d'aujourd'hui" : "Today's sales",
+                    },
+                    {
+                      value: '7days',
+                      label: language === 'ar' ? 'أسبوع' : language === 'fr' ? '7j' : '7d',
+                      tooltip: language === 'ar' ? 'آخر 7 أيام' : language === 'fr' ? '7 derniers jours' : 'Last 7 days',
+                    },
                   ]}
                 />
               )}
@@ -703,10 +717,10 @@ export const PosOrdersView: React.FC = () => {
                       <div>
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div>
-                            <span className="font-mono font-bold text-xs text-neutral-900 dark:text-white block">
+                            <span className="font-mono font-bold text-xs text-black dark:text-white block">
                               #{s.id.slice(-6).toUpperCase()}
                             </span>
-                            <span className="text-[10px] text-neutral-400 font-mono">
+                            <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
                               {new Date(s.createdAt).toLocaleString()}
                             </span>
                           </div>
@@ -719,11 +733,11 @@ export const PosOrdersView: React.FC = () => {
                           </span>
                         </div>
 
-                        <div className="text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1">
+                        <div className="text-xs font-bold text-black dark:text-white mb-1">
                           {s.memberName || 'Client de Passage'}
                         </div>
 
-                        <div className="text-xs bg-neutral-50 dark:bg-neutral-800/50 p-2 rounded-xl space-y-0.5 text-neutral-600 dark:text-neutral-300">
+                        <div className="text-xs bg-neutral-50 dark:bg-neutral-800/50 p-2 rounded-xl space-y-0.5 text-black/70 dark:text-white/75">
                           {s.items.map((it, idx) => (
                             <div key={idx} className="flex justify-between text-[11px]">
                               <span>{it.quantity}x {it.productName}</span>
@@ -800,10 +814,10 @@ export const PosOrdersView: React.FC = () => {
                 renderCard={(po) => (
                   <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-xs text-neutral-900 dark:text-white">{po.referenceName}</span>
+                      <span className="font-bold text-xs text-black dark:text-white">{po.referenceName}</span>
                       <span className="font-mono font-bold text-xs text-[#d4522f]">{formatMoney(po.totalAmount)}</span>
                     </div>
-                    <div className="text-[11px] text-neutral-400">
+                    <div className="text-[11px] text-black/55 dark:text-white/55">
                       {po.items.length} article(s) · {new Date(po.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </div>
                   </div>
@@ -869,16 +883,16 @@ export const PosOrdersView: React.FC = () => {
                   {receiptConfig.headerTitle || currentBranch.name}
                 </div>
                 {receiptConfig.subHeader && (
-                  <div className="text-[10px] text-neutral-600">{receiptConfig.subHeader}</div>
+                  <div className="text-[10px] text-black/75">{receiptConfig.subHeader}</div>
                 )}
-                <div className="text-[9px] text-neutral-500">
+                <div className="text-[9px] text-black/55">
                   {receiptConfig.address || currentBranch.address || '8 Rue Didouche Mourad, Alger'}
                 </div>
                 {receiptConfig.phone && (
-                  <div className="text-[9px] text-neutral-500">Tel: {receiptConfig.phone}</div>
+                  <div className="text-[9px] text-black/55">Tel: {receiptConfig.phone}</div>
                 )}
                 {receiptConfig.taxId && (
-                  <div className="text-[9px] font-bold text-neutral-600">NIF/RC: {receiptConfig.taxId}</div>
+                  <div className="text-[9px] font-bold text-black/75">NIF/RC: {receiptConfig.taxId}</div>
                 )}
               </div>
 
@@ -915,7 +929,7 @@ export const PosOrdersView: React.FC = () => {
                   <span>TOTAL PAYÉ</span>
                   <span>{formatMoney(selectedSaleForReceipt.totalAmount)}</span>
                 </div>
-                <div className="flex justify-between text-[10px] text-neutral-600 pt-0.5">
+                <div className="flex justify-between text-[10px] text-black/75 pt-0.5">
                   <span>MODE DE PAIEMENT :</span>
                   <span className="font-bold">{selectedSaleForReceipt.paymentMethod}</span>
                 </div>
@@ -946,7 +960,7 @@ export const PosOrdersView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSelectedSaleForReceipt(null)}
-                className="h-10 px-4 text-xs font-semibold text-neutral-600 dark:text-neutral-300 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                className="h-10 px-4 text-xs font-semibold text-black/70 dark:text-white/75 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
               >
                 {t('action_cancel')}
               </button>
@@ -964,7 +978,7 @@ export const PosOrdersView: React.FC = () => {
           subtitle={`Ticket #${selectedSaleForRefund.id.slice(-8).toUpperCase()} · ${formatMoney(selectedSaleForRefund.totalAmount)}`}
         >
           <div className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-black/55 dark:text-white/55">
               {language === 'ar'
                 ? 'سيتم إعادة الأصناف تلقائياً إلى المخزون وتسجيل حركة إرجاع في سجل التدقيق.'
                 : 'Les articles seront automatiquement réintégrés dans l’inventaire physique avec suivi complet.'}

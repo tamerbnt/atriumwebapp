@@ -18,7 +18,7 @@ interface ManufacturingOrderModalProps {
 
 
 
-const ManufacturingOrderModal = ({ isOpen, onClose, boms, onSave, orderToEdit }) => {
+export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = ({ isOpen, onClose, boms, onSave, orderToEdit }) => {
 	const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
 	const isAr = language === "ar";
 	const { materials } = useManufacturingData();
@@ -107,12 +107,12 @@ const ManufacturingOrderModal = ({ isOpen, onClose, boms, onSave, orderToEdit })
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Factory size={20} /></div>
 <div>
-<h3 className="font-bold text-base text-neutral-900 dark:text-white">
+<h3 className="font-bold text-base text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {orderToEdit ? isAr ? "تعديل أمر التصنيع" : "Modifier l'Ordre de Fabrication" : isAr ? "أمر تصنيع جديد (OF)" : "Nouvel Ordre de Fabrication (OF)"}
 </h3>
 </div>
 </div>
-<button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"><X size={18} /></button>
+<button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"><X size={18} /></button>
 </div>
 <form onSubmit={handleSubmit} className="space-y-4">
 <LabelSelect label={isAr ? "المنتج النهائي والتركيبة (BOM)" : "Produit & Nomenclature (BOM)"} value={bomId} onChange={setBomId} options={bomOptions} />

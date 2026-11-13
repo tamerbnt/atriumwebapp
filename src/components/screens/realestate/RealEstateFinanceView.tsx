@@ -124,7 +124,7 @@ export const RealEstateFinanceView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Receipt size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {isAr ? "الوصولات ومستحقات الملاك" : "Quittances de Loyer & Règlements Bailleurs"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Légal Foncier</span>
@@ -138,16 +138,16 @@ export const RealEstateFinanceView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "مؤشرات التحصيل وعمولات الوكالة" : "Encaissement des Loyers & Commissions"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "إجمالي الإيجارات المحصلة" : "Masse des Loyers Appelée"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "إجمالي الإيجارات المحصلة" : "Masse des Loyers Appelée"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">{formatMoney(totalMonthlyRents, language)}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalMonthlyRents, language)}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">
 {leases.length}
 {" "}
 {isAr ? "وصل إيجار سارٍ" : "quittances émises"}
@@ -155,19 +155,19 @@ export const RealEstateFinanceView: React.FC<any> = () => {
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "عمولة التسيير العقاري (10%)" : "Honoraires Gestion Agence"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "عمولة التسيير العقاري (10%)" : "Honoraires Gestion Agence"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-mono tabular-nums">{formatMoney(totalCommissions, language)}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">{isAr ? "إيرادات الوكالة الصافية" : "Revenu net agence mandatée"}</p>
+<div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalCommissions, language)}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">{isAr ? "إيرادات الوكالة الصافية" : "Revenu net agence mandatée"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{isAr ? "صافي مستحقات الملاك" : "Reversements Bailleurs"}</span>
+<span className="text-[11px] font-medium text-white/80">{isAr ? "صافي مستحقات الملاك" : "Reversements Bailleurs"}</span>
 <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">{isAr ? "جاهز للتحويل" : "Net Propriétaire"}</span>
 </div>
 <div>
-<div className="text-2xl font-black text-white font-mono tabular-nums">{formatMoney(netOwnerDisbursal, language)}</div>
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(netOwnerDisbursal, language)}</div>
 <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
 <CheckCircle2 size={11} />
 {settledBailleurIds.length}
@@ -181,7 +181,7 @@ export const RealEstateFinanceView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "سجل الوصولات ومستحقات الملاك العقاريين" : "Registre des Quittances & Règlements Bailleurs"}
 </h2>
 </div>
@@ -189,27 +189,32 @@ export const RealEstateFinanceView: React.FC<any> = () => {
 {[
 							{
 								id: "all",
-								label: isAr ? "جميع المعاملات" : "Toutes opérations"
+								label: isAr ? "الكل" : language === "fr" ? "Toutes" : "All",
+								tooltip: isAr ? "جميع المعاملات" : language === "fr" ? "Toutes opérations" : "All operations"
 							},
 							{
 								id: "loyers",
-								label: isAr ? "إيجارات محصلة" : "Loyers encaissés"
+								label: isAr ? "إيجارات" : language === "fr" ? "Loyers" : "Rents",
+								tooltip: isAr ? "إيجارات محصلة" : language === "fr" ? "Loyers encaissés" : "Collected rents"
 							},
 							{
 								id: "commissions",
-								label: isAr ? "أتعاب الوكالة" : "Commissions agence"
+								label: isAr ? "أتعاب" : language === "fr" ? "Commissions" : "Fees",
+								tooltip: isAr ? "أتعاب الوكالة" : language === "fr" ? "Commissions agence" : "Agency commissions"
 							},
 							{
 								id: "reversements",
-								label: isAr ? "محول للملاك" : "Reversements bailleurs"
+								label: isAr ? "تحويلات" : language === "fr" ? "Reversements" : "Payouts",
+								tooltip: isAr ? "محول للملاك" : language === "fr" ? "Reversements bailleurs" : "Landlord payouts"
 							},
 							{
 								id: "impayes",
-								label: isAr ? "إيجارات متأخرة" : "Impayés / Relances"
+								label: isAr ? "متأخرات" : language === "fr" ? "Impayés" : "Unpaid",
+								tooltip: isAr ? "إيجارات متأخرة" : language === "fr" ? "Impayés / Relances" : "Overdue & reminders"
 							}
 						].map((tab) => {
 							const isActive = settlementFilter === tab.id;
-							return /* @__PURE__ */ <button key={tab.id} onClick={() => setSettlementFilter(tab.id)} className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer" style={{
+							return /* @__PURE__ */ <button key={tab.id} type="button" onClick={() => setSettlementFilter(tab.id)} title={tab.tooltip} className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer" style={{
 									backgroundColor: isActive ? "#FCEEE8" : "transparent",
 									color: isActive ? "var(--color-accent)" : "#71717A"
 								}}>{tab.label}</button>;
@@ -223,8 +228,8 @@ export const RealEstateFinanceView: React.FC<any> = () => {
 									id: "property",
 									header: isAr ? "العقار" : "Bien Immobilier",
 									renderCell: (l: any) => /* @__PURE__ */ <div>
-<span className="font-bold text-xs text-neutral-900 dark:text-neutral-100 block">{l.propertyTitle}</span>
-<span className="text-[10px] text-neutral-400 font-mono">
+<span className="font-bold text-xs text-black dark:text-white block">{l.propertyTitle}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
 {"Bail du "}
 {l.startDate}
 {" au "}
@@ -237,8 +242,8 @@ export const RealEstateFinanceView: React.FC<any> = () => {
 									header: isAr ? "المستأجر" : "Locataire Titulaire",
 									width: "180px",
 									renderCell: (l: any) => /* @__PURE__ */ <div className="text-xs">
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 block truncate">{l.tenantName}</span>
-<span className="text-[10px] text-neutral-400 font-mono">{l.tenantPhone}</span>
+<span className="font-semibold text-black dark:text-white block truncate">{l.tenantName}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 font-mono">{l.tenantPhone}</span>
 </div>
 								},
 								{
@@ -246,7 +251,7 @@ export const RealEstateFinanceView: React.FC<any> = () => {
 									header: isAr ? "مبلغ الإيجار" : "Loyer Quittancé",
 									width: "140px",
 									sortable: true,
-									renderCell: (l: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white">{formatMoney(l.monthlyRentDzd, language)}</span>
+									renderCell: (l: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-black dark:text-white">{formatMoney(l.monthlyRentDzd, language)}</span>
 								},
 								{
 									id: "commission",
@@ -284,19 +289,19 @@ export const RealEstateFinanceView: React.FC<any> = () => {
 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isSettled ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300" : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"}`}>{isSettled ? "Reversé" : "À reverser"}</span>
 </div>
 <div>
-<h4 className="font-bold text-xs text-neutral-900 dark:text-white line-clamp-2">{l.propertyTitle}</h4>
-<p className="text-[11px] text-neutral-500 mt-0.5">
+<h4 className="font-bold text-xs text-black dark:text-white line-clamp-2">{l.propertyTitle}</h4>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 {"Locataire: "}
 {l.tenantName}
 </p>
 </div>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
 <div>
-<span className="text-[10px] text-neutral-400 block">Com. Agence</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 block">Com. Agence</span>
 <span className="font-mono text-blue-600 dark:text-blue-400 font-semibold">{formatMoney(l.monthlyRentDzd * .1, language)}</span>
 </div>
 <div className="text-right">
-<span className="text-[10px] text-neutral-400 block">Net Bailleur</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 block">Net Bailleur</span>
 <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">{formatMoney(l.monthlyRentDzd * .9, language)}</span>
 </div>
 </div>
@@ -308,38 +313,38 @@ export const RealEstateFinanceView: React.FC<any> = () => {
 <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Receipt size={16} /></div>
 <div>
-<h3 className="font-bold text-xs text-neutral-900 dark:text-white flex items-center gap-1.5 font-mono">Quittance de Loyer</h3>
-<p className="text-[10px] text-neutral-500 truncate max-w-[210px]">{selectedLease.tenantName}</p>
+<h3 className="font-bold text-xs text-black dark:text-white flex items-center gap-1.5 font-mono">Quittance de Loyer</h3>
+<p className="text-[10px] text-black/55 dark:text-white/55 truncate max-w-[210px]">{selectedLease.tenantName}</p>
 </div>
 </div>
-<button onClick={() => setSelectedLease(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500 transition-colors"><X size={15} /></button>
+<button onClick={() => setSelectedLease(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-black/55 dark:text-white/55 transition-colors"><X size={15} /></button>
 </div>
 <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 pt-2 gap-2">
-<button onClick={() => setInspectorTab("quittance")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "quittance" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"}`}>{isAr ? "الوصل والرسوم" : "Quittance"}</button>
-<button onClick={() => setInspectorTab("caution")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "caution" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"}`}>{isAr ? "عقد الإيجار والضمان" : "Bail & Caution"}</button>
-<button onClick={() => setInspectorTab("reversement")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "reversement" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"}`}>{isAr ? "تحويل المالك" : "Reversement"}</button>
+<button onClick={() => setInspectorTab("quittance")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "quittance" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "الوصل والرسوم" : "Quittance"}</button>
+<button onClick={() => setInspectorTab("caution")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "caution" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "عقد الإيجار والضمان" : "Bail & Caution"}</button>
+<button onClick={() => setInspectorTab("reversement")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "reversement" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "تحويل المالك" : "Reversement"}</button>
 </div>
 <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
 {inspectorTab === "quittance" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-4 bg-[#1F1D1B] rounded-xl text-white space-y-2 shadow-sm">
-<div className="flex items-center justify-between text-neutral-300 text-[11px]">
+<div className="flex items-center justify-between text-white/80 text-[11px]">
 <span>Loyer Mensuel Net Quittancé</span>
 <span className="bg-[#3D2817] text-[#FB923C] text-[10px] font-bold px-2 py-0.5 rounded-full">Acquitté</span>
 </div>
-<div className="text-2xl font-black font-mono tracking-tight text-white">{formatMoney(selectedLease.monthlyRentDzd, language)}</div>
-<p className="text-[10px] text-neutral-400">
+<div className="text-2xl font-black tracking-tight text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(selectedLease.monthlyRentDzd, language)}</div>
+<p className="text-[10px] text-white/75">
 Quittance de loyer délivrée au locataire valant décharge intégrale pour la période en cours.
 </p>
 </div>
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Détails de la Quittance</span>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Détails de la Quittance</span>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Bien loué:</span>
-<span className="font-bold text-neutral-900 dark:text-white truncate max-w-[190px]">{selectedLease.propertyTitle}</span>
+<span className="text-black/55 dark:text-white/55">Bien loué:</span>
+<span className="font-bold text-black dark:text-white truncate max-w-[190px]">{selectedLease.propertyTitle}</span>
 </div>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Locataire:</span>
-<span className="font-medium text-neutral-900 dark:text-white">{selectedLease.tenantName}</span>
+<span className="text-black/55 dark:text-white/55">Locataire:</span>
+<span className="font-medium text-black dark:text-white">{selectedLease.tenantName}</span>
 </div>
 <div className="flex items-center justify-between text-blue-600 dark:text-blue-400">
 <span>Honoraires Agence (10%):</span>
@@ -349,23 +354,23 @@ Quittance de loyer délivrée au locataire valant décharge intégrale pour la p
 </span>
 </div>
 <div className="flex items-center justify-between pt-1 border-t border-neutral-200 dark:border-neutral-800">
-<span className="font-bold text-neutral-900 dark:text-white">Solde Net Bailleur:</span>
+<span className="font-bold text-black dark:text-white">Solde Net Bailleur:</span>
 <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{formatMoney(selectedLease.monthlyRentDzd * .9, language)}</span>
 </div>
 </div>
 </div>}
 {inspectorTab === "caution" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Dépôt de Garantie Séquestré</span>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Dépôt de Garantie Séquestré</span>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Montant Caution:</span>
-<span className="font-mono font-bold text-base text-neutral-900 dark:text-white">{formatMoney(selectedLease.securityDepositDzd, language)}</span>
+<span className="text-black/55 dark:text-white/55">Montant Caution:</span>
+<span className="font-mono font-bold text-base text-black dark:text-white">{formatMoney(selectedLease.securityDepositDzd, language)}</span>
 </div>
-<div className="flex items-center justify-between text-[11px] text-neutral-500">
+<div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
 <span>Périodicité paiement:</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{selectedLease.paymentFrequency}</span>
+<span className="font-semibold text-black dark:text-white">{selectedLease.paymentFrequency}</span>
 </div>
-<div className="flex items-center justify-between text-[11px] text-neutral-500">
+<div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
 <span>Date d'échéance bail:</span>
 <span className="font-mono">{selectedLease.endDate}</span>
 </div>
@@ -373,22 +378,22 @@ Quittance de loyer délivrée au locataire valant décharge intégrale pour la p
 </div>}
 {inspectorTab === "reversement" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Ordre de Virement Propriétaire</span>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Ordre de Virement Propriétaire</span>
 <div className="space-y-1.5">
 <div className="flex justify-between">
-<span className="text-neutral-500">Bénéficiaire:</span>
-<span className="font-bold text-neutral-900 dark:text-white">Propriétaire du bien</span>
+<span className="text-black/55 dark:text-white/55">Bénéficiaire:</span>
+<span className="font-bold text-black dark:text-white">Propriétaire du bien</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">Montant Net:</span>
+<span className="text-black/55 dark:text-white/55">Montant Net:</span>
 <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{formatMoney(selectedLease.monthlyRentDzd * .9, language)}</span>
 </div>
 </div>
 </div>
 <div className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
 <div>
-<span className="font-semibold block text-neutral-900 dark:text-white">Validation Virement</span>
-<span className="text-[10px] text-neutral-500">
+<span className="font-semibold block text-black dark:text-white">Validation Virement</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">
 {settledBailleurIds.includes(selectedLease.id) ? "Virement déjà exécuté" : "Transférer sur compte bancaire"}
 </span>
 </div>

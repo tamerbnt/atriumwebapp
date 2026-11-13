@@ -105,7 +105,7 @@ export const MembershipFinanceView: React.FC = () => {
       accessorKey: 'memberName',
       sortable: true,
       cell: (tx) => (
-        <span className="font-medium text-xs text-neutral-900 dark:text-white">
+        <span className="font-medium text-xs text-black dark:text-white">
           {tx.memberName}
         </span>
       ),
@@ -114,7 +114,7 @@ export const MembershipFinanceView: React.FC = () => {
       id: 'plan',
       header: isAr ? 'نوع الاشتراك' : isEn ? 'Membership Plan' : 'Formule Abonnement',
       accessorKey: 'plan',
-      cell: (tx) => <span className="text-xs text-neutral-600 dark:text-neutral-300">{tx.plan}</span>,
+      cell: (tx) => <span className="text-xs text-black/70 dark:text-white/75">{tx.plan}</span>,
     },
     {
       id: 'amount',
@@ -122,7 +122,7 @@ export const MembershipFinanceView: React.FC = () => {
       accessorKey: 'amount',
       sortable: true,
       cell: (tx) => (
-        <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white tabular-nums">
+        <span className="font-mono text-xs font-bold text-black dark:text-white tabular-nums">
           {formatMoney(tx.amount)}
         </span>
       ),
@@ -132,7 +132,7 @@ export const MembershipFinanceView: React.FC = () => {
       header: isAr ? 'طريقة الدفع' : isEn ? 'Method' : 'Règlement',
       accessorKey: 'paymentMethod',
       cell: (tx) => (
-        <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+        <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75">
           {tx.paymentMethod === 'BaridiMob'
             ? 'BaridiMob'
             : tx.paymentMethod === 'Card'
@@ -147,7 +147,7 @@ export const MembershipFinanceView: React.FC = () => {
       id: 'date',
       header: isAr ? 'التاريخ' : isEn ? 'Date' : 'Date d’Opération',
       accessorKey: 'date',
-      cell: (tx) => <span className="text-xs text-neutral-500 tabular-nums">{tx.date}</span>,
+      cell: (tx) => <span className="text-xs text-black/55 dark:text-white/55 tabular-nums">{tx.date}</span>,
     },
     {
       id: 'status',
@@ -181,11 +181,11 @@ export const MembershipFinanceView: React.FC = () => {
       {/* Screen Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
+          <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-white">
             <DollarSign size={22} />
           </div>
           <div>
-            <h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white font-['Barlow_Condensed']">
+            <h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {isAr ? 'المالية والخزينة' : isEn ? 'Finance & Treasury' : 'Finances & Trésorerie'}
             </h1>
           </div>
@@ -196,7 +196,7 @@ export const MembershipFinanceView: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-[#1F1D1B] text-white p-5 rounded-2xl flex flex-col justify-between shadow-sm relative overflow-hidden">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-semibold tracking-wider uppercase text-neutral-400">
+            <span className="text-[11px] font-semibold tracking-wider uppercase text-white/75">
               {isAr ? 'إجمالي تحصيلات الصالة' : isEn ? 'Total Gym Revenue' : 'Chiffre d’Affaires Salle'}
             </span>
             <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-[#d4522f]">
@@ -204,10 +204,10 @@ export const MembershipFinanceView: React.FC = () => {
             </div>
           </div>
           <div>
-            <div className="text-3xl font-bold tracking-tight text-white mb-1 tabular-nums font-mono">
+            <div className="text-3xl font-bold tracking-tight text-white mb-1 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {formatMoney(financialMetrics.totalCollected)}
             </div>
-            <div className="text-xs text-neutral-300">
+            <div className="text-xs text-white/80">
               {financialMetrics.activeSubscriptions}{' '}
               {isAr ? 'اشتراك نشط هذا الشهر' : 'abonnements actifs ce mois'}
             </div>
@@ -215,7 +215,7 @@ export const MembershipFinanceView: React.FC = () => {
         </div>
 
         <div className="bg-[#F3EDE7] dark:bg-[#1C1C1E] p-5 rounded-2xl border border-neutral-200/70 dark:border-neutral-800 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-1">
+          <div className="flex items-center justify-between text-black/55 dark:text-white/75 mb-1">
             <span className="text-xs font-medium uppercase tracking-wider">
               {isAr ? 'متوسط الدخل اليومي' : isEn ? 'Daily Average' : 'Moyenne Journalière'}
             </span>
@@ -224,17 +224,17 @@ export const MembershipFinanceView: React.FC = () => {
             </div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums font-mono">
+            <div className="text-2xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {formatMoney(financialMetrics.dailyEstimated)}
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+            <p className="text-xs text-black/55 dark:text-white/75 mt-1">
               {isAr ? 'معدل تجديد متوازن' : 'Rythme de réabonnement régulier'}
             </p>
           </div>
         </div>
 
         <div className="bg-[#F3EDE7] dark:bg-[#1C1C1E] p-5 rounded-2xl border border-neutral-200/70 dark:border-neutral-800 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-1">
+          <div className="flex items-center justify-between text-black/55 dark:text-white/75 mb-1">
             <span className="text-xs font-medium uppercase tracking-wider">
               {isAr ? 'مستحقات غير محصلة' : isEn ? 'Pending Balances' : 'Impayés & Restes à Recouvrer'}
             </span>
@@ -243,17 +243,17 @@ export const MembershipFinanceView: React.FC = () => {
             </div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums font-mono">
+            <div className="text-2xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {formatMoney(financialMetrics.pendingBalance)}
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+            <p className="text-xs text-black/55 dark:text-white/75 mt-1">
               {isAr ? 'تنبيهات تلقائية مفعلة' : 'Relances automatiques actives'}
             </p>
           </div>
         </div>
 
         <div className="bg-[#F3EDE7] dark:bg-[#1C1C1E] p-5 rounded-2xl border border-neutral-200/70 dark:border-neutral-800 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-1">
+          <div className="flex items-center justify-between text-black/55 dark:text-white/75 mb-1">
             <span className="text-xs font-medium uppercase tracking-wider">
               {isAr ? 'الفرع الرياضي' : isEn ? 'Facility Branch' : 'Établissement Sportif'}
             </span>
@@ -262,10 +262,10 @@ export const MembershipFinanceView: React.FC = () => {
             </div>
           </div>
           <div>
-            <div className="text-lg font-bold text-neutral-900 dark:text-white truncate">
+            <div className="text-lg font-bold text-black dark:text-white truncate">
               {currentBranch?.name || 'Club Principal'}
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+            <p className="text-xs text-black/55 dark:text-white/75 mt-1">
               {currentBranch?.address || 'Alger'} · {isAr ? 'صندوق مفتوح' : 'Caisse Ouverte'}
             </p>
           </div>
@@ -284,30 +284,39 @@ export const MembershipFinanceView: React.FC = () => {
           </div>
 
           <div className="flex items-center p-0.5 bg-neutral-100 dark:bg-neutral-800/60 rounded-xl text-xs font-medium">
-            {(['All', 'Cash', 'Card', 'BaridiMob'] as const).map((method) => (
-              <button
-                key={method}
-                type="button"
-                onClick={() => setSelectedFilter(method)}
-                className={`px-3 py-1.5 rounded-lg transition-all ${
-                  selectedFilter === method
-                    ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-xs font-semibold'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
-                }`}
-              >
-                {method === 'All'
-                  ? isAr
-                    ? 'الكل'
-                    : 'Tous'
+            {(['All', 'Cash', 'Card', 'BaridiMob'] as const).map((method) => {
+              const label =
+                method === 'All'
+                  ? isAr ? 'الكل' : isEn ? 'All' : 'Tous'
                   : method === 'Cash'
-                  ? isAr
-                    ? 'نقداً'
-                    : 'Espèces'
+                  ? isAr ? 'نقداً' : isEn ? 'Cash' : 'Espèces'
                   : method === 'Card'
                   ? 'CIB'
-                  : 'BaridiMob'}
-              </button>
-            ))}
+                  : 'BaridiMob';
+              const tooltip =
+                method === 'All'
+                  ? isAr ? 'جميع طرق الدفع' : isEn ? 'All payment methods' : 'Tous les modes de paiement'
+                  : method === 'Cash'
+                  ? isAr ? 'الدفع نقداً' : isEn ? 'Cash payments' : 'Règlement en espèces'
+                  : method === 'Card'
+                  ? isAr ? 'بطاقة CIB / الذهبية' : isEn ? 'CIB / Dahabia Card' : 'Carte CIB / Dahabia'
+                  : 'BaridiMob';
+              return (
+                <button
+                  key={method}
+                  type="button"
+                  title={tooltip}
+                  onClick={() => setSelectedFilter(method)}
+                  className={`px-3 py-1.5 rounded-lg transition-all ${
+                    selectedFilter === method
+                      ? 'bg-white dark:bg-neutral-700 text-black dark:text-white shadow-xs font-semibold'
+                      : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
         </div>
 

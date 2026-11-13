@@ -173,14 +173,14 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
               <Boxes size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">
+              <h2 className="text-lg font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {t('trading_stock_modal_title')}
               </h2>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
           >
             <X size={20} />
           </button>
@@ -190,7 +190,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-5 flex-1 text-sm">
           {/* Movement Type Switcher */}
           <div>
-            <label className="block text-xs font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-semibold text-black/70 dark:text-white/75 uppercase tracking-wider mb-2">
               {t('trading_stock_dir')}
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -203,7 +203,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                 className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-semibold transition-all ${
                   type === 'entree'
                     ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-bold'
-                    : 'border-stone-200 dark:border-stone-800 hover:border-stone-300 text-stone-600 dark:text-stone-400'
+                    : 'border-stone-200 dark:border-stone-800 hover:border-stone-300 text-black/70 dark:text-white/75'
                 }`}
               >
                 <TrendingUp size={16} />
@@ -219,7 +219,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                 className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-semibold transition-all ${
                   type === 'sortie'
                     ? 'border-rose-500 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 font-bold'
-                    : 'border-stone-200 dark:border-stone-800 hover:border-stone-300 text-stone-600 dark:text-stone-400'
+                    : 'border-stone-200 dark:border-stone-800 hover:border-stone-300 text-black/70 dark:text-white/75'
                 }`}
               >
                 <TrendingDown size={16} />
@@ -235,7 +235,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                 className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-semibold transition-all ${
                   type === 'transfert'
                     ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f] font-bold'
-                    : 'border-stone-200 dark:border-stone-800 hover:border-stone-300 text-stone-600 dark:text-stone-400'
+                    : 'border-stone-200 dark:border-stone-800 hover:border-stone-300 text-black/70 dark:text-white/75'
                 }`}
               >
                 <ArrowRight size={16} />
@@ -317,7 +317,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
           {/* Items */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs font-semibold text-stone-600 dark:text-stone-400 uppercase tracking-wider">
+              <h3 className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase tracking-wider">
                 {t('trading_stock_items_title')} ({items.length})
               </h3>
               <button
@@ -363,7 +363,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                       type="button"
                       onClick={() => removeItemRow(idx)}
                       disabled={items.length <= 1}
-                      className="p-1.5 text-stone-400 hover:text-rose-600 disabled:opacity-30 transition-colors cursor-pointer"
+                      className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 disabled:opacity-30 transition-colors cursor-pointer"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -385,8 +385,8 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
 
           {/* Total Valuation Footer */}
           <div className="p-3 rounded-xl bg-stone-50 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 flex items-center justify-between text-xs font-mono">
-            <span className="text-stone-500">{t('trading_stock_est_valuation')}</span>
-            <span className="text-stone-900 dark:text-stone-100 font-bold text-sm">
+            <span className="text-black/55 dark:text-white/55">{t('trading_stock_est_valuation')}</span>
+            <span className="text-black dark:text-white font-bold text-sm">
               {formatMoney(totalValuation)}
             </span>
           </div>

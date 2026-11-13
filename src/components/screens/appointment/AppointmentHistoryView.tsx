@@ -122,7 +122,7 @@ export const AppointmentHistoryView: React.FC<any> = () => {
 			minWidth: "140px",
 			sortable: true,
 			renderCell: (apt: any) => /* @__PURE__ */ <div className="text-xs">
-<span className="font-bold text-neutral-900 dark:text-white font-mono block">{apt.date}</span>
+<span className="font-bold text-black dark:text-white font-mono block">{apt.date}</span>
 <span className="text-[11px] text-[#d4522f] font-bold font-mono">
 {apt.startTime}
 {" ("}
@@ -138,8 +138,8 @@ m)
 			minWidth: "200px",
 			sortable: true,
 			renderCell: (apt: any) => /* @__PURE__ */ <div className="min-w-0">
-<span className="font-bold text-xs text-neutral-900 dark:text-white block truncate">{apt.clientName}</span>
-{apt.clientPhone && /* @__PURE__ */ <span className="text-[10px] text-neutral-400 font-mono block">{apt.clientPhone}</span>}
+<span className="font-bold text-xs text-black dark:text-white block truncate">{apt.clientName}</span>
+{apt.clientPhone && /* @__PURE__ */ <span className="text-[10px] text-black/55 dark:text-white/55 font-mono block">{apt.clientPhone}</span>}
 </div>
 		},
 		{
@@ -149,7 +149,7 @@ m)
 			minWidth: "200px",
 			sortable: true,
 			renderCell: (apt: any) => /* @__PURE__ */ <div className="min-w-0">
-<span className="font-semibold text-xs text-neutral-800 dark:text-neutral-200 block truncate">{apt.serviceName}</span>
+<span className="font-semibold text-xs text-black dark:text-white block truncate">{apt.serviceName}</span>
 {apt.colorFormula && /* @__PURE__ */ <span className="text-[10px] text-amber-700 dark:text-amber-300 font-mono block truncate">
 {"🧪 "}
 {apt.colorFormula}
@@ -162,7 +162,7 @@ m)
 			width: "1.5*",
 			minWidth: "130px",
 			sortable: true,
-			renderCell: (apt: any) => /* @__PURE__ */ <span className="text-xs text-neutral-600 dark:text-neutral-300 truncate block">{apt.staffName}</span>
+			renderCell: (apt: any) => /* @__PURE__ */ <span className="text-xs text-black/70 dark:text-white/75 truncate block">{apt.staffName}</span>
 		},
 		{
 			key: "price",
@@ -171,8 +171,8 @@ m)
 			minWidth: "130px",
 			sortable: true,
 			renderCell: (apt: any) => /* @__PURE__ */ <div className="text-xs">
-<span className="font-bold font-mono text-neutral-900 dark:text-white tabular-nums block">{formatMoney(apt.price)}</span>
-<span className="text-[10px] text-neutral-400">{apt.paymentMethod ? apt.paymentMethod : "Non payé"}</span>
+<span className="font-bold font-mono text-black dark:text-white tabular-nums block">{formatMoney(apt.price)}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">{apt.paymentMethod ? apt.paymentMethod : "Non payé"}</span>
 </div>
 		},
 		{
@@ -193,10 +193,10 @@ m)
 			width: "1.2*",
 			minWidth: "80px",
 			renderCell: (apt: any) => /* @__PURE__ */ <div className="flex items-center justify-end gap-1">
-<button type="button" onClick={() => setReceiptAppointment(apt)} className="p-1.5 text-neutral-400 hover:text-[#d4522f] hover:bg-[#FCEEE8] dark:hover:bg-neutral-800 rounded-lg transition-colors cursor-pointer" title="Ticket Thermique 80mm"><Printer className="w-3.5 h-3.5" /></button>
+<button type="button" onClick={() => setReceiptAppointment(apt)} className="p-1.5 text-black/55 dark:text-white/55 hover:text-[#d4522f] hover:bg-[#FCEEE8] dark:hover:bg-neutral-800 rounded-lg transition-colors cursor-pointer" title="Ticket Thermique 80mm"><Printer className="w-3.5 h-3.5" /></button>
 <button type="button" onClick={() => {
 						if (confirm(`Supprimer le rendez-vous de ${apt.clientName} ?`)) deleteAppointment(apt.id);
-					}} className="p-1.5 text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer" title="Supprimer"><Trash2 className="w-3.5 h-3.5" /></button>
+					}} className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer" title="Supprimer"><Trash2 className="w-3.5 h-3.5" /></button>
 </div>
 		}
 	];
@@ -234,7 +234,7 @@ m)
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 <div>
 <div className="flex items-center gap-3">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white flex items-center gap-2.5">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 <History className="text-[#d4522f]" size={32} />
 <span>Historique des Rendez-vous</span>
 </h1>
@@ -252,9 +252,9 @@ m)
 <div className="flex items-center justify-between pb-2 border-b border-[#E9EEF0] dark:border-neutral-800">
 <div className="flex items-center gap-2">
 <Activity size={18} className="text-[#d4522f]" />
-<h2 className="text-xs font-black uppercase tracking-wider text-neutral-800 dark:text-neutral-200">Registre d'Audit & Performances Historiques</h2>
+<h2 className="text-xs font-black uppercase tracking-wider text-black dark:text-white">Registre d'Audit & Performances Historiques</h2>
 </div>
-<span className="text-xs text-neutral-400 font-medium">
+<span className="text-xs text-black/55 dark:text-white/55 font-medium">
 {currentBranch?.name || "Salon"}
 {" · Base Certifiée"}
 </span>
@@ -262,8 +262,8 @@ m)
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
-<div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">Soins Clôturés</span>
+<div className="flex items-center justify-between text-black/55 dark:text-white/75">
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">Soins Clôturés</span>
 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
 {"Sur "}
 {historyStats.totalCount}
@@ -271,23 +271,23 @@ m)
 </span>
 </div>
 </div>
-<div className="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums">
+<div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {historyStats.completedCount}
 {" "}
-<span className="text-xs font-normal text-neutral-400">prestations</span>
+<span className="text-xs font-normal text-black/55 dark:text-white/55">prestations</span>
 </div>
 </div>
 <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
-<div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">Recette Réalisée</span>
+<div className="flex items-center justify-between text-black/55 dark:text-white/75">
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">Recette Réalisée</span>
 <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full">
 {historyStats.formulasCount}
 {" formules"}
 </span>
 </div>
 </div>
-<div className="text-2xl font-black font-mono text-neutral-900 dark:text-white tracking-tight tabular-nums">{formatMoney(historyStats.totalRevenue)}</div>
+<div className="text-2xl font-black text-black dark:text-white tracking-tight tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(historyStats.totalRevenue)}</div>
 </div>
 <div className="bg-[#1F1D1B] rounded-[20px] p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between h-[124px] relative overflow-hidden group">
 <div className="absolute -right-4 -bottom-6 opacity-20 group-hover:opacity-30 transition-opacity pointer-events-none">
@@ -298,16 +298,16 @@ m)
 </div>
 <div>
 <div className="flex items-center justify-between mb-1">
-<span className="text-xs font-medium text-neutral-300">Audit & Conformité</span>
+<span className="text-xs font-medium text-white/80">Audit & Conformité</span>
 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">Certifié 100%</span>
 </div>
-<div className="text-2xl font-black font-mono tracking-tight text-white tabular-nums">
+<div className="text-2xl font-black tracking-tight text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {historyStats.completedCount}
 {" "}
-<span className="text-xs font-normal text-neutral-400">reçus édités</span>
+<span className="text-xs font-normal text-white/75">reçus édités</span>
 </div>
 </div>
-<div className="pt-1.5 border-t border-neutral-800/80 flex items-center justify-between text-[10px] text-neutral-400">
+<div className="pt-1.5 border-t border-neutral-800/80 flex items-center justify-between text-[10px] text-white/75">
 <span>Support Reçus 80mm</span>
 <span className="text-[#FB923C] font-semibold">Horodatage certifié</span>
 </div>
@@ -317,7 +317,7 @@ m)
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
 <div>
-<h2 className="text-base font-black text-neutral-900 dark:text-white">Registre Chronologique des Prestations</h2>
+<h2 className="text-base font-black text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">Registre Chronologique des Prestations</h2>
 </div>
 <div className="flex items-center gap-2.5 flex-wrap">
 <div className="w-64">
@@ -326,23 +326,28 @@ m)
 <FilterSelect value={selectedMethodFilter} onChange={setSelectedMethodFilter} options={[
 								{
 									value: "All",
-									label: "Tous les paiements"
+									label: "Tous",
+									tooltip: "Tous les paiements"
 								},
 								{
 									value: "Cash",
-									label: "Espèces"
+									label: "Espèces",
+									tooltip: "Paiement en espèces"
 								},
 								{
 									value: "BaridiMob",
-									label: "BaridiMob"
+									label: "BaridiMob",
+									tooltip: "Paiement BaridiMob"
 								},
 								{
 									value: "Dahabia_CIB",
-									label: "Carte CIB / Edahabia"
+									label: "CIB",
+									tooltip: "Carte CIB / Edahabia"
 								},
 								{
 									value: "Card",
-									label: "Carte bancaire"
+									label: "Carte",
+									tooltip: "Carte bancaire"
 								}
 							]} ariaLabel="Filtrer par mode de paiement" />
 </div>
@@ -357,14 +362,14 @@ m)
 						}} renderCard={(apt) => /* @__PURE__ */ <div className="flex flex-col justify-between h-full space-y-3">
 <div>
 <div className="flex items-start justify-between gap-2 mb-1">
-<span className="font-mono font-bold text-xs text-neutral-900 dark:text-white">
+<span className="font-mono font-bold text-xs text-black dark:text-white">
 {apt.date}
 {" · "}
 {apt.startTime}
 </span>
 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${apt.status === "Completed" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{apt.status}</span>
 </div>
-<div className="font-bold text-xs text-neutral-900 dark:text-white">{apt.clientName}</div>
+<div className="font-bold text-xs text-black dark:text-white">{apt.clientName}</div>
 <div className="text-[11px] text-[#d4522f] font-semibold mt-0.5">{apt.serviceName}</div>
 {apt.colorFormula && /* @__PURE__ */ <div className="text-[10px] text-amber-700 dark:text-amber-300 font-mono mt-1 bg-amber-50 dark:bg-amber-950/40 p-1.5 rounded-lg">
 {"🧪 "}
@@ -372,8 +377,8 @@ m)
 </div>}
 </div>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
-<span className="text-xs text-neutral-400">{apt.staffName}</span>
-<span className="font-mono font-bold text-sm text-neutral-900 dark:text-white">{formatMoney(apt.price)}</span>
+<span className="text-xs text-black/55 dark:text-white/55">{apt.staffName}</span>
+<span className="font-mono font-bold text-sm text-black dark:text-white">{formatMoney(apt.price)}</span>
 </div>
 </div>} selectedIds={selectedHistoryIds} onSelectionChange={setSelectedHistoryIds} isPinned={(a) => pinnedHistoryIds.has(a.id)} onTogglePin={(a) => {
 							setPinnedHistoryIds((prev) => {
@@ -388,28 +393,28 @@ m)
 {receiptAppointment && /* @__PURE__ */ <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
 <div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4">
 <div className="text-center font-mono text-xs border-b border-dashed border-neutral-300 dark:border-neutral-700 pb-3">
-<div className="text-sm font-black uppercase tracking-wider text-neutral-900 dark:text-white">{currentBranch?.name || "LUXE SPA HYDRA"}</div>
-<div className="text-[10px] text-neutral-500">Institut de Coiffure & Beauté</div>
-<div className="text-[9px] text-neutral-400 mt-1">{(/* @__PURE__ */ new Date()).toLocaleString()}</div>
+<div className="text-sm font-black uppercase tracking-wider text-black dark:text-white">{currentBranch?.name || "LUXE SPA HYDRA"}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">Institut de Coiffure & Beauté</div>
+<div className="text-[9px] text-black/55 dark:text-white/55 mt-1">{(/* @__PURE__ */ new Date()).toLocaleString()}</div>
 </div>
 <div className="font-mono text-xs space-y-2">
 <div className="flex justify-between">
-<span className="text-neutral-500">Client :</span>
-<span className="font-bold text-neutral-900 dark:text-white">{receiptAppointment.clientName}</span>
+<span className="text-black/55 dark:text-white/55">Client :</span>
+<span className="font-bold text-black dark:text-white">{receiptAppointment.clientName}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">Soin :</span>
-<span className="font-bold text-neutral-900 dark:text-white">{receiptAppointment.serviceName}</span>
+<span className="text-black/55 dark:text-white/55">Soin :</span>
+<span className="font-bold text-black dark:text-white">{receiptAppointment.serviceName}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">Styliste :</span>
+<span className="text-black/55 dark:text-white/55">Styliste :</span>
 <span>{receiptAppointment.staffName}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">Mode :</span>
+<span className="text-black/55 dark:text-white/55">Mode :</span>
 <span>{receiptAppointment.paymentMethod || "Espèces"}</span>
 </div>
-{receiptAppointment.colorFormula && /* @__PURE__ */ <div className="p-2 bg-neutral-100 dark:bg-neutral-800 rounded text-[10px] text-neutral-600 dark:text-neutral-300">
+{receiptAppointment.colorFormula && /* @__PURE__ */ <div className="p-2 bg-neutral-100 dark:bg-neutral-800 rounded text-[10px] text-black/70 dark:text-white/75">
 {"Formule: "}
 {receiptAppointment.colorFormula}
 </div>}
@@ -423,7 +428,7 @@ m)
 <Printer size={13} />
 <span>Imprimer 80mm</span>
 </button>
-<button type="button" onClick={() => setReceiptAppointment(null)} className="h-9 px-4 rounded-full text-neutral-500 hover:bg-neutral-100 text-xs font-semibold cursor-pointer">Fermer</button>
+<button type="button" onClick={() => setReceiptAppointment(null)} className="h-9 px-4 rounded-full text-black/55 dark:text-white/55 hover:bg-neutral-100 text-xs font-semibold cursor-pointer">Fermer</button>
 </div>
 </div>
 </div>}

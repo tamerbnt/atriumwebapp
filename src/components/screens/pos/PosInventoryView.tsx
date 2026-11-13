@@ -291,8 +291,8 @@ export const PosInventoryView: React.FC<any> = () => {
 				minWidth: "220px",
 				sortable: true,
 				renderCell: (p: any) => /* @__PURE__ */ <div className="min-w-0">
-<div className="font-bold text-xs text-neutral-900 dark:text-white truncate">{p.name}</div>
-<div className="text-[10px] text-neutral-400 truncate">{p.description || t("shop_standard_article")}</div>
+<div className="font-bold text-xs text-black dark:text-white truncate">{p.name}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 truncate">{p.description || t("shop_standard_article")}</div>
 </div>
 			},
 			{
@@ -301,7 +301,7 @@ export const PosInventoryView: React.FC<any> = () => {
 				width: "1.2*",
 				minWidth: "110px",
 				sortable: true,
-				renderCell: (p: any) => /* @__PURE__ */ <span className="text-[10px] font-bold text-neutral-600 dark:text-neutral-300">{p.category}</span>
+				renderCell: (p: any) => /* @__PURE__ */ <span className="text-[10px] font-bold text-black/70 dark:text-white/75">{p.category}</span>
 			},
 			{
 				key: "sku",
@@ -309,9 +309,9 @@ export const PosInventoryView: React.FC<any> = () => {
 				width: "1.5*",
 				minWidth: "130px",
 				sortable: true,
-				renderCell: (p: any) => /* @__PURE__ */ <div className="font-mono text-[11px] text-neutral-500">
+				renderCell: (p: any) => /* @__PURE__ */ <div className="font-mono text-[11px] text-black/55 dark:text-white/55">
 <div>{p.sku}</div>
-{p.barcode && /* @__PURE__ */ <div className="text-[10px] text-neutral-400">{p.barcode}</div>}
+{p.barcode && /* @__PURE__ */ <div className="text-[10px] text-black/55 dark:text-white/55">{p.barcode}</div>}
 </div>
 			},
 			{
@@ -322,7 +322,7 @@ export const PosInventoryView: React.FC<any> = () => {
 				sortable: true,
 				renderCell: (p: any) => {
 					const costAmt = p.costPrice || p.cost?.amount || Math.round(p.price.amount * .6);
-					return /* @__PURE__ */ <span className="font-mono text-neutral-500 tabular-nums">{formatMoney(costAmt)}</span>;
+					return /* @__PURE__ */ <span className="font-mono text-black/55 dark:text-white/55 tabular-nums">{formatMoney(costAmt)}</span>;
 				}
 			},
 			{
@@ -331,7 +331,7 @@ export const PosInventoryView: React.FC<any> = () => {
 				width: "1.2*",
 				minWidth: "110px",
 				sortable: true,
-				renderCell: (p: any) => /* @__PURE__ */ <span className="font-mono font-bold text-neutral-900 dark:text-white tabular-nums">{formatMoney(p.price.amount)}</span>
+				renderCell: (p: any) => /* @__PURE__ */ <span className="font-mono font-bold text-black dark:text-white tabular-nums">{formatMoney(p.price.amount)}</span>
 			},
 			{
 				key: "stock",
@@ -342,7 +342,7 @@ export const PosInventoryView: React.FC<any> = () => {
 				renderCell: (p: any) => {
 					const isOut = p.stockQuantity <= 0;
 					const isLow = !isOut && p.stockQuantity <= (p.reorderLevel || 5);
-					return /* @__PURE__ */ <span className={`inline-flex items-center gap-1 font-bold text-[11px] tabular-nums ${isOut ? "text-red-600 dark:text-red-400 font-black" : isLow ? "text-amber-600 dark:text-amber-400 font-bold" : "text-neutral-800 dark:text-neutral-200"}`}>
+					return /* @__PURE__ */ <span className={`inline-flex items-center gap-1 font-bold text-[11px] tabular-nums ${isOut ? "text-red-600 dark:text-red-400 font-black" : isLow ? "text-amber-600 dark:text-amber-400 font-bold" : "text-black dark:text-white"}`}>
 {p.stockQuantity}
 {" "}
 {p.unit || t("shop_unit_pcs")}
@@ -373,11 +373,11 @@ export const PosInventoryView: React.FC<any> = () => {
 <button type="button" onClick={(e) => {
 								e.stopPropagation();
 								handleOpenEditProduct(p);
-							}} className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer" title="Edit Product"><Edit2 size={14} /></button>
+							}} className="p-1.5 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer" title="Edit Product"><Edit2 size={14} /></button>
 <button type="button" onClick={(e) => {
 								e.stopPropagation();
 								if (window.confirm(t("shop_delete_confirm", { name: p.name }))) deleteProduct(p.id);
-							}} className="p-1.5 rounded-lg text-neutral-400 hover:text-red-500 cursor-pointer" title="Delete Product"><Trash2 size={14} /></button>
+							}} className="p-1.5 rounded-lg text-black/55 dark:text-white/55 hover:text-red-500 cursor-pointer" title="Delete Product"><Trash2 size={14} /></button>
 </div>
 			}
 		].filter((c) => !isStaff || c.key !== "cost");
@@ -397,7 +397,7 @@ export const PosInventoryView: React.FC<any> = () => {
 				const isBr = doc.type === "br";
 				return /* @__PURE__ */ <div className="flex items-center gap-2">
 <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono uppercase ${isBr ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300"}`}>{isBr ? "BR" : "PO"}</span>
-<span className="font-mono font-bold text-xs text-neutral-900 dark:text-white">{doc.docNumber}</span>
+<span className="font-mono font-bold text-xs text-black dark:text-white">{doc.docNumber}</span>
 </div>;
 			}
 		},
@@ -407,8 +407,8 @@ export const PosInventoryView: React.FC<any> = () => {
 			minWidth: "200px",
 			sortable: true,
 			renderCell: (doc: any) => /* @__PURE__ */ <div className="text-xs">
-<div className="font-bold text-neutral-900 dark:text-white truncate">{doc.supplierName}</div>
-<div className="text-[10px] text-neutral-400 font-mono">
+<div className="font-bold text-black dark:text-white truncate">{doc.supplierName}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 font-mono">
 {doc.items.length}
 {" "}
 {language === "ar" ? "أصناف محددة" : "articles commandés"}
@@ -421,8 +421,8 @@ export const PosInventoryView: React.FC<any> = () => {
 			width: "140px",
 			sortable: true,
 			renderCell: (doc: any) => /* @__PURE__ */ <div className="text-xs font-mono">
-<div className="text-neutral-800 dark:text-neutral-200">{doc.orderDate}</div>
-{doc.deliveryExpectedDate && /* @__PURE__ */ <div className="text-[10px] text-neutral-400">
+<div className="text-black dark:text-white">{doc.orderDate}</div>
+{doc.deliveryExpectedDate && /* @__PURE__ */ <div className="text-[10px] text-black/55 dark:text-white/55">
 {language === "ar" ? "التسليم:" : "Prévue:"}
 {" "}
 {doc.deliveryExpectedDate}
@@ -434,7 +434,7 @@ export const PosInventoryView: React.FC<any> = () => {
 			header: language === "ar" ? "المبلغ بدون ضريبة" : "Total HT",
 			width: "120px",
 			sortable: true,
-			renderCell: (doc: any) => /* @__PURE__ */ <span className="font-mono text-xs text-neutral-600 dark:text-neutral-300 tabular-nums">{formatMoney(doc.totalHt)}</span>
+			renderCell: (doc: any) => /* @__PURE__ */ <span className="font-mono text-xs text-black/70 dark:text-white/75 tabular-nums">{formatMoney(doc.totalHt)}</span>
 		},
 		{
 			key: "totalTtc",
@@ -476,7 +476,7 @@ export const PosInventoryView: React.FC<any> = () => {
 <button type="button" onClick={(e) => {
 						e.stopPropagation();
 						window.print();
-					}} title={language === "ar" ? "طباعة" : "Imprimer"} className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"><Printer size={14} /></button>
+					}} title={language === "ar" ? "طباعة" : "Imprimer"} className="p-1.5 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"><Printer size={14} /></button>
 </div>
 		}
 	], [language]);
@@ -663,7 +663,7 @@ export const PosInventoryView: React.FC<any> = () => {
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 <div>
 <div className="flex items-center gap-3">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white flex items-center gap-2.5">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 <Boxes className="text-[#d4522f]" size={32} />
 <span>
 {language === "ar" ? "المخزون والكتالوج العام" : language === "fr" ? "Inventaire & Gestion des Stocks" : "Inventory & Stock Catalog"}
@@ -693,18 +693,18 @@ export const PosInventoryView: React.FC<any> = () => {
 </div>
 </div>
 {!isStaff && /* @__PURE__ */ <div className="flex items-center gap-1.5 p-1 bg-neutral-100 dark:bg-neutral-850 rounded-xl w-fit border border-neutral-200 dark:border-neutral-800">
-<button type="button" onClick={() => setActiveSubTab("inventory")} className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${activeSubTab === "inventory" ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs" : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"}`}>
+<button type="button" onClick={() => setActiveSubTab("inventory")} className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${activeSubTab === "inventory" ? "bg-white dark:bg-neutral-900 text-black dark:text-white shadow-2xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>
 <Boxes size={14} className={activeSubTab === "inventory" ? "text-[#d4522f]" : ""} />
 <span>
 {t("nav_pos_inventory_tab_stock") || (language === "ar" ? "المخزون والمنتجات" : "État des Stocks & Catalogue")}
 </span>
-<span className="text-[10px] font-mono text-neutral-400">
+<span className="text-[10px] font-mono text-black/55 dark:text-white/55">
 (
 {inventoryStats.totalSKUs}
 )
 </span>
 </button>
-<button type="button" onClick={() => setActiveSubTab("purchases")} className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${activeSubTab === "purchases" ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs" : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"}`}>
+<button type="button" onClick={() => setActiveSubTab("purchases")} className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${activeSubTab === "purchases" ? "bg-white dark:bg-neutral-900 text-black dark:text-white shadow-2xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>
 <Truck size={14} className={activeSubTab === "purchases" ? "text-[#d4522f]" : ""} />
 <span>
 {t("nav_pos_inventory_tab_purchases") || (language === "ar" ? "المشتريات وإعادة التموين" : "Achats & Fournisseurs")}
@@ -717,20 +717,20 @@ export const PosInventoryView: React.FC<any> = () => {
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">{t("shop_kpi_skus")}</span>
+<span className="text-xs font-semibold text-black/55 dark:text-white/75">{t("shop_kpi_skus")}</span>
 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#d4522f]/10 text-[#d4522f]">
 {inventoryStats.totalUnits.toLocaleString()}
 {" unités"}
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 tabular-nums font-mono">{inventoryStats.totalSKUs}</div>
-<div className="text-[11px] text-neutral-400 mt-0.5">{t("shop_kpi_skus_sub", { count: inventoryStats.totalUnits })}</div>
+<div className="text-2xl lg:text-3xl font-extrabold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{inventoryStats.totalSKUs}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">{t("shop_kpi_skus_sub", { count: inventoryStats.totalUnits })}</div>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+<span className="text-xs font-semibold text-black/55 dark:text-white/75">
 {isStaff ? language === "ar" ? "الكتالوج المعروض" : "Articles au Catalogue" : t("shop_kpi_retail_val")}
 </span>
 {!isStaff ? /* @__PURE__ */ <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400">
@@ -744,8 +744,8 @@ export const PosInventoryView: React.FC<any> = () => {
 </span>}
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold font-mono text-[#d4522f] tabular-nums">{formatMoney(inventoryStats.retailValuation)}</div>
-<div className="text-[11px] text-neutral-400 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-[#d4522f] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(inventoryStats.retailValuation)}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 {!isStaff ? t("shop_kpi_retail_val_sub", { cost: formatMoney(inventoryStats.costValuation) }) : language === "ar" ? "القيمة الإجمالية لسعر البيع بالدينار" : "Valeur de vente TTC totale"}
 </div>
 </div>
@@ -760,7 +760,7 @@ export const PosInventoryView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight flex items-center gap-2">
+<div className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
 <span>{inventoryStats.lowStockItems}</span>
 {inventoryStats.outOfStockItems > 0 && /* @__PURE__ */ <span className="text-xs text-[#FB923C] font-bold">
 (
@@ -770,12 +770,12 @@ export const PosInventoryView: React.FC<any> = () => {
 )
 </span>}
 </div>
-<div className="flex items-center justify-between text-[11px] text-stone-400 mt-0.5">
+<div className="flex items-center justify-between text-[11px] text-white/75 mt-0.5">
 <span className="flex items-center gap-1">
 <AlertTriangle size={12} className="text-[#FB923C]" />
 <span>Seuil critique atteint</span>
 </span>
-<span className="font-mono text-stone-300">SKUs</span>
+<span className="font-mono text-white/80">SKUs</span>
 </div>
 </div>
 <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#FB923C]/5 rounded-full blur-2xl pointer-events-none" />
@@ -787,7 +787,7 @@ export const PosInventoryView: React.FC<any> = () => {
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><Boxes size={18} /></div>
 <div className="flex items-center gap-2">
-<span className="text-sm font-bold text-neutral-900 dark:text-white">{language === "ar" ? "المخزون والمنتجات" : "Catalogue & Stocks Magasin"}</span>
+<span className="text-sm font-bold text-black dark:text-white">{language === "ar" ? "المخزون والمنتجات" : "Catalogue & Stocks Magasin"}</span>
 <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#d4522f]/10 text-[#d4522f]">{filteredInventory.length}</span>
 </div>
 </div>
@@ -795,23 +795,27 @@ export const PosInventoryView: React.FC<any> = () => {
 <LiveSegmentedControl size="sm" value={stockStatusFilter} onValueChange={(val) => setStockStatusFilter(val)} options={[
 										{
 											value: "all",
-											label: language === "ar" ? "الكل" : "Tous",
+											label: language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All",
+											tooltip: language === "ar" ? "جميع المنتجات" : language === "fr" ? "Tous les articles" : "All items",
 											count: products.length
 										},
 										{
 											value: "low",
-											label: language === "ar" ? "منخفض" : "Stock bas",
+											label: language === "ar" ? "منخفض" : language === "fr" ? "Bas" : "Low",
+											tooltip: language === "ar" ? "مخزون منخفض (تحت الحد الأدنى)" : language === "fr" ? "Stock bas (sous le seuil d'alerte)" : "Low stock (below reorder threshold)",
 											count: inventoryStats.lowStockItems
 										},
 										{
 											value: "out",
-											label: language === "ar" ? "نفذ" : "Rupture",
+											label: language === "ar" ? "نفذ" : language === "fr" ? "Rupture" : "Out",
+											tooltip: language === "ar" ? "نفذت الكمية من المخزون" : language === "fr" ? "Articles en rupture de stock" : "Out of stock items",
 											count: inventoryStats.outOfStockItems
 										}
 									]} aria-label="POS Stock Filter" />
 <FilterSelect label={t("shop_filter_category_label")} value={categoryFilter} onChange={(val) => setCategoryFilter(typeof val === "string" ? val : val.target?.value || val)} options={categories.map((c) => ({
 										value: c,
-										label: c === "All" ? t("shop_categories_all") : c
+										label: c === "All" ? t("shop_categories_all") : c,
+										tooltip: c === "All" ? (language === "ar" ? "جميع الفئات" : language === "fr" ? "Toutes les catégories" : "All categories") : c
 									}))} />
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={language === "ar" ? "بحث بالاسم، الباركود، SKU..." : "Recherche produit, code-barres..."} shutSize={36} openWidth={220} />
 </div>
@@ -835,26 +839,26 @@ export const PosInventoryView: React.FC<any> = () => {
 								return /* @__PURE__ */ <div className="flex flex-col justify-between w-full h-full">
 <div>
 <div className="flex items-center justify-between gap-2 mb-2">
-<span className="text-[10px] font-bold text-neutral-500">{p.category}</span>
-<span className={`text-[10px] font-bold tabular-nums ${isOut ? "text-red-600 font-black" : isLow ? "text-amber-600 font-bold" : "text-neutral-700 dark:text-neutral-300"}`}>
+<span className="text-[10px] font-bold text-black/55 dark:text-white/55">{p.category}</span>
+<span className={`text-[10px] font-bold tabular-nums ${isOut ? "text-red-600 font-black" : isLow ? "text-amber-600 font-bold" : "text-black/70 dark:text-white/75"}`}>
 {p.stockQuantity}
 {" "}
 {p.unit || t("shop_unit_pcs")}
 </span>
 </div>
-<h3 className="font-bold text-sm text-neutral-900 dark:text-white line-clamp-1 mb-1">{p.name}</h3>
-<p className="text-[11px] text-neutral-400 line-clamp-2 mb-3">{p.description || t("shop_standard_article")}</p>
+<h3 className="font-bold text-sm text-black dark:text-white line-clamp-1 mb-1">{p.name}</h3>
+<p className="text-[11px] text-black/55 dark:text-white/55 line-clamp-2 mb-3">{p.description || t("shop_standard_article")}</p>
 <div className="grid grid-cols-2 gap-2 p-2.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl text-xs mb-3">
 <div>
-<span className="text-neutral-400 block text-[9px] uppercase font-medium">{t("shop_col_cost")}</span>
-<span className="font-mono text-neutral-600 dark:text-neutral-300 tabular-nums">{formatMoney(costAmt)}</span>
+<span className="text-black/55 dark:text-white/55 block text-[9px] uppercase font-medium">{t("shop_col_cost")}</span>
+<span className="font-mono text-black/70 dark:text-white/75 tabular-nums">{formatMoney(costAmt)}</span>
 </div>
 <div>
-<span className="text-neutral-400 block text-[9px] uppercase font-medium">{t("shop_col_retail")}</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white tabular-nums">{formatMoney(p.price.amount)}</span>
+<span className="text-black/55 dark:text-white/55 block text-[9px] uppercase font-medium">{t("shop_col_retail")}</span>
+<span className="font-mono font-bold text-black dark:text-white tabular-nums">{formatMoney(p.price.amount)}</span>
 </div>
 <div className="col-span-2 pt-1 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
-<span className="text-neutral-400 text-[10px] font-mono">{p.sku}</span>
+<span className="text-black/55 dark:text-white/55 text-[10px] font-mono">{p.sku}</span>
 <span className="font-mono font-bold text-[#d4522f] text-xs tabular-nums">{formatMoney(p.price.amount * p.stockQuantity)}</span>
 </div>
 </div>
@@ -887,31 +891,31 @@ export const PosInventoryView: React.FC<any> = () => {
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">{language === "ar" ? "الطلبيات وشبكة الموردين" : "Commandes & Fournisseurs"}</span>
+<span className="text-xs font-semibold text-black/55 dark:text-white/75">{language === "ar" ? "الطلبيات وشبكة الموردين" : "Commandes & Fournisseurs"}</span>
 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
 {purchaseStats.suppliersCount}
 {" partenaires"}
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-blue-600 dark:text-blue-400 tabular-nums font-mono">
+<div className="text-2xl lg:text-3xl font-extrabold text-blue-600 dark:text-blue-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {purchaseStats.pendingCount}
 {" "}
-<span className="text-xs font-normal text-neutral-400">en cours</span>
+<span className="text-xs font-normal text-black/55 dark:text-white/55">en cours</span>
 </div>
-<div className="text-[11px] text-neutral-400 mt-0.5">
+<div className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 {language === "ar" ? "في انتظار وصول البضاعة إلى الرصيف" : "Bons d’achat en attente de livraison à quai"}
 </div>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">{language === "ar" ? "النواقص تحت حد التنبيه" : "Articles en Alerte Stock"}</span>
+<span className="text-xs font-semibold text-black/55 dark:text-white/75">{language === "ar" ? "النواقص تحت حد التنبيه" : "Articles en Alerte Stock"}</span>
 {purchaseStats.lowStockCount > 0 && /* @__PURE__ */ <button type="button" onClick={handlePreFillLowStockPo} className="text-[10px] px-2 py-0.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-300 font-bold transition-colors cursor-pointer">{language === "ar" ? "طلب فوري" : "Commander"}</button>}
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-amber-600 dark:text-amber-400 tabular-nums font-mono">{purchaseStats.lowStockCount}</div>
-<div className="text-[11px] text-neutral-400 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-amber-600 dark:text-amber-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{purchaseStats.lowStockCount}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 {language === "ar" ? "تستلزم إعادة تموين عاجلة" : "Références sous le seuil de sécurité"}
 </div>
 </div>
@@ -926,13 +930,13 @@ export const PosInventoryView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">{formatMoney(purchaseStats.totalPurchasedValue)}</div>
-<div className="flex items-center justify-between text-[11px] text-stone-400 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(purchaseStats.totalPurchasedValue)}</div>
+<div className="flex items-center justify-between text-[11px] text-white/75 mt-0.5">
 <span className="flex items-center gap-1">
 <CheckCircle2 size={12} className="text-[#FB923C]" />
 <span>Réceptions conformes certifiées</span>
 </span>
-<span className="font-mono text-stone-300">TTC</span>
+<span className="font-mono text-white/80">TTC</span>
 </div>
 </div>
 <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#FB923C]/5 rounded-full blur-2xl pointer-events-none" />
@@ -945,7 +949,7 @@ export const PosInventoryView: React.FC<any> = () => {
 <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><Truck size={18} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h2 className="text-sm font-bold text-neutral-900 dark:text-white">
+<h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {language === "ar" ? "سجل طلبيات الشراء ووصولات الاستلام" : "Commandes Fournisseurs & Réceptions"}
 </h2>
 <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#d4522f]/10 text-[#d4522f]">{(purchaseDocs || []).length}</span>
@@ -960,14 +964,14 @@ export const PosInventoryView: React.FC<any> = () => {
 <div className="w-full">
 <UniversalDataCollection items={purchaseDocs || []} columns={purchaseColumns} keyExtractor={(p) => p.id} isLoading={isSyncing || networkMode === "force_skeleton"} isOffline={networkMode === "offline"} isTimedOut={isSyncTimeout} lastSyncedAt={lastSyncedAt} onRetrySync={retryCloudSync} renderCard={(doc) => /* @__PURE__ */ <div className="p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-2xs space-y-3">
 <div className="flex items-center justify-between">
-<span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200">{doc.docNumber}</span>
+<span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white">{doc.docNumber}</span>
 <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${doc.status === "Received" || doc.type === "br" ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700" : "bg-amber-100 dark:bg-amber-950/60 text-amber-700"}`}>
 {doc.status === "Received" || doc.type === "br" ? "Réceptionné" : "En commande"}
 </span>
 </div>
 <div>
-<h3 className="font-bold text-sm text-neutral-900 dark:text-white truncate">{doc.supplierName}</h3>
-<p className="text-[11px] text-neutral-400 font-mono">
+<h3 className="font-bold text-sm text-black dark:text-white truncate">{doc.supplierName}</h3>
+<p className="text-[11px] text-black/55 dark:text-white/55 font-mono">
 {doc.orderDate}
 {" · "}
 {doc.items.length}
@@ -984,7 +988,7 @@ export const PosInventoryView: React.FC<any> = () => {
 <div className="flex items-center justify-between">
 <div className="flex items-center gap-2">
 <Building2 size={16} className="text-[#d4522f]" />
-<h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
+<h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
 {language === "ar" ? "دليل الموردين التجاريين" : "Fournisseurs & Grossistes Partenaires"}
 </h3>
 </div>
@@ -996,14 +1000,14 @@ export const PosInventoryView: React.FC<any> = () => {
 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
 {b2bSuppliers.map((sup) => /* @__PURE__ */ <div key={sup.id} className="p-3.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-850/50 space-y-1.5">
 <div className="flex items-center justify-between">
-<span className="font-bold text-xs text-neutral-900 dark:text-white truncate">{sup.supplierName}</span>
-<span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-neutral-200/60 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">{sup.city || "Alger"}</span>
+<span className="font-bold text-xs text-black dark:text-white truncate">{sup.supplierName}</span>
+<span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-neutral-200/60 dark:bg-neutral-700 text-black/70 dark:text-white/75">{sup.city || "Alger"}</span>
 </div>
-<div className="text-[11px] text-neutral-500">
+<div className="text-[11px] text-black/55 dark:text-white/55">
 {sup.contactName ? `${sup.contactName} · ` : ""}
 {sup.phone || "Sans contact"}
 </div>
-<div className="flex items-center justify-between text-[10px] text-neutral-400 font-mono pt-1 border-t border-neutral-200/50 dark:border-neutral-800">
+<div className="flex items-center justify-between text-[10px] text-black/55 dark:text-white/55 font-mono pt-1 border-t border-neutral-200/50 dark:border-neutral-800">
 <span>{sup.sector || "Grossiste"}</span>
 <span>
 {sup.paymentTermsDays || 30}
@@ -1081,7 +1085,7 @@ j paiement
 <LabelInput field="ProdReorder" label={language === "ar" ? "حد التنبيه بالنقص" : "Seuil d’Alerte Réassort"} type="number" required value={formReorder !== void 0 ? String(formReorder) : ""} onChange={(v) => setFormReorder(parseInt(v) || 0)} width="100%" height={44} corner={12} />
 </div>
 <div className="flex items-center justify-end gap-3 pt-3">
-<button type="button" onClick={() => setIsProductFormModalOpen(false)} className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 cursor-pointer">{t("action_cancel")}</button>
+<button type="button" onClick={() => setIsProductFormModalOpen(false)} className="h-10 px-4 text-xs font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-neutral-100 cursor-pointer">{t("action_cancel")}</button>
 <button type="submit" className="h-10 px-5 text-xs font-bold text-white bg-[#d4522f] rounded-full hover:opacity-90 cursor-pointer shadow-xs">
 {editingProductId ? language === "ar" ? "حفظ التعديلات" : "Enregistrer" : language === "ar" ? "إضافة الصنف" : "Créer l’Article"}
 </button>
@@ -1091,15 +1095,15 @@ j paiement
 {selectedProductForAdjust && /* @__PURE__ */ <Modal isOpen={isAdjustStockModalOpen} onClose={() => setIsAdjustStockModalOpen(false)} title={language === "ar" ? "تعديل رصيد المخزون" : "Ajustement Manuel de Stock"} subtitle={`${selectedProductForAdjust.name} (Actuel: ${selectedProductForAdjust.stockQuantity} ${selectedProductForAdjust.unit || "pcs"})`}>
 <form onSubmit={handleConfirmStockAdjust} className="space-y-4" dir={isRtl ? "rtl" : "ltr"}>
 <div className="flex rounded-xl bg-neutral-100 dark:bg-neutral-800 p-1 text-xs font-bold">
-<button type="button" onClick={() => setAdjustMode("add")} className={`flex-1 py-2 rounded-lg cursor-pointer transition-colors ${adjustMode === "add" ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs" : "text-neutral-500"}`}>
+<button type="button" onClick={() => setAdjustMode("add")} className={`flex-1 py-2 rounded-lg cursor-pointer transition-colors ${adjustMode === "add" ? "bg-white dark:bg-neutral-900 text-black dark:text-white shadow-xs" : "text-black/55 dark:text-white/55"}`}>
 {"+ "}
 {language === "ar" ? "إضافة تموين" : "Ajouter"}
 </button>
-<button type="button" onClick={() => setAdjustMode("remove")} className={`flex-1 py-2 rounded-lg cursor-pointer transition-colors ${adjustMode === "remove" ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs" : "text-neutral-500"}`}>
+<button type="button" onClick={() => setAdjustMode("remove")} className={`flex-1 py-2 rounded-lg cursor-pointer transition-colors ${adjustMode === "remove" ? "bg-white dark:bg-neutral-900 text-black dark:text-white shadow-xs" : "text-black/55 dark:text-white/55"}`}>
 {"- "}
 {language === "ar" ? "خصم / تلف" : "Retirer (Casse)"}
 </button>
-<button type="button" onClick={() => setAdjustMode("set")} className={`flex-1 py-2 rounded-lg cursor-pointer transition-colors ${adjustMode === "set" ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs" : "text-neutral-500"}`}>
+<button type="button" onClick={() => setAdjustMode("set")} className={`flex-1 py-2 rounded-lg cursor-pointer transition-colors ${adjustMode === "set" ? "bg-white dark:bg-neutral-900 text-black dark:text-white shadow-xs" : "text-black/55 dark:text-white/55"}`}>
 {"= "}
 {language === "ar" ? "تحديد دقيق" : "Fixer Solde"}
 </button>
@@ -1107,7 +1111,7 @@ j paiement
 <LabelInput field="AdjustQty" label={adjustMode === "set" ? "Nouveau Solde Réel" : "Quantité à modifier"} type="number" required value={adjustQuantity ? String(adjustQuantity) : ""} onChange={(v) => setAdjustQuantity(parseInt(v) || 0)} width="100%" height={44} corner={12} />
 <LabelInput field="AdjustReason" label={language === "ar" ? "سبب التعديل" : "Motif de l’opération"} value={adjustReason} onChange={setAdjustReason} placeholder="Ex: Réception livraison, Casse accidentelle, Inventaire trimestriel..." width="100%" height={44} corner={12} />
 <div className="flex items-center justify-end gap-3 pt-3">
-<button type="button" onClick={() => setIsAdjustStockModalOpen(false)} className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 cursor-pointer">{t("action_cancel")}</button>
+<button type="button" onClick={() => setIsAdjustStockModalOpen(false)} className="h-10 px-4 text-xs font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-neutral-100 cursor-pointer">{t("action_cancel")}</button>
 <button type="submit" className="h-10 px-5 text-xs font-bold text-white bg-[#d4522f] rounded-full hover:opacity-90 cursor-pointer shadow-xs">{language === "ar" ? "تأكيد التعديل" : "Valider l’Ajustement"}</button>
 </div>
 </form>
@@ -1116,7 +1120,7 @@ j paiement
 <form onSubmit={handleConfirmBatchRestock} className="space-y-4" dir={isRtl ? "rtl" : "ltr"}>
 <LabelInput field="BatchQty" label={language === "ar" ? "الكمية الإضافية لكل صنف (+)" : "Quantité à rajouter par article (+)"} type="number" required value={batchRestockQty ? String(batchRestockQty) : ""} onChange={(v) => setBatchRestockQty(parseInt(v) || 0)} width="100%" height={44} corner={12} />
 <div className="flex items-center justify-end gap-3 pt-3">
-<button type="button" onClick={() => setIsBatchRestockModalOpen(false)} className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 cursor-pointer">{t("action_cancel")}</button>
+<button type="button" onClick={() => setIsBatchRestockModalOpen(false)} className="h-10 px-4 text-xs font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-neutral-100 cursor-pointer">{t("action_cancel")}</button>
 <button type="submit" className="h-10 px-5 text-xs font-bold text-white bg-[#d4522f] rounded-full hover:opacity-90 cursor-pointer shadow-xs">{language === "ar" ? "تطبيق التموين" : "Confirmer le Réassort"}</button>
 </div>
 </form>
@@ -1132,7 +1136,7 @@ j paiement
 </div>
 <div className="space-y-2">
 <div className="flex items-center justify-between">
-<span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 uppercase tracking-wider">{language === "ar" ? "السلع المطلوبة" : "Articles & Quantités à commander"}</span>
+<span className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">{language === "ar" ? "السلع المطلوبة" : "Articles & Quantités à commander"}</span>
 <button type="button" onClick={() => setPoItems((prev) => [...prev, {
 											productId: products[0]?.id || "",
 											description: products[0]?.name || "",
@@ -1195,7 +1199,7 @@ j paiement
 														}} />
 </div>
 <div className="sm:col-span-1 flex items-center justify-end">
-{poItems.length > 1 && /* @__PURE__ */ <button type="button" onClick={() => setPoItems((prev) => prev.filter((_, i) => i !== idx))} className="p-1.5 text-neutral-400 hover:text-rose-600 rounded-lg cursor-pointer transition-colors"><Trash2 size={16} /></button>}
+{poItems.length > 1 && /* @__PURE__ */ <button type="button" onClick={() => setPoItems((prev) => prev.filter((_, i) => i !== idx))} className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 rounded-lg cursor-pointer transition-colors"><Trash2 size={16} /></button>}
 </div>
 </div>
 </div>)}
@@ -1203,7 +1207,7 @@ j paiement
 </div>
 <LabelInput field="PoNotes" label={language === "ar" ? "ملاحظات وتوجيهات الشحن" : "Instructions de livraison & Note"} value={poNotes} onChange={setPoNotes} placeholder="Ex: Livraison par camionnette au magasin Didouche..." width="100%" height={44} corner={12} />
 <div className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-100/60 dark:bg-neutral-800/60 flex items-center justify-between text-xs">
-<span className="font-semibold text-neutral-600 dark:text-neutral-400">
+<span className="font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "المجموع المقدر (TTC شامل 19% رسم)" : "Total Estimé TTC (TVA 19% incluse) :"}
 </span>
 <span className="font-mono font-black text-sm text-[#d4522f] tabular-nums">

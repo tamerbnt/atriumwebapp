@@ -441,7 +441,7 @@ export const ContractorSitesView: React.FC = () => {
               {isAr ? 'الورشات النشطة قيد الإنجاز' : 'Chantiers en Cours'}
             </span>
             <div>
-              <div className="text-2xl font-bold tracking-tight text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
+              <div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {activeCount}
               </div>
               <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">
@@ -456,7 +456,7 @@ export const ContractorSitesView: React.FC = () => {
               {isAr ? 'الاستلامات المؤقتة والنهائية' : 'Réceptions & Clôtures'}
             </span>
             <div>
-              <div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
+              <div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {handoverCount}
               </div>
               <p className="text-[11px] text-black/55 dark:text-white/60 mt-0.5 font-medium">
@@ -476,7 +476,7 @@ export const ContractorSitesView: React.FC = () => {
               </span>
             </div>
             <div>
-              <div className="text-2xl font-black text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
+              <div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {formatMoney(totalContractDzd)}
               </div>
               <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
@@ -517,10 +517,30 @@ export const ContractorSitesView: React.FC = () => {
               value={filterStatus}
               onValueChange={(val) => setFilterStatus(val)}
               options={[
-                { value: 'All', label: isAr ? 'الكل' : 'Tous', count: projects.length },
-                { value: 'InProgress', label: isAr ? 'قيد الإنجاز' : 'En cours', count: activeCount },
-                { value: 'ProvisionalHandover', label: isAr ? 'استلام مؤقت' : 'Réc. provisoire', count: projects.filter(p => p.status === 'ProvisionalHandover').length },
-                { value: 'DefinitiveHandover', label: isAr ? 'استلام نهائي' : 'Réc. définitive', count: projects.filter(p => p.status === 'DefinitiveHandover').length },
+                {
+                  value: 'All',
+                  label: isAr ? 'الكل' : 'Tous',
+                  tooltip: isAr ? 'جميع المشاريع' : 'Tous les chantiers',
+                  count: projects.length,
+                },
+                {
+                  value: 'InProgress',
+                  label: isAr ? 'جاري' : 'Cours',
+                  tooltip: isAr ? 'مشاريع قيد الإنجاز' : 'Chantiers en cours',
+                  count: activeCount,
+                },
+                {
+                  value: 'ProvisionalHandover',
+                  label: isAr ? 'مؤقت' : 'Provisoire',
+                  tooltip: isAr ? 'استلام مؤقت' : 'Réception provisoire',
+                  count: projects.filter(p => p.status === 'ProvisionalHandover').length,
+                },
+                {
+                  value: 'DefinitiveHandover',
+                  label: isAr ? 'نهائي' : 'Définitive',
+                  tooltip: isAr ? 'استلام نهائي' : 'Réception définitive',
+                  count: projects.filter(p => p.status === 'DefinitiveHandover').length,
+                },
               ]}
             />
           </div>
@@ -540,10 +560,10 @@ export const ContractorSitesView: React.FC = () => {
             filterValue={filterStatus}
             onFilterChange={setFilterStatus}
             filterOptions={[
-              { value: 'All', label: isAr ? 'جميع الحالات' : 'Tous les statuts' },
-              { value: 'InProgress', label: isAr ? 'قيد الإنجاز' : 'En Cours' },
-              { value: 'ProvisionalHandover', label: isAr ? 'استلام مؤقت' : 'Réception Provisoire' },
-              { value: 'DefinitiveHandover', label: isAr ? 'استلام نهائي' : 'Réception Définitive' },
+              { value: 'All', label: isAr ? 'الكل' : 'Tous', tooltip: isAr ? 'جميع الحالات' : 'Tous les statuts' },
+              { value: 'InProgress', label: isAr ? 'جاري' : 'Cours', tooltip: isAr ? 'قيد الإنجاز' : 'En Cours' },
+              { value: 'ProvisionalHandover', label: isAr ? 'مؤقت' : 'Provisoire', tooltip: isAr ? 'استلام مؤقت' : 'Réception Provisoire' },
+              { value: 'DefinitiveHandover', label: isAr ? 'نهائي' : 'Définitive', tooltip: isAr ? 'استلام نهائي' : 'Réception Définitive' },
             ]}
             viewMode={viewMode}
             onViewModeChange={setViewMode}

@@ -204,14 +204,14 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
               <Package size={20} />
             </div>
             <div>
-              <h3 className="font-bold text-base text-neutral-900 dark:text-white">
+              <h3 className="font-bold text-base text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {isAr ? 'تسجيل طرد وشحنة جديدة (AWB 58 ولاية)' : 'Nouvelle Expédition (AWB 58 Wilayas)'}
               </h3>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"
           >
             <X size={18} />
           </button>
@@ -229,7 +229,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
             />
 
             <div>
-              <label className="block text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-1">
+              <label className="block text-xs font-semibold text-black/70 dark:text-white/75 mb-1">
                 {isAr ? 'طريقة الاستلام' : 'Mode de Livraison'}
               </label>
               <div className="flex rounded-xl bg-neutral-100 dark:bg-neutral-800 p-1 border border-neutral-200 dark:border-neutral-700">
@@ -238,8 +238,8 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
                   onClick={() => setDeliveryMode('HomeDelivery')}
                   className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                     deliveryMode === 'HomeDelivery'
-                      ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs'
-                      : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                      ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-xs'
+                      : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
                   }`}
                 >
                   {isAr ? 'توصيل للمنزل' : 'À Domicile'}
@@ -250,7 +250,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
                   className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                     deliveryMode === 'StopDesk'
                       ? 'bg-white dark:bg-neutral-900 text-[#d4522f] shadow-xs'
-                      : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                      : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
                   }`}
                 >
                   {isAr ? 'استلام Stop-Desk' : 'Stop-Desk'}
@@ -271,7 +271,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+                <label className="text-xs font-semibold text-black/70 dark:text-white/75">
                   {isAr ? 'هاتف المستلم' : 'Téléphone'}
                 </label>
                 {recipientPhone.trim() && (
@@ -323,7 +323,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
           {/* Weight & Volumetric Dimensions */}
           <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+              <span className="text-xs font-bold text-black dark:text-white">
                 {isAr ? 'الوزن والقياسات الحجمية (Diviseur 5000)' : 'Poids & Encombrement Volumétrique'}
               </span>
               <span className="text-[11px] font-mono text-[#d4522f] font-bold">
@@ -333,7 +333,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
               <div>
-                <label className="text-[10px] text-neutral-500 block">Poids Réel (kg)</label>
+                <label className="text-[10px] text-black/55 dark:text-white/55 block">Poids Réel (kg)</label>
                 <input
                   type="number"
                   step="0.1"
@@ -345,7 +345,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
               </div>
 
               <div>
-                <label className="text-[10px] text-neutral-500 block">Longueur (cm)</label>
+                <label className="text-[10px] text-black/55 dark:text-white/55 block">Longueur (cm)</label>
                 <input
                   type="number"
                   value={lengthCm}
@@ -355,7 +355,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
               </div>
 
               <div>
-                <label className="text-[10px] text-neutral-500 block">Largeur (cm)</label>
+                <label className="text-[10px] text-black/55 dark:text-white/55 block">Largeur (cm)</label>
                 <input
                   type="number"
                   value={widthCm}
@@ -365,7 +365,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
               </div>
 
               <div>
-                <label className="text-[10px] text-neutral-500 block">Hauteur (cm)</label>
+                <label className="text-[10px] text-black/55 dark:text-white/55 block">Hauteur (cm)</label>
                 <input
                   type="number"
                   value={heightCm}
@@ -379,7 +379,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
           {/* Pricing & Fiscal Stamp Breakdown Card */}
           <div className="p-4 rounded-2xl bg-[#1F1D1B] text-white space-y-2">
             <div className="flex items-center justify-between text-xs border-b border-neutral-800 pb-2">
-              <span className="text-neutral-300">
+              <span className="text-white/80">
                 {isAr ? 'مبلغ السلعة COD' : 'Montant à Encaisser (COD)'}
               </span>
               <div className="flex items-center gap-1">
@@ -393,17 +393,17 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px] text-neutral-300 pt-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px] text-white/80 pt-1">
               <div>
-                <span className="text-neutral-400 block">Frais Livraison:</span>
+                <span className="text-white/75 block">Frais Livraison:</span>
                 <span className="font-mono font-bold text-white">{formatMoney(tariffCalc.totalDeliveryFeeDzd, language)}</span>
               </div>
               <div>
-                <span className="text-neutral-400 block">Timbre Art. 317:</span>
+                <span className="text-white/75 block">Timbre Art. 317:</span>
                 <span className="font-mono font-bold text-amber-400">+{tariffCalc.stampDutyDzd} DZD</span>
               </div>
               <div>
-                <span className="text-neutral-400 block">Net Client au pas de porte:</span>
+                <span className="text-white/75 block">Net Client au pas de porte:</span>
                 <span className="font-mono font-black text-emerald-400">{formatMoney(tariffCalc.totalRecipientPayableDzd, language)}</span>
               </div>
             </div>

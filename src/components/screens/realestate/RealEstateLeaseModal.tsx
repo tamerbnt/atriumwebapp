@@ -15,7 +15,7 @@ interface RealEstateLeaseModalProps {
 
 
 
-const RealEstateLeaseModal = ({ isOpen, onClose, properties, onSave }) => {
+export const RealEstateLeaseModal: React.FC<RealEstateLeaseModalProps> = ({ isOpen, onClose, properties, onSave }) => {
 	const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
 	const [propertyId, setPropertyId] = React.useState(properties[0]?.id || "");
 	const [tenantName, setTenantName] = React.useState("");
@@ -63,9 +63,9 @@ const RealEstateLeaseModal = ({ isOpen, onClose, properties, onSave }) => {
 <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
 <div className="flex items-center gap-2">
 <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Key size={16} /></div>
-<h3 className="font-bold text-sm text-neutral-900 dark:text-white">{language === "ar" ? "تحرير عقد كراء جديد" : "Nouveau Bail de Location"}</h3>
+<h3 className="font-bold text-sm text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{language === "ar" ? "تحرير عقد كراء جديد" : "Nouveau Bail de Location"}</h3>
 </div>
-<button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"><X size={16} /></button>
+<button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"><X size={16} /></button>
 </div>
 <form onSubmit={handleSubmit} className="space-y-4">
 <LabelSelect label={language === "ar" ? "العقار المؤجر" : "Bien loué"} value={propertyId} onChange={setPropertyId} options={propOptions} />

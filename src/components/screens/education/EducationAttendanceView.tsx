@@ -683,7 +683,7 @@ export const EducationAttendanceView: React.FC = () => {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <Users size={18} className="text-black dark:text-white" />
-                <h2 className="text-sm font-bold text-black dark:text-white">
+                <h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                   {activeTab === 'attendance' ? t('edu_tab_rollcall') : t('edu_tab_gradebook')}
                 </h2>
                 <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-black dark:text-white">
@@ -727,7 +727,8 @@ export const EducationAttendanceView: React.FC = () => {
                   onChange={(val) => setSelectedCohortId(typeof val === 'string' ? val : val.target?.value || val)}
                   options={eduCohorts.map((c) => ({
                     value: c.id,
-                    label: `${c.name} (${c.cohortCode || c.courseTitle})`,
+                    label: c.cohortCode || c.name,
+                    tooltip: `${c.name} (${c.cohortCode || c.courseTitle})`,
                   }))}
                 />
               </div>

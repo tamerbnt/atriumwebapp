@@ -43,6 +43,7 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { useTranslation } from '../../../utils/useTranslation';
+import { compactFilterLabel } from '../../../utils/filterLexicon';
 import { TranslationKey } from '../../../utils/i18n';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonKanbanPipeline } from '../../ui/skeleton/StructuralSkeletons';
@@ -60,7 +61,7 @@ const STAGE_KEYS: Record<string, string> = {
 const STAGES = [
 	{
 		id: "Briefing",
-		countColor: "text-neutral-500"
+		countColor: "text-black/55 dark:text-white/55"
 	},
 	{
 		id: "InProgress",
@@ -76,7 +77,7 @@ const STAGES = [
 	},
 	{
 		id: "Billed",
-		countColor: "text-neutral-400"
+		countColor: "text-black/55 dark:text-white/55"
 	}
 ];
 
@@ -242,12 +243,12 @@ export const FreelanceDeliverablesView: React.FC<any> = () => {
 			minWidth: "220px",
 			sortable: true,
 			renderCell: (item: any) => /* @__PURE__ */ <div className="flex items-center gap-3">
-<div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 border ${item.isCompleted ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 border-emerald-200 dark:border-emerald-800" : "bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border-neutral-200 dark:border-neutral-700"}`}>
+<div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 border ${item.isCompleted ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 border-emerald-200 dark:border-emerald-800" : "bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white border-neutral-200 dark:border-neutral-700"}`}>
 {item.isCompleted ? /* @__PURE__ */ <CheckCircle2 size={16} /> : /* @__PURE__ */ <FileCheck size={16} />}
 </div>
 <div className="min-w-0">
-<div className="font-semibold text-neutral-900 dark:text-white truncate hover:text-[#d4522f] transition-colors">{item.title}</div>
-<div className="text-[11px] text-neutral-400 truncate flex items-center gap-1.5">
+<div className="font-semibold text-black dark:text-white truncate hover:text-[#d4522f] transition-colors">{item.title}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 truncate flex items-center gap-1.5">
 <span>{item.projectTitle}</span>
 <span>·</span>
 <span className="text-[#d4522f] font-medium">{item.clientName}</span>
@@ -261,7 +262,7 @@ export const FreelanceDeliverablesView: React.FC<any> = () => {
 			width: "1.8*",
 			minWidth: "130px",
 			sortable: true,
-			renderCell: (item: any) => /* @__PURE__ */ <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${item.stage === "Approved" ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800" : item.stage === "InProgress" ? "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800" : item.stage === "ClientReview" ? "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800" : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"}`}>{t(STAGE_KEYS[item.stage], language)}</span>
+			renderCell: (item: any) => /* @__PURE__ */ <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${item.stage === "Approved" ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800" : item.stage === "InProgress" ? "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800" : item.stage === "ClientReview" ? "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800" : "bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75"}`}>{t(STAGE_KEYS[item.stage], language)}</span>
 		},
 		{
 			key: "hours",
@@ -274,13 +275,13 @@ export const FreelanceDeliverablesView: React.FC<any> = () => {
 				const pct = Math.min(100, Math.round(item.loggedHours / (item.estimatedHours || 1) * 100));
 				return /* @__PURE__ */ <div className="space-y-1 min-w-[120px]">
 <div className="flex items-center justify-between text-xs">
-<span className={`font-semibold tabular-nums ${isCreep ? "text-rose-600 dark:text-rose-400 font-bold" : "text-neutral-800 dark:text-neutral-200"}`}>
+<span className={`font-semibold tabular-nums ${isCreep ? "text-rose-600 dark:text-rose-400 font-bold" : "text-black dark:text-white"}`}>
 {item.loggedHours}
 {"h / "}
 {item.estimatedHours}
 h
 </span>
-<span className="text-[10px] text-neutral-400 tabular-nums">
+<span className="text-[10px] text-black/55 dark:text-white/55 tabular-nums">
 {pct}
 %
 </span>
@@ -297,8 +298,8 @@ h
 			width: "1.5*",
 			minWidth: "120px",
 			sortable: true,
-			renderCell: (item: any) => /* @__PURE__ */ <div className="flex items-center gap-1.5 text-xs text-neutral-700 dark:text-neutral-300">
-<Calendar size={12} className="text-neutral-400" />
+			renderCell: (item: any) => /* @__PURE__ */ <div className="flex items-center gap-1.5 text-xs text-black/70 dark:text-white/75">
+<Calendar size={12} className="text-black/55 dark:text-white/55" />
 <span>{item.dueDate}</span>
 </div>
 		}
@@ -383,8 +384,8 @@ h
 <div className="w-12 h-12 rounded-2xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center shrink-0"><Kanban size={24} /></div>
 <div>
 <div className="flex items-center gap-2.5">
-<h1 className="text-[36px] sm:text-[48px] rtl:text-[30px] rtl:sm:text-[36px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{t("free_deliv_title", language)}</h1>
-<span className="text-xs px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-semibold">
+<h1 className="text-[36px] sm:text-[48px] rtl:text-[30px] rtl:sm:text-[36px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("free_deliv_title", language)}</h1>
+<span className="text-xs px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 font-semibold">
 {flattenedDeliverables.length}
 {" "}
 {language === "ar" ? "مهام" : "tasks"}
@@ -409,27 +410,27 @@ h
 </span>
 </button>
 {isQuickActionsOpen && /* @__PURE__ */ <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-[240px] rounded-[18px] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 p-2.5 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 space-y-1">
-<div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+<div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-black/55 dark:text-white/55">
 {language === "ar" ? "إجراءات سريعة" : language === "fr" ? "Actions Rapides" : "Quick Actions"}
 </div>
 <button type="button" onClick={() => {
 										setIsQuickActionsOpen(false);
 										setIsAddDeliverableModalOpen(true);
-									}} className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right">
+									}} className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-black dark:text-white font-medium transition-colors cursor-pointer text-left rtl:text-right">
 <div className="w-[30px] h-[30px] rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center shrink-0"><Plus size={15} /></div>
 <span>{t("free_deliv_btn_new", language)}</span>
 </button>
 <button type="button" onClick={() => {
 										setIsQuickActionsOpen(false);
 										setIsAddProjectModalOpen(true);
-									}} className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right">
+									}} className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-black dark:text-white font-medium transition-colors cursor-pointer text-left rtl:text-right">
 <div className="w-[30px] h-[30px] rounded-lg bg-emerald-500/15 text-emerald-600 flex items-center justify-center shrink-0"><Layers size={15} /></div>
 <span>{t("free_deliv_field_project", language)}</span>
 </button>
 <button type="button" onClick={() => {
 										setIsQuickActionsOpen(false);
 										setScreen("analytics");
-									}} className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right">
+									}} className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-black dark:text-white font-medium transition-colors cursor-pointer text-left rtl:text-right">
 <div className="w-[30px] h-[30px] rounded-lg bg-amber-500/15 text-amber-600 flex items-center justify-center shrink-0"><Clock size={15} /></div>
 <span>
 {language === "ar" ? "تشغيل الميقاتي" : language === "fr" ? "Lancer Minuteur" : "Start Timer"}
@@ -438,7 +439,7 @@ h
 <button type="button" onClick={() => {
 										setIsQuickActionsOpen(false);
 										handleExportCSV();
-									}} className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right">
+									}} className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-black dark:text-white font-medium transition-colors cursor-pointer text-left rtl:text-right">
 <div className="w-[30px] h-[30px] rounded-lg bg-blue-500/15 text-blue-600 flex items-center justify-center shrink-0"><Download size={15} /></div>
 <span>
 {language === "ar" ? "تصدير CSV" : language === "fr" ? "Exporter CSV" : "Export CSV"}
@@ -450,14 +451,14 @@ h
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {language === "ar" ? "مؤشرات إنجاز المشاريع والمهام" : language === "fr" ? "Indicateurs des Livrables & Projets" : "Deliverables & Production Performance"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "مهام قيد الإنجاز والمراجعة" : language === "fr" ? "En cours & En Révision" : "Active Production Queue"}
 </span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
@@ -467,16 +468,16 @@ h
 </span>
 </div>
 <div>
-<div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
+<div className="text-2xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {flattenedDeliverables.length}
-<span className="text-xs font-normal text-neutral-400 ml-1.5">
+<span className="text-xs font-normal text-black/55 dark:text-white/55 ml-1.5">
 {"/ "}
 {freelanceProjects.length}
 {" "}
 {language === "ar" ? "مشاريع" : "projets"}
 </span>
 </div>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
 {inProgressDeliverablesCount}
 {" "}
 {language === "ar" ? "قيد العمل" : "en cours"}
@@ -489,7 +490,7 @@ h
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "ساعات الإنتاج المحسوبة" : language === "fr" ? "Heures Déployées / Estimées" : "Production Hours Logged"}
 </span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
@@ -499,10 +500,10 @@ h
 </span>
 </div>
 <div>
-<div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
+<div className="text-2xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {totalLoggedHours}
 h
-<span className="text-xs font-normal text-neutral-400 ml-1.5">
+<span className="text-xs font-normal text-black/55 dark:text-white/55 ml-1.5">
 {"/ "}
 {totalEstimatedHours}
 {"h "}
@@ -516,7 +517,7 @@ h
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">
+<span className="text-[11px] font-medium text-white/80">
 {language === "ar" ? "تجاوزات النطاق والميزانية" : language === "fr" ? "Dépassement & Dérive Scope" : "Scope Creep & Overruns"}
 </span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
@@ -524,13 +525,13 @@ h
 </span>
 </div>
 <div>
-<div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
+<div className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {totalScopeCreepItems}
-<span className="text-xs font-normal text-neutral-400 ml-1.5">
+<span className="text-xs font-normal text-white/75 ml-1.5">
 {language === "ar" ? "مهام متجاوزة" : language === "fr" ? "dérives" : "tasks over"}
 </span>
 </div>
-<p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
 <span>
 {totalScopeCreepItems > 0 ? language === "ar" ? "يتطلب إعادة فوترة أو تسوية مع العميل" : "Facturation additionnelle requise" : language === "ar" ? "كافة الساعات متوافقة مع ميزانيات المشاريع" : "Toutes les heures respectent le devis"}
@@ -543,20 +544,22 @@ h
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-[#E6DED6] dark:border-neutral-800/60">
 <div className="flex items-center gap-2.5 flex-wrap">
-<div className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-700 dark:text-neutral-300"><Layers size={16} /></div>
+<div className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-black/70 dark:text-white/75"><Layers size={16} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white">{t("free_deliv_title", language)}</h3>
-<span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 text-neutral-600 dark:text-neutral-300">{flattenedDeliverables.length}</span>
+<h3 className="text-sm font-bold text-black dark:text-white">{t("free_deliv_title", language)}</h3>
+<span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 text-black/70 dark:text-white/75">{flattenedDeliverables.length}</span>
 </div>
 </div>
 <div className="ml-2">
 <LiveSegmentedControl value={viewLayout} onChange={(val) => setViewLayout(val)} size="sm" options={[{
 											id: "kanban",
-											label: language === "ar" ? "لوحة كانبان" : "Kanban"
+											label: language === "ar" ? "كانبان" : "Kanban",
+											tooltip: language === "ar" ? "لوحة كانبان للمراحل" : language === "fr" ? "Tableau Kanban des livrables" : "Kanban deliverables board"
 										}, {
 											id: "collection",
-											label: language === "ar" ? "قائمة وتصنيف" : language === "fr" ? "Liste" : "Collection"
+											label: language === "ar" ? "قائمة" : language === "fr" ? "Liste" : "List",
+											tooltip: language === "ar" ? "قائمة وتصنيف المهام" : language === "fr" ? "Vue liste & tableau" : "List & collection view"
 										}]} />
 </div>
 </div>
@@ -568,22 +571,20 @@ h
 </div>
 </div>
 <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
-<span className="text-xs text-neutral-400 font-medium shrink-0 flex items-center gap-1">
+<span className="text-xs text-black/55 dark:text-white/55 font-medium shrink-0 flex items-center gap-1">
 <Filter size={12} />
 {t("common_filter", language)}
 :
 </span>
-<button type="button" onClick={() => setSelectedProjectId("all")} className={`px-3 py-1 text-xs font-medium rounded-lg whitespace-nowrap transition-colors cursor-pointer ${selectedProjectId === "all" ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-2xs" : "bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 border border-[#E9EEF0] dark:border-neutral-700/60"}`}>
-{t("free_deliv_all_projects", language)}
-{" ("}
-{freelanceProjects.length}
-)
+<button type="button" onClick={() => setSelectedProjectId("all")} title={`${t("free_deliv_all_projects", language)} (${freelanceProjects.length})`} className={`px-3 py-1 text-xs font-medium rounded-lg whitespace-nowrap transition-colors cursor-pointer ${selectedProjectId === "all" ? "bg-neutral-900 text-white dark:bg-white dark:text-black shadow-2xs" : "bg-white dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white border border-[#E9EEF0] dark:border-neutral-700/60"}`}>
+{t("common_all", language)}
 </button>
-{freelanceProjects.map((project) => /* @__PURE__ */ <button key={project.id} type="button" onClick={() => setSelectedProjectId(project.id)} className={`px-3 py-1 text-xs font-medium rounded-lg whitespace-nowrap transition-colors cursor-pointer ${selectedProjectId === project.id ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-2xs" : "bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 border border-[#E9EEF0] dark:border-neutral-700/60"}`}>
-{project.title}
-{" · "}
-<span className="opacity-75">{project.clientName}</span>
-</button>)}
+{freelanceProjects.map((project) => {
+									const compact = compactFilterLabel(project.title, project.clientName, `${project.title} · ${project.clientName}`);
+									return /* @__PURE__ */ <button key={project.id} type="button" onClick={() => setSelectedProjectId(project.id)} title={compact.tooltip} className={`px-3 py-1 text-xs font-medium rounded-lg whitespace-nowrap transition-colors cursor-pointer ${selectedProjectId === project.id ? "bg-neutral-900 text-white dark:bg-white dark:text-black shadow-2xs" : "bg-white dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white border border-[#E9EEF0] dark:border-neutral-700/60"}`}>
+{compact.label}
+</button>;
+								})}
 {selectedProjectId !== "all" && /* @__PURE__ */ <button type="button" onClick={() => {
 									const targetProj = freelanceProjects.find((p) => p.id === selectedProjectId);
 									if (targetProj) setProjectToDelete(targetProj);
@@ -595,14 +596,14 @@ h
 {selectedDeliverableIds.size > 0 && /* @__PURE__ */ <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
 <div className="flex items-center gap-3">
 <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
-<span className="text-xs font-bold text-neutral-900 dark:text-white">
+<span className="text-xs font-bold text-black dark:text-white">
 {selectedDeliverableIds.size}
 {" "}
 {language === "ar" ? "مهام محددة" : language === "fr" ? "livrables sélectionnés" : "deliverables selected"}
 </span>
 </div>
 <div className="flex items-center gap-2 flex-wrap">
-<button onClick={() => setSelectedDeliverableIds(/* @__PURE__ */ new Set())} className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer">
+<button onClick={() => setSelectedDeliverableIds(/* @__PURE__ */ new Set())} className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer">
 {language === "ar" ? "إلغاء التحديد" : language === "fr" ? "Désélectionner" : "Deselect"}
 </button>
 <button onClick={() => handleBatchSetStage("InProgress")} className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs">
@@ -624,9 +625,9 @@ h
 </div>
 </div>}
 {freelanceProjects.length === 0 ? /* @__PURE__ */ <div className="p-12 text-center rounded-3xl border border-dashed border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/40 space-y-3">
-<Kanban size={36} className="mx-auto text-neutral-300 dark:text-neutral-600" />
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">{t("free_deliv_empty_column", language)}</h3>
-<p className="text-xs text-neutral-500 max-w-sm mx-auto">{t("free_deliv_modal_add_desc", language)}</p>
+<Kanban size={36} className="mx-auto text-black/55 dark:text-white/55" />
+<h3 className="text-base font-bold text-black dark:text-white">{t("free_deliv_empty_column", language)}</h3>
+<p className="text-xs text-black/55 dark:text-white/55 max-w-sm mx-auto">{t("free_deliv_modal_add_desc", language)}</p>
 <button type="button" onClick={() => setIsAddProjectModalOpen(true)} className="px-4 py-2 rounded-xl bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-1.5 shadow-xs">
 <Plus size={14} />
 <span>{t("free_deliv_field_project", language)}</span>
@@ -642,21 +643,21 @@ h
 							const pct = Math.min(100, Math.round(item.loggedHours / (item.estimatedHours || 1) * 100));
 							return /* @__PURE__ */ <div className="flex flex-col justify-between w-full h-full space-y-3">
 <div className="flex items-start justify-between gap-2">
-<span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 truncate max-w-[130px]">{item.projectTitle}</span>
-<span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0 ${item.stage === "Approved" ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800" : item.stage === "InProgress" ? "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800" : item.stage === "ClientReview" ? "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800" : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"}`}>{t(STAGE_KEYS[item.stage], language)}</span>
+<span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 truncate max-w-[130px]">{item.projectTitle}</span>
+<span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0 ${item.stage === "Approved" ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800" : item.stage === "InProgress" ? "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800" : item.stage === "ClientReview" ? "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800" : "bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75"}`}>{t(STAGE_KEYS[item.stage], language)}</span>
 </div>
 <div>
-<h4 className="text-sm font-bold text-neutral-900 dark:text-white leading-snug truncate">{item.title}</h4>
+<h4 className="text-sm font-bold text-black dark:text-white leading-snug truncate">{item.title}</h4>
 <div className="text-[11px] text-[#d4522f] font-medium mt-0.5 truncate">{item.clientName}</div>
-{item.description && /* @__PURE__ */ <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">{item.description}</p>}
+{item.description && /* @__PURE__ */ <p className="text-[11px] text-black/55 dark:text-white/75 mt-1 line-clamp-2">{item.description}</p>}
 </div>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 space-y-2">
 <div className="flex items-center justify-between text-xs">
-<span className="text-neutral-500 flex items-center gap-1 text-[11px]">
+<span className="text-black/55 dark:text-white/55 flex items-center gap-1 text-[11px]">
 <Clock size={11} />
 {t("free_clients_ph_hours_label", language)}
 </span>
-<span className={`tabular-nums font-semibold text-xs ${isCreep ? "text-rose-600 font-bold" : "text-neutral-700 dark:text-neutral-300"}`}>
+<span className={`tabular-nums font-semibold text-xs ${isCreep ? "text-rose-600 font-bold" : "text-black/70 dark:text-white/75"}`}>
 {item.loggedHours}
 {"h / "}
 {item.estimatedHours}
@@ -668,7 +669,7 @@ h (
 <div className="w-full h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
 <div className={`h-full rounded-full transition-all ${isCreep ? "bg-rose-500" : pct >= 100 ? "bg-emerald-500" : "bg-[#d4522f]"}`} style={{ width: `${pct}%` }} />
 </div>
-<div className="flex items-center justify-between text-[11px] text-neutral-500 pt-1">
+<div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55 pt-1">
 <span className="flex items-center gap-1">
 <Calendar size={11} />
 {item.dueDate}
@@ -745,7 +746,7 @@ h (
 							const itemsInStage = flattenedDeliverables.filter((item) => item.deliverable.stage === stage.id);
 							return /* @__PURE__ */ <div key={stage.id} className="rounded-2xl bg-[#F3EDE7] dark:bg-neutral-900/40 border border-[#E6DED6] dark:border-neutral-800 p-3 min-h-[500px] flex flex-col">
 <div className="flex items-center justify-between pb-3 mb-3 border-b border-neutral-200/60 dark:border-neutral-800">
-<span className="text-xs font-bold text-neutral-900 dark:text-white">{t(STAGE_KEYS[stage.id], language)}</span>
+<span className="text-xs font-bold text-black dark:text-white">{t(STAGE_KEYS[stage.id], language)}</span>
 <span className={`text-xs font-extrabold tabular-nums ${stage.countColor}`}>{itemsInStage.length}</span>
 </div>
 <div className="space-y-3 flex-1 overflow-y-auto">
@@ -754,20 +755,20 @@ h (
 										const ratioPercent = Math.round(deliverable.loggedHours / (deliverable.estimatedHours || 1) * 100);
 										return /* @__PURE__ */ <div key={deliverable.id} className="p-3.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs hover:border-[#d4522f]/40 transition-all flex flex-col justify-between gap-2.5 group">
 <div>
-<div className="flex items-center justify-between text-[11px] text-neutral-400 mb-1">
-<span className="truncate max-w-[130px] font-medium text-neutral-500 dark:text-neutral-400">{project.title}</span>
+<div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55 mb-1">
+<span className="truncate max-w-[130px] font-medium text-black/55 dark:text-white/75">{project.title}</span>
 <span className="shrink-0">{project.clientName}</span>
 </div>
-<h4 className="text-xs font-bold text-neutral-900 dark:text-white leading-snug">{deliverable.title}</h4>
-{deliverable.description && /* @__PURE__ */ <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">{deliverable.description}</p>}
+<h4 className="text-xs font-bold text-black dark:text-white leading-snug">{deliverable.title}</h4>
+{deliverable.description && /* @__PURE__ */ <p className="text-[11px] text-black/55 dark:text-white/75 mt-1 line-clamp-2">{deliverable.description}</p>}
 </div>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800/80 space-y-1.5 text-[11px]">
 <div className="flex items-center justify-between">
-<span className="text-neutral-500 flex items-center gap-1">
+<span className="text-black/55 dark:text-white/55 flex items-center gap-1">
 <Clock size={11} />
 {t("free_clients_ph_hours_label", language)}
 </span>
-<span className={`font-semibold tabular-nums ${isCreep ? "text-rose-600 dark:text-rose-400 font-bold" : "text-neutral-700 dark:text-neutral-300"}`}>
+<span className={`font-semibold tabular-nums ${isCreep ? "text-rose-600 dark:text-rose-400 font-bold" : "text-black/70 dark:text-white/75"}`}>
 {deliverable.loggedHours}
 {"h / "}
 {deliverable.estimatedHours}
@@ -786,7 +787,7 @@ h (
 h)
 </span>
 </div>}
-<div className="flex items-center justify-between text-neutral-400">
+<div className="flex items-center justify-between text-black/55 dark:text-white/55">
 <span className="flex items-center gap-1">
 <Calendar size={11} />
 {t("free_clients_ph_due_label", language)}
@@ -796,7 +797,7 @@ h)
 </div>
 <div className="flex items-center justify-between gap-1 pt-2 border-t border-neutral-100 dark:border-neutral-800/80">
 <div className="flex items-center gap-1">
-<button type="button" onClick={() => handleStartTimerForDeliverable(project, deliverable)} className="h-7 px-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-[#d4522f] hover:text-white text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer" title={t("free_btn_log_time", language)}>
+<button type="button" onClick={() => handleStartTimerForDeliverable(project, deliverable)} className="h-7 px-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-[#d4522f] hover:text-white text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer" title={t("free_btn_log_time", language)}>
 <Play size={10} />
 <span>{t("free_btn_log_time", language)}</span>
 </button>
@@ -811,21 +812,25 @@ h)
 																		estimatedHours: deliverable.estimatedHours,
 																		dueDate: deliverable.dueDate
 																	});
-																}} className="h-7 w-7 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center transition-colors cursor-pointer" title={t("free_deliv_edit", language)}><Edit2 size={12} /></button>
+																}} className="h-7 w-7 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center transition-colors cursor-pointer" title={t("free_deliv_edit", language)}><Edit2 size={12} /></button>
 <button type="button" onClick={() => setDeliverableToDelete({
 																	projectId: project.id,
 																	deliverableId: deliverable.id,
 																	title: deliverable.title
-																})} className="h-7 w-7 rounded-lg text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center justify-center transition-colors cursor-pointer" title={t("free_deliv_delete", language)}><Trash2 size={12} /></button>
+																})} className="h-7 w-7 rounded-lg text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center justify-center transition-colors cursor-pointer" title={t("free_deliv_delete", language)}><Trash2 size={12} /></button>
 </div>
-<FilterSelect value={deliverable.stage} onChange={(val) => updateDeliverableStage(project.id, deliverable.id, val?.target?.value ?? String(val))} options={STAGES.map((s) => ({
-															value: s.id,
-															label: `→ ${t(STAGE_KEYS[s.id], language)}`
-														}))} placeholder={t("free_deliv_ph_stage", language)} />
+<FilterSelect value={deliverable.stage} onChange={(val) => updateDeliverableStage(project.id, deliverable.id, val?.target?.value ?? String(val))} options={STAGES.map((s) => {
+															const fullLabel = t(STAGE_KEYS[s.id], language);
+															return {
+																value: s.id,
+																label: compactFilterLabel(fullLabel).label,
+																tooltip: fullLabel
+															};
+														})} placeholder={t("free_deliv_ph_stage", language)} />
 </div>
 </div>;
 									})}
-{itemsInStage.length === 0 && /* @__PURE__ */ <div className="py-8 text-center text-neutral-400 text-xs italic">{t("free_deliv_empty_column", language)}</div>}
+{itemsInStage.length === 0 && /* @__PURE__ */ <div className="py-8 text-center text-black/55 dark:text-white/55 text-xs italic">{t("free_deliv_empty_column", language)}</div>}
 </div>
 </div>;
 						})}
@@ -835,10 +840,10 @@ h)
 <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
 <div>
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">{t("free_deliv_modal_add_title", language)}</h3>
-<p className="text-xs text-neutral-500 mt-0.5">{t("free_deliv_modal_add_desc", language)}</p>
+<h3 className="text-base font-bold text-black dark:text-white">{t("free_deliv_modal_add_title", language)}</h3>
+<p className="text-xs text-black/55 dark:text-white/55 mt-0.5">{t("free_deliv_modal_add_desc", language)}</p>
 </div>
-<button type="button" onClick={() => setIsAddDeliverableModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"><X size={16} /></button>
+<button type="button" onClick={() => setIsAddDeliverableModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"><X size={16} /></button>
 </div>
 <form onSubmit={handleCreateDeliverable} className="space-y-3.5 text-xs">
 <LabelSelect label={`${t("free_deliv_field_project", language)} *`} value={targetProjectId} onChange={(val) => setTargetProjectId(val?.target?.value ?? String(val))} options={freelanceProjects.map((p) => ({
@@ -847,15 +852,15 @@ h)
 								}))} placeholder={t("free_deliv_ph_select_project", language)} />
 <LabelInput id="deliverable-title" label={t("free_deliv_field_title", language)} required placeholder={t("free_deliv_ph_title", language)} value={deliverableTitle} onChange={(e) => setDeliverableTitle(e.target.value)} />
 <div>
-<label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">{t("free_deliv_field_tags", language)}</label>
-<textarea rows={2} placeholder={t("free_deliv_ph_desc", language)} value={deliverableDescription} onChange={(e) => setDeliverableDescription(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white" />
+<label className="font-semibold text-black/70 dark:text-white/75 block mb-1">{t("free_deliv_field_tags", language)}</label>
+<textarea rows={2} placeholder={t("free_deliv_ph_desc", language)} value={deliverableDescription} onChange={(e) => setDeliverableDescription(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black dark:text-white" />
 </div>
 <div className="grid grid-cols-2 gap-3">
 <LabelInput id="deliverable-estimated-hours" label={t("free_deliv_field_est_hours", language)} type="number" min="1" required value={estimatedHours} onChange={(e) => setEstimatedHours(Number(e.target.value))} />
 <LabelInput id="deliverable-due-date" label={t("free_deliv_field_due_date", language)} type="date" required value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
 </div>
 <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-<button type="button" onClick={() => setIsAddDeliverableModalOpen(false)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">{t("free_clients_cancel", language)}</button>
+<button type="button" onClick={() => setIsAddDeliverableModalOpen(false)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">{t("free_clients_cancel", language)}</button>
 <button type="submit" className="px-5 py-2 rounded-xl bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer">{t("free_deliv_btn_new", language)}</button>
 </div>
 </form>
@@ -864,8 +869,8 @@ h)
 {isAddProjectModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
 <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">{t("free_deliv_field_project", language)}</h3>
-<button type="button" onClick={() => setIsAddProjectModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"><X size={16} /></button>
+<h3 className="text-base font-bold text-black dark:text-white">{t("free_deliv_field_project", language)}</h3>
+<button type="button" onClick={() => setIsAddProjectModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"><X size={16} /></button>
 </div>
 <form onSubmit={handleCreateProject} className="space-y-3.5 text-xs">
 <div className="grid grid-cols-2 gap-3">
@@ -899,11 +904,11 @@ h)
 									title: e.target.value
 								})} />
 <div>
-<label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">{t("free_deliv_field_tags", language)}</label>
+<label className="font-semibold text-black/70 dark:text-white/75 block mb-1">{t("free_deliv_field_tags", language)}</label>
 <textarea rows={2} placeholder={t("free_deliv_ph_proj_desc", language)} value={newProjectData.description} onChange={(e) => setNewProjectData({
 									...newProjectData,
 									description: e.target.value
-								})} className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white" />
+								})} className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black dark:text-white" />
 </div>
 <div className="grid grid-cols-3 gap-3">
 <LabelSelect label={t("free_clients_currency", language)} value={newProjectData.currency} onChange={(val) => setNewProjectData({
@@ -934,7 +939,7 @@ h)
 								})} />
 </div>
 <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-<button type="button" onClick={() => setIsAddProjectModalOpen(false)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">{t("free_clients_cancel", language)}</button>
+<button type="button" onClick={() => setIsAddProjectModalOpen(false)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">{t("free_clients_cancel", language)}</button>
 <button type="submit" className="px-5 py-2 rounded-xl bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs">{t("free_deliv_field_project", language)}</button>
 </div>
 </form>
@@ -944,14 +949,14 @@ h)
 <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
 <div>
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">{t("free_deliv_edit", language)}</h3>
-<p className="text-xs text-neutral-500 mt-0.5">
+<h3 className="text-base font-bold text-black dark:text-white">{t("free_deliv_edit", language)}</h3>
+<p className="text-xs text-black/55 dark:text-white/55 mt-0.5">
 {deliverableToEdit.project.title}
 {" · "}
 {deliverableToEdit.project.clientName}
 </p>
 </div>
-<button type="button" onClick={() => setDeliverableToEdit(null)} className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"><X size={16} /></button>
+<button type="button" onClick={() => setDeliverableToEdit(null)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"><X size={16} /></button>
 </div>
 <form onSubmit={handleEditDeliverableSubmit} className="space-y-3.5 text-xs">
 <LabelInput id="edit-deliverable-title" label={t("free_deliv_field_title", language)} required value={editDeliverableForm.title} onChange={(e) => setEditDeliverableForm({
@@ -959,11 +964,11 @@ h)
 									title: e.target.value
 								})} />
 <div>
-<label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">{t("free_deliv_field_tags", language)}</label>
+<label className="font-semibold text-black/70 dark:text-white/75 block mb-1">{t("free_deliv_field_tags", language)}</label>
 <textarea rows={2} value={editDeliverableForm.description} onChange={(e) => setEditDeliverableForm({
 									...editDeliverableForm,
 									description: e.target.value
-								})} className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white" />
+								})} className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black dark:text-white" />
 </div>
 <div className="grid grid-cols-2 gap-3">
 <LabelInput id="edit-deliverable-estimated-hours" label={t("free_deliv_field_est_hours", language)} type="number" min="1" required value={editDeliverableForm.estimatedHours} onChange={(e) => setEditDeliverableForm({
@@ -976,7 +981,7 @@ h)
 									})} />
 </div>
 <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-<button type="button" onClick={() => setDeliverableToEdit(null)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">{t("common_cancel", language)}</button>
+<button type="button" onClick={() => setDeliverableToEdit(null)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">{t("common_cancel", language)}</button>
 <button type="submit" className="px-5 py-2 rounded-xl bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs">{t("common_save", language)}</button>
 </div>
 </form>
@@ -987,15 +992,15 @@ h)
 <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
 <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60"><AlertTriangle size={20} /></div>
 <div>
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">{t("free_deliv_delete", language)}</h3>
-<p className="text-xs text-neutral-500">{deliverableToDelete.title}</p>
+<h3 className="text-base font-bold text-black dark:text-white">{t("free_deliv_delete", language)}</h3>
+<p className="text-xs text-black/55 dark:text-white/55">{deliverableToDelete.title}</p>
 </div>
 </div>
-<p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+<p className="text-xs text-black/70 dark:text-white/75 leading-relaxed">
 {language === "ar" ? `هل أنت متأكد من رغبتك في حذف التسليمة "${deliverableToDelete.title}"؟ سيتم حذفها نهائياً من لوحة كانبان.` : language === "fr" ? `Êtes-vous sûr de vouloir supprimer le livrable "${deliverableToDelete.title}" ? Cette tâche sera définitivement retirée du tableau Kanban.` : `Are you sure you want to delete deliverable "${deliverableToDelete.title}"? This task will be permanently removed from the Kanban board.`}
 </p>
 <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-<button type="button" onClick={() => setDeliverableToDelete(null)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">{t("common_cancel", language)}</button>
+<button type="button" onClick={() => setDeliverableToDelete(null)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">{t("common_cancel", language)}</button>
 <button type="button" onClick={() => {
 									deleteDeliverable(deliverableToDelete.projectId, deliverableToDelete.deliverableId);
 									setDeliverableToDelete(null);
@@ -1008,21 +1013,21 @@ h)
 <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
 <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60"><AlertTriangle size={20} /></div>
 <div>
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">
+<h3 className="text-base font-bold text-black dark:text-white">
 {language === "ar" ? "حذف المشروع" : language === "fr" ? "Supprimer le Projet" : "Delete Project"}
 </h3>
-<p className="text-xs text-neutral-500">
+<p className="text-xs text-black/55 dark:text-white/55">
 {projectToDelete.title}
 {" · "}
 {projectToDelete.clientName}
 </p>
 </div>
 </div>
-<p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+<p className="text-xs text-black/70 dark:text-white/75 leading-relaxed">
 {language === "ar" ? `هل أنت متأكد من رغبتك في حذف مشروع "${projectToDelete.title}"؟ سيتم حذف جميع التسليمات وسجلات الوقت المرتبطة به نهائياً.` : language === "fr" ? `Êtes-vous sûr de vouloir supprimer le projet "${projectToDelete.title}" ? Tous les livrables et sessions de travail associées seront définitivement supprimés.` : `Are you sure you want to delete project "${projectToDelete.title}"? All associated deliverables and tracked sessions will be permanently deleted.`}
 </p>
 <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-<button type="button" onClick={() => setProjectToDelete(null)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">{t("common_cancel", language)}</button>
+<button type="button" onClick={() => setProjectToDelete(null)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">{t("common_cancel", language)}</button>
 <button type="button" onClick={() => {
 									deleteFreelanceProject(projectToDelete.id);
 									setSelectedProjectId("all");

@@ -1,11 +1,13 @@
 import React, { forwardRef, useRef, useState, useEffect, useLayoutEffect, useImperativeHandle } from 'react';
 import { SegmentedBlobController } from '../../../utils/atriumSprings';
+import { compactFilterLabel } from '../../../utils/filterLexicon';
 import { LiveButtonSize } from './LiveButton';
 
 export interface SegmentedOption {
   value?: string;
   id?: string;
   label?: React.ReactNode;
+  tooltip?: string;
   icon?: React.ReactNode;
   count?: number | string;
   disabled?: boolean;
@@ -210,6 +212,11 @@ export const LiveSegmentedControl = React.memo(forwardRef<HTMLDivElement, LiveSe
           const isChecked = val === currentValue;
           const isIconOnly = opt.icon && !opt.label;
           const hasCount = opt.count !== undefined && opt.count !== null;
+          const compacted = typeof opt.label === 'string'
+            ? compactFilterLabel(opt.label, undefined, opt.tooltip)
+            : null;
+          const displayLabel = compacted ? compacted.label : opt.label;
+          const tooltipText = opt.tooltip || compacted?.tooltip;
           return (
             <button
               key={val || idx}
@@ -220,6 +227,7 @@ export const LiveSegmentedControl = React.memo(forwardRef<HTMLDivElement, LiveSe
               role="radio"
               aria-checked={isChecked}
               aria-label={opt['aria-label'] || (typeof opt.label === 'string' ? opt.label : undefined)}
+              title={tooltipText}
               disabled={opt.disabled}
               className={[
                 classes.option,
@@ -230,7 +238,7 @@ export const LiveSegmentedControl = React.memo(forwardRef<HTMLDivElement, LiveSe
               onClick={() => handleSelect(val)}
             >
               {opt.icon}
-              {opt.label && <span>{opt.label}</span>}
+              {displayLabel && <span>{displayLabel}</span>}
               {hasCount && <span className="atr-badge">{opt.count}</span>}
             </button>
           );

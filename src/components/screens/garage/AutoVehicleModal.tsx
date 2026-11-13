@@ -148,7 +148,7 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
               <Car size={20} />
             </div>
             <div>
-              <h3 className="font-bold text-base text-neutral-900 dark:text-white">
+              <h3 className="font-bold text-base text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {vehicleToEdit
                   ? (isAr ? 'تعديل بيانات المركبة' : 'Modifier la Fiche Véhicule')
                   : (isAr ? 'تسجيل مركبة جديدة في الحظيرة' : 'Nouveau Véhicule au Parc')}
@@ -157,7 +157,7 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"
           >
             <X size={18} />
           </button>
@@ -171,8 +171,8 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
               onClick={() => handleFleetToggle(false)}
               className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all ${
                 !isFleet
-                  ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs border border-neutral-200 dark:border-neutral-700'
-                  : 'text-neutral-500 hover:text-neutral-800'
+                  ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-xs border border-neutral-200 dark:border-neutral-700'
+                  : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
               }`}
             >
               🚗 {isAr ? 'زبون فردي (Particulier)' : 'Client Particulier'}
@@ -183,7 +183,7 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
               className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all ${
                 isFleet
                   ? 'bg-[#d4522f] text-white shadow-xs'
-                  : 'text-neutral-500 hover:text-neutral-800'
+                  : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
               }`}
             >
               🏢 {isAr ? 'أسطول شركات (Flotte B2B)' : 'Flotte Entreprise B2B'}

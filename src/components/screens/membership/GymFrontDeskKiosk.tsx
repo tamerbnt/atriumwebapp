@@ -193,7 +193,7 @@ export const GymFrontDeskKiosk: React.FC<any> = () => {
 <div className="flex items-center gap-3.5">
 <div className="w-12 h-12 rounded-2xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center text-xl shrink-0"><Scan size={24} /></div>
 <div>
-<h1 className="text-[36px] sm:text-[48px] rtl:text-[30px] rtl:sm:text-[36px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white flex items-center gap-2">
+<h1 className="text-[36px] sm:text-[48px] rtl:text-[30px] rtl:sm:text-[36px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2 rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 <span>{isRtl ? "كشك الاستقبال ومسح الدخول السريع" : "Kiosk Accueil & Pointage Salle"}</span>
 <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400">{isRtl ? "مباشر" : "Live Kiosk"}</span>
 </h1>
@@ -210,21 +210,21 @@ export const GymFrontDeskKiosk: React.FC<any> = () => {
 <div className="lg:col-span-2 space-y-5">
 <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-6 shadow-xs">
 <form onSubmit={handleScanSubmit} className="relative">
-<label htmlFor="barcodeInput" className="block text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
+<label htmlFor="barcodeInput" className="block text-xs font-semibold text-black/70 dark:text-white/75 mb-2">
 {isRtl ? "مسح رمز الباركود أو بطاقة RFID أو الاسم" : "Scanner Code-Barres / Badge RFID / Recherche Adhérent"}
 </label>
 <div className="relative">
-<input id="barcodeInput" ref={inputRef} type="text" value={scanInput} onChange={(e) => setScanInput(e.target.value)} placeholder={isRtl ? "امسح الباركود أو ابدأ بالكتابة..." : "Scanner le badge ou taper le nom/téléphone..."} className="w-full h-14 pl-12 pr-28 rounded-2xl border-2 border-[#d4522f]/40 focus:border-[#d4522f] focus:ring-4 focus:ring-[#d4522f]/15 bg-neutral-50 dark:bg-neutral-800/60 text-base font-medium text-neutral-900 dark:text-white transition-all" dir="ltr" />
+<input id="barcodeInput" ref={inputRef} type="text" value={scanInput} onChange={(e) => setScanInput(e.target.value)} placeholder={isRtl ? "امسح الباركود أو ابدأ بالكتابة..." : "Scanner le badge ou taper le nom/téléphone..."} className="w-full h-14 pl-12 pr-28 rounded-2xl border-2 border-[#d4522f]/40 focus:border-[#d4522f] focus:ring-4 focus:ring-[#d4522f]/15 bg-neutral-50 dark:bg-neutral-800/60 text-base font-medium text-black dark:text-white transition-all" dir="ltr" />
 <Scan size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#d4522f]" />
-<button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 h-10 px-4 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer">{isRtl ? "تحقق" : "Valider"}</button>
+<button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 h-10 px-4 rounded-xl bg-neutral-900 dark:bg-white text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer">{isRtl ? "تحقق" : "Valider"}</button>
 </div>
 {searchResults.length > 0 && /* @__PURE__ */ <div className="absolute z-20 left-0 right-0 mt-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl overflow-hidden divide-y divide-neutral-100 dark:divide-neutral-800">
 {searchResults.map((m) => /* @__PURE__ */ <div key={m.id} onClick={() => handleValidateCheckIn(m)} className="p-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 flex items-center justify-between cursor-pointer transition-colors">
 <div className="flex items-center gap-3">
 <div className="w-9 h-9 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center font-bold text-xs text-[#d4522f]">{m.fullName.charAt(0)}</div>
 <div>
-<p className="text-xs font-bold text-neutral-900 dark:text-white">{m.fullName}</p>
-<p className="text-2xs text-neutral-500">
+<p className="text-xs font-bold text-black dark:text-white">{m.fullName}</p>
+<p className="text-2xs text-black/55 dark:text-white/55">
 {m.phoneNumber || m.id}
 {" • "}
 {m.membershipPlanName || "Pass"}
@@ -242,24 +242,24 @@ export const GymFrontDeskKiosk: React.FC<any> = () => {
 </div>
 <div className="flex-1">
 <div className="flex items-center justify-between">
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">{lastCheckInResult.member.fullName}</h3>
+<h3 className="text-base font-bold text-black dark:text-white">{lastCheckInResult.member.fullName}</h3>
 <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${lastCheckInResult.status === "Granted" ? "bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200" : lastCheckInResult.status === "Warning_Expiring" ? "bg-amber-200 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200" : "bg-rose-200 dark:bg-rose-900/60 text-rose-900 dark:text-rose-200"}`}>
 {lastCheckInResult.status === "Granted" ? isRtl ? "دخول مسموح" : "ACCÈS AUTORISÉ" : lastCheckInResult.status === "Warning_Expiring" ? isRtl ? "ينتهي قريباً" : "EXPIRATION PROCHE" : isRtl ? "دخول مرفوض" : "ACCÈS REFUSÉ"}
 </span>
 </div>
-<p className="text-xs font-medium text-neutral-700 dark:text-neutral-300 mt-1">{lastCheckInResult.message}</p>
+<p className="text-xs font-medium text-black/70 dark:text-white/75 mt-1">{lastCheckInResult.message}</p>
 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3 pt-3 border-t border-neutral-200/60 dark:border-neutral-700/60 text-xs">
 <div>
-<span className="text-neutral-400 block text-2xs">{isRtl ? "الاشتراك" : "Formule"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{lastCheckInResult.member.membershipPlanName || "Standard"}</span>
+<span className="text-black/55 dark:text-white/55 block text-2xs">{isRtl ? "الاشتراك" : "Formule"}</span>
+<span className="font-semibold text-black dark:text-white">{lastCheckInResult.member.membershipPlanName || "Standard"}</span>
 </div>
 <div>
-<span className="text-neutral-400 block text-2xs">{isRtl ? "تاريخ الانتهاء" : "Validité jusqu'au"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{lastCheckInResult.member.expirationDate || "—"}</span>
+<span className="text-black/55 dark:text-white/55 block text-2xs">{isRtl ? "تاريخ الانتهاء" : "Validité jusqu'au"}</span>
+<span className="font-semibold text-black dark:text-white">{lastCheckInResult.member.expirationDate || "—"}</span>
 </div>
 <div>
-<span className="text-neutral-400 block text-2xs">{isRtl ? "الحصص المتبقية" : "Séances restantes"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">
+<span className="text-black/55 dark:text-white/55 block text-2xs">{isRtl ? "الحصص المتبقية" : "Séances restantes"}</span>
+<span className="font-semibold text-black dark:text-white">
 {lastCheckInResult.member.remainingSessions !== void 0 ? `${lastCheckInResult.member.remainingSessions} séances` : "Illimité"}
 </span>
 </div>
@@ -270,19 +270,19 @@ export const GymFrontDeskKiosk: React.FC<any> = () => {
 </div>
 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
 <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-2xs">
-<span className="text-2xs text-neutral-500 font-semibold block uppercase">{isRtl ? "دخول اليوم" : "Check-ins du Jour"}</span>
-<span className="text-xl font-bold font-mono text-neutral-900 dark:text-white mt-1 block">{memberCheckIns.length}</span>
+<span className="text-2xs text-black/55 dark:text-white/55 font-semibold block uppercase">{isRtl ? "دخول اليوم" : "Check-ins du Jour"}</span>
+<span className="text-xl font-bold font-mono text-black dark:text-white mt-1 block">{memberCheckIns.length}</span>
 </div>
 <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-2xs">
-<span className="text-2xs text-neutral-500 font-semibold block uppercase">{isRtl ? "تذاكر الحصة" : "Pass Séance Émis"}</span>
+<span className="text-2xs text-black/55 dark:text-white/55 font-semibold block uppercase">{isRtl ? "تذاكر الحصة" : "Pass Séance Émis"}</span>
 <span className="text-xl font-bold font-mono text-[#d4522f] mt-1 block">{walkInTickets.length}</span>
 </div>
 <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-2xs">
-<span className="text-2xs text-neutral-500 font-semibold block uppercase">{isRtl ? "مشتركون نشطون" : "Adhérents Actifs"}</span>
+<span className="text-2xs text-black/55 dark:text-white/55 font-semibold block uppercase">{isRtl ? "مشتركون نشطون" : "Adhérents Actifs"}</span>
 <span className="text-xl font-bold font-mono text-emerald-600 mt-1 block">{members.filter((m) => m.status === "Active").length}</span>
 </div>
 <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-2xs">
-<span className="text-2xs text-neutral-500 font-semibold block uppercase">{isRtl ? "حالة البوابة" : "Portique"}</span>
+<span className="text-2xs text-black/55 dark:text-white/55 font-semibold block uppercase">{isRtl ? "حالة البوابة" : "Portique"}</span>
 <span className="text-xs font-bold text-emerald-600 flex items-center gap-1.5 mt-2">
 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
 <span>{isRtl ? "متصل" : "Opérationnel"}</span>
@@ -292,35 +292,35 @@ export const GymFrontDeskKiosk: React.FC<any> = () => {
 </div>
 <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-5 shadow-xs flex flex-col h-[520px]">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+<h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
 <Clock size={16} className="text-[#d4522f]" />
 <span>{isRtl ? "سجل الدخول اللحظي" : "Journal des Passages Direct"}</span>
 </h3>
-<span className="text-2xs text-neutral-400 font-mono">
+<span className="text-2xs text-black/55 dark:text-white/55 font-mono">
 {memberCheckIns.length}
 {" "}
 {isRtl ? "عمليات" : "enregistrements"}
 </span>
 </div>
 <div className="flex-1 overflow-y-auto space-y-2.5 pt-3 pr-1">
-{memberCheckIns.length === 0 ? /* @__PURE__ */ <div className="h-full flex flex-col items-center justify-center text-center p-6 text-neutral-400">
-<UserCheck size={36} className="text-neutral-300 mb-2 opacity-50" />
+{memberCheckIns.length === 0 ? /* @__PURE__ */ <div className="h-full flex flex-col items-center justify-center text-center p-6 text-black/55 dark:text-white/55">
+<UserCheck size={36} className="text-black/55 dark:text-white/55 mb-2 opacity-50" />
 <p className="text-xs font-medium">
 {isRtl ? "لا توجد عمليات دخول مسجلة اليوم بعد" : "Aucun passage enregistré aujourd'hui"}
 </p>
-<p className="text-2xs text-neutral-400 mt-1">
+<p className="text-2xs text-black/55 dark:text-white/55 mt-1">
 {isRtl ? "امسح الباركود للبدء في التسجيل" : "Scannez un badge pour voir les entrées en direct"}
 </p>
 </div> : memberCheckIns.slice(0, 15).map((log) => /* @__PURE__ */ <div key={log.id} className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800/60 flex items-center justify-between text-xs">
 <div className="flex items-center gap-2.5">
 <span className={`w-2 h-2 rounded-full shrink-0 ${log.accessStatus === "Granted" ? "bg-emerald-500" : log.accessStatus === "Warning_Expiring" ? "bg-amber-500" : "bg-rose-500"}`} />
 <div>
-<p className="font-bold text-neutral-900 dark:text-white">{log.memberName}</p>
-<p className="text-2xs text-neutral-500">{log.planName}</p>
+<p className="font-bold text-black dark:text-white">{log.memberName}</p>
+<p className="text-2xs text-black/55 dark:text-white/55">{log.planName}</p>
 </div>
 </div>
 <div className="text-right">
-<span className="text-2xs text-neutral-400 font-mono block">
+<span className="text-2xs text-black/55 dark:text-white/55 font-mono block">
 {new Date(log.timestamp).toLocaleTimeString([], {
 										hour: "2-digit",
 										minute: "2-digit",
@@ -339,29 +339,29 @@ export const GymFrontDeskKiosk: React.FC<any> = () => {
 <div className="flex items-center gap-2.5">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center"><Ticket size={20} /></div>
 <div>
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">{isRtl ? "إصدار تذكرة حصة منفردة (Pass)" : "Émission Pass Séance Libre"}</h3>
-<p className="text-2xs text-neutral-500">{isRtl ? "تسجيل دخول الزائر غير المشترك" : "Entrée ponctuelle sans abonnement"}</p>
+<h3 className="text-base font-bold text-black dark:text-white">{isRtl ? "إصدار تذكرة حصة منفردة (Pass)" : "Émission Pass Séance Libre"}</h3>
+<p className="text-2xs text-black/55 dark:text-white/55">{isRtl ? "تسجيل دخول الزائر غير المشترك" : "Entrée ponctuelle sans abonnement"}</p>
 </div>
 </div>
-<button type="button" onClick={() => setIsWalkInModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800">✕</button>
+<button type="button" onClick={() => setIsWalkInModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800">✕</button>
 </div>
 <form onSubmit={handleCreateWalkIn} className="space-y-4">
 <div>
-<label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">{isRtl ? "اسم الزائر" : "Nom du visiteur"}</label>
+<label className="block text-xs font-semibold text-black/70 dark:text-white/75 mb-1">{isRtl ? "اسم الزائر" : "Nom du visiteur"}</label>
 <input type="text" required value={walkInName} onChange={(e) => setWalkInName(e.target.value)} placeholder={isRtl ? "محمد بلقاسم" : "Ex: Karim Benali"} className="w-full h-10 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-xs font-medium focus:ring-2 focus:ring-[#d4522f]" />
 </div>
 <div>
-<label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">{isRtl ? "رقم الهاتف (اختياري)" : "Numéro de téléphone (optionnel)"}</label>
+<label className="block text-xs font-semibold text-black/70 dark:text-white/75 mb-1">{isRtl ? "رقم الهاتف (اختياري)" : "Numéro de téléphone (optionnel)"}</label>
 <input type="tel" value={walkInPhone} onChange={(e) => setWalkInPhone(e.target.value)} placeholder="0550 12 34 56" className="w-full h-10 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-xs font-medium focus:ring-2 focus:ring-[#d4522f]" dir="ltr" />
 </div>
 <div>
-<label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">{isRtl ? "مبلغ الحصة (د.ج)" : "Tarif de la séance (DZD)"}</label>
+<label className="block text-xs font-semibold text-black/70 dark:text-white/75 mb-1">{isRtl ? "مبلغ الحصة (د.ج)" : "Tarif de la séance (DZD)"}</label>
 <div className="grid grid-cols-3 gap-2 mb-2">
 {[
 										"500",
 										"800",
 										"1000"
-									].map((amt) => /* @__PURE__ */ <button key={amt} type="button" onClick={() => setWalkInAmount(amt)} className={`py-2 rounded-xl text-xs font-bold font-mono transition-all border ${walkInAmount === amt ? "border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]" : "border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300"}`}>
+									].map((amt) => /* @__PURE__ */ <button key={amt} type="button" onClick={() => setWalkInAmount(amt)} className={`py-2 rounded-xl text-xs font-bold font-mono transition-all border ${walkInAmount === amt ? "border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]" : "border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75"}`}>
 {amt}
 {" DA"}
 </button>)}
@@ -369,24 +369,24 @@ export const GymFrontDeskKiosk: React.FC<any> = () => {
 <input type="number" required value={walkInAmount} onChange={(e) => setWalkInAmount(e.target.value)} className="w-full h-10 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-xs font-bold font-mono focus:ring-2 focus:ring-[#d4522f]" dir="ltr" />
 </div>
 <div>
-<label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">{isRtl ? "طريقة الدفع" : "Mode de Paiement"}</label>
+<label className="block text-xs font-semibold text-black/70 dark:text-white/75 mb-1">{isRtl ? "طريقة الدفع" : "Mode de Paiement"}</label>
 <div className="grid grid-cols-3 gap-2">
-<button type="button" onClick={() => setWalkInPaymentMethod("cash")} className={`py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all ${walkInPaymentMethod === "cash" ? "border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]" : "border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400"}`}>
+<button type="button" onClick={() => setWalkInPaymentMethod("cash")} className={`py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all ${walkInPaymentMethod === "cash" ? "border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]" : "border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75"}`}>
 <Banknote size={14} />
 <span>{isRtl ? "نقداً" : "Espèces"}</span>
 </button>
-<button type="button" onClick={() => setWalkInPaymentMethod("baridimob")} className={`py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all ${walkInPaymentMethod === "baridimob" ? "border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]" : "border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400"}`}>
+<button type="button" onClick={() => setWalkInPaymentMethod("baridimob")} className={`py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all ${walkInPaymentMethod === "baridimob" ? "border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]" : "border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75"}`}>
 <span>📱</span>
 <span>BaridiMob</span>
 </button>
-<button type="button" onClick={() => setWalkInPaymentMethod("cib")} className={`py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all ${walkInPaymentMethod === "cib" ? "border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]" : "border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400"}`}>
+<button type="button" onClick={() => setWalkInPaymentMethod("cib")} className={`py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all ${walkInPaymentMethod === "cib" ? "border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]" : "border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75"}`}>
 <CreditCard size={14} />
 <span>CIB / EDAHABIA</span>
 </button>
 </div>
 </div>
 <div className="pt-2 flex gap-2">
-<button type="button" onClick={() => setIsWalkInModalOpen(false)} className="flex-1 py-2.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-300">{isRtl ? "إلغاء" : "Annuler"}</button>
+<button type="button" onClick={() => setIsWalkInModalOpen(false)} className="flex-1 py-2.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-black/70 dark:text-white/75">{isRtl ? "إلغاء" : "Annuler"}</button>
 <button type="submit" className="flex-1 py-2.5 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5">
 <Printer size={14} />
 <span>{isRtl ? "تأكيد وطباعة التذكرة" : "Valider & Imprimer"}</span>
@@ -398,16 +398,16 @@ export const GymFrontDeskKiosk: React.FC<any> = () => {
 {lastPrintedTicket && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
 <div className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl border border-neutral-200 dark:border-neutral-800 max-w-sm w-full p-6 text-center animate-in fade-in zoom-in-95 duration-150">
 <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 mx-auto flex items-center justify-center mb-3"><CheckCircle2 size={24} /></div>
-<h3 className="text-base font-bold text-neutral-900 dark:text-white mb-1">{isRtl ? "تذكرة الحصة جاهزة" : "Pass Séance Validé"}</h3>
-<p className="text-xs text-neutral-500 mb-4 font-mono font-bold text-[#d4522f]">{lastPrintedTicket.ticketNumber}</p>
+<h3 className="text-base font-bold text-black dark:text-white mb-1">{isRtl ? "تذكرة الحصة جاهزة" : "Pass Séance Validé"}</h3>
+<p className="text-xs text-black/55 dark:text-white/55 mb-4 font-mono font-bold text-[#d4522f]">{lastPrintedTicket.ticketNumber}</p>
 <div className="bg-neutral-50 dark:bg-neutral-800/60 rounded-2xl p-4 text-xs space-y-2 text-left mb-5">
 <div className="flex justify-between">
-<span className="text-neutral-400">{isRtl ? "الزبون" : "Client"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{lastPrintedTicket.clientName}</span>
+<span className="text-black/55 dark:text-white/55">{isRtl ? "الزبون" : "Client"}</span>
+<span className="font-semibold text-black dark:text-white">{lastPrintedTicket.clientName}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">{isRtl ? "المبلغ" : "Montant"}</span>
-<span className="font-bold font-mono text-neutral-900 dark:text-white">{formatMoney(lastPrintedTicket.amountDzd, "DZD")}</span>
+<span className="text-black/55 dark:text-white/55">{isRtl ? "المبلغ" : "Montant"}</span>
+<span className="font-bold font-mono text-black dark:text-white">{formatMoney(lastPrintedTicket.amountDzd, "DZD")}</span>
 </div>
 {lastPrintedTicket.timbreFiscalDzd > 0 && /* @__PURE__ */ <div className="flex justify-between text-2xs text-amber-600 font-medium">
 <span>{isRtl ? "طابع المادة 317" : "Timbre Art. 317"}</span>
@@ -425,7 +425,7 @@ export const GymFrontDeskKiosk: React.FC<any> = () => {
 </div>
 </div>
 <div className="flex gap-2">
-<button type="button" onClick={() => setLastPrintedTicket(null)} className="flex-1 py-2.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300">{isRtl ? "إغلاق" : "Fermer"}</button>
+<button type="button" onClick={() => setLastPrintedTicket(null)} className="flex-1 py-2.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 text-xs font-semibold text-black/70 dark:text-white/75">{isRtl ? "إغلاق" : "Fermer"}</button>
 <button type="button" onClick={() => {
 									window.print();
 									setLastPrintedTicket(null);

@@ -85,10 +85,10 @@ export const LegalMattersView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs"><BookOpen size={18} /></div>
 <div className="min-w-0">
 <div className="flex items-center gap-2">
-<span className="text-xs font-bold text-neutral-900 dark:text-white truncate">{d.title}</span>
+<span className="text-xs font-bold text-black dark:text-white truncate">{d.title}</span>
 {pinnedIds.has(d.id) && /* @__PURE__ */ <span className="text-[10px] text-amber-500 font-bold">📌 VIP</span>}
 </div>
-<div className="flex items-center gap-2 mt-0.5 text-[11px] text-neutral-400 font-mono">
+<div className="flex items-center gap-2 mt-0.5 text-[11px] text-black/55 dark:text-white/55 font-mono">
 <span className="font-bold text-[#d4522f]">{d.repertoireNumber}</span>
 <span>·</span>
 <span>{d.actType.replace("_", " ").toUpperCase()}</span>
@@ -101,12 +101,12 @@ export const LegalMattersView: React.FC<any> = () => {
 			header: isAr ? "الأطراف الموقعة (NIN)" : "Parties Contractantes (NIN)",
 			width: "3*",
 			renderCell: (d: any) => /* @__PURE__ */ <div className="text-xs">
-<div className="font-medium text-neutral-800 dark:text-neutral-200 truncate">
+<div className="font-medium text-black dark:text-white truncate">
 {d.parties.vendorName}
 {" ➔ "}
 {d.parties.purchaserName}
 </div>
-<div className="text-[10px] text-neutral-400 font-mono mt-0.5">
+<div className="text-[10px] text-black/55 dark:text-white/55 font-mono mt-0.5">
 {"NIN: "}
 {d.parties.purchaserNin}
 </div>
@@ -117,7 +117,7 @@ export const LegalMattersView: React.FC<any> = () => {
 			header: isAr ? "المعاملة والتعريفة (مرسوم 08-243)" : "Valeur & Honoraires Décret 08-243",
 			width: "2.5*",
 			renderCell: (d: any) => /* @__PURE__ */ <div className="text-xs">
-<div className="font-bold font-mono text-neutral-900 dark:text-white">{formatMoney(d.transactionValueDzd, language)}</div>
+<div className="font-bold font-mono text-black dark:text-white">{formatMoney(d.transactionValueDzd, language)}</div>
 <div className="text-[10px] font-mono text-[#d4522f] mt-0.5">
 {"Tarif HT: "}
 {formatMoney(d.financials.honorairesHtDzd, language)}
@@ -170,10 +170,10 @@ export const LegalMattersView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs"><Gavel size={18} /></div>
 <div className="min-w-0">
 <div className="flex items-center gap-2">
-<span className="text-xs font-bold text-neutral-900 dark:text-white truncate">{m.title}</span>
+<span className="text-xs font-bold text-black dark:text-white truncate">{m.title}</span>
 {pinnedIds.has(m.id) && /* @__PURE__ */ <span className="text-[10px] text-amber-500 font-bold">📌 VIP</span>}
 </div>
-<div className="flex items-center gap-2 mt-0.5 text-[11px] text-neutral-400 font-mono">
+<div className="flex items-center gap-2 mt-0.5 text-[11px] text-black/55 dark:text-white/55 font-mono">
 <span className="font-bold text-[#d4522f]">{m.matterNumber}</span>
 <span>·</span>
 <span>{m.category}</span>
@@ -186,7 +186,7 @@ export const LegalMattersView: React.FC<any> = () => {
 			header: isAr ? "المحكمة والغرفة" : "Juridiction & Chambre",
 			width: "2.5*",
 			renderCell: (m: any) => /* @__PURE__ */ <div className="text-xs">
-<div className="font-semibold text-neutral-800 dark:text-neutral-200 truncate">{m.courtJurisdiction}</div>
+<div className="font-semibold text-black dark:text-white truncate">{m.courtJurisdiction}</div>
 {m.nextHearingDate && /* @__PURE__ */ <div className="text-[10px] text-amber-600 dark:text-amber-400 font-mono mt-0.5 flex items-center gap-1">
 <Calendar size={10} />
 <span>
@@ -202,8 +202,8 @@ export const LegalMattersView: React.FC<any> = () => {
 			header: isAr ? "الموكل والطرف الخصم" : "Client & Partie Adverse",
 			width: "2.5*",
 			renderCell: (m: any) => /* @__PURE__ */ <div className="text-xs">
-<div className="font-medium text-neutral-900 dark:text-white truncate">{m.clientName}</div>
-<div className="text-[10px] text-neutral-400 truncate mt-0.5">
+<div className="font-medium text-black dark:text-white truncate">{m.clientName}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 truncate mt-0.5">
 {"c/ "}
 {m.adversePartyName || "N/A"}
 </div>
@@ -214,7 +214,7 @@ export const LegalMattersView: React.FC<any> = () => {
 			header: isAr ? "الأتعاب والوديعة (دج)" : "Honoraires & Séquestre",
 			width: "2*",
 			renderCell: (m: any) => /* @__PURE__ */ <div className="text-xs font-mono">
-<div className="font-bold text-neutral-900 dark:text-white">{formatMoney(m.retainerAmountDzd, language)}</div>
+<div className="font-bold text-black dark:text-white">{formatMoney(m.retainerAmountDzd, language)}</div>
 <div className="text-[10px] text-[#d4522f] mt-0.5">
 {"CARPA: "}
 {formatMoney(m.trustEscrowBalanceDzd || 0, language)}
@@ -256,7 +256,7 @@ export const LegalMattersView: React.FC<any> = () => {
 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {activeLegalRole === "notaire_titulaire" ? isAr ? "سجل العقود التوثيقية الرسمية (المرسوم 08-243)" : "Répertoire Chronologique des Actes Notariés" : activeLegalRole === "secretaire_caisse" ? isAr ? "دليل الموكلين والأطراف والمعرف الوطني NIN" : "Répertoire Général des Clients & Personnes Morales" : isAr ? "ملفات القضايا والمنازعات القضائية" : "Dossiers Juridiques & Affaires au Rôle"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f] font-mono">{activeLegalRole.toUpperCase()}</span>
@@ -273,27 +273,32 @@ export const LegalMattersView: React.FC<any> = () => {
 {activeLegalRole === "notaire_titulaire" ? /* @__PURE__ */ <UniversalDataCollection items={filteredDeeds} keyExtractor={(d) => d.id} columns={notaryColumns} searchQuery={searchQuery} onSearchChange={setSearchQuery} searchPlaceholder={isAr ? "بحث في الفهرس، الأطراف، أو رقم العقد..." : "Rechercher au répertoire, partie, référence..."} filterOptions={[
 						{
 							value: "All",
-							label: isAr ? "كل العقود" : "Tous les Actes",
+							label: isAr ? "الكل" : language === "fr" ? "Tous" : "All",
+							tooltip: isAr ? "كل العقود المحررة" : language === "fr" ? "Tous les Actes" : "All notarized deeds",
 							count: notaryDeeds.length
 						},
 						{
 							value: "vente_immobiliere",
-							label: isAr ? "عقود بيع عقاري" : "Ventes Immobilières",
+							label: isAr ? "عقار" : language === "fr" ? "Ventes" : "Sales",
+							tooltip: isAr ? "عقود بيع عقاري" : language === "fr" ? "Ventes Immobilières" : "Real estate sales deeds",
 							count: notaryDeeds.filter((d) => d.actType === "vente_immobiliere").length
 						},
 						{
 							value: "bail_commercial",
-							label: isAr ? "إيجار تجاري" : "Baux Commerciaux",
+							label: isAr ? "إيجار" : language === "fr" ? "Baux" : "Leases",
+							tooltip: isAr ? "إيجار تجاري" : language === "fr" ? "Baux Commerciaux" : "Commercial leases",
 							count: notaryDeeds.filter((d) => d.actType === "bail_commercial").length
 						},
 						{
 							value: "fredha",
-							label: isAr ? "فرائض شرعية" : "Actes de Frédha",
+							label: isAr ? "فرائض" : language === "fr" ? "Frédha" : "Inheritance",
+							tooltip: isAr ? "فرائض شرعية" : language === "fr" ? "Actes de Frédha" : "Inheritance deeds (Fredha)",
 							count: notaryDeeds.filter((d) => d.actType === "fredha").length
 						},
 						{
 							value: "statuts_societe",
-							label: isAr ? "عقود تأسيس شركات" : "Statuts Sociétés",
+							label: isAr ? "شركات" : language === "fr" ? "Sociétés" : "Corporate",
+							tooltip: isAr ? "عقود تأسيس شركات" : language === "fr" ? "Statuts Sociétés" : "Corporate charters",
 							count: notaryDeeds.filter((d) => d.actType === "statuts_societe").length
 						}
 					]} filterValue={filterCategory} onFilterChange={setFilterCategory} viewMode={viewMode} onViewModeChange={setViewMode} selectedIds={selectedIds} onSelectionChange={setSelectedIds} pinnedIds={pinnedIds} onPinToggle={(itemOrId) => {
@@ -309,35 +314,40 @@ export const LegalMattersView: React.FC<any> = () => {
 <span className="font-mono font-bold text-xs text-[#d4522f]">{d.repertoireNumber}</span>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700">{d.status === "publie_conservation" ? "Publié" : "Signé"}</span>
 </div>
-<h4 className="text-xs font-bold text-neutral-900 dark:text-white line-clamp-2">{d.title}</h4>
+<h4 className="text-xs font-bold text-black dark:text-white line-clamp-2">{d.title}</h4>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700 text-xs">
-<span className="text-[10px] text-neutral-400 block">{isAr ? "قيمة المعاملة" : "Valeur"}</span>
-<span className="font-bold font-mono text-neutral-900 dark:text-white">{formatMoney(d.transactionValueDzd, language)}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? "قيمة المعاملة" : "Valeur"}</span>
+<span className="font-bold font-mono text-black dark:text-white">{formatMoney(d.transactionValueDzd, language)}</span>
 </div>
 </div>} /> : /* @__PURE__ */ <UniversalDataCollection items={filteredMatters} keyExtractor={(m) => m.id} columns={matterColumns} searchQuery={searchQuery} onSearchChange={setSearchQuery} searchPlaceholder={isAr ? "بحث في القضايا، الموكلين، أو المحكمة..." : "Rechercher une affaire, client, juridiction..."} filterOptions={[
 						{
 							value: "All",
-							label: isAr ? "كل القضايا" : "Tous les Dossiers",
+							label: isAr ? "الكل" : language === "fr" ? "Tous" : "All",
+							tooltip: isAr ? "كل القضايا" : language === "fr" ? "Tous les Dossiers" : "All legal matters",
 							count: matters.length
 						},
 						{
 							value: "Commercial",
-							label: isAr ? "تجاري ومنازعات" : "Commercial",
+							label: isAr ? "تجاري" : "Commercial",
+							tooltip: isAr ? "تجاري ومنازعات" : language === "fr" ? "Contentieux commercial" : "Commercial disputes",
 							count: matters.filter((m) => m.category === "Commercial").length
 						},
 						{
 							value: "Civil",
-							label: isAr ? "مدني وعقارات" : "Civil",
+							label: isAr ? "مدني" : "Civil",
+							tooltip: isAr ? "مدني وعقارات" : language === "fr" ? "Droit civil & immobilier" : "Civil & real estate",
 							count: matters.filter((m) => m.category === "Civil").length
 						},
 						{
 							value: "Labor",
-							label: isAr ? "عمالي واجتماعي" : "Social",
+							label: isAr ? "عمالي" : language === "fr" ? "Social" : "Labor",
+							tooltip: isAr ? "عمالي واجتماعي" : language === "fr" ? "Droit du travail & social" : "Labor & employment",
 							count: matters.filter((m) => m.category === "Labor").length
 						},
 						{
 							value: "Penal",
-							label: isAr ? "جزائي وجنائي" : "Pénal",
+							label: isAr ? "جزائي" : language === "fr" ? "Pénal" : "Criminal",
+							tooltip: isAr ? "جزائي وجنائي" : language === "fr" ? "Droit pénal" : "Criminal defense",
 							count: matters.filter((m) => m.category === "Penal").length
 						}
 					]} filterValue={filterCategory} onFilterChange={setFilterCategory} viewMode={viewMode} onViewModeChange={setViewMode} selectedIds={selectedIds} onSelectionChange={setSelectedIds} pinnedIds={pinnedIds} onPinToggle={(itemOrId) => {
@@ -353,10 +363,10 @@ export const LegalMattersView: React.FC<any> = () => {
 <span className="font-mono font-bold text-xs text-[#d4522f]">{m.matterNumber}</span>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">{m.category}</span>
 </div>
-<h4 className="text-xs font-bold text-neutral-900 dark:text-white line-clamp-2">{m.title}</h4>
+<h4 className="text-xs font-bold text-black dark:text-white line-clamp-2">{m.title}</h4>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700 text-xs">
-<span className="text-[10px] text-neutral-400 block">{m.clientName}</span>
-<span className="font-bold font-mono text-neutral-900 dark:text-white">{formatMoney(m.retainerAmountDzd, language)}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 block">{m.clientName}</span>
+<span className="font-bold font-mono text-black dark:text-white">{formatMoney(m.retainerAmountDzd, language)}</span>
 </div>
 </div>} />}
 </div>
@@ -365,59 +375,59 @@ export const LegalMattersView: React.FC<any> = () => {
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-700">
 <div className="flex items-center gap-2">
 <BookOpen size={18} className="text-[#d4522f]" />
-<span className="text-xs font-bold text-neutral-900 dark:text-white font-mono">{selectedDeed.repertoireNumber}</span>
+<span className="text-xs font-bold text-black dark:text-white font-mono">{selectedDeed.repertoireNumber}</span>
 </div>
-<button onClick={() => setSelectedDeed(null)} className="p-1 rounded-full text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer"><X size={18} /></button>
+<button onClick={() => setSelectedDeed(null)} className="p-1 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer"><X size={18} /></button>
 </div>
 <div>
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white">{selectedDeed.title}</h3>
-<p className="text-xs text-neutral-500 mt-0.5">{selectedDeed.titleAr}</p>
+<h3 className="text-sm font-bold text-black dark:text-white">{selectedDeed.title}</h3>
+<p className="text-xs text-black/55 dark:text-white/55 mt-0.5">{selectedDeed.titleAr}</p>
 </div>
 <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-900/40 border border-[#E6DED6] dark:border-neutral-700/60 space-y-2 text-xs">
-<span className="font-bold text-neutral-900 dark:text-white block">
+<span className="font-bold text-black dark:text-white block">
 {isAr ? "التعريفة الرسمية (المرسوم 08-243):" : "Décompte Légal Décret 08-243 :"}
 </span>
-<div className="flex justify-between text-neutral-600 dark:text-neutral-400">
+<div className="flex justify-between text-black/70 dark:text-white/75">
 <span>{isAr ? "مبلغ المعاملة" : "Valeur Transaction"}</span>
-<span className="font-bold font-mono text-neutral-900 dark:text-white">{formatMoney(selectedDeed.transactionValueDzd, language)}</span>
+<span className="font-bold font-mono text-black dark:text-white">{formatMoney(selectedDeed.transactionValueDzd, language)}</span>
 </div>
-<div className="flex justify-between text-neutral-600 dark:text-neutral-400">
+<div className="flex justify-between text-black/70 dark:text-white/75">
 <span>{isAr ? "أتعاب التوثيق الخام" : "Honoraires Notaire HT"}</span>
-<span className="font-bold font-mono text-neutral-900 dark:text-white">{formatMoney(selectedDeed.financials.honorairesHtDzd, language)}</span>
+<span className="font-bold font-mono text-black dark:text-white">{formatMoney(selectedDeed.financials.honorairesHtDzd, language)}</span>
 </div>
-<div className="flex justify-between text-neutral-600 dark:text-neutral-400">
+<div className="flex justify-between text-black/70 dark:text-white/75">
 <span>{isAr ? "الرسم 19% TVA" : "TVA (19%)"}</span>
 <span className="font-bold font-mono text-[#d4522f]">
 +
 {formatMoney(selectedDeed.financials.tvaAmountDzd, language)}
 </span>
 </div>
-<div className="flex justify-between text-neutral-600 dark:text-neutral-400">
+<div className="flex justify-between text-black/70 dark:text-white/75">
 <span>{isAr ? "حقوق التسجيل والشهر" : "Enregistrement & Publicité"}</span>
-<span className="font-bold font-mono text-neutral-900 dark:text-white">
+<span className="font-bold font-mono text-black dark:text-white">
 +
 {formatMoney(selectedDeed.financials.droitsEnregistrementDzd + selectedDeed.financials.droitsPubliciteDzd, language)}
 </span>
 </div>
-<div className="pt-2 border-t border-neutral-200 dark:border-neutral-700 flex justify-between font-bold text-neutral-900 dark:text-white">
+<div className="pt-2 border-t border-neutral-200 dark:border-neutral-700 flex justify-between font-bold text-black dark:text-white">
 <span>{isAr ? "إجمالي الوديعة المطلوبة" : "Total Provision Due"}</span>
 <span className="text-[#d4522f] font-mono">{formatMoney(selectedDeed.financials.totalProvisionClientDzd, language)}</span>
 </div>
 </div>
 <div className="space-y-1.5 text-xs">
-<span className="font-bold text-neutral-900 dark:text-white block">{isAr ? "الأطراف الموقعة:" : "Parties Contractantes :"}</span>
+<span className="font-bold text-black dark:text-white block">{isAr ? "الأطراف الموقعة:" : "Parties Contractantes :"}</span>
 <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200/60 dark:border-neutral-700/60">
-<span className="text-[10px] text-neutral-400 block">{isAr ? "البائع / المتنازل" : "Vendeur"}</span>
-<span className="font-semibold text-neutral-900 dark:text-white">{selectedDeed.parties.vendorName}</span>
-<span className="text-[10px] font-mono text-neutral-400 block">
+<span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? "البائع / المتنازل" : "Vendeur"}</span>
+<span className="font-semibold text-black dark:text-white">{selectedDeed.parties.vendorName}</span>
+<span className="text-[10px] font-mono text-black/55 dark:text-white/55 block">
 {"NIN: "}
 {selectedDeed.parties.vendorNin}
 </span>
 </div>
 <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200/60 dark:border-neutral-700/60">
-<span className="text-[10px] text-neutral-400 block">{isAr ? "المشتري / المستفيد" : "Acquéreur"}</span>
-<span className="font-semibold text-neutral-900 dark:text-white">{selectedDeed.parties.purchaserName}</span>
-<span className="text-[10px] font-mono text-neutral-400 block">
+<span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? "المشتري / المستفيد" : "Acquéreur"}</span>
+<span className="font-semibold text-black dark:text-white">{selectedDeed.parties.purchaserName}</span>
+<span className="text-[10px] font-mono text-black/55 dark:text-white/55 block">
 {"NIN: "}
 {selectedDeed.parties.purchaserNin}
 </span>
@@ -436,35 +446,35 @@ export const LegalMattersView: React.FC<any> = () => {
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-700">
 <div className="flex items-center gap-2">
 <Gavel size={18} className="text-[#d4522f]" />
-<span className="text-xs font-bold text-neutral-900 dark:text-white font-mono">{selectedMatter.matterNumber}</span>
+<span className="text-xs font-bold text-black dark:text-white font-mono">{selectedMatter.matterNumber}</span>
 </div>
-<button onClick={() => setSelectedMatter(null)} className="p-1 rounded-full text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer"><X size={18} /></button>
+<button onClick={() => setSelectedMatter(null)} className="p-1 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer"><X size={18} /></button>
 </div>
 <div>
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white">{selectedMatter.title}</h3>
-<p className="text-xs text-neutral-500 mt-0.5">{selectedMatter.courtJurisdiction}</p>
+<h3 className="text-sm font-bold text-black dark:text-white">{selectedMatter.title}</h3>
+<p className="text-xs text-black/55 dark:text-white/55 mt-0.5">{selectedMatter.courtJurisdiction}</p>
 </div>
 <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-900/40 border border-[#E6DED6] dark:border-neutral-700/60 space-y-2 text-xs">
 <div className="flex justify-between">
-<span className="text-neutral-500">{isAr ? "الموكل" : "Client"}</span>
-<span className="font-bold text-neutral-900 dark:text-white">{selectedMatter.clientName}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "الموكل" : "Client"}</span>
+<span className="font-bold text-black dark:text-white">{selectedMatter.clientName}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">{isAr ? "الطرف الخصم" : "Partie Adverse"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{selectedMatter.adversePartyName || "N/A"}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "الطرف الخصم" : "Partie Adverse"}</span>
+<span className="font-semibold text-black dark:text-white">{selectedMatter.adversePartyName || "N/A"}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">{isAr ? "الأتعاب المتفق عليها" : "Convention Retainer"}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "الأتعاب المتفق عليها" : "Convention Retainer"}</span>
 <span className="font-bold font-mono text-[#d4522f]">{formatMoney(selectedMatter.retainerAmountDzd, language)}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">{isAr ? "رصيد حساب الحراسة" : "Solde CARPA"}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "رصيد حساب الحراسة" : "Solde CARPA"}</span>
 <span className="font-bold font-mono text-emerald-600">{formatMoney(selectedMatter.trustEscrowBalanceDzd, language)}</span>
 </div>
 </div>
 {selectedMatter.notes && /* @__PURE__ */ <div className="text-xs space-y-1">
-<span className="font-bold text-neutral-700 dark:text-neutral-300 block">{isAr ? "ملاحظات المحامي والاستراتيجية:" : "Stratégie du Cabinet :"}</span>
-<p className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300">{selectedMatter.notes}</p>
+<span className="font-bold text-black/70 dark:text-white/75 block">{isAr ? "ملاحظات المحامي والاستراتيجية:" : "Stratégie du Cabinet :"}</span>
+<p className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75">{selectedMatter.notes}</p>
 </div>}
 </div>
 <div className="pt-4 border-t border-neutral-100 dark:border-neutral-700 flex gap-2">

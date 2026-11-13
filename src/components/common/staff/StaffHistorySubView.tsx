@@ -20,6 +20,7 @@ import {
 import { PayslipPrintModal } from './PayslipPrintModal';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { compactFilterLabel } from '../../../utils/filterLexicon';
 
 interface StaffHistorySubViewProps {
   staffList: StaffMember[];
@@ -72,12 +73,14 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
             {
               value: 'salaires',
               label: isAr ? 'الرواتب' : isEn ? 'Payroll' : 'Salaires',
+              tooltip: isAr ? 'سجل دفعات الرواتب' : isEn ? 'Payroll runs & slips' : 'Historique des salaires',
               icon: <FileText className="w-4 h-4 mr-1.5" />,
               count: payrollRuns.length,
             },
             {
               value: 'pointages',
               label: isAr ? 'الحضور' : isEn ? 'Logs' : 'Pointages',
+              tooltip: isAr ? 'سجل الحضور والانصراف' : isEn ? 'Attendance punch logs' : 'Journal des pointages',
               icon: <Clock className="w-4 h-4 mr-1.5" />,
               count: attendanceLogs.length,
             },
@@ -188,12 +191,15 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
               <select
                 value={selectedStaffFilter}
                 onChange={(e) => setSelectedStaffFilter(e.target.value)}
+                title={isAr ? 'تصفية حسب الموظف' : isEn ? 'Filter by staff member' : 'Filtrer par collaborateur'}
                 className="px-3 py-1.5 text-xs font-medium rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202024] text-black dark:text-white"
               >
-                <option value="all">{isAr ? 'الكل' : isEn ? 'All' : 'Tous'}</option>
+                <option value="all" title={isAr ? 'جميع الموظفين' : isEn ? 'All staff members' : 'Tous les collaborateurs'}>
+                  {isAr ? 'الكل' : isEn ? 'All' : 'Tous'}
+                </option>
                 {staffList.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.fullName}
+                  <option key={s.id} value={s.id} title={s.fullName}>
+                    {compactFilterLabel(s.fullName).label}
                   </option>
                 ))}
               </select>

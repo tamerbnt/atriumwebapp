@@ -93,8 +93,8 @@ export const TradingDirectoryView: React.FC<any> = () => {
 			header: t("trading_col_company", "Raison Sociale & Secteur"),
 			minWidth: "220px",
 			renderCell: (c: any) => /* @__PURE__ */ <div className="text-xs">
-<span className="font-bold text-neutral-900 dark:text-neutral-100 block">{c.companyName}</span>
-<span className="text-[10px] text-neutral-500">{c.sector || "Entreprise B2B"}</span>
+<span className="font-bold text-black dark:text-white block">{c.companyName}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">{c.sector || "Entreprise B2B"}</span>
 </div>
 		},
 		{
@@ -102,11 +102,11 @@ export const TradingDirectoryView: React.FC<any> = () => {
 			header: "N.I.F. / R.C.",
 			width: "180px",
 			renderCell: (c: any) => /* @__PURE__ */ <div className="text-xs font-mono">
-<span className="block font-medium text-neutral-800 dark:text-neutral-200">
+<span className="block font-medium text-black dark:text-white">
 {"NIF: "}
 {c.nif || "N/A"}
 </span>
-<span className="text-[10px] text-neutral-400">
+<span className="text-[10px] text-black/55 dark:text-white/55">
 {"RC: "}
 {c.rc || "N/A"}
 </span>
@@ -117,15 +117,15 @@ export const TradingDirectoryView: React.FC<any> = () => {
 			header: t("trading_col_contact", "Interlocuteur"),
 			width: "180px",
 			renderCell: (c: any) => /* @__PURE__ */ <div className="text-xs">
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 block">{c.contactName || "N/A"}</span>
-<span className="text-[10px] text-neutral-500 font-mono">{c.phone || c.contactPhone}</span>
+<span className="font-semibold text-black dark:text-white block">{c.contactName || "N/A"}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 font-mono">{c.phone || c.contactPhone}</span>
 </div>
 		},
 		{
 			key: "city",
 			header: t("trading_col_city", "Wilaya"),
 			width: "100px",
-			renderCell: (c: any) => /* @__PURE__ */ <span className="text-xs text-neutral-600 dark:text-neutral-400">{c.city}</span>
+			renderCell: (c: any) => /* @__PURE__ */ <span className="text-xs text-black/70 dark:text-white/75">{c.city}</span>
 		},
 		{
 			key: "balance",
@@ -134,8 +134,8 @@ export const TradingDirectoryView: React.FC<any> = () => {
 			renderCell: (c: any) => {
 				const isOver = (c.outstandingBalance || 0) > (c.creditLimit || 0);
 				return /* @__PURE__ */ <div className="text-xs font-mono tabular-nums">
-<span className={`font-bold block ${isOver ? "text-rose-600 dark:text-rose-400" : "text-neutral-900 dark:text-neutral-100"}`}>{formatMoney(c.outstandingBalance || 0)}</span>
-<span className="text-[10px] text-neutral-400">
+<span className={`font-bold block ${isOver ? "text-rose-600 dark:text-rose-400" : "text-black dark:text-white"}`}>{formatMoney(c.outstandingBalance || 0)}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">
 {"Plafond: "}
 {formatMoney(c.creditLimit || 0)}
 </span>
@@ -151,11 +151,11 @@ export const TradingDirectoryView: React.FC<any> = () => {
 						e.stopPropagation();
 						setEditingEntity(c);
 						setEntityModalOpen(true);
-					}} title={t("action_edit", "Modifier")} className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"><Edit size={14} /></button>
+					}} title={t("action_edit", "Modifier")} className="p-1.5 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"><Edit size={14} /></button>
 <button onClick={(e) => {
 						e.stopPropagation();
 						setDeleteTarget(c);
-					}} title={t("action_delete", "Supprimer")} className="p-1.5 text-neutral-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"><Trash2 size={14} /></button>
+					}} title={t("action_delete", "Supprimer")} className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"><Trash2 size={14} /></button>
 </div>
 		}
 	];
@@ -165,8 +165,8 @@ export const TradingDirectoryView: React.FC<any> = () => {
 			header: t("trading_col_supplier", "Fournisseur Référencé"),
 			minWidth: "220px",
 			renderCell: (s: any) => /* @__PURE__ */ <div className="text-xs">
-<span className="font-bold text-neutral-900 dark:text-neutral-100 block">{s.supplierName}</span>
-<span className="text-[10px] text-neutral-500">{s.sector || "Fournisseur"}</span>
+<span className="font-bold text-black dark:text-white block">{s.supplierName}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">{s.sector || "Fournisseur"}</span>
 </div>
 		},
 		{
@@ -174,11 +174,11 @@ export const TradingDirectoryView: React.FC<any> = () => {
 			header: "N.I.F. / R.C.",
 			width: "180px",
 			renderCell: (s: any) => /* @__PURE__ */ <div className="text-xs font-mono">
-<span className="block font-medium text-neutral-800 dark:text-neutral-200">
+<span className="block font-medium text-black dark:text-white">
 {"NIF: "}
 {s.nif || "N/A"}
 </span>
-<span className="text-[10px] text-neutral-400">
+<span className="text-[10px] text-black/55 dark:text-white/55">
 {"RC: "}
 {s.rc || "N/A"}
 </span>
@@ -189,21 +189,21 @@ export const TradingDirectoryView: React.FC<any> = () => {
 			header: t("trading_col_contact", "Contact & Tél"),
 			width: "180px",
 			renderCell: (s: any) => /* @__PURE__ */ <div className="text-xs">
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 block">{s.contactName || "Standard"}</span>
-<span className="text-[10px] text-neutral-500 font-mono">{s.phone}</span>
+<span className="font-semibold text-black dark:text-white block">{s.contactName || "Standard"}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 font-mono">{s.phone}</span>
 </div>
 		},
 		{
 			key: "city",
 			header: t("trading_col_city", "Ville"),
 			width: "110px",
-			renderCell: (s: any) => /* @__PURE__ */ <span className="text-xs text-neutral-600 dark:text-neutral-400">{s.city}</span>
+			renderCell: (s: any) => /* @__PURE__ */ <span className="text-xs text-black/70 dark:text-white/75">{s.city}</span>
 		},
 		{
 			key: "payable",
 			header: t("trading_col_debt", "Dette Fournisseur"),
 			width: "150px",
-			renderCell: (s: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100 tabular-nums">{formatMoney(s.outstandingPayable || 0)}</span>
+			renderCell: (s: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">{formatMoney(s.outstandingPayable || 0)}</span>
 		},
 		{
 			key: "actions",
@@ -214,11 +214,11 @@ export const TradingDirectoryView: React.FC<any> = () => {
 						e.stopPropagation();
 						setEditingEntity(s);
 						setEntityModalOpen(true);
-					}} title={t("action_edit", "Modifier")} className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"><Edit size={14} /></button>
+					}} title={t("action_edit", "Modifier")} className="p-1.5 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"><Edit size={14} /></button>
 <button onClick={(e) => {
 						e.stopPropagation();
 						setDeleteTarget(s);
-					}} title={t("action_delete", "Supprimer")} className="p-1.5 text-neutral-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"><Trash2 size={14} /></button>
+					}} title={t("action_delete", "Supprimer")} className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"><Trash2 size={14} /></button>
 </div>
 		}
 	];
@@ -267,7 +267,7 @@ export const TradingDirectoryView: React.FC<any> = () => {
 <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><Users size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{t("trading_directory_title", "Répertoire des Partenaires B2B")}</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("trading_directory_title", "Répertoire des Partenaires B2B")}</h1>
 <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4522f]/15 text-[#d4522f] border border-[#d4522f]/30">
 {b2bClients.length}
 {" "}
@@ -293,34 +293,34 @@ export const TradingDirectoryView: React.FC<any> = () => {
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">{language === "ar" ? "العملاء التجاريون المعتمدون" : "Clients B2B Référencés"}</span>
+<span className="text-xs font-semibold text-black/55 dark:text-white/75">{language === "ar" ? "العملاء التجاريون المعتمدون" : "Clients B2B Référencés"}</span>
 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#d4522f]/10 text-[#d4522f]">
 {b2bClients.length}
 {" comptes"}
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">{b2bClients.length}</div>
-<div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{b2bClients.length}</div>
+<div className="flex items-center gap-1.5 text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 <ShieldCheck size={13} className="text-emerald-500" />
 <span>
 {"Plafond global: "}
-<strong className="font-mono text-neutral-800 dark:text-neutral-200">{formatMoney(metrics.totalCreditLimit)}</strong>
+<strong className="font-mono text-black dark:text-white">{formatMoney(metrics.totalCreditLimit)}</strong>
 </span>
 </div>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">{language === "ar" ? "الموردون والمستحقات" : "Fournisseurs & Dettes Achats"}</span>
-<span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
+<span className="text-xs font-semibold text-black/55 dark:text-white/75">{language === "ar" ? "الموردون والمستحقات" : "Fournisseurs & Dettes Achats"}</span>
+<span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75">
 {b2bSuppliers.length}
 {" fournisseurs"}
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">{formatMoney(metrics.totalSupplierDebt)}</div>
-<div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(metrics.totalSupplierDebt)}</div>
+<div className="flex items-center gap-1.5 text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 <Clock size={13} className="text-amber-500" />
 <span>Dettes fournisseurs exigibles sous 30/60j</span>
 </div>
@@ -337,15 +337,15 @@ export const TradingDirectoryView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">{formatMoney(metrics.totalClientDebt)}</div>
-<div className="flex items-center justify-between text-[11px] text-stone-400 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(metrics.totalClientDebt)}</div>
+<div className="flex items-center justify-between text-[11px] text-white/75 mt-0.5">
 <span>
 {metrics.overLimitClients > 0 ? /* @__PURE__ */ <span className="text-[#FB923C] font-semibold">
 {metrics.overLimitClients}
 {" dépassement(s) de plafond"}
 </span> : /* @__PURE__ */ <span className="text-emerald-400">Tous les encours dans les limites</span>}
 </span>
-<span className="font-mono text-stone-300">Total B2B</span>
+<span className="font-mono text-white/80">Total B2B</span>
 </div>
 </div>
 <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#FB923C]/5 rounded-full blur-2xl pointer-events-none" />
@@ -357,7 +357,7 @@ export const TradingDirectoryView: React.FC<any> = () => {
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><Users size={18} /></div>
 <div className="flex items-center gap-2">
-<span className="text-sm font-bold text-neutral-900 dark:text-white">
+<span className="text-sm font-bold text-black dark:text-white">
 {mode === "clients" ? t("trading_directory_clients_title", "Portefeuille Clients") : t("trading_directory_suppliers_title", "Fournisseurs Référencés")}
 </span>
 <span className="text-xs px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f] font-semibold font-mono">{mode === "clients" ? filteredClients.length : filteredSuppliers.length}</span>
@@ -369,18 +369,12 @@ export const TradingDirectoryView: React.FC<any> = () => {
 											setMode("clients");
 											setSelectedEntity(null);
 											setSelectedEntityIds(/* @__PURE__ */ new Set());
-										}} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${mode === "clients" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"}`}>
-<span>{t("trading_directory_tab_clients", "Clients B2B")}</span>
-<span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${mode === "clients" ? "bg-[#d4522f]/15 text-[#d4522f]" : "bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500"}`}>{b2bClients.length}</span>
-</button>
+										}} title={`${t("trading_directory_tab_clients", "Clients B2B")} (${b2bClients.length})`} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${mode === "clients" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "العملاء" : language === "fr" ? "Clients" : "Clients"}</button>
 <button type="button" onClick={() => {
 											setMode("suppliers");
 											setSelectedEntity(null);
 											setSelectedEntityIds(/* @__PURE__ */ new Set());
-										}} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${mode === "suppliers" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"}`}>
-<span>{t("trading_directory_tab_suppliers", "Fournisseurs Référencés")}</span>
-<span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${mode === "suppliers" ? "bg-[#d4522f]/15 text-[#d4522f]" : "bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500"}`}>{b2bSuppliers.length}</span>
-</button>
+										}} title={`${t("trading_directory_tab_suppliers", "Fournisseurs Référencés")} (${b2bSuppliers.length})`} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${mode === "suppliers" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "الموردون" : language === "fr" ? "Fournisseurs" : "Suppliers"}</button>
 </div>
 <div className="self-end sm:self-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={language === "ar" ? "بحث باسم الشركة، المسؤول، NIF..." : "Rechercher raison sociale, contact, NIF..."} shutSize={36} openWidth={280} />
@@ -418,10 +412,10 @@ export const TradingDirectoryView: React.FC<any> = () => {
 <div>
 <div className="flex items-start justify-between mb-3">
 <div className="w-12 h-12 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-base shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">{c.companyName.charAt(0).toUpperCase()}</div>
-<span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 truncate max-w-[150px]">{c.sector || "Entreprise B2B"}</span>
+<span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 truncate max-w-[150px]">{c.sector || "Entreprise B2B"}</span>
 </div>
-<h3 className="font-bold text-base text-neutral-900 dark:text-white line-clamp-1 mb-0.5">{c.companyName}</h3>
-<div className="text-[11px] font-mono text-neutral-400 mb-3">
+<h3 className="font-bold text-base text-black dark:text-white line-clamp-1 mb-0.5">{c.companyName}</h3>
+<div className="text-[11px] font-mono text-black/55 dark:text-white/55 mb-3">
 {"NIF: "}
 {c.nif || "Non renseigné"}
 {" "}
@@ -429,17 +423,17 @@ export const TradingDirectoryView: React.FC<any> = () => {
 </div>
 <div className="p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-1.5 text-xs">
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Encours Dû :</span>
+<span className="text-black/55 dark:text-white/55">Encours Dû :</span>
 <span className={`font-mono font-bold tabular-nums ${isOverLimit ? "text-rose-600" : "text-[#d4522f]"}`}>{formatMoney(c.outstandingBalance || 0)}</span>
 </div>
-<div className="flex items-center justify-between text-[11px] text-neutral-400">
+<div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
 <span>Plafond Autorisé :</span>
 <span className="font-mono tabular-nums">{formatMoney(c.creditLimit || 0)}</span>
 </div>
 </div>
 </div>
 <div className="mt-3 pt-2.5 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-<span className="text-neutral-600 dark:text-neutral-300 truncate max-w-[160px] font-medium">{c.contactName || c.phone || "Contact Direct"}</span>
+<span className="text-black/70 dark:text-white/75 truncate max-w-[160px] font-medium">{c.contactName || c.phone || "Contact Direct"}</span>
 <button type="button" onClick={(e) => {
 														e.stopPropagation();
 														setSelectedEntity(c);
@@ -473,11 +467,11 @@ export const TradingDirectoryView: React.FC<any> = () => {
 									}]} renderCard={(s) => /* @__PURE__ */ <div className="flex flex-col justify-between w-full h-full">
 <div>
 <div className="flex items-start justify-between mb-3">
-<div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center font-bold text-base shrink-0 border border-neutral-200 dark:border-neutral-700 shadow-2xs">{s.supplierName.charAt(0).toUpperCase()}</div>
-<span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 truncate max-w-[150px]">{s.sector || "Fournisseur Agréé"}</span>
+<div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-base shrink-0 border border-neutral-200 dark:border-neutral-700 shadow-2xs">{s.supplierName.charAt(0).toUpperCase()}</div>
+<span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 truncate max-w-[150px]">{s.sector || "Fournisseur Agréé"}</span>
 </div>
-<h3 className="font-bold text-base text-neutral-900 dark:text-white line-clamp-1 mb-0.5">{s.supplierName}</h3>
-<div className="text-[11px] font-mono text-neutral-400 mb-3">
+<h3 className="font-bold text-base text-black dark:text-white line-clamp-1 mb-0.5">{s.supplierName}</h3>
+<div className="text-[11px] font-mono text-black/55 dark:text-white/55 mb-3">
 {"NIF: "}
 {s.nif || "Non renseigné"}
 {" "}
@@ -485,10 +479,10 @@ export const TradingDirectoryView: React.FC<any> = () => {
 </div>
 <div className="p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-1.5 text-xs">
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Dettes Achats Exigibles :</span>
+<span className="text-black/55 dark:text-white/55">Dettes Achats Exigibles :</span>
 <span className="font-mono font-bold text-amber-600 tabular-nums">{formatMoney(s.outstandingPayable || 0)}</span>
 </div>
-<div className="flex items-center justify-between text-[11px] text-neutral-400">
+<div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
 <span>Modalités :</span>
 <span>
 {s.paymentTermsDays || 30}
@@ -498,12 +492,12 @@ export const TradingDirectoryView: React.FC<any> = () => {
 </div>
 </div>
 <div className="mt-3 pt-2.5 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-<span className="text-neutral-600 dark:text-neutral-300 truncate max-w-[160px] font-medium">{s.contactName || s.phone || "Contact Commercial"}</span>
+<span className="text-black/70 dark:text-white/75 truncate max-w-[160px] font-medium">{s.contactName || s.phone || "Contact Commercial"}</span>
 <button type="button" onClick={(e) => {
 													e.stopPropagation();
 													setSelectedEntity(s);
 													setComposerOpen(true);
-												}} className="px-2.5 py-1 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-neutral-800 dark:text-neutral-200 text-[11px] font-bold transition-colors cursor-pointer">+ Bon Commande</button>
+												}} className="px-2.5 py-1 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-black dark:text-white text-[11px] font-bold transition-colors cursor-pointer">+ Bon Commande</button>
 </div>
 </div>} emptyTitle={language === "ar" ? "لم يتم العثور على موردين" : "Aucun fournisseur trouvé"} emptyDescription={language === "ar" ? "أضف أول مورد بالضغط على زر مورد جديد أعلاه." : "Ajoutez votre premier fournisseur en cliquant sur Nouveau Fournisseur."} />}
 </div>
@@ -511,56 +505,56 @@ export const TradingDirectoryView: React.FC<any> = () => {
 <div className="flex items-start justify-between">
 <div>
 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#d4522f]/15 text-[#d4522f] font-bold uppercase">{mode === "clients" ? "Fiche Client B2B" : "Fiche Fournisseur"}</span>
-<h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100 mt-1.5">
+<h3 className="text-base font-bold text-black dark:text-white mt-1.5">
 {"companyName" in selectedEntity ? selectedEntity.companyName : selectedEntity.supplierName}
 </h3>
-<p className="text-xs text-neutral-500">{selectedEntity.sector}</p>
+<p className="text-xs text-black/55 dark:text-white/55">{selectedEntity.sector}</p>
 </div>
-<button onClick={() => setSelectedEntity(null)} className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700"><X size={16} /></button>
+<button onClick={() => setSelectedEntity(null)} className="p-1.5 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700"><X size={16} /></button>
 </div>
 <div className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50/70 dark:bg-neutral-800/60 text-xs font-mono space-y-1.5">
-<span className="font-bold font-sans text-[11px] text-neutral-600 dark:text-neutral-400 block uppercase">Identifiants Fiscaux Certifiés</span>
+<span className="font-bold font-sans text-[11px] text-black/70 dark:text-white/75 block uppercase">Identifiants Fiscaux Certifiés</span>
 <div className="flex justify-between">
-<span className="text-neutral-500">N.I.F. (15 ch) :</span>
-<span className="font-bold text-neutral-800 dark:text-neutral-200">{selectedEntity.nif || "Non renseigné"}</span>
+<span className="text-black/55 dark:text-white/55">N.I.F. (15 ch) :</span>
+<span className="font-bold text-black dark:text-white">{selectedEntity.nif || "Non renseigné"}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">R.C. N° :</span>
-<span className="text-neutral-800 dark:text-neutral-200">{selectedEntity.rc || "Non renseigné"}</span>
+<span className="text-black/55 dark:text-white/55">R.C. N° :</span>
+<span className="text-black dark:text-white">{selectedEntity.rc || "Non renseigné"}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">Art. Imposition :</span>
-<span className="text-neutral-800 dark:text-neutral-200">{selectedEntity.ai || "Non renseigné"}</span>
+<span className="text-black/55 dark:text-white/55">Art. Imposition :</span>
+<span className="text-black dark:text-white">{selectedEntity.ai || "Non renseigné"}</span>
 </div>
 </div>
 <div className="space-y-2 text-xs">
-<span className="font-bold uppercase tracking-wider text-neutral-500 text-[10px] block">Contact Direct</span>
-<div className="flex items-center gap-2 text-neutral-800 dark:text-neutral-200">
+<span className="font-bold uppercase tracking-wider text-black/55 dark:text-white/55 text-[10px] block">Contact Direct</span>
+<div className="flex items-center gap-2 text-black dark:text-white">
 <span className="font-semibold">{selectedEntity.contactName || "Standard"}</span>
-{selectedEntity && "contactRole" in selectedEntity && /* @__PURE__ */ <span className="text-neutral-400">
+{selectedEntity && "contactRole" in selectedEntity && /* @__PURE__ */ <span className="text-black/55 dark:text-white/55">
 (
 {selectedEntity.contactRole}
 )
 </span>}
 </div>
-<div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 font-mono text-[11px]">
+<div className="flex items-center gap-2 text-black/70 dark:text-white/75 font-mono text-[11px]">
 <Phone size={13} className="text-[#d4522f]" />
 <span>{selectedEntity.phone || "Non renseigné"}</span>
 </div>
 </div>
 {mode === "clients" && /* @__PURE__ */ <div className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 space-y-2 text-xs font-mono">
-<span className="font-bold font-sans text-[11px] text-neutral-600 dark:text-neutral-400 block uppercase">Encours & Conditions Commerciales</span>
+<span className="font-bold font-sans text-[11px] text-black/70 dark:text-white/75 block uppercase">Encours & Conditions Commerciales</span>
 <div className="flex justify-between">
-<span className="text-neutral-500">Encours Actuel :</span>
+<span className="text-black/55 dark:text-white/55">Encours Actuel :</span>
 <span className="font-bold text-rose-600">{formatMoney(selectedEntity.outstandingBalance || 0)}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">Plafond Autorisé :</span>
-<span className="text-neutral-800 dark:text-neutral-200">{formatMoney(selectedEntity.creditLimit || 0)}</span>
+<span className="text-black/55 dark:text-white/55">Plafond Autorisé :</span>
+<span className="text-black dark:text-white">{formatMoney(selectedEntity.creditLimit || 0)}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">Délai Règlement :</span>
-<span className="text-neutral-800 dark:text-neutral-200">
+<span className="text-black/55 dark:text-white/55">Délai Règlement :</span>
+<span className="text-black dark:text-white">
 {selectedEntity.paymentTermsDays}
 {" jours"}
 </span>
@@ -568,7 +562,7 @@ export const TradingDirectoryView: React.FC<any> = () => {
 </div>}
 {mode === "clients" && /* @__PURE__ */ <div className="space-y-2 text-xs">
 <div className="flex items-center justify-between">
-<span className="font-bold uppercase tracking-wider text-neutral-500 text-[10px]">
+<span className="font-bold uppercase tracking-wider text-black/55 dark:text-white/55 text-[10px]">
 Historique Pièces (
 {entityHistory.length}
 )
@@ -579,10 +573,10 @@ Historique Pièces (
 </div>
 <div className="space-y-1.5 max-h-48 overflow-y-auto">
 {entityHistory.map((d) => /* @__PURE__ */ <div key={d.id} className="p-2 rounded-lg border border-neutral-200 dark:border-neutral-700 flex items-center justify-between text-[11px]">
-<span className="font-mono font-bold text-neutral-800 dark:text-neutral-200">{d.docNumber}</span>
+<span className="font-mono font-bold text-black dark:text-white">{d.docNumber}</span>
 <span className="font-mono font-bold text-[#d4522f]">{formatMoney(d.netToPay)}</span>
 </div>)}
-{entityHistory.length === 0 && /* @__PURE__ */ <p className="text-neutral-400 text-[11px] italic">Aucune transaction pour ce client.</p>}
+{entityHistory.length === 0 && /* @__PURE__ */ <p className="text-black/55 dark:text-white/55 text-[11px] italic">Aucune transaction pour ce client.</p>}
 </div>
 </div>}
 </div>}

@@ -106,14 +106,14 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
               <MapPin size={18} />
             </div>
             <div>
-              <h3 className="font-bold text-base text-neutral-900 dark:text-white">
+              <h3 className="font-bold text-base text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {isAr ? 'شبكة تسعير التوصيل عبر 58 ولاية' : 'Grille Tarifaire des 58 Wilayas & Zones'}
               </h3>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"
           >
             <X size={18} />
           </button>
@@ -130,10 +130,10 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <div>
-                    <h4 className="font-bold text-sm text-neutral-900 dark:text-white">
+                    <h4 className="font-bold text-sm text-black dark:text-white">
                       {isAr ? z.nameAr : z.nameFr}
                     </h4>
-                    <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                    <span className="text-[11px] text-black/55 dark:text-white/75">
                       {z.wilayasExample}
                     </span>
                   </div>
@@ -144,7 +144,7 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                   <div>
-                    <label className="block text-[11px] font-medium text-neutral-500 mb-1">
+                    <label className="block text-[11px] font-medium text-black/55 dark:text-white/55 mb-1">
                       {isAr ? 'توصيل للمنزل (DZD)' : 'Domicile (DZD)'}
                     </label>
                     <input
@@ -158,7 +158,7 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-medium text-neutral-500 mb-1">
+                    <label className="block text-[11px] font-medium text-black/55 dark:text-white/55 mb-1">
                       {isAr ? 'استلام مكتب Stop-Desk' : 'Stop-Desk (DZD)'}
                     </label>
                     <input
@@ -172,7 +172,7 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-medium text-neutral-500 mb-1">
+                    <label className="block text-[11px] font-medium text-black/55 dark:text-white/55 mb-1">
                       {isAr ? 'زيادة الكيلوغرام (+DZD/kg)' : '+ Par Kg supp.'}
                     </label>
                     <input
@@ -186,7 +186,7 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-medium text-neutral-500 mb-1">
+                    <label className="block text-[11px] font-medium text-black/55 dark:text-white/55 mb-1">
                       {isAr ? 'عناية هشة (+DZD)' : 'Fragile (+DZD)'}
                     </label>
                     <input

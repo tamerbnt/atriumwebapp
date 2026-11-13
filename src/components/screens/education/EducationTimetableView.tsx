@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { compactFilterLabel } from '../../../utils/filterLexicon';
 import {
   Calendar as CalendarIcon,
   Clock,
@@ -133,7 +134,7 @@ export const EducationTimetableView: React.FC<any> = () => {
 	];
 	const renderCalendarGrid = () => {
 		const dates = Array.from(new Set(filteredSessions.map((s) => s.date))).sort();
-		if (dates.length === 0) return /* @__PURE__ */ <div className="py-16 text-center text-neutral-400">
+		if (dates.length === 0) return /* @__PURE__ */ <div className="py-16 text-center text-black/55 dark:text-white/55">
 <CalendarIcon size={32} className="mx-auto mb-2 opacity-40 text-[#d4522f]" />
 <p className="text-xs font-semibold">
 {isAr ? "لا توجد حصص مجدولة حالياً" : "Aucune séance programmée dans le planning"}
@@ -146,9 +147,9 @@ export const EducationTimetableView: React.FC<any> = () => {
 <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800">
 <div className="flex items-center gap-2">
 <div className="w-2 h-2 rounded-full bg-[#d4522f]" />
-<span className="font-mono text-xs font-bold text-neutral-800 dark:text-neutral-100">{dateStr}</span>
+<span className="font-mono text-xs font-bold text-black dark:text-white">{dateStr}</span>
 </div>
-<span className="text-[10px] font-semibold text-neutral-400 px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded-full">
+<span className="text-[10px] font-semibold text-black/55 dark:text-white/55 px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded-full">
 {daySessions.length}
 {" "}
 {isAr ? "حصص" : "séances"}
@@ -168,9 +169,9 @@ export const EducationTimetableView: React.FC<any> = () => {
 </span>
 {hasConflict && /* @__PURE__ */ <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300">Conflit</span>}
 </div>
-<div className="font-bold text-xs text-neutral-900 dark:text-neutral-100 truncate">{s.cohortName}</div>
-{s.topic && /* @__PURE__ */ <div className="text-[11px] text-neutral-500 line-clamp-1 mt-0.5">{s.topic}</div>}
-<div className="mt-2 pt-2 border-t border-neutral-200/50 dark:border-neutral-700/50 flex items-center justify-between text-[10px] text-neutral-400">
+<div className="font-bold text-xs text-black dark:text-white truncate">{s.cohortName}</div>
+{s.topic && /* @__PURE__ */ <div className="text-[11px] text-black/55 dark:text-white/55 line-clamp-1 mt-0.5">{s.topic}</div>}
+<div className="mt-2 pt-2 border-t border-neutral-200/50 dark:border-neutral-700/50 flex items-center justify-between text-[10px] text-black/55 dark:text-white/55">
 <span className="flex items-center gap-1 truncate max-w-[110px]">
 <MapPin size={10} className="text-[#d4522f]" />
 {s.classroomName || "Salle"}
@@ -199,7 +200,7 @@ export const EducationTimetableView: React.FC<any> = () => {
 <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><CalendarIcon size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{t("edu_timetable_title")}</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("edu_timetable_title")}</h1>
 </div>
 </div>
 </div>
@@ -216,12 +217,12 @@ export const EducationTimetableView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
 <div>
-<h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">Planning & Utilisation des Espaces</h3>
+<h3 className="text-xs font-bold text-black dark:text-white tracking-tight">Planning & Utilisation des Espaces</h3>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">Séances Planifiées</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">Séances Planifiées</span>
 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
 {"↗ "}
 {filteredSessions.length}
@@ -229,30 +230,30 @@ export const EducationTimetableView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<span className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">{eduSessions.length}</span>
-<span className="text-xs text-neutral-400 ml-1">créneaux programmés</span>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">Volume horaire d'enseignement</p>
+<span className="text-2xl font-bold text-black dark:text-white tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">{eduSessions.length}</span>
+<span className="text-xs text-black/55 dark:text-white/55 ml-1">créneaux programmés</span>
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">Volume horaire d'enseignement</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">Salles & Ateliers</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">Salles & Ateliers</span>
 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">100% opérationnelles</span>
 </div>
 <div>
-<span className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">{eduClassrooms.length}</span>
-<span className="text-xs text-neutral-400 ml-1">espaces d'enseignement</span>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">Rotation salles & laboratoires</p>
+<span className="text-2xl font-bold text-black dark:text-white tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">{eduClassrooms.length}</span>
+<span className="text-xs text-black/55 dark:text-white/55 ml-1">espaces d'enseignement</span>
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">Rotation salles & laboratoires</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-400">Intégrité des Horaires</span>
+<span className="text-[11px] font-medium text-white/75">Intégrité des Horaires</span>
 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 inline-block">{conflicts.size > 0 ? `${conflicts.size} Conflits Détectés` : "Optimal"}</span>
 </div>
 <div>
-<span className="text-2xl font-bold text-[#FB923C] tabular-nums tracking-tight font-mono">{conflicts.size === 0 ? "Optimal" : `${conflicts.size} Alertes`}</span>
-<p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+<span className="text-2xl font-bold text-[#FB923C] tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">{conflicts.size === 0 ? "Optimal" : `${conflicts.size} Alertes`}</span>
+<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
 <span>
 {conflicts.size === 0 ? "Zéro conflit salle ou formateur" : "Ajustement de planning requis"}
@@ -265,20 +266,25 @@ export const EducationTimetableView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "جدول الحصص والقاعات التدريبية" : "Grille Générale des Séances & Horaires"}
 </h2>
 </div>
 <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto max-w-full">
 {[{
 									id: "all",
-									label: isAr ? "جميع القاعات" : "Toutes les salles"
-								}, ...eduClassrooms.map((cr) => ({
-									id: cr.id,
-									label: cr.name
-								}))].map((tab) => {
+									label: isAr ? "الكل" : "Toutes",
+									tooltip: isAr ? "جميع القاعات" : "Toutes les salles"
+								}, ...eduClassrooms.map((cr) => {
+									const compact = compactFilterLabel(cr.name);
+									return {
+										id: cr.id,
+										label: compact.label,
+										tooltip: cr.name
+									};
+								})].map((tab) => {
 									const isActive = selectedClassroomId === tab.id;
-									return /* @__PURE__ */ <button key={tab.id} onClick={() => setSelectedClassroomId(tab.id)} className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer" style={{
+									return /* @__PURE__ */ <button key={tab.id} type="button" title={tab.tooltip} onClick={() => setSelectedClassroomId(tab.id)} className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer" style={{
 											backgroundColor: isActive ? "#FCEEE8" : "transparent",
 											color: isActive ? "var(--color-accent)" : "#71717A"
 										}}>{tab.label}</button>;
@@ -309,7 +315,7 @@ export const EducationTimetableView: React.FC<any> = () => {
 <CalendarIcon size={12} />
 <span>{s.date}</span>
 </div>
-<div className="text-[11px] text-neutral-500 flex items-center gap-1">
+<div className="text-[11px] text-black/55 dark:text-white/55 flex items-center gap-1">
 <Clock size={11} />
 <span>
 {s.startTime}
@@ -324,15 +330,15 @@ export const EducationTimetableView: React.FC<any> = () => {
 											header: isAr ? "الفوج" : "Cohorte / Promotion",
 											width: "180px",
 											renderCell: (s: any) => /* @__PURE__ */ <div>
-<span className="font-bold text-xs text-neutral-900 dark:text-neutral-100 block">{s.cohortName}</span>
-{s.topic && /* @__PURE__ */ <span className="text-[11px] text-neutral-500 line-clamp-1">{s.topic}</span>}
+<span className="font-bold text-xs text-black dark:text-white block">{s.cohortName}</span>
+{s.topic && /* @__PURE__ */ <span className="text-[11px] text-black/55 dark:text-white/55 line-clamp-1">{s.topic}</span>}
 </div>
 										},
 										{
 											id: "room",
 											header: isAr ? "القاعة" : "Salle Campus",
 											width: "140px",
-											renderCell: (s: any) => /* @__PURE__ */ <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 flex items-center gap-1">
+											renderCell: (s: any) => /* @__PURE__ */ <span className="text-xs font-semibold text-black dark:text-white flex items-center gap-1">
 <MapPin size={12} className="text-[#d4522f]" />
 <span>{s.classroomName || "Non assignée"}</span>
 </span>
@@ -341,8 +347,8 @@ export const EducationTimetableView: React.FC<any> = () => {
 											id: "instructor",
 											header: isAr ? "المدرب" : "Formateur / Enseignant",
 											width: "170px",
-											renderCell: (s: any) => /* @__PURE__ */ <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-1">
-<User size={12} className="text-neutral-400" />
+											renderCell: (s: any) => /* @__PURE__ */ <span className="text-xs font-medium text-black/70 dark:text-white/75 flex items-center gap-1">
+<User size={12} className="text-black/55 dark:text-white/55" />
 <span>{s.instructorName || "Formateur"}</span>
 </span>
 										},
@@ -372,12 +378,12 @@ Planifiée
 {hasConflict ? /* @__PURE__ */ <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">Conflit</span> : /* @__PURE__ */ <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">Planifiée</span>}
 </div>
 <div>
-<h4 className="font-bold text-xs text-neutral-900 dark:text-white line-clamp-1">{s.cohortName}</h4>
-<p className="text-[11px] text-neutral-500 mt-0.5 line-clamp-1">{s.topic || "Séance de cours"}</p>
+<h4 className="font-bold text-xs text-black dark:text-white line-clamp-1">{s.cohortName}</h4>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 line-clamp-1">{s.topic || "Séance de cours"}</p>
 </div>
-<div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-neutral-500">
+<div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-black/55 dark:text-white/55">
 <span>{s.classroomName || "Salle"}</span>
-<span className="font-medium text-neutral-700 dark:text-neutral-300 truncate max-w-[120px]">{s.instructorName}</span>
+<span className="font-medium text-black/70 dark:text-white/75 truncate max-w-[120px]">{s.instructorName}</span>
 </div>
 </div>;
 									}} />
@@ -387,32 +393,32 @@ Planifiée
 <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><CalendarIcon size={16} /></div>
 <div>
-<h3 className="font-bold text-xs text-neutral-900 dark:text-white flex items-center gap-1.5 font-mono">
+<h3 className="font-bold text-xs text-black dark:text-white flex items-center gap-1.5 font-mono">
 {selectedSession.date}
 {" · "}
 {selectedSession.startTime}
 </h3>
-<p className="text-[10px] text-neutral-500 truncate max-w-[210px]">{selectedSession.cohortName}</p>
+<p className="text-[10px] text-black/55 dark:text-white/55 truncate max-w-[210px]">{selectedSession.cohortName}</p>
 </div>
 </div>
-<button onClick={() => setSelectedSession(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500 transition-colors"><X size={15} /></button>
+<button onClick={() => setSelectedSession(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-black/55 dark:text-white/55 transition-colors"><X size={15} /></button>
 </div>
 <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 pt-2 gap-2">
-<button onClick={() => setInspectorTab("seance")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "seance" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"}`}>{isAr ? "تفاصيل الحصة" : "Séance & Cours"}</button>
-<button onClick={() => setInspectorTab("salle")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "salle" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"}`}>{isAr ? "القاعة والتجهيزات" : "Salle & Capacité"}</button>
-<button onClick={() => setInspectorTab("emargement")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "emargement" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"}`}>{isAr ? "ورقة الحضور" : "Émargement"}</button>
+<button onClick={() => setInspectorTab("seance")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "seance" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "تفاصيل الحصة" : "Séance & Cours"}</button>
+<button onClick={() => setInspectorTab("salle")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "salle" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "القاعة والتجهيزات" : "Salle & Capacité"}</button>
+<button onClick={() => setInspectorTab("emargement")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "emargement" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "ورقة الحضور" : "Émargement"}</button>
 </div>
 <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
 {inspectorTab === "seance" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Fiche Pédagogique</span>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Fiche Pédagogique</span>
 <div className="flex justify-between">
-<span className="text-neutral-500">Promotion / Cohorte:</span>
-<span className="font-bold text-neutral-900 dark:text-white">{selectedSession.cohortName}</span>
+<span className="text-black/55 dark:text-white/55">Promotion / Cohorte:</span>
+<span className="font-bold text-black dark:text-white">{selectedSession.cohortName}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">Date & Créneau:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">
+<span className="text-black/55 dark:text-white/55">Date & Créneau:</span>
+<span className="font-mono font-bold text-black dark:text-white">
 {selectedSession.date}
 {" ("}
 {selectedSession.startTime}
@@ -422,34 +428,34 @@ Planifiée
 </span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">Formateur:</span>
-<span className="font-medium text-neutral-900 dark:text-white">{selectedSession.instructorName}</span>
+<span className="text-black/55 dark:text-white/55">Formateur:</span>
+<span className="font-medium text-black dark:text-white">{selectedSession.instructorName}</span>
 </div>
 </div>
 <div className="space-y-1.5">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold">Sujet / Module Traité</span>
-<div className="p-3 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200">
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold">Sujet / Module Traité</span>
+<div className="p-3 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 text-black dark:text-white">
 {selectedSession.topic || "Séance magistrale et travaux pratiques dirigés selon le syllabus de la formation."}
 </div>
 </div>
 </div>}
 {inspectorTab === "salle" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Espace Pédagogique Assigné</span>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Espace Pédagogique Assigné</span>
 <div className="flex justify-between">
-<span className="text-neutral-500">Salle de cours:</span>
-<span className="font-bold text-neutral-900 dark:text-white">{selectedSession.classroomName || "Salle A1"}</span>
+<span className="text-black/55 dark:text-white/55">Salle de cours:</span>
+<span className="font-bold text-black dark:text-white">{selectedSession.classroomName || "Salle A1"}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">Équipements:</span>
-<span className="text-neutral-700 dark:text-neutral-300">Vidéoprojecteur HD, Tableau blanc, Wi-Fi</span>
+<span className="text-black/55 dark:text-white/55">Équipements:</span>
+<span className="text-black/70 dark:text-white/75">Vidéoprojecteur HD, Tableau blanc, Wi-Fi</span>
 </div>
 </div>
 </div>}
 {inspectorTab === "emargement" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Appel & Présences Étudiants</span>
-<p className="text-[11px] text-neutral-600 dark:text-neutral-400">
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Appel & Présences Étudiants</span>
+<p className="text-[11px] text-black/70 dark:text-white/75">
 Feuille d'émargement officielle de la séance. Les absences non justifiées sont transmises à l'administration.
 </p>
 <button onClick={() => {
@@ -473,9 +479,9 @@ Feuille d'émargement officielle de la séance. Les absences non justifiées son
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
 <div className="flex items-center gap-2">
 <CalendarIcon size={20} className="text-[#d4522f]" />
-<h3 className="font-bold text-base text-neutral-900 dark:text-white">{t("edu_btn_add_session")}</h3>
+<h3 className="font-bold text-base text-black dark:text-white">{t("edu_btn_add_session")}</h3>
 </div>
-<button onClick={() => setIsAddSessionModalOpen(false)} className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1"><X size={18} /></button>
+<button onClick={() => setIsAddSessionModalOpen(false)} className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1"><X size={18} /></button>
 </div>
 <form onSubmit={handleCreateSession} className="space-y-4">
 <LabelSelect label={t("edu_label_cohort")} value={formData.cohortId} onChange={(v) => setFormData({
@@ -525,5 +531,3 @@ Feuille d'émargement officielle de la séance. Les absences non justifiées son
 				}} />}
 </div>;
 };
-
-export { EducationDashboardView_exports as a, EducationAdmissionsView_exports as c, MessageCircle as d, LockOpen as f, Bell as g, CircleX as h, EducationFinanceView_exports as i, AcademyRollCallKiosk_exports as l, FileCheck as m, EducationStudentsView_exports as n, EducationCohortsView_exports as o, GraduationCap as p, EducationStaffView_exports as r, EducationAttendanceView_exports as s, EducationTimetableView_exports as t, UserCheck as u };

@@ -166,12 +166,12 @@ export const ManufacturingWorkstationView: React.FC<any> = () => {
 <div className="flex items-center gap-2">
 <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#FB923C]/20 text-[#FB923C] uppercase tracking-wider font-mono">{isAr ? "محطة تشغيل تابلت" : "Borne Kiosk Atelier"}</span>
 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-<span className="text-xs text-neutral-400 font-medium">Poste Connecté</span>
+<span className="text-xs text-white/75 font-medium">Poste Connecté</span>
 </div>
-<h1 className="text-[38px] sm:text-[52px] rtl:text-[32px] rtl:sm:text-[38px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-white mt-0.5">{stationName}</h1>
-<p className="text-xs text-neutral-400">
+<h1 className="text-[38px] sm:text-[52px] rtl:text-[32px] rtl:sm:text-[38px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-white mt-0.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{stationName}</h1>
+<p className="text-xs text-white/75">
 {isAr ? "المشغل المسجل: " : "Opérateur connecté : "}
-<span className="text-neutral-200 font-semibold">{currentUser?.fullName || "M. Karim Bouzid"}</span>
+<span className="text-white font-semibold">{currentUser?.fullName || "M. Karim Bouzid"}</span>
 </p>
 </div>
 </div>
@@ -189,7 +189,7 @@ export const ManufacturingWorkstationView: React.FC<any> = () => {
 <div className="lg:col-span-5 space-y-6">
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex items-center justify-between">
-<span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">{isAr ? "أمر التصنيع المخصص" : "Sélection Ordre de Fabrication"}</span>
+<span className="text-xs font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">{isAr ? "أمر التصنيع المخصص" : "Sélection Ordre de Fabrication"}</span>
 <span className="text-xs font-mono font-bold text-[#d4522f]">
 {orders.length}
 {" "}
@@ -200,7 +200,7 @@ export const ManufacturingWorkstationView: React.FC<any> = () => {
 									setSelectedOrderId(e.target.value);
 									setElapsedSeconds(0);
 									setIsRunning(false);
-								}} className="w-full p-3.5 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 text-sm font-bold text-neutral-900 dark:text-white shadow-2xs outline-none focus:ring-2 focus:ring-[#d4522f]">
+								}} className="w-full p-3.5 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 text-sm font-bold text-black dark:text-white shadow-2xs outline-none focus:ring-2 focus:ring-[#d4522f]">
 {orders.map((o) => /* @__PURE__ */ <option key={o.id} value={o.id}>
 {o.orderNumber}
 {" - "}
@@ -214,23 +214,23 @@ export const ManufacturingWorkstationView: React.FC<any> = () => {
 </select>
 {currentOrder && /* @__PURE__ */ <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-3">
 <div className="flex items-center justify-between">
-<span className="text-xs font-bold text-neutral-400 font-mono">
+<span className="text-xs font-bold text-black/55 dark:text-white/55 font-mono">
 {"Lot: "}
 {currentOrder.batchLotNumber || "LOT-2026-05"}
 </span>
-<span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${currentOrder.status === "Completed" ? "bg-emerald-100 text-emerald-800" : currentOrder.status === "InProduction" ? "bg-amber-100 text-amber-800" : "bg-neutral-100 text-neutral-700"}`}>{currentOrder.status}</span>
+<span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${currentOrder.status === "Completed" ? "bg-emerald-100 text-emerald-800" : currentOrder.status === "InProduction" ? "bg-amber-100 text-amber-800" : "bg-neutral-100 text-black/70 dark:text-white/75"}`}>{currentOrder.status}</span>
 </div>
-<div className="text-base font-bold text-neutral-900 dark:text-white">{currentOrder.productName}</div>
+<div className="text-base font-bold text-black dark:text-white">{currentOrder.productName}</div>
 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#E6DED6] dark:border-neutral-700 text-xs">
 <div>
-<span className="text-neutral-400 block text-[11px]">{isAr ? "الهدف" : "Cible OF"}</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white text-sm">
+<span className="text-black/55 dark:text-white/55 block text-[11px]">{isAr ? "الهدف" : "Cible OF"}</span>
+<span className="font-mono font-bold text-black dark:text-white text-sm">
 {currentOrder.targetQuantity}
 {" unités"}
 </span>
 </div>
 <div>
-<span className="text-neutral-400 block text-[11px]">{isAr ? "المنجز" : "Conformes"}</span>
+<span className="text-black/55 dark:text-white/55 block text-[11px]">{isAr ? "المنجز" : "Conformes"}</span>
 <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">
 {currentOrder.actualQuantityProduced || currentOrder.quantityProduced || 0}
 {" unités"}
@@ -243,30 +243,30 @@ export const ManufacturingWorkstationView: React.FC<any> = () => {
 <div className="flex items-center justify-between">
 <div className="flex items-center gap-2">
 <ShieldCheck size={18} className="text-[#d4522f]" />
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+<h3 className="text-sm font-bold text-black dark:text-white">
 {isAr ? "إجراءات السلامة والوقاية (قانون 88-07)" : "Contrôle Sécurité EPI (Loi 88-07)"}
 </h3>
 </div>
 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isSafetyChecklistComplete ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"}`}>{isSafetyChecklistComplete ? "EPI Conformes" : "Validation Requise"}</span>
 </div>
-<p className="text-xs text-neutral-500 dark:text-neutral-400">
+<p className="text-xs text-black/55 dark:text-white/75">
 {isAr ? "وفقاً للتشريع الجزائري، يُلزم المشغل بارتداء معدات الحماية قبل تفعيل محطة التشغيل" : "Conformément à la réglementation de sécurité au travail, cochez les EPI obligatoires avant d'actionner le poste."}
 </p>
 <div className="grid grid-cols-2 gap-3">
-<button type="button" onClick={() => setEpiGlasses(!epiGlasses)} className={`p-3.5 rounded-xl border text-left flex items-center gap-3 transition-all cursor-pointer ${epiGlasses ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 text-emerald-800 dark:text-emerald-300 font-bold" : "bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300"}`}>
-<div className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold ${epiGlasses ? "bg-emerald-600 text-white" : "bg-neutral-100 text-neutral-400"}`}>✓</div>
+<button type="button" onClick={() => setEpiGlasses(!epiGlasses)} className={`p-3.5 rounded-xl border text-left flex items-center gap-3 transition-all cursor-pointer ${epiGlasses ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 text-emerald-800 dark:text-emerald-300 font-bold" : "bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75"}`}>
+<div className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold ${epiGlasses ? "bg-emerald-600 text-white" : "bg-neutral-100 text-black/55 dark:text-white/55"}`}>✓</div>
 <span className="text-xs">{isAr ? "نظارات واقية" : "Lunettes de protection"}</span>
 </button>
-<button type="button" onClick={() => setEpiGloves(!epiGloves)} className={`p-3.5 rounded-xl border text-left flex items-center gap-3 transition-all cursor-pointer ${epiGloves ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 text-emerald-800 dark:text-emerald-300 font-bold" : "bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300"}`}>
-<div className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold ${epiGloves ? "bg-emerald-600 text-white" : "bg-neutral-100 text-neutral-400"}`}>✓</div>
+<button type="button" onClick={() => setEpiGloves(!epiGloves)} className={`p-3.5 rounded-xl border text-left flex items-center gap-3 transition-all cursor-pointer ${epiGloves ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 text-emerald-800 dark:text-emerald-300 font-bold" : "bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75"}`}>
+<div className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold ${epiGloves ? "bg-emerald-600 text-white" : "bg-neutral-100 text-black/55 dark:text-white/55"}`}>✓</div>
 <span className="text-xs">{isAr ? "قفازات تقنية" : "Gants anti-coupure"}</span>
 </button>
-<button type="button" onClick={() => setEpiShoes(!epiShoes)} className={`p-3.5 rounded-xl border text-left flex items-center gap-3 transition-all cursor-pointer ${epiShoes ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 text-emerald-800 dark:text-emerald-300 font-bold" : "bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300"}`}>
-<div className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold ${epiShoes ? "bg-emerald-600 text-white" : "bg-neutral-100 text-neutral-400"}`}>✓</div>
+<button type="button" onClick={() => setEpiShoes(!epiShoes)} className={`p-3.5 rounded-xl border text-left flex items-center gap-3 transition-all cursor-pointer ${epiShoes ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 text-emerald-800 dark:text-emerald-300 font-bold" : "bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75"}`}>
+<div className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold ${epiShoes ? "bg-emerald-600 text-white" : "bg-neutral-100 text-black/55 dark:text-white/55"}`}>✓</div>
 <span className="text-xs">{isAr ? "أحذية سلامة S3" : "Chaussures de sécurité"}</span>
 </button>
-<button type="button" onClick={() => setEpiHelmet(!epiHelmet)} className={`p-3.5 rounded-xl border text-left flex items-center gap-3 transition-all cursor-pointer ${epiHelmet ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 text-emerald-800 dark:text-emerald-300 font-bold" : "bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300"}`}>
-<div className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold ${epiHelmet ? "bg-emerald-600 text-white" : "bg-neutral-100 text-neutral-400"}`}>✓</div>
+<button type="button" onClick={() => setEpiHelmet(!epiHelmet)} className={`p-3.5 rounded-xl border text-left flex items-center gap-3 transition-all cursor-pointer ${epiHelmet ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 text-emerald-800 dark:text-emerald-300 font-bold" : "bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75"}`}>
+<div className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold ${epiHelmet ? "bg-emerald-600 text-white" : "bg-neutral-100 text-black/55 dark:text-white/55"}`}>✓</div>
 <span className="text-xs">{isAr ? "خوذة / واقي أذن" : "Casque / Anti-bruit"}</span>
 </button>
 </div>
@@ -274,12 +274,12 @@ export const ManufacturingWorkstationView: React.FC<any> = () => {
 </div>
 <div className="lg:col-span-7 space-y-6">
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[28px] p-6 sm:p-8 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs flex flex-col items-center justify-center text-center space-y-6">
-<div className="flex items-center gap-2 text-xs font-semibold text-neutral-500 uppercase tracking-widest">
+<div className="flex items-center gap-2 text-xs font-semibold text-black/55 dark:text-white/55 uppercase tracking-widest">
 <Clock size={16} className="text-[#d4522f]" />
 <span>{isAr ? "عداد وقت التشغيل النشط" : "Temps de Cycle Machine"}</span>
 </div>
-<div className="font-mono font-black text-6xl sm:text-7xl lg:text-8xl tracking-tight text-neutral-900 dark:text-white tabular-nums select-none drop-shadow-xs">{formatTimer(elapsedSeconds)}</div>
-<div className="flex items-center gap-3 text-xs text-neutral-400">
+<div className="font-mono font-black text-6xl sm:text-7xl lg:text-8xl tracking-tight text-black dark:text-white tabular-nums select-none drop-shadow-xs">{formatTimer(elapsedSeconds)}</div>
+<div className="flex items-center gap-3 text-xs text-black/55 dark:text-white/55">
 <span className={`w-3 h-3 rounded-full ${isRunning ? "bg-emerald-500 animate-ping" : "bg-neutral-300 dark:bg-neutral-600"}`} />
 <span className="font-medium">
 {isRunning ? isAr ? "الآلة قيد التشغيل والإنتاج" : "Machine en marche • Cycle actif" : isAr ? "الآلة في وضع الاستعداد أو التوقف" : "Poste en pause / attente"}
@@ -293,7 +293,7 @@ export const ManufacturingWorkstationView: React.FC<any> = () => {
 <Pause size={24} fill="currentColor" />
 <span>{isAr ? "إيقاف مؤقت" : "Mettre en Pause"}</span>
 </button>}
-<button type="button" onClick={handleOpenFinishModal} disabled={elapsedSeconds === 0 && !isRunning} className={`w-full h-18 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 shadow-md transition-all cursor-pointer ${elapsedSeconds > 0 || isRunning ? "bg-[#1F1D1B] hover:bg-black text-white active:scale-98" : "bg-neutral-200 text-neutral-400 cursor-not-allowed"}`}>
+<button type="button" onClick={handleOpenFinishModal} disabled={elapsedSeconds === 0 && !isRunning} className={`w-full h-18 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 shadow-md transition-all cursor-pointer ${elapsedSeconds > 0 || isRunning ? "bg-[#1F1D1B] hover:bg-black text-white active:scale-98" : "bg-neutral-200 text-black/55 dark:text-white/55 cursor-not-allowed"}`}>
 <CheckCircle2 size={24} />
 <span>{isAr ? "إنهاء وتسجيل القطع" : "Déclarer Pièces"}</span>
 </button>
@@ -301,15 +301,15 @@ export const ManufacturingWorkstationView: React.FC<any> = () => {
 </div>
 <div className="grid grid-cols-3 gap-3">
 <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs text-center">
-<span className="text-[11px] text-neutral-400 font-semibold block">{isAr ? "الوقت المستهدف" : "Cadence Prévue"}</span>
-<span className="font-mono font-bold text-base text-neutral-900 dark:text-white">12 min / u</span>
+<span className="text-[11px] text-black/55 dark:text-white/55 font-semibold block">{isAr ? "الوقت المستهدف" : "Cadence Prévue"}</span>
+<span className="font-mono font-bold text-base text-black dark:text-white">12 min / u</span>
 </div>
 <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs text-center">
-<span className="text-[11px] text-neutral-400 font-semibold block">{isAr ? "معدل التوافر" : "Disponibilité"}</span>
+<span className="text-[11px] text-black/55 dark:text-white/55 font-semibold block">{isAr ? "معدل التوافر" : "Disponibilité"}</span>
 <span className="font-mono font-bold text-base text-emerald-600 dark:text-emerald-400">96.4%</span>
 </div>
 <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs text-center">
-<span className="text-[11px] text-neutral-400 font-semibold block">{isAr ? "الخردة المسجلة" : "Rebuts Cumulés"}</span>
+<span className="text-[11px] text-black/55 dark:text-white/55 font-semibold block">{isAr ? "الخردة المسجلة" : "Rebuts Cumulés"}</span>
 <span className="font-mono font-bold text-base text-amber-600 dark:text-amber-400">
 {currentOrder?.scrapQuantity || 0}
 {" u"}
@@ -324,30 +324,30 @@ export const ManufacturingWorkstationView: React.FC<any> = () => {
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold"><CheckCircle2 size={22} /></div>
 <div>
-<h3 className="text-lg font-bold text-neutral-900 dark:text-white">{isAr ? "تسجيل كميات الإنتاج والخردة" : "Déclaration de Fin de Cycle & Rebuts"}</h3>
-<p className="text-xs text-neutral-400">
+<h3 className="text-lg font-bold text-black dark:text-white">{isAr ? "تسجيل كميات الإنتاج والخردة" : "Déclaration de Fin de Cycle & Rebuts"}</h3>
+<p className="text-xs text-black/55 dark:text-white/55">
 {currentOrder?.orderNumber}
 {" • "}
 {currentOrder?.productName}
 </p>
 </div>
 </div>
-<button type="button" onClick={() => setIsFinishModalOpen(false)} className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 cursor-pointer">✕</button>
+<button type="button" onClick={() => setIsFinishModalOpen(false)} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 cursor-pointer">✕</button>
 </div>
 <div className="grid grid-cols-2 gap-4">
 <button type="button" onClick={() => setActiveNumpadField("good")} className={`p-4 rounded-2xl border text-center transition-all cursor-pointer ${activeNumpadField === "good" ? "border-[#d4522f] bg-[#FCEEE8] dark:bg-neutral-800 ring-2 ring-[#d4522f]" : "border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/40"}`}>
 <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 block mb-1">{isAr ? "القطع السليمة المطابقة" : "Pièces Bonnes (Conformes)"}</span>
-<span className="font-mono font-black text-3xl text-neutral-900 dark:text-white">{goodQuantityInput}</span>
+<span className="font-black text-3xl text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{goodQuantityInput}</span>
 </button>
 <button type="button" onClick={() => setActiveNumpadField("scrap")} className={`p-4 rounded-2xl border text-center transition-all cursor-pointer ${activeNumpadField === "scrap" ? "border-red-500 bg-red-50 dark:bg-neutral-800 ring-2 ring-red-500" : "border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/40"}`}>
 <span className="text-xs font-bold text-red-600 dark:text-red-400 block mb-1">{isAr ? "القطع المرفوضة / خردة" : "Pièces Rebutées (Chutes)"}</span>
-<span className="font-mono font-black text-3xl text-red-600 dark:text-red-400">{scrapQuantityInput}</span>
+<span className="font-black text-3xl text-red-600 dark:text-red-400 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{scrapQuantityInput}</span>
 </button>
 </div>
 {parseInt(scrapQuantityInput, 10) > 0 && /* @__PURE__ */ <div className="space-y-2">
-<label className="text-xs font-bold text-neutral-600 dark:text-neutral-300">{isAr ? "سبب رفض القطع (التشريع الصناعي)" : "Motif de Rebut Déclaré"}</label>
+<label className="text-xs font-bold text-black/70 dark:text-white/75">{isAr ? "سبب رفض القطع (التشريع الصناعي)" : "Motif de Rebut Déclaré"}</label>
 <div className="grid grid-cols-2 gap-2">
-{SCRAP_REASON_CODES.map((code) => /* @__PURE__ */ <button key={code.id} type="button" onClick={() => setSelectedScrapReason(code.id)} className={`p-2.5 rounded-xl border text-xs text-left cursor-pointer transition-all ${selectedScrapReason === code.id ? "border-red-500 bg-red-50 dark:bg-neutral-800 text-red-700 dark:text-red-300 font-bold" : "border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400"}`}>{isAr ? code.labelAr : code.labelFr}</button>)}
+{SCRAP_REASON_CODES.map((code) => /* @__PURE__ */ <button key={code.id} type="button" onClick={() => setSelectedScrapReason(code.id)} className={`p-2.5 rounded-xl border text-xs text-left cursor-pointer transition-all ${selectedScrapReason === code.id ? "border-red-500 bg-red-50 dark:bg-neutral-800 text-red-700 dark:text-red-300 font-bold" : "border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75"}`}>{isAr ? code.labelAr : code.labelFr}</button>)}
 </div>
 </div>}
 <div className="grid grid-cols-3 gap-2.5">
@@ -364,15 +364,13 @@ export const ManufacturingWorkstationView: React.FC<any> = () => {
 								"C",
 								"0",
 								"00"
-							].map((digit) => /* @__PURE__ */ <button key={digit} type="button" onClick={() => handleNumpadPress(digit)} className={`h-14 rounded-xl font-mono text-xl font-bold flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-xs ${digit === "C" ? "bg-red-100 text-red-700 hover:bg-red-200" : "bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-700"}`}>{digit}</button>)}
+							].map((digit) => /* @__PURE__ */ <button key={digit} type="button" onClick={() => handleNumpadPress(digit)} className={`h-14 rounded-xl font-mono text-xl font-bold flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-xs ${digit === "C" ? "bg-red-100 text-red-700 hover:bg-red-200" : "bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-700"}`}>{digit}</button>)}
 </div>
 <div className="flex items-center gap-3 pt-2">
-<button type="button" onClick={() => setIsFinishModalOpen(false)} className="flex-1 py-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 font-bold text-sm cursor-pointer">{isAr ? "إلغاء" : "Annuler"}</button>
+<button type="button" onClick={() => setIsFinishModalOpen(false)} className="flex-1 py-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 font-bold text-sm cursor-pointer">{isAr ? "إلغاء" : "Annuler"}</button>
 <button type="button" onClick={handleConfirmFinish} className="flex-2 py-3.5 rounded-xl bg-[#d4522f] hover:bg-[#b0674b] text-white font-bold text-sm shadow-md cursor-pointer transition-all">{isAr ? "تأكيد التسجيل وتحديث أمر التصنيع" : "Valider la Déclaration"}</button>
 </div>
 </div>
 </div>}
 </div>;
 };
-
-export { ManufacturingMaterialsView_exports as a, Warehouse as c, ManufacturingOrdersView_exports as i, Factory as l, ManufacturingStaffView_exports as n, ManufacturingDashboardView_exports as o, ManufacturingQcView_exports as r, ManufacturingBomView_exports as s, ManufacturingWorkstationView_exports as t };

@@ -218,11 +218,11 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 			cell: (m: any) => /* @__PURE__ */ <div className="flex items-center gap-2">
 <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0"><Truck size={16} /></div>
 <div>
-<div className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
+<div className="font-mono font-bold text-xs text-black dark:text-white flex items-center gap-1.5">
 {m.manifestNumber}
 {pinnedIds.has(m.id) && /* @__PURE__ */ <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />}
 </div>
-<div className="text-[10px] text-neutral-400">{m.dispatchDate}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">{m.dispatchDate}</div>
 </div>
 </div>
 		},
@@ -233,8 +233,8 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 			sortable: true,
 			minWidth: "180px",
 			cell: (m: any) => /* @__PURE__ */ <div>
-<div className="font-semibold text-xs text-neutral-900 dark:text-neutral-100">{m.driverName}</div>
-<div className="text-[11px] text-neutral-500 font-mono">
+<div className="font-semibold text-xs text-black dark:text-white">{m.driverName}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
 {m.vehiclePlate}
 {" ("}
 {m.driverPhone}
@@ -248,7 +248,7 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 			accessorKey: "zoneWilaya",
 			sortable: true,
 			minWidth: "140px",
-			cell: (m: any) => /* @__PURE__ */ <div className="flex items-center gap-1 text-xs text-neutral-700 dark:text-neutral-300">
+			cell: (m: any) => /* @__PURE__ */ <div className="flex items-center gap-1 text-xs text-black/70 dark:text-white/75">
 <MapPin size={12} className="text-[#d4522f] shrink-0" />
 <span>{m.zoneWilaya || "Alger"}</span>
 </div>
@@ -259,7 +259,7 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 			accessorKey: "totalShipmentsCount",
 			sortable: true,
 			minWidth: "100px",
-			cell: (m: any) => /* @__PURE__ */ <div className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100">
+			cell: (m: any) => /* @__PURE__ */ <div className="font-mono font-bold text-xs text-black dark:text-white">
 {m.totalShipmentsCount}
 {" colis"}
 </div>
@@ -270,7 +270,7 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 			accessorKey: "totalCodExpectedDzd",
 			sortable: true,
 			minWidth: "140px",
-			cell: (m: any) => /* @__PURE__ */ <div className="font-mono font-bold text-xs text-neutral-900 dark:text-white">{formatMoney(m.totalCodExpectedDzd)}</div>
+			cell: (m: any) => /* @__PURE__ */ <div className="font-mono font-bold text-xs text-black dark:text-white">{formatMoney(m.totalCodExpectedDzd)}</div>
 		},
 		{
 			id: "status",
@@ -313,7 +313,7 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Truck size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {isAr ? "أوراق الإرسال ومسارات الشاحنات" : "Manifestes de Dispatch & Feuilles de Route"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
@@ -330,16 +330,16 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "حمولة الأسطول ومبالغ التحصيل الميداني" : "Activité Flotte & Encaissement Livreur"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "إجمالي الطرود المحملة" : "Colis en Tournée"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "إجمالي الطرود المحملة" : "Colis en Tournée"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">{totalParcelsInManifests}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{totalParcelsInManifests}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">
 {manifests.length}
 {" "}
 {isAr ? "مسارات مسجلة" : "tournées chauffeurs"}
@@ -347,9 +347,9 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "المسارات المكتملة" : "Tournées Clôturées"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "المسارات المكتملة" : "Tournées Clôturées"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
+<div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {completedTournees}
 {" / "}
 {manifests.length}
@@ -359,11 +359,11 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{isAr ? "مجموع مبالغ COD المطلوبة" : "Encaissements COD"}</span>
+<span className="text-[11px] font-medium text-white/80">{isAr ? "مجموع مبالغ COD المطلوبة" : "Encaissements COD"}</span>
 <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">Cash on Delivery</span>
 </div>
 <div>
-<div className="text-2xl font-black text-white font-mono tabular-nums">{formatMoney(totalCodInManifests)}</div>
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalCodInManifests)}</div>
 <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
 <CheckCircle2 size={11} />
 {isAr ? "تحت عهدة السائقين" : "Bordereaux scellés"}
@@ -375,7 +375,7 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "بيانات الشحن وأوراق الطريق الرسمية" : "Manifestes de Dispatch & Feuilles de Route"}
 </h2>
 </div>
@@ -383,21 +383,25 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 {[
 							{
 								id: "All",
-								label: isAr ? "جميع المسارات" : "Toutes tournées"
+								label: isAr ? "الكل" : language === "fr" ? "Toutes" : "All",
+								tooltip: isAr ? "جميع المسارات وأوراق الطريق" : language === "fr" ? "Toutes les tournées" : "All dispatch routes"
 							},
 							{
 								id: "Draft",
-								label: isAr ? "قيد التحميل" : "En chargement"
+								label: isAr ? "تحميل" : language === "fr" ? "Chargement" : "Loading",
+								tooltip: isAr ? "مسارات قيد التحميل" : language === "fr" ? "Tournées en cours de chargement" : "Currently loading"
 							},
 							{
 								id: "InTransit",
-								label: isAr ? "في الطريق" : "En transit"
+								label: isAr ? "طريق" : "Transit",
+								tooltip: isAr ? "مسارات في الطريق" : language === "fr" ? "Tournées en transit" : "In transit"
 							},
 							{
 								id: "Delivered",
-								label: isAr ? "مكتملة" : "Clôturées"
+								label: isAr ? "مكتملة" : language === "fr" ? "Clôturées" : "Closed",
+								tooltip: isAr ? "مسارات مكتملة" : language === "fr" ? "Tournées clôturées" : "Closed routes"
 							}
-						].map((f) => /* @__PURE__ */ <button key={f.id} onClick={() => setFilterStatus(f.id)} className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer" style={{
+						].map((f) => /* @__PURE__ */ <button key={f.id} onClick={() => setFilterStatus(f.id)} title={f.tooltip} className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer" style={{
 								backgroundColor: filterStatus === f.id ? "#FCEEE8" : "transparent",
 								color: filterStatus === f.id ? "var(--color-accent)" : "#71717A"
 							}}>{f.label}</button>)}
@@ -408,15 +412,18 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 <UniversalDataCollection data={filteredManifests} columns={columns} keyExtractor={(m) => m.id} searchQuery={searchQuery} onSearchChange={setSearchQuery} searchPlaceholder={isAr ? "بحث برقم الإرسال، السائق، المنطقة..." : "Rechercher par manifeste, chauffeur, zone..."} filterValue={filterStatus} onFilterChange={setFilterStatus} filterOptions={[
 								{
 									value: "All",
-									label: isAr ? "جميع الحالات" : "Tous statuts"
+									label: isAr ? "الكل" : language === "fr" ? "Tous" : "All",
+									tooltip: isAr ? "جميع الحالات" : language === "fr" ? "Tous les statuts" : "All statuses"
 								},
 								{
 									value: "Dispatched",
-									label: "En Tournée (Dispatched)"
+									label: isAr ? "توزيع" : language === "fr" ? "Tournée" : "Dispatched",
+									tooltip: isAr ? "قيد التوزيع (في الجولة)" : language === "fr" ? "En Tournée (Dispatched)" : "Out on route (Dispatched)"
 								},
 								{
 									value: "Completed",
-									label: "Clôturées (Completed)"
+									label: isAr ? "مكتملة" : language === "fr" ? "Clôturées" : "Completed",
+									tooltip: isAr ? "مسارات مكتملة ومقفلة" : language === "fr" ? "Clôturées (Completed)" : "Completed manifests"
 								}
 							]} viewMode={viewMode} onViewModeChange={setViewMode} selectedIds={selectedIds} onSelectionChange={setSelectedIds} bulkSecondaryAction={{
 								label: isAr ? "إغلاق المسارات" : "Clôturer tournées",
@@ -439,7 +446,7 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 								setSortDir(dir);
 							}} onItemClick={(m) => {
 								setSelectedManifest(m);
-							}} onEdit={openEditModal} onDelete={handleDelete} emptyIcon={<Truck size={32} className="text-neutral-400" />} emptyTitle={isAr ? "لا توجد أوراق طريق" : "Aucun manifeste trouvé"} emptyDescription={searchQuery ? isAr ? "لا توجد نتائج مطابقة لبحثك" : "Aucun résultat ne correspond à votre recherche" : isAr ? "قم بإنشاء أول ورقة طريق للسائق" : "Émettez votre premier manifeste de dispatch"} customActions={[
+							}} onEdit={openEditModal} onDelete={handleDelete} emptyIcon={<Truck size={32} className="text-black/55 dark:text-white/55" />} emptyTitle={isAr ? "لا توجد أوراق طريق" : "Aucun manifeste trouvé"} emptyDescription={searchQuery ? isAr ? "لا توجد نتائج مطابقة لبحثك" : "Aucun résultat ne correspond à votre recherche" : isAr ? "قم بإنشاء أول ورقة طريق للسائق" : "Émettez votre premier manifeste de dispatch"} customActions={[
 								{
 									id: "print05468",
 									label: isAr ? "طباعة بيان الشحن (05-468)" : "Imprimer Lettre 05-468",
@@ -470,8 +477,8 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${m.status === "Completed" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300"}`}>{m.status === "Completed" ? "Clôturée" : "En Tournée"}</span>
 </div>
 <div>
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white line-clamp-1">{m.driverName}</h3>
-<div className="text-xs text-neutral-500 font-medium mt-0.5 flex items-center gap-1">
+<h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">{m.driverName}</h3>
+<div className="text-xs text-black/55 dark:text-white/55 font-medium mt-0.5 flex items-center gap-1">
 <MapPin size={12} className="text-[#d4522f] shrink-0" />
 <span>
 {m.zoneWilaya}
@@ -482,12 +489,12 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 </div>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
 <div>
-<div className="text-[10px] text-neutral-400 uppercase tracking-wider">COD Attendu</div>
-<div className="font-mono font-bold text-neutral-900 dark:text-white mt-0.5">{formatMoney(m.totalCodExpectedDzd)}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">COD Attendu</div>
+<div className="font-mono font-bold text-black dark:text-white mt-0.5">{formatMoney(m.totalCodExpectedDzd)}</div>
 </div>
 <div className="text-right">
-<div className="text-[10px] text-neutral-400 uppercase tracking-wider">Colis</div>
-<div className="font-mono font-semibold text-neutral-700 dark:text-neutral-300 mt-0.5">
+<div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">Colis</div>
+<div className="font-mono font-semibold text-black/70 dark:text-white/75 mt-0.5">
 {m.totalShipmentsCount}
 {" unités"}
 </div>
@@ -501,10 +508,10 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold"><Truck size={18} /></div>
 <div>
 <div className="flex items-center gap-1.5">
-<span className="font-mono font-bold text-xs text-neutral-900 dark:text-white">{selectedManifest.manifestNumber}</span>
+<span className="font-mono font-bold text-xs text-black dark:text-white">{selectedManifest.manifestNumber}</span>
 <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${selectedManifest.status === "Completed" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300"}`}>{selectedManifest.status}</span>
 </div>
-<p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 line-clamp-1">
+<p className="text-xs font-semibold text-black/70 dark:text-white/75 line-clamp-1">
 {selectedManifest.driverName}
 {" ("}
 {selectedManifest.vehiclePlate}
@@ -512,7 +519,7 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 </p>
 </div>
 </div>
-<button onClick={() => setSelectedManifest(null)} className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800"><X size={16} /></button>
+<button onClick={() => setSelectedManifest(null)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"><X size={16} /></button>
 </div>
 <div className="flex items-center gap-1.5 flex-wrap">
 <button onClick={() => handleCloseTournee(selectedManifest)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 transition-colors">
@@ -533,45 +540,45 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 <ShieldCheck size={12} />
 {isAr ? "تصفية الصندوق" : "Décharge Caisse"}
 </button>
-<button onClick={() => openEditModal(selectedManifest)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 transition-colors">
+<button onClick={() => openEditModal(selectedManifest)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-neutral-100 text-black/70 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-white/75 transition-colors">
 <Edit size={12} />
 {isAr ? "تعديل" : "Modifier"}
 </button>
 <button onClick={() => handleDelete(selectedManifest)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 transition-colors ml-auto"><Trash2 size={12} /></button>
 </div>
 <div className="flex border-b border-neutral-100 dark:border-neutral-800 gap-1 text-xs">
-<button onClick={() => setActiveTab("manifest")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "manifest" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "المسار" : "Détails"}</button>
-<button onClick={() => setActiveTab("colis")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "colis" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "الطرود" : "Colisage"}</button>
-<button onClick={() => setActiveTab("cod")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "cod" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "التحصيل" : "Finance COD"}</button>
-<button onClick={() => setActiveTab("notes")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "التعليمات" : "Consignes"}</button>
+<button onClick={() => setActiveTab("manifest")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "manifest" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "المسار" : "Détails"}</button>
+<button onClick={() => setActiveTab("colis")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "colis" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "الطرود" : "Colisage"}</button>
+<button onClick={() => setActiveTab("cod")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "cod" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "التحصيل" : "Finance COD"}</button>
+<button onClick={() => setActiveTab("notes")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "التعليمات" : "Consignes"}</button>
 </div>
 {activeTab === "manifest" && /* @__PURE__ */ <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Chauffeur assigné:</span>
-<span className="font-semibold text-neutral-900 dark:text-white">{selectedManifest.driverName}</span>
+<span className="text-black/55 dark:text-white/55">Chauffeur assigné:</span>
+<span className="font-semibold text-black dark:text-white">{selectedManifest.driverName}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Contact:</span>
-<span className="font-mono text-neutral-800 dark:text-neutral-200">{selectedManifest.driverPhone}</span>
+<span className="text-black/55 dark:text-white/55">Contact:</span>
+<span className="font-mono text-black dark:text-white">{selectedManifest.driverPhone}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Véhicule:</span>
+<span className="text-black/55 dark:text-white/55">Véhicule:</span>
 <span className="font-mono font-bold text-[#d4522f]">{selectedManifest.vehiclePlate}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Zone de livraison:</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{selectedManifest.zoneWilaya}</span>
+<span className="text-black/55 dark:text-white/55">Zone de livraison:</span>
+<span className="font-semibold text-black dark:text-white">{selectedManifest.zoneWilaya}</span>
 </div>
 </div>
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Date d'expédition:</span>
-<span className="font-mono text-neutral-800 dark:text-neutral-200">{selectedManifest.dispatchDate}</span>
+<span className="text-black/55 dark:text-white/55">Date d'expédition:</span>
+<span className="font-mono text-black dark:text-white">{selectedManifest.dispatchDate}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Nombre de colis:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">
+<span className="text-black/55 dark:text-white/55">Nombre de colis:</span>
+<span className="font-mono font-bold text-black dark:text-white">
 {selectedManifest.totalShipmentsCount}
 {" colis"}
 </span>
@@ -581,10 +588,10 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 {activeTab === "colis" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Colis chargés sur feuille:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">{selectedManifest.totalShipmentsCount}</span>
+<span className="text-black/55 dark:text-white/55">Colis chargés sur feuille:</span>
+<span className="font-mono font-bold text-black dark:text-white">{selectedManifest.totalShipmentsCount}</span>
 </div>
-<p className="text-[11px] text-neutral-500">
+<p className="text-[11px] text-black/55 dark:text-white/55">
 Bordereau de chargement scellé au départ du hub. Tous les scans codes-barres sont confirmés.
 </p>
 </div>
@@ -592,18 +599,18 @@ Bordereau de chargement scellé au départ du hub. Tous les scans codes-barres s
 {activeTab === "cod" && /* @__PURE__ */ <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Total COD à encaisser:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">{formatMoney(selectedManifest.totalCodExpectedDzd)}</span>
+<span className="text-black/55 dark:text-white/55">Total COD à encaisser:</span>
+<span className="font-mono font-bold text-black dark:text-white">{formatMoney(selectedManifest.totalCodExpectedDzd)}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Montant reversé en caisse:</span>
+<span className="text-black/55 dark:text-white/55">Montant reversé en caisse:</span>
 <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{formatMoney(selectedManifest.totalCodCollectedDzd || 0)}</span>
 </div>
 </div>
 </div>}
 {activeTab === "notes" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
-<p className="text-neutral-500 text-[11px]">Ordre de tournée, consignes de sécurité et instructions pour colis fragiles :</p>
-<textarea rows={6} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} placeholder="Noter les points relais à livrer en priorité, numéros urgents..." className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none" />
+<p className="text-black/55 dark:text-white/55 text-[11px]">Ordre de tournée, consignes de sécurité et instructions pour colis fragiles :</p>
+<textarea rows={6} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} placeholder="Noter les points relais à livrer en priorité, numéros urgents..." className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none" />
 <button onClick={handleSaveNotes} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#d4522f] text-white hover:bg-[#a86246] transition-colors font-medium text-xs shadow-xs">
 {noteSaved ? /* @__PURE__ */ <>
 <Check size={14} />
@@ -623,12 +630,12 @@ Bordereau de chargement scellé au départ du hub. Tous les scans codes-barres s
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold"><Truck size={20} /></div>
 <div>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {manifestToEdit ? isAr ? "تعديل ورقة الطريق" : "Modifier le Manifeste" : isAr ? "إنشاء ورقة طريق جديدة" : "Nouvelle Feuille de Route"}
 </h2>
 </div>
 </div>
-<button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
+<button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
 </div>
 <form onSubmit={handleSaveModal} className="space-y-4">
 <LabelInput label={isAr ? "اسم السائق / الموزع *" : "Nom du Chauffeur / Coursier *"} placeholder="Ex: Mourad Brahimi" value={driverName} onChange={(e) => setDriverName(e.target.value)} required />

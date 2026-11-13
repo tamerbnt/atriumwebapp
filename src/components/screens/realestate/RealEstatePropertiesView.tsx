@@ -191,10 +191,10 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs"><Building2 size={18} /></div>
 <div className="min-w-0">
 <div className="flex items-center gap-2">
-<span className="text-xs font-bold text-neutral-900 dark:text-white truncate">{p.title}</span>
+<span className="text-xs font-bold text-black dark:text-white truncate">{p.title}</span>
 {isPinned && /* @__PURE__ */ <span className="text-[10px] text-amber-500 font-bold">📌 VIP</span>}
 </div>
-<div className="flex items-center gap-2 mt-0.5 text-[11px] text-neutral-400 font-mono">
+<div className="flex items-center gap-2 mt-0.5 text-[11px] text-black/55 dark:text-white/55 font-mono">
 <span>{p.cityWilaya}</span>
 <span>·</span>
 <span>
@@ -217,8 +217,8 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
 			header: language === "ar" ? "المالك / الاتصال" : "Bailleur & Contact",
 			width: "2.4*",
 			renderCell: (p: any) => /* @__PURE__ */ <div>
-<div className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 truncate">{p.ownerName}</div>
-<div className="text-[11px] font-mono text-neutral-400 mt-0.5">{p.ownerPhone}</div>
+<div className="text-xs font-semibold text-black dark:text-white truncate">{p.ownerName}</div>
+<div className="text-[11px] font-mono text-black/55 dark:text-white/55 mt-0.5">{p.ownerPhone}</div>
 </div>
 		},
 		{
@@ -228,7 +228,7 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
 			sortable: true,
 			renderCell: (p: any) => /* @__PURE__ */ <div>
 <span className="text-xs font-mono font-bold text-[#d4522f]">{formatMoney(p.priceDzd)}</span>
-<div className="text-[10px] text-neutral-400">{language === "ar" ? "/ شهر" : "/ mois"}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">{language === "ar" ? "/ شهر" : "/ mois"}</div>
 </div>
 		},
 		{
@@ -278,7 +278,7 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Building2 size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {language === "ar" ? "محفظة العقارات والوحدات المؤجرة" : "Portefeuille Immobilier & Lots"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
@@ -296,26 +296,26 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {language === "ar" ? "مؤشرات المحفظة العقارية ونسبة الإشغال" : "Indicateurs de Portefeuille & Taux d'Occupation"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">{language === "ar" ? "إجمالي المحفظة العقارية" : "Biens Sous Gestion"}</span>
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">{language === "ar" ? "إجمالي المحفظة العقارية" : "Biens Sous Gestion"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono">{properties.length}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">{language === "ar" ? "عقارات مسجلة ومفحوصة" : "Lots sous contrat d'agence"}</p>
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{properties.length}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">{language === "ar" ? "عقارات مسجلة ومفحوصة" : "Lots sous contrat d'agence"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">{language === "ar" ? "نسبة الإشغال الإيجاري" : "Taux d'Occupation"}</span>
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">{language === "ar" ? "نسبة الإشغال الإيجاري" : "Taux d'Occupation"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono">
+<div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
 {occupancyRate}
 %
 </div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 {rentedCount}
 {" / "}
 {properties.length}
@@ -326,12 +326,12 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-300">{language === "ar" ? "الأمان التعاقدي والقانوني" : "Sécurité Juridique"}</span>
+<span className="text-xs font-semibold text-white/80">{language === "ar" ? "الأمان التعاقدي والقانوني" : "Sécurité Juridique"}</span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">100% CONFORME</span>
 </div>
 <div>
-<div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">100%</div>
-<p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+<div className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">100%</div>
+<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
 <span>Baux notariés & cautions séquestrées</span>
 </p>
@@ -342,8 +342,8 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex items-center gap-2">
-<span className="text-sm font-bold text-neutral-900 dark:text-white">{language === "ar" ? "دليل العقارات" : "Inventaire Immobilier"}</span>
-<span className="text-xs text-neutral-400 font-semibold tabular-nums">
+<span className="text-sm font-bold text-black dark:text-white">{language === "ar" ? "دليل العقارات" : "Inventaire Immobilier"}</span>
+<span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums">
 (
 {sortedProperties.length}
 )
@@ -352,29 +352,24 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
 <div className="flex flex-wrap items-center gap-2.5 ml-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={language === "ar" ? "بحث بالاسم أو المدينة أو المالك..." : "Recherche bien, quartier, propriétaire..."} shutSize={36} openWidth={220} />
 <div className="flex items-center bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700 p-0.5 rounded-xl shadow-2xs">
-<button type="button" onClick={() => setFilterType("All")} className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${filterType === "All" ? "bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"}`}>
-{language === "ar" ? "الكل" : "Tous"}
-{" ("}
-{properties.length}
-)
-</button>
-<button type="button" onClick={() => setFilterType("Apartment")} className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${filterType === "Apartment" ? "bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"}`}>{language === "ar" ? "شقق" : "Appartements"}</button>
-<button type="button" onClick={() => setFilterType("Office")} className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${filterType === "Office" ? "bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"}`}>{language === "ar" ? "مكاتب" : "Bureaux"}</button>
-<button type="button" onClick={() => setFilterType("Villa")} className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${filterType === "Villa" ? "bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"}`}>{language === "ar" ? "فلل" : "Villas"}</button>
+<button type="button" onClick={() => setFilterType("All")} title={language === "ar" ? `جميع العقارات (${properties.length})` : language === "fr" ? `Tous les biens (${properties.length})` : `All properties (${properties.length})`} className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${filterType === "All" ? "bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All"}</button>
+<button type="button" onClick={() => setFilterType("Apartment")} title={language === "ar" ? "تصفية حسب الشقق" : language === "fr" ? "Filtrer par appartements" : "Filter by apartments"} className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${filterType === "Apartment" ? "bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "شقق" : language === "fr" ? "Appartements" : "Apartments"}</button>
+<button type="button" onClick={() => setFilterType("Office")} title={language === "ar" ? "تصفية حسب المكاتب" : language === "fr" ? "Filtrer par bureaux" : "Filter by offices"} className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${filterType === "Office" ? "bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "مكاتب" : language === "fr" ? "Bureaux" : "Offices"}</button>
+<button type="button" onClick={() => setFilterType("Villa")} title={language === "ar" ? "تصفية حسب الفلل" : language === "fr" ? "Filtrer par villas" : "Filter by villas"} className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${filterType === "Villa" ? "bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "فلل" : language === "fr" ? "Villas" : "Villas"}</button>
 </div>
 </div>
 </div>
 {selectedIds.size > 0 && /* @__PURE__ */ <div className="flex items-center justify-between p-3 px-4 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in">
 <div className="flex items-center gap-3">
 <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
-<span className="text-xs font-bold text-neutral-900 dark:text-white">
+<span className="text-xs font-bold text-black dark:text-white">
 {selectedIds.size}
 {" "}
 {language === "ar" ? "عقارات محددة" : "biens sélectionnés"}
 </span>
 </div>
 <div className="flex items-center gap-2">
-<button type="button" onClick={() => setSelectedIds(/* @__PURE__ */ new Set())} className="px-3 py-1 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 font-medium cursor-pointer">{language === "ar" ? "إلغاء التحديد" : "Désélectionner"}</button>
+<button type="button" onClick={() => setSelectedIds(/* @__PURE__ */ new Set())} className="px-3 py-1 text-xs text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer">{language === "ar" ? "إلغاء التحديد" : "Désélectionner"}</button>
 <button type="button" onClick={() => {
 									selectedIds.forEach((id) => deleteProperty(id));
 									setSelectedIds(/* @__PURE__ */ new Set());
@@ -404,12 +399,12 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
 									const isPinned = pinnedIds.has(p.id);
 									const isRented = p.status === "Rented";
 									return /* @__PURE__ */ <div className="flex flex-col items-center justify-center w-full">
-<div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700"><Building2 size={32} /></div>
+<div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums"><Building2 size={32} /></div>
 <div className="flex items-center gap-1.5 max-w-[210px] mb-0.5">
-<h3 className="text-base font-bold text-neutral-900 dark:text-white truncate tracking-tight">{p.title}</h3>
+<h3 className="text-base font-bold text-black dark:text-white truncate tracking-tight">{p.title}</h3>
 {isPinned && /* @__PURE__ */ <span className="text-xs text-amber-500">📌</span>}
 </div>
-<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 mb-3 truncate max-w-[200px]">
+<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 mb-3 truncate max-w-[200px]">
 {p.cityWilaya}
 {" · "}
 {p.surfaceM2}
@@ -419,10 +414,10 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
 <div className="text-[#d4522f] font-mono font-bold text-[13px]">
 {formatMoney(p.priceDzd)}
 {" "}
-<span className="text-[10px] text-neutral-400 font-normal">/ mois</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 font-normal">/ mois</span>
 </div>
 <div className="flex items-center justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800 text-[10px]">
-<span className="text-neutral-500">{p.ownerName}</span>
+<span className="text-black/55 dark:text-white/55">{p.ownerName}</span>
 {isRented ? /* @__PURE__ */ <span className="text-blue-600 font-bold">{language === "ar" ? "مؤجر" : "Loué"}</span> : /* @__PURE__ */ <span className="text-emerald-600 font-bold">{language === "ar" ? "شاغر" : "Disponible"}</span>}
 </div>
 </div>
@@ -437,62 +432,62 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
 <div className="flex items-center gap-3 min-w-0">
 <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] text-[#d4522f] font-bold text-sm flex items-center justify-center shrink-0 border border-[#F5E2D8]"><Building2 size={20} /></div>
 <div className="min-w-0">
-<h3 className="font-bold text-sm text-neutral-900 dark:text-white truncate">{selectedProperty.title}</h3>
-<div className="flex items-center gap-1.5 text-xs text-neutral-400 font-mono">
+<h3 className="font-bold text-sm text-black dark:text-white truncate">{selectedProperty.title}</h3>
+<div className="flex items-center gap-1.5 text-xs text-black/55 dark:text-white/55 font-mono">
 <span>{selectedProperty.propertyType}</span>
 <span>·</span>
 <span className="text-[#d4522f] font-bold">{formatMoney(selectedProperty.priceDzd)}</span>
 </div>
 </div>
 </div>
-<button type="button" onClick={() => setSelectedProperty(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200/50 dark:hover:bg-neutral-700 transition-colors"><X size={16} /></button>
+<button type="button" onClick={() => setSelectedProperty(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-neutral-200/50 dark:hover:bg-neutral-700 transition-colors"><X size={16} /></button>
 </div>
 <div className="px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800/40 border-b border-neutral-100 dark:border-neutral-800 flex items-center gap-2">
 <button type="button" onClick={() => handleOpenNewLease(selectedProperty)} className="flex-1 py-1.5 px-2 rounded-lg bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-colors">
 <Key size={13} />
 <span>{language === "ar" ? "عقد إيجار" : "Nouveau Bail"}</span>
 </button>
-<button type="button" onClick={() => handleOpenEdit(selectedProperty)} className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 text-xs font-semibold transition-colors" title="Modifier"><Edit size={14} /></button>
-<button type="button" onClick={() => handleTogglePin(selectedProperty.id)} className={`p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold transition-colors ${pinnedIds.has(selectedProperty.id) ? "text-amber-500" : "text-neutral-400 hover:text-neutral-700"}`} title="Épingler"><Pin size={14} /></button>
+<button type="button" onClick={() => handleOpenEdit(selectedProperty)} className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-neutral-100 text-xs font-semibold transition-colors" title="Modifier"><Edit size={14} /></button>
+<button type="button" onClick={() => handleTogglePin(selectedProperty.id)} className={`p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold transition-colors ${pinnedIds.has(selectedProperty.id) ? "text-amber-500" : "text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`} title="Épingler"><Pin size={14} /></button>
 </div>
 <div className="flex border-b border-neutral-100 dark:border-neutral-800 text-xs font-semibold px-2 bg-white dark:bg-neutral-855">
-<button type="button" onClick={() => setActiveTab("fiche")} className={`py-2 px-3 border-b-2 transition-colors ${activeTab === "fiche" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-900"}`}>{language === "ar" ? "بيانات العقار" : "Fiche"}</button>
-<button type="button" onClick={() => setActiveTab("owner")} className={`py-2 px-3 border-b-2 transition-colors ${activeTab === "owner" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-900"}`}>{language === "ar" ? "المالك" : "Propriétaire"}</button>
-<button type="button" onClick={() => setActiveTab("leases")} className={`py-2 px-3 border-b-2 transition-colors ${activeTab === "leases" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-900"}`}>{language === "ar" ? "عقود الإيجار" : "Baux"}</button>
-<button type="button" onClick={() => setActiveTab("notes")} className={`py-2 px-3 border-b-2 transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-900"}`}>{language === "ar" ? "الملاحظات" : "Gestion"}</button>
+<button type="button" onClick={() => setActiveTab("fiche")} className={`py-2 px-3 border-b-2 transition-colors ${activeTab === "fiche" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "بيانات العقار" : "Fiche"}</button>
+<button type="button" onClick={() => setActiveTab("owner")} className={`py-2 px-3 border-b-2 transition-colors ${activeTab === "owner" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "المالك" : "Propriétaire"}</button>
+<button type="button" onClick={() => setActiveTab("leases")} className={`py-2 px-3 border-b-2 transition-colors ${activeTab === "leases" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "عقود الإيجار" : "Baux"}</button>
+<button type="button" onClick={() => setActiveTab("notes")} className={`py-2 px-3 border-b-2 transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "الملاحظات" : "Gestion"}</button>
 </div>
 <div className="flex-1 overflow-y-auto p-4 space-y-4">
 {activeTab === "fiche" && /* @__PURE__ */ <div className="space-y-3 text-xs">
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">{language === "ar" ? "المواصفات الفنية" : "Caractéristiques du Lot"}</div>
+<div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">{language === "ar" ? "المواصفات الفنية" : "Caractéristiques du Lot"}</div>
 <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-<span className="text-neutral-500">{language === "ar" ? "النوع" : "Type de bien"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{selectedProperty.propertyType}</span>
+<span className="text-black/55 dark:text-white/55">{language === "ar" ? "النوع" : "Type de bien"}</span>
+<span className="font-semibold text-black dark:text-white">{selectedProperty.propertyType}</span>
 </div>
 <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-<span className="text-neutral-500">{language === "ar" ? "المساحة الإجمالية" : "Superficie"}</span>
-<span className="font-bold text-neutral-900 dark:text-white font-mono">
+<span className="text-black/55 dark:text-white/55">{language === "ar" ? "المساحة الإجمالية" : "Superficie"}</span>
+<span className="font-bold text-black dark:text-white font-mono">
 {selectedProperty.surfaceM2}
 {" m²"}
 </span>
 </div>
 <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-<span className="text-neutral-500">{language === "ar" ? "عدد الغرف" : "Nombre de pièces"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 font-mono">{selectedProperty.roomsCount}</span>
+<span className="text-black/55 dark:text-white/55">{language === "ar" ? "عدد الغرف" : "Nombre de pièces"}</span>
+<span className="font-semibold text-black dark:text-white font-mono">{selectedProperty.roomsCount}</span>
 </div>
 <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-<span className="text-neutral-500">{language === "ar" ? "العنوان" : "Adresse"}</span>
-<span className="font-medium text-neutral-800 dark:text-neutral-200 text-right max-w-[200px] truncate">{selectedProperty.address}</span>
+<span className="text-black/55 dark:text-white/55">{language === "ar" ? "العنوان" : "Adresse"}</span>
+<span className="font-medium text-black dark:text-white text-right max-w-[200px] truncate">{selectedProperty.address}</span>
 </div>
 <div className="flex justify-between py-1">
-<span className="text-neutral-500">{language === "ar" ? "المدينة / الولاية" : "Ville & Wilaya"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{selectedProperty.cityWilaya}</span>
+<span className="text-black/55 dark:text-white/55">{language === "ar" ? "المدينة / الولاية" : "Ville & Wilaya"}</span>
+<span className="font-semibold text-black dark:text-white">{selectedProperty.cityWilaya}</span>
 </div>
 </div>
 {selectedProperty.amenities && /* @__PURE__ */ <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-1.5">
-<div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">{language === "ar" ? "المرافق والتجهيزات" : "Équipements & Prestations"}</div>
+<div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">{language === "ar" ? "المرافق والتجهيزات" : "Équipements & Prestations"}</div>
 <div className="flex flex-wrap gap-1.5 pt-1">
-{selectedProperty.amenities.map((a: any, i: number) => /* @__PURE__ */ <span key={i} className="px-2 py-0.5 rounded bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 text-[11px] font-medium text-neutral-700 dark:text-neutral-300">
+{selectedProperty.amenities.map((a: any, i: number) => /* @__PURE__ */ <span key={i} className="px-2 py-0.5 rounded bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 text-[11px] font-medium text-black/70 dark:text-white/75">
 {"✓ "}
 {a}
 </span>)}
@@ -501,14 +496,14 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
 </div>}
 {activeTab === "owner" && /* @__PURE__ */ <div className="space-y-3 text-xs">
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">{language === "ar" ? "بيانات المالك" : "Coordonnées Propriétaire"}</div>
+<div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">{language === "ar" ? "بيانات المالك" : "Coordonnées Propriétaire"}</div>
 <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-<span className="text-neutral-500">{language === "ar" ? "الاسم الكامل" : "Nom du bailleur"}</span>
-<span className="font-bold text-neutral-900 dark:text-white">{selectedProperty.ownerName}</span>
+<span className="text-black/55 dark:text-white/55">{language === "ar" ? "الاسم الكامل" : "Nom du bailleur"}</span>
+<span className="font-bold text-black dark:text-white">{selectedProperty.ownerName}</span>
 </div>
 <div className="flex justify-between py-1">
-<span className="text-neutral-500">{language === "ar" ? "الهاتف" : "Téléphone"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 font-mono">{selectedProperty.ownerPhone}</span>
+<span className="text-black/55 dark:text-white/55">{language === "ar" ? "الهاتف" : "Téléphone"}</span>
+<span className="font-semibold text-black dark:text-white font-mono">{selectedProperty.ownerPhone}</span>
 </div>
 </div>
 </div>}
@@ -517,30 +512,30 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
 												const l = propertyLeaseMap.get(selectedProperty.id);
 												return /* @__PURE__ */ <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-2">
 <div className="flex items-center justify-between">
-<span className="font-bold text-neutral-900 dark:text-white">{l.tenantName}</span>
+<span className="font-bold text-black dark:text-white">{l.tenantName}</span>
 <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">{language === "ar" ? "عقد سارٍ" : "Bail Actif"}</span>
 </div>
-<div className="text-[11px] text-neutral-500 font-mono">
+<div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
 {l.startDate}
 {" → "}
 {l.endDate}
 </div>
 <div className="flex justify-between pt-1 border-t border-neutral-200/50 dark:border-neutral-700/50">
-<span className="text-neutral-500">
+<span className="text-black/55 dark:text-white/55">
 {language === "ar" ? "الإيجار" : "Loyer"}
 :
 </span>
 <span className="font-mono font-bold text-[#d4522f]">{formatMoney(l.monthlyRentDzd)}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">
+<span className="text-black/55 dark:text-white/55">
 {language === "ar" ? "الضمان" : "Dépôt de garantie"}
 :
 </span>
-<span className="font-mono text-neutral-800 dark:text-neutral-200">{formatMoney(l.securityDepositDzd)}</span>
+<span className="font-mono text-black dark:text-white">{formatMoney(l.securityDepositDzd)}</span>
 </div>
 </div>;
-											})() : /* @__PURE__ */ <div className="text-center py-8 text-neutral-400">
+											})() : /* @__PURE__ */ <div className="text-center py-8 text-black/55 dark:text-white/55">
 <Key size={28} className="mx-auto mb-2 opacity-40" />
 <p>
 {language === "ar" ? "لا يوجد عقد إيجار سارٍ لهذا العقار" : "Aucun bail actif pour ce bien."}
@@ -548,12 +543,12 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
 </div>}
 </div>}
 {activeTab === "notes" && /* @__PURE__ */ <div className="space-y-3 text-xs">
-<label className="block text-[11px] font-bold text-neutral-500 uppercase">
+<label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase">
 {language === "ar" ? "ملاحظات الوكالة والتفقد" : "Observations de l'Agence & Visites"}
 </label>
-<textarea value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} rows={8} placeholder={language === "ar" ? "أدخل ملاحظات الوكالة..." : "Disponibilité des clés, travaux à prévoir, profil locataire souhaité..."} className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-2 focus:ring-[#d4522f] outline-none" />
+<textarea value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} rows={8} placeholder={language === "ar" ? "أدخل ملاحظات الوكالة..." : "Disponibilité des clés, travaux à prévoir, profil locataire souhaité..."} className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-2 focus:ring-[#d4522f] outline-none" />
 <div className="flex items-center justify-between pt-1">
-<span className="text-[11px] text-neutral-400">
+<span className="text-[11px] text-black/55 dark:text-white/55">
 {noteSaved && /* @__PURE__ */ <span className="text-emerald-600 font-bold flex items-center gap-1">
 <Check size={12} />
 {" "}

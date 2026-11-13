@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { compactFilterLabel } from '../../../utils/filterLexicon';
 import {
   ShoppingBag,
   Plus,
@@ -211,8 +212,8 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 			minWidth: "220px",
 			sortable: true,
 			renderCell: (p: any) => /* @__PURE__ */ <div className="min-w-0">
-<div className="font-bold text-neutral-900 dark:text-white truncate">{p.name}</div>
-<div className="text-[10px] text-neutral-400 truncate">{p.description || t("shop_standard_article")}</div>
+<div className="font-bold text-black dark:text-white truncate">{p.name}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 truncate">{p.description || t("shop_standard_article")}</div>
 </div>
 		},
 		{
@@ -221,7 +222,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 			width: "1.2*",
 			minWidth: "110px",
 			sortable: true,
-			renderCell: (p: any) => /* @__PURE__ */ <span className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[10px] font-bold text-neutral-700 dark:text-neutral-300">{p.category}</span>
+			renderCell: (p: any) => /* @__PURE__ */ <span className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[10px] font-bold text-black/70 dark:text-white/75">{p.category}</span>
 		},
 		{
 			key: "sku",
@@ -229,9 +230,9 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 			width: "1.5*",
 			minWidth: "130px",
 			sortable: true,
-			renderCell: (p: any) => /* @__PURE__ */ <div className="font-mono text-[11px] text-neutral-500">
+			renderCell: (p: any) => /* @__PURE__ */ <div className="font-mono text-[11px] text-black/55 dark:text-white/55">
 <div>{p.sku}</div>
-{p.barcode && /* @__PURE__ */ <div className="text-[10px] text-neutral-400">{p.barcode}</div>}
+{p.barcode && /* @__PURE__ */ <div className="text-[10px] text-black/55 dark:text-white/55">{p.barcode}</div>}
 </div>
 		},
 		{
@@ -242,7 +243,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 			sortable: true,
 			renderCell: (p: any) => {
 				const costAmt = p.costPrice || p.cost?.amount || Math.round(p.price.amount * .6);
-				return /* @__PURE__ */ <span className="font-mono text-neutral-500 tabular-nums">{formatMoney(costAmt)}</span>;
+				return /* @__PURE__ */ <span className="font-mono text-black/55 dark:text-white/55 tabular-nums">{formatMoney(costAmt)}</span>;
 			}
 		},
 		{
@@ -251,7 +252,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 			width: "1.2*",
 			minWidth: "110px",
 			sortable: true,
-			renderCell: (p: any) => /* @__PURE__ */ <span className="font-mono font-bold text-neutral-900 dark:text-white tabular-nums">{formatMoney(p.price.amount)}</span>
+			renderCell: (p: any) => /* @__PURE__ */ <span className="font-mono font-bold text-black dark:text-white tabular-nums">{formatMoney(p.price.amount)}</span>
 		},
 		{
 			key: "stock",
@@ -286,10 +287,10 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 			minWidth: "160px",
 			sortable: true,
 			renderCell: (p: any) => /* @__PURE__ */ <div className="flex items-center gap-2">
-<div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center font-bold text-xs text-neutral-600 dark:text-neutral-300 shrink-0">{p.name.charAt(0)}</div>
+<div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center font-bold text-xs text-black/70 dark:text-white/75 shrink-0">{p.name.charAt(0)}</div>
 <div className="min-w-0">
-<span className="font-bold text-xs text-neutral-900 dark:text-white truncate block">{p.name}</span>
-<span className="text-[10px] text-neutral-400 font-mono block">
+<span className="font-bold text-xs text-black dark:text-white truncate block">{p.name}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 font-mono block">
 {p.sku}
 {" "}
 {p.barcode ? `· ${p.barcode}` : ""}
@@ -303,7 +304,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 			width: "1.2*",
 			minWidth: "100px",
 			sortable: true,
-			renderCell: (p: any) => /* @__PURE__ */ <span className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[10px] font-bold text-neutral-700 dark:text-neutral-300">{p.category}</span>
+			renderCell: (p: any) => /* @__PURE__ */ <span className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[10px] font-bold text-black/70 dark:text-white/75">{p.category}</span>
 		},
 		{
 			key: "price",
@@ -311,7 +312,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 			width: "1.2*",
 			minWidth: "110px",
 			sortable: true,
-			renderCell: (p: any) => /* @__PURE__ */ <span className="font-mono font-black text-xs text-neutral-900 dark:text-white tabular-nums">{formatMoney(p.price.amount)}</span>
+			renderCell: (p: any) => /* @__PURE__ */ <span className="font-mono font-black text-xs text-black dark:text-white tabular-nums">{formatMoney(p.price.amount)}</span>
 		},
 		{
 			key: "stock",
@@ -340,7 +341,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 				return /* @__PURE__ */ <button type="button" disabled={isOut} onClick={(e) => {
 						e.stopPropagation();
 						addToCart(p);
-					}} className={`h-7 px-2.5 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors ${isOut ? "bg-neutral-100 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed" : inCartItem ? "bg-[#d4522f] text-white shadow-2xs" : "bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-neutral-800 dark:text-neutral-200"}`}>
+					}} className={`h-7 px-2.5 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors ${isOut ? "bg-neutral-100 dark:bg-neutral-800 text-black/55 dark:text-white/55 cursor-not-allowed" : inCartItem ? "bg-[#d4522f] text-white shadow-2xs" : "bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-black dark:text-white"}`}>
 <Plus size={12} />
 <span>{inCartItem ? `(${inCartItem.quantity})` : t("shop_add_btn")}</span>
 </button>;
@@ -355,8 +356,8 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 			minWidth: "150px",
 			sortable: true,
 			renderCell: (po: any) => /* @__PURE__ */ <div>
-<span className="font-bold text-xs text-neutral-900 dark:text-white block">{po.referenceName}</span>
-<span className="text-[10px] text-neutral-400 font-mono block">{new Date(po.createdAt).toLocaleTimeString()}</span>
+<span className="font-bold text-xs text-black dark:text-white block">{po.referenceName}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 font-mono block">{new Date(po.createdAt).toLocaleTimeString()}</span>
 </div>
 		},
 		{
@@ -365,12 +366,12 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 			width: "3*",
 			minWidth: "200px",
 			renderCell: (po: any) => /* @__PURE__ */ <div className="flex items-center gap-1.5 flex-wrap">
-{po.items.slice(0, 3).map((it: any, idx: number) => /* @__PURE__ */ <span key={idx} className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[11px] font-medium text-neutral-700 dark:text-neutral-300">
+{po.items.slice(0, 3).map((it: any, idx: number) => /* @__PURE__ */ <span key={idx} className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[11px] font-medium text-black/70 dark:text-white/75">
 {it.quantity}
 {"x "}
 {it.productName}
 </span>)}
-{po.items.length > 3 && /* @__PURE__ */ <span className="text-[10px] text-neutral-400 font-bold">
+{po.items.length > 3 && /* @__PURE__ */ <span className="text-[10px] text-black/55 dark:text-white/55 font-bold">
 +
 {po.items.length - 3}
 </span>}
@@ -400,7 +401,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <button type="button" onClick={(e) => {
 						e.stopPropagation();
 						deleteParkedOrder(po.id);
-					}} className="h-8 px-2 rounded-xl text-neutral-400 hover:text-red-500 cursor-pointer" title={t("shop_discard_order")}><Trash2 size={14} /></button>
+					}} className="h-8 px-2 rounded-xl text-black/55 dark:text-white/55 hover:text-red-500 cursor-pointer" title={t("shop_discard_order")}><Trash2 size={14} /></button>
 </div>
 		}
 	], [language, t]);
@@ -909,7 +910,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 <div>
 <div className="flex items-center gap-3">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white flex items-center gap-2.5">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 <ShoppingBag className="text-[#d4522f]" size={32} />
 <span>{t("shop_hub_title")}</span>
 </h1>
@@ -917,7 +918,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </div>
 </div>
 <div className="flex items-center gap-2.5 flex-wrap">
-<button type="button" onClick={() => setSoundEnabled(!soundEnabled)} title={soundEnabled ? t("shop_sound_enabled_tip") : t("shop_sound_muted_tip")} className={`p-2.5 rounded-xl border text-xs cursor-pointer transition-colors shadow-2xs ${soundEnabled ? "border-emerald-300 text-emerald-600 dark:border-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40" : "border-neutral-200 text-neutral-400 dark:border-neutral-800 bg-white dark:bg-neutral-900"}`}>
+<button type="button" onClick={() => setSoundEnabled(!soundEnabled)} title={soundEnabled ? t("shop_sound_enabled_tip") : t("shop_sound_muted_tip")} className={`p-2.5 rounded-xl border text-xs cursor-pointer transition-colors shadow-2xs ${soundEnabled ? "border-emerald-300 text-emerald-600 dark:border-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40" : "border-neutral-200 text-black/55 dark:text-white/55 dark:border-neutral-800 bg-white dark:bg-neutral-900"}`}>
 {soundEnabled ? /* @__PURE__ */ <Volume2 size={16} /> : /* @__PURE__ */ <VolumeX size={16} />}
 </button>
 </div>
@@ -925,25 +926,25 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#E9EEF0] dark:border-neutral-800">
 <div>
-<h2 className="text-sm font-bold text-neutral-900 dark:text-white">
+<h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {language === "ar" ? "جلسة البيع & مؤشرات الصندوق" : language === "fr" ? "Session de Caisse & Indicateurs Directs" : "Register Session & Live Sales"}
 </h2>
-<p className="text-xs text-neutral-400 dark:text-neutral-500">
+<p className="text-xs text-black/55 dark:text-white/55">
 {language === "ar" ? "متابعة العمليات اليومية، التذاكر المعلقة، والسيولة النقدية المتوقعة في الدرج" : "Encaissements instantanés, gestion des paniers suspendus et liquidités physiques attendues au tiroir."}
 </p>
 </div>
 <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs shadow-2xs">
-<button type="button" onClick={() => setActiveTab("register")} className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === "register" ? "bg-[#d4522f] text-white shadow-2xs" : "text-neutral-600 dark:text-neutral-300 hover:text-neutral-900"}`}>
+<button type="button" onClick={() => setActiveTab("register")} className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === "register" ? "bg-[#d4522f] text-white shadow-2xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>
 <Coins size={14} />
 <span>{t("nav_pos_register")}</span>
 {cart.length > 0 && /* @__PURE__ */ <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-black ${activeTab === "register" ? "bg-white text-[#d4522f]" : "bg-[#d4522f] text-white"}`}>{cart.reduce((a, b) => a + b.quantity, 0)}</span>}
 </button>
-<button type="button" onClick={() => setActiveTab("parked")} className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === "parked" ? "bg-[#d4522f] text-white shadow-2xs" : "text-neutral-600 dark:text-neutral-300 hover:text-neutral-900"}`}>
+<button type="button" onClick={() => setActiveTab("parked")} className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === "parked" ? "bg-[#d4522f] text-white shadow-2xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>
 <PauseCircle size={14} />
 <span>{t("shop_held_orders")}</span>
 {parkedOrders.length > 0 && /* @__PURE__ */ <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-black ${activeTab === "parked" ? "bg-white text-[#d4522f]" : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"}`}>{parkedOrders.length}</span>}
 </button>
-<button type="button" onClick={() => setActiveTab("receipt_settings")} className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === "receipt_settings" ? "bg-[#d4522f] text-white shadow-2xs" : "text-neutral-600 dark:text-neutral-300 hover:text-neutral-900"}`}>
+<button type="button" onClick={() => setActiveTab("receipt_settings")} className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === "receipt_settings" ? "bg-[#d4522f] text-white shadow-2xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>
 <Settings2 size={14} />
 <span>{t("shop_receipt_printed")}</span>
 </button>
@@ -952,7 +953,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "حجم مبيعات اليوم" : language === "fr" ? "Volume Ventes Caisse" : "Today Register Turnover"}
 </span>
 <div className="mt-1">
@@ -963,11 +964,11 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </span>
 </div>
 </div>
-<div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">{formatMoney(sessionMetrics.turnover)}</div>
+<div className="text-2xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(sessionMetrics.turnover)}</div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "تذاكر قيد الانتظار" : language === "fr" ? "Paniers Suspendus" : "Parked Carts Queue"}
 </span>
 <div className="mt-1">
@@ -978,7 +979,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </span>
 </div>
 </div>
-<div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">{formatMoney(sessionMetrics.parkedValuation)}</div>
+<div className="text-2xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(sessionMetrics.parkedValuation)}</div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm relative overflow-hidden group">
 <div className="absolute -right-4 -bottom-6 opacity-20 group-hover:opacity-30 transition-opacity pointer-events-none">
@@ -988,14 +989,14 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </svg>
 </div>
 <div>
-<span className="text-xs font-medium text-neutral-300">
+<span className="text-xs font-medium text-white/80">
 {language === "ar" ? "سيولة الدرج النقدية" : language === "fr" ? "Liquidités Tiroir-Caisse" : "Drawer Cash Turnover"}
 </span>
 <div className="text-[11px] text-[#FB923C] font-semibold mt-0.5">
 <span className="bg-[#3D2817] px-2 py-0.5 rounded-full inline-block">{language === "ar" ? "نقداً محصلاً (DZD)" : "Tiroir Actif (Espèces)"}</span>
 </div>
 </div>
-<div className="text-2xl font-black text-white tabular-nums font-mono">{formatMoney(sessionMetrics.totalCash)}</div>
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(sessionMetrics.totalCash)}</div>
 </div>
 </div>
 </div>
@@ -1011,23 +1012,28 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <div className="flex flex-wrap items-center justify-between gap-3">
 <div className="flex items-center gap-2 flex-1 min-w-[200px]">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={t("shop_search_catalog")} shutSize={36} openWidth={260} />
-<button type="button" onClick={() => setIsCustomItemModalOpen(true)} className="px-3 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-bold flex items-center gap-1.5 shrink-0 cursor-pointer border border-neutral-200 dark:border-neutral-700">
+<button type="button" onClick={() => setIsCustomItemModalOpen(true)} className="px-3 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-black dark:text-white text-xs font-bold flex items-center gap-1.5 shrink-0 cursor-pointer border border-neutral-200 dark:border-neutral-700">
 <Tag size={13} className="text-[#d4522f]" />
 <span>{t("shop_custom_item_btn")}</span>
 </button>
 </div>
 <div className="flex items-center gap-1 border border-neutral-200 dark:border-neutral-800 rounded-xl p-0.5 bg-white dark:bg-neutral-900">
-<button type="button" onClick={() => setViewMode("grid")} className={`p-1.5 rounded-lg cursor-pointer ${viewMode === "grid" ? "bg-[#d4522f] text-white" : "text-neutral-400"}`}><LayoutGrid size={14} /></button>
-<button type="button" onClick={() => setViewMode("list")} className={`p-1.5 rounded-lg cursor-pointer ${viewMode === "list" ? "bg-[#d4522f] text-white" : "text-neutral-400"}`}><List size={14} /></button>
+<button type="button" onClick={() => setViewMode("grid")} className={`p-1.5 rounded-lg cursor-pointer ${viewMode === "grid" ? "bg-[#d4522f] text-white" : "text-black/55 dark:text-white/55"}`}><LayoutGrid size={14} /></button>
+<button type="button" onClick={() => setViewMode("list")} className={`p-1.5 rounded-lg cursor-pointer ${viewMode === "list" ? "bg-[#d4522f] text-white" : "text-black/55 dark:text-white/55"}`}><List size={14} /></button>
 </div>
 </div>
 <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-{categories.map((cat) => /* @__PURE__ */ <button key={cat} type="button" onClick={() => setCategoryFilter(cat)} className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 cursor-pointer transition-colors ${categoryFilter === cat ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-2xs" : "bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300"}`}>{cat === "All" ? t("shop_categories_all") : cat}</button>)}
+{categories.map((cat) => {
+	const compact = cat === "All"
+		? { label: t("shop_categories_all"), tooltip: language === "ar" ? "جميع الفئات" : language === "fr" ? "Toutes les catégories" : "All categories" }
+		: compactFilterLabel(cat);
+	return /* @__PURE__ */ <button key={cat} type="button" title={compact.tooltip || cat} onClick={() => setCategoryFilter(cat)} className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 cursor-pointer transition-colors ${categoryFilter === cat ? "bg-neutral-900 dark:bg-white text-white dark:text-black shadow-2xs" : "bg-white dark:bg-neutral-900 text-black/70 dark:text-white/75 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300"}`}>{compact.label}</button>;
+})}
 </div>
 {products.length === 0 && /* @__PURE__ */ <div className="p-8 rounded-3xl bg-neutral-50 dark:bg-neutral-900 border border-dashed border-neutral-300 dark:border-neutral-700 text-center space-y-3">
 <Package size={36} className="text-[#d4522f] mx-auto opacity-70" />
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">{t("shop_empty_inventory_title", { branch: currentBranch.name })}</h3>
-<p className="text-xs text-neutral-500 max-w-md mx-auto">{t("shop_empty_inventory_desc")}</p>
+<h3 className="text-base font-bold text-black dark:text-white">{t("shop_empty_inventory_title", { branch: currentBranch.name })}</h3>
+<p className="text-xs text-black/55 dark:text-white/55 max-w-md mx-auto">{t("shop_empty_inventory_desc")}</p>
 </div>}
 {products.length > 0 && /* @__PURE__ */ <UniversalDataCollection items={filteredProducts} keyExtractor={(p) => p.id} defaultViewMode="grid" columns={registerProductColumns} onItemClick={(product) => {
 												if (product.stockQuantity > 0) addToCart(product);
@@ -1039,19 +1045,19 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 														if (!isOutOfStock) addToCart(product);
 													}} className={`relative p-3.5 rounded-2xl transition-all flex flex-col justify-between h-full cursor-pointer group ${isOutOfStock ? "opacity-60 cursor-not-allowed" : ""}`}>
 <div className="flex items-center justify-between w-full gap-1 mb-2">
-<span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider truncate max-w-[90px]">{product.category}</span>
+<span className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider truncate max-w-[90px]">{product.category}</span>
 {inCartItem && /* @__PURE__ */ <span className="px-1.5 py-0.5 rounded-full bg-[#d4522f] text-white text-[10px] font-black">{t("shop_in_cart_badge", { count: inCartItem.quantity })}</span>}
 {!inCartItem && isLowStock && /* @__PURE__ */ <span className="px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400 text-[10px] font-bold">{t("shop_left_badge", { count: product.stockQuantity })}</span>}
 {!inCartItem && isOutOfStock && /* @__PURE__ */ <span className="px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400 text-[10px] font-bold">{t("shop_sold_out_badge")}</span>}
 </div>
 <div className="my-1.5">
-<div className="text-xs font-bold text-neutral-900 dark:text-white line-clamp-2 leading-tight group-hover:text-[#d4522f] transition-colors">{product.name}</div>
-<div className="text-[10px] font-mono text-neutral-400 mt-0.5">{product.sku}</div>
+<div className="text-xs font-bold text-black dark:text-white line-clamp-2 leading-tight group-hover:text-[#d4522f] transition-colors">{product.name}</div>
+<div className="text-[10px] font-mono text-black/55 dark:text-white/55 mt-0.5">{product.sku}</div>
 </div>
 <div className="flex items-center justify-between w-full pt-2 border-t border-neutral-100 dark:border-neutral-800">
 <div>
-<div className="text-sm font-black text-neutral-900 dark:text-white font-mono">{formatMoney(product.price.amount)}</div>
-<div className="text-[10px] font-bold text-neutral-400">
+<div className="text-sm font-black text-black dark:text-white font-mono">{formatMoney(product.price.amount)}</div>
+<div className="text-[10px] font-bold text-black/55 dark:text-white/55">
 {product.stockQuantity}
 {" "}
 {product.unit || t("shop_unit_pcs")}
@@ -1060,7 +1066,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <button type="button" disabled={isOutOfStock} onClick={(e) => {
 																	e.stopPropagation();
 																	addToCart(product);
-																}} className={`h-8 px-2.5 rounded-xl text-xs font-bold cursor-pointer transition-colors flex items-center gap-1 ${isOutOfStock ? "bg-neutral-100 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed" : inCartItem ? "bg-[#d4522f] text-white shadow-2xs" : "bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-neutral-800 dark:text-neutral-200"}`}>
+																}} className={`h-8 px-2.5 rounded-xl text-xs font-bold cursor-pointer transition-colors flex items-center gap-1 ${isOutOfStock ? "bg-neutral-100 dark:bg-neutral-800 text-black/55 dark:text-white/55 cursor-not-allowed" : inCartItem ? "bg-[#d4522f] text-white shadow-2xs" : "bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-black dark:text-white"}`}>
 <Plus size={13} />
 <span>{inCartItem ? `(${inCartItem.quantity})` : t("shop_add_btn")}</span>
 </button>
@@ -1071,11 +1077,11 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <div className="lg:col-span-5 xl:col-span-4 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 shadow-sm space-y-4 sticky top-4">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
 <div>
-<h2 className="text-base font-black text-neutral-900 dark:text-white flex items-center gap-2">
+<h2 className="text-base font-black text-black dark:text-white flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 <Receipt size={18} className="text-[#d4522f]" />
 <span>{t("pos_current_order_title")}</span>
 </h2>
-<div className="text-[11px] text-neutral-400">
+<div className="text-[11px] text-black/55 dark:text-white/55">
 {t("shop_unique_items_summary", {
 													unique: cart.length,
 													total: cart.reduce((a, b) => a + b.quantity, 0)
@@ -1095,53 +1101,53 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 												label: `${m.fullName} (${m.phoneNumber})`
 											}))]} height={40} corner={12} />
 <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1 divide-y divide-neutral-100 dark:divide-neutral-800/60">
-{cart.length === 0 ? /* @__PURE__ */ <div className="py-12 text-center text-neutral-400 space-y-2">
+{cart.length === 0 ? /* @__PURE__ */ <div className="py-12 text-center text-black/55 dark:text-white/55 space-y-2">
 <ShoppingBag size={32} className="mx-auto opacity-40" />
 <p className="text-xs font-semibold">{t("shop_cart_empty_title")}</p>
-<p className="text-[11px] text-neutral-400 max-w-[200px] mx-auto">{t("shop_cart_empty_desc")}</p>
+<p className="text-[11px] text-black/55 dark:text-white/55 max-w-[200px] mx-auto">{t("shop_cart_empty_desc")}</p>
 </div> : cart.map((item) => {
 												const lineTotal = item.product.price.amount * item.quantity - item.discount;
 												return /* @__PURE__ */ <div key={item.product.id} className="pt-2 first:pt-0 space-y-1.5">
 <div className="flex items-start justify-between gap-2">
 <div className="min-w-0">
-<div className="text-xs font-bold text-neutral-900 dark:text-white truncate">{item.product.name}</div>
-<div className="text-[10px] text-neutral-400 font-mono">
+<div className="text-xs font-bold text-black dark:text-white truncate">{item.product.name}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 font-mono">
 {formatMoney(item.product.price.amount)}
 {" "}
 {t("shop_per_unit")}
 </div>
 </div>
 <div className={`shrink-0 ${isRtl ? "text-left" : "text-right"}`}>
-<div className="text-xs font-black font-mono text-neutral-900 dark:text-white">{formatMoney(lineTotal)}</div>
+<div className="text-xs font-black font-mono text-black dark:text-white">{formatMoney(lineTotal)}</div>
 {item.discount > 0 && /* @__PURE__ */ <div className="text-[10px] text-emerald-600 font-bold">{t("shop_discount_badge", { amount: formatMoney(item.discount) })}</div>}
 </div>
 </div>
 <div className="flex items-center justify-between gap-2">
 <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5">
-<button type="button" onClick={() => updateQuantity(item.product.id, -1)} className="w-6 h-6 rounded flex items-center justify-center text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 cursor-pointer"><Minus size={12} /></button>
-<span className="w-7 text-center text-xs font-black font-mono text-neutral-900 dark:text-white">{item.quantity}</span>
-<button type="button" onClick={() => updateQuantity(item.product.id, 1)} className="w-6 h-6 rounded flex items-center justify-center text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 cursor-pointer"><Plus size={12} /></button>
+<button type="button" onClick={() => updateQuantity(item.product.id, -1)} className="w-6 h-6 rounded flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-white dark:hover:bg-neutral-700 cursor-pointer"><Minus size={12} /></button>
+<span className="w-7 text-center text-xs font-black font-mono text-black dark:text-white">{item.quantity}</span>
+<button type="button" onClick={() => updateQuantity(item.product.id, 1)} className="w-6 h-6 rounded flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-white dark:hover:bg-neutral-700 cursor-pointer"><Plus size={12} /></button>
 </div>
 <div className="flex items-center gap-2">
 <input type="number" min="0" placeholder={t("shop_line_discount_ph")} value={item.discount || ""} onChange={(e) => updateLineDiscount(item.product.id, parseFloat(e.target.value) || 0)} className={`w-20 h-6 px-1.5 text-[11px] rounded border border-neutral-200 dark:border-neutral-700 bg-transparent font-mono ${isRtl ? "text-left" : "text-right"}`} />
-<button type="button" onClick={() => removeFromCart(item.product.id)} className="text-neutral-400 hover:text-red-500 cursor-pointer p-0.5"><Trash2 size={13} /></button>
+<button type="button" onClick={() => removeFromCart(item.product.id)} className="text-black/55 dark:text-white/55 hover:text-red-500 cursor-pointer p-0.5"><Trash2 size={13} /></button>
 </div>
 </div>
 </div>;
 											})}
 </div>
 {cart.length > 0 && /* @__PURE__ */ <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 space-y-1">
-<div className="flex items-center justify-between text-[11px] font-bold text-neutral-500">
+<div className="flex items-center justify-between text-[11px] font-bold text-black/55 dark:text-white/55">
 <span>{t("pos_cart_discount_label")}</span>
 <div className="flex items-center gap-1">
-<button type="button" onClick={() => setOrderDiscountType("fixed")} className={`px-1.5 py-0.5 rounded text-[10px] font-black cursor-pointer ${orderDiscountType === "fixed" ? "bg-[#d4522f] text-white" : "text-neutral-400"}`}>{language === "ar" ? "د.ج" : "DA"}</button>
-<button type="button" onClick={() => setOrderDiscountType("percent")} className={`px-1.5 py-0.5 rounded text-[10px] font-black cursor-pointer ${orderDiscountType === "percent" ? "bg-[#d4522f] text-white" : "text-neutral-400"}`}>%</button>
+<button type="button" onClick={() => setOrderDiscountType("fixed")} className={`px-1.5 py-0.5 rounded text-[10px] font-black cursor-pointer ${orderDiscountType === "fixed" ? "bg-[#d4522f] text-white" : "text-black/55 dark:text-white/55"}`}>{language === "ar" ? "د.ج" : "DA"}</button>
+<button type="button" onClick={() => setOrderDiscountType("percent")} className={`px-1.5 py-0.5 rounded text-[10px] font-black cursor-pointer ${orderDiscountType === "percent" ? "bg-[#d4522f] text-white" : "text-black/55 dark:text-white/55"}`}>%</button>
 </div>
 </div>
-<input type="number" min="0" max={orderDiscountType === "percent" ? 100 : cartSubtotal} value={orderDiscountValue || ""} onChange={(e) => setOrderDiscountValue(parseFloat(e.target.value) || 0)} placeholder={orderDiscountType === "percent" ? "10%" : t("shop_order_discount_ph")} className="w-full h-8 px-2 text-xs rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800 font-mono text-neutral-900 dark:text-white" />
+<input type="number" min="0" max={orderDiscountType === "percent" ? 100 : cartSubtotal} value={orderDiscountValue || ""} onChange={(e) => setOrderDiscountValue(parseFloat(e.target.value) || 0)} placeholder={orderDiscountType === "percent" ? "10%" : t("shop_order_discount_ph")} className="w-full h-8 px-2 text-xs rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800 font-mono text-black dark:text-white" />
 </div>}
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 space-y-1.5 text-xs">
-<div className="flex justify-between text-neutral-500">
+<div className="flex justify-between text-black/55 dark:text-white/55">
 <span>{t("pos_subtotal_label")}</span>
 <span className="font-mono font-semibold">{formatMoney(cartSubtotal)}</span>
 </div>
@@ -1152,17 +1158,17 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 {formatMoney(discountAmount)}
 </span>
 </div>}
-{receiptConfig.showTaxBreakdown && taxAmount > 0 && /* @__PURE__ */ <div className="flex justify-between text-neutral-500">
+{receiptConfig.showTaxBreakdown && taxAmount > 0 && /* @__PURE__ */ <div className="flex justify-between text-black/55 dark:text-white/55">
 <span>{t("shop_vat_line")}</span>
 <span className="font-mono">{formatMoney(taxAmount)}</span>
 </div>}
-<div className="flex justify-between items-baseline pt-2 border-t border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white font-black">
+<div className="flex justify-between items-baseline pt-2 border-t border-neutral-200 dark:border-neutral-700 text-black dark:text-white font-black">
 <span className="text-sm">{t("pos_total_due_label")}</span>
 <span className="text-2xl font-mono text-[#d4522f]">{formatMoney(cartTotal)}</span>
 </div>
 </div>
 {cart.length > 0 && /* @__PURE__ */ <div className="space-y-1.5 pt-1">
-<div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">{t("pos_quick_cash_title")}</div>
+<div className="text-[10px] font-bold uppercase tracking-wider text-black/55 dark:text-white/55">{t("pos_quick_cash_title")}</div>
 <div className="grid grid-cols-4 gap-1.5">
 {[
 													cartTotal,
@@ -1175,13 +1181,13 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 															setSinglePaymentMethod("Cash");
 															setAmountTenderedInput(amt.toString());
 															handleOpenCheckout();
-														}} className={`p-1.5 rounded-xl text-[10px] font-bold font-mono text-center border cursor-pointer hover:border-[#d4522f] transition-colors ${isExact ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 border-transparent" : "bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300"}`}>
+														}} className={`p-1.5 rounded-xl text-[10px] font-bold font-mono text-center border cursor-pointer hover:border-[#d4522f] transition-colors ${isExact ? "bg-neutral-900 dark:bg-white text-white dark:text-white/55 border-transparent" : "bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75"}`}>
 {isExact ? t("shop_quick_cash_exact") : `${amt.toLocaleString()} ${language === "ar" ? "د.ج" : "DA"}`}
 </button>;
 												})}
 </div>
 </div>}
-<button type="button" disabled={cart.length === 0} onClick={handleOpenCheckout} className={`w-full h-12 rounded-2xl text-xs font-black tracking-wide uppercase flex items-center justify-center gap-2 cursor-pointer transition-all shadow-md ${cart.length === 0 ? "bg-neutral-200 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed shadow-none" : "bg-[#d4522f] text-white hover:opacity-90 active:scale-98"}`}>
+<button type="button" disabled={cart.length === 0} onClick={handleOpenCheckout} className={`w-full h-12 rounded-2xl text-xs font-black tracking-wide uppercase flex items-center justify-center gap-2 cursor-pointer transition-all shadow-md ${cart.length === 0 ? "bg-neutral-200 dark:bg-neutral-800 text-black/55 dark:text-white/55 cursor-not-allowed shadow-none" : "bg-[#d4522f] text-white hover:opacity-90 active:scale-98"}`}>
 <Coins size={16} />
 <span>{t("shop_charge_button", { amount: formatMoney(cartTotal) })}</span>
 <ArrowRight size={15} className={isRtl ? "rotate-180" : ""} />
@@ -1191,15 +1197,15 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 {activeTab === "parked" && /* @__PURE__ */ <div className="space-y-4">
 <div className="flex items-center justify-between">
 <div>
-<h2 className="text-base font-black text-neutral-900 dark:text-white">{t("shop_held_orders_title", { count: parkedOrders.length })}</h2>
+<h2 className="text-base font-black text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("shop_held_orders_title", { count: parkedOrders.length })}</h2>
 </div>
 </div>
 <UniversalDataCollection items={parkedOrders} keyExtractor={(po) => po.id} defaultViewMode="grid" columns={parkedOrderColumns} onItemClick={(po) => handleResumeOrder(po)} renderCard={(po) => /* @__PURE__ */ <div className="flex flex-col justify-between h-full space-y-3">
 <div>
 <div className="flex items-start justify-between gap-2 mb-2">
 <div>
-<div className="text-xs font-black text-neutral-900 dark:text-white">{po.referenceName}</div>
-<div className="text-[10px] text-neutral-400 mt-0.5">
+<div className="text-xs font-black text-black dark:text-white">{po.referenceName}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 mt-0.5">
 {t("shop_held_at_time", {
 														time: new Date(po.createdAt).toLocaleTimeString(),
 														count: po.items.length
@@ -1209,7 +1215,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <div className="text-sm font-black font-mono text-[#d4522f]">{formatMoney(po.totalAmount)}</div>
 </div>
 <div className="text-xs bg-neutral-50 dark:bg-neutral-800/50 p-2.5 rounded-xl space-y-1">
-{po.items.map((it, idx) => /* @__PURE__ */ <div key={idx} className="flex justify-between text-[11px] text-neutral-600 dark:text-neutral-300">
+{po.items.map((it, idx) => /* @__PURE__ */ <div key={idx} className="flex justify-between text-[11px] text-black/70 dark:text-white/75">
 <span>
 {it.quantity}
 {"x "}
@@ -1231,52 +1237,62 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <button type="button" onClick={(e) => {
 													e.stopPropagation();
 													deleteParkedOrder(po.id);
-												}} className="h-9 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-400 hover:text-red-500 cursor-pointer" title={t("shop_discard_order")}><Trash2 size={14} /></button>
+												}} className="h-9 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/55 dark:text-white/55 hover:text-red-500 cursor-pointer" title={t("shop_discard_order")}><Trash2 size={14} /></button>
 </div>
 </div>} emptyTitle={t("shop_no_held_title")} emptyDescription={t("shop_no_held_desc")} />
 </div>}
 {activeTab === "inventory" && /* @__PURE__ */ <div className="space-y-5">
 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
 <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
-<div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">{t("shop_kpi_skus")}</div>
-<div className="text-xl font-black text-neutral-900 dark:text-white">{inventoryStats.totalSKUs}</div>
-<div className="text-[10px] text-neutral-400">{t("shop_kpi_skus_sub", { count: inventoryStats.totalUnits })}</div>
+<div className="text-[10px] font-bold uppercase tracking-wider text-black/55 dark:text-white/55">{t("shop_kpi_skus")}</div>
+<div className="text-xl font-black text-black dark:text-white">{inventoryStats.totalSKUs}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">{t("shop_kpi_skus_sub", { count: inventoryStats.totalUnits })}</div>
 </div>
 <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
-<div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">{t("shop_kpi_retail_val")}</div>
+<div className="text-[10px] font-bold uppercase tracking-wider text-black/55 dark:text-white/55">{t("shop_kpi_retail_val")}</div>
 <div className="text-xl font-black font-mono text-[#d4522f]">{formatMoney(inventoryStats.retailValuation)}</div>
-<div className="text-[10px] text-neutral-400">
+<div className="text-[10px] text-black/55 dark:text-white/55">
 {t("shop_kpi_retail_val_sub", { cost: formatMoney(inventoryStats.costValuation) })}
 </div>
 </div>
 <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
-<div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">{t("shop_kpi_margin")}</div>
+<div className="text-[10px] font-bold uppercase tracking-wider text-black/55 dark:text-white/55">{t("shop_kpi_margin")}</div>
 <div className="text-xl font-black font-mono text-emerald-600 dark:text-emerald-400">{formatMoney(inventoryStats.potentialProfit)}</div>
-<div className="text-[10px] text-neutral-400">{t("shop_kpi_margin_sub")}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">{t("shop_kpi_margin_sub")}</div>
 </div>
 <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
-<div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">{t("shop_kpi_low_stock")}</div>
+<div className="text-[10px] font-bold uppercase tracking-wider text-black/55 dark:text-white/55">{t("shop_kpi_low_stock")}</div>
 <div className="text-xl font-black text-red-600 dark:text-red-400 flex items-center gap-2">
 <span>{t("shop_kpi_low_items", { count: inventoryStats.lowStockItems })}</span>
 {inventoryStats.outOfStockItems > 0 && /* @__PURE__ */ <span className="text-xs font-bold text-red-400">{t("shop_kpi_out_items", { count: inventoryStats.outOfStockItems })}</span>}
 </div>
-<div className="text-[10px] text-neutral-400">{t("shop_kpi_low_sub")}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">{t("shop_kpi_low_sub")}</div>
 </div>
 </div>
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div className="flex items-center gap-2 flex-wrap">
 <div className="flex items-center p-0.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs font-bold">
-<button type="button" onClick={() => setStockStatusFilter("all")} className={`px-3 py-1.5 rounded-lg cursor-pointer ${stockStatusFilter === "all" ? "bg-[#d4522f] text-white" : "text-neutral-500"}`}>{t("shop_filter_all", { count: products.length })}</button>
-<button type="button" onClick={() => setStockStatusFilter("low")} className={`px-3 py-1.5 rounded-lg cursor-pointer ${stockStatusFilter === "low" ? "bg-amber-600 text-white" : "text-neutral-500"}`}>{t("shop_filter_low", { count: inventoryStats.lowStockItems })}</button>
-<button type="button" onClick={() => setStockStatusFilter("out")} className={`px-3 py-1.5 rounded-lg cursor-pointer ${stockStatusFilter === "out" ? "bg-red-600 text-white" : "text-neutral-500"}`}>{t("shop_filter_out", { count: inventoryStats.outOfStockItems })}</button>
+<button type="button" title={language === "ar" ? "جميع المنتجات" : language === "fr" ? "Tous les articles" : "All items"} onClick={() => setStockStatusFilter("all")} className={`px-3 py-1.5 rounded-lg cursor-pointer inline-flex items-center gap-1.5 ${stockStatusFilter === "all" ? "bg-[#d4522f] text-white" : "text-black/70 dark:text-white/75"}`}>
+<span>{t("shop_filter_all")}</span>
+<span className="text-[10px] opacity-80 tabular-nums">{products.length}</span>
+</button>
+<button type="button" title={language === "ar" ? "مخزون منخفض (تحت الحد الأدنى)" : language === "fr" ? "Stock bas (sous le seuil d'alerte)" : "Low stock (below reorder level)"} onClick={() => setStockStatusFilter("low")} className={`px-3 py-1.5 rounded-lg cursor-pointer inline-flex items-center gap-1.5 ${stockStatusFilter === "low" ? "bg-amber-600 text-white" : "text-black/70 dark:text-white/75"}`}>
+<span>{t("shop_filter_low")}</span>
+<span className="text-[10px] opacity-80 tabular-nums">{inventoryStats.lowStockItems}</span>
+</button>
+<button type="button" title={language === "ar" ? "منتجات نفذت من المخزون" : language === "fr" ? "Articles en rupture de stock" : "Out of stock items"} onClick={() => setStockStatusFilter("out")} className={`px-3 py-1.5 rounded-lg cursor-pointer inline-flex items-center gap-1.5 ${stockStatusFilter === "out" ? "bg-red-600 text-white" : "text-black/70 dark:text-white/75"}`}>
+<span>{t("shop_filter_out")}</span>
+<span className="text-[10px] opacity-80 tabular-nums">{inventoryStats.outOfStockItems}</span>
+</button>
 </div>
 <FilterSelect label={t("shop_filter_category_label")} value={categoryFilter} onChange={(val) => setCategoryFilter(typeof val === "string" ? val : val.target?.value || val)} options={categories.map((c) => ({
 													value: c,
-													label: c === "All" ? t("shop_categories_all") : c
+													label: c === "All" ? t("shop_categories_all") : c,
+													tooltip: c === "All" ? (language === "ar" ? "جميع الفئات" : language === "fr" ? "Toutes les catégories" : "All categories") : c
 												}))} />
 </div>
 <div className="flex items-center gap-2">
-<button type="button" onClick={handleExportInventoryCSV} className="h-9 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-200 text-xs font-bold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer">
+<button type="button" onClick={handleExportInventoryCSV} className="h-9 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black/70 dark:text-white text-xs font-bold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer">
 <Download size={13} />
 <span>{t("shop_export_csv")}</span>
 </button>
@@ -1299,26 +1315,26 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 											return /* @__PURE__ */ <div className="flex flex-col justify-between w-full h-full">
 <div>
 <div className="flex items-center justify-between gap-2 mb-2">
-<span className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[10px] font-bold text-neutral-600 dark:text-neutral-300">{p.category}</span>
+<span className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[10px] font-bold text-black/70 dark:text-white/75">{p.category}</span>
 <span className={`inline-flex items-center gap-1 font-bold px-2 py-0.5 rounded-full text-[10px] tabular-nums ${isOut ? "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300" : isLow ? "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300" : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"}`}>
 {p.stockQuantity}
 {" "}
 {p.unit || t("shop_unit_pcs")}
 </span>
 </div>
-<h3 className="font-bold text-sm text-neutral-900 dark:text-white line-clamp-1 mb-1">{p.name}</h3>
-<p className="text-[11px] text-neutral-400 line-clamp-2 mb-3">{p.description || t("shop_standard_article")}</p>
+<h3 className="font-bold text-sm text-black dark:text-white line-clamp-1 mb-1">{p.name}</h3>
+<p className="text-[11px] text-black/55 dark:text-white/55 line-clamp-2 mb-3">{p.description || t("shop_standard_article")}</p>
 <div className="grid grid-cols-2 gap-2 p-2.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl text-xs mb-3">
 <div>
-<span className="text-neutral-400 block text-[9px] uppercase font-medium">{t("shop_col_cost")}</span>
-<span className="font-mono text-neutral-600 dark:text-neutral-300 tabular-nums">{formatMoney(costAmt)}</span>
+<span className="text-black/55 dark:text-white/55 block text-[9px] uppercase font-medium">{t("shop_col_cost")}</span>
+<span className="font-mono text-black/70 dark:text-white/75 tabular-nums">{formatMoney(costAmt)}</span>
 </div>
 <div>
-<span className="text-neutral-400 block text-[9px] uppercase font-medium">{t("shop_col_retail")}</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white tabular-nums">{formatMoney(p.price.amount)}</span>
+<span className="text-black/55 dark:text-white/55 block text-[9px] uppercase font-medium">{t("shop_col_retail")}</span>
+<span className="font-mono font-bold text-black dark:text-white tabular-nums">{formatMoney(p.price.amount)}</span>
 </div>
 <div className="col-span-2 pt-1 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
-<span className="text-neutral-400 text-[10px] font-mono">{p.sku}</span>
+<span className="text-black/55 dark:text-white/55 text-[10px] font-mono">{p.sku}</span>
 <span className="font-mono font-bold text-[#d4522f] text-xs tabular-nums">{formatMoney(p.price.amount * p.stockQuantity)}</span>
 </div>
 </div>
@@ -1373,14 +1389,14 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 										}]} isPinned={(p) => pinnedProductIds.has(p.id)} selectedIds={selectedProductIds} onSelectionChange={setSelectedProductIds} emptyTitle={t("shop_table_empty")} emptyDescription={t("shop_empty_cat_sub")} primaryActionLabel={t("shop_add_product")} onAddFirstItem={handleOpenAddProduct} />
 {stockMovements.length > 0 && /* @__PURE__ */ <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 space-y-3">
 <div className="flex items-center justify-between">
-<h3 className="text-xs font-black uppercase tracking-wider text-neutral-500">{t("shop_movements_title")}</h3>
-<span className="text-[10px] text-neutral-400 font-mono">{t("shop_movements_count", { count: stockMovements.length })}</span>
+<h3 className="text-xs font-black uppercase tracking-wider text-black/55 dark:text-white/55">{t("shop_movements_title")}</h3>
+<span className="text-[10px] text-black/55 dark:text-white/55 font-mono">{t("shop_movements_count", { count: stockMovements.length })}</span>
 </div>
 <div className="divide-y divide-neutral-100 dark:divide-neutral-800 text-xs">
 {stockMovements.slice(0, 6).map((sm) => /* @__PURE__ */ <div key={sm.id} className="py-2 flex items-center justify-between gap-3">
 <div className="min-w-0">
-<div className="font-bold text-neutral-900 dark:text-white truncate">{sm.productName}</div>
-<div className="text-[10px] text-neutral-400">
+<div className="font-bold text-black dark:text-white truncate">{sm.productName}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">
 {t("shop_movement_by", {
 															reason: sm.reason || sm.type,
 															user: sm.createdBy || "Staff",
@@ -1390,7 +1406,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </div>
 <div className={`shrink-0 ${isRtl ? "text-left" : "text-right"}`}>
 <span className={`font-mono font-bold text-xs ${sm.quantity > 0 ? "text-emerald-600" : "text-red-600"}`}>{sm.quantity > 0 ? `+${sm.quantity}` : sm.quantity}</span>
-<div className="text-[10px] text-neutral-400 font-mono">
+<div className="text-[10px] text-black/55 dark:text-white/55 font-mono">
 {sm.previousStock}
 {" → "}
 {sm.newStock}
@@ -1403,7 +1419,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 {activeTab === "receipt_settings" && /* @__PURE__ */ <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
 <div className="p-5 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-4">
 <div>
-<h2 className="text-base font-black text-neutral-900 dark:text-white">{t("shop_receipt_branding_title")}</h2>
+<h2 className="text-base font-black text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("shop_receipt_branding_title")}</h2>
 </div>
 <div className="space-y-3 text-xs">
 <LabelInput field="StoreTitle" label={t("shop_field_store_title")} value={receiptConfig.headerTitle} onChange={(v) => updateReceiptConfig({ headerTitle: v })} width="100%" height={40} corner={12} />
@@ -1415,15 +1431,15 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <LabelInput field="Address" label={t("shop_field_address")} value={receiptConfig.address || ""} onChange={(v) => updateReceiptConfig({ address: v })} width="100%" height={40} corner={12} />
 <LabelInput field="Footer" label={t("shop_field_footer")} value={receiptConfig.footerMessage || ""} onChange={(v) => updateReceiptConfig({ footerMessage: v })} width="100%" height={40} corner={12} />
 <div className="pt-2 space-y-2">
-<label className="flex items-center gap-2 cursor-pointer font-bold text-neutral-700 dark:text-neutral-300">
+<label className="flex items-center gap-2 cursor-pointer font-bold text-black/70 dark:text-white/75">
 <input type="checkbox" checked={receiptConfig.showTaxBreakdown} onChange={(e) => updateReceiptConfig({ showTaxBreakdown: e.target.checked })} className="w-4 h-4 rounded text-[#d4522f]" />
 <span>{t("shop_toggle_tax")}</span>
 </label>
-<label className="flex items-center gap-2 cursor-pointer font-bold text-neutral-700 dark:text-neutral-300">
+<label className="flex items-center gap-2 cursor-pointer font-bold text-black/70 dark:text-white/75">
 <input type="checkbox" checked={receiptConfig.showCashier} onChange={(e) => updateReceiptConfig({ showCashier: e.target.checked })} className="w-4 h-4 rounded text-[#d4522f]" />
 <span>{t("shop_toggle_cashier")}</span>
 </label>
-<label className="flex items-center gap-2 cursor-pointer font-bold text-neutral-700 dark:text-neutral-300">
+<label className="flex items-center gap-2 cursor-pointer font-bold text-black/70 dark:text-white/75">
 <input type="checkbox" checked={receiptConfig.showBarcode} onChange={(e) => updateReceiptConfig({ showBarcode: e.target.checked })} className="w-4 h-4 rounded text-[#d4522f]" />
 <span>{t("shop_toggle_barcode")}</span>
 </label>
@@ -1431,17 +1447,17 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </div>
 </div>
 <div className="p-5 rounded-3xl bg-neutral-100 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 flex flex-col items-center">
-<div className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3">{t("shop_preview_title")}</div>
+<div className="text-xs font-bold text-black/55 dark:text-white/55 uppercase tracking-wider mb-3">{t("shop_preview_title")}</div>
 <div className="w-[300px] bg-white text-black p-5 shadow-xl font-mono text-[11px] leading-relaxed border-t-4 border-[#d4522f]">
 <div className="text-center space-y-1 pb-3 border-b border-dashed border-neutral-400">
 <div className="text-base font-black tracking-wider uppercase">{receiptConfig.headerTitle}</div>
-{receiptConfig.subHeader && /* @__PURE__ */ <div className="text-[10px] text-neutral-600">{receiptConfig.subHeader}</div>}
-{receiptConfig.address && /* @__PURE__ */ <div className="text-[9px] text-neutral-500">{receiptConfig.address}</div>}
-{receiptConfig.phone && /* @__PURE__ */ <div className="text-[9px] text-neutral-500">
+{receiptConfig.subHeader && /* @__PURE__ */ <div className="text-[10px] text-black/75">{receiptConfig.subHeader}</div>}
+{receiptConfig.address && /* @__PURE__ */ <div className="text-[9px] text-black/55">{receiptConfig.address}</div>}
+{receiptConfig.phone && /* @__PURE__ */ <div className="text-[9px] text-black/55">
 {"Tel: "}
 {receiptConfig.phone}
 </div>}
-{receiptConfig.taxId && /* @__PURE__ */ <div className="text-[9px] font-bold text-neutral-600 pt-0.5">{receiptConfig.taxId}</div>}
+{receiptConfig.taxId && /* @__PURE__ */ <div className="text-[9px] font-bold text-black/75 pt-0.5">{receiptConfig.taxId}</div>}
 </div>
 <div className="py-2.5 text-[10px] border-b border-dashed border-neutral-400 space-y-0.5">
 <div className="flex justify-between">
@@ -1476,7 +1492,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <span>{t("shop_receipt_subtotal_header")}</span>
 <span>4,160 DA</span>
 </div>
-{receiptConfig.showTaxBreakdown && /* @__PURE__ */ <div className="flex justify-between text-[10px] text-neutral-600">
+{receiptConfig.showTaxBreakdown && /* @__PURE__ */ <div className="flex justify-between text-[10px] text-black/75">
 <span>{t("shop_receipt_vat_header")}</span>
 <span>374 DA</span>
 </div>}
@@ -1484,7 +1500,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <span>{t("shop_receipt_total_due_header")}</span>
 <span>4,160 DA</span>
 </div>
-<div className="flex justify-between text-[10px] text-neutral-600 pt-1">
+<div className="flex justify-between text-[10px] text-black/75 pt-1">
 <span>{t("shop_receipt_tender_cash_header")}</span>
 <span>5,000 DA</span>
 </div>
@@ -1495,7 +1511,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </div>
 <div className="pt-3 text-center space-y-2">
 {receiptConfig.showBarcode && /* @__PURE__ */ <div className="w-40 h-8 mx-auto bg-neutral-900 text-white text-[8px] flex items-center justify-center tracking-widest font-mono">||||| | |||| || ||| ||||</div>}
-<div className="text-[10px] font-bold text-neutral-800">{receiptConfig.footerMessage || t("shop_receipt_default_footer")}</div>
+<div className="text-[10px] font-bold text-black">{receiptConfig.footerMessage || t("shop_receipt_default_footer")}</div>
 </div>
 </div>
 </div>
@@ -1505,17 +1521,17 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <Modal isOpen={isCheckoutModalOpen} onClose={() => setIsCheckoutModalOpen(false)} title={t("shop_modal_checkout_title")} subtitle={t("shop_modal_checkout_subtitle", { amount: formatMoney(cartTotal) })}>
 <div className="space-y-4" dir={isRtl ? "rtl" : "ltr"}>
 <div className="flex rounded-xl bg-neutral-100 dark:bg-neutral-800 p-1 text-xs font-bold">
-<button type="button" onClick={() => setCheckoutMode("single")} className={`flex-1 py-2 rounded-lg cursor-pointer transition-colors flex items-center justify-center gap-1.5 ${checkoutMode === "single" ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs" : "text-neutral-500"}`}>
+<button type="button" onClick={() => setCheckoutMode("single")} className={`flex-1 py-2 rounded-lg cursor-pointer transition-colors flex items-center justify-center gap-1.5 ${checkoutMode === "single" ? "bg-white dark:bg-neutral-900 text-black dark:text-white shadow-xs" : "text-black/55 dark:text-white/55"}`}>
 <Banknote size={14} />
 <span>{t("shop_mode_single")}</span>
 </button>
-<button type="button" onClick={() => setCheckoutMode("split")} className={`flex-1 py-2 rounded-lg cursor-pointer transition-colors flex items-center justify-center gap-1.5 ${checkoutMode === "split" ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs" : "text-neutral-500"}`}>
+<button type="button" onClick={() => setCheckoutMode("split")} className={`flex-1 py-2 rounded-lg cursor-pointer transition-colors flex items-center justify-center gap-1.5 ${checkoutMode === "split" ? "bg-white dark:bg-neutral-900 text-black dark:text-white shadow-xs" : "text-black/55 dark:text-white/55"}`}>
 <Split size={14} />
 <span>{t("shop_mode_split")}</span>
 </button>
 </div>
 {checkoutMode === "single" && /* @__PURE__ */ <div className="space-y-3">
-<label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">{t("shop_tender_method_label")}</label>
+<label className="text-xs font-bold text-black/70 dark:text-white/75">{t("shop_tender_method_label")}</label>
 <div className="grid grid-cols-3 gap-2">
 {[
 										"Cash",
@@ -1524,7 +1540,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 									].map((method) => {
 										const isSelected = singlePaymentMethod === method;
 										const label = method === "Cash" ? t("pos_tender_cash") : method === "Card" ? t("pos_tender_card") : t("shop_tender_member_bal");
-										return /* @__PURE__ */ <button key={method} type="button" onClick={() => setSinglePaymentMethod(method)} className={`p-3 rounded-2xl border text-xs font-bold flex flex-col items-center gap-1.5 cursor-pointer transition-all ${isSelected ? "border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f] shadow-xs" : "border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300"}`}>
+										return /* @__PURE__ */ <button key={method} type="button" onClick={() => setSinglePaymentMethod(method)} className={`p-3 rounded-2xl border text-xs font-bold flex flex-col items-center gap-1.5 cursor-pointer transition-all ${isSelected ? "border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f] shadow-xs" : "border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75"}`}>
 {method === "Cash" && /* @__PURE__ */ <Banknote size={18} />}
 {method === "Card" && /* @__PURE__ */ <CreditCard size={18} />}
 {method === "MemberBalance" && /* @__PURE__ */ <User size={18} />}
@@ -1534,12 +1550,12 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </div>
 {singlePaymentMethod === "Cash" && /* @__PURE__ */ <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 space-y-2">
 <div className="flex items-center justify-between pb-1">
-<span className="text-[11px] font-bold text-neutral-400">{t("shop_cash_settlement")}</span>
+<span className="text-[11px] font-bold text-black/55 dark:text-white/55">{t("shop_cash_settlement")}</span>
 <button type="button" onClick={() => setAmountTenderedInput(cartTotal.toString())} className="text-[11px] font-bold text-[#d4522f] hover:underline cursor-pointer">{t("shop_exact_cash_btn", { amount: formatMoney(cartTotal) })}</button>
 </div>
 <LabelInput field="Tendered" label={t("shop_amount_tendered_input")} type="number" value={amountTenderedInput} onChange={setAmountTenderedInput} width="100%" height={48} corner={14} />
 <div className="flex items-center justify-between pt-1">
-<span className="text-xs font-bold text-neutral-500">
+<span className="text-xs font-bold text-black/55 dark:text-white/55">
 {t("pos_change_due_label")}
 {" :"}
 </span>
@@ -1549,7 +1565,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </div>}
 {checkoutMode === "split" && /* @__PURE__ */ <div className="space-y-3">
 <div className="flex items-center justify-between text-xs font-bold">
-<span className="text-neutral-500">{t("shop_split_total_order", { amount: formatMoney(cartTotal) })}</span>
+<span className="text-black/55 dark:text-white/55">{t("shop_split_total_order", { amount: formatMoney(cartTotal) })}</span>
 <span className={splitRemaining === 0 ? "text-emerald-600 font-mono" : "text-red-500 font-mono"}>
 {splitRemaining === 0 ? t("shop_split_balanced") : t("shop_split_remaining", { amount: formatMoney(splitRemaining) })}
 </span>
@@ -1588,7 +1604,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 													setSplitPayments(newArr);
 												}} width="100%" height={40} corner={12} />
 </div>
-{splitPayments.length > 1 && /* @__PURE__ */ <button type="button" onClick={() => setSplitPayments(splitPayments.filter((_, i) => i !== idx))} className="text-neutral-400 hover:text-red-500 p-1 cursor-pointer"><Trash2 size={14} /></button>}
+{splitPayments.length > 1 && /* @__PURE__ */ <button type="button" onClick={() => setSplitPayments(splitPayments.filter((_, i) => i !== idx))} className="text-black/55 dark:text-white/55 hover:text-red-500 p-1 cursor-pointer"><Trash2 size={14} /></button>}
 </div>)}
 <button type="button" onClick={() => setSplitPayments([...splitPayments, {
 										method: "Cash",
@@ -1614,7 +1630,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <LabelInput field="TransNotes" label={t("shop_field_notes_optional")} value={checkoutNotes} onChange={setCheckoutNotes} placeholder="e.g. Counter #1 - BaridiMob Ref #9812" width="100%" height={42} corner={12} />
 </div>
 <div className="flex items-center justify-end gap-3 pt-3">
-<button type="button" onClick={() => setIsCheckoutModalOpen(false)} className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">{t("action_cancel")}</button>
+<button type="button" onClick={() => setIsCheckoutModalOpen(false)} className="h-10 px-4 text-xs font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">{t("action_cancel")}</button>
 <button type="button" onClick={handleConfirmCheckout} className="h-10 px-6 text-xs font-bold text-white bg-[#d4522f] rounded-full flex items-center gap-2 hover:opacity-90 active:scale-98 transition-all cursor-pointer shadow-xs">
 <CheckCircle2 size={15} />
 <span>{t("shop_btn_complete_sale")}</span>
@@ -1627,13 +1643,13 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <div id="pos-thermal-receipt-container" className="mx-auto max-w-[340px] bg-white text-black p-4 rounded-xl border border-neutral-300 font-mono text-[11px] leading-relaxed shadow-xs">
 <div className="text-center space-y-0.5 pb-2 border-b border-dashed border-neutral-400">
 <div className="text-sm font-black uppercase tracking-wider">{receiptConfig.headerTitle}</div>
-{receiptConfig.subHeader && /* @__PURE__ */ <div className="text-[10px] text-neutral-600">{receiptConfig.subHeader}</div>}
-{receiptConfig.address && /* @__PURE__ */ <div className="text-[9px] text-neutral-500">{receiptConfig.address}</div>}
-{receiptConfig.phone && /* @__PURE__ */ <div className="text-[9px] text-neutral-500">
+{receiptConfig.subHeader && /* @__PURE__ */ <div className="text-[10px] text-black/75">{receiptConfig.subHeader}</div>}
+{receiptConfig.address && /* @__PURE__ */ <div className="text-[9px] text-black/55">{receiptConfig.address}</div>}
+{receiptConfig.phone && /* @__PURE__ */ <div className="text-[9px] text-black/55">
 {"Tel: "}
 {receiptConfig.phone}
 </div>}
-{receiptConfig.taxId && /* @__PURE__ */ <div className="text-[9px] font-bold text-neutral-600">{receiptConfig.taxId}</div>}
+{receiptConfig.taxId && /* @__PURE__ */ <div className="text-[9px] font-bold text-black/75">{receiptConfig.taxId}</div>}
 </div>
 <div className="py-2 text-[10px] border-b border-dashed border-neutral-400 space-y-0.5">
 <div className="flex justify-between">
@@ -1670,7 +1686,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </div>)}
 </div>
 <div className="py-2 space-y-1 border-b border-dashed border-neutral-400">
-{completedSale.subtotal && completedSale.subtotal !== completedSale.totalAmount && /* @__PURE__ */ <div className="flex justify-between text-neutral-600">
+{completedSale.subtotal && completedSale.subtotal !== completedSale.totalAmount && /* @__PURE__ */ <div className="flex justify-between text-black/75">
 <span>
 {language === "ar" ? "المجموع الفرعي / SOUS-TOTAL" : language === "fr" ? "SOUS-TOTAL" : "SUBTOTAL"}
 </span>
@@ -1701,7 +1717,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 {language === "ar" ? "د.ج" : ""}
 </span>
 </div>
-<div className="flex justify-between text-[10px] text-neutral-600 pt-1">
+<div className="flex justify-between text-[10px] text-black/75 pt-1">
 <span>
 {language === "ar" ? "طريقة الدفع / MODE DE PAIEMENT :" : language === "fr" ? "MODE DE PAIEMENT :" : "METHOD:"}
 </span>
@@ -1738,17 +1754,17 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </div>
 </div>
 <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/60 text-xs space-y-1">
-<div className="flex items-center justify-between font-bold text-neutral-800 dark:text-neutral-200">
+<div className="flex items-center justify-between font-bold text-black dark:text-white">
 <span className="flex items-center gap-1.5 text-[#d4522f]">
 <Printer size={13} />
 <span>{t("shop_escpos_hardware_title")}</span>
 </span>
 <span className="text-[10px] bg-[#d4522f]/15 text-[#d4522f] px-2 py-0.5 rounded-full">Atrium Desktop</span>
 </div>
-<p className="text-[11px] text-neutral-500">{t("shop_escpos_hardware_desc")}</p>
+<p className="text-[11px] text-black/55 dark:text-white/55">{t("shop_escpos_hardware_desc")}</p>
 </div>
 <div className="flex items-center gap-2">
-<button type="button" onClick={() => window.print()} className="h-10 px-4 text-xs font-bold text-neutral-700 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 rounded-full cursor-pointer flex items-center justify-center gap-1.5 border border-neutral-200 dark:border-neutral-700">
+<button type="button" onClick={() => window.print()} className="h-10 px-4 text-xs font-bold text-black/70 dark:text-white bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 rounded-full cursor-pointer flex items-center justify-center gap-1.5 border border-neutral-200 dark:border-neutral-700">
 <Printer size={14} />
 <span>{t("shop_btn_print")}</span>
 </button>
@@ -1764,7 +1780,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <LabelInput field="CustomCategory" label={t("shop_custom_category")} value={customItemCategory} onChange={setCustomItemCategory} placeholder="General" width="100%" height={46} corner={14} />
 </div>
 <div className="flex justify-end gap-3 pt-3">
-<button type="button" onClick={() => setIsCustomItemModalOpen(false)} className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 cursor-pointer">{t("action_cancel")}</button>
+<button type="button" onClick={() => setIsCustomItemModalOpen(false)} className="h-10 px-4 text-xs font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-neutral-100 cursor-pointer">{t("action_cancel")}</button>
 <button type="submit" className="h-10 px-5 text-xs font-bold text-white bg-[#d4522f] rounded-full hover:opacity-90 shadow-xs cursor-pointer">{t("shop_custom_btn_add")}</button>
 </div>
 </form>
@@ -1774,7 +1790,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <LabelInput field="HoldRef" label={t("shop_hold_ref")} value={holdOrderRefName} onChange={setHoldOrderRefName} placeholder={t("shop_hold_ref_ph")} width="100%" height={46} corner={14} />
 <LabelInput field="HoldNotes" label={t("shop_hold_notes")} value={holdOrderNotes} onChange={setHoldOrderNotes} placeholder={t("shop_hold_notes_ph")} width="100%" height={46} corner={14} />
 <div className="flex justify-end gap-3 pt-3">
-<button type="button" onClick={() => setIsHoldOrderModalOpen(false)} className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 cursor-pointer">{t("action_cancel")}</button>
+<button type="button" onClick={() => setIsHoldOrderModalOpen(false)} className="h-10 px-4 text-xs font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-neutral-100 cursor-pointer">{t("action_cancel")}</button>
 <button type="submit" className="h-10 px-5 text-xs font-bold text-white bg-[#d4522f] rounded-full hover:opacity-90 shadow-xs flex items-center gap-1.5 cursor-pointer">
 <PauseCircle size={14} />
 <span>{t("shop_hold_confirm_btn")}</span>
@@ -1788,15 +1804,15 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 				}} title={t("shop_adjust_modal_title")} subtitle={selectedProductForAdjust.name}>
 <form onSubmit={handleConfirmStockAdjust} className="space-y-4" dir={isRtl ? "rtl" : "ltr"}>
 <div className="p-3 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-between text-xs font-bold">
-<span className="text-neutral-500">{t("shop_adjust_current")}</span>
-<span className="font-mono text-neutral-900 dark:text-white text-sm">
+<span className="text-black/55 dark:text-white/55">{t("shop_adjust_current")}</span>
+<span className="font-mono text-black dark:text-white text-sm">
 {selectedProductForAdjust.stockQuantity}
 {" "}
 {selectedProductForAdjust.unit || t("shop_unit_pcs")}
 </span>
 </div>
 <div className="space-y-1">
-<label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">{t("shop_adjust_action")}</label>
+<label className="text-xs font-bold text-black/70 dark:text-white/75">{t("shop_adjust_action")}</label>
 <div className="grid grid-cols-3 gap-2">
 <button type="button" onClick={() => setAdjustMode("add")} className={`p-2.5 rounded-xl border text-xs font-bold cursor-pointer ${adjustMode === "add" ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40" : "border-neutral-200 dark:border-neutral-700"}`}>{t("shop_adjust_restock")}</button>
 <button type="button" onClick={() => setAdjustMode("remove")} className={`p-2.5 rounded-xl border text-xs font-bold cursor-pointer ${adjustMode === "remove" ? "border-red-500 bg-red-50 text-red-700 dark:bg-red-950/40" : "border-neutral-200 dark:border-neutral-700"}`}>{t("shop_adjust_damage")}</button>
@@ -1813,7 +1829,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <button type="button" onClick={() => {
 									setIsAdjustStockModalOpen(false);
 									setSelectedProductForAdjust(null);
-								}} className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 cursor-pointer">{t("action_cancel")}</button>
+								}} className="h-10 px-4 text-xs font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-neutral-100 cursor-pointer">{t("action_cancel")}</button>
 <button type="submit" className="h-10 px-5 text-xs font-bold text-white bg-[#d4522f] rounded-full hover:opacity-90 shadow-xs cursor-pointer">{t("shop_adjust_apply_btn")}</button>
 </div>
 </form>
@@ -1902,7 +1918,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <button type="button" onClick={() => {
 									setIsProductFormModalOpen(false);
 									setEditingProductId(null);
-								}} className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 cursor-pointer">{t("action_cancel")}</button>
+								}} className="h-10 px-4 text-xs font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-neutral-100 cursor-pointer">{t("action_cancel")}</button>
 <button type="submit" className="h-10 px-6 text-xs font-bold text-white bg-[#d4522f] rounded-full hover:opacity-90 shadow-xs cursor-pointer">{editingProductId ? t("shop_prod_update") : t("shop_prod_save")}</button>
 </div>
 </form>

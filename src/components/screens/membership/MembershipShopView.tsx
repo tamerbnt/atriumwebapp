@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { compactFilterLabel } from '../../../utils/filterLexicon';
 import {
   ShoppingBag,
   Plus,
@@ -232,7 +233,7 @@ export const MembershipShopView: React.FC = () => {
               <Zap size={22} />
             </div>
             <div>
-              <h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+              <h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {isAr ? 'متجر المكملات والتغذية الرياضية' : 'Pro-Shop & Nutrition Sportive'}
               </h1>
             </div>
@@ -245,7 +246,7 @@ export const MembershipShopView: React.FC = () => {
         {/* Canonical 3-Card Top Metrics Pod Tray */}
         <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
           <div>
-            <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+            <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {isAr ? 'مؤشرات مبيعات المتجر وتدفق الصندوق' : 'Indicateurs Pro-Shop & Rotation de Stock'}
             </h2>
           </div>
@@ -253,7 +254,7 @@ export const MembershipShopView: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div>
-                <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+                <span className="text-xs font-semibold text-black/70 dark:text-white/75">
                   {isAr ? 'مبيعات المتجر اليوم' : 'Chiffre d’Affaires Pro-Shop'}
                 </span>
                 <div className="mt-1">
@@ -262,14 +263,14 @@ export const MembershipShopView: React.FC = () => {
                   </span>
                 </div>
               </div>
-              <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
+              <div className="text-2xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {formatMoney(cartTotal > 0 ? cartTotal : 34800)}
               </div>
             </div>
 
             <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div>
-                <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+                <span className="text-xs font-semibold text-black/70 dark:text-white/75">
                   {isAr ? 'تنبيهات انخفاض المخزون' : 'Alertes Réapprovisionnement'}
                 </span>
                 <div className="mt-1">
@@ -284,9 +285,9 @@ export const MembershipShopView: React.FC = () => {
                   </span>
                 </div>
               </div>
-              <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
+              <div className="text-2xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {lowStockCount}{' '}
-                <span className="text-xs text-neutral-400 font-normal">
+                <span className="text-xs text-black/55 dark:text-white/55 font-normal">
                   {isAr ? 'منتجات' : 'références'}
                 </span>
               </div>
@@ -294,7 +295,7 @@ export const MembershipShopView: React.FC = () => {
 
             <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
               <div>
-                <span className="text-xs font-medium text-neutral-300">
+                <span className="text-xs font-medium text-white/80">
                   {isAr ? 'قيمة مخزون الصالة الإجمالية' : 'Valorisation Globale Stock'}
                 </span>
                 <div className="text-[11px] text-[#FB923C] font-semibold mt-0.5">
@@ -303,7 +304,7 @@ export const MembershipShopView: React.FC = () => {
                   </span>
                 </div>
               </div>
-              <div className="text-2xl font-black text-white tabular-nums font-mono">
+              <div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {formatMoney(totalCatalogInventoryValue)}
               </div>
             </div>
@@ -315,11 +316,11 @@ export const MembershipShopView: React.FC = () => {
           {/* Workstation Header Bar */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <ShoppingBag size={16} className="text-neutral-500" />
-              <span className="text-sm font-bold text-neutral-900 dark:text-white">
+              <ShoppingBag size={16} className="text-black/55 dark:text-white/55" />
+              <span className="text-sm font-bold text-black dark:text-white">
                 {isAr ? 'كتالوج المنتجات والمكملات' : 'Catalogue Pro-Shop & Articles'}
               </span>
-              <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
+              <span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums ml-1">
                 {filteredProducts.length}
               </span>
             </div>
@@ -329,21 +330,24 @@ export const MembershipShopView: React.FC = () => {
               <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs overflow-x-auto max-w-full">
                 {categories.map((cat) => {
                   const isActive = selectedCategory === cat;
-                  const label = cat === 'All' ? (isAr ? 'الكل' : 'Tous') : cat;
+                  const compact = cat === 'All'
+                    ? { label: isAr ? 'الكل' : 'Tous', tooltip: isAr ? 'جميع الفئات' : 'Toutes les catégories' }
+                    : compactFilterLabel(cat);
                   return (
                     <button
                       key={cat}
                       type="button"
+                      title={compact.tooltip || cat}
                       onClick={() => setSelectedCategory(cat)}
                       style={{
                         backgroundColor: isActive ? '#FCEEE8' : 'transparent',
                         color: isActive ? 'var(--color-accent)' : '#71717A',
                       }}
                       className={`px-3 py-1 rounded-full cursor-pointer transition-all whitespace-nowrap ${
-                        isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
+                        isActive ? 'font-bold' : 'hover:text-black dark:hover:text-white'
                       }`}
                     >
-                      {label}
+                      {compact.label}
                     </button>
                   );
                 })}
@@ -392,10 +396,10 @@ export const MembershipShopView: React.FC = () => {
                   header: isAr ? 'المنتج' : 'Désignation Article',
                   renderCell: (p) => (
                     <div>
-                      <span className="font-bold text-xs text-neutral-900 dark:text-neutral-100 block">
+                      <span className="font-bold text-xs text-black dark:text-white block">
                         {p.name}
                       </span>
-                      <span className="text-[10px] text-neutral-400">
+                      <span className="text-[10px] text-black/55 dark:text-white/55">
                         {p.category || 'Fitness & Nutrition'}
                       </span>
                     </div>
@@ -407,7 +411,7 @@ export const MembershipShopView: React.FC = () => {
                   width: '130px',
                   sortable: true,
                   renderCell: (p) => (
-                    <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white">
+                    <span className="font-mono text-xs font-bold text-black dark:text-white">
                       {formatMoney(p.price.amount)}
                     </span>
                   ),
@@ -472,10 +476,10 @@ export const MembershipShopView: React.FC = () => {
                     </div>
 
                     <div>
-                      <h4 className="font-bold text-xs text-neutral-900 dark:text-white line-clamp-2">
+                      <h4 className="font-bold text-xs text-black dark:text-white line-clamp-2">
                         {p.name}
                       </h4>
-                      <p className="text-[10px] text-neutral-400 mt-0.5">
+                      <p className="text-[10px] text-black/55 dark:text-white/55 mt-0.5">
                         {p.category || 'Pro-Shop'}
                       </p>
                     </div>
@@ -509,7 +513,7 @@ export const MembershipShopView: React.FC = () => {
                   className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                     sidePanelMode === 'cart'
                       ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs'
-                      : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                      : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
                   }`}
                 >
                   Panier ({cart.length})
@@ -520,7 +524,7 @@ export const MembershipShopView: React.FC = () => {
                   className={`px-3 py-1 rounded-lg text-xs font-bold transition-all disabled:opacity-40 ${
                     sidePanelMode === 'inspector'
                       ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs'
-                      : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                      : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
                   }`}
                 >
                   Fiche Article
@@ -530,7 +534,7 @@ export const MembershipShopView: React.FC = () => {
               {selectedProduct && sidePanelMode === 'inspector' && (
                 <button
                   onClick={() => setSidePanelMode('cart')}
-                  className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500"
+                  className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-black/55 dark:text-white/55"
                 >
                   <X size={15} />
                 </button>
@@ -546,7 +550,7 @@ export const MembershipShopView: React.FC = () => {
                     className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                       inspectorTab === 'fiche'
                         ? 'border-[#d4522f] text-[#d4522f]'
-                        : 'border-transparent text-neutral-500'
+                        : 'border-transparent text-black/55 dark:text-white/55'
                     }`}
                   >
                     Détails Article
@@ -556,7 +560,7 @@ export const MembershipShopView: React.FC = () => {
                     className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
                       inspectorTab === 'stock'
                         ? 'border-[#d4522f] text-[#d4522f]'
-                        : 'border-transparent text-neutral-500'
+                        : 'border-transparent text-black/55 dark:text-white/55'
                     }`}
                   >
                     Niveau Stock
@@ -565,25 +569,25 @@ export const MembershipShopView: React.FC = () => {
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
                   <div className="p-4 bg-[#1F1D1B] rounded-xl text-white space-y-2 shadow-sm">
-                    <span className="text-[10px] text-neutral-400 font-mono">SKU: {selectedProduct.sku}</span>
+                    <span className="text-[10px] text-white/75 font-mono">SKU: {selectedProduct.sku}</span>
                     <h3 className="text-base font-bold text-white">{selectedProduct.name}</h3>
-                    <div className="text-2xl font-black font-mono text-[#FB923C]">
+                    <div className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                       {formatMoney(selectedProduct.price.amount)}
                     </div>
                   </div>
 
                   <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-neutral-500">Catégorie:</span>
-                      <span className="font-semibold text-neutral-900 dark:text-white">{selectedProduct.category || 'Nutrition'}</span>
+                      <span className="text-black/55 dark:text-white/55">Catégorie:</span>
+                      <span className="font-semibold text-black dark:text-white">{selectedProduct.category || 'Nutrition'}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-neutral-500">Stock en rayon:</span>
-                      <span className="font-mono font-bold text-neutral-900 dark:text-white">{selectedProduct.stockQuantity} pcs</span>
+                      <span className="text-black/55 dark:text-white/55">Stock en rayon:</span>
+                      <span className="font-mono font-bold text-black dark:text-white">{selectedProduct.stockQuantity} pcs</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-neutral-500">Seuil de réappro:</span>
-                      <span className="font-mono text-neutral-700 dark:text-neutral-300">{selectedProduct.reorderLevel || 5} pcs</span>
+                      <span className="text-black/55 dark:text-white/55">Seuil de réappro:</span>
+                      <span className="font-mono text-black/70 dark:text-white/75">{selectedProduct.reorderLevel || 5} pcs</span>
                     </div>
                   </div>
                 </div>
@@ -604,7 +608,7 @@ export const MembershipShopView: React.FC = () => {
               <div className="flex-1 flex flex-col justify-between overflow-hidden">
                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
                   <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800">
-                    <span className="text-xs font-bold text-neutral-900 dark:text-white">Articles ({cart.length})</span>
+                    <span className="text-xs font-bold text-black dark:text-white">Articles ({cart.length})</span>
                     {cart.length > 0 && (
                       <button
                         onClick={() => setCart([])}
@@ -616,10 +620,10 @@ export const MembershipShopView: React.FC = () => {
                   </div>
 
                   {cart.length === 0 ? (
-                    <div className="h-44 flex flex-col items-center justify-center text-center text-neutral-400 text-xs">
-                      <ShoppingBag size={32} className="text-neutral-300 dark:text-neutral-700 mb-2" />
+                    <div className="h-44 flex flex-col items-center justify-center text-center text-black/55 dark:text-white/55 text-xs">
+                      <ShoppingBag size={32} className="text-black/55 dark:text-white/55 mb-2" />
                       <p>Le panier est vide.</p>
-                      <span className="text-[10px] text-neutral-500 mt-1">Cliquez sur "+ Panier" pour ajouter des articles</span>
+                      <span className="text-[10px] text-black/55 dark:text-white/55 mt-1">Cliquez sur "+ Panier" pour ajouter des articles</span>
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -629,7 +633,7 @@ export const MembershipShopView: React.FC = () => {
                           className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-2"
                         >
                           <div className="min-w-0 flex-1">
-                            <span className="font-bold text-xs text-neutral-900 dark:text-white truncate block">
+                            <span className="font-bold text-xs text-black dark:text-white truncate block">
                               {item.product.name}
                             </span>
                             <span className="font-mono text-[11px] text-[#d4522f]">
@@ -655,7 +659,7 @@ export const MembershipShopView: React.FC = () => {
                             </button>
                             <button
                               onClick={() => handleRemoveItem(item.product.id)}
-                              className="w-6 h-6 rounded text-neutral-400 hover:text-red-500 flex items-center justify-center ml-1"
+                              className="w-6 h-6 rounded text-black/55 dark:text-white/55 hover:text-red-500 flex items-center justify-center ml-1"
                             >
                               <Trash2 size={12} />
                             </button>
@@ -669,8 +673,8 @@ export const MembershipShopView: React.FC = () => {
                 {/* Checkout Section */}
                 <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 space-y-3">
                   <div className="flex justify-between text-xs">
-                    <span className="text-neutral-500">Total à Payer:</span>
-                    <span className="font-mono font-bold text-base text-neutral-900 dark:text-white">
+                    <span className="text-black/55 dark:text-white/55">Total à Payer:</span>
+                    <span className="font-mono font-bold text-base text-black dark:text-white">
                       {formatMoney(cartTotal)}
                     </span>
                   </div>
@@ -681,7 +685,7 @@ export const MembershipShopView: React.FC = () => {
                       className={`p-2 rounded-lg text-xs font-semibold border flex items-center justify-center gap-1.5 ${
                         paymentMethod === 'Cash'
                           ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
-                          : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300'
+                          : 'border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75'
                       }`}
                     >
                       <Banknote size={13} />
@@ -692,7 +696,7 @@ export const MembershipShopView: React.FC = () => {
                       className={`p-2 rounded-lg text-xs font-semibold border flex items-center justify-center gap-1.5 ${
                         paymentMethod === 'Card'
                           ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
-                          : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300'
+                          : 'border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75'
                       }`}
                     >
                       <CreditCard size={13} />

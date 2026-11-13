@@ -147,7 +147,7 @@ export const AutoGarageDashboardView: React.FC<any> = () => {
 		];
 	}, []);
 	if (showSkeleton) return /* @__PURE__ */ <div className="p-6"><SkeletonDashboardGarage /></div>;
-	return /* @__PURE__ */ <div className="flex-1 bg-white min-h-screen p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
+	return /* @__PURE__ */ <div className="flex-1 bg-white dark:bg-[#0C0C0E] min-h-screen p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
 <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} isSyncing={isSyncing} lastSyncedAt={lastSyncedAt} onRetry={retryCloudSync} />
 <DashboardHeader title={t("nav_dashboard", language)} subtitle={language === "ar" ? "مؤشرات حركة الورشة، إشغال الجسور والرافعات وتتبع أوامر الإصلاح وقطع الغيار" : language === "fr" ? "Occupation des ponts élévateurs, ordres de réparation et rentabilité garage." : "Live lift & bay utilization, repair order turnaround, and auto workshop analytics."} currentBranchName={currentBranch?.name || "Atelier Central Auto Atrium"} branches={branches} onSwitchBranch={switchBranch} onResetDemoData={() => {}} exportFileName="garage_dashboard_report" />
 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -158,18 +158,18 @@ export const AutoGarageDashboardView: React.FC<any> = () => {
 {totalBays}
 {" "}
 {language === "ar" ? "جسور مشغولة" : "Ponts Actifs"}
-</span>} rightControls={<div className="flex items-center bg-[#F0F2F5] p-0.5 rounded-lg text-xs font-semibold">
-<button type="button" onClick={() => setTimeFilter("today")} className={`px-3 py-1 rounded-md transition-all ${timeFilter === "today" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-800"}`}>{language === "ar" ? "اليوم" : "Today"}</button>
-<button type="button" onClick={() => setTimeFilter("yesterday")} className={`px-3 py-1 rounded-md transition-all ${timeFilter === "yesterday" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-800"}`}>{language === "ar" ? "أمس" : "Yesterday"}</button>
+</span>} rightControls={<div className="flex items-center bg-[#F0F2F5] dark:bg-neutral-800 p-0.5 rounded-lg text-xs font-semibold">
+<button type="button" onClick={() => setTimeFilter("today")} title={language === "ar" ? "بيانات اليوم" : language === "fr" ? "Données d'aujourd'hui" : "Today's metrics"} className={`px-3 py-1 rounded-md transition-all ${timeFilter === "today" ? "bg-white dark:bg-neutral-900 text-black dark:text-white shadow-sm" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "اليوم" : language === "fr" ? "Aujourd'hui" : "Today"}</button>
+<button type="button" onClick={() => setTimeFilter("yesterday")} title={language === "ar" ? "بيانات الأمس" : language === "fr" ? "Données d'hier" : "Yesterday's metrics"} className={`px-3 py-1 rounded-md transition-all ${timeFilter === "yesterday" ? "bg-white dark:bg-neutral-900 text-black dark:text-white shadow-sm" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "أمس" : language === "fr" ? "Hier" : "Yesterday"}</button>
 </div>} className="flex-1 flex flex-col justify-between">
 <div className="space-y-4">
-<div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
 <div className="flex items-center justify-between">
 <div className="flex-1">
-<span className="text-xs font-medium text-gray-500 block mb-1">{language === "ar" ? "الجسور قيد العمل" : "Ponts Élévateurs"}</span>
+<span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">{language === "ar" ? "الجسور قيد العمل" : "Ponts Élévateurs"}</span>
 <div className="flex items-baseline gap-2">
-<span className="text-3xl font-bold font-mono text-gray-900 tabular-nums">{occupiedBays}</span>
-<span className="text-xs text-gray-400">
+<span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{occupiedBays}</span>
+<span className="text-xs text-black/55 dark:text-white/55">
 {"/ "}
 {totalBays}
 </span>
@@ -181,32 +181,32 @@ export const AutoGarageDashboardView: React.FC<any> = () => {
 {language === "ar" ? "معدل الإشغال" : "Charge atelier"}
 </span>
 </div>
-<div className="w-px h-12 bg-gray-200 mx-4" />
+<div className="w-px h-12 bg-neutral-200 dark:bg-neutral-700 mx-4" />
 <div className="flex-1">
-<span className="text-xs font-medium text-gray-500 block mb-1">{language === "ar" ? "سيارات جاهزة للتسليم" : "Prêtes à Livrer"}</span>
+<span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">{language === "ar" ? "سيارات جاهزة للتسليم" : "Prêtes à Livrer"}</span>
 <div className="flex items-baseline gap-2">
-<span className="text-3xl font-bold font-mono text-gray-900 tabular-nums">{readyForPickup}</span>
-<span className="text-xs text-gray-400">{language === "ar" ? "مركبات" : "véhicules"}</span>
+<span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{readyForPickup}</span>
+<span className="text-xs text-black/55 dark:text-white/55">{language === "ar" ? "مركبات" : "véhicules"}</span>
 </div>
 <span className="inline-block mt-2 px-2 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium rounded-full">{language === "ar" ? "فواتير محررة" : "Facturation prête"}</span>
 </div>
 </div>
-<div className="mt-4 pt-3 border-t border-gray-100">
-<span className="text-[11px] text-gray-400 block mb-2">
+<div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700/60">
+<span className="text-[11px] text-black/55 dark:text-white/55 block mb-2">
 {language === "ar" ? "كثافة أعمال الورشة على مدار 24 ساعة" : "Charge horaire des ponts (24h)"}
 </span>
 <HourlyCurveChart data={hourlyData} color="#d4522f" />
 </div>
 </div>
-<div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
 <div className="flex justify-between items-center mb-1.5">
-<span className="text-xs font-medium text-gray-500">{language === "ar" ? "إيرادات الورشة اليوم" : "Chiffre d’Affaires Aujourd’hui"}</span>
-<span className="text-base font-bold font-mono text-gray-900 tabular-nums">{formatMoney(todayRevenue)}</span>
+<span className="text-xs font-medium text-black/70 dark:text-white/75">{language === "ar" ? "إيرادات الورشة اليوم" : "Chiffre d’Affaires Aujourd’hui"}</span>
+<span className="text-base font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(todayRevenue)}</span>
 </div>
-<div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-1">
+<div className="w-full bg-neutral-100 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
 <div className="bg-[#d4522f] h-full rounded-full transition-all duration-500" style={{ width: `${targetPct}%` }} />
 </div>
-<div className="flex justify-between text-[11px] text-gray-400">
+<div className="flex justify-between text-[11px] text-black/55 dark:text-white/55">
 <span>
 {targetPct}
 {"% "}
@@ -219,13 +219,13 @@ export const AutoGarageDashboardView: React.FC<any> = () => {
 </DashboardPod>
 </div>
 <div className="lg:col-span-7 flex flex-col">
-<DashboardPod title={language === "ar" ? "حظيرة المركبات والأساطيل" : language === "fr" ? "Flottes & Parc Roulant" : "Vehicles & Fleets"} icon={<Car size={18} className="text-[#d4522f]" />} rightControls={<div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
-<button type="button" onClick={() => setCurrentMonthIndex((prev) => prev > 0 ? prev - 1 : 11)} className="p-1 hover:bg-gray-200 rounded"><ChevronLeft size={14} /></button>
-<span className="px-1 text-gray-800">
+<DashboardPod title={language === "ar" ? "حظيرة المركبات والأساطيل" : language === "fr" ? "Flottes & Parc Roulant" : "Vehicles & Fleets"} icon={<Car size={18} className="text-[#d4522f]" />} rightControls={<div className="flex items-center gap-1 text-xs font-semibold text-black/70 dark:text-white/75">
+<button type="button" onClick={() => setCurrentMonthIndex((prev) => prev > 0 ? prev - 1 : 11)} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"><ChevronLeft size={14} /></button>
+<span className="px-1 text-black dark:text-white">
 {months[currentMonthIndex]}
 {" 2026"}
 </span>
-<button type="button" onClick={() => setCurrentMonthIndex((prev) => prev < 11 ? prev + 1 : 0)} className="p-1 hover:bg-gray-200 rounded"><ChevronRight size={14} /></button>
+<button type="button" onClick={() => setCurrentMonthIndex((prev) => prev < 11 ? prev + 1 : 0)} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"><ChevronRight size={14} /></button>
 </div>} className="flex-1 flex flex-col justify-between">
 <div className="space-y-4">
 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -233,12 +233,12 @@ export const AutoGarageDashboardView: React.FC<any> = () => {
 <DashboardMetricCard label={language === "ar" ? "حسابات الأساطيل B2B" : "Contrats Flottes"} value={totalFleetsCount} badgeText="Flottes" badgeVariant="neutral" tooltip={language === "ar" ? "شركات وأساطيل نقل متعاقدة" : "Entreprises sous contrat d’entretien"} />
 <DarkEspressoCard label={language === "ar" ? "أوامر إصلاح نشطة" : "Ordres de Réparation (OR)"} value={(orders || []).filter((o) => o.status === "InRepair").length || 4} sublabel={language === "ar" ? "قيد التنفيذ" : "En cours de travaux"} badgeText={language === "ar" ? "نشط" : "En cours"} badgeVariant="neutral" />
 </div>
-<div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
 <div className="flex justify-between items-center mb-3">
-<span className="text-xs font-semibold text-gray-700">
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "عدد التدخلات الأسبوعية" : "Volume hebdomadaire des réparations"}
 </span>
-<span className="text-[11px] text-gray-400">{language === "ar" ? "مقارنة شهرية" : "4 dernières semaines"}</span>
+<span className="text-[11px] text-black/55 dark:text-white/55">{language === "ar" ? "مقارنة شهرية" : "4 dernières semaines"}</span>
 </div>
 <PillBarHistogram data={weeklyRepairTrend} maxScale={30} barColor="#d4522f" />
 </div>
@@ -248,67 +248,67 @@ export const AutoGarageDashboardView: React.FC<any> = () => {
 </div>
 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 <div className="lg:col-span-5 flex flex-col">
-<DashboardPod title={language === "ar" ? "الإيرادات والأرباح" : language === "fr" ? "Revenus & Marges" : "Revenue & Profit"} icon={<TrendingUp size={18} className="text-[#d4522f]" />} rightControls={<span className="text-xs font-semibold text-gray-500 uppercase">
+<DashboardPod title={language === "ar" ? "الإيرادات والأرباح" : language === "fr" ? "Revenus & Marges" : "Revenue & Profit"} icon={<TrendingUp size={18} className="text-[#d4522f]" />} rightControls={<span className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase">
 {months[currentMonthIndex]}
 {" 2026"}
 </span>} className="flex-1 flex flex-col justify-between">
 <div className="space-y-4">
-<div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
-<div className="grid grid-cols-3 gap-2 pb-3 border-b border-gray-100">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+<div className="grid grid-cols-3 gap-2 pb-3 border-b border-neutral-200 dark:border-neutral-700/60">
 <div>
-<span className="text-[11px] text-gray-500 block">{language === "ar" ? "صافي الورشة" : "Marge Nette"}</span>
-<span className="text-lg font-bold font-mono text-gray-900 tabular-nums">{formatMoney(Math.round(todayRevenue * .46))}</span>
+<span className="text-[11px] text-black/70 dark:text-white/75 block">{language === "ar" ? "صافي الورشة" : "Marge Nette"}</span>
+<span className="text-lg font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(Math.round(todayRevenue * .46))}</span>
 <span className="text-[10px] text-emerald-600 block">46% Brut</span>
 </div>
 <div>
-<span className="text-[11px] text-gray-500 block">{language === "ar" ? "الإيراد الإجمالي" : "CA Facturé"}</span>
-<span className="text-lg font-bold font-mono text-gray-900 tabular-nums">{formatMoney(todayRevenue)}</span>
+<span className="text-[11px] text-black/70 dark:text-white/75 block">{language === "ar" ? "الإيراد الإجمالي" : "CA Facturé"}</span>
+<span className="text-lg font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(todayRevenue)}</span>
 <span className="text-[10px] text-emerald-600 block">+9.1%</span>
 </div>
 <div>
-<span className="text-[11px] text-gray-500 block">{language === "ar" ? "قطع ومستهلكات" : "Pièces Achetées"}</span>
-<span className="text-lg font-bold font-mono text-gray-900 tabular-nums">{formatMoney(Math.round(todayRevenue * .54))}</span>
-<span className="text-[10px] text-gray-400 block">54% CA</span>
+<span className="text-[11px] text-black/70 dark:text-white/75 block">{language === "ar" ? "قطع ومستهلكات" : "Pièces Achetées"}</span>
+<span className="text-lg font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(Math.round(todayRevenue * .54))}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 block">54% CA</span>
 </div>
 </div>
 <div className="pt-3">
-<span className="text-[11px] text-gray-400 block mb-1">
+<span className="text-[11px] text-black/55 dark:text-white/55 block mb-1">
 {language === "ar" ? "منحنى التدفق النقدي على مدار 30 يوماً" : "Tendance des encaissements sur 30 jours"}
 </span>
 <MonthlyAreaChart data={monthlyRevenue} color="#8B5CF6" />
 </div>
 </div>
-<div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
 <div className="flex justify-between items-center mb-3">
-<span className="text-xs font-semibold text-gray-700">{language === "ar" ? "مؤشرات كفاءة الورشة" : "Indicateurs Atelier"}</span>
-<Info size={13} className="text-gray-400" />
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">{language === "ar" ? "مؤشرات كفاءة الورشة" : "Indicateurs Atelier"}</span>
+<Info size={13} className="text-black/55 dark:text-white/55" />
 </div>
 <div className="grid grid-cols-2 gap-3">
-<div className="bg-[#F3EDE7] p-3 rounded-xl">
-<span className="text-[11px] text-gray-500 block">{language === "ar" ? "زمن دوران الجسر" : "Temps Rotation Pont"}</span>
+<div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
+<span className="text-[11px] text-black/70 dark:text-white/75 block">{language === "ar" ? "زمن دوران الجسر" : "Temps Rotation Pont"}</span>
 <div className="flex items-center justify-between mt-1">
-<span className="text-base font-bold font-mono text-gray-900">2.4 h</span>
+<span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">2.4 h</span>
 <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">Rapide</span>
 </div>
 </div>
-<div className="bg-[#F3EDE7] p-3 rounded-xl">
-<span className="text-[11px] text-gray-500 block">{language === "ar" ? "هامش قطع الغيار" : "Marge Pièces"}</span>
+<div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
+<span className="text-[11px] text-black/70 dark:text-white/75 block">{language === "ar" ? "هامش قطع الغيار" : "Marge Pièces"}</span>
 <div className="flex items-center justify-between mt-1">
-<span className="text-base font-bold font-mono text-gray-900">32%</span>
+<span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">32%</span>
 <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">Optimal</span>
 </div>
 </div>
-<div className="bg-[#F3EDE7] p-3 rounded-xl">
-<span className="text-[11px] text-gray-500 block">{language === "ar" ? "إصلاح من المرة الأولى" : "First-Time Fix"}</span>
+<div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
+<span className="text-[11px] text-black/70 dark:text-white/75 block">{language === "ar" ? "إصلاح من المرة الأولى" : "First-Time Fix"}</span>
 <div className="flex items-center justify-between mt-1">
-<span className="text-base font-bold font-mono text-gray-900">96.8%</span>
+<span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">96.8%</span>
 <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">Qualité</span>
 </div>
 </div>
-<div className="bg-[#F3EDE7] p-3 rounded-xl">
-<span className="text-[11px] text-gray-500 block">{language === "ar" ? "دقة التشخيص" : "Précision Diagnostic"}</span>
+<div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
+<span className="text-[11px] text-black/70 dark:text-white/75 block">{language === "ar" ? "دقة التشخيص" : "Précision Diagnostic"}</span>
 <div className="flex items-center justify-between mt-1">
-<span className="text-base font-bold font-mono text-gray-900">98.5%</span>
+<span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">98.5%</span>
 <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">OBD Expert</span>
 </div>
 </div>
@@ -321,19 +321,19 @@ export const AutoGarageDashboardView: React.FC<any> = () => {
 <DashboardPod title={language === "ar" ? "المؤشرات والتنبيهات" : language === "fr" ? "Analyses & Alertes" : "Insights & Alerts"} icon={<ShieldCheck size={18} className="text-[#d4522f]" />} className="flex-1 flex flex-col justify-between">
 <div className="space-y-4">
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-<div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
 <div className="flex justify-between items-center mb-2">
-<span className="text-xs font-semibold text-gray-700">{language === "ar" ? "توزيع أنواع الإصلاحات" : "Typologie des Prestations"}</span>
-<Info size={13} className="text-gray-400" />
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">{language === "ar" ? "توزيع أنواع الإصلاحات" : "Typologie des Prestations"}</span>
+<Info size={13} className="text-black/55 dark:text-white/55" />
 </div>
 <DonutChart segments={jobTypes} centerLabel={`${totalVehiclesCount} Véhicules`} />
 </div>
-<div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
 <div className="flex justify-between items-center mb-2">
-<span className="text-xs font-semibold text-gray-700">
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "إنتاجية الفنيين والميكانيكيين" : "Ordres Clôturés / Mécanicien"}
 </span>
-<Info size={13} className="text-gray-400" />
+<Info size={13} className="text-black/55 dark:text-white/55" />
 </div>
 <PillBarHistogram data={mechanicProductivity} maxScale={12} barColor="#3B82F6" />
 </div>

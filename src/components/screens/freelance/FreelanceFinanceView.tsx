@@ -199,13 +199,13 @@ export const FreelanceFinanceView: React.FC<any> = () => {
 				const isPinned = pinnedExpenseIds.has(exp.id);
 				return /* @__PURE__ */ <div className="flex items-center gap-3 min-w-0">
 {isPinned && /* @__PURE__ */ <span className="w-1.5 h-6 rounded-full bg-[#d4522f] shrink-0" />}
-<div className="w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-300 font-bold text-xs shrink-0">{exp.vendor.charAt(0).toUpperCase()}</div>
+<div className="w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black/70 dark:text-white/75 font-bold text-xs shrink-0">{exp.vendor.charAt(0).toUpperCase()}</div>
 <div className="min-w-0">
-<div className="font-bold text-sm text-neutral-900 dark:text-white truncate flex items-center gap-1.5">
+<div className="font-bold text-sm text-black dark:text-white truncate flex items-center gap-1.5">
 <span>{exp.vendor}</span>
 {isPinned && /* @__PURE__ */ <Pin size={11} className="text-[#d4522f] shrink-0" />}
 </div>
-<div className="text-xs text-neutral-400 truncate">{exp.description}</div>
+<div className="text-xs text-black/55 dark:text-white/55 truncate">{exp.description}</div>
 </div>
 </div>;
 			}
@@ -215,21 +215,21 @@ export const FreelanceFinanceView: React.FC<any> = () => {
 			header: t("free_fin_expense_category", language),
 			width: "1.8*",
 			sortable: true,
-			renderCell: (exp: any) => /* @__PURE__ */ <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">{exp.category}</span>
+			renderCell: (exp: any) => /* @__PURE__ */ <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75">{exp.category}</span>
 		},
 		{
 			key: "amount",
 			header: t("common_amount", language),
 			width: "1.6*",
 			sortable: true,
-			renderCell: (exp: any) => /* @__PURE__ */ <div className="font-mono font-bold text-sm text-neutral-900 dark:text-white tabular-nums">{formatCurrencyAmount(exp.amount, exp.currency)}</div>
+			renderCell: (exp: any) => /* @__PURE__ */ <div className="font-mono font-bold text-sm text-black dark:text-white tabular-nums">{formatCurrencyAmount(exp.amount, exp.currency)}</div>
 		},
 		{
 			key: "date",
 			header: language === "ar" ? "التاريخ" : language === "fr" ? "Date" : "Date",
 			width: "1.4*",
 			sortable: true,
-			renderCell: (exp: any) => /* @__PURE__ */ <span className="text-xs text-neutral-500 tabular-nums">{exp.date || "2026-02-15"}</span>
+			renderCell: (exp: any) => /* @__PURE__ */ <span className="text-xs text-black/55 dark:text-white/55 tabular-nums">{exp.date || "2026-02-15"}</span>
 		},
 		{
 			key: "deductible",
@@ -238,7 +238,7 @@ export const FreelanceFinanceView: React.FC<any> = () => {
 			renderCell: (exp: any) => exp.isTaxDeductible ? /* @__PURE__ */ <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
 <CheckCircle2 size={13} />
 <span>{language === "ar" ? "معفى" : language === "fr" ? "Oui" : "Deductible"}</span>
-</span> : /* @__PURE__ */ <span className="text-xs text-neutral-400">{language === "ar" ? "لا" : language === "fr" ? "Non" : "No"}</span>
+</span> : /* @__PURE__ */ <span className="text-xs text-black/55 dark:text-white/55">{language === "ar" ? "لا" : language === "fr" ? "Non" : "No"}</span>
 		}
 	], [
 		language,
@@ -277,8 +277,8 @@ export const FreelanceFinanceView: React.FC<any> = () => {
 <div className="w-12 h-12 rounded-2xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center shrink-0"><Wallet size={24} /></div>
 <div>
 <div className="flex items-center gap-2.5">
-<h1 className="text-[36px] sm:text-[48px] rtl:text-[30px] rtl:sm:text-[36px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{t("free_fin_title", language)}</h1>
-<span className="text-xs px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-semibold">
+<h1 className="text-[36px] sm:text-[48px] rtl:text-[30px] rtl:sm:text-[36px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("free_fin_title", language)}</h1>
+<span className="text-xs px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 font-semibold">
 €
 {currencyTotals.totalEurEquiv.toLocaleString()}
 {" "}
@@ -296,20 +296,20 @@ export const FreelanceFinanceView: React.FC<any> = () => {
 </span>
 </button>
 {isQuickActionsOpen && /* @__PURE__ */ <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-[240px] rounded-[18px] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 p-2.5 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 space-y-1">
-<div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+<div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-black/55 dark:text-white/55">
 {language === "ar" ? "إجراءات سريعة" : language === "fr" ? "Actions Rapides" : "Quick Actions"}
 </div>
 <button type="button" onClick={() => {
 										setIsQuickActionsOpen(false);
 										setIsAddExpenseModalOpen(true);
-									}} className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right">
+									}} className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-black dark:text-white font-medium transition-colors cursor-pointer text-left rtl:text-right">
 <div className="w-[30px] h-[30px] rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center shrink-0"><Plus size={15} /></div>
 <span>{t("free_fin_btn_add_expense", language)}</span>
 </button>
 <button type="button" onClick={() => {
 										setIsQuickActionsOpen(false);
 										handleExportCSV();
-									}} className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right">
+									}} className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-black dark:text-white font-medium transition-colors cursor-pointer text-left rtl:text-right">
 <div className="w-[30px] h-[30px] rounded-lg bg-blue-500/15 text-blue-600 flex items-center justify-center shrink-0"><Download size={15} /></div>
 <span>
 {language === "ar" ? "تصدير CSV" : language === "fr" ? "Exporter CSV" : "Export CSV"}
@@ -321,53 +321,53 @@ export const FreelanceFinanceView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {language === "ar" ? "ملخص السيولة والتدفقات المالية" : language === "fr" ? "Trésorerie & Encaissements Multi-Devises" : "Cashflow & Revenue Overview"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "اليورو المحصّل (حساب SEPA)" : language === "fr" ? "EUR Encaissé (Virement SEPA)" : "EUR Collected"}
 </span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">SEPA Wire</span>
 </div>
 <div>
-<div className="text-2xl font-black text-neutral-900 dark:text-white font-mono tabular-nums">
+<div className="text-2xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 €
 {currencyTotals.eur.toLocaleString()}
 </div>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
 {language === "ar" ? "عملاء أوروبا ومشاريع الريموت" : "Clients européens & missions remote"}
 </p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "الدولار والدينار الجزائري" : language === "fr" ? "USD & DZD Encaissés" : "USD & Local Cash"}
 </span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">BaridiMob / Direct</span>
 </div>
 <div>
-<div className="text-xl font-black text-neutral-900 dark:text-white font-mono tabular-nums">
+<div className="text-xl font-black text-black dark:text-white font-mono tabular-nums">
 $
 {currencyTotals.usd.toLocaleString()}
 {" "}
-<span className="text-xs font-normal text-neutral-400">/</span>
+<span className="text-xs font-normal text-black/55 dark:text-white/55">/</span>
 {" "}
 {currencyTotals.dzd.toLocaleString()}
 {" DZD"}
 </div>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
 {language === "ar" ? "تحويلات أمريكية وحسابات CCP المحلية" : "Virements directs US & encaissements locaux"}
 </p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">
+<span className="text-[11px] font-medium text-white/80">
 {language === "ar" ? "صافي الدخل التقديري" : language === "fr" ? "Bénéfice Net Projeté" : "Net Take-Home"}
 </span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
@@ -377,11 +377,11 @@ $
 </span>
 </div>
 <div>
-<div className="text-2xl font-black text-[#FB923C] font-mono tabular-nums">
+<div className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 €
 {netTakeHomeEur.toLocaleString()}
 </div>
-<p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
 <span>
 {language === "ar" ? `احتياطي ضريبي: €${taxReserveAmount.toLocaleString()}` : `Provision fiscale: €${taxReserveAmount.toLocaleString()}`}
@@ -395,12 +395,12 @@ $
 <div className="flex items-center justify-between">
 <div className="flex items-center gap-2">
 <ShieldCheck size={16} className="text-[#d4522f]" />
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+<h3 className="text-sm font-bold text-black dark:text-white">
 {language === "ar" ? "الاحتياطي الضريبي ومحاكاة الأرباح الصافية" : language === "fr" ? "Provision Fiscale & Simulation du Bénéfice Net" : "Tax Reserve & Net Earnings Simulation"}
 </h3>
 </div>
 <div className="flex items-center gap-2 text-xs font-mono">
-<span className="text-neutral-500">
+<span className="text-black/55 dark:text-white/55">
 {t("free_fin_tax_reserve", language)}
 :
 </span>
@@ -414,7 +414,7 @@ $
 </div>
 </div>
 <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 space-y-3">
-<div className="flex items-center justify-between text-xs text-neutral-700 dark:text-neutral-300">
+<div className="flex items-center justify-between text-xs text-black/70 dark:text-white/75">
 <span className="font-medium">
 {language === "ar" ? "معدل الضريبة التقديري والاشتراكات الاجتماعية" : language === "fr" ? "Curseur de taux d'imposition estimé" : "Tax Rate & Social Contributions Slider"}
 </span>
@@ -424,7 +424,7 @@ $
 </span>
 </div>
 <input type="range" min="0" max="35" step="1" value={taxRate} onChange={(e) => setTaxRate(Number(e.target.value))} className="w-full accent-[#d4522f] h-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg cursor-pointer" />
-<div className="flex justify-between text-[10px] text-neutral-500 font-mono">
+<div className="flex justify-between text-[10px] text-black/55 dark:text-white/55 font-mono">
 <span>
 0% (
 {t("free_fin_tax_exempt_label", language)}
@@ -448,27 +448,27 @@ $
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-neutral-100 dark:border-neutral-700 text-xs">
 <div>
-<span className="text-neutral-400 block">{t("free_fin_gross_revenue_equiv", language)}</span>
-<span className="text-base font-bold font-mono text-neutral-900 dark:text-white tabular-nums">
+<span className="text-black/55 dark:text-white/55 block">{t("free_fin_gross_revenue_equiv", language)}</span>
+<span className="text-base font-bold font-mono text-black dark:text-white tabular-nums">
 €
 {currencyTotals.totalEurEquiv.toLocaleString()}
 </span>
 </div>
 <div>
-<span className="text-neutral-400 block">{t("free_fin_expenses_total", language)}</span>
+<span className="text-black/55 dark:text-white/55 block">{t("free_fin_expenses_total", language)}</span>
 <span className="text-base font-bold font-mono text-rose-600 dark:text-rose-400 tabular-nums">
 -€
 {totalExpensesEurEquiv.toLocaleString()}
 </span>
 </div>
 <div>
-<span className="text-neutral-400 block">{t("free_fin_net_hourly_yield", language)}</span>
+<span className="text-black/55 dark:text-white/55 block">{t("free_fin_net_hourly_yield", language)}</span>
 <span className="text-base font-bold font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">
 €
 {netEhr}
 {t("free_dash_per_hour", language)}
 {" "}
-<span className="text-xs font-normal text-neutral-400">
+<span className="text-xs font-normal text-black/55 dark:text-white/55">
 (
 {t("free_fin_gross_label", language)}
 {" €"}
@@ -484,11 +484,11 @@ $
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-[#E6DED6] dark:border-neutral-800/60">
 <div className="flex items-center gap-2.5 flex-wrap">
-<div className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-700 dark:text-neutral-300"><Receipt size={16} /></div>
+<div className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-black/70 dark:text-white/75"><Receipt size={16} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white">{t("free_fin_operational_overhead", language)}</h3>
-<span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 text-neutral-600 dark:text-neutral-300">
+<h3 className="text-sm font-bold text-black dark:text-white">{t("free_fin_operational_overhead", language)}</h3>
+<span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 text-black/70 dark:text-white/75">
 {sortedExpenses.length}
 {" · ~€"}
 {totalExpensesEurEquiv.toLocaleString()}
@@ -499,25 +499,30 @@ $
 {[
 										{
 											value: "All",
-											label: language === "ar" ? "الكل" : "Tous"
+											label: language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All",
+											tooltip: language === "ar" ? "جميع فئات المصاريف" : language === "fr" ? "Toutes les catégories de dépenses" : "All expense categories"
 										},
 										{
 											value: "Software",
-											label: t("free_fin_expense_software", language)
+											label: language === "ar" ? "برمجيات" : language === "fr" ? "Logiciels" : "Software",
+											tooltip: t("free_fin_expense_software", language)
 										},
 										{
 											value: "Office",
-											label: t("free_fin_expense_workspace", language)
+											label: language === "ar" ? "مكتب" : language === "fr" ? "Espace" : "Office",
+											tooltip: t("free_fin_expense_workspace", language)
 										},
 										{
 											value: "Hardware",
-											label: t("free_fin_expense_hardware", language)
+											label: language === "ar" ? "معدات" : language === "fr" ? "Matériel" : "Hardware",
+											tooltip: t("free_fin_expense_hardware", language)
 										},
 										{
 											value: "Subcontractor",
-											label: t("free_fin_expense_subcontractor", language)
+											label: language === "ar" ? "تعاقد" : language === "fr" ? "Sous-traitance" : "Contractors",
+											tooltip: t("free_fin_expense_subcontractor", language)
 										}
-									].map((cat) => /* @__PURE__ */ <button key={cat.value} type="button" onClick={() => setCategoryFilter(cat.value)} className={`px-3 py-1 text-xs font-semibold rounded-full transition-all whitespace-nowrap cursor-pointer ${categoryFilter === cat.value ? "bg-[#d4522f] text-white shadow-2xs" : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"}`}>{cat.label}</button>)}
+									].map((cat) => /* @__PURE__ */ <button key={cat.value} type="button" onClick={() => setCategoryFilter(cat.value)} title={cat.tooltip} className={`px-3 py-1 text-xs font-semibold rounded-full transition-all whitespace-nowrap cursor-pointer ${categoryFilter === cat.value ? "bg-[#d4522f] text-white shadow-2xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>{cat.label}</button>)}
 </div>
 </div>
 <div className="flex items-center gap-2 flex-wrap">
@@ -532,7 +537,7 @@ $
 <span>
 {language === "ar" ? "مصاريف محددة" : language === "fr" ? "charges sélectionnées" : "expenses selected"}
 </span>
-<button type="button" onClick={() => setSelectedExpenseIds(/* @__PURE__ */ new Set())} className="text-neutral-400 hover:text-white underline text-xs cursor-pointer ml-1">
+<button type="button" onClick={() => setSelectedExpenseIds(/* @__PURE__ */ new Set())} className="text-white/75 hover:text-white underline text-xs cursor-pointer ml-1">
 {language === "ar" ? "إلغاء التحديد" : language === "fr" ? "Désélectionner" : "Deselect all"}
 </button>
 </div>
@@ -556,18 +561,18 @@ $
 							return /* @__PURE__ */ <div key={exp.id} className="p-5 rounded-[22px] border border-[#E9EEF0] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 shadow-2xs relative space-y-3">
 {isPinned && /* @__PURE__ */ <div className="absolute top-3 left-3 text-[#d4522f]"><Pin size={12} className="fill-[#d4522f]" /></div>}
 <div className="flex items-center justify-between pl-4">
-<span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">{exp.category}</span>
-<span className="text-xs text-neutral-400 tabular-nums">{exp.date || "2026-02-15"}</span>
+<span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75">{exp.category}</span>
+<span className="text-xs text-black/55 dark:text-white/55 tabular-nums">{exp.date || "2026-02-15"}</span>
 </div>
 <div>
-<h4 className="text-base font-bold text-neutral-900 dark:text-white">{exp.vendor}</h4>
-<p className="text-xs text-neutral-500 mt-0.5 line-clamp-2">{exp.description}</p>
+<h4 className="text-base font-bold text-black dark:text-white">{exp.vendor}</h4>
+<p className="text-xs text-black/55 dark:text-white/55 mt-0.5 line-clamp-2">{exp.description}</p>
 </div>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
 <span className="font-mono text-base font-black text-[#d4522f] tabular-nums">{formatCurrencyAmount(exp.amount, exp.currency)}</span>
 <div className="flex items-center gap-1.5">
 {exp.isTaxDeductible && /* @__PURE__ */ <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">Deductible</span>}
-<button type="button" onClick={() => deleteFreelanceExpense(exp.id)} className="p-1 text-neutral-400 hover:text-rose-500 transition-colors cursor-pointer"><Trash2 size={13} /></button>
+<button type="button" onClick={() => deleteFreelanceExpense(exp.id)} className="p-1 text-black/55 dark:text-white/55 hover:text-rose-500 transition-colors cursor-pointer"><Trash2 size={13} /></button>
 </div>
 </div>
 </div>;
@@ -576,8 +581,8 @@ $
 {isAddExpenseModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
 <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">{t("free_fin_modal_expense_title", language)}</h3>
-<button type="button" onClick={() => setIsAddExpenseModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"><X size={16} /></button>
+<h3 className="text-base font-bold text-black dark:text-white">{t("free_fin_modal_expense_title", language)}</h3>
+<button type="button" onClick={() => setIsAddExpenseModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"><X size={16} /></button>
 </div>
 <form onSubmit={handleCreateExpense} className="space-y-3.5 text-xs">
 <div className="grid grid-cols-2 gap-3">
@@ -634,7 +639,7 @@ $
 									]} height={46} corner={14} />
 </div>
 <div className="pt-2">
-<label className="flex items-center gap-2 cursor-pointer text-neutral-700 dark:text-neutral-300 font-medium">
+<label className="flex items-center gap-2 cursor-pointer text-black/70 dark:text-white/75 font-medium">
 <input type="checkbox" checked={isTaxDeductible} onChange={(e) => setIsTaxDeductible(e.target.checked)} className="rounded text-[#d4522f] focus:ring-0" />
 <span>{t("free_fin_tax_deductible_prompt", language)}</span>
 </label>

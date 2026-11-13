@@ -115,15 +115,15 @@ export const TradingInventoryView: React.FC<any> = () => {
 			key: "sku",
 			header: "Code SKU",
 			width: "130px",
-			renderCell: (prod: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-neutral-700 dark:text-neutral-300">{prod.sku || "N/A"}</span>
+			renderCell: (prod: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-black/70 dark:text-white/75">{prod.sku || "N/A"}</span>
 		},
 		{
 			key: "name",
 			header: "Désignation de l'Article",
 			minWidth: "240px",
 			renderCell: (prod: any) => /* @__PURE__ */ <div className="text-xs">
-<span className="font-bold text-neutral-900 dark:text-neutral-100 block">{prod.name}</span>
-<span className="text-[10px] text-neutral-400">
+<span className="font-bold text-black dark:text-white block">{prod.name}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">
 {prod.category}
 {" "}
 {prod.supplier ? `• Fournisseur: ${prod.supplier}` : ""}
@@ -137,7 +137,7 @@ export const TradingInventoryView: React.FC<any> = () => {
 			renderCell: (prod: any) => {
 				const isLow = (prod.stockQuantity || 0) <= (prod.reorderLevel || 10);
 				return /* @__PURE__ */ <div className="text-xs font-mono">
-<span className={`font-bold tabular-nums ${isLow ? "text-rose-600 dark:text-rose-400" : "text-neutral-900 dark:text-neutral-100"}`}>
+<span className={`font-bold tabular-nums ${isLow ? "text-rose-600 dark:text-rose-400" : "text-black dark:text-white"}`}>
 {prod.stockQuantity || 0}
 {" "}
 {prod.unit || "u"}
@@ -150,13 +150,13 @@ export const TradingInventoryView: React.FC<any> = () => {
 			key: "cost",
 			header: t("trading_inventory_col_cost", "Coût PMP (HT)"),
 			width: "120px",
-			renderCell: (prod: any) => /* @__PURE__ */ <span className="font-mono text-xs text-neutral-600 dark:text-neutral-400 tabular-nums">{formatMoney(prod.cost?.amount || prod.costPrice || 0)}</span>
+			renderCell: (prod: any) => /* @__PURE__ */ <span className="font-mono text-xs text-black/70 dark:text-white/75 tabular-nums">{formatMoney(prod.cost?.amount || prod.costPrice || 0)}</span>
 		},
 		{
 			key: "price",
 			header: t("trading_catalog_col_price", "Prix Vente HT"),
 			width: "120px",
-			renderCell: (prod: any) => /* @__PURE__ */ <span className="font-mono text-xs font-semibold text-neutral-800 dark:text-neutral-200 tabular-nums">{formatMoney(prod.price?.amount || 0)}</span>
+			renderCell: (prod: any) => /* @__PURE__ */ <span className="font-mono text-xs font-semibold text-black dark:text-white tabular-nums">{formatMoney(prod.price?.amount || 0)}</span>
 		},
 		{
 			key: "valuation",
@@ -164,7 +164,7 @@ export const TradingInventoryView: React.FC<any> = () => {
 			width: "150px",
 			renderCell: (prod: any) => {
 				const val = (prod.stockQuantity || 0) * (prod.cost?.amount || prod.costPrice || 0);
-				return /* @__PURE__ */ <span className="font-mono font-bold text-xs text-neutral-900 dark:text-white tabular-nums">{formatMoney(val)}</span>;
+				return /* @__PURE__ */ <span className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">{formatMoney(val)}</span>;
 			}
 		}
 	];
@@ -177,7 +177,7 @@ export const TradingInventoryView: React.FC<any> = () => {
 				const badgeColor = v.type === "entree" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400" : v.type === "sortie" ? "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-400" : "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-400";
 				return /* @__PURE__ */ <div className="flex items-center gap-2 font-mono text-xs font-bold">
 <span className={`px-2 py-0.5 rounded text-[10px] uppercase ${badgeColor}`}>{v.type === "entree" ? "BE" : v.type === "sortie" ? "BS" : "BT"}</span>
-<span className="text-neutral-900 dark:text-neutral-100">{v.voucherNumber}</span>
+<span className="text-black dark:text-white">{v.voucherNumber}</span>
 </div>;
 			}
 		},
@@ -185,15 +185,15 @@ export const TradingInventoryView: React.FC<any> = () => {
 			key: "date",
 			header: "Date",
 			width: "110px",
-			renderCell: (v: any) => /* @__PURE__ */ <span className="font-mono text-xs text-neutral-600 dark:text-neutral-400">{v.date}</span>
+			renderCell: (v: any) => /* @__PURE__ */ <span className="font-mono text-xs text-black/70 dark:text-white/75">{v.date}</span>
 		},
 		{
 			key: "depots",
 			header: "Trajet / Dépôts",
 			minWidth: "220px",
 			renderCell: (v: any) => /* @__PURE__ */ <div className="text-xs">
-<span className="font-medium text-neutral-900 dark:text-neutral-100">{v.depotSourceName}</span>
-{v.type === "transfert" && v.depotTargetName && /* @__PURE__ */ <span className="text-neutral-500 flex items-center gap-1 text-[11px]">
+<span className="font-medium text-black dark:text-white">{v.depotSourceName}</span>
+{v.type === "transfert" && v.depotTargetName && /* @__PURE__ */ <span className="text-black/55 dark:text-white/55 flex items-center gap-1 text-[11px]">
 {"→ "}
 {v.depotTargetName}
 </span>}
@@ -203,13 +203,13 @@ export const TradingInventoryView: React.FC<any> = () => {
 			key: "reason",
 			header: "Motif",
 			width: "160px",
-			renderCell: (v: any) => /* @__PURE__ */ <span className="text-xs font-mono text-neutral-600 dark:text-neutral-400">{v.reason.replace("_", " ")}</span>
+			renderCell: (v: any) => /* @__PURE__ */ <span className="text-xs font-mono text-black/70 dark:text-white/75">{v.reason.replace("_", " ")}</span>
 		},
 		{
 			key: "valuation",
 			header: "Valeur du Bon",
 			width: "140px",
-			renderCell: (v: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100 tabular-nums">{formatMoney(v.totalValuationDzd)}</span>
+			renderCell: (v: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">{formatMoney(v.totalValuationDzd)}</span>
 		}
 	];
 	const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
@@ -249,7 +249,7 @@ export const TradingInventoryView: React.FC<any> = () => {
 <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><Boxes size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{t("trading_inventory_title", "Dépôts Logistiques & Inventaire")}</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("trading_inventory_title", "Dépôts Logistiques & Inventaire")}</h1>
 <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4522f]/15 text-[#d4522f] border border-[#d4522f]/30">
 {warehouses.length}
 {" "}
@@ -267,19 +267,19 @@ export const TradingInventoryView: React.FC<any> = () => {
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">{language === "ar" ? "المقالات والوحدات المخزنة" : "Références & Volume Réel"}</span>
+<span className="text-xs font-semibold text-black/55 dark:text-white/75">{language === "ar" ? "المقالات والوحدات المخزنة" : "Références & Volume Réel"}</span>
 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#d4522f]/10 text-[#d4522f]">
 {products.length}
 {" SKUs"}
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
+<div className="text-2xl lg:text-3xl font-extrabold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
 {metrics.totalUnits.toLocaleString()}
 {" "}
-<span className="text-xs text-neutral-400 font-normal">unités</span>
+<span className="text-xs text-black/55 dark:text-white/55 font-normal">unités</span>
 </div>
-<div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
+<div className="flex items-center gap-1.5 text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 {metrics.lowStockCount > 0 ? /* @__PURE__ */ <span className="text-rose-500 font-semibold flex items-center gap-1">
 <AlertTriangle size={13} />
 {metrics.lowStockCount}
@@ -293,15 +293,15 @@ Niveaux de stocks nominaux
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">{language === "ar" ? "المستودعات وسندات النقل" : "Maillage & Mouvements"}</span>
-<span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
+<span className="text-xs font-semibold text-black/55 dark:text-white/75">{language === "ar" ? "المستودعات وسندات النقل" : "Maillage & Mouvements"}</span>
+<span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75">
 {metrics.depotsCount}
 {" sites"}
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">{metrics.vouchersCount}</div>
-<div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{metrics.vouchersCount}</div>
+<div className="flex items-center gap-1.5 text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 <Clock size={13} className="text-blue-500" />
 <span>Bons d'entrée, sortie et transferts inter-dépôts</span>
 </div>
@@ -315,13 +315,13 @@ Niveaux de stocks nominaux
 <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 uppercase tracking-wider">Coût PMP (HT)</span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">{formatMoney(metrics.totalValuation)}</div>
-<div className="flex items-center justify-between text-[11px] text-stone-400 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(metrics.totalValuation)}</div>
+<div className="flex items-center justify-between text-[11px] text-white/75 mt-0.5">
 <span className="flex items-center gap-1">
 <Warehouse size={12} className="text-[#FB923C]" />
 <span>Actif circulant multi-dépôts</span>
 </span>
-<span className="font-mono text-stone-300">DZD</span>
+<span className="font-mono text-white/80">DZD</span>
 </div>
 </div>
 <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#FB923C]/5 rounded-full blur-2xl pointer-events-none" />
@@ -333,31 +333,31 @@ Niveaux de stocks nominaux
 <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><Warehouse size={16} /></div>
 <div>
-<span className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">{t("trading_inventory_depots_hub", "Réseau des Dépôts & Hubs Logistiques")}</span>
-<span className="text-[11px] text-neutral-500 dark:text-neutral-400 block">Filtrage actif du stock par entrepôt physique ou valorisation consolidée</span>
+<span className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">{t("trading_inventory_depots_hub", "Réseau des Dépôts & Hubs Logistiques")}</span>
+<span className="text-[11px] text-black/55 dark:text-white/75 block">Filtrage actif du stock par entrepôt physique ou valorisation consolidée</span>
 </div>
 </div>
-<span className="text-xs font-mono font-semibold text-neutral-500">
+<span className="text-xs font-mono font-semibold text-black/55 dark:text-white/55">
 {warehouses.length}
 {" "}
 {t("trading_depots_active", "dépôts configurés")}
 </span>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-<button type="button" onClick={() => setSelectedDepotId("all")} className={`p-3.5 rounded-2xl border text-left rtl:text-right transition-all cursor-pointer ${selectedDepotId === "all" ? "border-[#d4522f] bg-white dark:bg-neutral-800 shadow-xs ring-2 ring-[#d4522f]/20" : "border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800/80 hover:border-neutral-300"}`}>
+<button type="button" onClick={() => setSelectedDepotId("all")} title={language === "ar" ? "عرض مخزون جميع المستودعات" : language === "fr" ? "Tous les dépôts configurés" : "All configured depots"} className={`p-3.5 rounded-2xl border text-left rtl:text-right transition-all cursor-pointer ${selectedDepotId === "all" ? "border-[#d4522f] bg-white dark:bg-neutral-800 shadow-xs ring-2 ring-[#d4522f]/20" : "border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800/80 hover:border-neutral-300"}`}>
 <div className="flex items-center justify-between mb-1">
-<span className="font-bold text-xs text-neutral-900 dark:text-neutral-100">{t("trading_inventory_all_depots", "Tous les Dépôts")}</span>
+<span className="font-bold text-xs text-black dark:text-white">{t("trading_inventory_all_depots", "Tous")}</span>
 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 font-semibold">GLOBAL</span>
 </div>
 <div className="text-xs font-bold font-mono text-[#d4522f]">{formatMoney(metrics.totalValuation)}</div>
 </button>
-{warehouses.map((w) => /* @__PURE__ */ <button key={w.id} type="button" onClick={() => setSelectedDepotId(w.id)} className={`p-3.5 rounded-2xl border text-left rtl:text-right transition-all cursor-pointer ${selectedDepotId === w.id ? "border-[#d4522f] bg-white dark:bg-neutral-800 shadow-xs ring-2 ring-[#d4522f]/20" : "border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800/80 hover:border-neutral-300"}`}>
+{warehouses.map((w) => /* @__PURE__ */ <button key={w.id} type="button" onClick={() => setSelectedDepotId(w.id)} title={`${w.name} — ${w.city}`} className={`p-3.5 rounded-2xl border text-left rtl:text-right transition-all cursor-pointer ${selectedDepotId === w.id ? "border-[#d4522f] bg-white dark:bg-neutral-800 shadow-xs ring-2 ring-[#d4522f]/20" : "border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800/80 hover:border-neutral-300"}`}>
 <div className="flex items-center justify-between mb-1">
-<span className="font-bold text-xs text-neutral-900 dark:text-neutral-100">{w.name}</span>
+<span className="font-bold text-xs text-black dark:text-white">{w.name}</span>
 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 font-semibold">{w.code}</span>
 </div>
-<div className="text-[11px] text-neutral-500 mb-0.5">{w.city}</div>
-<div className="text-xs font-mono font-bold text-neutral-800 dark:text-neutral-200">{formatMoney(w.totalValuationDzd || 0)}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 mb-0.5">{w.city}</div>
+<div className="text-xs font-mono font-bold text-black dark:text-white">{formatMoney(w.totalValuationDzd || 0)}</div>
 </button>)}
 </div>
 </div>
@@ -366,7 +366,7 @@ Niveaux de stocks nominaux
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><Boxes size={18} /></div>
 <div className="flex items-center gap-2">
-<span className="text-sm font-bold text-neutral-900 dark:text-white">
+<span className="text-sm font-bold text-black dark:text-white">
 {viewMode === "stock_state" ? t("trading_inventory_tab_state", "État des Stocks") : t("trading_inventory_tab_vouchers", "Bons de Mouvements")}
 </span>
 <span className="text-xs px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f] font-semibold font-mono">
@@ -376,14 +376,8 @@ Niveaux de stocks nominaux
 </div>
 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
 <div className="flex items-center gap-1.5 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl self-start">
-<button type="button" onClick={() => setViewMode("stock_state")} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${viewMode === "stock_state" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"}`}>
-<span>{t("trading_inventory_tab_state", "État des Stocks")}</span>
-<span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${viewMode === "stock_state" ? "bg-[#d4522f]/15 text-[#d4522f]" : "bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500"}`}>{products.length}</span>
-</button>
-<button type="button" onClick={() => setViewMode("vouchers")} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${viewMode === "vouchers" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"}`}>
-<span>{t("trading_inventory_tab_vouchers", "Bons de Mouvements")}</span>
-<span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${viewMode === "vouchers" ? "bg-[#d4522f]/15 text-[#d4522f]" : "bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500"}`}>{stockVouchers.length}</span>
-</button>
+<button type="button" onClick={() => setViewMode("stock_state")} title={`${t("trading_inventory_tab_state", "État des Stocks")} (${products.length})`} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${viewMode === "stock_state" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "المخزون" : language === "fr" ? "Stocks" : "Stock"}</button>
+<button type="button" onClick={() => setViewMode("vouchers")} title={`${t("trading_inventory_tab_vouchers", "Bons de Mouvements")} (${stockVouchers.length})`} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${viewMode === "vouchers" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "السندات" : language === "fr" ? "Bons" : "Vouchers"}</button>
 </div>
 <div className="self-end sm:self-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={language === "ar" ? "بحث برمز المادة، التسمية، السند..." : "Filtrer article, bon, SKU..."} shutSize={36} openWidth={280} />
@@ -415,7 +409,7 @@ Niveaux de stocks nominaux
 <StockMovementModal isOpen={movementModalOpen} onClose={() => setMovementModalOpen(false)} />
 {newDepotModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
 <div className="relative w-full max-w-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 space-y-4">
-<h2 className="text-base font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+<h2 className="text-base font-bold text-black dark:text-white flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 <Building2 size={18} className="text-[#d4522f]" />
 <span>Ajouter un Nouveau Dépôt</span>
 </h2>

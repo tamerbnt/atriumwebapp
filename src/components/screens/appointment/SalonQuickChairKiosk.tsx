@@ -155,7 +155,7 @@ export const SalonQuickChairKiosk: React.FC<any> = () => {
 <div className="flex items-center gap-3.5">
 <div className="w-12 h-12 rounded-2xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center text-xl shrink-0"><Scissors size={24} /></div>
 <div>
-<h1 className="text-[36px] sm:text-[48px] rtl:text-[30px] rtl:sm:text-[36px] font-['Barlow_Condensed',sans-serif] rtl:font-sans font-extrabold uppercase rtl:normal-case leading-none rtl:leading-tight tracking-[0.01em] rtl:tracking-normal text-black dark:text-white flex items-center gap-2">
+<h1 className="text-[36px] sm:text-[48px] rtl:text-[30px] rtl:sm:text-[36px] font-extrabold uppercase rtl:normal-case leading-none rtl:leading-tight tracking-[0.01em] rtl:tracking-normal text-black dark:text-white flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 <span>
 {isRtl ? "كشك محطات العمل والصالون السريع" : "Kiosk Fauteuils & Suivi Postes Salon"}
 </span>
@@ -374,5 +374,3 @@ export const SalonQuickChairKiosk: React.FC<any> = () => {
 </div>}
 </div>;
 };
-
-export { Award as _, AppointmentHistoryView_exports as a, AppointmentClientsView_exports as c, Smartphone as d, Scissors as f, Banknote as g, History as h, AppointmentScheduleView_exports as i, AppointmentModal as l, Pen as m, AppointmentStaffView_exports as n, AppointmentFinanceView_exports as o, Play as p, AppointmentServicesView_exports as r, AppointmentDashboardView_exports as s, SalonQuickChairKiosk_exports as t, Star as u };

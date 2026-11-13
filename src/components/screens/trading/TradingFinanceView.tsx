@@ -115,15 +115,15 @@ export const TradingFinanceView: React.FC<any> = () => {
 			key: "docNumber",
 			header: t("trading_sales_col_doc_num", "N° Facture"),
 			width: "180px",
-			renderCell: (doc: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100">{doc.docNumber}</span>
+			renderCell: (doc: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs text-black dark:text-white">{doc.docNumber}</span>
 		},
 		{
 			key: "date",
 			header: t("trading_sales_col_date_due", "Date & Échéance"),
 			width: "140px",
 			renderCell: (doc: any) => /* @__PURE__ */ <div className="text-xs font-mono">
-<div className="text-neutral-800 dark:text-neutral-200">{doc.date}</div>
-<div className="text-[10px] text-neutral-400">
+<div className="text-black dark:text-white">{doc.date}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">
 {"Éch: "}
 {doc.dueDate || "30j"}
 </div>
@@ -133,13 +133,13 @@ export const TradingFinanceView: React.FC<any> = () => {
 			key: "client",
 			header: t("trading_sales_col_client", "Client B2B"),
 			minWidth: "220px",
-			renderCell: (doc: any) => /* @__PURE__ */ <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100">{doc.clientName}</span>
+			renderCell: (doc: any) => /* @__PURE__ */ <span className="text-xs font-bold text-black dark:text-white">{doc.clientName}</span>
 		},
 		{
 			key: "netToPay",
 			header: t("trading_sales_col_net_to_pay", "Montant Net TTC"),
 			width: "150px",
-			renderCell: (doc: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100 tabular-nums">{formatMoney(doc.netToPay)}</span>
+			renderCell: (doc: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">{formatMoney(doc.netToPay)}</span>
 		},
 		{
 			key: "status",
@@ -198,7 +198,7 @@ export const TradingFinanceView: React.FC<any> = () => {
 <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><Wallet size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{t("trading_finance_title", "Règlements, Trésorerie & Balance Âgée")}</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("trading_finance_title", "Règlements, Trésorerie & Balance Âgée")}</h1>
 <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4522f]/15 text-[#d4522f] border border-[#d4522f]/30">{language === "ar" ? "تحصيل الشركات" : "Recouvrement B2B"}</span>
 </div>
 </div>
@@ -208,7 +208,7 @@ export const TradingFinanceView: React.FC<any> = () => {
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+<span className="text-xs font-semibold text-black/55 dark:text-white/75">
 {language === "ar" ? "التحصيلات المحققة الفعلية" : "Encaissements Clientèle Réalisés"}
 </span>
 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
@@ -217,8 +217,8 @@ export const TradingFinanceView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">{formatMoney(agingAnalysis.totalPaidAmount)}</div>
-<div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(agingAnalysis.totalPaidAmount)}</div>
+<div className="flex items-center gap-1.5 text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 <CheckCircle size={13} className="text-emerald-500" />
 <span>Règlements reçus par virement, chèque ou espèces</span>
 </div>
@@ -226,17 +226,17 @@ export const TradingFinanceView: React.FC<any> = () => {
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+<span className="text-xs font-semibold text-black/55 dark:text-white/75">
 {language === "ar" ? "المستحقات الواجبة للموردين" : "Dettes Fournisseurs Exigibles"}
 </span>
-<span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
+<span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75">
 {b2bSuppliers.length}
 {" fournisseurs"}
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">{formatMoney(agingAnalysis.totalSupplierPayable)}</div>
-<div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(agingAnalysis.totalSupplierPayable)}</div>
+<div className="flex items-center gap-1.5 text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 <Clock size={13} className="text-blue-500" />
 <span>Échéancier de trésorerie décaissable</span>
 </div>
@@ -253,15 +253,15 @@ export const TradingFinanceView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">{formatMoney(agingAnalysis.totalUnpaid)}</div>
-<div className="flex items-center justify-between text-[11px] text-stone-400 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(agingAnalysis.totalUnpaid)}</div>
+<div className="flex items-center justify-between text-[11px] text-white/75 mt-0.5">
 <span className="flex items-center gap-1">
 {agingAnalysis.bucket90Plus > 0 ? /* @__PURE__ */ <span className="text-[#FB923C] font-semibold">
 {formatMoney(agingAnalysis.bucket90Plus)}
 {" en contentieux (>90j)"}
 </span> : /* @__PURE__ */ <span className="text-emerald-400">Aucun dossier en contentieux</span>}
 </span>
-<span className="font-mono text-stone-300">Total B2B</span>
+<span className="font-mono text-white/80">Total B2B</span>
 </div>
 </div>
 <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#FB923C]/5 rounded-full blur-2xl pointer-events-none" />
@@ -270,24 +270,24 @@ export const TradingFinanceView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
 <div className="flex items-center justify-between">
-<span className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+<span className="text-xs font-bold uppercase tracking-wider text-black/55 dark:text-white/55">
 {language === "ar" ? "تحليل أعمار الديون (Balance Âgée)" : "Balance Âgée des Créances Commerciales (4 Paliers)"}
 </span>
-<span className="text-[11px] font-mono text-neutral-400">Base de calcul: Date d'émission de la facture fiscale</span>
+<span className="text-[11px] font-mono text-black/55 dark:text-white/55">Base de calcul: Date d'émission de la facture fiscale</span>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
 <div className="p-4 rounded-[18px] border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-2xs">
-<span className="text-xs font-semibold text-neutral-500 block mb-1">{t("trading_finance_aging_current", "0 à 30 jours (Courant)")}</span>
+<span className="text-xs font-semibold text-black/55 dark:text-white/55 block mb-1">{t("trading_finance_aging_current", "0 à 30 jours (Courant)")}</span>
 <div className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">{formatMoney(agingAnalysis.bucketCurrent)}</div>
-<span className="text-[10px] text-neutral-400 mt-1 block">{language === "ar" ? "مستحقات اعتيادية" : "Créances normales sous délai légal"}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 mt-1 block">{language === "ar" ? "مستحقات اعتيادية" : "Créances normales sous délai légal"}</span>
 </div>
 <div className="p-4 rounded-[18px] border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-2xs">
-<span className="text-xs font-semibold text-neutral-500 block mb-1">{t("trading_finance_aging_31_60", "31 à 60 jours")}</span>
+<span className="text-xs font-semibold text-black/55 dark:text-white/55 block mb-1">{t("trading_finance_aging_31_60", "31 à 60 jours")}</span>
 <div className="text-xl font-bold font-mono text-amber-600 dark:text-amber-400 tabular-nums">{formatMoney(agingAnalysis.bucket31_60)}</div>
 <span className="text-[10px] text-amber-600/80 mt-1 block">{language === "ar" ? "تذكير ودي" : "Relance commerciale de courtoisie"}</span>
 </div>
 <div className="p-4 rounded-[18px] border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-2xs">
-<span className="text-xs font-semibold text-neutral-500 block mb-1">{t("trading_finance_aging_61_90", "61 à 90 jours")}</span>
+<span className="text-xs font-semibold text-black/55 dark:text-white/55 block mb-1">{t("trading_finance_aging_61_90", "61 à 90 jours")}</span>
 <div className="text-xl font-bold font-mono text-orange-600 dark:text-orange-400 tabular-nums">{formatMoney(agingAnalysis.bucket61_90)}</div>
 <span className="text-[10px] text-orange-600/80 mt-1 block">{language === "ar" ? "إشعار بالسداد مطلوب" : "Mise en demeure requise"}</span>
 </div>
@@ -303,18 +303,9 @@ export const TradingFinanceView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
 <div className="flex items-center gap-1.5 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl self-start">
-<button type="button" onClick={() => setFilterMode("unpaid")} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${filterMode === "unpaid" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"}`}>
-<span>{language === "ar" ? "غير مسددة" : "En Attente d'Encaissement"}</span>
-<span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${filterMode === "unpaid" ? "bg-[#d4522f]/15 text-[#d4522f]" : "bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500"}`}>{agingAnalysis.unpaidCount}</span>
-</button>
-<button type="button" onClick={() => setFilterMode("paid")} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${filterMode === "paid" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"}`}>
-<span>{language === "ar" ? "المسددة" : "Factures Soldées"}</span>
-<span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${filterMode === "paid" ? "bg-[#d4522f]/15 text-[#d4522f]" : "bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500"}`}>{agingAnalysis.paidCount}</span>
-</button>
-<button type="button" onClick={() => setFilterMode("all")} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${filterMode === "all" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"}`}>
-<span>{language === "ar" ? "الكل" : "Toutes les Factures"}</span>
-<span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${filterMode === "all" ? "bg-[#d4522f]/15 text-[#d4522f]" : "bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500"}`}>{invoices.length}</span>
-</button>
+<button type="button" onClick={() => setFilterMode("unpaid")} title={`${language === "ar" ? "فواتير غير مسددة" : language === "fr" ? "En Attente d'Encaissement" : "Pending Collection"} (${agingAnalysis.unpaidCount})`} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${filterMode === "unpaid" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "معلقة" : language === "fr" ? "Attente" : "Unpaid"}</button>
+<button type="button" onClick={() => setFilterMode("paid")} title={`${language === "ar" ? "فواتير مسددة" : language === "fr" ? "Factures Soldées" : "Paid Invoices"} (${agingAnalysis.paidCount})`} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${filterMode === "paid" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "مسددة" : language === "fr" ? "Soldées" : "Paid"}</button>
+<button type="button" onClick={() => setFilterMode("all")} title={`${language === "ar" ? "جميع الفواتير" : language === "fr" ? "Toutes les Factures" : "All Invoices"} (${invoices.length})`} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${filterMode === "all" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "الكل" : language === "fr" ? "Toutes" : "All"}</button>
 </div>
 <div className="self-end sm:self-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={language === "ar" ? "بحث برقم الفاتورة، العميل..." : "Filtrer N° facture, client..."} shutSize={36} openWidth={280} />
@@ -325,7 +316,7 @@ export const TradingFinanceView: React.FC<any> = () => {
 <span className="font-mono text-xs font-bold">{inv.docNumber}</span>
 <p className="font-bold text-xs">{inv.clientName}</p>
 <div className="flex justify-between text-xs pt-1 border-t border-neutral-100 dark:border-neutral-700">
-<span className="text-neutral-500">Net TTC:</span>
+<span className="text-black/55 dark:text-white/55">Net TTC:</span>
 <span className="font-bold text-[#d4522f]">{formatMoney(inv.netToPay)}</span>
 </div>
 </div>} emptyTitle={language === "ar" ? "لا توجد فواتير مطابقة" : "Aucune facture trouvée"} emptyDescription={language === "ar" ? "جميع الفواتير التجارية مسددة أو لا توجد نتائج للبحث." : "Toutes les factures sont soldées ou aucun résultat ne correspond à votre filtre."} />
@@ -335,20 +326,20 @@ export const TradingFinanceView: React.FC<any> = () => {
 {settlementDoc && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
 <div className="relative w-full max-w-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-6 space-y-4">
 <div className="flex items-center justify-between border-b pb-3 border-neutral-200 dark:border-neutral-800">
-<h2 className="text-base font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+<h2 className="text-base font-bold text-black dark:text-white flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 <CheckCircle size={18} className="text-emerald-600" />
 <span>Enregistrer le Règlement Client</span>
 </h2>
-<button onClick={() => setSettlementDoc(null)} className="p-1 text-neutral-400 hover:text-neutral-600 rounded-lg"><X size={18} /></button>
+<button onClick={() => setSettlementDoc(null)} className="p-1 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 rounded-lg"><X size={18} /></button>
 </div>
 <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 text-xs space-y-1.5 font-mono">
 <div className="flex justify-between">
-<span className="text-neutral-500 font-sans">Facture :</span>
-<span className="font-bold text-neutral-900 dark:text-neutral-100">{settlementDoc.docNumber}</span>
+<span className="text-black/55 dark:text-white/55 font-sans">Facture :</span>
+<span className="font-bold text-black dark:text-white">{settlementDoc.docNumber}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500 font-sans">Client :</span>
-<span className="text-neutral-900 dark:text-neutral-100">{settlementDoc.clientName}</span>
+<span className="text-black/55 dark:text-white/55 font-sans">Client :</span>
+<span className="text-black dark:text-white">{settlementDoc.clientName}</span>
 </div>
 <div className="flex justify-between text-emerald-600 font-bold text-sm pt-1.5 border-t border-neutral-200 dark:border-neutral-700">
 <span className="font-sans">Montant Net :</span>

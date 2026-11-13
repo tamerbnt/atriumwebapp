@@ -102,7 +102,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-white dark:bg-[#18181B] rounded-[28px] shadow-2xl border border-[#E9EEF0] dark:border-[#27272A] p-6 md:p-8 my-8 text-[#18181B] dark:text-[#FAFAFA]">
+      <div className="relative w-full max-w-2xl bg-white dark:bg-[#18181B] rounded-[28px] shadow-2xl border border-[#E9EEF0] dark:border-[#27272A] p-6 md:p-8 my-8 text-black dark:text-[#FAFAFA]">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#E2E8EC] dark:border-[#27272A] mb-5">
           <div className="flex items-center gap-3">
@@ -110,12 +110,12 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
               <Receipt className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold tracking-tight">Encaissement & Quittance de Loyer</h2>
+              <h2 className="text-xl font-bold tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">Encaissement & Quittance de Loyer</h2>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-[#64748B] hover:text-[#18181B] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            className="p-2 rounded-xl text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -186,7 +186,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
 
           {/* Fiscal Calculation Breakdown Pod */}
           <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#141416] border border-[#E6DED6] dark:border-[#232328] space-y-3">
-            <div className="flex items-center justify-between text-xs font-semibold text-[#64748B] dark:text-[#A1A1AA] uppercase">
+            <div className="flex items-center justify-between text-xs font-semibold text-black/70 dark:text-[#A1A1AA] uppercase">
               <span>Décompte Légal de la Quittance</span>
               <span className="flex items-center gap-1 text-[#d4522f]">
                 <Stamp className="w-3.5 h-3.5" />
@@ -209,7 +209,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
                 </span>
               </div>
 
-              <div className="flex justify-between py-1.5 text-sm font-bold text-[#18181B] dark:text-white">
+              <div className="flex justify-between py-1.5 text-sm font-bold text-black dark:text-white">
                 <span>Total Net Encaissé du Locataire</span>
                 <span className="font-mono text-base text-[#d4522f]">
                   {totalCollectedDzd.toLocaleString()} DZD
@@ -217,8 +217,8 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
               </div>
             </div>
 
-            <div className="p-2.5 rounded-xl bg-white dark:bg-[#18181B] border border-[#E2E8EC] dark:border-[#27272A] text-[11px] text-[#64748B] dark:text-[#A1A1AA] flex items-center justify-between">
-              <span>Commission Agence ({managementRate}% + TVA 19%): <strong className="text-[#18181B] dark:text-white">{(agencyCommissionFeeDzd + agencyCommissionTvaDzd).toLocaleString()} DZD</strong></span>
+            <div className="p-2.5 rounded-xl bg-white dark:bg-[#18181B] border border-[#E2E8EC] dark:border-[#27272A] text-[11px] text-black/70 dark:text-[#A1A1AA] flex items-center justify-between">
+              <span>Commission Agence ({managementRate}% + TVA 19%): <strong className="text-black dark:text-white">{(agencyCommissionFeeDzd + agencyCommissionTvaDzd).toLocaleString()} DZD</strong></span>
               <span>Reversé au Propriétaire: <strong className="text-emerald-600 dark:text-emerald-400 font-mono">{netDisbursedToOwnerDzd.toLocaleString()} DZD</strong></span>
             </div>
           </div>

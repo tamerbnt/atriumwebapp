@@ -14,6 +14,7 @@ export interface SelectOption {
   value: string | number;
   label: string;
   sublabel?: string;
+  tooltip?: string;
   icon?: React.ReactNode;
   disabled?: boolean;
 }
@@ -383,6 +384,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
           id={id}
           data-no-liquid="true"
           disabled={disabled}
+          title={selectedOption?.tooltip || selectedOption?.sublabel || selectedOption?.label}
           onClick={() => {
             if (!disabled) setIsOpen((prev) => !prev);
           }}
@@ -483,6 +485,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
                       key={String(opt.value)}
                       role="option"
                       aria-selected={isSelected}
+                      title={opt.tooltip || opt.sublabel || opt.label}
                       onClick={() => {
                         if (!opt.disabled) handleSelect(opt.value);
                       }}

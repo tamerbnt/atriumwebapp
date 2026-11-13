@@ -292,14 +292,14 @@ ON CONFLICT (id) DO NOTHING;
               <Cloud size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-lg font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 Supabase Live Cloud Verification
               </h2>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            className="p-2 rounded-xl text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           >
             <X size={18} />
           </button>
@@ -312,14 +312,14 @@ ON CONFLICT (id) DO NOTHING;
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
+                <span className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
                   Supabase Client Status
                 </span>
                 <span className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900/40 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
                   Connected
                 </span>
               </div>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 font-mono">
+              <p className="text-xs text-black/55 dark:text-white/75 mt-1 font-mono">
                 Project: tzzncsbvezywtaknwind.supabase.co
               </p>
             </div>
@@ -327,7 +327,7 @@ ON CONFLICT (id) DO NOTHING;
             <button
               onClick={refreshCloudCounts}
               disabled={isLoading}
-              className="px-3 py-1.5 bg-white dark:bg-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-600 border border-neutral-200 dark:border-neutral-600 rounded-xl text-xs font-medium text-neutral-700 dark:text-neutral-200 flex items-center gap-1.5 transition-colors self-start sm:self-auto"
+              className="px-3 py-1.5 bg-white dark:bg-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-600 border border-neutral-200 dark:border-neutral-600 rounded-xl text-xs font-medium text-black/70 dark:text-white flex items-center gap-1.5 transition-colors self-start sm:self-auto"
             >
               <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
               Refresh Status
@@ -337,7 +337,7 @@ ON CONFLICT (id) DO NOTHING;
           {/* Local vs Cloud Matrix */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-black/70 dark:text-white/75 uppercase tracking-wider">
                 Rental Database Tables & Live Row Counts
               </h3>
               <button
@@ -352,55 +352,55 @@ ON CONFLICT (id) DO NOTHING;
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
-                <span className="text-[11px] font-medium text-neutral-500">Rentable Spaces</span>
+                <span className="text-[11px] font-medium text-black/55 dark:text-white/55">Rentable Spaces</span>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-xl font-bold text-neutral-900 dark:text-white tabular-nums">
+                  <span className="text-xl font-bold text-black dark:text-white tabular-nums">
                     {rentableUnits.length}
                   </span>
                   <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
                     ({cloudCounts.units !== null ? `${cloudCounts.units} in Cloud` : 'checking...'})
                   </span>
                 </div>
-                <span className="text-[10px] text-neutral-400 font-mono block mt-1">rentable_units</span>
+                <span className="text-[10px] text-black/55 dark:text-white/55 font-mono block mt-1">rentable_units</span>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
-                <span className="text-[11px] font-medium text-neutral-500">Reservations</span>
+                <span className="text-[11px] font-medium text-black/55 dark:text-white/55">Reservations</span>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-xl font-bold text-neutral-900 dark:text-white tabular-nums">
+                  <span className="text-xl font-bold text-black dark:text-white tabular-nums">
                     {rentalBookings.length}
                   </span>
                   <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
                     ({cloudCounts.bookings !== null ? `${cloudCounts.bookings} in Cloud` : 'checking...'})
                   </span>
                 </div>
-                <span className="text-[10px] text-neutral-400 font-mono block mt-1">rental_bookings</span>
+                <span className="text-[10px] text-black/55 dark:text-white/55 font-mono block mt-1">rental_bookings</span>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
-                <span className="text-[11px] font-medium text-neutral-500">Renters & Clients</span>
+                <span className="text-[11px] font-medium text-black/55 dark:text-white/55">Renters & Clients</span>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-xl font-bold text-neutral-900 dark:text-white tabular-nums">
+                  <span className="text-xl font-bold text-black dark:text-white tabular-nums">
                     {rentalRenters.length}
                   </span>
                   <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
                     ({cloudCounts.renters !== null ? `${cloudCounts.renters} in Cloud` : 'checking...'})
                   </span>
                 </div>
-                <span className="text-[10px] text-neutral-400 font-mono block mt-1">rental_renters</span>
+                <span className="text-[10px] text-black/55 dark:text-white/55 font-mono block mt-1">rental_renters</span>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
-                <span className="text-[11px] font-medium text-neutral-500">Caution Escrow</span>
+                <span className="text-[11px] font-medium text-black/55 dark:text-white/55">Caution Escrow</span>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-xl font-bold text-neutral-900 dark:text-white tabular-nums">
+                  <span className="text-xl font-bold text-black dark:text-white tabular-nums">
                     {securityDeposits.length}
                   </span>
                   <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
                     ({cloudCounts.deposits !== null ? `${cloudCounts.deposits} in Cloud` : 'checking...'})
                   </span>
                 </div>
-                <span className="text-[10px] text-neutral-400 font-mono block mt-1">security_deposits</span>
+                <span className="text-[10px] text-black/55 dark:text-white/55 font-mono block mt-1">security_deposits</span>
               </div>
             </div>
           </div>
@@ -419,17 +419,17 @@ ON CONFLICT (id) DO NOTHING;
                   table: rental_bookings
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-neutral-800 dark:text-neutral-200 mt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-black dark:text-white mt-2">
                 <div>
-                  <span className="text-neutral-500 dark:text-neutral-400 text-[11px] block">Event & Renter:</span>
+                  <span className="text-black/55 dark:text-white/75 text-[11px] block">Event & Renter:</span>
                   <span className="font-semibold">{latestBooking.purpose}</span> · {latestBooking.renterName}
                 </div>
                 <div>
-                  <span className="text-neutral-500 dark:text-neutral-400 text-[11px] block">Space & Amount:</span>
+                  <span className="text-black/55 dark:text-white/75 text-[11px] block">Space & Amount:</span>
                   <span className="font-medium">{latestBooking.unitName}</span> · <span className="font-bold tabular-nums">{latestBooking.totalAmount} {latestBooking.currency}</span>
                 </div>
                 <div>
-                  <span className="text-neutral-500 dark:text-neutral-400 text-[11px] block">Created In Supabase:</span>
+                  <span className="text-black/55 dark:text-white/75 text-[11px] block">Created In Supabase:</span>
                   <span className="font-mono text-[11px]">{new Date(latestBooking.createdAt).toLocaleString()}</span>
                 </div>
               </div>
@@ -440,11 +440,11 @@ ON CONFLICT (id) DO NOTHING;
           <div className="p-4 rounded-2xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900/50">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h4 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                <h4 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
                   <Send size={15} className="text-purple-600 dark:text-purple-400" />
                   Live Cloud Verification Test
                 </h4>
-                <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
+                <p className="text-xs text-black/70 dark:text-white/75 mt-0.5">
                   Send an actual reservation to your Supabase project right now to verify row insertion.
                 </p>
               </div>
@@ -496,14 +496,14 @@ ON CONFLICT (id) DO NOTHING;
           <div className="border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 bg-neutral-50 dark:bg-neutral-800/30">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <Database size={15} className="text-neutral-500" />
-                <h4 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
+                <Database size={15} className="text-black/55 dark:text-white/55" />
+                <h4 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
                   Supabase 10-Second SQL Fix (If no rows appear)
                 </h4>
               </div>
               <button
                 onClick={handleCopySql}
-                className="px-3 py-1 bg-white dark:bg-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-600 border border-neutral-200 dark:border-neutral-600 rounded-lg text-xs font-medium text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5 transition-colors"
+                className="px-3 py-1 bg-white dark:bg-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-600 border border-neutral-200 dark:border-neutral-600 rounded-lg text-xs font-medium text-black dark:text-white flex items-center gap-1.5 transition-colors"
               >
                 {copied ? (
                   <>
@@ -519,11 +519,11 @@ ON CONFLICT (id) DO NOTHING;
               </button>
             </div>
 
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
+            <p className="text-xs text-black/55 dark:text-white/75 mb-3">
               If your Supabase project was created with strict foreign keys or RLS, run this script once in your Supabase SQL Editor. It allows direct, seamless saves from the application:
             </p>
 
-            <pre className="p-3 bg-neutral-900 text-neutral-200 rounded-xl text-[11px] font-mono overflow-x-auto max-h-40 border border-neutral-800">
+            <pre className="p-3 bg-neutral-900 text-white rounded-xl text-[11px] font-mono overflow-x-auto max-h-40 border border-neutral-800">
               {sqlRepairScript}
             </pre>
           </div>
@@ -531,12 +531,12 @@ ON CONFLICT (id) DO NOTHING;
 
         {/* Footer */}
         <div className="px-6 py-4 border-t border-[#E9EEF0] dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-800/30">
-          <span className="text-xs text-neutral-500 dark:text-neutral-400">
+          <span className="text-xs text-black/55 dark:text-white/75">
             All app reservations are saved both locally in browser storage & synced to Supabase
           </span>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-neutral-900 hover:bg-black dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-semibold rounded-xl transition-colors"
+            className="px-4 py-2 bg-neutral-900 hover:bg-black dark:bg-white dark:hover:bg-neutral-100 text-white text-xs font-semibold rounded-xl transition-colors"
           >
             Close
           </button>

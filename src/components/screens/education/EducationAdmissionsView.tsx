@@ -146,7 +146,7 @@ export const EducationAdmissionsView: React.FC<any> = () => {
 			renderCell: (lead: any) => /* @__PURE__ */ <div className="flex items-center gap-3">
 <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700">{lead.studentName.charAt(0)}</div>
 <div className="min-w-0">
-<div className="font-bold text-neutral-900 dark:text-white truncate">{lead.studentName}</div>
+<div className="font-bold text-black dark:text-white truncate">{lead.studentName}</div>
 <div className="text-[11px] text-[#d4522f] font-medium truncate">{lead.desiredCourseTitle}</div>
 </div>
 </div>
@@ -157,12 +157,12 @@ export const EducationAdmissionsView: React.FC<any> = () => {
 			width: "2*",
 			minWidth: "180px",
 			renderCell: (lead: any) => /* @__PURE__ */ <div className="space-y-0.5 text-xs">
-<div className="flex items-center gap-1.5 text-neutral-700 dark:text-neutral-300 font-mono text-[11px]">
-<Phone size={12} className="text-neutral-400 shrink-0" />
+<div className="flex items-center gap-1.5 text-black/70 dark:text-white/75 font-mono text-[11px]">
+<Phone size={12} className="text-black/55 dark:text-white/55 shrink-0" />
 <span>{lead.phone}</span>
 </div>
-{lead.email && /* @__PURE__ */ <div className="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400 truncate text-[11px]">
-<Mail size={12} className="text-neutral-400 shrink-0" />
+{lead.email && /* @__PURE__ */ <div className="flex items-center gap-1.5 text-black/55 dark:text-white/75 truncate text-[11px]">
+<Mail size={12} className="text-black/55 dark:text-white/55 shrink-0" />
 <span className="truncate">{lead.email}</span>
 </div>}
 </div>
@@ -172,14 +172,14 @@ export const EducationAdmissionsView: React.FC<any> = () => {
 			header: language === "ar" ? "الولي / الوصي" : language === "fr" ? "Tuteur / Parent" : "Guardian",
 			width: "1.8*",
 			minWidth: "150px",
-			renderCell: (lead: any) => /* @__PURE__ */ <span className="text-xs text-neutral-700 dark:text-neutral-300">{lead.guardianName || (language === "ar" ? "مترشح راشد" : "Adult / Self")}</span>
+			renderCell: (lead: any) => /* @__PURE__ */ <span className="text-xs text-black/70 dark:text-white/75">{lead.guardianName || (language === "ar" ? "مترشح راشد" : "Adult / Self")}</span>
 		},
 		{
 			key: "score",
 			header: language === "ar" ? "نتيجة التقييم" : language === "fr" ? "Test d'orientation" : "Placement Score",
 			width: "1.8*",
 			minWidth: "150px",
-			renderCell: (lead: any) => /* @__PURE__ */ <span className="text-xs text-neutral-600 dark:text-neutral-400">
+			renderCell: (lead: any) => /* @__PURE__ */ <span className="text-xs text-black/70 dark:text-white/75">
 {lead.placementScore ? /* @__PURE__ */ <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f]">{lead.placementScore}</span> : "—"}
 </span>
 		},
@@ -300,17 +300,17 @@ export const EducationAdmissionsView: React.FC<any> = () => {
 <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><ClipboardList size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{t("edu_admissions_title")}</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("edu_admissions_title")}</h1>
 </div>
 </div>
 </div>
 <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
 <div className="flex items-center p-1 bg-[#F4EFEA] dark:bg-neutral-800 rounded-xl border border-[#E8DFD8] dark:border-neutral-700 shadow-2xs">
-<button type="button" onClick={() => setViewLayout("kanban")} className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer ${viewLayout === "kanban" ? "bg-white dark:bg-neutral-900 text-[#d4522f] shadow-2xs" : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"}`}>
+<button type="button" onClick={() => setViewLayout("kanban")} className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer ${viewLayout === "kanban" ? "bg-white dark:bg-neutral-900 text-[#d4522f] shadow-2xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>
 <Columns size={13} />
 <span>Kanban</span>
 </button>
-<button type="button" onClick={() => setViewLayout("collection")} className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer ${viewLayout === "collection" ? "bg-white dark:bg-neutral-900 text-[#d4522f] shadow-2xs" : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"}`}>
+<button type="button" onClick={() => setViewLayout("collection")} className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer ${viewLayout === "collection" ? "bg-white dark:bg-neutral-900 text-[#d4522f] shadow-2xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>
 <LayoutGrid size={13} />
 <span>
 {language === "ar" ? "جدول وبطاقات" : language === "fr" ? "Liste & Grille" : "List & Grid"}
@@ -323,14 +323,14 @@ export const EducationAdmissionsView: React.FC<any> = () => {
 {selectedLeadIds.size > 0 && /* @__PURE__ */ <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
 <div className="flex items-center gap-3">
 <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
-<span className="text-xs font-bold text-neutral-900 dark:text-white">
+<span className="text-xs font-bold text-black dark:text-white">
 {selectedLeadIds.size}
 {" "}
 {language === "ar" ? "طلبات تسجيل محددة" : language === "fr" ? "dossiers sélectionnés" : "leads selected"}
 </span>
 </div>
 <div className="flex items-center gap-2 flex-wrap">
-<button onClick={() => setSelectedLeadIds(/* @__PURE__ */ new Set())} className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer">
+<button onClick={() => setSelectedLeadIds(/* @__PURE__ */ new Set())} className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer">
 {language === "ar" ? "إلغاء التحديد" : language === "fr" ? "Désélectionner" : "Deselect"}
 </button>
 <button onClick={() => handleBatchSetStage("TrialClass")} className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs">
@@ -349,34 +349,34 @@ export const EducationAdmissionsView: React.FC<any> = () => {
 </div>}
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
 <div>
-<h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
+<h3 className="text-xs font-bold text-black dark:text-white tracking-tight">
 {language === "ar" ? "قمع القبول والتسجيلات" : language === "fr" ? "Pipeline d'Admissions & Conversion" : "Admissions Pipeline & Conversion Health"}
 </h3>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "ملفات قيد المعالجة" : language === "fr" ? "Prospects Actifs" : "Active Pipeline"}
 </span>
 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">5 Étapes d'admission</span>
 </div>
 <div>
-<span className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">{totalLeads}</span>
-<span className="text-xs text-neutral-400 tabular-nums ml-1">
+<span className="text-2xl font-bold text-black dark:text-white tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">{totalLeads}</span>
+<span className="text-xs text-black/55 dark:text-white/55 tabular-nums ml-1">
 {"/ "}
 {totalLeads}
 {" "}
 {language === "ar" ? "ملف في المسار" : "leads"}
 </span>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
 {language === "ar" ? "طلبات تسجيل قيد المتابعة" : "Dossiers en instruction active"}
 </p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "معدل التحويل للقبول" : language === "fr" ? "Taux d'admission" : "Admission Conversion"}
 </span>
 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
@@ -386,19 +386,19 @@ export const EducationAdmissionsView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<span className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">
+<span className="text-2xl font-bold text-black dark:text-white tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {conversionRate}
 %
 </span>
-<span className="text-xs text-neutral-400 ml-1">{language === "ar" ? "نسبة التحويل" : "conversion rate"}</span>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+<span className="text-xs text-black/55 dark:text-white/55 ml-1">{language === "ar" ? "نسبة التحويل" : "conversion rate"}</span>
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
 {language === "ar" ? "تحويل المقابلات إلى قبول نهائي" : "Transformation en inscriptions"}
 </p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-400">
+<span className="text-[11px] font-medium text-white/75">
 {language === "ar" ? "القيمة المتوقعة للتسجيلات" : language === "fr" ? "Potentiel Recouvrement Frais" : "Projected Tuition Pipeline"}
 </span>
 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 inline-block">
@@ -406,11 +406,11 @@ export const EducationAdmissionsView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<span className="text-2xl font-bold text-[#FB923C] tabular-nums tracking-tight font-mono">
+<span className="text-2xl font-bold text-[#FB923C] tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {projectedPipeline.toLocaleString()}
 {" DZD"}
 </span>
-<p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
 <span>
 {language === "ar" ? "إجمالي الرسوم المتوقعة" : "Potentiel d'encaissement rentrée"}
@@ -423,23 +423,25 @@ export const EducationAdmissionsView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
 <div className="flex items-center gap-2">
-<ClipboardList size={18} className="text-neutral-700 dark:text-neutral-300" />
-<h2 className="text-sm font-bold text-neutral-900 dark:text-white">
+<ClipboardList size={18} className="text-black/70 dark:text-white/75" />
+<h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {language === "ar" ? "طلبات التسجيل والقبول" : language === "fr" ? "Dossiers d'Admission" : "Admissions Pipeline"}
 </h2>
-<span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">{filteredAdmissions.length}</span>
+<span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-black/70 dark:text-white/75">{filteredAdmissions.length}</span>
 </div>
 <div className="flex items-center gap-2.5 flex-wrap">
 <LiveSegmentedControl size="sm" value={viewLayout} onValueChange={(val) => setViewLayout(val)} options={[{
 												value: "kanban",
-												label: language === "ar" ? "مسار كانبان" : "Kanban Funnel",
+												label: language === "ar" ? "كانبان" : "Kanban",
+												tooltip: language === "ar" ? "مسار كانبان للقبول" : language === "fr" ? "Vue en pipeline Kanban" : "Kanban admissions funnel",
 												count: totalLeads
 											}, {
 												value: "collection",
-												label: language === "ar" ? "سجل القبول" : "Tableau & Grille"
+												label: language === "ar" ? "سجل" : language === "fr" ? "Tableau" : "Table",
+												tooltip: language === "ar" ? "عرض السجل والجدول" : language === "fr" ? "Affichage tableau & grille" : "Table & grid registry"
 											}]} aria-label="Admissions View Mode" />
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder="Search leads by student, phone, desired course..." shutSize={36} openWidth={240} />
-<button type="button" onClick={handleExportCSV} className="h-9 px-3 bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer" title="Export CSV">
+<button type="button" onClick={handleExportCSV} className="h-9 px-3 bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer" title="Export CSV">
 <Download size={13} />
 <span className="hidden sm:inline">CSV</span>
 </button>
@@ -453,18 +455,18 @@ export const EducationAdmissionsView: React.FC<any> = () => {
 									}
 								}} renderCard={(lead) => /* @__PURE__ */ <div className="flex flex-col items-center justify-center w-full">
 <div className="w-20 h-20 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-[28px] font-bold shadow-md mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">{lead.studentName.charAt(0)}</div>
-<h3 className="text-[16px] font-bold text-neutral-900 dark:text-white truncate max-w-[210px] mb-1 tracking-tight text-center">{lead.studentName}</h3>
+<h3 className="text-[16px] font-bold text-black dark:text-white truncate max-w-[210px] mb-1 tracking-tight text-center">{lead.studentName}</h3>
 <span className="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700 mb-2 truncate max-w-[200px]">{lead.desiredCourseTitle}</span>
 <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1.5 text-center">
-<div className="font-mono text-neutral-600 dark:text-neutral-400 text-[11px]">{lead.phone}</div>
-{lead.guardianName && /* @__PURE__ */ <div className="text-neutral-400 text-[11px]">
+<div className="font-mono text-black/70 dark:text-white/75 text-[11px]">{lead.phone}</div>
+{lead.guardianName && /* @__PURE__ */ <div className="text-black/55 dark:text-white/55 text-[11px]">
 {"Guardian: "}
 {lead.guardianName}
 </div>}
 {lead.placementScore && /* @__PURE__ */ <div className="text-[11px] font-semibold text-[#d4522f]">{lead.placementScore}</div>}
 <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
-<span className="text-[11px] text-neutral-400">Stage:</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{lead.stage}</span>
+<span className="text-[11px] text-black/55 dark:text-white/55">Stage:</span>
+<span className="font-semibold text-black dark:text-white">{lead.stage}</span>
 </div>
 </div>
 </div>} onItemClick={(lead) => {
@@ -501,14 +503,14 @@ export const EducationAdmissionsView: React.FC<any> = () => {
 									const leadsInStage = filteredAdmissions.filter((l) => l.stage === stage.id);
 									return /* @__PURE__ */ <div key={stage.id} className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 p-3.5 flex flex-col space-y-3 min-h-[480px] shadow-2xs">
 <div className="flex items-center justify-between pb-2 border-b border-neutral-200/80 dark:border-neutral-800">
-<span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">{stage.title}</span>
-<span className="w-5 h-5 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 text-[10px] font-bold flex items-center justify-center">{leadsInStage.length}</span>
+<span className="text-xs font-bold text-black dark:text-white">{stage.title}</span>
+<span className="w-5 h-5 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-[10px] font-bold flex items-center justify-center">{leadsInStage.length}</span>
 </div>
 <div className="space-y-2.5 flex-1">
 {leadsInStage.map((lead) => /* @__PURE__ */ <div key={lead.id} className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-2xs hover:border-[#d4522f]/50 transition-all space-y-2 group">
 <div>
 <div className="flex items-center justify-between">
-<span className="font-bold text-neutral-900 dark:text-white text-xs group-hover:text-[#d4522f] transition-colors">{lead.studentName}</span>
+<span className="font-bold text-black dark:text-white text-xs group-hover:text-[#d4522f] transition-colors">{lead.studentName}</span>
 {lead.placementScore && /* @__PURE__ */ <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f]">
 {"Score: "}
 {lead.placementScore}
@@ -516,13 +518,13 @@ export const EducationAdmissionsView: React.FC<any> = () => {
 </div>
 <span className="text-[11px] font-medium text-[#d4522f] block mt-0.5">{lead.desiredCourseTitle}</span>
 </div>
-<div className="space-y-1 text-[11px] text-neutral-500 dark:text-neutral-400">
+<div className="space-y-1 text-[11px] text-black/55 dark:text-white/75">
 <div className="flex items-center gap-1.5">
-<Phone size={11} className="text-neutral-400" />
+<Phone size={11} className="text-black/55 dark:text-white/55" />
 <span>{lead.phone}</span>
 </div>
-{lead.guardianName && /* @__PURE__ */ <div className="text-[10px] text-neutral-400">{t("edu_guardian_prefix", { name: lead.guardianName })}</div>}
-{lead.source && /* @__PURE__ */ <div className="text-[10px] text-neutral-400">
+{lead.guardianName && /* @__PURE__ */ <div className="text-[10px] text-black/55 dark:text-white/55">{t("edu_guardian_prefix", { name: lead.guardianName })}</div>}
+{lead.source && /* @__PURE__ */ <div className="text-[10px] text-black/55 dark:text-white/55">
 {"Source: "}
 {lead.source}
 </div>}
@@ -534,7 +536,7 @@ export const EducationAdmissionsView: React.FC<any> = () => {
 </button> : stage.id !== "Enrolled" ? /* @__PURE__ */ <button type="button" onClick={() => {
 																const nextIndex = stages.findIndex((s) => s.id === stage.id) + 1;
 																if (nextIndex < stages.length) updateAdmissionStage(lead.id, stages[nextIndex].id as any);
-															}} className="w-full py-1 text-center text-[10px] font-semibold text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer">
+															}} className="w-full py-1 text-center text-[10px] font-semibold text-black/70 dark:text-white/75 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer">
 <span>Move Next</span>
 <ArrowRight size={11} className="rtl:rotate-180" />
 </button> : /* @__PURE__ */ <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 mx-auto">
@@ -543,7 +545,7 @@ export const EducationAdmissionsView: React.FC<any> = () => {
 </span>}
 </div>
 </div>)}
-{leadsInStage.length === 0 && /* @__PURE__ */ <div className="py-8 text-center text-neutral-400 dark:text-neutral-500 text-[11px]">No leads in this stage</div>}
+{leadsInStage.length === 0 && /* @__PURE__ */ <div className="py-8 text-center text-black/55 dark:text-white/55 text-[11px]">No leads in this stage</div>}
 </div>
 </div>;
 								})}
@@ -553,13 +555,13 @@ export const EducationAdmissionsView: React.FC<any> = () => {
 {conversionLead && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
 <div className="relative w-full max-w-md bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">{t("edu_lead_modal_title")}</h2>
-<button type="button" onClick={() => setConversionLead(null)} className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("edu_lead_modal_title")}</h2>
+<button type="button" onClick={() => setConversionLead(null)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
 </div>
 <div className="pt-4 space-y-4 text-xs">
-<p className="text-neutral-600 dark:text-neutral-300">
+<p className="text-black/70 dark:text-white/75">
 {"You are about to register "}
-<strong className="text-neutral-900 dark:text-white">{conversionLead.studentName}</strong>
+<strong className="text-black dark:text-white">{conversionLead.studentName}</strong>
 {" into the student CRM and create an active enrollment record."}
 </p>
 <LabelSelect label={t("edu_label_cohort")} value={targetCohortId} onChange={(val) => setTargetCohortId(val?.target?.value ?? String(val))} options={eduCohorts.map((c) => ({
@@ -568,7 +570,7 @@ export const EducationAdmissionsView: React.FC<any> = () => {
 								}))} placeholder="Select Starting Cohort..." />
 <LabelInput label="Acompte Initial Reçu (DZD)" type="number" min="0" step="1000" value={conversionDeposit === 0 ? "" : conversionDeposit} placeholder="0 DZD (Optionnel - Règlement à l'inscription)" onChange={(e) => setConversionDeposit(Math.max(0, Number(e.target.value) || 0))} />
 <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-<button type="button" onClick={() => setConversionLead(null)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold cursor-pointer">{t("common_cancel")}</button>
+<button type="button" onClick={() => setConversionLead(null)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer">{t("common_cancel")}</button>
 <button type="button" onClick={handleConfirmConversion} className="px-5 py-2 rounded-xl bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs">{t("edu_btn_convert_student")}</button>
 </div>
 </div>
@@ -577,8 +579,8 @@ export const EducationAdmissionsView: React.FC<any> = () => {
 {isAddLeadModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
 <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6">
 <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">{t("edu_btn_new_lead")}</h2>
-<button type="button" onClick={() => setIsAddLeadModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("edu_btn_new_lead")}</h2>
+<button type="button" onClick={() => setIsAddLeadModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
 </div>
 <form onSubmit={handleCreateLead} className="space-y-4 pt-4 text-xs">
 <div>
@@ -623,7 +625,7 @@ export const EducationAdmissionsView: React.FC<any> = () => {
 </div>
 </div>
 <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
-<button type="button" onClick={() => setIsAddLeadModalOpen(false)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold cursor-pointer">{t("common_cancel")}</button>
+<button type="button" onClick={() => setIsAddLeadModalOpen(false)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer">{t("common_cancel")}</button>
 <button type="submit" className="px-5 py-2 rounded-xl bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs">{t("edu_btn_new_lead")}</button>
 </div>
 </form>

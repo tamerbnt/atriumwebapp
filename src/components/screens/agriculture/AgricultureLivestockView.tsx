@@ -265,8 +265,8 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 			cell: (a: any) => /* @__PURE__ */ <div className="flex items-center gap-3">
 <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0"><Tag size={15} /></div>
 <div>
-<div className="font-mono font-bold text-xs text-neutral-900 dark:text-white">{a.earTagNumber}</div>
-<div className="text-[10px] text-neutral-400">
+<div className="font-mono font-bold text-xs text-black dark:text-white">{a.earTagNumber}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">
 {a.nameOrNumber || a.species}
 {" • "}
 {a.breed}
@@ -281,8 +281,8 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 			sortable: true,
 			minWidth: "140px",
 			cell: (a: any) => /* @__PURE__ */ <div className="text-xs">
-<span className="font-medium text-neutral-700 dark:text-neutral-300">{a.reproStatus || "Lactation"}</span>
-<div className="text-[10px] text-neutral-400">
+<span className="font-medium text-black/70 dark:text-white/75">{a.reproStatus || "Lactation"}</span>
+<div className="text-[10px] text-black/55 dark:text-white/55">
 {"Lactation N° "}
 {a.lactationNumber || 1}
 </div>
@@ -314,11 +314,11 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 			sortable: true,
 			minWidth: "140px",
 			cell: (a: any) => /* @__PURE__ */ <div className="text-xs">
-<div className="font-mono font-bold text-neutral-900 dark:text-white">
+<div className="font-mono font-bold text-black dark:text-white">
 {a.dailyProductionLiters || a.dailyAvgLiters || 0}
 {" L/j"}
 </div>
-<div className="text-[10px] text-neutral-400">{a.gender === "Female" ? "Traite active" : "Mâle"}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">{a.gender === "Female" ? "Traite active" : "Mâle"}</div>
 </div>
 		}
 	];
@@ -332,8 +332,8 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 			cell: (m: any) => /* @__PURE__ */ <div className="flex items-center gap-3">
 <div className="w-8 h-8 rounded-lg bg-blue-500/15 text-blue-600 flex items-center justify-center font-bold shrink-0"><Milk size={16} /></div>
 <div>
-<div className="font-mono font-bold text-xs text-neutral-900 dark:text-white">{m.sessionDate}</div>
-<div className="text-[10px] text-neutral-400">{m.sessionPeriod === "morning" ? "Traite du Matin" : "Traite du Soir"}</div>
+<div className="font-mono font-bold text-xs text-black dark:text-white">{m.sessionDate}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">{m.sessionPeriod === "morning" ? "Traite du Matin" : "Traite du Soir"}</div>
 </div>
 </div>
 		},
@@ -344,7 +344,7 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 			sortable: true,
 			minWidth: "160px",
 			cell: (m: any) => /* @__PURE__ */ <div className="text-xs">
-<div className="font-mono font-bold text-neutral-900 dark:text-white">
+<div className="font-mono font-bold text-black dark:text-white">
 {m.conformingLiters.toLocaleString()}
 {" L"}
 </div>
@@ -387,9 +387,9 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 			accessorKey: "destinationDairy",
 			sortable: true,
 			minWidth: "180px",
-			cell: (m: any) => /* @__PURE__ */ <div className="text-xs text-neutral-600 dark:text-neutral-400 truncate max-w-[170px]">
+			cell: (m: any) => /* @__PURE__ */ <div className="text-xs text-black/70 dark:text-white/75 truncate max-w-[170px]">
 <div>{m.destinationDairy}</div>
-<div className="text-[10px] text-neutral-400 font-mono">{m.dairyDeliverySlipNo || "BL-Attente"}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 font-mono">{m.dairyDeliverySlipNo || "BL-Attente"}</div>
 </div>
 		}
 	];
@@ -453,7 +453,7 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Layers size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isAr ? "إدارة الثروة الحيوانية والإنتاج اللبني" : "Cheptel Bovin Laitier & Traite"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
@@ -473,11 +473,13 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 <div className="border-b border-neutral-200 dark:border-neutral-800 pb-2">
 <LiveSegmentedControl value={activeTabMode} onChange={(val) => setActiveTabMode(val)} size="sm" options={[{
 						id: "cheptel",
-						label: isAr ? "سجل القطيع والترقيم (DZ-16)" : "Cheptel & Identification (DZ-16)",
+						label: isAr ? "القطيع" : "Cheptel",
+						tooltip: isAr ? "سجل القطيع والترقيم (DZ-16)" : "Cheptel & Identification (DZ-16)",
 						count: livestock.length
 					}, {
 						id: "milking",
-						label: isAr ? "جلسات الحلب وخزان التبريد" : "Sessions de Traite & Tank à Lait",
+						label: isAr ? "الحلب" : "Traite",
+						tooltip: isAr ? "جلسات الحلب وخزان التبريد" : "Sessions de Traite & Tank à Lait",
 						count: milkingRecords.length
 					}]} />
 </div>
@@ -493,11 +495,11 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 </div>}
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500">{isAr ? "الإنتاج اللبني اليومي التقديري" : "Production Laitière Estimée"}</span>
-<div className="text-2xl font-bold font-mono text-neutral-900 dark:text-white mt-1">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/55">{isAr ? "الإنتاج اللبني اليومي التقديري" : "Production Laitière Estimée"}</span>
+<div className="text-2xl font-bold text-black dark:text-white mt-1 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {totalMilkProduction.toFixed(1)}
 {" "}
-<span className="text-xs font-normal text-neutral-500">L / jour</span>
+<span className="text-xs font-normal text-black/55 dark:text-white/55">L / jour</span>
 </div>
 <p className="text-[10.5px] text-[#d4522f] mt-0.5">
 {bovineCount}
@@ -506,18 +508,18 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 </p>
 </div>
 <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500">{isAr ? "الحليب المورد للملبنات (المطابق)" : "Lait Conforme Livré ce Mois"}</span>
-<div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/55">{isAr ? "الحليب المورد للملبنات (المطابق)" : "Lait Conforme Livré ce Mois"}</span>
+<div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {totalMonthlyDeliveredLiters.toLocaleString()}
 {" "}
-<span className="text-xs font-normal text-neutral-500">Litres</span>
+<span className="text-xs font-normal text-black/55 dark:text-white/55">Litres</span>
 </div>
-<p className="text-[10.5px] text-neutral-400 mt-0.5">{isAr ? "تم استبعاد الحليب المعالج" : "Sans résidus antibiotiques"}</p>
+<p className="text-[10.5px] text-black/55 dark:text-white/55 mt-0.5">{isAr ? "تم استبعاد الحليب المعالج" : "Sans résidus antibiotiques"}</p>
 </div>
 <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500">{isAr ? "إجمالي مستحقات دعم ONIL" : "Total Prime État ONIL (12 DA/L)"}</span>
-<div className="text-2xl font-bold font-mono text-[#d4522f] mt-1">{formatMoney(totalMonthlyOnilSubsidyDzd)}</div>
-<p className="text-[10.5px] text-neutral-400 mt-0.5">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/55">{isAr ? "إجمالي مستحقات دعم ONIL" : "Total Prime État ONIL (12 DA/L)"}</span>
+<div className="text-2xl font-bold text-[#d4522f] mt-1 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalMonthlyOnilSubsidyDzd)}</div>
+<p className="text-[10.5px] text-black/55 dark:text-white/55 mt-0.5">
 {milkingRecords.length}
 {" "}
 {isAr ? "وصولات تسليم مسجلة" : "bons de livraison enregistrés"}
@@ -546,8 +548,8 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Tag size={16} /></div>
 <div>
-<h2 className="text-xs font-bold text-neutral-900 dark:text-white">{selectedAnimal.earTagNumber}</h2>
-<p className="text-[10px] text-neutral-400">
+<h2 className="text-xs font-bold text-black dark:text-white">{selectedAnimal.earTagNumber}</h2>
+<p className="text-[10px] text-black/55 dark:text-white/55">
 {selectedAnimal.nameOrNumber}
 {" • "}
 {selectedAnimal.breed}
@@ -558,7 +560,7 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 </div>
 <div className="p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-2">
 <div className="flex justify-between">
-<span className="text-neutral-400">Espèce & Sexe:</span>
+<span className="text-black/55 dark:text-white/55">Espèce & Sexe:</span>
 <span className="font-semibold">
 {selectedAnimal.species}
 {" ("}
@@ -567,26 +569,26 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 </span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">Race:</span>
+<span className="text-black/55 dark:text-white/55">Race:</span>
 <span className="font-semibold">{selectedAnimal.breed}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">Date de Naissance:</span>
+<span className="text-black/55 dark:text-white/55">Date de Naissance:</span>
 <span className="font-mono">{selectedAnimal.birthDate}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">Statut Reproduction:</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{selectedAnimal.reproStatus || "Lactation"}</span>
+<span className="text-black/55 dark:text-white/55">Statut Reproduction:</span>
+<span className="font-semibold text-black dark:text-white">{selectedAnimal.reproStatus || "Lactation"}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">N° de Lactation:</span>
+<span className="text-black/55 dark:text-white/55">N° de Lactation:</span>
 <span className="font-mono font-bold">
 {"Lactation "}
 {selectedAnimal.lactationNumber || 1}
 </span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">Production L/jour:</span>
+<span className="text-black/55 dark:text-white/55">Production L/jour:</span>
 <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
 {selectedAnimal.dailyProductionLiters || selectedAnimal.dailyAvgLiters || 0}
 {" L/j"}
@@ -606,15 +608,15 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 {selectedAnimal.healthStatus === "Healthy" ? "Mettre en Soins" : "Rétablir Sain"}
 </AtriumButton>
 </div>
-</div> : /* @__PURE__ */ <div className="text-center py-10 text-neutral-400 text-xs">
+</div> : /* @__PURE__ */ <div className="text-center py-10 text-black/55 dark:text-white/55 text-xs">
 {isAr ? "حدد رأس بقر لمعاينة التفاصيل" : "Sélectionnez un animal pour afficher sa fiche"}
 </div> : selectedMilking ? /* @__PURE__ */ <div className="space-y-4 text-xs">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
 <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-lg bg-blue-500/15 text-blue-600 flex items-center justify-center font-bold"><Milk size={16} /></div>
 <div>
-<h2 className="text-xs font-bold text-neutral-900 dark:text-white">{selectedMilking.sessionDate}</h2>
-<p className="text-[10px] text-neutral-400">
+<h2 className="text-xs font-bold text-black dark:text-white">{selectedMilking.sessionDate}</h2>
+<p className="text-[10px] text-black/55 dark:text-white/55">
 {selectedMilking.sessionPeriod === "morning" ? "Traite du Matin" : "Traite du Soir"}
 </p>
 </div>
@@ -626,14 +628,14 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 </div>
 <div className="p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-2">
 <div className="flex justify-between">
-<span className="text-neutral-400">Volume Total Trait:</span>
+<span className="text-black/55 dark:text-white/55">Volume Total Trait:</span>
 <span className="font-mono font-semibold">
 {selectedMilking.totalTankLiters}
 {" L"}
 </span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">Volume Écarté (Retrait):</span>
+<span className="text-black/55 dark:text-white/55">Volume Écarté (Retrait):</span>
 <span className="font-mono text-amber-600">
 -
 {selectedMilking.rejectedWithholdingLiters}
@@ -648,7 +650,7 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 </span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">Température Tank:</span>
+<span className="text-black/55 dark:text-white/55">Température Tank:</span>
 <span className="font-mono font-bold">
 +
 {selectedMilking.tankTemperatureCelsius}
@@ -656,18 +658,18 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 </span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">Laiterie Destinataire:</span>
-<span className="font-medium text-neutral-800 dark:text-neutral-200">{selectedMilking.destinationDairy}</span>
+<span className="text-black/55 dark:text-white/55">Laiterie Destinataire:</span>
+<span className="font-medium text-black dark:text-white">{selectedMilking.destinationDairy}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">N° Bon Livraison (BL):</span>
+<span className="text-black/55 dark:text-white/55">N° Bon Livraison (BL):</span>
 <span className="font-mono">{selectedMilking.dairyDeliverySlipNo || "N/A"}</span>
 </div>
 </div>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800">
 <AtriumButton variant="primary" size="sm" className="w-full" onClick={() => setIsOnilModalOpen(true)} icon={<FileText size={13} />}>{isAr ? "طباعة كشف دعم ONIL" : "Imprimer Bordereau ONIL"}</AtriumButton>
 </div>
-</div> : /* @__PURE__ */ <div className="text-center py-10 text-neutral-400 text-xs">
+</div> : /* @__PURE__ */ <div className="text-center py-10 text-black/55 dark:text-white/55 text-xs">
 {isAr ? "حدد جلسة حلب لمعاينة التفاصيل" : "Sélectionnez une session pour afficher les détails"}
 </div>}
 </div>
@@ -675,10 +677,10 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 {isAnimalModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
 <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {animalToEdit ? isAr ? "تعديل بيانات رأس الماشية" : "Modifier Fiche Bovine" : isAr ? "تسجيل رأس ماشية في السجل" : "Ajouter un Animal au Cheptel"}
 </h2>
-<button onClick={() => setIsAnimalModalOpen(false)}><X size={18} className="text-neutral-400" /></button>
+<button onClick={() => setIsAnimalModalOpen(false)}><X size={18} className="text-black/55 dark:text-white/55" /></button>
 </div>
 <form onSubmit={handleSaveModal} className="space-y-4">
 <div className="grid grid-cols-2 gap-3">

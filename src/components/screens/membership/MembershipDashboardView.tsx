@@ -174,24 +174,26 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                 <button
                   type="button"
                   onClick={() => setTimeFilter('today')}
+                  title={language === 'ar' ? 'إحصائيات اليوم' : language === 'fr' ? "Statistiques d'aujourd'hui" : "Today's activity"}
                   className={`h-7 px-3 rounded-full transition-all cursor-pointer ${
                     timeFilter === 'today'
                       ? 'bg-[#d4522f] text-white shadow-xs font-bold'
-                      : 'text-neutral-600 dark:text-neutral-400'
+                      : 'text-black/70 dark:text-white/75'
                   }`}
                 >
-                  {language === 'ar' ? 'اليوم' : language === 'fr' ? 'Today' : 'Today'}
+                  {language === 'ar' ? 'اليوم' : language === 'fr' ? "Aujourd'hui" : 'Today'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setTimeFilter('yesterday')}
+                  title={language === 'ar' ? 'إحصائيات الأمس' : language === 'fr' ? "Statistiques d'hier" : "Yesterday's activity"}
                   className={`h-7 px-3 rounded-full transition-all cursor-pointer ${
                     timeFilter === 'yesterday'
                       ? 'bg-[#d4522f] text-white shadow-xs font-bold'
-                      : 'text-neutral-600 dark:text-neutral-400'
+                      : 'text-black/70 dark:text-white/75'
                   }`}
                 >
-                  {language === 'ar' ? 'الأمس' : language === 'fr' ? 'Yesterday' : 'Yesterday'}
+                  {language === 'ar' ? 'الأمس' : language === 'fr' ? 'Hier' : 'Yesterday'}
                 </button>
               </div>
             }
@@ -205,15 +207,15 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                     <div className="w-[18px] h-[18px] rounded-full bg-[#FCEEE8] dark:bg-neutral-700 flex items-center justify-center text-[#d4522f]">
                       <ArrowDown size={11} />
                     </div>
-                    <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                    <span className="text-[11px] font-medium text-black/70 dark:text-white/75">
                       {language === 'ar' ? 'الموجودون حالياً' : language === 'fr' ? 'People Inside' : 'People Inside'}
                     </span>
                   </div>
                   <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums">
+                    <span className="text-2xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                       {peopleInsideCount}
                     </span>
-                    <span className="text-xs text-neutral-400 font-semibold tabular-nums">
+                    <span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums">
                       / {totalCapacity}
                     </span>
                   </div>
@@ -225,12 +227,12 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                     <div className="w-[18px] h-[18px] rounded-full bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center text-amber-600">
                       <FileText size={11} />
                     </div>
-                    <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                    <span className="text-[11px] font-medium text-black/70 dark:text-white/75">
                       {language === 'ar' ? 'الملفات المعلقة' : language === 'fr' ? 'Pending Regs' : 'Pending Regs'}
                     </span>
                   </div>
                   <div className="flex items-baseline gap-2 mt-1">
-                    <span className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums">
+                    <span className="text-2xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                       {pendingMembers.length}
                     </span>
                     <span className="text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full">
@@ -256,11 +258,11 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                   <div className="w-6 h-6 rounded-lg bg-[#FCEEE8] dark:bg-neutral-700 flex items-center justify-center text-[#d4522f]">
                     <DollarSign size={13} />
                   </div>
-                  <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+                  <span className="text-xs font-bold text-black/70 dark:text-white/75">
                     {language === 'ar' ? 'مداخيل اليوم' : language === 'fr' ? 'Revenue Today' : 'Revenue Today'}
                   </span>
                 </div>
-                <span className="text-sm font-black text-neutral-900 dark:text-white tabular-nums font-mono">
+                <span className="text-sm font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                   {formatMoney(todayRevenue)}
                 </span>
               </div>
@@ -272,7 +274,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                   className="h-full bg-[#d4522f] rounded-full transition-all duration-500"
                 />
               </div>
-              <div className="flex justify-between text-[10px] text-neutral-400 font-medium">
+              <div className="flex justify-between text-[10px] text-black/55 dark:text-white/55 font-medium">
                 <span>{targetRevenueProgress}% {language === 'ar' ? 'من الهدف اليومي' : "d'objectif journalier"}</span>
                 <span>{formatMoney(targetDailyRevenue)}</span>
               </div>
@@ -291,7 +293,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
             }
             icon={<TrendingUp size={17} />}
             headerRight={
-              <div className="flex items-center gap-2 bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 rounded-xl px-2.5 py-1 text-xs font-bold text-neutral-700 dark:text-neutral-300 shadow-2xs">
+              <div className="flex items-center gap-2 bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 rounded-xl px-2.5 py-1 text-xs font-bold text-black/70 dark:text-white/75 shadow-2xs">
                 <button
                   type="button"
                   onClick={() => setCurrentMonthIndex((prev) => (prev > 0 ? prev - 1 : 11))}
@@ -317,10 +319,10 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
               <div className="grid grid-cols-3 gap-3">
                 {/* Net Profit Today */}
                 <div className="space-y-0.5">
-                  <span className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 block truncate">
+                  <span className="text-[10px] font-semibold text-black/70 dark:text-white/75 block truncate">
                     {language === 'ar' ? 'صافي الربح اليوم' : language === 'fr' ? 'Net Profit Today' : 'Net Profit Today'}
                   </span>
-                  <span className="text-base lg:text-lg font-black text-neutral-900 dark:text-white tabular-nums font-mono block">
+                  <span className="text-base lg:text-lg font-black text-black dark:text-white tabular-nums block font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                     {formatMoney(Math.round(todayRevenue * 0.72))}
                   </span>
                   <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded-full inline-block">
@@ -330,10 +332,10 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
 
                 {/* Revenue */}
                 <div className="space-y-0.5">
-                  <span className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 block truncate">
+                  <span className="text-[10px] font-semibold text-black/70 dark:text-white/75 block truncate">
                     {language === 'ar' ? 'المداخيل' : language === 'fr' ? 'Revenue' : 'Revenue'}
                   </span>
-                  <span className="text-base lg:text-lg font-black text-neutral-900 dark:text-white tabular-nums font-mono block">
+                  <span className="text-base lg:text-lg font-black text-black dark:text-white tabular-nums block font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                     {formatMoney(todayRevenue)}
                   </span>
                   <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded-full inline-block">
@@ -343,10 +345,10 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
 
                 {/* Expenses */}
                 <div className="space-y-0.5">
-                  <span className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 block truncate">
+                  <span className="text-[10px] font-semibold text-black/70 dark:text-white/75 block truncate">
                     {language === 'ar' ? 'المصاريف' : language === 'fr' ? 'Expenses' : 'Expenses'}
                   </span>
-                  <span className="text-base lg:text-lg font-black text-neutral-900 dark:text-white tabular-nums font-mono block">
+                  <span className="text-base lg:text-lg font-black text-black dark:text-white tabular-nums block font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                     {formatMoney(Math.round(todayRevenue * 0.28))}
                   </span>
                   <span className="text-[9px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded-full inline-block">
@@ -365,23 +367,23 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
 
             {/* 4 Critical Domain KPIs (2x2 Grid) */}
             <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-3">
-              <div className="flex items-center justify-between text-xs font-bold text-neutral-700 dark:text-neutral-300">
+              <div className="flex items-center justify-between text-xs font-bold text-black/70 dark:text-white/75">
                 <span>{language === 'ar' ? 'مؤشرات الأداء الرئيسية' : language === 'fr' ? 'Indicateurs de Performance Clés' : 'Key Performance Indicators'}</span>
-                <Info size={13} className="text-neutral-400" />
+                <Info size={13} className="text-black/55 dark:text-white/55" />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 {/* KPI 1: Churn Rate */}
                 <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-20">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10.5px] font-semibold text-neutral-500 dark:text-neutral-400 truncate">
+                    <span className="text-[10.5px] font-semibold text-black/70 dark:text-white/75 truncate">
                       {language === 'ar' ? 'معدل الانسحاب' : language === 'fr' ? 'Taux de Churn' : 'Churn Rate'}
                     </span>
                     <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-red-50 text-red-600 dark:bg-red-950/40">
                       MO
                     </span>
                   </div>
-                  <span className="text-lg font-black text-neutral-900 dark:text-white tabular-nums">
+                  <span className="text-lg font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                     2.1%
                   </span>
                 </div>
@@ -389,14 +391,14 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                 {/* KPI 2: Peak Occupancy */}
                 <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-20">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10.5px] font-semibold text-neutral-500 dark:text-neutral-400 truncate">
+                    <span className="text-[10.5px] font-semibold text-black/70 dark:text-white/75 truncate">
                       {language === 'ar' ? 'ذروة الإشغال' : language === 'fr' ? "Taux d'Occupation Pic" : 'Peak Occupancy'}
                     </span>
                     <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40">
                       Optimal
                     </span>
                   </div>
-                  <span className="text-lg font-black text-neutral-900 dark:text-white tabular-nums">
+                  <span className="text-lg font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                     85%
                   </span>
                 </div>
@@ -404,14 +406,14 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                 {/* KPI 3: Coaching Conversion */}
                 <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-20">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10.5px] font-semibold text-neutral-500 dark:text-neutral-400 truncate">
+                    <span className="text-[10.5px] font-semibold text-black/70 dark:text-white/75 truncate">
                       {language === 'ar' ? 'تحويل التدريب الخاص' : language === 'fr' ? 'Conversion Coaching' : 'Coaching Conversion'}
                     </span>
                     <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/40">
                       Ce Mois
                     </span>
                   </div>
-                  <span className="text-lg font-black text-neutral-900 dark:text-white tabular-nums">
+                  <span className="text-lg font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                     18.5%
                   </span>
                 </div>
@@ -419,14 +421,14 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                 {/* KPI 4: Trial Conversion */}
                 <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-20">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10.5px] font-semibold text-neutral-500 dark:text-neutral-400 truncate">
+                    <span className="text-[10.5px] font-semibold text-black/70 dark:text-white/75 truncate">
                       {language === 'ar' ? 'تحويل الحصص التجريبية' : language === 'fr' ? 'Conversion Essais' : 'Trial Conversion'}
                     </span>
                     <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40">
                       ↗ 84%
                     </span>
                   </div>
-                  <span className="text-lg font-black text-neutral-900 dark:text-white tabular-nums">
+                  <span className="text-lg font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                     100%
                   </span>
                 </div>
@@ -449,12 +451,12 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
             }
             icon={<Users size={17} />}
             headerRight={
-              <div className="flex items-center gap-2 bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 rounded-xl px-2.5 py-1 text-xs font-bold text-neutral-700 dark:text-neutral-300 shadow-2xs">
-                <ChevronLeft size={13} className="rtl:rotate-180 text-neutral-400 cursor-pointer" />
+              <div className="flex items-center gap-2 bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 rounded-xl px-2.5 py-1 text-xs font-bold text-black/70 dark:text-white/75 shadow-2xs">
+                <ChevronLeft size={13} className="rtl:rotate-180 text-black/55 dark:text-white/55 cursor-pointer" />
                 <span className="text-[11px]">
                   {language === 'ar' ? 'هذا الشهر' : language === 'fr' ? 'This Month' : 'This Month'}
                 </span>
-                <ChevronRight size={13} className="rtl:rotate-180 text-neutral-400 cursor-pointer" />
+                <ChevronRight size={13} className="rtl:rotate-180 text-black/55 dark:text-white/55 cursor-pointer" />
               </div>
             }
           >
@@ -488,7 +490,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
 
             {/* Total Active Members Trend (4 Rounded Pill Bars with Y-Axis) */}
             <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-              <span className="text-[11px] font-bold text-neutral-600 dark:text-neutral-300 block mb-1">
+              <span className="text-[11px] font-bold text-black/70 dark:text-white/75 block mb-1">
                 {language === 'ar' ? 'اتجاه نمو المشتركين النشطين (أسابيع)' : language === 'fr' ? 'Total active members trend' : 'Total active members trend'}
               </span>
               <PillBarHistogram
@@ -524,7 +526,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
 
               {/* Right: Visit Frequency */}
               <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between min-h-[160px]">
-                <span className="text-[11px] font-bold text-neutral-600 dark:text-neutral-300 block">
+                <span className="text-[11px] font-bold text-black/70 dark:text-white/75 block">
                   {language === 'ar' ? 'تكرار الزيارات (7 أيام)' : language === 'fr' ? 'Visit Frequency (7d)' : 'Visit Frequency (7d)'}
                 </span>
                 <PillBarHistogram

@@ -181,10 +181,10 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 			minWidth: "220px",
 			sortable: true,
 			renderCell: (inv: any) => /* @__PURE__ */ <div className="flex items-center gap-3">
-<div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700"><FileText size={16} /></div>
+<div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700"><FileText size={16} /></div>
 <div className="min-w-0">
-<div className="font-semibold text-neutral-900 dark:text-white font-mono hover:text-[#d4522f] transition-colors">{inv.invoiceNumber}</div>
-<div className="text-[11px] text-neutral-400 truncate flex items-center gap-1.5">
+<div className="font-semibold text-black dark:text-white font-mono hover:text-[#d4522f] transition-colors">{inv.invoiceNumber}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 truncate flex items-center gap-1.5">
 <span>{inv.clientName}</span>
 {inv.clientCompany && /* @__PURE__ */ <>
 <span>·</span>
@@ -200,16 +200,16 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 			width: "2*",
 			minWidth: "160px",
 			sortable: true,
-			renderCell: (inv: any) => /* @__PURE__ */ <div className="text-[11px] text-neutral-600 dark:text-neutral-400 space-y-0.5">
+			renderCell: (inv: any) => /* @__PURE__ */ <div className="text-[11px] text-black/70 dark:text-white/75 space-y-0.5">
 <div className="flex items-center gap-1">
-<span className="text-neutral-400">
+<span className="text-black/55 dark:text-white/55">
 {t("free_inv_table_date", language)}
 :
 </span>
 <span>{inv.issueDate}</span>
 </div>
-<div className="flex items-center gap-1 font-semibold text-neutral-800 dark:text-neutral-200">
-<span className="text-neutral-400">
+<div className="flex items-center gap-1 font-semibold text-black dark:text-white">
+<span className="text-black/55 dark:text-white/55">
 {t("free_inv_table_due", language)}
 :
 </span>
@@ -231,7 +231,7 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 			width: "1.5*",
 			minWidth: "120px",
 			sortable: true,
-			renderCell: (inv: any) => /* @__PURE__ */ <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${inv.status === "Paid" ? "text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800" : inv.status === "Overdue" ? "text-rose-700 bg-rose-50 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-800" : inv.status === "Sent" ? "text-blue-700 bg-blue-50 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-200 dark:border-blue-800" : "text-neutral-600 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-400"}`}>
+			renderCell: (inv: any) => /* @__PURE__ */ <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${inv.status === "Paid" ? "text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800" : inv.status === "Overdue" ? "text-rose-700 bg-rose-50 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-800" : inv.status === "Sent" ? "text-blue-700 bg-blue-50 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-200 dark:border-blue-800" : "text-black/70 bg-neutral-100 dark:bg-neutral-800 dark:text-white/75"}`}>
 {inv.status === "Paid" ? t("free_invoice_status_paid", language) : inv.status === "Overdue" ? t("free_invoice_status_overdue", language) : inv.status === "Sent" ? t("free_invoice_status_sent", language) : t("free_invoice_status_draft", language)}
 </span>
 		}
@@ -358,8 +358,8 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 <div className="w-12 h-12 rounded-2xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center shrink-0"><FileText size={24} /></div>
 <div>
 <div className="flex items-center gap-2.5">
-<h1 className="text-[36px] sm:text-[48px] rtl:text-[30px] rtl:sm:text-[36px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{t("free_inv_title", language)}</h1>
-<span className="text-xs px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-semibold">
+<h1 className="text-[36px] sm:text-[48px] rtl:text-[30px] rtl:sm:text-[36px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("free_inv_title", language)}</h1>
+<span className="text-xs px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 font-semibold">
 {freelanceInvoices.length}
 {" "}
 {t("free_inv_title", language).toLowerCase()}
@@ -376,13 +376,13 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 </span>
 </button>
 {isQuickActionsOpen && /* @__PURE__ */ <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-[240px] rounded-[18px] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 p-2.5 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 space-y-1">
-<div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+<div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-black/55 dark:text-white/55">
 {language === "ar" ? "إجراءات سريعة" : language === "fr" ? "Actions Rapides" : "Quick Actions"}
 </div>
 <button type="button" onClick={() => {
 										setIsQuickActionsOpen(false);
 										setIsCreateModalOpen(true);
-									}} className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right">
+									}} className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-black dark:text-white font-medium transition-colors cursor-pointer text-left rtl:text-right">
 <div className="w-[30px] h-[30px] rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center shrink-0"><Plus size={15} /></div>
 <span>{t("free_inv_btn_new", language)}</span>
 </button>
@@ -409,7 +409,7 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 											message: language === "ar" ? "لا توجد ساعات غير مفوترة حالياً" : "All billable hours are already invoiced",
 											category: "freelance_solo"
 										});
-									}} className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right">
+									}} className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-black dark:text-white font-medium transition-colors cursor-pointer text-left rtl:text-right">
 <div className="w-[30px] h-[30px] rounded-lg bg-emerald-500/15 text-emerald-600 flex items-center justify-center shrink-0"><Clock size={15} /></div>
 <span>
 {language === "ar" ? "فوترة الساعات المتبقية" : language === "fr" ? "Facturer Heures" : "Bill Unbilled Hours"}
@@ -418,7 +418,7 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 <button type="button" onClick={() => {
 										setIsQuickActionsOpen(false);
 										handleExportCSV();
-									}} className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right">
+									}} className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-black dark:text-white font-medium transition-colors cursor-pointer text-left rtl:text-right">
 <div className="w-[30px] h-[30px] rounded-lg bg-blue-500/15 text-blue-600 flex items-center justify-center shrink-0"><Download size={15} /></div>
 <span>
 {language === "ar" ? "تصدير CSV" : language === "fr" ? "Exporter CSV" : "Export CSV"}
@@ -430,14 +430,14 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {language === "ar" ? "مؤشرات الفوترة والمستحقات المالية" : language === "fr" ? "Indicateurs de Facturation & Recouvrement" : "Billing & Cash Flow Indicators"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{t("free_inv_filter_paid", language)}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{t("free_inv_filter_paid", language)}</span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
 {paidCount}
 {" "}
@@ -445,8 +445,8 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">{formatCurrencyAmount(paidTotal, "EUR")}</div>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+<div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatCurrencyAmount(paidTotal, "EUR")}</div>
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
 {paidCount}
 {" "}
 {language === "ar" ? "فواتير تم تسويتها بالكامل" : "factures réglées avec succès"}
@@ -455,7 +455,7 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "فواتير مرسلة وبانتظار الدفع" : language === "fr" ? "Factures Envoyées / En Cours" : "Sent & In Progress"}
 </span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
@@ -465,8 +465,8 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<div className="text-2xl font-black text-blue-600 dark:text-blue-400 font-mono tabular-nums">{formatCurrencyAmount(pendingTotal, "EUR")}</div>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+<div className="text-2xl font-black text-blue-600 dark:text-blue-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatCurrencyAmount(pendingTotal, "EUR")}</div>
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
 {pendingCount}
 {" "}
 {language === "ar" ? "بانتظار التحويل المصرفي أو الشيك" : "en attente de règlement client"}
@@ -475,14 +475,14 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{t("free_inv_filter_overdue", language)}</span>
+<span className="text-[11px] font-medium text-white/80">{t("free_inv_filter_overdue", language)}</span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
 {overdueCount > 0 ? `${overdueCount} ${language === "ar" ? "متأخرة" : "en retard"}` : language === "ar" ? "لا متأخرات" : "À jour"}
 </span>
 </div>
 <div>
-<div className="text-2xl font-black text-[#FB923C] font-mono tabular-nums">{formatCurrencyAmount(overdueTotal, "EUR")}</div>
-<p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+<div className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatCurrencyAmount(overdueTotal, "EUR")}</div>
+<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
 <span>
 {overdueCount > 0 ? language === "ar" ? `${overdueCount} فواتير تجاوزت موعد الاستحقاق - تذكير فوري مطلوب` : `${overdueCount} créance(s) échue(s) nécessitant une relance client` : language === "ar" ? "جميع فواتير العملاء مسددة في مواعيدها" : "Toutes les échéances sont respectées"}
@@ -495,11 +495,11 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-[#E6DED6] dark:border-neutral-800/60">
 <div className="flex items-center gap-2.5 flex-wrap">
-<div className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-700 dark:text-neutral-300"><FileText size={16} /></div>
+<div className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-black/70 dark:text-white/75"><FileText size={16} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white">{t("free_inv_title", language)}</h3>
-<span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 text-neutral-600 dark:text-neutral-300">{freelanceInvoices.length}</span>
+<h3 className="text-sm font-bold text-black dark:text-white">{t("free_inv_title", language)}</h3>
+<span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 text-black/70 dark:text-white/75">{freelanceInvoices.length}</span>
 </div>
 </div>
 <div className="ml-2">
@@ -507,26 +507,31 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 											{
 												id: "all",
 												label: t("free_inv_filter_all", language),
+												tooltip: language === "ar" ? "جميع الفواتير الصادرة" : language === "fr" ? "Toutes les factures" : "All invoices",
 												count: freelanceInvoices.length
 											},
 											{
 												id: "sent",
 												label: t("free_inv_filter_sent", language),
+												tooltip: language === "ar" ? "فواتير مرسلة بانتظار الدفع" : language === "fr" ? "Factures envoyées en attente de règlement" : "Sent invoices awaiting payment",
 												count: freelanceInvoices.filter((i) => i.status.toLowerCase() === "sent").length
 											},
 											{
 												id: "paid",
 												label: t("free_inv_filter_paid", language),
+												tooltip: language === "ar" ? "فواتير مدفوعة بالكامل" : language === "fr" ? "Factures réglées" : "Paid invoices",
 												count: paidCount
 											},
 											{
 												id: "overdue",
 												label: t("free_inv_filter_overdue", language),
+												tooltip: language === "ar" ? "فواتير متأخرة السداد" : language === "fr" ? "Factures en retard de paiement" : "Overdue invoices",
 												count: overdueCount
 											},
 											{
 												id: "draft",
 												label: t("free_inv_filter_draft", language),
+												tooltip: language === "ar" ? "مسودات الفواتير" : language === "fr" ? "Brouillons de factures" : "Draft invoices",
 												count: freelanceInvoices.filter((i) => i.status.toLowerCase() === "draft").length
 											}
 										]} />
@@ -541,14 +546,14 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 {selectedInvoiceIds.size > 0 && /* @__PURE__ */ <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
 <div className="flex items-center gap-3">
 <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
-<span className="text-xs font-bold text-neutral-900 dark:text-white">
+<span className="text-xs font-bold text-black dark:text-white">
 {selectedInvoiceIds.size}
 {" "}
 {language === "ar" ? "فواتير محددة" : language === "fr" ? "factures sélectionnées" : "invoices selected"}
 </span>
 </div>
 <div className="flex items-center gap-2 flex-wrap">
-<button onClick={() => setSelectedInvoiceIds(/* @__PURE__ */ new Set())} className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer">
+<button onClick={() => setSelectedInvoiceIds(/* @__PURE__ */ new Set())} className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer">
 {language === "ar" ? "إلغاء التحديد" : language === "fr" ? "Désélectionner" : "Deselect"}
 </button>
 <button onClick={handleBatchMarkPaid} className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs">
@@ -577,18 +582,18 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 							}
 						}} renderCard={(inv) => /* @__PURE__ */ <div className="flex flex-col justify-between w-full h-full space-y-3">
 <div className="flex items-start justify-between gap-2">
-<span className="font-mono font-bold text-neutral-900 dark:text-white text-sm">{inv.invoiceNumber}</span>
-<span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0 ${inv.status === "Paid" ? "text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200" : inv.status === "Overdue" ? "text-rose-700 bg-rose-50 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200" : inv.status === "Sent" ? "text-blue-700 bg-blue-50 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-200" : "text-neutral-600 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-400"}`}>
+<span className="font-mono font-bold text-black dark:text-white text-sm">{inv.invoiceNumber}</span>
+<span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0 ${inv.status === "Paid" ? "text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200" : inv.status === "Overdue" ? "text-rose-700 bg-rose-50 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200" : inv.status === "Sent" ? "text-blue-700 bg-blue-50 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-200" : "text-black/70 bg-neutral-100 dark:bg-neutral-800 dark:text-white/75"}`}>
 {inv.status === "Paid" ? t("free_invoice_status_paid", language) : inv.status === "Overdue" ? t("free_invoice_status_overdue", language) : inv.status === "Sent" ? t("free_invoice_status_sent", language) : t("free_invoice_status_draft", language)}
 </span>
 </div>
 <div>
-<h4 className="text-sm font-bold text-neutral-900 dark:text-white leading-snug truncate">{inv.clientName}</h4>
-<div className="text-[11px] text-neutral-500 truncate mt-0.5">{inv.clientCompany || t("free_inv_direct_client", language)}</div>
+<h4 className="text-sm font-bold text-black dark:text-white leading-snug truncate">{inv.clientName}</h4>
+<div className="text-[11px] text-black/55 dark:text-white/55 truncate mt-0.5">{inv.clientCompany || t("free_inv_direct_client", language)}</div>
 </div>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 space-y-2">
 <div className="flex items-center justify-between text-xs">
-<span className="text-neutral-400 text-[11px] flex items-center gap-1">
+<span className="text-black/55 dark:text-white/55 text-[11px] flex items-center gap-1">
 <Calendar size={11} />
 {t("free_inv_table_due", language)}
 {": "}
@@ -600,7 +605,7 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 <button type="button" onClick={(e) => {
 												e.stopPropagation();
 												setPreviewInvoice(inv);
-											}} className="px-2.5 py-1 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer">
+											}} className="px-2.5 py-1 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-black/70 dark:text-white/75 text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer">
 <Eye size={11} />
 <span>{t("free_inv_doc_print", language)}</span>
 </button>
@@ -648,10 +653,10 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
 <div>
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">{t("free_inv_modal_new_title", language)}</h3>
-<p className="text-xs text-neutral-500 mt-0.5">{t("free_inv_modal_new_desc", language)}</p>
+<h3 className="text-base font-bold text-black dark:text-white">{t("free_inv_modal_new_title", language)}</h3>
+<p className="text-xs text-black/55 dark:text-white/55 mt-0.5">{t("free_inv_modal_new_desc", language)}</p>
 </div>
-<button type="button" onClick={() => setIsCreateModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"><X size={16} /></button>
+<button type="button" onClick={() => setIsCreateModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"><X size={16} /></button>
 </div>
 <form onSubmit={handleCreateInvoiceSubmit} className="space-y-4 text-xs">
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -681,7 +686,7 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 </div>
 <div className="space-y-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
 <div className="flex items-center justify-between">
-<span className="font-semibold text-neutral-900 dark:text-white">{t("free_deliv_title", language)}</span>
+<span className="font-semibold text-black dark:text-white">{t("free_deliv_title", language)}</span>
 <button type="button" onClick={handleAddItemRow} className="text-[#d4522f] hover:underline font-semibold cursor-pointer">
 {"+ "}
 {t("free_inv_btn_add_line", language)}
@@ -689,19 +694,19 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 </div>
 <div className="space-y-2">
 {items.map((item, idx) => /* @__PURE__ */ <div key={idx} className="flex items-center gap-2">
-<input type="text" required placeholder={t("free_inv_item_desc", language)} value={item.description} onChange={(e) => handleItemChange(idx, "description", e.target.value)} className="flex-1 px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white" />
-<input type="number" min="1" placeholder={t("free_inv_ph_qty", language)} value={item.quantity} onChange={(e) => handleItemChange(idx, "quantity", Number(e.target.value))} className="w-16 px-2 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white text-right" />
-<input type="number" min="0" placeholder={t("free_inv_ph_rate", language)} value={item.unitRate} onChange={(e) => handleItemChange(idx, "unitRate", Number(e.target.value))} className="w-24 px-2 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white text-right" />
-{items.length > 1 && /* @__PURE__ */ <button type="button" onClick={() => handleRemoveItemRow(idx)} className="p-1.5 text-neutral-400 hover:text-rose-500 cursor-pointer"><X size={14} /></button>}
+<input type="text" required placeholder={t("free_inv_item_desc", language)} value={item.description} onChange={(e) => handleItemChange(idx, "description", e.target.value)} className="flex-1 px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black dark:text-white" />
+<input type="number" min="1" placeholder={t("free_inv_ph_qty", language)} value={item.quantity} onChange={(e) => handleItemChange(idx, "quantity", Number(e.target.value))} className="w-16 px-2 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black dark:text-white text-right" />
+<input type="number" min="0" placeholder={t("free_inv_ph_rate", language)} value={item.unitRate} onChange={(e) => handleItemChange(idx, "unitRate", Number(e.target.value))} className="w-24 px-2 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black dark:text-white text-right" />
+{items.length > 1 && /* @__PURE__ */ <button type="button" onClick={() => handleRemoveItemRow(idx)} className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-500 cursor-pointer"><X size={14} /></button>}
 </div>)}
 </div>
 </div>
 <div>
-<label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">{t("free_inv_notes_terms", language)}</label>
-<textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t("free_inv_notes_ph", language)} className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white" />
+<label className="font-semibold text-black/70 dark:text-white/75 block mb-1">{t("free_inv_notes_terms", language)}</label>
+<textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t("free_inv_notes_ph", language)} className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black dark:text-white" />
 </div>
 <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-<button type="button" onClick={() => setIsCreateModalOpen(false)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">{t("free_clients_cancel", language)}</button>
+<button type="button" onClick={() => setIsCreateModalOpen(false)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">{t("free_clients_cancel", language)}</button>
 <button type="submit" className="px-5 py-2 rounded-xl bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs">{t("free_inv_btn_new", language)}</button>
 </div>
 </form>
@@ -712,17 +717,17 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
 <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60"><AlertTriangle size={20} /></div>
 <div>
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">{t("common_delete", language)}</h3>
-<p className="text-xs text-neutral-500">
+<h3 className="text-base font-bold text-black dark:text-white">{t("common_delete", language)}</h3>
+<p className="text-xs text-black/55 dark:text-white/55">
 #
 {invoiceToDelete.invoiceNumber}
 </p>
 </div>
 </div>
-<p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+<p className="text-xs text-black/70 dark:text-white/75 leading-relaxed">
 {t("free_clients_delete_confirm", language)}
 {" "}
-<strong className="text-neutral-900 dark:text-white font-semibold">
+<strong className="text-black dark:text-white font-semibold">
 #
 {invoiceToDelete.invoiceNumber}
 </strong>
@@ -731,7 +736,7 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 )?
 </p>
 <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-<button type="button" onClick={() => setInvoiceToDelete(null)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">{t("free_clients_cancel", language)}</button>
+<button type="button" onClick={() => setInvoiceToDelete(null)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">{t("free_clients_cancel", language)}</button>
 <button type="button" onClick={() => {
 									deleteFreelanceInvoice(invoiceToDelete.id);
 									setInvoiceToDelete(null);

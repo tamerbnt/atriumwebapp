@@ -191,19 +191,23 @@ export const LegalVaultView: React.FC<any> = () => {
 			catPills: [
 				{
 					id: "All",
-					label: isAr ? "جميع الأصول" : "Toutes Minutes"
+					label: isAr ? "الكل" : language === "fr" ? "Toutes" : "All",
+					tooltip: isAr ? "جميع الأصول المحفوظة" : "Toutes Minutes"
 				},
 				{
 					id: "Minutes Notariées",
-					label: "Minutes Notariées"
+					label: isAr ? "أصول" : "Minutes",
+					tooltip: isAr ? "أصول العقود الرسمية" : "Minutes Notariées"
 				},
 				{
 					id: "Grosses Exécutoires",
-					label: "Grosses Exécutoires"
+					label: isAr ? "تنفيذية" : "Grosses",
+					tooltip: isAr ? "النسخ التنفيذية" : "Grosses Exécutoires"
 				},
 				{
 					id: "Expéditions",
-					label: "Expéditions"
+					label: isAr ? "مستخرجات" : "Expéditions",
+					tooltip: isAr ? "النسخ العادية والمستخرجات" : "Expéditions d'actes"
 				}
 			]
 		};
@@ -214,19 +218,23 @@ export const LegalVaultView: React.FC<any> = () => {
 			catPills: [
 				{
 					id: "All",
-					label: isAr ? "جميع الملفات" : "Tous Dossiers"
+					label: isAr ? "الكل" : language === "fr" ? "Tous" : "All",
+					tooltip: isAr ? "جميع الملفات الرقابية" : "Tous Dossiers"
 				},
 				{
 					id: "Rapports CAC",
-					label: "Rapports CAC"
+					label: isAr ? "تقارير" : "Rapports",
+					tooltip: isAr ? "تقارير محافظ الحسابات" : "Rapports CAC"
 				},
 				{
 					id: "Feuilles de Travail",
-					label: "Feuilles de Travail"
+					label: isAr ? "أوراق" : "Feuilles",
+					tooltip: isAr ? "أوراق العمل الرقابية" : "Feuilles de Travail"
 				},
 				{
 					id: "Contrôle G50",
-					label: "Contrôle G50"
+					label: "G50",
+					tooltip: isAr ? "الرقابة الجبائية G50" : "Contrôle G50"
 				}
 			]
 		};
@@ -237,19 +245,23 @@ export const LegalVaultView: React.FC<any> = () => {
 			catPills: [
 				{
 					id: "All",
-					label: isAr ? "جميع الوثائق" : "Toutes Pièces"
+					label: isAr ? "الكل" : language === "fr" ? "Toutes" : "All",
+					tooltip: isAr ? "جميع الوثائق المودعة" : "Toutes Pièces"
 				},
 				{
 					id: "Identité NIN/NIF",
-					label: "Identité NIN/NIF"
+					label: "NIN/NIF",
+					tooltip: isAr ? "وثائق الهوية الوطنية والجبائية" : "Identité NIN/NIF"
 				},
 				{
 					id: "Registre Commerce",
-					label: "Registre Commerce"
+					label: isAr ? "السجل" : "Registre",
+					tooltip: isAr ? "مستخرجات السجل التجاري" : "Registre Commerce"
 				},
 				{
 					id: "Récépissés",
-					label: "Récépissés"
+					label: isAr ? "وصولات" : "Récépissés",
+					tooltip: isAr ? "وصولات الإيداع الرسمية" : "Récépissés de dépôt"
 				}
 			]
 		};
@@ -260,23 +272,27 @@ export const LegalVaultView: React.FC<any> = () => {
 			catPills: [
 				{
 					id: "All",
-					label: isAr ? "جميع الوثائق" : "Toutes pièces"
+					label: isAr ? "الكل" : language === "fr" ? "Toutes" : "All",
+					tooltip: isAr ? "جميع الوثائق السرية" : "Toutes pièces"
 				},
 				{
 					id: "Contrats",
-					label: "Contrats"
+					label: isAr ? "عقود" : "Contrats",
+					tooltip: isAr ? "العقود والاتفاقيات" : "Contrats scellés"
 				},
 				{
 					id: "Mémoires",
-					label: "Mémoires"
+					label: isAr ? "مذكرات" : "Mémoires",
+					tooltip: isAr ? "مذكرات الدفاع والمرافعات" : "Mémoires en défense"
 				},
 				{
 					id: "Huissier",
-					label: "Huissier"
+					label: isAr ? "محضر" : "Huissier",
+					tooltip: isAr ? "محاضر التبليغ القضائي" : "Actes d'huissier"
 				}
 			]
 		};
-	}, [targetScope, isAr]);
+	}, [targetScope, isAr, language]);
 	const columns = [
 		{
 			id: "code",
@@ -289,11 +305,11 @@ export const LegalVaultView: React.FC<any> = () => {
 {targetScope === "notaire" ? /* @__PURE__ */ <Scroll size={16} /> : /* @__PURE__ */ <Lock size={16} />}
 </div>
 <div>
-<div className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
+<div className="font-mono font-bold text-xs text-black dark:text-white flex items-center gap-1.5">
 {i.code}
 {pinnedIds.has(i.id) && /* @__PURE__ */ <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />}
 </div>
-<div className="text-[10px] text-neutral-400">{i.depositDate}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">{i.depositDate}</div>
 </div>
 </div>
 		},
@@ -304,8 +320,8 @@ export const LegalVaultView: React.FC<any> = () => {
 			sortable: true,
 			minWidth: "240px",
 			cell: (i: any) => /* @__PURE__ */ <div>
-<div className="font-semibold text-xs text-neutral-900 dark:text-neutral-100 line-clamp-1">{i.title}</div>
-<div className="text-[11px] text-neutral-500 font-mono flex items-center gap-2">
+<div className="font-semibold text-xs text-black dark:text-white line-clamp-1">{i.title}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 font-mono flex items-center gap-2">
 <span>
 {"Dossier: "}
 {i.matterReference}
@@ -325,7 +341,7 @@ export const LegalVaultView: React.FC<any> = () => {
 			accessorKey: "category",
 			sortable: true,
 			minWidth: "150px",
-			cell: (i: any) => /* @__PURE__ */ <div className="text-xs text-neutral-700 dark:text-neutral-300">{i.category}</div>
+			cell: (i: any) => /* @__PURE__ */ <div className="text-xs text-black/70 dark:text-white/75">{i.category}</div>
 		},
 		{
 			id: "status",
@@ -372,7 +388,7 @@ export const LegalVaultView: React.FC<any> = () => {
 </div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{roleMetadata.title}</h1>
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{roleMetadata.title}</h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">{roleMetadata.badge}</span>
 </div>
 </div>
@@ -386,15 +402,15 @@ export const LegalVaultView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "أمان الوثائق والقوة الإثباتية" : "Force Probante & Intégrité des Pièces"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "المستندات المودعة بالخزينة" : "Total Pièces au Coffre"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "المستندات المودعة بالخزينة" : "Total Pièces au Coffre"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">{roleScopedItems.length}</div>
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{roleScopedItems.length}</div>
 <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">
 {"100% "}
 {isAr ? "أصول مشفرة وممسوحة رقمياً" : "scellées avec empreinte certifiée"}
@@ -402,23 +418,23 @@ export const LegalVaultView: React.FC<any> = () => {
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {targetScope === "notaire" ? "Minutes Publiées Conservation" : "Documents Haute Sécurité"}
 </span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono tabular-nums">
+<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {roleScopedItems.filter((i) => i.cadastralVolume || i.status === "Confidential").length}
 </div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">{isAr ? "خاضعة للأختام الرسمية المعتمدة" : "Revêtus du sceau officiel"}</p>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">{isAr ? "خاضعة للأختام الرسمية المعتمدة" : "Revêtus du sceau officiel"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{isAr ? "الختم الإلكتروني والبصمة" : "Cachet & Horodatage"}</span>
+<span className="text-[11px] font-medium text-white/80">{isAr ? "الختم الإلكتروني والبصمة" : "Cachet & Horodatage"}</span>
 <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">{targetScope.toUpperCase()}</span>
 </div>
 <div>
-<div className="text-2xl font-black text-white font-mono tabular-nums">SHA-256 GCM</div>
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">SHA-256 GCM</div>
 <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
 <CheckCircle2 size={11} />
 {isAr ? "شهادة إلكترونية سارية المفعول" : "Inviolabilité certifiée"}
@@ -430,10 +446,10 @@ export const LegalVaultView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex items-center justify-between">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">{roleMetadata.title}</h2>
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">{roleMetadata.title}</h2>
 </div>
 <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
-{roleMetadata.catPills.map((pill) => /* @__PURE__ */ <button key={pill.id} onClick={() => setCategoryFilter(pill.id)} className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer" style={{
+{roleMetadata.catPills.map((pill) => /* @__PURE__ */ <button key={pill.id} onClick={() => setCategoryFilter(pill.id)} title={pill.tooltip} className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer" style={{
 								backgroundColor: categoryFilter === pill.id ? "#FCEEE8" : "transparent",
 								color: categoryFilter === pill.id ? "var(--color-accent)" : "#71717A"
 							}}>{pill.label}</button>)}
@@ -443,7 +459,8 @@ export const LegalVaultView: React.FC<any> = () => {
 <div className="flex-1 min-w-0">
 <UniversalDataCollection data={filteredItems} columns={columns} keyExtractor={(i) => i.id} searchQuery={searchQuery} onSearchChange={setSearchQuery} searchPlaceholder={isAr ? "بحث برمز الوثيقة، العنوان، رقم القضية..." : "Rechercher par code pièce, intitulé, dossier..."} filterValue={categoryFilter} onFilterChange={setCategoryFilter} filterOptions={roleMetadata.catPills.map((p) => ({
 								value: p.id,
-								label: p.label
+								label: p.label,
+								tooltip: p.tooltip
 							}))} viewMode={viewMode} onViewModeChange={setViewMode} selectedIds={selectedIds} onSelectionChange={setSelectedIds} pinnedIds={pinnedIds} onPinToggle={handlePin} sortBy={sortBy} sortDir={sortDir} onSortChange={(field, dir) => {
 								setSortBy(field);
 								setSortDir(dir);
@@ -458,8 +475,8 @@ export const LegalVaultView: React.FC<any> = () => {
 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">{item.status}</span>
 </div>
 <div>
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white line-clamp-1">{item.title}</h3>
-<div className="text-xs text-neutral-500 font-mono mt-0.5">
+<h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">{item.title}</h3>
+<div className="text-xs text-black/55 dark:text-white/55 font-mono mt-0.5">
 {"Dossier: "}
 {item.matterReference}
 </div>
@@ -474,43 +491,43 @@ export const LegalVaultView: React.FC<any> = () => {
 </div>
 <div>
 <div className="flex items-center gap-1.5">
-<span className="font-mono font-bold text-xs text-neutral-900 dark:text-white">{selectedItem.code}</span>
+<span className="font-mono font-bold text-xs text-black dark:text-white">{selectedItem.code}</span>
 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">{selectedItem.status}</span>
 </div>
-<p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 line-clamp-1">{selectedItem.title}</p>
+<p className="text-xs font-semibold text-black/70 dark:text-white/75 line-clamp-1">{selectedItem.title}</p>
 </div>
 </div>
-<button onClick={() => setSelectedItem(null)} className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"><X size={16} /></button>
+<button onClick={() => setSelectedItem(null)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"><X size={16} /></button>
 </div>
 <div className="flex items-center gap-1.5 flex-wrap">
 <button onClick={() => handleCertifyHash(selectedItem)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-orange-50 text-[#d4522f] hover:bg-orange-100 transition-colors">
 <FileCheck size={12} />
 {isAr ? "فحص البصمة" : "Vérifier SHA-256"}
 </button>
-<button onClick={() => openEditModal(selectedItem)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 hover:bg-neutral-200 transition-colors">
+<button onClick={() => openEditModal(selectedItem)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-neutral-100 text-black/70 dark:text-white/75 hover:bg-neutral-200 transition-colors">
 <Edit size={12} />
 {isAr ? "تعديل" : "Modifier"}
 </button>
 <button onClick={() => handleDelete(selectedItem)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors ml-auto"><Trash2 size={12} /></button>
 </div>
 <div className="flex border-b border-neutral-100 dark:border-neutral-800 gap-1 text-xs">
-<button onClick={() => setActiveTab("piece")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "piece" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "الوثيقة" : "Fiche"}</button>
-<button onClick={() => setActiveTab("sceau")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "sceau" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "الختم الرسمي" : "Cachet & Sceau"}</button>
-<button onClick={() => setActiveTab("hash")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "hash" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "التشفير" : "SHA-256"}</button>
-<button onClick={() => setActiveTab("notes")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "الملاحظات" : "Bordereau"}</button>
+<button onClick={() => setActiveTab("piece")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "piece" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "الوثيقة" : "Fiche"}</button>
+<button onClick={() => setActiveTab("sceau")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "sceau" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "الختم الرسمي" : "Cachet & Sceau"}</button>
+<button onClick={() => setActiveTab("hash")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "hash" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "التشفير" : "SHA-256"}</button>
+<button onClick={() => setActiveTab("notes")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "الملاحظات" : "Bordereau"}</button>
 </div>
 {activeTab === "piece" && /* @__PURE__ */ <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Numéro de pièce:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">{selectedItem.code}</span>
+<span className="text-black/55 dark:text-white/55">Numéro de pièce:</span>
+<span className="font-mono font-bold text-black dark:text-white">{selectedItem.code}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Dossier:</span>
+<span className="text-black/55 dark:text-white/55">Dossier:</span>
 <span className="font-mono font-semibold text-[#d4522f]">{selectedItem.matterReference}</span>
 </div>
 {selectedItem.cadastralVolume && /* @__PURE__ */ <div className="flex justify-between items-center">
-<span className="text-neutral-500">Conservation Foncière:</span>
+<span className="text-black/55 dark:text-white/55">Conservation Foncière:</span>
 <span className="font-mono font-bold text-emerald-600">
 {selectedItem.cadastralVolume}
 {" "}
@@ -518,18 +535,18 @@ export const LegalVaultView: React.FC<any> = () => {
 </span>
 </div>}
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Date d'archivage:</span>
-<span className="font-mono text-neutral-800 dark:text-neutral-200">{selectedItem.depositDate}</span>
+<span className="text-black/55 dark:text-white/55">Date d'archivage:</span>
+<span className="font-mono text-black dark:text-white">{selectedItem.depositDate}</span>
 </div>
 </div>
 </div>}
 {activeTab === "sceau" && /* @__PURE__ */ <div className="p-4 bg-white dark:bg-neutral-900 border-2 border-dashed border-[#d4522f]/40 rounded-2xl text-center space-y-3 text-xs animate-in fade-in duration-150">
 <div className="w-12 h-12 rounded-full bg-[#d4522f]/15 text-[#d4522f] mx-auto flex items-center justify-center font-bold"><Stamp size={24} /></div>
 <div>
-<span className="font-bold text-sm text-neutral-900 dark:text-white block uppercase tracking-wider">الجمهورية الجزائرية الديمقراطية الشعبية</span>
-<span className="text-[10px] text-neutral-500 block">RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE</span>
+<span className="font-bold text-sm text-black dark:text-white block uppercase tracking-wider">الجمهورية الجزائرية الديمقراطية الشعبية</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 block">RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE</span>
 </div>
-<div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 font-mono text-[11px] text-neutral-700 dark:text-neutral-300 space-y-1">
+<div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 font-mono text-[11px] text-black/70 dark:text-white/75 space-y-1">
 <div>
 {"Sceau N° : "}
 <strong>{selectedItem.officialSealNumber || "DZ-SEAL-2026-99"}</strong>
@@ -555,14 +572,14 @@ export const LegalVaultView: React.FC<any> = () => {
 </div>}
 {activeTab === "hash" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 block">Empreinte Numérique Cryptographique :</span>
-<div className="font-mono text-[10px] break-all bg-white dark:bg-neutral-900 p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-300">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</div>
+<span className="font-semibold text-black dark:text-white block">Empreinte Numérique Cryptographique :</span>
+<div className="font-mono text-[10px] break-all bg-white dark:bg-neutral-900 p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800 text-black/70 dark:text-white/75">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</div>
 <p className="text-[10px] text-emerald-600 font-medium">✓ Horodatage certifié conforme aux exigences de recevabilité judiciaire.</p>
 </div>
 </div>}
 {activeTab === "notes" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
-<p className="text-neutral-500 text-[11px]">Bordereau de communication de pièces contradictoire et réserves :</p>
-<textarea rows={6} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} placeholder="Mentionner la notification aux parties, récépissé de dépôt..." className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none" />
+<p className="text-black/55 dark:text-white/55 text-[11px]">Bordereau de communication de pièces contradictoire et réserves :</p>
+<textarea rows={6} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} placeholder="Mentionner la notification aux parties, récépissé de dépôt..." className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none" />
 <button onClick={() => {
 											setNoteSaved(true);
 											setTimeout(() => setNoteSaved(false), 2e3);
@@ -588,12 +605,12 @@ export const LegalVaultView: React.FC<any> = () => {
 {targetScope === "notaire" ? /* @__PURE__ */ <Scroll size={20} /> : /* @__PURE__ */ <Lock size={20} />}
 </div>
 <div>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {vaultToEdit ? isAr ? "تعديل وثيقة بالخزينة" : "Modifier la Pièce du Coffre" : isAr ? "إيداع وثيقة جديدة بالخزينة" : "Déposer une Pièce au Coffre-fort"}
 </h2>
 </div>
 </div>
-<button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"><X size={18} /></button>
+<button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"><X size={18} /></button>
 </div>
 <form onSubmit={handleSaveModal} className="space-y-4">
 <div className="grid grid-cols-2 gap-3">
@@ -636,5 +653,3 @@ export const LegalVaultView: React.FC<any> = () => {
 </div>}
 </div>;
 };
-
-export { LegalHearingsView_exports as a, Key as c, LegalMattersView_exports as i, LegalTrustView_exports as n, LegalDashboardView_exports as o, LegalStaffView_exports as r, Stamp as s, LegalVaultView_exports as t };

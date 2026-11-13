@@ -176,7 +176,7 @@ export const TradingPurchasesView: React.FC<any> = () => {
 				const badgeColor = doc.type === "po" ? "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-400" : doc.type === "br" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400" : "bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-400";
 				return /* @__PURE__ */ <div className="flex items-center gap-2">
 <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono uppercase ${badgeColor}`}>{doc.type === "po" ? "PO" : doc.type === "br" ? "BR" : "FF"}</span>
-<span className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100">{doc.docNumber}</span>
+<span className="font-mono font-bold text-xs text-black dark:text-white">{doc.docNumber}</span>
 </div>;
 			}
 		},
@@ -184,15 +184,15 @@ export const TradingPurchasesView: React.FC<any> = () => {
 			key: "orderDate",
 			header: t("trading_purchases_col_order_delivery", "Date Commande"),
 			width: "130px",
-			renderCell: (doc: any) => /* @__PURE__ */ <span className="text-xs font-mono text-neutral-700 dark:text-neutral-300">{doc.orderDate}</span>
+			renderCell: (doc: any) => /* @__PURE__ */ <span className="text-xs font-mono text-black/70 dark:text-white/75">{doc.orderDate}</span>
 		},
 		{
 			key: "supplier",
 			header: t("trading_purchases_col_supplier", "Fournisseur Référencé"),
 			minWidth: "220px",
 			renderCell: (doc: any) => /* @__PURE__ */ <div className="text-xs">
-<span className="font-bold text-neutral-900 dark:text-neutral-100 block">{doc.supplierName}</span>
-<span className="text-[10px] text-neutral-400 font-mono">
+<span className="font-bold text-black dark:text-white block">{doc.supplierName}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
 {t("trading_sales_col_depot", "Dépôt")}
 {" : "}
 {doc.depotName || "Dépôt Central"}
@@ -203,7 +203,7 @@ export const TradingPurchasesView: React.FC<any> = () => {
 			key: "itemsCount",
 			header: language === "ar" ? "البنود" : "Lignes",
 			width: "100px",
-			renderCell: (doc: any) => /* @__PURE__ */ <span className="text-xs font-mono text-neutral-500">
+			renderCell: (doc: any) => /* @__PURE__ */ <span className="text-xs font-mono text-black/55 dark:text-white/55">
 {doc.items.length}
 {" "}
 {language === "ar" ? "بند" : "article(s)"}
@@ -213,7 +213,7 @@ export const TradingPurchasesView: React.FC<any> = () => {
 			key: "totalTtc",
 			header: t("trading_composer_total_ttc", "Montant Total TTC"),
 			width: "150px",
-			renderCell: (doc: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100 tabular-nums">{formatMoney(doc.totalTtc)}</span>
+			renderCell: (doc: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">{formatMoney(doc.totalTtc)}</span>
 		},
 		{
 			key: "status",
@@ -231,7 +231,7 @@ export const TradingPurchasesView: React.FC<any> = () => {
 			header: "",
 			width: "170px",
 			renderCell: (doc: any) => /* @__PURE__ */ <div className="flex items-center justify-end gap-2">
-<button onClick={() => setPrintDoc(commercialDocFromPurchase(doc))} title={t("action_print", "Imprimer")} className="p-1.5 text-neutral-400 hover:text-[#d4522f] hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"><Printer size={14} /></button>
+<button onClick={() => setPrintDoc(commercialDocFromPurchase(doc))} title={t("action_print", "Imprimer")} className="p-1.5 text-black/55 dark:text-white/55 hover:text-[#d4522f] hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"><Printer size={14} /></button>
 {doc.type === "po" && doc.status === "Ordered" && /* @__PURE__ */ <button onClick={() => receivePurchaseDoc(doc.id)} className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center gap-1 transition-colors cursor-pointer">
 <CheckCircle2 size={13} />
 <span>{t("trading_purchases_receive_stock", "Réceptionner à quai")}</span>
@@ -277,7 +277,7 @@ export const TradingPurchasesView: React.FC<any> = () => {
 <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><Truck size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{t("trading_purchases_title", "Cycle des Achats & Réceptions Fournisseurs")}</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("trading_purchases_title", "Cycle des Achats & Réceptions Fournisseurs")}</h1>
 <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4522f]/15 text-[#d4522f] border border-[#d4522f]/30">
 {purchaseDocs.length}
 {" "}
@@ -294,7 +294,7 @@ export const TradingPurchasesView: React.FC<any> = () => {
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+<span className="text-xs font-semibold text-black/55 dark:text-white/75">
 {language === "ar" ? "طلبيات الشراء قيد التنفيذ" : "Commandes d'Achat (PO) Ouvertes"}
 </span>
 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
@@ -303,8 +303,8 @@ export const TradingPurchasesView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">{formatMoney(metrics.pendingPoTtc)}</div>
-<div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(metrics.pendingPoTtc)}</div>
+<div className="flex items-center gap-1.5 text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 <Clock size={13} className="text-blue-500" />
 <span>En attente de livraison quai fournisseur</span>
 </div>
@@ -312,7 +312,7 @@ export const TradingPurchasesView: React.FC<any> = () => {
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+<span className="text-xs font-semibold text-black/55 dark:text-white/75">
 {language === "ar" ? "الاستلامات الفعلية بالمستودع" : "Bons de Réception à Quai (BR)"}
 </span>
 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
@@ -321,8 +321,8 @@ export const TradingPurchasesView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">{formatMoney(metrics.receivedBrTtc)}</div>
-<div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(metrics.receivedBrTtc)}</div>
+<div className="flex items-center gap-1.5 text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 <CheckCircle2 size={13} className="text-emerald-500" />
 <span>Stock incrémenté dans les dépôts désignés</span>
 </div>
@@ -337,13 +337,13 @@ export const TradingPurchasesView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">{formatMoney(metrics.totalPurchasesTtc)}</div>
-<div className="flex items-center justify-between text-[11px] text-stone-400 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(metrics.totalPurchasesTtc)}</div>
+<div className="flex items-center justify-between text-[11px] text-white/75 mt-0.5">
 <span className="flex items-center gap-1">
 <Boxes size={12} className="text-[#FB923C]" />
 <span>Flux réapprovisionnement multi-dépôts</span>
 </span>
-<span className="font-mono text-stone-300">TTC</span>
+<span className="font-mono text-white/80">TTC</span>
 </div>
 </div>
 <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#FB923C]/5 rounded-full blur-2xl pointer-events-none" />
@@ -355,7 +355,7 @@ export const TradingPurchasesView: React.FC<any> = () => {
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><Truck size={18} /></div>
 <div className="flex items-center gap-2">
-<span className="text-sm font-bold text-neutral-900 dark:text-white">{t("trading_purchases_docs_register", "Registre des Achats")}</span>
+<span className="text-sm font-bold text-black dark:text-white">{t("trading_purchases_docs_register", "Registre des Achats")}</span>
 <span className="text-xs px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f] font-semibold font-mono">{filteredDocs.length}</span>
 </div>
 </div>
@@ -364,21 +364,25 @@ export const TradingPurchasesView: React.FC<any> = () => {
 										{
 											value: "all",
 											label: t("trading_purchases_tab_all", "Toutes"),
+											tooltip: language === "ar" ? "جميع مستندات الشراء" : language === "fr" ? "Toutes les pièces d'achat" : "All purchase documents",
 											count: tabCounts.all
 										},
 										{
 											value: "po",
-											label: t("trading_purchases_tab_po", "Commandes (PO)"),
+											label: t("trading_purchases_tab_po", "Commandes"),
+											tooltip: language === "ar" ? "أوامر الشراء (PO)" : language === "fr" ? "Bons de Commande (PO)" : "Purchase Orders (PO)",
 											count: tabCounts.po
 										},
 										{
 											value: "br",
-											label: t("trading_purchases_tab_br", "Réceptions (BR)"),
+											label: t("trading_purchases_tab_br", "Réceptions"),
+											tooltip: language === "ar" ? "سندات الاستلام (BR)" : language === "fr" ? "Bons de Réception (BR)" : "Goods Receipts (BR)",
 											count: tabCounts.br
 										},
 										{
 											value: "facture_fournisseur",
 											label: t("trading_purchases_tab_bills", "Factures"),
+											tooltip: language === "ar" ? "فواتير الموردين" : language === "fr" ? "Factures Fournisseurs" : "Supplier Bills",
 											count: tabCounts.facture_fournisseur
 										}
 									]} aria-label="Trading Purchases Tab Filter" />
@@ -392,7 +396,7 @@ export const TradingPurchasesView: React.FC<any> = () => {
 <span className="font-mono font-bold text-xs">{doc.docNumber}</span>
 <p className="text-xs font-semibold">{doc.supplierName}</p>
 <div className="flex justify-between text-xs font-mono pt-2 border-t border-neutral-100 dark:border-neutral-700">
-<span className="text-neutral-500">TTC :</span>
+<span className="text-black/55 dark:text-white/55">TTC :</span>
 <span className="font-bold text-[#d4522f]">{formatMoney(doc.totalTtc)}</span>
 </div>
 </div>} emptyTitle={language === "ar" ? "لا توجد طلبيات شراء" : "Aucune commande d'achat"} emptyDescription={language === "ar" ? "أنشئ أول طلب شراء للموردين بالضغط على الزر أعلاه." : "Créez votre première commande d'achat fournisseur en cliquant sur le bouton ci-dessus."} />
@@ -402,11 +406,11 @@ export const TradingPurchasesView: React.FC<any> = () => {
 {isPoModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
 <div className="relative w-full max-w-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-6 space-y-4">
 <div className="flex items-center justify-between border-b pb-3 border-neutral-200 dark:border-neutral-800">
-<h2 className="text-base font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+<h2 className="text-base font-bold text-black dark:text-white flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 <Truck size={18} className="text-[#d4522f]" />
 <span>Nouvelle Commande d'Achat Fournisseur (PO)</span>
 </h2>
-<button onClick={() => setIsPoModalOpen(false)} className="p-1 text-neutral-400 hover:text-neutral-600 rounded-lg"><X size={18} /></button>
+<button onClick={() => setIsPoModalOpen(false)} className="p-1 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 rounded-lg"><X size={18} /></button>
 </div>
 <form onSubmit={handleCreatePo} className="space-y-4 text-xs">
 <div className="grid grid-cols-2 gap-3">
@@ -424,7 +428,7 @@ export const TradingPurchasesView: React.FC<any> = () => {
 <LabelInput label="Observations / Mention Bon de Pesée" placeholder="Ex: Livraison par semi-remorque citerne..." value={poNotes} onChange={(e) => setPoNotes(e.target.value)} />
 </div>
 <div className="space-y-2 pt-2 border-t border-neutral-200 dark:border-neutral-800">
-<label className="font-semibold text-neutral-700 dark:text-neutral-300">Article Commandé :</label>
+<label className="font-semibold text-black/70 dark:text-white/75">Article Commandé :</label>
 {poItems.map((it, idx) => /* @__PURE__ */ <div key={idx} className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
 <div className="sm:col-span-2">
 <LabelSelect label="Article" value={it.productId} onChange={(val) => {

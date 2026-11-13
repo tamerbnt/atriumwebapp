@@ -141,7 +141,7 @@ export const AgricultureWholesaleView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Wallet size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isAr ? "مبيعات سوق الجملة والسيولة الفلاحية" : "Comptabilité Mandataires & Ventes Gros"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">Commission 6%</span>
@@ -157,15 +157,15 @@ export const AgricultureWholesaleView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "حسابات الوكلاء والمبيعات الإجمالية" : "Comptabilité Ventes Gros & Mandataires"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "إجمالي المبيعات الإجمالية (Brut)" : "Chiffre d’Affaires Brut Gros"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "إجمالي المبيعات الإجمالية (Brut)" : "Chiffre d’Affaires Brut Gros"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">{formatMoney(totalGrossSales)}</div>
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalGrossSales)}</div>
 <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-0.5 font-medium">
 {harvestTickets.length}
 {" "}
@@ -174,19 +174,19 @@ export const AgricultureWholesaleView: React.FC<any> = () => {
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "عمولة الوكلاء المقتطعة (6%)" : "Commissions Mandataires (6%)"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "عمولة الوكلاء المقتطعة (6%)" : "Commissions Mandataires (6%)"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono tabular-nums">{formatMoney(totalMandataireFees)}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">{isAr ? "حسب القوانين السارية" : "Tarification légale marchés"}</p>
+<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalMandataireFees)}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">{isAr ? "حسب القوانين السارية" : "Tarification légale marchés"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{isAr ? "صافي مستحقات المزرعة" : "Net à Verser Domaine"}</span>
+<span className="text-[11px] font-medium text-white/80">{isAr ? "صافي مستحقات المزرعة" : "Net à Verser Domaine"}</span>
 <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">Trésorerie Gros</span>
 </div>
 <div>
-<div className="text-2xl font-black text-white font-mono tabular-nums">{formatMoney(totalNetFarm)}</div>
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalNetFarm)}</div>
 <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
 <CheckCircle2 size={11} />
 {settledTickets.length}
@@ -200,24 +200,27 @@ export const AgricultureWholesaleView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "وصولات البيع وتسويات أسواق الجملة" : "Bordereaux de Criée & Ventes Mandataires"}
 </h2>
 </div>
 <LiveSegmentedControl value={statusFilter} onChange={setStatusFilter} size="sm" options={[
 							{
 								id: "all",
-								label: isAr ? "جميع التسويات" : "Tous les bordereaux",
+								label: isAr ? "الكل" : "Tous",
+								tooltip: isAr ? "جميع التسويات" : "Tous les bordereaux",
 								count: harvestTickets.length
 							},
 							{
 								id: "settled",
 								label: isAr ? "مقبوضة" : "Encaissés",
+								tooltip: isAr ? "تسويات مقبوضة" : "Bordereaux encaissés",
 								count: settledTickets.length
 							},
 							{
 								id: "pending",
-								label: isAr ? "قيد التحصيل" : "En attente mandataire",
+								label: isAr ? "معلق" : "Attente",
+								tooltip: isAr ? "قيد التحصيل عند الوكيل" : "En attente mandataire",
 								count: harvestTickets.filter((t) => !settledTickets.includes(t.id)).length
 							}
 						]} />
@@ -238,8 +241,8 @@ export const AgricultureWholesaleView: React.FC<any> = () => {
 									id: "crop",
 									header: isAr ? "المنتوج الفلاحي" : "Culture & Variété",
 									renderCell: (t: any) => /* @__PURE__ */ <div>
-<span className="font-bold text-xs text-neutral-900 dark:text-neutral-100 block">{t.cropDesignation}</span>
-<span className="text-[11px] text-neutral-500">{t.destinationWholesaleMarket}</span>
+<span className="font-bold text-xs text-black dark:text-white block">{t.cropDesignation}</span>
+<span className="text-[11px] text-black/55 dark:text-white/55">{t.destinationWholesaleMarket}</span>
 </div>
 								},
 								{
@@ -248,11 +251,11 @@ export const AgricultureWholesaleView: React.FC<any> = () => {
 									width: "120px",
 									sortable: true,
 									renderCell: (t: any) => /* @__PURE__ */ <div className="font-mono text-xs">
-<span className="font-bold text-neutral-900 dark:text-white">
+<span className="font-bold text-black dark:text-white">
 {t.netWeightKg.toLocaleString()}
 {" kg"}
 </span>
-<span className="text-[10px] text-neutral-400 block">
+<span className="text-[10px] text-black/55 dark:text-white/55 block">
 {"Brut: "}
 {t.grossWeightKg.toLocaleString()}
 {" kg"}
@@ -263,7 +266,7 @@ export const AgricultureWholesaleView: React.FC<any> = () => {
 									id: "unitPrice",
 									header: isAr ? "سعر الكريّة" : "Cours Criée",
 									width: "120px",
-									renderCell: (t: any) => /* @__PURE__ */ <span className="font-mono text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+									renderCell: (t: any) => /* @__PURE__ */ <span className="font-mono text-xs font-semibold text-black/70 dark:text-white/75">
 {t.unitPriceDzdPerKg}
 {" DZD/kg"}
 </span>
@@ -282,7 +285,7 @@ export const AgricultureWholesaleView: React.FC<any> = () => {
 									header: isAr ? "صافي المزرعة" : "Net à Verser",
 									width: "140px",
 									sortable: true,
-									renderCell: (t: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white">{formatMoney(getTicketNet(t))}</span>
+									renderCell: (t: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-black dark:text-white">{formatMoney(getTicketNet(t))}</span>
 								},
 								{
 									id: "status",
@@ -304,8 +307,8 @@ export const AgricultureWholesaleView: React.FC<any> = () => {
 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isSettled ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"}`}>{isSettled ? isAr ? "مقبوض" : "Encaissé" : isAr ? "En attente" : "En attente"}</span>
 </div>
 <div>
-<h4 className="font-bold text-xs text-neutral-900 dark:text-white">{t.cropDesignation}</h4>
-<p className="text-[11px] text-neutral-500 mt-0.5">
+<h4 className="font-bold text-xs text-black dark:text-white">{t.cropDesignation}</h4>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 {t.destinationWholesaleMarket}
 {" · "}
 {t.driverName || "Non assigné"}
@@ -313,14 +316,14 @@ export const AgricultureWholesaleView: React.FC<any> = () => {
 </div>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
 <div>
-<span className="text-[10px] text-neutral-400 block">Poids Net</span>
-<span className="font-mono font-bold text-neutral-700 dark:text-neutral-300">
+<span className="text-[10px] text-black/55 dark:text-white/55 block">Poids Net</span>
+<span className="font-mono font-bold text-black/70 dark:text-white/75">
 {t.netWeightKg.toLocaleString()}
 {" kg"}
 </span>
 </div>
 <div className="text-right">
-<span className="text-[10px] text-neutral-400 block">Net Domaine</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 block">Net Domaine</span>
 <span className="font-mono font-bold text-[#d4522f] text-sm">{formatMoney(getTicketNet(t))}</span>
 </div>
 </div>
@@ -332,38 +335,38 @@ export const AgricultureWholesaleView: React.FC<any> = () => {
 <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Receipt size={16} /></div>
 <div>
-<h3 className="font-bold text-xs text-neutral-900 dark:text-white flex items-center gap-1.5 font-mono">{selectedTicket.ticketNumber}</h3>
-<p className="text-[10px] text-neutral-500">{selectedTicket.destinationWholesaleMarket}</p>
+<h3 className="font-bold text-xs text-black dark:text-white flex items-center gap-1.5 font-mono">{selectedTicket.ticketNumber}</h3>
+<p className="text-[10px] text-black/55 dark:text-white/55">{selectedTicket.destinationWholesaleMarket}</p>
 </div>
 </div>
-<button onClick={() => setSelectedTicket(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500 transition-colors"><X size={15} /></button>
+<button onClick={() => setSelectedTicket(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-black/55 dark:text-white/55 transition-colors"><X size={15} /></button>
 </div>
 <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 pt-2 gap-2">
-<button onClick={() => setInspectorTab("decompte")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "decompte" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"}`}>{isAr ? "البيان المالي" : "Décompte"}</button>
-<button onClick={() => setInspectorTab("pesee")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "pesee" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"}`}>{isAr ? "ميزان الجسر" : "Pont-Bascule"}</button>
-<button onClick={() => setInspectorTab("tracabilite")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "tracabilite" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"}`}>{isAr ? "النقل والتتبع" : "Suivi lot"}</button>
+<button onClick={() => setInspectorTab("decompte")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "decompte" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "البيان المالي" : "Décompte"}</button>
+<button onClick={() => setInspectorTab("pesee")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "pesee" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "ميزان الجسر" : "Pont-Bascule"}</button>
+<button onClick={() => setInspectorTab("tracabilite")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "tracabilite" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "النقل والتتبع" : "Suivi lot"}</button>
 </div>
 <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
 {inspectorTab === "decompte" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Calcul Décompte Mandataire (Criée)</span>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Calcul Décompte Mandataire (Criée)</span>
 <div className="flex items-center justify-between">
-<span className="text-neutral-600 dark:text-neutral-400">Poids Facturé:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">
+<span className="text-black/70 dark:text-white/75">Poids Facturé:</span>
+<span className="font-mono font-bold text-black dark:text-white">
 {selectedTicket.netWeightKg.toLocaleString()}
 {" kg"}
 </span>
 </div>
 <div className="flex items-center justify-between">
-<span className="text-neutral-600 dark:text-neutral-400">Prix Moyen Vente:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">
+<span className="text-black/70 dark:text-white/75">Prix Moyen Vente:</span>
+<span className="font-mono font-bold text-black dark:text-white">
 {selectedTicket.unitPriceDzdPerKg}
 {" DZD/kg"}
 </span>
 </div>
 <div className="flex items-center justify-between pt-1 border-t border-neutral-200 dark:border-neutral-800">
-<span className="text-neutral-800 dark:text-neutral-200 font-medium">Chiffre d'Affaires Brut:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">{formatMoney(getTicketGross(selectedTicket))}</span>
+<span className="text-black dark:text-white font-medium">Chiffre d'Affaires Brut:</span>
+<span className="font-mono font-bold text-black dark:text-white">{formatMoney(getTicketGross(selectedTicket))}</span>
 </div>
 <div className="flex items-center justify-between text-amber-600 dark:text-amber-400">
 <span>Commission Mandataire (6%):</span>
@@ -374,19 +377,19 @@ export const AgricultureWholesaleView: React.FC<any> = () => {
 </div>
 </div>
 <div className="p-4 bg-[#1F1D1B] rounded-xl text-white space-y-2 shadow-sm">
-<div className="flex items-center justify-between text-neutral-300 text-[11px]">
+<div className="flex items-center justify-between text-white/80 text-[11px]">
 <span>Net Liquide à Verser Domaine</span>
 <span className="bg-[#3D2817] text-[#FB923C] text-[10px] font-bold px-2 py-0.5 rounded-full">Règlement</span>
 </div>
-<div className="text-2xl font-black font-mono tracking-tight text-white">{formatMoney(getTicketNet(selectedTicket))}</div>
-<p className="text-[10px] text-neutral-400">
+<div className="text-2xl font-black tracking-tight text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(getTicketNet(selectedTicket))}</div>
+<p className="text-[10px] text-white/75">
 Versement direct sur compte d'exploitation agricole après déduction des frais de carreau.
 </p>
 </div>
 <div className="flex items-center justify-between p-3 rounded-xl border border-neutral-200 dark:border-neutral-800">
 <div>
-<span className="font-semibold block text-neutral-900 dark:text-white">Statut du Règlement</span>
-<span className="text-[10px] text-neutral-500">
+<span className="font-semibold block text-black dark:text-white">Statut du Règlement</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">
 {settledTickets.includes(selectedTicket.id) ? "Reçu et pointé en banque" : "En attente de chèque / virement"}
 </span>
 </div>
@@ -397,29 +400,29 @@ Versement direct sur compte d'exploitation agricole après déduction des frais 
 </div>}
 {inspectorTab === "pesee" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2.5">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block flex items-center gap-1.5">
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block flex items-center gap-1.5">
 <Scale size={13} className="text-[#d4522f]" />
 Ticket Pont-Bascule Électronique
 </span>
 <div className="grid grid-cols-2 gap-2 text-xs">
 <div className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800">
-<span className="text-[10px] text-neutral-400 block">Poids Brut (Entrée)</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white text-sm">
+<span className="text-[10px] text-black/55 dark:text-white/55 block">Poids Brut (Entrée)</span>
+<span className="font-mono font-bold text-black dark:text-white text-sm">
 {selectedTicket.grossWeightKg.toLocaleString()}
 {" kg"}
 </span>
 </div>
 <div className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800">
-<span className="text-[10px] text-neutral-400 block">Tare Camion (Sortie)</span>
-<span className="font-mono font-bold text-neutral-700 dark:text-neutral-300 text-sm">
+<span className="text-[10px] text-black/55 dark:text-white/55 block">Tare Camion (Sortie)</span>
+<span className="font-mono font-bold text-black/70 dark:text-white/75 text-sm">
 {(selectedTicket.truckTareKg || selectedTicket.tareWeightKg || 0).toLocaleString()}
 {" kg"}
 </span>
 </div>
 </div>
 {(selectedTicket.crateCount || 0) > 0 && /* @__PURE__ */ <div className="p-2 bg-neutral-100 dark:bg-neutral-800/70 rounded-lg border border-neutral-200 dark:border-neutral-700/60 flex items-center justify-between text-xs">
-<span className="text-neutral-600 dark:text-neutral-300">{isAr ? "خصم وزن الصناديق الفارغة :" : "Tare Caisses Déduite :"}</span>
-<span className="font-mono font-semibold text-neutral-900 dark:text-white">
+<span className="text-black/70 dark:text-white/75">{isAr ? "خصم وزن الصناديق الفارغة :" : "Tare Caisses Déduite :"}</span>
+<span className="font-mono font-semibold text-black dark:text-white">
 {selectedTicket.crateCount}
 {" × "}
 {selectedTicket.crateUnitTareKg || 1.8}
@@ -439,22 +442,22 @@ Ticket Pont-Bascule Électronique
 </div>
 <div className="p-2.5 bg-neutral-100 dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 space-y-1">
 <div className="flex items-center justify-between text-xs">
-<span className="text-neutral-600 dark:text-neutral-300 font-medium">{isAr ? "رسم الطابع الجبائي (المادة 317) :" : "Droit de Timbre (Art. 317) :"}</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">
+<span className="text-black/70 dark:text-white/75 font-medium">{isAr ? "رسم الطابع الجبائي (المادة 317) :" : "Droit de Timbre (Art. 317) :"}</span>
+<span className="font-mono font-bold text-black dark:text-white">
 {selectedTicket.paymentMethod === "cash" || selectedTicket.paymentMethod === "especes" ? `${selectedTicket.timbreFiscalDzd || calculateArt317Timbre(selectedTicket.subtotalProduceDzd || selectedTicket.totalGrossDzd || 0)} DZD (Plafonné à 2.500)` : "0 DZD (Exonéré hors espèces)"}
 </span>
 </div>
-<p className="text-[10px] text-neutral-400">
+<p className="text-[10px] text-black/55 dark:text-white/55">
 {isAr ? "1% على المبالغ النقدية وفق قانون الضرائب المباشرة والرسوم المماثلة الجزائري" : "1% gradué plafonné à 2.500 DA applicable aux paiements en espèces (Art. 317 CID)"}
 </p>
 </div>
 </div>
 <div className="space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Spécifications Récolte</span>
-<div className="space-y-1 text-neutral-700 dark:text-neutral-300">
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Spécifications Récolte</span>
+<div className="space-y-1 text-black/70 dark:text-white/75">
 <div className="flex justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-900/40">
 <span>Désignation:</span>
-<strong className="text-neutral-900 dark:text-white">{selectedTicket.cropDesignation}</strong>
+<strong className="text-black dark:text-white">{selectedTicket.cropDesignation}</strong>
 </div>
 <div className="flex justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-900/40">
 <span>Variété & Calibre:</span>
@@ -469,33 +472,33 @@ Ticket Pont-Bascule Électronique
 </div>}
 {inspectorTab === "tracabilite" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Données d'Acheminement</span>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Données d'Acheminement</span>
 <div className="space-y-1.5">
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Marché de Gros:</span>
-<span className="font-bold text-neutral-900 dark:text-white">{selectedTicket.destinationWholesaleMarket}</span>
+<span className="text-black/55 dark:text-white/55">Marché de Gros:</span>
+<span className="font-bold text-black dark:text-white">{selectedTicket.destinationWholesaleMarket}</span>
 </div>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Chauffeur assigné:</span>
-<span className="font-medium text-neutral-900 dark:text-white">{selectedTicket.driverName || "Non assigné"}</span>
+<span className="text-black/55 dark:text-white/55">Chauffeur assigné:</span>
+<span className="font-medium text-black dark:text-white">{selectedTicket.driverName || "Non assigné"}</span>
 </div>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Matricule Camion:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">{selectedTicket.truckPlate || selectedTicket.vehiclePlate}</span>
+<span className="text-black/55 dark:text-white/55">Matricule Camion:</span>
+<span className="font-mono font-bold text-black dark:text-white">{selectedTicket.truckPlate || selectedTicket.vehiclePlate}</span>
 </div>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Date d'expédition:</span>
-<span className="font-mono text-neutral-900 dark:text-white">{selectedTicket.date}</span>
+<span className="text-black/55 dark:text-white/55">Date d'expédition:</span>
+<span className="font-mono text-black dark:text-white">{selectedTicket.date}</span>
 </div>
 </div>
 </div>
 <div className="p-3 bg-neutral-100 dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 text-center space-y-1">
-<span className="text-[10px] text-neutral-400 font-mono block">QR Code Sécurisé Bordereau</span>
-<p className="font-bold text-xs text-neutral-900 dark:text-white">
+<span className="text-[10px] text-black/55 dark:text-white/55 font-mono block">QR Code Sécurisé Bordereau</span>
+<p className="font-bold text-xs text-black dark:text-white">
 AGRI-PESEE-
 {selectedTicket.ticketNumber}
 </p>
-<span className="text-[9px] text-neutral-500 font-mono">Conforme aux règlements de police des marchés</span>
+<span className="text-[9px] text-black/55 dark:text-white/55 font-mono">Conforme aux règlements de police des marchés</span>
 </div>
 </div>}
 </div>
@@ -508,5 +511,3 @@ AGRI-PESEE-
 <AgriWeighbridgePrintModal isOpen={isPrintModalOpen} onClose={() => setIsPrintModalOpen(false)} ticket={selectedTicket} />
 </div>;
 };
-
-export { SkeletonPageHeader as $, FileText as $t, LabelSelect as A, require_react_dom as An, Search as At, SkeletonDashboardLegal as B, Phone as Bt, DashboardHeader as C, AppShell as Cn, Sprout as Ct, useSkeletonLoading as D, Button as Dn, ShieldCheck as Dt, LiquidExportButton as E, Menu as En, Shield as Et, SkeletonDashboardContractor as F, Receipt as Ft, SkeletonDashboardProject as G, Mail as Gt, SkeletonDashboardManufacturing as H, Package as Ht, SkeletonDashboardEducation as I, QrCode as It, SkeletonDashboardTrading as J, LayoutGrid as Jt, SkeletonDashboardRealEstate as K, Lock as Kt, SkeletonDashboardFreelance as L, Printer as Lt, SkeletonCalendarTimeline as M, Save as Mt, SkeletonCollectionScreen as N, RotateCcw as Nt, Modal as O, require_jsx_runtime as On, Share2 as Ot, SkeletonDashboardAgriculture as P, RefreshCw as Pt, SkeletonKioskGrid as Q, HeartPulse as Qt, SkeletonDashboardGarage as R, Plus as Rt, DashboardPod as S, Sidebar as Sn, SquarePen as St, UniversalDataCollection as T, Toggle as Tn, Snowflake as Tt, SkeletonDashboardMedical as U, Minus as Ut, SkeletonDashboardLogistics as V, Pencil as Vt, SkeletonDashboardPos as W, MapPin as Wt, SkeletonFinanceAudit as X, KeyRound as Xt, SkeletonDashboardVenue as Y, Layers as Yt, SkeletonKanbanPipeline as Z, Info as Zt, MonthlyAreaChart as _, ArrowRight as _n, UserPlus as _t, ConfirmDialog as a, Coins as an, AtriumButton as at, DarkEspressoCard as b, createLucideIcon as bn, Trash2 as bt, StaffActionToolbar as c, CheckCircle2 as cn, LiveIconButton as ct, AgricultureParcelsView_exports as d, ChevronRight as dn, Zap as dt, Eye as en, SkeletonPosRegister as et, AgricultureLivestockView_exports as f, ChevronLeft as fn, X as ft, DonutChart as g, Building as gn, User as gt, GuardianCard as h, Calendar as hn, Users as ht, StaffInspectorDrawer as i, CreditCard as in, SkeletonText as it, SkeletonAnalytics as j, Scale as jt, ScrollJumpPill as k, configureMotion as kn, Send as kt, StaffHeaderTray as l, CircleAlert as ln, LiveButton as lt, AgricultureDashboardView_exports as m, Check as mn, Wallet as mt, FilterSelect as n, Download as nn, OfflineRetryBanner as nt, StaffModal as o, Clock as on, LabelInput as ot, AgricultureHarvestView_exports as p, ChevronDown as pn, WifiOff as pt, SkeletonDashboardSalon as q, List as qt, AgricultureStaffView_exports as r, DollarSign as rn, SkeletonBox as rt, QuickPointageModal as s, CirclePause as sn, LiveSegmentedControl as st, AgricultureWholesaleView_exports as t, Droplets as tn, SkeletonSchedulerView as tt, useStaffFoundation as u, ChevronUp as un, Seek as ut, PillBarHistogram as v, ArrowDown as vn, TriangleAlert as vt, AgricultureCyclesView_exports as w, LiquidButton as wn, Sparkles as wt, DashboardMetricCard as x, AtriumLogo as xn, Tag as xt, HourlyCurveChart as y, Activity as yn, TrendingUp as yt, SkeletonDashboardGym as z, Pin as zt };

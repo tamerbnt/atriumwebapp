@@ -138,7 +138,7 @@ export const MedicalDashboardView: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 bg-white min-h-screen p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
+    <div className="flex-1 bg-white dark:bg-[#0C0C0E] min-h-screen p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
       <OfflineRetryBanner
         isOffline={isOffline}
         isTimedOut={isTimedOut}
@@ -177,56 +177,58 @@ export const MedicalDashboardView: React.FC = () => {
               </span>
             }
             rightControls={
-              <div className="flex items-center bg-[#F0F2F5] p-0.5 rounded-lg text-xs font-semibold">
+              <div className="flex items-center bg-[#F0F2F5] dark:bg-neutral-800 p-0.5 rounded-lg text-xs font-semibold">
                 <button
                   type="button"
                   onClick={() => setTimeFilter('today')}
+                  title={language === 'ar' ? 'بيانات اليوم' : language === 'fr' ? "Données d'aujourd'hui" : "Today's queue"}
                   className={`px-3 py-1 rounded-md transition-all ${
-                    timeFilter === 'today' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                    timeFilter === 'today' ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-sm' : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
                   }`}
                 >
-                  {language === 'ar' ? 'اليوم' : 'Today'}
+                  {language === 'ar' ? 'اليوم' : language === 'fr' ? "Aujourd'hui" : 'Today'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setTimeFilter('yesterday')}
+                  title={language === 'ar' ? 'بيانات الأمس' : language === 'fr' ? "Données d'hier" : "Yesterday's queue"}
                   className={`px-3 py-1 rounded-md transition-all ${
-                    timeFilter === 'yesterday' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                    timeFilter === 'yesterday' ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-sm' : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
                   }`}
                 >
-                  {language === 'ar' ? 'أمس' : 'Yesterday'}
+                  {language === 'ar' ? 'أمس' : language === 'fr' ? 'Hier' : 'Yesterday'}
                 </button>
               </div>
             }
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <span className="text-xs font-medium text-gray-500 block mb-1">
+                    <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">
                       {language === 'ar' ? 'المرضى في الانتظار' : 'Salle d’Attente'}
                     </span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold font-mono text-gray-900 tabular-nums">
+                      <span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                         {waitingCount}
                       </span>
-                      <span className="text-xs text-gray-400">/ 12 max</span>
+                      <span className="text-xs text-black/55 dark:text-white/55">/ 12 max</span>
                     </div>
                     <span className="inline-block mt-2 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[11px] font-medium rounded-full">
                       ● ~12 min {language === 'ar' ? 'متوسط الانتظار' : 'attente estimée'}
                     </span>
                   </div>
-                  <div className="w-px h-12 bg-gray-200 mx-4" />
+                  <div className="w-px h-12 bg-neutral-200 dark:bg-neutral-700 mx-4" />
                   <div className="flex-1">
-                    <span className="text-xs font-medium text-gray-500 block mb-1">
+                    <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">
                       {language === 'ar' ? 'استشارات أنجزت اليوم' : 'Consultations Terminées'}
                     </span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold font-mono text-gray-900 tabular-nums">
+                      <span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                         {completedToday}
                       </span>
-                      <span className="text-xs text-gray-400">{language === 'ar' ? 'حالة' : 'visites'}</span>
+                      <span className="text-xs text-black/55 dark:text-white/55">{language === 'ar' ? 'حالة' : 'visites'}</span>
                     </div>
                     <span className="inline-block mt-2 px-2 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium rounded-full">
                       {language === 'ar' ? 'معدل سليم' : 'Cadence fluide'}
@@ -234,30 +236,30 @@ export const MedicalDashboardView: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-gray-100">
-                  <span className="text-[11px] text-gray-400 block mb-2">
+                <div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700/60">
+                  <span className="text-[11px] text-black/55 dark:text-white/55 block mb-2">
                     {language === 'ar' ? 'كثافة توافد المرضى على مدار 24 ساعة' : 'Courbe horaire des arrivées patients (24h)'}
                   </span>
                   <HourlyCurveChart data={hourlyData} color="#d4522f" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                 <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-xs font-medium text-gray-500">
+                  <span className="text-xs font-medium text-black/70 dark:text-white/75">
                     {language === 'ar' ? 'إيرادات الاستشارات اليوم' : 'Recettes Consultations Aujourd’hui'}
                   </span>
-                  <span className="text-base font-bold font-mono text-gray-900 tabular-nums">
+                  <span className="text-base font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                     {formatMoney(todayRevenue)}
                   </span>
                 </div>
-                <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-1">
+                <div className="w-full bg-neutral-100 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
                   <div
                     className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
                     style={{ width: `${targetPct}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-[11px] text-gray-400">
+                <div className="flex justify-between text-[11px] text-black/55 dark:text-white/55">
                   <span>{targetPct}% {language === 'ar' ? 'من الهدف' : 'de l’objectif'}</span>
                   <span>{formatMoney(dailyTarget)}</span>
                 </div>
@@ -272,19 +274,19 @@ export const MedicalDashboardView: React.FC = () => {
             title={language === 'ar' ? 'سجل المرضى والمتابعات' : language === 'fr' ? 'Dossiers Patients' : 'Patient Records'}
             icon={<Users size={18} className="text-[#d4522f]" />}
             rightControls={
-              <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
+              <div className="flex items-center gap-1 text-xs font-semibold text-black/70 dark:text-white/75">
                 <button
                   type="button"
                   onClick={() => setCurrentMonthIndex((prev) => (prev > 0 ? prev - 1 : 11))}
-                  className="p-1 hover:bg-gray-200 rounded"
+                  className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"
                 >
                   <ChevronLeft size={14} />
                 </button>
-                <span className="px-1 text-gray-800">{months[currentMonthIndex]} 2026</span>
+                <span className="px-1 text-black dark:text-white">{months[currentMonthIndex]} 2026</span>
                 <button
                   type="button"
                   onClick={() => setCurrentMonthIndex((prev) => (prev < 11 ? prev + 1 : 0))}
-                  className="p-1 hover:bg-gray-200 rounded"
+                  className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"
                 >
                   <ChevronRight size={14} />
                 </button>
@@ -319,12 +321,12 @@ export const MedicalDashboardView: React.FC = () => {
                 />
               </div>
 
-              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-semibold text-gray-700">
+                  <span className="text-xs font-semibold text-black/70 dark:text-white/75">
                     {language === 'ar' ? 'حجم الاستشارات الأسبوعية' : 'Volume hebdomadaire des consultations'}
                   </span>
-                  <span className="text-[11px] text-gray-400">
+                  <span className="text-[11px] text-black/55 dark:text-white/55">
                     {language === 'ar' ? 'مقارنة شهرية' : '4 dernières semaines'}
                   </span>
                 </div>
@@ -347,40 +349,40 @@ export const MedicalDashboardView: React.FC = () => {
             title={language === 'ar' ? 'الإيرادات والأرباح' : language === 'fr' ? 'Revenus & Recettes' : 'Revenue & Profit'}
             icon={<TrendingUp size={18} className="text-[#d4522f]" />}
             rightControls={
-              <span className="text-xs font-semibold text-gray-500 uppercase">
+              <span className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase">
                 {months[currentMonthIndex]} 2026
               </span>
             }
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
-                <div className="grid grid-cols-3 gap-2 pb-3 border-b border-gray-100">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+                <div className="grid grid-cols-3 gap-2 pb-3 border-b border-neutral-200 dark:border-neutral-700/60">
                   <div>
-                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'صافي العائد' : 'Net Cabinet'}</span>
-                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'صافي العائد' : 'Net Cabinet'}</span>
+                    <span className="text-lg font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                       {formatMoney(Math.round(todayRevenue * 0.82))}
                     </span>
                     <span className="text-[10px] text-emerald-600 block">+5.8%</span>
                   </div>
                   <div>
-                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'الإيراد الإجمالي' : 'CA Total'}</span>
-                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'الإيراد الإجمالي' : 'CA Total'}</span>
+                    <span className="text-lg font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                       {formatMoney(todayRevenue)}
                     </span>
                     <span className="text-[10px] text-emerald-600 block">+7.2%</span>
                   </div>
                   <div>
-                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'مستهلكات طبية' : 'Matériel & Soins'}</span>
-                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'مستهلكات طبية' : 'Matériel & Soins'}</span>
+                    <span className="text-lg font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                       {formatMoney(Math.round(todayRevenue * 0.18))}
                     </span>
-                    <span className="text-[10px] text-gray-400 block">18% CA</span>
+                    <span className="text-[10px] text-black/55 dark:text-white/55 block">18% CA</span>
                   </div>
                 </div>
 
                 <div className="pt-3">
-                  <span className="text-[11px] text-gray-400 block mb-1">
+                  <span className="text-[11px] text-black/55 dark:text-white/55 block mb-1">
                     {language === 'ar' ? 'منحنى التدفق النقدي على مدار 30 يوماً' : 'Tendance des encaissements sur 30 jours'}
                   </span>
                   <MonthlyAreaChart data={monthlyRevenue} color="#8B5CF6" />
@@ -388,56 +390,56 @@ export const MedicalDashboardView: React.FC = () => {
               </div>
 
               {/* 4 KPIs Inset Grid */}
-              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-semibold text-gray-700">
+                  <span className="text-xs font-semibold text-black/70 dark:text-white/75">
                     {language === 'ar' ? 'مؤشرات الكفاءة الطبية' : 'Indicateurs Cliniques'}
                   </span>
-                  <Info size={13} className="text-gray-400" />
+                  <Info size={13} className="text-black/55 dark:text-white/55" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
-                    <span className="text-[11px] text-gray-500 block">
+                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
                       {language === 'ar' ? 'متوسط مدة الفحص' : 'Durée Consultation'}
                     </span>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-mono text-gray-900">18 min</span>
+                      <span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">18 min</span>
                       <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
                         Écoute
                       </span>
                     </div>
                   </div>
 
-                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
-                    <span className="text-[11px] text-gray-500 block">
+                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
                       {language === 'ar' ? 'معدل عودة المرضى' : 'Taux de Rétention'}
                     </span>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-mono text-gray-900">88%</span>
+                      <span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">88%</span>
                       <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
                         Confiance
                       </span>
                     </div>
                   </div>
 
-                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
-                    <span className="text-[11px] text-gray-500 block">
+                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
                       {language === 'ar' ? 'دقة التشخيص' : 'Conformité Dossiers'}
                     </span>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-mono text-gray-900">100%</span>
+                      <span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">100%</span>
                       <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
                         Complets
                       </span>
                     </div>
                   </div>
 
-                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
-                    <span className="text-[11px] text-gray-500 block">
+                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
                       {language === 'ar' ? 'نسبة الغياب عن الموعد' : 'Taux de No-Show'}
                     </span>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-mono text-gray-900">2.1%</span>
+                      <span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">2.1%</span>
                       <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
                         Faible
                       </span>
@@ -458,22 +460,22 @@ export const MedicalDashboardView: React.FC = () => {
           >
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-gray-700">
+                    <span className="text-xs font-semibold text-black/70 dark:text-white/75">
                       {language === 'ar' ? 'توزيع التخصصات الطبية' : 'Motifs de Consultation'}
                     </span>
-                    <Info size={13} className="text-gray-400" />
+                    <Info size={13} className="text-black/55 dark:text-white/55" />
                   </div>
                   <DonutChart segments={specialtyBreakdown} centerLabel={`${totalPatientsCount} Suivis`} />
                 </div>
 
-                <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-gray-700">
+                    <span className="text-xs font-semibold text-black/70 dark:text-white/75">
                       {language === 'ar' ? 'ذروة التوافد بالساعات' : 'Affluence par Créneau'}
                     </span>
-                    <Info size={13} className="text-gray-400" />
+                    <Info size={13} className="text-black/55 dark:text-white/55" />
                   </div>
                   <PillBarHistogram
                     data={peakInflow}

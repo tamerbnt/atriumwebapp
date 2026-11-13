@@ -25,10 +25,10 @@ export const TradingStaffView: React.FC = () => {
             {member.fullName.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <div className="font-semibold text-neutral-900 dark:text-white text-xs truncate">
+            <div className="font-semibold text-black dark:text-white text-xs truncate">
               {member.fullName}
             </div>
-            <div className="text-[11px] text-neutral-500 truncate">
+            <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
               {member.role}
             </div>
           </div>
@@ -60,7 +60,7 @@ export const TradingStaffView: React.FC = () => {
                   : 'bg-neutral-400'
               }`}
             />
-            <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200">
+            <span className="text-xs font-medium text-black dark:text-white">
               {member.status === 'active'
                 ? isPresent
                   ? isAr
@@ -100,7 +100,7 @@ export const TradingStaffView: React.FC = () => {
       header: isAr ? 'طبيعة العقد' : isEn ? 'Contract' : 'Contrat Commercial',
       accessorKey: 'contractType',
       cell: (member) => (
-        <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+        <span className="text-xs font-medium text-black/70 dark:text-white/75">
           {member.contractType === 'cdi' ? 'CDI Permanent' : 'CDD / Mission'}
         </span>
       ),
@@ -110,7 +110,7 @@ export const TradingStaffView: React.FC = () => {
       header: isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone',
       accessorKey: 'phoneNumber',
       cell: (member) => (
-        <span className="text-xs text-neutral-600 dark:text-neutral-300 tabular-nums">
+        <span className="text-xs text-black/70 dark:text-white/75 tabular-nums">
           {member.phoneNumber || '—'}
         </span>
       ),

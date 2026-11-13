@@ -186,11 +186,11 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 				return /* @__PURE__ */ <div className="flex items-center gap-3">
 <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800"><Pill size={16} /></div>
 <div className="min-w-0">
-<div className="font-bold text-xs text-neutral-900 dark:text-white flex items-center gap-1.5 truncate">
+<div className="font-bold text-xs text-black dark:text-white flex items-center gap-1.5 truncate">
 {rx.patientName}
 {isPinned && /* @__PURE__ */ <span className="text-xs text-amber-500">📌</span>}
 </div>
-<div className="text-[11px] text-neutral-400 font-mono">
+<div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
 {rx.qrCodeHash}
 {" · "}
 {rx.prescriptionDate}
@@ -203,7 +203,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 			key: "doctor",
 			header: isAr ? "الطبيب المعالج" : "Praticien",
 			minWidth: "170px",
-			renderCell: (rx: any) => /* @__PURE__ */ <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">{rx.prescribingDoctorName || "Dr. Polyclinique"}</span>
+			renderCell: (rx: any) => /* @__PURE__ */ <span className="text-xs font-medium text-black/70 dark:text-white/75">{rx.prescribingDoctorName || "Dr. Polyclinique"}</span>
 		},
 		{
 			key: "itemsCount",
@@ -257,7 +257,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Pill size={20} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {isAr ? "الوصفات الطبية الإلكترونية (Ordonnances)" : "Ordonnances Médicales Sécurisées"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Chifa Validated</span>
@@ -266,10 +266,10 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 </div>
 <div className="flex flex-wrap items-center gap-2">
 <div className="flex bg-neutral-200/80 dark:bg-neutral-800 p-1 rounded-xl text-xs font-semibold">
-<button type="button" onClick={() => setActiveMainTab("prescriptions")} className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${activeMainTab === "prescriptions" ? "bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-2xs font-bold" : "text-neutral-600 dark:text-neutral-400"}`}>{isAr ? "الوصفات الطبية" : "Ordonnances"}</button>
-<button type="button" onClick={() => setActiveMainTab("ngap")} className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${activeMainTab === "ngap" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-2xs font-bold" : "text-neutral-600 dark:text-neutral-400"}`}>{isAr ? "دليل الفحوصات NGAP" : "Nomenclature NGAP"}</button>
+<button type="button" onClick={() => setActiveMainTab("prescriptions")} className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${activeMainTab === "prescriptions" ? "bg-white dark:bg-neutral-700 text-black dark:text-white shadow-2xs font-bold" : "text-black/70 dark:text-white/75"}`}>{isAr ? "الوصفات الطبية" : "Ordonnances"}</button>
+<button type="button" onClick={() => setActiveMainTab("ngap")} className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${activeMainTab === "ngap" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-2xs font-bold" : "text-black/70 dark:text-white/75"}`}>{isAr ? "دليل الفحوصات NGAP" : "Nomenclature NGAP"}</button>
 </div>
-<button type="button" onClick={() => setIsPersonalizerOpen(true)} className="px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:border-[#d4522f] text-xs font-semibold flex items-center gap-2 shadow-2xs transition-colors cursor-pointer">
+<button type="button" onClick={() => setIsPersonalizerOpen(true)} className="px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black/70 dark:text-white hover:border-[#d4522f] text-xs font-semibold flex items-center gap-2 shadow-2xs transition-colors cursor-pointer">
 <Settings size={14} className="text-[#d4522f]" />
 <span>{isAr ? "تخصيص الأوردونونس" : "Studio Ordonnance"}</span>
 </button>
@@ -278,19 +278,19 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 </div>
 {activeMainTab === "ngap" ? /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs animate-in fade-in duration-150">
 <div>
-<h3 className="font-bold text-sm text-neutral-900 dark:text-white flex items-center gap-2">
+<h3 className="font-bold text-sm text-black dark:text-white flex items-center gap-2">
 <Stethoscope size={16} className="text-[#d4522f]" />
 <span>
 {isAr ? "دليل الفحوصات والأعمال الطبية (NGAP)" : "Nomenclature Générale des Actes Professionnels (NGAP)"}
 </span>
 </h3>
-<p className="text-xs text-neutral-500">
+<p className="text-xs text-black/55 dark:text-white/55">
 {isAr ? "التعريفات الرسمية للضمان الاجتماعي، حصص الصندوق والتغذية التلقائية للمستهلكات" : "Codification officielle CNAS/CASNOS, tarifs conventionnés, ticket modérateur et dépréciation du stock"}
 </p>
 </div>
 <div className="overflow-x-auto w-full">
 <table className="w-full text-left text-xs border-separate border-spacing-y-1.5">
-<thead className="bg-transparent text-neutral-500">
+<thead className="bg-transparent text-black/55 dark:text-white/55">
 <tr>
 <th className="p-3 font-bold uppercase tracking-wider text-[11px]">Code NGAP</th>
 <th className="p-3 font-bold uppercase tracking-wider text-[11px]">Libellé de l'Acte Médical</th>
@@ -307,9 +307,9 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 <td className="p-3.5 font-mono font-bold text-[#d4522f]">
 <span className="px-2 py-0.5 rounded-md bg-[#d4522f]/10 border border-[#d4522f]/20">{act.code}</span>
 </td>
-<td className="p-3.5 font-semibold text-neutral-900 dark:text-white">{act.label}</td>
-<td className="p-3.5 text-neutral-500">{act.category}</td>
-<td className="p-3.5 font-mono font-bold text-neutral-900 dark:text-white">
+<td className="p-3.5 font-semibold text-black dark:text-white">{act.label}</td>
+<td className="p-3.5 text-black/55 dark:text-white/55">{act.category}</td>
+<td className="p-3.5 font-mono font-bold text-black dark:text-white">
 {act.conventionFeeDzd.toLocaleString()}
 {" DA"}
 </td>
@@ -317,13 +317,13 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 {act.cnasReimbursementDzd.toLocaleString()}
 {" DA"}
 </td>
-<td className="p-3.5 font-mono text-neutral-600 dark:text-neutral-300">
+<td className="p-3.5 font-mono text-black/70 dark:text-white/75">
 {act.ticketModerateurDzd.toLocaleString()}
 {" DA"}
 </td>
 <td className="p-3.5">
 <div className="flex flex-wrap gap-1">
-{act.linkedConsumables.map((c, idx) => /* @__PURE__ */ <span key={idx} className="text-[10px] px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 font-mono">{c}</span>)}
+{act.linkedConsumables.map((c, idx) => /* @__PURE__ */ <span key={idx} className="text-[10px] px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75 font-mono">{c}</span>)}
 </div>
 </td>
 <td className="p-3.5 text-right">
@@ -339,33 +339,33 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 </div> : /* @__PURE__ */ <>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "مؤشرات الوصفات الطبية والسلامة الدوائية" : "Indicateurs de Prescription & Sécurisation Pharmacologique"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "إجمالي الوصفات الصادرة" : "Ordonnances Signées"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "إجمالي الوصفات الصادرة" : "Ordonnances Signées"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono">{prescriptions.length}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">Archivage légal ordonnancier</p>
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{prescriptions.length}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">Archivage légal ordonnancier</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "الأدوية الموصوفة" : "Lignes Médicamenteuses"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "الأدوية الموصوفة" : "Lignes Médicamenteuses"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono">{totalDrugsPrescribed}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">Posologies & durées vérifiées</p>
+<div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{totalDrugsPrescribed}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">Posologies & durées vérifiées</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{isAr ? "التأمين والصيدليات" : "Sécurité & Chifa"}</span>
+<span className="text-[11px] font-medium text-white/80">{isAr ? "التأمين والصيدليات" : "Sécurité & Chifa"}</span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">QR PROTOCOL</span>
 </div>
 <div>
-<div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">100% Validé</div>
-<p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5"><span>Délivrance directe en officine</span></p>
+<div className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">100% Validé</div>
+<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5"><span>Délivrance directe en officine</span></p>
 </div>
 </div>
 </div>
@@ -373,9 +373,9 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div className="flex flex-wrap items-center justify-between gap-3">
 <div className="flex items-center gap-2">
-<FileText size={16} className="text-neutral-500" />
-<span className="text-sm font-bold text-neutral-900 dark:text-white">{isAr ? "أرشيف الوصفات الطبية" : "Registre des Ordonnances Médicales"}</span>
-<span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">{sortedPrescriptions.length}</span>
+<FileText size={16} className="text-black/55 dark:text-white/55" />
+<span className="text-sm font-bold text-black dark:text-white">{isAr ? "أرشيف الوصفات الطبية" : "Registre des Ordonnances Médicales"}</span>
+<span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums ml-1">{sortedPrescriptions.length}</span>
 </div>
 <div className="flex flex-wrap items-center gap-2.5 ml-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={isAr ? "بحث بمريض، دواء أو كود QR..." : "Rechercher patient, médicament ou QR code..."} shutSize={36} openWidth={220} />
@@ -383,22 +383,25 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 {[
 								{
 									id: "all",
-									label: isAr ? "الكل" : "Toutes"
+									label: isAr ? "الكل" : language === "fr" ? "Toutes" : "All",
+									tooltip: isAr ? "جميع الوصفات الطبية" : language === "fr" ? "Toutes les ordonnances" : "All prescriptions"
 								},
 								{
 									id: "recent",
-									label: isAr ? "حديثة (<14j)" : "Récentes (<14j)"
+									label: isAr ? "حديثة" : language === "fr" ? "Récentes" : "Recent",
+									tooltip: isAr ? "وصفات حديثة (<14 يوماً)" : language === "fr" ? "Ordonnances récentes (<14 jours)" : "Recent prescriptions (<14 days)"
 								},
 								{
 									id: "multi",
-									label: isAr ? "متعددة الأدوية" : "Polymédicamentées (≥3)"
+									label: isAr ? "متعددة" : language === "fr" ? "Polymédic" : "Multi",
+									tooltip: isAr ? "وصفات متعددة الأدوية (≥3 أدوية)" : language === "fr" ? "Ordonnances polymédicamentées (≥3)" : "Multi-drug prescriptions (≥3 items)"
 								}
 							].map((filter) => {
 								const isActive = filterStatus === filter.id;
-								return /* @__PURE__ */ <button key={filter.id} type="button" onClick={() => setFilterStatus(filter.id)} style={{
+								return /* @__PURE__ */ <button key={filter.id} type="button" onClick={() => setFilterStatus(filter.id)} title={filter.tooltip} style={{
 										backgroundColor: isActive ? "#FCEEE8" : "transparent",
 										color: isActive ? "var(--color-accent)" : "#71717A"
-									}} className={`px-3 py-1 rounded-full cursor-pointer transition-all ${isActive ? "font-bold" : "hover:text-neutral-900 dark:hover:text-white"}`}>{filter.label}</button>;
+									}} className={`px-3 py-1 rounded-full cursor-pointer whitespace-nowrap transition-all ${isActive ? "font-bold" : "hover:text-black dark:hover:text-white"}`}>{filter.label}</button>;
 							})}
 </div>
 </div>
@@ -426,7 +429,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 								const isPinned = pinnedIds.has(rx.id);
 								return /* @__PURE__ */ <div className="flex flex-col w-full space-y-3">
 <div className="flex items-center justify-between">
-<span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+<span className="text-xs font-bold text-black dark:text-white truncate">
 {rx.patientName}
 {" "}
 {isPinned && "📌"}
@@ -434,17 +437,17 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50">{rx.qrCodeHash}</span>
 </div>
 <div className="bg-neutral-50 dark:bg-neutral-900/60 rounded-xl p-3 space-y-1.5 text-xs">
-{rx.items.slice(0, 2).map((item, idx) => /* @__PURE__ */ <div key={idx} className="flex justify-between items-center text-neutral-700 dark:text-neutral-300">
+{rx.items.slice(0, 2).map((item, idx) => /* @__PURE__ */ <div key={idx} className="flex justify-between items-center text-black/70 dark:text-white/75">
 <span className="font-semibold truncate max-w-[170px]">{item.drugName}</span>
-<span className="text-neutral-400 font-mono text-[11px]">{item.dosage}</span>
+<span className="text-black/55 dark:text-white/55 font-mono text-[11px]">{item.dosage}</span>
 </div>)}
-{rx.items.length > 2 && /* @__PURE__ */ <div className="text-[10px] text-neutral-400">
+{rx.items.length > 2 && /* @__PURE__ */ <div className="text-[10px] text-black/55 dark:text-white/55">
 +
 {rx.items.length - 2}
 {" autre(s) spécialité(s)..."}
 </div>}
 </div>
-<div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-neutral-400">
+<div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-black/55 dark:text-white/55">
 <span>{rx.prescriptionDate}</span>
 <span className="text-[#d4522f] font-medium">
 {rx.items.length}
@@ -459,8 +462,8 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 <div className="flex items-center gap-3 min-w-0">
 <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-950/60 text-[#d4522f] font-bold text-sm flex items-center justify-center shrink-0 border border-orange-200/60"><Pill size={18} /></div>
 <div className="min-w-0">
-<h3 className="font-bold text-sm text-neutral-900 dark:text-white truncate">{selectedRx.patientName}</h3>
-<div className="flex items-center gap-1.5 text-xs text-neutral-400">
+<h3 className="font-bold text-sm text-black dark:text-white truncate">{selectedRx.patientName}</h3>
+<div className="flex items-center gap-1.5 text-xs text-black/55 dark:text-white/55">
 <span className="font-mono">
 {"Réf: "}
 {selectedRx.qrCodeHash}
@@ -468,24 +471,24 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<button type="button" onClick={() => setSelectedRx(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={16} /></button>
+<button type="button" onClick={() => setSelectedRx(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={16} /></button>
 </div>
 <div className="flex items-center border-b border-neutral-100 dark:border-neutral-800 px-4 bg-white dark:bg-neutral-850 text-xs">
-<button type="button" onClick={() => setActiveTab("posologie")} className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${activeTab === "posologie" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200"}`}>{isAr ? "الجرعات والأدوية" : "Posologie"}</button>
-<button type="button" onClick={() => setActiveTab("apercu")} className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${activeTab === "apercu" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200"}`}>{isAr ? "المعاينة والورق" : "Papier / Studio"}</button>
-<button type="button" onClick={() => setActiveTab("securite")} className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${activeTab === "securite" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200"}`}>{isAr ? "الأمان والـ QR" : "Sécurité & QR"}</button>
-<button type="button" onClick={() => setActiveTab("actions")} className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${activeTab === "actions" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200"}`}>{isAr ? "الإجراءات" : "Actions"}</button>
+<button type="button" onClick={() => setActiveTab("posologie")} className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${activeTab === "posologie" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{isAr ? "الجرعات والأدوية" : "Posologie"}</button>
+<button type="button" onClick={() => setActiveTab("apercu")} className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${activeTab === "apercu" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{isAr ? "المعاينة والورق" : "Papier / Studio"}</button>
+<button type="button" onClick={() => setActiveTab("securite")} className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${activeTab === "securite" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{isAr ? "الأمان والـ QR" : "Sécurité & QR"}</button>
+<button type="button" onClick={() => setActiveTab("actions")} className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${activeTab === "actions" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{isAr ? "الإجراءات" : "Actions"}</button>
 </div>
 <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
 {activeTab === "posologie" && /* @__PURE__ */ <div className="space-y-3 animate-in fade-in duration-150">
-<div className="text-[11px] font-semibold text-neutral-400">
+<div className="text-[11px] font-semibold text-black/55 dark:text-white/55">
 LISTE DES SPÉCIALITÉS DÉLIVRÉES (
 {selectedRx.items.length}
 )
 </div>
 {selectedRx.items.map((item: any, idx: number) => /* @__PURE__ */ <div key={idx} className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-1.5">
 <div className="flex justify-between items-center">
-<span className="font-bold text-neutral-900 dark:text-white text-xs">
+<span className="font-bold text-black dark:text-white text-xs">
 {idx + 1}
 {". "}
 {item.drugName}
@@ -500,7 +503,7 @@ j
 {" · "}
 {item.frequency}
 </div>
-{item.instructions && /* @__PURE__ */ <div className="text-[11px] text-neutral-500 italic">
+{item.instructions && /* @__PURE__ */ <div className="text-[11px] text-black/55 dark:text-white/55 italic">
 "
 {item.instructions}
 "
@@ -514,8 +517,8 @@ j
 {activeTab === "apercu" && /* @__PURE__ */ <div className="space-y-3 animate-in fade-in duration-150">
 <div className="p-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-between text-xs">
 <div>
-<span className="font-semibold block text-neutral-900 dark:text-white">Format Document</span>
-<span className="text-[10px] text-neutral-500 font-mono">
+<span className="font-semibold block text-black dark:text-white">Format Document</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
 {currentDoctorConfig.paperSize}
 {" · "}
 {currentDoctorConfig.usePreprintedStationery ? "Papier Pré-imprimé" : "Papier Vierge"}
@@ -523,14 +526,14 @@ j
 </div>
 <button type="button" onClick={() => setIsPersonalizerOpen(true)} className="px-2.5 py-1 text-xs rounded bg-[#d4522f] text-white font-semibold shadow-2xs">Configurer</button>
 </div>
-<div className={`p-4 rounded-xl border bg-white text-neutral-900 shadow-sm relative overflow-hidden text-[11px] font-sans ${currentDoctorConfig.usePreprintedStationery ? "border-dashed border-amber-300" : "border-neutral-200"}`} style={{ minHeight: "360px" }}>
+<div className={`p-4 rounded-xl border bg-white text-black shadow-sm relative overflow-hidden text-[11px] font-sans ${currentDoctorConfig.usePreprintedStationery ? "border-dashed border-amber-300" : "border-neutral-200"}`} style={{ minHeight: "360px" }}>
 {currentDoctorConfig.usePreprintedStationery ? /* @__PURE__ */ <div className="border border-dashed border-amber-400 bg-amber-50/60 rounded p-2 text-center text-amber-800 text-[10px] mb-4">
 <strong>Mode Papier En-tête Pré-imprimé Actif :</strong>
 {" L'en-tête et le pied de page sont masqués pour impression directe sur votre papeterie physique d'imprimerie."}
 </div> : /* @__PURE__ */ <div className="border-b-2 pb-2 mb-3" style={{ borderColor: currentDoctorConfig.accentColor }}>
 <div className="font-bold text-sm" style={{ color: currentDoctorConfig.accentColor }}>{currentDoctorConfig.doctorName}</div>
-<div className="text-[10px] text-neutral-600 font-medium">{currentDoctorConfig.specialtyTitle}</div>
-<div className="text-[9px] text-neutral-400">
+<div className="text-[10px] text-black/75 font-medium">{currentDoctorConfig.specialtyTitle}</div>
+<div className="text-[9px] text-black/55">
 {currentDoctorConfig.qualifications}
 {" · N° Ordre: "}
 {currentDoctorConfig.councilOrderNumber}
@@ -541,7 +544,7 @@ j
 {"Patient(e): "}
 <strong className="text-xs uppercase">{selectedRx.patientName}</strong>
 </div>
-<div className="font-mono text-neutral-500">
+<div className="font-mono text-black/55">
 {"Le : "}
 {selectedRx.prescriptionDate}
 </div>
@@ -549,14 +552,14 @@ j
 <div className="space-y-2 mb-6">
 <div className="font-serif italic font-bold text-xs underline mb-1">Ordonnance :</div>
 {selectedRx.items.map((it: any, idx: number) => /* @__PURE__ */ <div key={idx} className="pl-2 border-l-2 border-neutral-200 text-[11px]">
-<div className="font-bold text-neutral-800">
+<div className="font-bold text-black">
 {"- "}
 {it.drugName}
 {" ("}
 {it.dosage}
 )
 </div>
-<div className="text-[10px] text-neutral-500 font-mono">
+<div className="text-[10px] text-black/55 font-mono">
 {it.frequency}
 {" pendant "}
 {it.durationDays}
@@ -566,8 +569,8 @@ j
 </div>
 <div className="flex justify-between items-end pt-4 border-t border-neutral-100 mt-6">
 <div className="flex items-center gap-2">
-<QrCode size={36} className="text-neutral-700" />
-<div className="text-[8px] font-mono text-neutral-400 leading-tight">
+<QrCode size={36} className="text-black/75" />
+<div className="text-[8px] font-mono text-black/55 leading-tight">
 ORD-CHIFA
 <br />
 {selectedRx.qrCodeHash}
@@ -585,8 +588,8 @@ ORD-CHIFA
 <div className="p-6 rounded-2xl bg-white dark:bg-neutral-800 border-2 border-dashed border-[#d4522f]/40 flex flex-col items-center justify-center space-y-3">
 <QrCode size={80} className="text-[#d4522f]" />
 <div>
-<div className="font-mono font-bold text-xs text-neutral-900 dark:text-white">{selectedRx.qrCodeHash}</div>
-<span className="text-[10px] text-neutral-400">Signature numérique certifiée par l'Ordre des Médecins</span>
+<div className="font-mono font-bold text-xs text-black dark:text-white">{selectedRx.qrCodeHash}</div>
+<span className="text-[10px] text-black/55 dark:text-white/55">Signature numérique certifiée par l'Ordre des Médecins</span>
 </div>
 </div>
 <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300 text-left space-y-1">
@@ -606,13 +609,13 @@ Ce code QR permet la lecture automatisée dans toutes les pharmacies conventionn
 Imprimer ordonnance PDF
 </span>
 </button>
-<button type="button" onClick={() => handleTogglePin(selectedRx.id)} className="w-full p-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold flex items-center justify-between hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer">
+<button type="button" onClick={() => handleTogglePin(selectedRx.id)} className="w-full p-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white font-semibold flex items-center justify-between hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer">
 <span className="flex items-center gap-2">
 <Pin size={16} />
 {pinnedIds.has(selectedRx.id) ? "Détacher" : "Épingler au dossier"}
 </span>
 </button>
-<button type="button" onClick={() => showToast("Ordonnance dupliquée avec succès", "success")} className="w-full p-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold flex items-center justify-between hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer">
+<button type="button" onClick={() => showToast("Ordonnance dupliquée avec succès", "success")} className="w-full p-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white font-semibold flex items-center justify-between hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer">
 <span className="flex items-center gap-2">
 <FileText size={16} />
 Renouveler / Dupliquer traitement
@@ -635,17 +638,17 @@ Renouveler / Dupliquer traitement
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center"><Pill size={18} /></div>
 <div>
-<h3 className="font-bold text-sm text-neutral-900 dark:text-white">Nouvelle Prescription Médicale Sécurisée</h3>
-<p className="text-[11px] text-neutral-400">Contrôle automatique des contre-indications et posologies Chifa</p>
+<h3 className="font-bold text-sm text-black dark:text-white">Nouvelle Prescription Médicale Sécurisée</h3>
+<p className="text-[11px] text-black/55 dark:text-white/55">Contrôle automatique des contre-indications et posologies Chifa</p>
 </div>
 </div>
-<button type="button" onClick={() => setIsComposerOpen(false)} className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-white"><X size={16} /></button>
+<button type="button" onClick={() => setIsComposerOpen(false)} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"><X size={16} /></button>
 </div>
 <div className="flex-1 overflow-y-auto p-5 space-y-4 text-xs">
 <div className="grid grid-cols-2 gap-3">
 <div>
-<label className="block text-[11px] font-bold text-neutral-500 uppercase mb-1">Médecin Prescripteur</label>
-<select value={compDoctorId} onChange={(e) => setCompDoctorId(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white">
+<label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase mb-1">Médecin Prescripteur</label>
+<select value={compDoctorId} onChange={(e) => setCompDoctorId(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-black dark:text-white">
 {practitioners.map((doc) => /* @__PURE__ */ <option key={doc.id} value={doc.id}>
 {doc.fullName || doc.name}
 {" ("}
@@ -655,11 +658,11 @@ Renouveler / Dupliquer traitement
 </select>
 </div>
 <div>
-<label className="block text-[11px] font-bold text-neutral-500 uppercase mb-1">Patient Destinataire</label>
+<label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase mb-1">Patient Destinataire</label>
 <select value={compPatientId} onChange={(e) => {
 											setCompPatientId(e.target.value);
 											setOverrideConfirmed(false);
-										}} className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white">
+										}} className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-black dark:text-white">
 {patients.map((p) => /* @__PURE__ */ <option key={p.id} value={p.id}>
 {p.fullName}
 {" (NSS: "}
@@ -671,9 +674,9 @@ Renouveler / Dupliquer traitement
 </div>
 {selectedPatientForComp && /* @__PURE__ */ <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
 <div className="space-y-0.5">
-<span className="text-[10px] text-neutral-400 uppercase font-semibold">Vigilances du dossier</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 uppercase font-semibold">Vigilances du dossier</span>
 <div className="flex items-center gap-2">
-<span className="font-bold text-neutral-800 dark:text-neutral-200">
+<span className="font-bold text-black dark:text-white">
 {selectedPatientForComp.bloodGroup || "O+"}
 {" · "}
 {selectedPatientForComp.phone}
@@ -684,7 +687,7 @@ Renouveler / Dupliquer traitement
 {selectedPatientForComp.allergies && selectedPatientForComp.allergies.length > 0 ? /* @__PURE__ */ <span className="px-2 py-1 rounded bg-rose-100 text-rose-800 font-bold text-[10px]">
 {"⚠️ Allergies : "}
 {selectedPatientForComp.allergies.join(", ")}
-</span> : /* @__PURE__ */ <span className="text-neutral-400 text-[11px]">Aucune allergie connue</span>}
+</span> : /* @__PURE__ */ <span className="text-black/55 dark:text-white/55 text-[11px]">Aucune allergie connue</span>}
 </div>
 </div>}
 {allergyAlerts.length > 0 && /* @__PURE__ */ <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-500/80 text-rose-800 dark:text-rose-300 space-y-2">
@@ -704,7 +707,7 @@ Je confirme en tant que médecin responsable avoir évalué le bénéfice/risque
 </div>}
 <div className="space-y-2.5">
 <div className="flex items-center justify-between">
-<label className="text-[11px] font-bold text-neutral-500 uppercase">
+<label className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase">
 Lignes de Prescription (
 {compItems.length}
 )
@@ -723,7 +726,7 @@ Lignes de Prescription (
 </div>
 {compItems.map((item, idx) => /* @__PURE__ */ <div key={idx} className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-2">
 <div className="flex items-center gap-2">
-<span className="font-bold text-neutral-400 text-xs w-4">
+<span className="font-bold text-black/55 dark:text-white/55 text-xs w-4">
 {idx + 1}
 .
 </span>
@@ -732,11 +735,11 @@ Lignes de Prescription (
 														updated[idx].drugName = e.target.value;
 														setCompItems(updated);
 													}} className="flex-1 px-2.5 py-1.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-xs font-semibold" />
-{compItems.length > 1 && /* @__PURE__ */ <button type="button" onClick={() => setCompItems(compItems.filter((_, i) => i !== idx))} className="p-1 text-neutral-400 hover:text-rose-500"><Trash2 size={14} /></button>}
+{compItems.length > 1 && /* @__PURE__ */ <button type="button" onClick={() => setCompItems(compItems.filter((_, i) => i !== idx))} className="p-1 text-black/55 dark:text-white/55 hover:text-rose-500"><Trash2 size={14} /></button>}
 </div>
 <div className="grid grid-cols-3 gap-2">
 <div>
-<label className="text-[10px] text-neutral-400">Dosage</label>
+<label className="text-[10px] text-black/55 dark:text-white/55">Dosage</label>
 <input type="text" value={item.dosage} onChange={(e) => {
 														const updated = [...compItems];
 														updated[idx].dosage = e.target.value;
@@ -744,7 +747,7 @@ Lignes de Prescription (
 													}} className="w-full px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-[11px]" />
 </div>
 <div>
-<label className="text-[10px] text-neutral-400">Fréquence / Prise</label>
+<label className="text-[10px] text-black/55 dark:text-white/55">Fréquence / Prise</label>
 <input type="text" value={item.frequency} onChange={(e) => {
 														const updated = [...compItems];
 														updated[idx].frequency = e.target.value;
@@ -752,7 +755,7 @@ Lignes de Prescription (
 													}} className="w-full px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-[11px]" />
 </div>
 <div>
-<label className="text-[10px] text-neutral-400">Durée (Jours)</label>
+<label className="text-[10px] text-black/55 dark:text-white/55">Durée (Jours)</label>
 <input type="number" value={item.durationDays} onChange={(e) => {
 														const updated = [...compItems];
 														updated[idx].durationDays = parseInt(e.target.value) || 1;
@@ -763,14 +766,14 @@ Lignes de Prescription (
 </div>)}
 </div>
 <div>
-<label className="block text-[11px] font-bold text-neutral-500 uppercase mb-1">Recommandations au Patient</label>
+<label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase mb-1">Recommandations au Patient</label>
 <textarea value={compNotes} onChange={(e) => setCompNotes(e.target.value)} rows={2} placeholder="Conseils hygiéno-diététiques, hydratation, repos..." className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-xs" />
 </div>
 </div>
 <div className="p-4 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-850">
-<span className="text-[11px] text-neutral-400 font-mono">Code QR sécurisé généré automatiquement</span>
+<span className="text-[11px] text-black/55 dark:text-white/55 font-mono">Code QR sécurisé généré automatiquement</span>
 <div className="flex gap-2">
-<button type="button" onClick={() => setIsComposerOpen(false)} className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 text-xs font-semibold">Annuler</button>
+<button type="button" onClick={() => setIsComposerOpen(false)} className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold">Annuler</button>
 <AtriumButton type="button" variant="primary" size="md" icon={<ShieldCheck size={14} />} onClick={handleSaveComposer}><span>Signer & Valider l'Ordonnance</span></AtriumButton>
 </div>
 </div>

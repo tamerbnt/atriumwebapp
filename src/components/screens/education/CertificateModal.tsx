@@ -237,25 +237,25 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                   {currentBusiness?.displayName || 'Atlas Academy & Tutoring Institute'}
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl font-serif font-bold text-black dark:text-white tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                <h1 className="text-2xl sm:text-3xl font-serif font-bold text-black tracking-tight rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
                   {t('edu_cert_doc_title')}
                 </h1>
 
-                <p className="text-xs text-black/70 dark:text-white/70 italic">
+                <p className="text-xs text-black/70 italic">
                   {t('edu_cert_awarded_to')}
                 </p>
 
                 <div className="py-2">
-                  <div className="text-2xl sm:text-3xl font-serif font-bold text-[#d4522f] border-b-2 border-[#d4522f]/30 inline-block px-8 pb-1">
+                  <div className="text-2xl sm:text-3xl font-serif font-bold text-[#d4522f] border-b-2 border-[#d4522f]/30 inline-block px-8 pb-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
                     {activeCert.studentName}
                   </div>
                 </div>
 
-                <p className="text-sm text-black dark:text-white max-w-lg mx-auto leading-relaxed">
+                <p className="text-sm text-black max-w-lg mx-auto leading-relaxed">
                   {t('edu_cert_for_curriculum')}
                 </p>
 
-                <div className="text-lg font-semibold text-black dark:text-white">
+                <div className="text-lg font-semibold text-black">
                   {activeCert.courseTitle}
                 </div>
 
@@ -267,25 +267,25 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
 
                 <div className="pt-8 grid grid-cols-2 gap-8 border-t border-[#d4522f]/20 mt-8 text-left rtl:text-right">
                   <div>
-                    <div className="text-xs font-semibold text-black dark:text-white">
+                    <div className="text-xs font-semibold text-black">
                       {activeCert.signatoryName}
                     </div>
-                    <div className="text-[11px] text-black/70 dark:text-white/70">
+                    <div className="text-[11px] text-black/70">
                       {activeCert.signatoryTitle}
                     </div>
-                    <div className="text-[10px] text-black/55 dark:text-white/60 mt-1">
+                    <div className="text-[10px] text-black/55 mt-1">
                       {t('edu_cert_date_issued')} {activeCert.issueDate}
                     </div>
                   </div>
 
                   <div className="text-right rtl:text-left">
-                    <div className="text-[10px] uppercase font-mono tracking-wider text-black/55 dark:text-white/60 rtl:normal-case rtl:tracking-normal">
+                    <div className="text-[10px] uppercase font-mono tracking-wider text-black/55 rtl:normal-case rtl:tracking-normal">
                       {t('edu_cert_verif_hash')}
                     </div>
                     <div className="text-xs font-mono font-medium text-[#d4522f]">
                       {activeCert.verificationHash}
                     </div>
-                    <div className="text-[10px] text-black/55 dark:text-white/60 mt-1">
+                    <div className="text-[10px] text-black/55 mt-1">
                       {t('edu_cert_id')} #{activeCert.certificateNumber}
                     </div>
                   </div>

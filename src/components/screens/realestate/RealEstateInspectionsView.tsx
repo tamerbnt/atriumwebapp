@@ -112,7 +112,7 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><FileCheck size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {isAr ? "معاينة الأماكن (États des Lieux)" : "États des Lieux d'Entrée & Sortie"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">Conforme Juridique</span>
@@ -125,13 +125,13 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
 </div>
 </div>
 <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-1">
-<button onClick={() => setMainTab("inspections")} className={`px-4 py-2 text-xs font-semibold rounded-xl transition-colors ${mainTab === "inspections" ? "bg-[#d4522f] text-white shadow-xs" : "text-[#64748B] hover:text-[#18181B] dark:hover:text-white"}`}>
+<button onClick={() => setMainTab("inspections")} className={`px-4 py-2 text-xs font-semibold rounded-xl transition-colors ${mainTab === "inspections" ? "bg-[#d4522f] text-white shadow-xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>
 {isAr ? "محاضر تسليم الأماكن (États des Lieux)" : "États des Lieux d'Entrée & Sortie"}
 {" ("}
 {inspections.length}
 )
 </button>
-<button onClick={() => setMainTab("visits")} className={`px-4 py-2 text-xs font-semibold rounded-xl transition-colors ${mainTab === "visits" ? "bg-[#d4522f] text-white shadow-xs" : "text-[#64748B] hover:text-[#18181B] dark:hover:text-white"}`}>
+<button onClick={() => setMainTab("visits")} className={`px-4 py-2 text-xs font-semibold rounded-xl transition-colors ${mainTab === "visits" ? "bg-[#d4522f] text-white shadow-xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>
 {isAr ? "وصولات المعاينة الرقمية (Bons de Visite)" : "Bons de Visite Numériques & GPS"}
 {" ("}
 {visits.length}
@@ -140,27 +140,27 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "إحصائيات المعاينة وسلامة العقارات" : "Registre des Constats & Conformité"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "إجمالي محاضر المعاينة" : "Constats Réalisés"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "إجمالي محاضر المعاينة" : "Constats Réalisés"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">{inspections.length}</div>
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{inspections.length}</div>
 <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">{isAr ? "موقعة حضورياً من الطرفين" : "Signatures contradictoires validées"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "معاينات الدخول والخروج" : "Entrée vs Sortie"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "معاينات الدخول والخروج" : "Entrée vs Sortie"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-mono tabular-nums">
+<div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {entryCount}
 {" / "}
 {exitCount}
 </div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">
 {entryCount}
 {" "}
 {isAr ? "دخول وتسليم مفاتيح" : "entrées"}
@@ -173,14 +173,14 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{isAr ? "الامتثال القانوني للمعاينة" : "Conformité Réglementaire"}</span>
+<span className="text-[11px] font-medium text-white/80">{isAr ? "الامتثال القانوني للمعاينة" : "Conformité Réglementaire"}</span>
 <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">
 {"100% "}
 {isAr ? "قانوني" : "Légal"}
 </span>
 </div>
 <div>
-<div className="text-2xl font-black text-white font-mono tabular-nums">100%</div>
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">100%</div>
 <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
 <CheckCircle2 size={11} />
 {inspections.length}
@@ -194,7 +194,7 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "محاضر تسليم واستلام الأماكن والنزاعات" : "Registre des États des Lieux d'Entrée & Sortie"}
 </h2>
 </div>
@@ -202,23 +202,27 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
 {[
 								{
 									id: "all",
-									label: isAr ? "جميع المحاضر" : "Tous les constats"
+									label: isAr ? "الكل" : language === "fr" ? "Tous" : "All",
+									tooltip: isAr ? "جميع المحاضر" : language === "fr" ? "Tous les constats" : "All inspection reports"
 								},
 								{
 									id: "entry",
-									label: isAr ? "دخول / استلام" : "État entrant"
+									label: isAr ? "دخول" : language === "fr" ? "Entrant" : "Entry",
+									tooltip: isAr ? "دخول / استلام" : language === "fr" ? "État entrant" : "Move-in inspection"
 								},
 								{
 									id: "exit",
-									label: isAr ? "خروج / إخلاء" : "État sortant"
+									label: isAr ? "خروج" : language === "fr" ? "Sortant" : "Exit",
+									tooltip: isAr ? "خروج / إخلاء" : language === "fr" ? "État sortant" : "Move-out inspection"
 								},
 								{
 									id: "damages",
-									label: isAr ? "أضرار مسجلة" : "Constat sinistre"
+									label: isAr ? "أضرار" : language === "fr" ? "Sinistre" : "Damages",
+									tooltip: isAr ? "أضرار مسجلة" : language === "fr" ? "Constat sinistre" : "Recorded damages"
 								}
 							].map((tab) => {
 								const isActive = filterType === tab.id;
-								return /* @__PURE__ */ <button key={tab.id} onClick={() => setFilterType(tab.id)} className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer" style={{
+								return /* @__PURE__ */ <button key={tab.id} type="button" onClick={() => setFilterType(tab.id)} title={tab.tooltip} className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer" style={{
 										backgroundColor: isActive ? "#FCEEE8" : "transparent",
 										color: isActive ? "var(--color-accent)" : "#71717A"
 									}}>{tab.label}</button>;
@@ -232,8 +236,8 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
 										id: "property",
 										header: isAr ? "العقار" : "Bien Immobilier",
 										renderCell: (insp: any) => /* @__PURE__ */ <div>
-<span className="font-bold text-xs text-neutral-900 dark:text-neutral-100 block">{insp.propertyTitle}</span>
-<span className="text-[10px] text-neutral-400 font-mono">
+<span className="font-bold text-xs text-black dark:text-white block">{insp.propertyTitle}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
 {"Date: "}
 {insp.inspectionDate}
 </span>
@@ -252,23 +256,23 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
 										id: "inspector",
 										header: isAr ? "الخبير المعاين" : "Inspecteur Mandataire",
 										width: "180px",
-										renderCell: (insp: any) => /* @__PURE__ */ <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200">{insp.inspectorName}</span>
+										renderCell: (insp: any) => /* @__PURE__ */ <span className="text-xs font-medium text-black dark:text-white">{insp.inspectorName}</span>
 									},
 									{
 										id: "meters",
 										header: isAr ? "العدادات (سونلغاز / سيال)" : "Index Compteurs",
 										width: "180px",
-										renderCell: (insp: any) => /* @__PURE__ */ <div className="font-mono text-[11px] text-neutral-500 space-y-0.5">
+										renderCell: (insp: any) => /* @__PURE__ */ <div className="font-mono text-[11px] text-black/55 dark:text-white/55 space-y-0.5">
 <div>
 {"Élec: "}
-<strong className="text-neutral-800 dark:text-neutral-200">
+<strong className="text-black dark:text-white">
 {insp.meterReadings?.electricKwh || insp.meterElectricityKwh || 0}
 {" kWh"}
 </strong>
 </div>
 <div>
 {"Gaz: "}
-<strong className="text-neutral-800 dark:text-neutral-200">
+<strong className="text-black dark:text-white">
 {insp.meterReadings?.gasM3 || insp.meterGasM3 || 0}
 {" m³"}
 </strong>
@@ -298,11 +302,11 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
 									return /* @__PURE__ */ <div className="p-4 flex flex-col justify-between h-full space-y-3">
 <div className="flex items-start justify-between gap-2">
 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isEntry ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300" : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"}`}>{isEntry ? "Constat Entrée" : "Constat Sortie"}</span>
-<span className="text-xs text-neutral-400 font-mono">{insp.inspectionDate}</span>
+<span className="text-xs text-black/55 dark:text-white/55 font-mono">{insp.inspectionDate}</span>
 </div>
 <div>
-<h4 className="font-bold text-xs text-neutral-900 dark:text-white line-clamp-2">{insp.propertyTitle}</h4>
-<p className="text-[11px] text-neutral-500 mt-1">
+<h4 className="font-bold text-xs text-black dark:text-white line-clamp-2">{insp.propertyTitle}</h4>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-1">
 {"Inspecteur: "}
 {insp.inspectorName}
 </p>
@@ -325,35 +329,35 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
 <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><ClipboardCheck size={16} /></div>
 <div>
-<h3 className="font-bold text-xs text-neutral-900 dark:text-white flex items-center gap-1.5">État des Lieux</h3>
-<p className="text-[10px] text-neutral-500 truncate max-w-[210px]">{selectedInspection.propertyTitle}</p>
+<h3 className="font-bold text-xs text-black dark:text-white flex items-center gap-1.5">État des Lieux</h3>
+<p className="text-[10px] text-black/55 dark:text-white/55 truncate max-w-[210px]">{selectedInspection.propertyTitle}</p>
 </div>
 </div>
-<button onClick={() => setSelectedInspection(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500 transition-colors"><X size={15} /></button>
+<button onClick={() => setSelectedInspection(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-black/55 dark:text-white/55 transition-colors"><X size={15} /></button>
 </div>
 <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 pt-2 gap-2">
-<button onClick={() => setInspectorTab("constat")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "constat" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"}`}>{isAr ? "المحضر والمفاتيح" : "Constat & Clés"}</button>
-<button onClick={() => setInspectorTab("compteurs")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "compteurs" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"}`}>{isAr ? "العدادات" : "Compteurs"}</button>
-<button onClick={() => setInspectorTab("pieces")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "pieces" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"}`}>{isAr ? "حالة الغرف" : "Pièces"}</button>
+<button onClick={() => setInspectorTab("constat")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "constat" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "المحضر والمفاتيح" : "Constat & Clés"}</button>
+<button onClick={() => setInspectorTab("compteurs")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "compteurs" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "العدادات" : "Compteurs"}</button>
+<button onClick={() => setInspectorTab("pieces")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "pieces" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "حالة الغرف" : "Pièces"}</button>
 </div>
 <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
 {inspectorTab === "constat" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Informations sur le Constat</span>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Informations sur le Constat</span>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Bien concerné:</span>
-<span className="font-bold text-neutral-900 dark:text-white truncate max-w-[190px]">{selectedInspection.propertyTitle}</span>
+<span className="text-black/55 dark:text-white/55">Bien concerné:</span>
+<span className="font-bold text-black dark:text-white truncate max-w-[190px]">{selectedInspection.propertyTitle}</span>
 </div>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Date de visite:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">{selectedInspection.inspectionDate}</span>
+<span className="text-black/55 dark:text-white/55">Date de visite:</span>
+<span className="font-mono font-bold text-black dark:text-white">{selectedInspection.inspectionDate}</span>
 </div>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Inspecteur agence:</span>
-<span className="font-medium text-neutral-900 dark:text-white">{selectedInspection.inspectorName}</span>
+<span className="text-black/55 dark:text-white/55">Inspecteur agence:</span>
+<span className="font-medium text-black dark:text-white">{selectedInspection.inspectorName}</span>
 </div>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Trousseau de clés:</span>
+<span className="text-black/55 dark:text-white/55">Trousseau de clés:</span>
 <span className="font-bold text-emerald-600 flex items-center gap-1 font-mono">
 <Key size={12} />
 {selectedInspection.keysDeliveredCount || selectedInspection.keysCount || 4}
@@ -362,21 +366,21 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
 </div>
 </div>
 <div className="space-y-1.5">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold">Observations & Remarques</span>
-<div className="p-3 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 leading-relaxed">
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold">Observations & Remarques</span>
+<div className="p-3 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 text-black/70 dark:text-white/75 leading-relaxed">
 {selectedInspection.notes || "Appartement en parfait état de propreté. Travaux de peinture récents. Toutes les serrures fonctionnent correctement."}
 </div>
 </div>
 </div>}
 {inspectorTab === "compteurs" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2.5">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Index des Compteurs Énergétiques & Fluides</span>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Index des Compteurs Énergétiques & Fluides</span>
 <div className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
 <div className="flex items-center gap-2">
 <Zap size={14} className="text-amber-500" />
-<span className="font-medium text-neutral-800 dark:text-neutral-200">Électricité (Sonelgaz):</span>
+<span className="font-medium text-black dark:text-white">Électricité (Sonelgaz):</span>
 </div>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">
+<span className="font-mono font-bold text-black dark:text-white">
 {selectedInspection.meterReadings?.electricKwh || selectedInspection.meterElectricityKwh || 14200}
 {" kWh"}
 </span>
@@ -384,9 +388,9 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
 <div className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
 <div className="flex items-center gap-2">
 <Flame size={14} className="text-orange-500" />
-<span className="font-medium text-neutral-800 dark:text-neutral-200">Gaz Naturel:</span>
+<span className="font-medium text-black dark:text-white">Gaz Naturel:</span>
 </div>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">
+<span className="font-mono font-bold text-black dark:text-white">
 {selectedInspection.meterReadings?.gasM3 || selectedInspection.meterGasM3 || 450}
 {" m³"}
 </span>
@@ -394,9 +398,9 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
 <div className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
 <div className="flex items-center gap-2">
 <Droplets size={14} className="text-blue-500" />
-<span className="font-medium text-neutral-800 dark:text-neutral-200">Eau (Seaal):</span>
+<span className="font-medium text-black dark:text-white">Eau (Seaal):</span>
 </div>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">
+<span className="font-mono font-bold text-black dark:text-white">
 {selectedInspection.meterReadings?.waterM3 || 88}
 {" m³"}
 </span>
@@ -405,7 +409,7 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
 </div>}
 {inspectorTab === "pieces" && /* @__PURE__ */ <div className="space-y-4">
 <div className="space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">État par Pièce & Équipements</span>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">État par Pièce & Équipements</span>
 {[
 													{
 														room: "Salon & Salle à Manger",
@@ -429,10 +433,10 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
 													}
 												].map((item, i) => /* @__PURE__ */ <div key={i} className="p-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-1">
 <div className="flex items-center justify-between">
-<span className="font-bold text-neutral-900 dark:text-white">{item.room}</span>
+<span className="font-bold text-black dark:text-white">{item.room}</span>
 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-full">{item.condition}</span>
 </div>
-<p className="text-[11px] text-neutral-500">{item.note}</p>
+<p className="text-[11px] text-black/55 dark:text-white/55">{item.note}</p>
 </div>)}
 </div>
 </div>}

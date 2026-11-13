@@ -124,10 +124,10 @@ export const PosHistoryView: React.FC = () => {
       sortable: true,
       renderCell: (m) => (
         <div className="min-w-0">
-          <div className="font-bold text-xs text-neutral-900 dark:text-white truncate">
+          <div className="font-bold text-xs text-black dark:text-white truncate">
             {m.productName}
           </div>
-          <div className="text-[10px] text-neutral-400 truncate">
+          <div className="text-[10px] text-black/55 dark:text-white/55 truncate">
             {m.reason || 'Mouvement régulier'}
           </div>
         </div>
@@ -151,7 +151,7 @@ export const PosHistoryView: React.FC = () => {
               isRestock
                 ? 'text-emerald-600 dark:text-emerald-400'
                 : isSale
-                ? 'text-neutral-700 dark:text-neutral-300'
+                ? 'text-black/70 dark:text-white/75'
                 : isReturn
                 ? 'text-blue-600 dark:text-blue-400'
                 : isDamage
@@ -194,8 +194,8 @@ export const PosHistoryView: React.FC = () => {
       width: '1.8*',
       minWidth: '140px',
       renderCell: (m) => (
-        <span className="font-mono text-xs text-neutral-500 tabular-nums">
-          {m.previousStock} → <span className="font-bold text-neutral-900 dark:text-white">{m.newStock}</span>
+        <span className="font-mono text-xs text-black/55 dark:text-white/55 tabular-nums">
+          {m.previousStock} → <span className="font-bold text-black dark:text-white">{m.newStock}</span>
         </span>
       ),
     },
@@ -205,7 +205,7 @@ export const PosHistoryView: React.FC = () => {
       width: '1.5*',
       minWidth: '130px',
       renderCell: (m) => (
-        <span className="text-xs text-neutral-600 dark:text-neutral-300 truncate block">
+        <span className="text-xs text-black/70 dark:text-white/75 truncate block">
           {m.createdBy || 'Staff'}
         </span>
       ),
@@ -217,7 +217,7 @@ export const PosHistoryView: React.FC = () => {
       minWidth: '140px',
       sortable: true,
       renderCell: (m) => (
-        <span className="text-xs text-neutral-400 font-mono">
+        <span className="text-xs text-black/55 dark:text-white/55 font-mono">
           {new Date(m.createdAt).toLocaleString()}
         </span>
       ),
@@ -281,7 +281,7 @@ export const PosHistoryView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white flex items-center gap-2.5">
+            <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
               <History className="text-[#d4522f]" size={32} />
               <span>
                 {language === 'ar' ? 'سجل التدقيق وحركات المخزون' : language === 'fr' ? 'Journal d’Audit & Mouvements de Stock' : 'Audit Trail & Stock History'}
@@ -299,7 +299,7 @@ export const PosHistoryView: React.FC = () => {
           <button
             type="button"
             onClick={handleExportMovementsCSV}
-            className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-50 text-xs font-bold text-neutral-700 dark:text-neutral-200 flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-50 text-xs font-bold text-black/70 dark:text-white flex items-center gap-1.5 cursor-pointer shadow-2xs"
           >
             <Download size={14} />
             <span>{language === 'ar' ? 'تصدير CSV' : 'Export CSV'}</span>
@@ -312,11 +312,11 @@ export const PosHistoryView: React.FC = () => {
         <div className="flex items-center justify-between pb-2 border-b border-[#E9EEF0] dark:border-neutral-800">
           <div className="flex items-center gap-2">
             <Activity size={18} className="text-[#d4522f]" />
-            <h2 className="text-xs font-black uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
+            <h2 className="text-xs font-black uppercase tracking-wider text-black dark:text-white">
               {language === 'ar' ? 'مؤشرات حركة وتدفق المخزون' : 'Indicateurs de Flux & Conformité d’Inventaire'}
             </h2>
           </div>
-          <span className="text-xs text-neutral-400 font-medium">
+          <span className="text-xs text-black/55 dark:text-white/55 font-medium">
             {currentBranch.name} · Live Registry
           </span>
         </div>
@@ -326,8 +326,8 @@ export const PosHistoryView: React.FC = () => {
           {/* Card 1: Entrées */}
           <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
-              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
-                <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+              <div className="flex items-center justify-between text-black/55 dark:text-white/75">
+                <span className="text-xs font-semibold text-black/70 dark:text-white/75">
                   {language === 'ar' ? 'الوحدات المضافة' : 'Entrées Physiques (+)'}
                 </span>
                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
@@ -335,7 +335,7 @@ export const PosHistoryView: React.FC = () => {
                 </span>
               </div>
             </div>
-            <div className="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums">
+            <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               +{movementStats.unitsIn}
             </div>
           </div>
@@ -343,8 +343,8 @@ export const PosHistoryView: React.FC = () => {
           {/* Card 2: Sorties */}
           <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
-              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
-                <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+              <div className="flex items-center justify-between text-black/55 dark:text-white/75">
+                <span className="text-xs font-semibold text-black/70 dark:text-white/75">
                   {language === 'ar' ? 'الوحدات المخصومة' : 'Sorties Physiques (-)'}
                 </span>
                 <span className="text-[10px] font-bold text-red-600 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded-full">
@@ -352,7 +352,7 @@ export const PosHistoryView: React.FC = () => {
                 </span>
               </div>
             </div>
-            <div className="text-2xl font-black font-mono text-red-600 dark:text-red-400 tracking-tight tabular-nums">
+            <div className="text-2xl font-black text-red-600 dark:text-red-400 tracking-tight tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               -{movementStats.unitsOut}
             </div>
           </div>
@@ -375,19 +375,19 @@ export const PosHistoryView: React.FC = () => {
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-neutral-300">
+                <span className="text-xs font-medium text-white/80">
                   {language === 'ar' ? 'تدقيق الحركات والتسوية' : 'Journal & Solde Net'}
                 </span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
                   {movementStats.totalMovements} événements
                 </span>
               </div>
-              <div className="text-2xl font-black font-mono tracking-tight text-white tabular-nums">
-                {movementStats.netUnitsDelta > 0 ? `+${movementStats.netUnitsDelta}` : movementStats.netUnitsDelta} <span className="text-xs font-normal text-neutral-400">unités nettes</span>
+              <div className="text-2xl font-black tracking-tight text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                {movementStats.netUnitsDelta > 0 ? `+${movementStats.netUnitsDelta}` : movementStats.netUnitsDelta} <span className="text-xs font-normal text-white/75">unités nettes</span>
               </div>
             </div>
 
-            <div className="pt-1.5 border-t border-neutral-800/80 flex items-center justify-between text-[10px] text-neutral-400">
+            <div className="pt-1.5 border-t border-neutral-800/80 flex items-center justify-between text-[10px] text-white/75">
               <span>{movementStats.adjustmentsCount} rectifications manuelles</span>
               <span className="text-[#FB923C] font-semibold">Registre certifié</span>
             </div>
@@ -405,7 +405,7 @@ export const PosHistoryView: React.FC = () => {
               <History size={18} />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-neutral-900 dark:text-white">
+              <span className="text-sm font-bold text-black dark:text-white">
                 {language === 'ar' ? 'سجل حركات المخزون والمراجعة' : 'Registre des Mouvements de Stock'}
               </span>
               <span className="text-xs px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f] font-semibold font-mono">
@@ -427,12 +427,36 @@ export const PosHistoryView: React.FC = () => {
               value={movementTypeFilter}
               onChange={setMovementTypeFilter}
               options={[
-                { value: 'all', label: language === 'ar' ? 'جميع الحركات' : 'Tous les mouvements' },
-                { value: 'Sale', label: language === 'ar' ? 'مبيعات كاشير' : 'Ventes Caisse' },
-                { value: 'Restock', label: language === 'ar' ? 'تموين واستلام' : 'Réassort Stock' },
-                { value: 'Return', label: language === 'ar' ? 'إرجاع زبون' : 'Retour Client' },
-                { value: 'Damage', label: language === 'ar' ? 'تالف / خردة' : 'Casse / Dépréciation' },
-                { value: 'Adjustment', label: language === 'ar' ? 'تعديل جرد' : 'Ajustement Manuel' },
+                {
+                  value: 'all',
+                  label: language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All',
+                  tooltip: language === 'ar' ? 'جميع الحركات' : language === 'fr' ? 'Tous les mouvements' : 'All movements',
+                },
+                {
+                  value: 'Sale',
+                  label: language === 'ar' ? 'مبيعات' : language === 'fr' ? 'Ventes' : 'Sales',
+                  tooltip: language === 'ar' ? 'مبيعات كاشير' : language === 'fr' ? 'Ventes Caisse' : 'POS Sales',
+                },
+                {
+                  value: 'Restock',
+                  label: language === 'ar' ? 'تموين' : language === 'fr' ? 'Réassort' : 'Restock',
+                  tooltip: language === 'ar' ? 'تموين واستلام' : language === 'fr' ? 'Réassort Stock' : 'Stock Restock',
+                },
+                {
+                  value: 'Return',
+                  label: language === 'ar' ? 'إرجاع' : language === 'fr' ? 'Retours' : 'Returns',
+                  tooltip: language === 'ar' ? 'إرجاع زبون' : language === 'fr' ? 'Retour Client' : 'Customer Return',
+                },
+                {
+                  value: 'Damage',
+                  label: language === 'ar' ? 'تالف' : language === 'fr' ? 'Casse' : 'Damage',
+                  tooltip: language === 'ar' ? 'تالف / خردة' : language === 'fr' ? 'Casse / Dépréciation' : 'Damaged / Write-off',
+                },
+                {
+                  value: 'Adjustment',
+                  label: language === 'ar' ? 'تعديل' : language === 'fr' ? 'Ajustement' : 'Adjust',
+                  tooltip: language === 'ar' ? 'تعديل جرد' : language === 'fr' ? 'Ajustement Manuel' : 'Manual Adjustment',
+                },
               ]}
               ariaLabel="Filtrer par type de mouvement"
             />
@@ -460,7 +484,7 @@ export const PosHistoryView: React.FC = () => {
               <div className="flex flex-col justify-between h-full space-y-3">
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-1">
-                    <span className="text-[10px] font-bold text-neutral-400 uppercase">
+                    <span className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase">
                       {m.type}
                     </span>
                     <span
@@ -471,17 +495,17 @@ export const PosHistoryView: React.FC = () => {
                       {m.quantity > 0 ? `+${m.quantity}` : m.quantity}
                     </span>
                   </div>
-                  <div className="font-bold text-xs text-neutral-900 dark:text-white truncate">
+                  <div className="font-bold text-xs text-black dark:text-white truncate">
                     {m.productName}
                   </div>
                   {m.reason && (
-                    <div className="text-[10px] text-neutral-400 truncate mt-0.5">
+                    <div className="text-[10px] text-black/55 dark:text-white/55 truncate mt-0.5">
                       {m.reason}
                     </div>
                   )}
                 </div>
 
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/50 flex items-center justify-between text-[11px] text-neutral-400">
+                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/50 flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
                   <span className="font-mono">{m.previousStock} → {m.newStock}</span>
                   <span>{new Date(m.createdAt).toLocaleDateString()}</span>
                 </div>

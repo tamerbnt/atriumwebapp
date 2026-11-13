@@ -401,7 +401,7 @@ export const AppointmentFinanceView: React.FC = () => {
                 </span>
               </div>
             </div>
-            <div className="text-2xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums text-black dark:text-white tracking-tight">
+            <div className="text-2xl font-black tabular-nums text-black dark:text-white tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {formatMoney(totalServicesRevenue)}
             </div>
           </div>
@@ -418,7 +418,7 @@ export const AppointmentFinanceView: React.FC = () => {
                 </span>
               </div>
             </div>
-            <div className="text-2xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums text-emerald-600 dark:text-emerald-400 tracking-tight">
+            <div className="text-2xl font-black tabular-nums text-emerald-600 dark:text-emerald-400 tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {formatMoney(netSalonProfit)}
             </div>
           </div>
@@ -448,7 +448,7 @@ export const AppointmentFinanceView: React.FC = () => {
                   {stylistPayouts.length} stylistes
                 </span>
               </div>
-              <div className="text-2xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums tracking-tight text-white">
+              <div className="text-2xl font-black tabular-nums tracking-tight text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {formatMoney(totalCommissionsDue)}
               </div>
             </div>

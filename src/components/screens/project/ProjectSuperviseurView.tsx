@@ -107,13 +107,13 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 								else next.add(m.id);
 								return next;
 							});
-						}} className={`p-1 rounded-lg transition-colors cursor-pointer ${isPinned ? "text-[#d4522f] bg-[#d4522f]/10" : "text-zinc-300 hover:text-zinc-500"}`}><Pin className={`w-3.5 h-3.5 ${isPinned ? "fill-current" : ""}`} /></button>
+						}} className={`p-1 rounded-lg transition-colors cursor-pointer ${isPinned ? "text-[#d4522f] bg-[#d4522f]/10" : "text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}><Pin className={`w-3.5 h-3.5 ${isPinned ? "fill-current" : ""}`} /></button>
 <div>
 <div className="flex items-center gap-2">
 <span className="font-mono font-bold text-xs text-[#d4522f]">{m.code}</span>
-<span className="font-semibold text-xs text-zinc-900 dark:text-zinc-100">{m.title}</span>
+<span className="font-semibold text-xs text-black dark:text-white">{m.title}</span>
 </div>
-<div className="text-[11px] text-zinc-500 truncate max-w-[200px]">{m.projectTitle}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 truncate max-w-[200px]">{m.projectTitle}</div>
 </div>
 </div>;
 			}
@@ -123,9 +123,9 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 			header: "Lieu & Wilaya",
 			width: "2*",
 			minWidth: "180px",
-			renderCell: (m: any) => /* @__PURE__ */ <div className="text-xs text-zinc-700 dark:text-zinc-300">
+			renderCell: (m: any) => /* @__PURE__ */ <div className="text-xs text-black/70 dark:text-white/75">
 <div className="font-semibold">{m.venueName}</div>
-<div className="text-[11px] text-zinc-500">
+<div className="text-[11px] text-black/55 dark:text-white/55">
 {m.address}
 {" ("}
 {m.wilayaName}
@@ -138,9 +138,9 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 			header: "Date & Horaires",
 			width: "1.5*",
 			minWidth: "150px",
-			renderCell: (m: any) => /* @__PURE__ */ <div className="text-xs text-zinc-600 dark:text-zinc-400 font-mono">
+			renderCell: (m: any) => /* @__PURE__ */ <div className="text-xs text-black/70 dark:text-white/75 font-mono">
 <div>{m.startDate}</div>
-<div className="text-[11px] text-zinc-400">
+<div className="text-[11px] text-black/55 dark:text-white/55">
 {m.dailyStartHour}
 {" - "}
 {m.dailyEndHour}
@@ -153,7 +153,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 			width: "1.2*",
 			minWidth: "120px",
 			align: "center",
-			renderCell: (m: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-zinc-800 dark:text-zinc-200">
+			renderCell: (m: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-black dark:text-white">
 {m.requiredStaffCount}
 {" pers."}
 </span>
@@ -183,7 +183,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 					}
 				} as Record<string, any>)[m.status] || {
 					label: m.status,
-					bg: "bg-zinc-100 text-zinc-700"
+					bg: "bg-zinc-100 text-black/70 dark:text-white/75"
 				};
 				return /* @__PURE__ */ <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${b.bg}`}>{b.label}</span>;
 			}
@@ -209,8 +209,8 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 			renderCell: (att: any) => /* @__PURE__ */ <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-xs text-[#d4522f] shrink-0">{att.talentName.substring(0, 2).toUpperCase()}</div>
 <div>
-<div className="font-semibold text-xs text-zinc-900 dark:text-zinc-100">{att.talentName}</div>
-<div className="text-[11px] text-zinc-500 font-mono">
+<div className="font-semibold text-xs text-black dark:text-white">{att.talentName}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
 {"Arrivée : "}
 {att.checkInTime || "Non pointé"}
 </div>
@@ -223,7 +223,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 			width: "1.5*",
 			minWidth: "140px",
 			align: "right",
-			renderCell: (att: any) => /* @__PURE__ */ <div className="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{formatMoney(att.grossPayableDzd, "DZD")}</div>
+			renderCell: (att: any) => /* @__PURE__ */ <div className="font-mono text-xs font-bold text-black dark:text-white tabular-nums">{formatMoney(att.grossPayableDzd, "DZD")}</div>
 		},
 		{
 			key: "status",
@@ -232,14 +232,14 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 			minWidth: "200px",
 			align: "center",
 			renderCell: (att: any) => {
-				if (isMissionLocked) return /* @__PURE__ */ <span className="font-semibold text-xs text-zinc-600 dark:text-zinc-400 capitalize">
+				if (isMissionLocked) return /* @__PURE__ */ <span className="font-semibold text-xs text-black/70 dark:text-white/75 capitalize">
 {att.status}
 {" (Verrouillé)"}
 </span>;
 				return /* @__PURE__ */ <div className="flex items-center gap-1">
-<button type="button" onClick={() => updatePmAttendanceStatus(att.id, "present")} className={`px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer ${att.status === "present" ? "bg-emerald-600 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 hover:bg-emerald-50"}`}>Présent</button>
-<button type="button" onClick={() => updatePmAttendanceStatus(att.id, "late", 15)} className={`px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer ${att.status === "late" ? "bg-amber-500 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 hover:bg-amber-50"}`}>Retard</button>
-<button type="button" onClick={() => updatePmAttendanceStatus(att.id, "absent")} className={`px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer ${att.status === "absent" ? "bg-red-600 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 hover:bg-red-50"}`}>Absent</button>
+<button type="button" onClick={() => updatePmAttendanceStatus(att.id, "present")} className={`px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer ${att.status === "present" ? "bg-emerald-600 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-black/70 dark:text-white/75 hover:bg-emerald-50"}`}>Présent</button>
+<button type="button" onClick={() => updatePmAttendanceStatus(att.id, "late", 15)} className={`px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer ${att.status === "late" ? "bg-amber-500 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-black/70 dark:text-white/75 hover:bg-amber-50"}`}>Retard</button>
+<button type="button" onClick={() => updatePmAttendanceStatus(att.id, "absent")} className={`px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer ${att.status === "absent" ? "bg-red-600 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-black/70 dark:text-white/75 hover:bg-red-50"}`}>Absent</button>
 </div>;
 			}
 		}
@@ -332,15 +332,15 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 <div>
 <div className="flex items-center gap-2">
 <span className="text-xs font-semibold uppercase tracking-wider text-[#d4522f]">Superviseur Terrain</span>
-<span className="text-zinc-400">·</span>
-<span className="text-xs text-zinc-500">Missions Live & Pointage Mobile</span>
+<span className="text-black/55 dark:text-white/55">·</span>
+<span className="text-xs text-black/55 dark:text-white/55">Missions Live & Pointage Mobile</span>
 </div>
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-zinc-900 dark:text-zinc-100">
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {activeTab === "missions" ? "Déploiements & Activations Terrain" : activeTab === "attendance" ? "Pointage Présence & Clôture Paie" : activeTab === "staffing" ? "Sélection & Affectation Équipes" : "Frais & Dépenses Logistiques"}
 </h1>
 </div>
 <div className="flex items-center gap-2.5">
-<button onClick={() => setShowPhoneSimulator((prev) => !prev)} className={`px-3 py-1.5 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer ${showPhoneSimulator ? "bg-[#d4522f] text-white" : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50"}`}>
+<button onClick={() => setShowPhoneSimulator((prev) => !prev)} className={`px-3 py-1.5 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer ${showPhoneSimulator ? "bg-[#d4522f] text-white" : "bg-white dark:bg-zinc-800 text-black/70 dark:text-white/75 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50"}`}>
 <Smartphone className="w-3.5 h-3.5" />
 <span>Simulateur Mobile</span>
 </button>
@@ -374,23 +374,23 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 				].map((tab) => {
 					const Icon = tab.icon;
 					const isActive = activeTab === tab.id;
-					return /* @__PURE__ */ <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${isActive ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}>
+					return /* @__PURE__ */ <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${isActive ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>
 <Icon className="w-4 h-4" />
 <span>{tab.label}</span>
-{tab.count !== void 0 && tab.count > 0 && /* @__PURE__ */ <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">{tab.count}</span>}
+{tab.count !== void 0 && tab.count > 0 && /* @__PURE__ */ <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-zinc-100 dark:bg-zinc-800 text-black/70 dark:text-white/75">{tab.count}</span>}
 </button>;
 				})}
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">Supervision Opérationnelle & Déploiement Terrains</h2>
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">Supervision Opérationnelle & Déploiement Terrains</h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">Missions Déployées</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">Missions Déployées</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono">{pmMissions.length}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{pmMissions.length}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 {"Sur "}
 {new Set(pmMissions.map((m) => m.wilayaCode)).size}
 {" wilayas couvertes"}
@@ -398,10 +398,10 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">Talents Actifs Mobilisés</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">Talents Actifs Mobilisés</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono">{pmTalents.filter((t) => t.status === "active").length}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{pmTalents.filter((t) => t.status === "active").length}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 {"Sur "}
 {pmTalents.length}
 {" profils qualifiés"}
@@ -410,12 +410,12 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">SLA Conformité Clôture</span>
+<span className="text-[11px] font-medium text-white/80">SLA Conformité Clôture</span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">58 WILAYAS LIVE</span>
 </div>
 <div>
-<div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">98.6%</div>
-<p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+<div className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">98.6%</div>
+<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
 <span>Émargements géolocalisés clôturés</span>
 </p>
@@ -430,27 +430,32 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 <FilterSelect label="Wilaya" value={wilayaFilter} onChange={(val) => setWilayaFilter(typeof val === "string" ? val : val.target?.value || val)} options={[
 								{
 									value: "all",
-									label: "Toutes les wilayas"
+									label: language === "ar" ? "الكل" : language === "fr" ? "Toutes" : "All",
+									tooltip: language === "ar" ? "جميع الولايات" : language === "fr" ? "Toutes les wilayas" : "All wilayas"
 								},
 								{
 									value: "16",
-									label: "16 - Alger"
+									label: language === "ar" ? "الجزائر" : language === "fr" ? "Alger" : "Algiers",
+									tooltip: "16 - Alger"
 								},
 								{
 									value: "31",
-									label: "31 - Oran"
+									label: language === "ar" ? "وهران" : "Oran",
+									tooltip: "31 - Oran"
 								},
 								{
 									value: "25",
-									label: "25 - Constantine"
+									label: language === "ar" ? "قسنطينة" : "Constantine",
+									tooltip: "25 - Constantine"
 								},
 								{
 									value: "19",
-									label: "19 - Sétif"
+									label: language === "ar" ? "سطيف" : "Sétif",
+									tooltip: "19 - Sétif"
 								}
 							]} />
 </div>
-<button onClick={handleExportMissionsCsv} className="px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer">
+<button onClick={handleExportMissionsCsv} className="px-3 py-1.5 text-xs font-semibold text-black/70 dark:text-white/75 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer">
 <Download className="w-3.5 h-3.5" />
 <span>Export CSV</span>
 </button>
@@ -459,11 +464,11 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 <div className="space-y-2">
 <div className="flex items-center justify-between text-xs font-mono font-bold text-[#d4522f]">
 <span>{mission.code}</span>
-<span className="text-zinc-500 font-normal">{mission.activationType}</span>
+<span className="text-black/55 dark:text-white/55 font-normal">{mission.activationType}</span>
 </div>
-<h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 line-clamp-1">{mission.title}</h4>
-<div className="text-xs text-zinc-500 space-y-0.5">
-<div className="font-semibold text-zinc-700 dark:text-zinc-300">{mission.venueName}</div>
+<h4 className="text-sm font-bold text-black dark:text-white line-clamp-1">{mission.title}</h4>
+<div className="text-xs text-black/55 dark:text-white/55 space-y-0.5">
+<div className="font-semibold text-black/70 dark:text-white/75">{mission.venueName}</div>
 <div>
 {mission.address}
 {" ("}
@@ -473,7 +478,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 </div>
 </div>
 <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center text-xs">
-<span className="font-mono text-zinc-500">{mission.startDate}</span>
+<span className="font-mono text-black/55 dark:text-white/55">{mission.startDate}</span>
 <button type="button" onClick={() => {
 									setSelectedMissionId(mission.id);
 									setActiveTab("attendance");
@@ -486,17 +491,17 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 <div>
 <div className="flex items-center gap-2">
 <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider">Feuille de Présence & Pointage (Slide 9 & 10)</span>
-{isMissionLocked && /* @__PURE__ */ <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 flex items-center gap-1">
+{isMissionLocked && /* @__PURE__ */ <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-black/70 dark:text-white/75 flex items-center gap-1">
 <Lock className="w-3 h-3" />
 {" Verrouillé"}
 </span>}
 </div>
-<h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mt-1">
+<h2 className="text-lg font-bold text-black dark:text-white mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {selectedMission?.code}
 {" · "}
 {selectedMission?.title}
 </h2>
-<div className="text-xs text-zinc-500">
+<div className="text-xs text-black/55 dark:text-white/55">
 {selectedMission?.venueName}
 {" · "}
 {selectedMission?.startDate}
@@ -534,23 +539,23 @@ Clôturer & Transmettre Paie DG
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-sm text-[#d4522f] shrink-0">{att.talentName.substring(0, 2).toUpperCase()}</div>
 <div>
-<h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 line-clamp-1">{att.talentName}</h4>
-<p className="text-xs text-zinc-400 font-mono">
+<h4 className="text-sm font-bold text-black dark:text-white line-clamp-1">{att.talentName}</h4>
+<p className="text-xs text-black/55 dark:text-white/55 font-mono">
 {"Arrivée : "}
 {att.checkInTime || "Non pointé"}
 </p>
 </div>
 </div>
 <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
-<span className="font-mono font-bold text-sm text-zinc-900 dark:text-zinc-100 tabular-nums">{formatMoney(att.grossPayableDzd, "DZD")}</span>
+<span className="font-mono font-bold text-sm text-black dark:text-white tabular-nums">{formatMoney(att.grossPayableDzd, "DZD")}</span>
 <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${att.status === "present" ? "bg-emerald-100 text-emerald-700" : att.status === "late" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}`}>{att.status}</span>
 </div>
 </div>} />
 </div>}
 {activeTab === "staffing" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex items-center justify-between">
-<h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Répertoire des Animateurs (58 Wilayas)</h3>
-<span className="text-xs text-zinc-500">
+<h3 className="text-sm font-bold text-black dark:text-white">Répertoire des Animateurs (58 Wilayas)</h3>
+<span className="text-xs text-black/55 dark:text-white/55">
 {pmTalents.length}
 {" profils disponibles"}
 </span>
@@ -559,8 +564,8 @@ Clôturer & Transmettre Paie DG
 {pmTalents.slice(0, 9).map((talent) => /* @__PURE__ */ <div key={talent.id} className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-neutral-800 flex items-center gap-3 shadow-2xs">
 <img src={talent.portraitPhotoUrl} alt={talent.fullName} className="w-12 h-12 rounded-full object-cover border border-[#d4522f]" />
 <div className="min-w-0">
-<div className="font-bold text-xs text-zinc-900 dark:text-zinc-100 truncate">{talent.fullName}</div>
-<div className="text-[11px] text-zinc-500">
+<div className="font-bold text-xs text-black dark:text-white truncate">{talent.fullName}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55">
 {talent.wilayaName}
 {" · "}
 {talent.commune}
@@ -577,7 +582,7 @@ Clôturer & Transmettre Paie DG
 <div className="p-6 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs max-w-xl mx-auto space-y-4">
 <div>
 <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">Dépense d'Urgence Terrain (Slide 11)</span>
-<h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mt-0.5">Frais de Régie & Consommables</h3>
+<h3 className="text-lg font-bold text-black dark:text-white mt-0.5">Frais de Régie & Consommables</h3>
 </div>
 {expenseSubmitted && /* @__PURE__ */ <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-300">Dépense transmise à la Direction pour arbitrage !</div>}
 <form onSubmit={handleExpenseSubmit} className="space-y-4">
@@ -586,15 +591,18 @@ Clôturer & Transmettre Paie DG
 <FilterSelect label="Catégorie de Frais" value={expenseCategory} onChange={(val) => setExpenseCategory(typeof val === "string" ? val : val.target?.value || val)} options={[
 										{
 											value: "materials",
-											label: "Fournitures stand / adhésif / scotch"
+											label: language === "ar" ? "مستلزمات" : language === "fr" ? "Fournitures" : "Supplies",
+											tooltip: "Fournitures stand / adhésif / scotch"
 										},
 										{
 											value: "catering",
-											label: "Eau minérale & pauses animateurs"
+											label: language === "ar" ? "إطعام" : language === "fr" ? "Pauses" : "Refreshments",
+											tooltip: "Eau minérale & pauses animateurs"
 										},
 										{
 											value: "transport",
-											label: "Stationnement & péage autoroute"
+											label: language === "ar" ? "نقل" : language === "fr" ? "Transport" : "Transit",
+											tooltip: "Stationnement & péage autoroute"
 										}
 									]} />
 <AtriumButton type="submit" variant="primary" className="w-full" icon={<Plus className="w-4 h-4" />}>Soumettre le Reçu à la Direction</AtriumButton>
@@ -608,8 +616,8 @@ Clôturer & Transmettre Paie DG
 <div className="p-4 space-y-4">
 <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700">
 <div className="text-xs font-bold text-[#d4522f]">{selectedMission?.code || "MIS-104"}</div>
-<div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{selectedMission?.title || "Activation Terrain"}</div>
-<div className="text-[11px] text-zinc-500">
+<div className="text-sm font-bold text-black dark:text-white">{selectedMission?.title || "Activation Terrain"}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55">
 {selectedMission?.venueName}
 {" ("}
 {selectedMission?.wilayaName}
@@ -617,15 +625,15 @@ Clôturer & Transmettre Paie DG
 </div>
 </div>
 <div className="space-y-2">
-<div className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+<div className="text-xs font-bold text-black/70 dark:text-white/75">
 Équipe Affectée (
 {missionAttendances.length}
 {" animateurs)"}
 </div>
 {missionAttendances.map((att) => /* @__PURE__ */ <div key={att.id} className="p-3 bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 flex items-center justify-between text-xs shadow-xs">
 <div>
-<div className="font-semibold text-zinc-900 dark:text-zinc-100">{att.talentName}</div>
-<div className="text-[10px] text-zinc-400 font-mono">
+<div className="font-semibold text-black dark:text-white">{att.talentName}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 font-mono">
 {att.status.toUpperCase()}
 {" · "}
 {formatMoney(att.grossPayableDzd, "DZD")}
@@ -640,5 +648,3 @@ Clôturer & Transmettre Paie DG
 </div>}
 </div>;
 };
-
-export { ProjectComptaView_exports as a, Monitor as c, ProjectCreaView_exports as i, ExternalLink as l, ProjectRhView_exports as n, ProjectChefProjetView_exports as o, ProjectDirectionView_exports as r, Radio as s, ProjectSuperviseurView_exports as t };

@@ -100,10 +100,10 @@ export const STATUS_TRANSLATIONS: Record<MemberStatus, Record<SupportedLanguage,
   Expired: { en: 'Expired', fr: 'Expiré', ar: 'منتهي' },
   Frozen: { en: 'Frozen', fr: 'Gelé', ar: 'مجمد' },
   Suspended: { en: 'Suspended', fr: 'Suspendu', ar: 'معلق' },
-  Pending: { en: 'Pending', fr: 'En attente', ar: 'قيد الانتظار' },
+  Pending: { en: 'Pending', fr: 'Attente', ar: 'منتظر' },
   Lead: { en: 'Lead', fr: 'Prospect', ar: 'محتمل' },
   Banned: { en: 'Banned', fr: 'Banni', ar: 'محظور' },
-  Unknown: { en: 'Unknown', fr: 'Inconnu', ar: 'غير معروف' },
+  Unknown: { en: 'Unknown', fr: 'Inconnu', ar: 'مجهول' },
 };
 
 /**
@@ -115,10 +115,10 @@ export function localizeStatus(status: string, lang: SupportedLanguage = 'en'): 
   if (status === 'Approved') return lang === 'ar' ? 'معتمد' : lang === 'fr' ? 'Validé' : 'Approved';
   if (status === 'Declined') return lang === 'ar' ? 'مرفوض' : lang === 'fr' ? 'Refusé' : 'Declined';
   if (status === 'Confirmed') return lang === 'ar' ? 'مؤكد' : lang === 'fr' ? 'Confirmé' : 'Confirmed';
-  if (status === 'InChair') return lang === 'ar' ? 'على الكرسي' : lang === 'fr' ? 'Au fauteuil' : 'In Chair';
+  if (status === 'InChair') return lang === 'ar' ? 'جاري' : lang === 'fr' ? 'Fauteuil' : 'Chair';
   if (status === 'Completed') return lang === 'ar' ? 'مكتمل' : lang === 'fr' ? 'Terminé' : 'Completed';
   if (status === 'Cancelled') return lang === 'ar' ? 'ملغى' : lang === 'fr' ? 'Annulé' : 'Cancelled';
-  if (status === 'NoShow') return lang === 'ar' ? 'لم يحضر' : lang === 'fr' ? 'Absent' : 'No Show';
+  if (status === 'NoShow') return lang === 'ar' ? 'غائب' : lang === 'fr' ? 'Absent' : 'Missed';
   if (status === 'Settled') return lang === 'ar' ? 'مسدد' : lang === 'fr' ? 'Encaissé' : 'Settled';
   if (status === 'Refunded') return lang === 'ar' ? 'مسترجع' : lang === 'fr' ? 'Remboursé' : 'Refunded';
   return status;

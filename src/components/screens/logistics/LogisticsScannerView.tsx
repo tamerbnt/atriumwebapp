@@ -223,7 +223,7 @@ export const LogisticsScannerView: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+              <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
                 {isAr ? 'ماسح الأرصفة وفرز الأكياس (Sac-Navette & Scellés)' : 'Scanner Express Quai & Sacs-Navette'}
               </h1>
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 flex items-center gap-1">
@@ -243,7 +243,7 @@ export const LogisticsScannerView: React.FC = () => {
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                 scanMode === m
                   ? 'bg-white dark:bg-neutral-900 text-[#d4522f] shadow-xs'
-                  : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                  : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
               }`}
             >
               {m === 'Bagging'
@@ -266,7 +266,7 @@ export const LogisticsScannerView: React.FC = () => {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-bold text-sm text-neutral-900 dark:text-white">
+                  <span className="font-mono font-bold text-sm text-black dark:text-white">
                     {activeBag.bagCode}
                   </span>
                   <span
@@ -279,7 +279,7 @@ export const LogisticsScannerView: React.FC = () => {
                     {activeBag.status}
                   </span>
                 </div>
-                <div className="text-xs text-neutral-500 mt-0.5">
+                <div className="text-xs text-black/55 dark:text-white/55 mt-0.5">
                   Destination: Wilaya {activeBag.destinationHubWilaya} • Poids: <span className="font-mono font-bold">{activeBag.totalWeightKg} kg / 25 kg</span>
                 </div>
               </div>
@@ -324,9 +324,9 @@ export const LogisticsScannerView: React.FC = () => {
                 ? 'امسح باركود الشحنة بواسطة قارئ الباركود (Ex: ATR-EXP-88912)...'
                 : 'Scannez le code-barres AWB (Lecteur HID ou caméra, ex: ATR-EXP-88912)...'
             }
-            className="w-full pl-12 pr-28 py-4 rounded-2xl bg-white dark:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-700 focus:border-[#d4522f] text-sm font-mono font-bold text-neutral-900 dark:text-white shadow-xs outline-hidden tracking-wider"
+            className="w-full pl-12 pr-28 py-4 rounded-2xl bg-white dark:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-700 focus:border-[#d4522f] text-sm font-mono font-bold text-black dark:text-white shadow-xs outline-hidden tracking-wider"
           />
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-black/55 dark:text-white/55">
             <Barcode size={22} />
           </div>
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -342,15 +342,15 @@ export const LogisticsScannerView: React.FC = () => {
         {/* Live Audio / Optical Scan Feed */}
         <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-3 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
+            <h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
               {isAr ? 'سجل المسح الصوتي المباشر' : 'Journal des Scans en Direct'}
             </h3>
-            <span className="text-[10px] font-mono text-neutral-400">Auto-scroll</span>
+            <span className="text-[10px] font-mono text-black/55 dark:text-white/55">Auto-scroll</span>
           </div>
 
           <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
             {scanHistory.length === 0 ? (
-              <div className="p-6 text-center text-xs text-neutral-400">
+              <div className="p-6 text-center text-xs text-black/55 dark:text-white/55">
                 {isAr ? 'في انتظار أول مسح ضوئي...' : 'En attente de lecture code-barres...'}
               </div>
             ) : (
@@ -364,14 +364,14 @@ export const LogisticsScannerView: React.FC = () => {
                   }`}
                 >
                   <div className="space-y-0.5 truncate">
-                    <div className="font-mono font-bold text-neutral-900 dark:text-white">
+                    <div className="font-mono font-bold text-black dark:text-white">
                       {h.code}
                     </div>
-                    <div className="text-[11px] text-neutral-600 dark:text-neutral-400 truncate">
+                    <div className="text-[11px] text-black/70 dark:text-white/75 truncate">
                       {h.message}
                     </div>
                   </div>
-                  <span className="text-[10px] font-mono text-neutral-400 shrink-0">
+                  <span className="text-[10px] font-mono text-black/55 dark:text-white/55 shrink-0">
                     {h.timestamp}
                   </span>
                 </div>
@@ -384,7 +384,7 @@ export const LogisticsScannerView: React.FC = () => {
         <div className="lg:col-span-2 bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {isAr ? 'طرود رصيف الفرز' : 'Colis au Quai de Tri'}
               </h2>
             </div>
@@ -417,10 +417,10 @@ export const LogisticsScannerView: React.FC = () => {
                 header: isAr ? 'المستلم والوجهة' : 'Destinataire & Wilaya',
                 renderCell: (s: LogisticsShipment) => (
                   <div>
-                    <div className="font-semibold text-xs text-neutral-900 dark:text-white">
+                    <div className="font-semibold text-xs text-black dark:text-white">
                       {s.recipientName}
                     </div>
-                    <div className="text-[11px] text-neutral-500">
+                    <div className="text-[11px] text-black/55 dark:text-white/55">
                       {s.destinationWilaya} • {s.recipientPhone}
                     </div>
                   </div>
@@ -472,27 +472,27 @@ export const LogisticsScannerView: React.FC = () => {
             <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3">
               <div className="flex items-center gap-2">
                 <Lock size={18} className="text-[#d4522f]" />
-                <h3 className="font-bold text-sm text-neutral-900 dark:text-white">
+                <h3 className="font-bold text-sm text-black dark:text-white">
                   {isAr ? 'ختم وإغلاق كيس الشحن (Scellé de Sécurité)' : 'Pose du Scellé de Sécurité'}
                 </h3>
               </div>
               <button
                 onClick={() => setIsSealModalOpen(false)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"
               >
                 <X size={16} />
               </button>
             </div>
 
             <form onSubmit={handleSealActiveBag} className="space-y-4">
-              <p className="text-xs text-neutral-500">
+              <p className="text-xs text-black/55 dark:text-white/55">
                 {isAr
                   ? `أدخل رقم القفل البلاستيكي الفريد لغلق الكيس ${activeBag.bagCode} المتوجه إلى ولاية ${activeBag.destinationHubWilaya}:`
                   : `Veuillez saisir le numéro unique gravé sur le collier de scellé plastique pour le sac ${activeBag.bagCode} :`}
               </p>
 
               <div>
-                <label className="block text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-1">
+                <label className="block text-xs font-semibold text-black/70 dark:text-white/75 mb-1">
                   Numéro de Scellé (Ex: SL-994821)
                 </label>
                 <input

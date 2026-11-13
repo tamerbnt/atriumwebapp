@@ -16,7 +16,7 @@ interface MandateModalProps {
 
 
 
-const MandateModal = ({ isOpen, onClose, onSave, properties, selectedProperty }) => {
+export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onSave, properties, selectedProperty }) => {
 	const [propertyId, setPropertyId] = React.useState(selectedProperty?.id || (properties[0]?.id ?? ""));
 	const activeProp = properties.find((p: any) => p.id === propertyId) || selectedProperty || properties[0];
 	const [mandateType, setMandateType] = React.useState("Vente_Simple");
@@ -91,15 +91,15 @@ const MandateModal = ({ isOpen, onClose, onSave, properties, selectedProperty })
 		onClose();
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-<div className="relative w-full max-w-3xl bg-white dark:bg-[#18181B] rounded-[28px] shadow-2xl border border-[#E9EEF0] dark:border-[#27272A] p-6 md:p-8 my-8 text-[#18181B] dark:text-[#FAFAFA]">
+<div className="relative w-full max-w-3xl bg-white dark:bg-[#18181B] rounded-[28px] shadow-2xl border border-[#E9EEF0] dark:border-[#27272A] p-6 md:p-8 my-8 text-black dark:text-[#FAFAFA]">
 <div className="flex items-center justify-between pb-4 border-b border-[#E2E8EC] dark:border-[#27272A] mb-6">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><FileText className="w-5 h-5" /></div>
 <div>
-<h2 className="text-xl font-bold tracking-tight">Nouveau Mandat d'Agence (Décret 09-18)</h2>
+<h2 className="text-xl font-bold tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">Nouveau Mandat d'Agence (Décret 09-18)</h2>
 </div>
 </div>
-<button onClick={onClose} className="p-2 rounded-xl text-[#64748B] hover:text-[#18181B] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"><X className="w-5 h-5" /></button>
+<button onClick={onClose} className="p-2 rounded-xl text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"><X className="w-5 h-5" /></button>
 </div>
 <form onSubmit={handleSubmit} className="space-y-6">
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -187,10 +187,10 @@ const MandateModal = ({ isOpen, onClose, onSave, properties, selectedProperty })
 <div className="flex items-center gap-3">
 <div className="w-9 h-9 rounded-xl bg-[#d4522f] text-white flex items-center justify-center font-bold"><Calculator className="w-5 h-5" /></div>
 <div>
-<div className="text-xs text-[#64748B] dark:text-[#A1A1AA]">
+<div className="text-xs text-black/70 dark:text-[#A1A1AA]">
 {commissionMode === "DecreeTranches" ? "Honoraires Légaux Dégressifs (Décret 09-18 Art. 34)" : `Honoraires Forfaitaires (${commissionRatePercent}%)`}
 </div>
-<div className="text-sm font-semibold text-[#18181B] dark:text-white">
+<div className="text-sm font-semibold text-black dark:text-white">
 {"Base HT: "}
 <span className="font-mono text-[#d4522f] font-bold">
 {commissionCalc.baseHt.toLocaleString()}
@@ -205,7 +205,7 @@ const MandateModal = ({ isOpen, onClose, onSave, properties, selectedProperty })
 </div>
 </div>
 <div className="text-right">
-<span className="text-xs uppercase text-[#64748B] dark:text-[#A1A1AA] font-semibold">Total TTC</span>
+<span className="text-xs uppercase text-black/70 dark:text-[#A1A1AA] font-semibold">Total TTC</span>
 <div className="text-lg font-bold font-mono text-[#d4522f]">
 {commissionCalc.totalTtc.toLocaleString()}
 {" DZD"}

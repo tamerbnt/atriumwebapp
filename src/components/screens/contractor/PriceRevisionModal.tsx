@@ -15,7 +15,7 @@ interface PriceRevisionModalProps {
 
 
 
-const PriceRevisionModal = ({ isOpen, onClose, project }) => {
+export const PriceRevisionModal: React.FC<PriceRevisionModalProps> = ({ isOpen, onClose, project }) => {
 	const { language } = useAtriumStore();
 	const isAr = language === "ar";
 	const [baseLaborS0, setBaseLaborS0] = React.useState("120.0");
@@ -70,38 +70,38 @@ const PriceRevisionModal = ({ isOpen, onClose, project }) => {
 <div className="flex items-center gap-2.5">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Calculator size={20} /></div>
 <div>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isAr ? "حاسبة مراجعة الأسعار التعاقدية (CCAG المادة 54)" : "Calculateur de Révision des Prix (CCAG Art. 54)"}
 </h2>
-<p className="text-xs text-neutral-500">
+<p className="text-xs text-black/55 dark:text-white/55">
 {project.projectCode}
 {" · "}
 {project.projectName}
 </p>
 </div>
 </div>
-<button onClick={onClose} className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1"><X size={18} /></button>
+<button onClick={onClose} className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1"><X size={18} /></button>
 </div>
 <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 space-y-1">
-<div className="flex items-center gap-2 text-xs font-bold text-neutral-800 dark:text-neutral-200">
+<div className="flex items-center gap-2 text-xs font-bold text-black dark:text-white">
 <Info size={14} className="text-[#d4522f]" />
 <span>Formule Paramétrique Réglementaire Algérienne</span>
 </div>
-<p className="text-[11px] text-neutral-500 font-mono">P = P0 × [a + b × (S / S0) + c × (M / M0)]</p>
-<p className="text-[10px] text-neutral-400">
+<p className="text-[11px] text-black/55 dark:text-white/55 font-mono">P = P0 × [a + b × (S / S0) + c × (M / M0)]</p>
+<p className="text-[10px] text-black/55 dark:text-white/55">
 Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du Ministère des Travaux Publics.
 </p>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 <div className="p-3.5 bg-neutral-50 dark:bg-neutral-850 rounded-2xl border border-neutral-200 dark:border-neutral-800 space-y-3">
-<span className="text-xs font-bold text-neutral-900 dark:text-white block">Main d'Œuvre & Salaires (S)</span>
+<span className="text-xs font-bold text-black dark:text-white block">Main d'Œuvre & Salaires (S)</span>
 <div className="grid grid-cols-2 gap-2">
 <LabelInput label="Indice Base S0" type="number" value={baseLaborS0} onChange={setBaseLaborS0} />
 <LabelInput label="Indice Actuel S" type="number" value={currentLaborS} onChange={setCurrentLaborS} />
 </div>
-<div className="flex justify-between items-center text-[11px] text-neutral-500 pt-1">
+<div className="flex justify-between items-center text-[11px] text-black/55 dark:text-white/55 pt-1">
 <span>Ratio S / S0:</span>
-<span className="font-mono font-bold text-neutral-800 dark:text-neutral-200">
+<span className="font-mono font-bold text-black dark:text-white">
 {calculation.laborRatio}
 {" (+"}
 {Math.round((calculation.laborRatio - 1) * 100)}
@@ -110,14 +110,14 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 </div>
 </div>
 <div className="p-3.5 bg-neutral-50 dark:bg-neutral-850 rounded-2xl border border-neutral-200 dark:border-neutral-800 space-y-3">
-<span className="text-xs font-bold text-neutral-900 dark:text-white block">Matériaux & Carburant (M)</span>
+<span className="text-xs font-bold text-black dark:text-white block">Matériaux & Carburant (M)</span>
 <div className="grid grid-cols-2 gap-2">
 <LabelInput label="Indice Base M0" type="number" value={baseMaterialM0} onChange={setBaseMaterialM0} />
 <LabelInput label="Indice Actuel M" type="number" value={currentMaterialM} onChange={setCurrentMaterialM} />
 </div>
-<div className="flex justify-between items-center text-[11px] text-neutral-500 pt-1">
+<div className="flex justify-between items-center text-[11px] text-black/55 dark:text-white/55 pt-1">
 <span>Ratio M / M0:</span>
-<span className="font-mono font-bold text-neutral-800 dark:text-neutral-200">
+<span className="font-mono font-bold text-black dark:text-white">
 {calculation.materialRatio}
 {" (+"}
 {Math.round((calculation.materialRatio - 1) * 100)}
@@ -128,8 +128,8 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 </div>
 <div className="p-3.5 bg-neutral-50 dark:bg-neutral-850 rounded-2xl border border-neutral-200 dark:border-neutral-800 space-y-2">
 <div className="flex justify-between items-center text-xs">
-<span className="font-bold text-neutral-900 dark:text-white">Pondération Contractuelle du Marché</span>
-<span className="text-[11px] text-neutral-500 font-mono">
+<span className="font-bold text-black dark:text-white">Pondération Contractuelle du Marché</span>
+<span className="text-[11px] text-black/55 dark:text-white/55 font-mono">
 {"Total = "}
 {(parseFloat(coeffA) + parseFloat(coeffB) + parseFloat(coeffC)).toFixed(2)}
 </span>
@@ -145,7 +145,7 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 </div>
 <div className="p-4 rounded-2xl bg-[#1F1D1B] text-white space-y-3 shadow-md">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-300">Résultat Paramétrique (Coefficient K)</span>
+<span className="text-xs font-semibold text-white/80">Résultat Paramétrique (Coefficient K)</span>
 <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-[#3D2817] text-[#FB923C]">
 {"K = "}
 {calculation.kCoeff}
@@ -153,11 +153,11 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-neutral-800">
 <div>
-<span className="text-[10px] text-neutral-400 block uppercase tracking-wider">Montant Initial HT</span>
+<span className="text-[10px] text-white/75 block uppercase tracking-wider">Montant Initial HT</span>
 <span className="text-base font-bold font-mono">{formatMoney(parseFloat(contractBaseAmount) || 0)}</span>
 </div>
 <div>
-<span className="text-[10px] text-neutral-400 block uppercase tracking-wider">Plus-value Révision</span>
+<span className="text-[10px] text-white/75 block uppercase tracking-wider">Plus-value Révision</span>
 <span className="text-base font-bold font-mono text-emerald-400">
 +
 {formatMoney(calculation.revisionAllowanceDzd)}
@@ -169,7 +169,7 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 </span>
 </div>
 <div>
-<span className="text-[10px] text-neutral-400 block uppercase tracking-wider">Nouveau Montant Révisé HT</span>
+<span className="text-[10px] text-white/75 block uppercase tracking-wider">Nouveau Montant Révisé HT</span>
 <span className="text-base font-bold font-mono text-[#FB923C]">{formatMoney(calculation.revisedTotalDzd)}</span>
 </div>
 </div>

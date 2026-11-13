@@ -130,7 +130,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><FileBadge size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {language === "ar" ? "الشهادات والوثائق الطبية" : "Certificats & Documents Médicaux Officiels"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#0D9488]/15 text-[#0D9488]">Conforme CNAS</span>
@@ -144,7 +144,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex items-center justify-between">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">Activité des Certifications Médicales</h2>
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">Activité des Certifications Médicales</h2>
 </div>
 <div className="flex items-center gap-2">
 <Seek placeholder="Rechercher patient, médecin, QR hash..." value={searchQuery} onChange={setSearchQuery} />
@@ -152,27 +152,27 @@ export const MedicalCertificatesView: React.FC<any> = () => {
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
 <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500">Arrêts de Travail CNAS</span>
-<div className="text-2xl font-bold text-neutral-900 dark:text-white font-mono mt-1">{certificates.filter((c) => c.certificateType === "ArretDeTravail").length}</div>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/55">Arrêts de Travail CNAS</span>
+<div className="text-2xl font-bold text-black dark:text-white mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{certificates.filter((c) => c.certificateType === "ArretDeTravail").length}</div>
 <span className="text-[10px] text-emerald-600 font-medium">Validité juridique garantie</span>
 </div>
 <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500">Aptitudes Physiques</span>
-<div className="text-2xl font-bold text-neutral-900 dark:text-white font-mono mt-1">{certificates.filter((c) => c.certificateType === "AptitudePhysique").length}</div>
-<span className="text-[10px] text-neutral-400">Sport & licences club</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/55">Aptitudes Physiques</span>
+<div className="text-2xl font-bold text-black dark:text-white mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{certificates.filter((c) => c.certificateType === "AptitudePhysique").length}</div>
+<span className="text-[10px] text-black/55 dark:text-white/55">Sport & licences club</span>
 </div>
 <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500">Certificats ITT Médicolégal</span>
-<div className="text-2xl font-bold text-neutral-900 dark:text-white font-mono mt-1">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/55">Certificats ITT Médicolégal</span>
+<div className="text-2xl font-bold text-black dark:text-white mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
 {certificates.filter((c) => c.certificateType === "CertificatDescriptifITT").length}
 </div>
 <span className="text-[10px] text-amber-600">Constats de blessures</span>
 </div>
 <div className="p-4 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white shadow-sm flex flex-col justify-between">
-<span className="text-[11px] text-neutral-400 font-medium">Total Certificats Émis</span>
+<span className="text-[11px] text-white/75 font-medium">Total Certificats Émis</span>
 <div>
-<div className="text-2xl font-bold font-mono text-emerald-400">{certificates.length}</div>
-<span className="text-[10px] text-neutral-400">100% signés et horodatés</span>
+<div className="text-2xl font-bold text-emerald-400 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{certificates.length}</div>
+<span className="text-[10px] text-white/75">100% signés et horodatés</span>
 </div>
 </div>
 </div>
@@ -181,30 +181,35 @@ export const MedicalCertificatesView: React.FC<any> = () => {
 {[
 					{
 						id: "all",
-						label: "Tous les Certificats"
+						label: language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All",
+						tooltip: language === "ar" ? "جميع الشهادات الطبية" : language === "fr" ? "Tous les Certificats" : "All medical certificates"
 					},
 					{
 						id: "ArretDeTravail",
-						label: "Arrêts de Travail"
+						label: language === "ar" ? "توقف" : language === "fr" ? "Arrêts" : "Leave",
+						tooltip: language === "ar" ? "شهادات التوقف عن العمل" : language === "fr" ? "Arrêts de Travail" : "Sick leave certificates"
 					},
 					{
 						id: "AptitudePhysique",
-						label: "Aptitudes Physiques"
+						label: language === "ar" ? "أهلية" : language === "fr" ? "Aptitudes" : "Fitness",
+						tooltip: language === "ar" ? "شهادات اللياقة البدنية" : language === "fr" ? "Aptitudes Physiques" : "Physical fitness certificates"
 					},
 					{
 						id: "CertificatDescriptifITT",
-						label: "Certificats ITT"
+						label: "ITT",
+						tooltip: language === "ar" ? "شهادات العجز الطبي ITT" : language === "fr" ? "Certificats ITT" : "ITT medical certificates"
 					},
 					{
 						id: "LettreOrientation",
-						label: "Lettres d'Orientation"
+						label: language === "ar" ? "توجيه" : language === "fr" ? "Orientation" : "Referral",
+						tooltip: language === "ar" ? "رسائل التوجيه الطبي" : language === "fr" ? "Lettres d'Orientation" : "Specialist referral letters"
 					}
-				].map((tab) => /* @__PURE__ */ <button key={tab.id} onClick={() => setSelectedTypeFilter(tab.id)} className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${selectedTypeFilter === tab.id ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-xs" : "bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700"}`}>{tab.label}</button>)}
+				].map((tab) => /* @__PURE__ */ <button key={tab.id} onClick={() => setSelectedTypeFilter(tab.id)} title={tab.tooltip} className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${selectedTypeFilter === tab.id ? "bg-neutral-900 dark:bg-white text-white dark:text-black shadow-xs" : "bg-white dark:bg-neutral-800 text-black/70 dark:text-white/75 border border-neutral-200 dark:border-neutral-700"}`}>{tab.label}</button>)}
 </div>
 <div className="w-full overflow-x-auto">
 <table className="w-full text-left border-separate border-spacing-y-1.5 text-xs">
 <thead>
-<tr className="bg-transparent text-neutral-500 font-mono uppercase tracking-wider text-[11px]">
+<tr className="bg-transparent text-black/55 dark:text-white/55 font-mono uppercase tracking-wider text-[11px]">
 <th className="py-2.5 px-4">Date Émission</th>
 <th className="py-2.5 px-4">Type de Document</th>
 <th className="py-2.5 px-4">Patient</th>
@@ -216,14 +221,14 @@ export const MedicalCertificatesView: React.FC<any> = () => {
 </thead>
 <tbody>
 {filteredCertificates.map((cert) => /* @__PURE__ */ <tr key={cert.id} className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs hover:bg-neutral-50/90 dark:hover:bg-neutral-700/60 transition-colors">
-<td className="py-3.5 px-4 font-mono font-medium text-neutral-700 dark:text-neutral-300">{cert.issueDate}</td>
-<td className="py-3.5 px-4 font-semibold text-neutral-900 dark:text-white">{getCertTypeLabel(cert.certificateType)}</td>
-<td className="py-3.5 px-4 font-bold text-neutral-900 dark:text-white">{cert.patientName}</td>
-<td className="py-3.5 px-4 text-neutral-700 dark:text-neutral-300">
+<td className="py-3.5 px-4 font-mono font-medium text-black/70 dark:text-white/75">{cert.issueDate}</td>
+<td className="py-3.5 px-4 font-semibold text-black dark:text-white">{getCertTypeLabel(cert.certificateType)}</td>
+<td className="py-3.5 px-4 font-bold text-black dark:text-white">{cert.patientName}</td>
+<td className="py-3.5 px-4 text-black/70 dark:text-white/75">
 {cert.doctorName}
-<span className="block text-[10px] text-neutral-400">{cert.doctorSpecialty}</span>
+<span className="block text-[10px] text-black/55 dark:text-white/55">{cert.doctorSpecialty}</span>
 </td>
-<td className="py-3.5 px-4 text-neutral-600 dark:text-neutral-400">
+<td className="py-3.5 px-4 text-black/70 dark:text-white/75">
 {cert.certificateType === "ArretDeTravail" && /* @__PURE__ */ <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">
 {cert.durationDays}
 {" jours (du "}
@@ -247,7 +252,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
 {cert.purpose}
 </span>}
 </td>
-<td className="py-3.5 px-4 font-mono text-[10px] text-neutral-400">{cert.qrHash}</td>
+<td className="py-3.5 px-4 font-mono text-[10px] text-black/55 dark:text-white/55">{cert.qrHash}</td>
 <td className="py-3.5 px-4 text-right">
 <AtriumButton variant="secondary" size="sm" onClick={() => setActivePrintCert(cert)} icon={<Printer size={13} />}>Imprimer</AtriumButton>
 </td>
@@ -261,10 +266,10 @@ export const MedicalCertificatesView: React.FC<any> = () => {
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><FileBadge size={20} /></div>
 <div>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">Établir un Certificat Médical</h2>
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">Établir un Certificat Médical</h2>
 </div>
 </div>
-<button onClick={() => setIsCreateModalOpen(false)} className="p-2 rounded-xl text-neutral-400 hover:text-neutral-700 dark:hover:text-white hover:bg-neutral-100"><X size={18} /></button>
+<button onClick={() => setIsCreateModalOpen(false)} className="p-2 rounded-xl text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100"><X size={18} /></button>
 </div>
 <form onSubmit={handleCreateCertificate} className="p-6 space-y-4 overflow-y-auto max-h-[75vh]">
 <LabelSelect label="Type de Certificat" value={certType} onChange={(val) => setCertType(val)} options={[
@@ -316,7 +321,7 @@ Avertissement Réglementaire CNAS (
 Les arrêts de travail de plus de 30 jours consécutifs requièrent une convocation et validation préalable de la commission médicale du contrôle de la sécurité sociale (Art. 17 Loi 83-11).
 </p>
 </div>;
-									return /* @__PURE__ */ <div className="text-[11px] text-neutral-500 font-mono">
+									return /* @__PURE__ */ <div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
 {"Durée calculée de l'arrêt : "}
 <strong>
 {diffDays}
@@ -328,8 +333,8 @@ Les arrêts de travail de plus de 30 jours consécutifs requièrent une convocat
 {certType === "CertificatDescriptifITT" && /* @__PURE__ */ <LabelInput label="Incapacité Totale de Travail (en jours)" type="number" value={String(ittDays)} onChange={(e) => setIttDays(Number(e.target.value))} required />}
 {(certType === "AptitudePhysique" || certType === "LettreOrientation") && /* @__PURE__ */ <LabelInput label="Objet / Destination du Certificat" value={purpose} onChange={(e) => setPurpose(e.target.value)} placeholder="ex: Football amateur, Visite d'embauche, Référé pour avis cardiologique" required />}
 <div>
-<label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">Constatations Cliniques & Mentions Légales</label>
-<textarea value={clinicalFindings} onChange={(e) => setClinicalFindings(e.target.value)} rows={3} className="w-full px-3 py-2 text-xs rounded-xl bg-[#F3EDE7] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-hidden" required />
+<label className="text-xs font-semibold text-black/70 dark:text-white/75 block mb-1">Constatations Cliniques & Mentions Légales</label>
+<textarea value={clinicalFindings} onChange={(e) => setClinicalFindings(e.target.value)} rows={3} className="w-full px-3 py-2 text-xs rounded-xl bg-[#F3EDE7] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white focus:outline-hidden" required />
 </div>
 <div className="pt-3 border-t border-neutral-200 dark:border-neutral-800 flex justify-between items-center">
 <AtriumButton variant="ghost" type="button" onClick={() => setIsCreateModalOpen(false)}>Annuler</AtriumButton>
@@ -339,22 +344,22 @@ Les arrêts de travail de plus de 30 jours consécutifs requièrent une convocat
 </div>
 </div>}
 {activePrintCert && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-<div className="bg-white text-neutral-900 w-full max-w-xl rounded-[28px] border border-neutral-300 shadow-2xl p-8 flex flex-col justify-between max-h-[90vh] overflow-y-auto">
+<div className="bg-white text-black w-full max-w-xl rounded-[28px] border border-neutral-300 shadow-2xl p-8 flex flex-col justify-between max-h-[90vh] overflow-y-auto">
 <div className="border-b-2 border-[#d4522f] pb-4 flex justify-between items-start">
 <div>
-<h2 className="text-lg font-black uppercase text-[#d4522f]">{activePrintCert.doctorName}</h2>
-<p className="text-xs font-semibold text-neutral-800">{activePrintCert.doctorSpecialty}</p>
-<p className="text-[10px] text-neutral-500">Polyclinique El-Chifa · 14 Rue Didouche Mourad, Alger</p>
+<h2 className="text-lg font-black uppercase text-[#d4522f] font-['Barlow_Condensed',sans-serif] rtl:font-sans">{activePrintCert.doctorName}</h2>
+<p className="text-xs font-semibold text-black">{activePrintCert.doctorSpecialty}</p>
+<p className="text-[10px] text-black/55">Polyclinique El-Chifa · 14 Rue Didouche Mourad, Alger</p>
 </div>
-<div className="text-right text-[10px] font-mono text-neutral-400">
-<p className="font-bold text-neutral-800">RÉPUBLIQUE ALGÉRIENNE</p>
+<div className="text-right text-[10px] font-mono text-black/55">
+<p className="font-bold text-black">RÉPUBLIQUE ALGÉRIENNE</p>
 <p>CERTIFICAT MÉDICAL OFFICIEL</p>
 </div>
 </div>
 <div className="text-center my-6">
 <span className="text-sm font-bold uppercase tracking-widest px-4 py-1.5 border-2 border-neutral-800 rounded-lg inline-block">{getCertTypeLabel(activePrintCert.certificateType)}</span>
 </div>
-<div className="space-y-4 text-xs leading-relaxed text-neutral-800">
+<div className="space-y-4 text-xs leading-relaxed text-black">
 <p>
 {"Je soussigné, "}
 <strong>{activePrintCert.doctorName}</strong>
@@ -414,20 +419,20 @@ Les arrêts de travail de plus de 30 jours consécutifs requièrent une convocat
 </strong>
 , sous réserve de complications ultérieures.
 </div>}
-<p className="text-[11px] text-neutral-500 pt-2">
+<p className="text-[11px] text-black/55 pt-2">
 Certificat délivré en mains propres à l'intéressé(e) pour faire valoir ce que de droit.
 </p>
 </div>
 <div className="mt-8 pt-4 border-t border-neutral-200 flex justify-between items-end">
 <div className="flex items-center gap-3">
-<QrCode size={40} className="text-neutral-800" />
-<div className="text-[9px] font-mono text-neutral-400">
-<p className="font-bold text-neutral-700">AUTHENTICITÉ VÉRIFIÉE</p>
+<QrCode size={40} className="text-black" />
+<div className="text-[9px] font-mono text-black/55">
+<p className="font-bold text-black/75">AUTHENTICITÉ VÉRIFIÉE</p>
 <p>{activePrintCert.qrHash}</p>
 </div>
 </div>
 <div className="text-center w-36">
-<span className="text-[10px] text-neutral-500 block mb-1">Cachet & Signature</span>
+<span className="text-[10px] text-black/55 block mb-1">Cachet & Signature</span>
 <div className="w-32 h-16 border-2 border-dashed border-blue-600 rounded-lg p-1.5 flex flex-col justify-center items-center text-center rotate-[-3deg] text-blue-700 bg-blue-50/50">
 <span className="text-[8px] font-black uppercase">{activePrintCert.doctorName}</span>
 <span className="text-[7px] font-bold">{activePrintCert.doctorSpecialty}</span>

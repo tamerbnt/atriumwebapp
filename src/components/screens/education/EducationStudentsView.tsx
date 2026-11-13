@@ -243,10 +243,10 @@ export const EducationStudentsView: React.FC<any> = () => {
 				minWidth: "220px",
 				sortable: true,
 				renderCell: (student: any) => /* @__PURE__ */ <div className="flex items-center gap-3">
-<div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">{student.fullName.charAt(0)}</div>
+<div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">{student.fullName.charAt(0)}</div>
 <div className="min-w-0">
-<div className="font-semibold text-neutral-900 dark:text-white truncate hover:text-[#d4522f] transition-colors">{student.fullName}</div>
-<div className="text-[11px] text-neutral-400 truncate">
+<div className="font-semibold text-black dark:text-white truncate hover:text-[#d4522f] transition-colors">{student.fullName}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 truncate">
 {student.phone}
 {" "}
 {student.email && `· ${student.email}`}
@@ -262,12 +262,12 @@ export const EducationStudentsView: React.FC<any> = () => {
 				renderCell: (student: any) => {
 					const enrollment = eduEnrollments.find((e) => e.studentId === student.id && e.status === "Active");
 					return enrollment ? /* @__PURE__ */ <div>
-<span className="font-medium text-neutral-800 dark:text-neutral-200 block truncate max-w-[180px]">{enrollment.cohortName}</span>
-<span className="text-[10px] text-neutral-400">
+<span className="font-medium text-black dark:text-white block truncate max-w-[180px]">{enrollment.cohortName}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">
 {"Enrolled "}
 {enrollment.enrolledAt ? enrollment.enrolledAt.split("T")[0] : "Active"}
 </span>
-</div> : /* @__PURE__ */ <span className="text-neutral-400 italic">No Active Cohort</span>;
+</div> : /* @__PURE__ */ <span className="text-black/55 dark:text-white/55 italic">No Active Cohort</span>;
 				}
 			},
 			{
@@ -282,7 +282,7 @@ export const EducationStudentsView: React.FC<any> = () => {
 <div className="w-12 h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
 <div className={`h-full rounded-full ${rate >= 85 ? "bg-emerald-500" : "bg-rose-500"}`} style={{ width: `${rate}%` }} />
 </div>
-<span className="font-semibold text-neutral-700 dark:text-neutral-300 tabular-nums">
+<span className="font-semibold text-black/70 dark:text-white/75 tabular-nums">
 {rate}
 %
 </span>
@@ -300,7 +300,7 @@ export const EducationStudentsView: React.FC<any> = () => {
 {enrollment.paymentStatus}
 {" · "}
 {formatMoney(enrollment.paidAmount)}
-</span> : /* @__PURE__ */ <span className="text-neutral-400">—</span>;
+</span> : /* @__PURE__ */ <span className="text-black/55 dark:text-white/55">—</span>;
 				}
 			},
 			{
@@ -308,14 +308,14 @@ export const EducationStudentsView: React.FC<any> = () => {
 				header: t("edu_drawer_guardian"),
 				width: "2*",
 				minWidth: "160px",
-				renderCell: (student: any) => student.guardianName ? /* @__PURE__ */ <div className="text-neutral-700 dark:text-neutral-300">
+				renderCell: (student: any) => student.guardianName ? /* @__PURE__ */ <div className="text-black/70 dark:text-white/75">
 <span className="font-medium">{student.guardianName}</span>
-<span className="text-[10px] text-neutral-400 block">
+<span className="text-[10px] text-black/55 dark:text-white/55 block">
 {student.guardianRelation || "Guardian"}
 {" · "}
 {student.guardianPhone}
 </span>
-</div> : /* @__PURE__ */ <span className="text-neutral-400">Adult / Self</span>
+</div> : /* @__PURE__ */ <span className="text-black/55 dark:text-white/55">Adult / Self</span>
 			}
 		].filter((c) => !isStaff || c.key !== "tuition");
 	}, [
@@ -435,7 +435,7 @@ export const EducationStudentsView: React.FC<any> = () => {
 <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><Users size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{t("edu_students_title")}</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("edu_students_title")}</h1>
 </div>
 </div>
 </div>
@@ -446,14 +446,14 @@ export const EducationStudentsView: React.FC<any> = () => {
 {selectedStudentIds.size > 0 && /* @__PURE__ */ <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
 <div className="flex items-center gap-3">
 <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
-<span className="text-xs font-bold text-neutral-900 dark:text-white">
+<span className="text-xs font-bold text-black dark:text-white">
 {selectedStudentIds.size}
 {" "}
 {language === "ar" ? "طلاب محددين" : language === "fr" ? "étudiants sélectionnés" : "students selected"}
 </span>
 </div>
 <div className="flex items-center gap-2 flex-wrap">
-<button onClick={() => setSelectedStudentIds(/* @__PURE__ */ new Set())} className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer">
+<button onClick={() => setSelectedStudentIds(/* @__PURE__ */ new Set())} className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer">
 {language === "ar" ? "إلغاء التحديد" : language === "fr" ? "Désélectionner" : "Deselect"}
 </button>
 <button onClick={handleBatchGraduate} className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs">
@@ -476,52 +476,52 @@ export const EducationStudentsView: React.FC<any> = () => {
 </div>}
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
 <div>
-<h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
+<h3 className="text-xs font-bold text-black dark:text-white tracking-tight">
 {language === "ar" ? "مؤشرات الانضباط والتحصيل الدراسي" : language === "fr" ? "Effectifs & Assiduité Scolaire" : "Student Body & Attendance Health"}
 </h3>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "نسبة النشاط" : language === "fr" ? "Ratio d'activité" : "Active Ratio"}
 </span>
 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">↗ 100%</span>
 </div>
 <div>
-<span className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">{totalStudentsCount}</span>
-<span className="text-xs text-neutral-400 tabular-nums ml-1">
+<span className="text-2xl font-bold text-black dark:text-white tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">{totalStudentsCount}</span>
+<span className="text-xs text-black/55 dark:text-white/55 tabular-nums ml-1">
 {"/ "}
 {totalStudentsCount}
 {" "}
 {language === "ar" ? "إجمالي الطلبة" : "total"}
 </span>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">{language === "ar" ? "طلبة مسجلون ونشطون" : "Étudiants régulièrement inscrits"}</p>
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">{language === "ar" ? "طلبة مسجلون ونشطون" : "Étudiants régulièrement inscrits"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "معدل الحضور العام" : language === "fr" ? "Taux d'assiduité" : "Attendance Rate"}
 </span>
 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">{t("edu_verified_rate")}</span>
 </div>
 <div>
-<span className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">
+<span className="text-2xl font-bold text-black dark:text-white tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {averageAttendance}
 %
 </span>
-<span className="text-xs text-neutral-400 ml-1">
+<span className="text-xs text-black/55 dark:text-white/55 ml-1">
 {activeMinorsCount}
 {" "}
 {language === "ar" ? "قاصر" : "mineurs"}
 </span>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">{language === "ar" ? "حضور الفصول والأفواج" : "Assiduité globale certifiée"}</p>
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">{language === "ar" ? "حضور الفصول والأفواج" : "Assiduité globale certifiée"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-400">
+<span className="text-[11px] font-medium text-white/75">
 {isStaff ? language === "ar" ? "الأفواج والبرامج" : language === "fr" ? "Promotions & Cohortes" : "Cohorts & Programs" : language === "ar" ? "إجمالي التحصيل الدراسي" : language === "fr" ? "Frais Scolaires Encaissés" : "Collected Tuition"}
 </span>
 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 inline-block">
@@ -529,10 +529,10 @@ export const EducationStudentsView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<span className="text-2xl font-bold text-[#FB923C] tabular-nums tracking-tight font-mono">
+<span className="text-2xl font-bold text-[#FB923C] tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isStaff ? `${eduCohorts.length} ${language === "ar" ? "فوج" : "cohortes"}` : formatMoney(totalBilledEquiv)}
 </span>
-<p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
 <span>
 {isStaff ? language === "ar" ? "أفواج دراسية تحت الإشراف" : "Programmes d'enseignement en cours" : language === "ar" ? "المستحقات الأكاديمية المسواة" : "Recouvrement scolarité actif"}
@@ -545,11 +545,11 @@ export const EducationStudentsView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
 <div className="flex items-center gap-2">
-<Users size={18} className="text-neutral-700 dark:text-neutral-300" />
-<h2 className="text-sm font-bold text-neutral-900 dark:text-white">
+<Users size={18} className="text-black/70 dark:text-white/75" />
+<h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {language === "ar" ? "دليل الطلبة" : language === "fr" ? "Répertoire des Étudiants" : "Students Directory"}
 </h2>
-<span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">{filteredStudents.length}</span>
+<span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-black/70 dark:text-white/75">{filteredStudents.length}</span>
 </div>
 <div className="flex items-center gap-2.5 flex-wrap">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={t("edu_search_students_ph")} shutSize={36} openWidth={240} />
@@ -557,27 +557,32 @@ export const EducationStudentsView: React.FC<any> = () => {
 											{
 												value: "all",
 												label: t("edu_filter_all"),
+												tooltip: language === "ar" ? "جميع الطلبة" : language === "fr" ? "Tous les étudiants" : "All students",
 												count: eduStudents.length
 											},
 											{
 												value: "active",
-												label: t("edu_status_active"),
+												label: language === "ar" ? "نشط" : t("edu_status_active"),
+												tooltip: t("edu_status_active"),
 												count: eduStudents.filter((s) => s.status === "Active").length
 											},
 											{
 												value: "minors",
-												label: t("edu_filter_minors")
+												label: t("edu_filter_minors"),
+												tooltip: language === "ar" ? "الطلبة القُصّر (< 18 سنة)" : language === "fr" ? "Étudiants mineurs (< 18 ans)" : "Minor students (< 18)"
 											},
 											...!isStaff ? [{
 												value: "overdue",
-												label: t("edu_tuition_overdue")
+												label: language === "ar" ? "متأخر" : language === "fr" ? "Retard" : "Overdue",
+												tooltip: t("edu_tuition_overdue")
 											}] : [],
 											{
 												value: "graduated",
-												label: t("edu_status_graduated")
+												label: language === "ar" ? "متخرج" : t("edu_status_graduated"),
+												tooltip: t("edu_status_graduated")
 											}
 										]} />
-<button type="button" onClick={handleExportCSV} className="h-9 px-3 bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer" title="Export CSV">
+<button type="button" onClick={handleExportCSV} className="h-9 px-3 bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer" title="Export CSV">
 <Download size={13} />
 <span className="hidden sm:inline">CSV</span>
 </button>
@@ -593,13 +598,13 @@ export const EducationStudentsView: React.FC<any> = () => {
 								const enrollment = eduEnrollments.find((e) => e.studentId === student.id && e.status === "Active");
 								const rate = student.attendanceRatePercent ?? 100;
 								return /* @__PURE__ */ <div className="flex flex-col items-center justify-center w-full">
-<div className="w-24 h-24 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center text-[32px] font-bold shadow-md mb-4 select-none border border-neutral-200 dark:border-neutral-700">{student.fullName.charAt(0)}</div>
-<h3 className="text-[16px] font-bold text-neutral-900 dark:text-white truncate max-w-[210px] mb-1 tracking-tight">{student.fullName}</h3>
+<div className="w-24 h-24 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center text-[32px] font-bold shadow-md mb-4 select-none border border-neutral-200 dark:border-neutral-700">{student.fullName.charAt(0)}</div>
+<h3 className="text-[16px] font-bold text-black dark:text-white truncate max-w-[210px] mb-1 tracking-tight">{student.fullName}</h3>
 <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700 mb-3 truncate max-w-[200px]">{enrollment ? enrollment.cohortName : "No Active Cohort"}</span>
 <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-2 text-center">
 <div className="flex items-center justify-between text-[11px]">
-<span className="text-neutral-400">{t("edu_col_attendance")}</span>
-<span className="font-bold tabular-nums text-neutral-700 dark:text-neutral-300">
+<span className="text-black/55 dark:text-white/55">{t("edu_col_attendance")}</span>
+<span className="font-bold tabular-nums text-black/70 dark:text-white/75">
 {rate}
 %
 </span>
@@ -608,7 +613,7 @@ export const EducationStudentsView: React.FC<any> = () => {
 <div className={`h-full rounded-full ${rate >= 85 ? "bg-emerald-500" : "bg-rose-500"}`} style={{ width: `${rate}%` }} />
 </div>
 <div className="flex items-center justify-between pt-1 text-[11px]">
-<span className="text-neutral-400">Status</span>
+<span className="text-black/55 dark:text-white/55">Status</span>
 <span className="font-semibold text-emerald-600 dark:text-emerald-400">{student.status}</span>
 </div>
 </div>
@@ -669,11 +674,11 @@ export const EducationStudentsView: React.FC<any> = () => {
 <div className="w-full max-w-lg bg-white dark:bg-[#18181B] h-full shadow-2xl border-l rtl:border-r rtl:border-l-0 border-neutral-200 dark:border-neutral-800 flex flex-col overflow-hidden animate-in slide-in-from-right duration-200">
 <div className="p-5 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
 <div className="flex items-center gap-3">
-<div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center font-bold text-sm shrink-0 border border-neutral-200 dark:border-neutral-700">{selectedStudent.fullName.charAt(0)}</div>
+<div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-sm shrink-0 border border-neutral-200 dark:border-neutral-700">{selectedStudent.fullName.charAt(0)}</div>
 <div>
 <span className="text-[11px] font-semibold text-[#d4522f] uppercase tracking-wider block">Student Profile</span>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">{selectedStudent.fullName}</h2>
-<p className="text-xs text-neutral-500">
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{selectedStudent.fullName}</h2>
+<p className="text-xs text-black/55 dark:text-white/55">
 {selectedStudent.schoolGrade || "Adult Learner"}
 {" · Status: "}
 {selectedStudent.status}
@@ -681,8 +686,8 @@ export const EducationStudentsView: React.FC<any> = () => {
 </div>
 </div>
 <div className="flex items-center gap-1.5">
-<button type="button" onClick={() => handleOpenEdit(selectedStudent)} className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer" title="Edit Profile"><Edit2 size={15} /></button>
-<button type="button" onClick={() => setSelectedStudent(null)} className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
+<button type="button" onClick={() => handleOpenEdit(selectedStudent)} className="p-1.5 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer" title="Edit Profile"><Edit2 size={15} /></button>
+<button type="button" onClick={() => setSelectedStudent(null)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
 </div>
 </div>
 <div className="px-5 pt-3 pb-2 border-b border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/30">
@@ -704,20 +709,20 @@ export const EducationStudentsView: React.FC<any> = () => {
 										id: "certificates",
 										label: t("edu_drawer_certificates")
 									}
-								].map((tb) => /* @__PURE__ */ <button key={tb.id} onClick={() => setActiveDrawerTab(tb.id)} className={`flex-1 py-1.5 px-2 text-[11px] font-semibold rounded-lg text-center transition-colors whitespace-nowrap cursor-pointer ${activeDrawerTab === tb.id ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs" : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"}`}>{tb.label}</button>)}
+								].map((tb) => /* @__PURE__ */ <button key={tb.id} onClick={() => setActiveDrawerTab(tb.id)} className={`flex-1 py-1.5 px-2 text-[11px] font-semibold rounded-lg text-center transition-colors whitespace-nowrap cursor-pointer ${activeDrawerTab === tb.id ? "bg-white dark:bg-neutral-900 text-black dark:text-white shadow-2xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>{tb.label}</button>)}
 </div>
 </div>
 <div className="flex-1 overflow-y-auto p-5 space-y-5 text-xs">
 {(activeDrawerTab === "academic" || isStaff && activeDrawerTab === "financial") && /* @__PURE__ */ <div className="space-y-4">
 <div>
-<h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider mb-2">{t("edu_cohorts_title")}</h3>
-{studentEnrollments.length === 0 ? /* @__PURE__ */ <p className="text-neutral-400 italic">No current enrollments.</p> : /* @__PURE__ */ <div className="space-y-2">
+<h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider mb-2">{t("edu_cohorts_title")}</h3>
+{studentEnrollments.length === 0 ? /* @__PURE__ */ <p className="text-black/55 dark:text-white/55 italic">No current enrollments.</p> : /* @__PURE__ */ <div className="space-y-2">
 {studentEnrollments.map((enr) => /* @__PURE__ */ <div key={enr.id} className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60">
 <div className="flex items-center justify-between mb-1">
-<span className="font-bold text-neutral-900 dark:text-white">{enr.cohortName}</span>
+<span className="font-bold text-black dark:text-white">{enr.cohortName}</span>
 <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">{enr.status}</span>
 </div>
-{!isStaff && /* @__PURE__ */ <div className="text-[11px] text-neutral-500">
+{!isStaff && /* @__PURE__ */ <div className="text-[11px] text-black/55 dark:text-white/55">
 {"Agreed Tuition: "}
 {formatMoney(enr.agreedTuition)}
 {" · Paid:"}
@@ -728,10 +733,10 @@ export const EducationStudentsView: React.FC<any> = () => {
 </div>}
 </div>
 <div>
-<h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider mb-2">{t("edu_tab_rollcall")}</h3>
-{studentAttendance.length === 0 ? /* @__PURE__ */ <p className="text-neutral-400 italic">{t("edu_no_sessions")}</p> : /* @__PURE__ */ <div className="space-y-1.5">
+<h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider mb-2">{t("edu_tab_rollcall")}</h3>
+{studentAttendance.length === 0 ? /* @__PURE__ */ <p className="text-black/55 dark:text-white/55 italic">{t("edu_no_sessions")}</p> : /* @__PURE__ */ <div className="space-y-1.5">
 {studentAttendance.slice(0, 5).map((att) => /* @__PURE__ */ <div key={att.id} className="flex items-center justify-between p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
-<span className="text-neutral-700 dark:text-neutral-300">{att.recordedAt ? att.recordedAt.split("T")[0] : "Recent Session"}</span>
+<span className="text-black/70 dark:text-white/75">{att.recordedAt ? att.recordedAt.split("T")[0] : "Recent Session"}</span>
 <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase ${att.status === "Present" ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : att.status === "Late" ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300" : "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"}`}>
 {att.status}
 {" "}
@@ -741,12 +746,12 @@ export const EducationStudentsView: React.FC<any> = () => {
 </div>}
 </div>
 <div>
-<h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider mb-2">{t("edu_tab_gradebook")}</h3>
-{studentGrades.length === 0 ? /* @__PURE__ */ <p className="text-neutral-400 italic">No grades recorded yet.</p> : /* @__PURE__ */ <div className="space-y-1.5">
+<h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider mb-2">{t("edu_tab_gradebook")}</h3>
+{studentGrades.length === 0 ? /* @__PURE__ */ <p className="text-black/55 dark:text-white/55 italic">No grades recorded yet.</p> : /* @__PURE__ */ <div className="space-y-1.5">
 {studentGrades.map((g) => /* @__PURE__ */ <div key={g.id} className="flex items-center justify-between p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
 <div>
-<div className="font-semibold text-neutral-800 dark:text-neutral-200">{g.assessmentTitle}</div>
-{g.teacherRemarks && /* @__PURE__ */ <div className="text-[10px] text-neutral-400">
+<div className="font-semibold text-black dark:text-white">{g.assessmentTitle}</div>
+{g.teacherRemarks && /* @__PURE__ */ <div className="text-[10px] text-black/55 dark:text-white/55">
 "
 {g.teacherRemarks}
 "
@@ -764,21 +769,21 @@ export const EducationStudentsView: React.FC<any> = () => {
 {!isStaff && activeDrawerTab === "financial" && /* @__PURE__ */ <div className="space-y-4">
 {studentEnrollments.map((enr) => /* @__PURE__ */ <div key={enr.id} className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-3">
 <div className="flex items-center justify-between">
-<span className="font-bold text-neutral-900 dark:text-white">{enr.cohortName}</span>
+<span className="font-bold text-black dark:text-white">{enr.cohortName}</span>
 <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">{enr.paymentStatus}</span>
 </div>
 <div className="grid grid-cols-2 gap-2 text-xs">
 <div className="p-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
-<span className="text-neutral-400 block text-[10px]">{t("edu_field_tuition_fee")}</span>
-<span className="font-bold text-neutral-900 dark:text-white">{formatMoney(enr.agreedTuition)}</span>
+<span className="text-black/55 dark:text-white/55 block text-[10px]">{t("edu_field_tuition_fee")}</span>
+<span className="font-bold text-black dark:text-white">{formatMoney(enr.agreedTuition)}</span>
 </div>
 <div className="p-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
-<span className="text-neutral-400 block text-[10px]">{t("edu_fin_receivables")}</span>
+<span className="text-black/55 dark:text-white/55 block text-[10px]">{t("edu_fin_receivables")}</span>
 <span className="font-bold text-rose-600 dark:text-rose-400">{formatMoney(enr.balanceDue)}</span>
 </div>
 </div>
 <div className="space-y-2 pt-2 border-t border-neutral-200/60 dark:border-neutral-800">
-<span className="text-[11px] font-bold text-neutral-600 dark:text-neutral-400 block">Installment Milestones</span>
+<span className="text-[11px] font-bold text-black/70 dark:text-white/75 block">Installment Milestones</span>
 {enr.installments?.map((inst, idx) => /* @__PURE__ */ <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-neutral-900 text-xs">
 <span>
 Installment #
@@ -789,7 +794,7 @@ Installment #
 </span>
 <div className="flex items-center gap-2">
 <span className="font-semibold tabular-nums">{formatMoney(inst.amount)}</span>
-<span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${inst.isPaid ? "bg-emerald-50 text-emerald-700" : "bg-neutral-100 text-neutral-500"}`}>{inst.isPaid ? t("edu_tuition_paid") : t("edu_tuition_unpaid")}</span>
+<span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${inst.isPaid ? "bg-emerald-50 text-emerald-700" : "bg-neutral-100 text-black/55 dark:text-white/55"}`}>{inst.isPaid ? t("edu_tuition_paid") : t("edu_tuition_unpaid")}</span>
 </div>
 </div>)}
 </div>
@@ -804,58 +809,58 @@ Installment #
 </div>}
 {activeDrawerTab === "guardian" && /* @__PURE__ */ <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-3">
 <div className="flex items-center justify-between">
-<span className="font-bold text-neutral-900 dark:text-white">{t("edu_drawer_guardian")}</span>
+<span className="font-bold text-black dark:text-white">{t("edu_drawer_guardian")}</span>
 <Shield size={16} className="text-[#d4522f]" />
 </div>
 {selectedStudent.guardianName ? /* @__PURE__ */ <div className="space-y-2">
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">
+<span className="text-black/55 dark:text-white/55">
 {t("edu_field_guardian_name")}
 :
 </span>
-<span className="font-semibold text-neutral-900 dark:text-white">{selectedStudent.guardianName}</span>
+<span className="font-semibold text-black dark:text-white">{selectedStudent.guardianName}</span>
 </div>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">
+<span className="text-black/55 dark:text-white/55">
 {t("edu_field_guardian_relation")}
 :
 </span>
-<span className="font-semibold text-neutral-900 dark:text-white">{selectedStudent.guardianRelation || "Parent"}</span>
+<span className="font-semibold text-black dark:text-white">{selectedStudent.guardianRelation || "Parent"}</span>
 </div>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">
+<span className="text-black/55 dark:text-white/55">
 {t("edu_field_guardian_phone")}
 :
 </span>
 <a href={`tel:${selectedStudent.guardianPhone}`} className="font-semibold text-[#d4522f] hover:underline">{selectedStudent.guardianPhone}</a>
 </div>
-</div> : /* @__PURE__ */ <p className="text-neutral-400 italic">No linked guardian recorded. Student is registered as an independent adult.</p>}
+</div> : /* @__PURE__ */ <p className="text-black/55 dark:text-white/55 italic">No linked guardian recorded. Student is registered as an independent adult.</p>}
 </div>}
 {activeDrawerTab === "certificates" && /* @__PURE__ */ <div className="space-y-3">
 <div className="flex items-center justify-between">
-<span className="font-bold text-neutral-900 dark:text-white">{t("edu_drawer_certificates")}</span>
+<span className="font-bold text-black dark:text-white">{t("edu_drawer_certificates")}</span>
 <button type="button" onClick={() => setIsCertModalOpen(true)} className="px-2.5 py-1.5 rounded-lg bg-[#d4522f] text-white text-xs font-semibold flex items-center gap-1 cursor-pointer hover:opacity-90">
 <Plus size={12} />
 <span>{t("edu_btn_issue_certificate")}</span>
 </button>
 </div>
 {studentCerts.length === 0 ? /* @__PURE__ */ <div className="p-8 text-center rounded-xl border border-dashed border-neutral-200 dark:border-neutral-800">
-<Award size={32} className="mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
-<p className="text-neutral-400 italic">No certificates issued yet.</p>
-<p className="text-[11px] text-neutral-500 mt-1">{t("edu_cert_security_sub")}</p>
+<Award size={32} className="mx-auto text-black/55 dark:text-white/55 mb-2" />
+<p className="text-black/55 dark:text-white/55 italic">No certificates issued yet.</p>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-1">{t("edu_cert_security_sub")}</p>
 </div> : /* @__PURE__ */ <div className="space-y-2">
 {studentCerts.map((c) => /* @__PURE__ */ <div key={c.id} className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-1.5">
 <div className="flex items-center justify-between">
-<span className="font-bold text-neutral-900 dark:text-white">{c.courseTitle}</span>
+<span className="font-bold text-black dark:text-white">{c.courseTitle}</span>
 <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-emerald-50 text-emerald-700">Verified</span>
 </div>
-<div className="text-[11px] text-neutral-500">
+<div className="text-[11px] text-black/55 dark:text-white/55">
 {"Issued: "}
 {c.issueDate}
 {" · Honors: "}
 {c.honors || "Certificate of Completion"}
 </div>
-<div className="text-[10px] font-mono text-neutral-400 truncate">
+<div className="text-[10px] font-mono text-black/55 dark:text-white/55 truncate">
 {"Hash: "}
 {c.verificationHash || "0x4f8e...ba39"}
 </div>
@@ -868,8 +873,8 @@ Installment #
 {isAddModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
 <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6 max-h-[90vh] overflow-y-auto">
 <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">{studentToEdit ? t("edu_modal_edit_student") : t("edu_modal_add_student")}</h2>
-<button type="button" onClick={() => setIsAddModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{studentToEdit ? t("edu_modal_edit_student") : t("edu_modal_add_student")}</h2>
+<button type="button" onClick={() => setIsAddModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
 </div>
 <form onSubmit={handleSaveStudent} className="space-y-4 pt-4 text-xs">
 <LabelInput id="student-fullname" label={t("edu_field_fullname")} required value={formData.fullName} onChange={(e) => setFormData({
@@ -924,7 +929,7 @@ Installment #
 									label: `${c.name} (${c.cohortCode || c.courseTitle})`
 								}))]} placeholder="Select Cohort..." />}
 <div className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-3">
-<label className="flex items-center gap-2 font-semibold text-neutral-800 dark:text-neutral-200 cursor-pointer">
+<label className="flex items-center gap-2 font-semibold text-black dark:text-white cursor-pointer">
 <input type="checkbox" checked={formData.isMinor} onChange={(e) => setFormData({
 											...formData,
 											isMinor: e.target.checked
@@ -966,7 +971,7 @@ Installment #
 </div>}
 </div>
 <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
-<button type="button" onClick={() => setIsAddModalOpen(false)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold cursor-pointer">{t("common_cancel")}</button>
+<button type="button" onClick={() => setIsAddModalOpen(false)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer">{t("common_cancel")}</button>
 <button type="submit" className="px-5 py-2 rounded-xl bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs">{t("edu_btn_save_student")}</button>
 </div>
 </form>

@@ -231,20 +231,22 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
                 <button
                   type="button"
                   onClick={() => setTimeFilter('today')}
+                  title={language === 'ar' ? 'عرض مؤشرات اليوم' : language === 'fr' ? "Activité d'aujourd'hui" : "Today's activity"}
                   className={`px-3 py-1 rounded-md transition-all ${
                     timeFilter === 'today' ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-sm' : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
                   }`}
                 >
-                  {language === 'ar' ? 'اليوم' : 'Today'}
+                  {language === 'ar' ? 'اليوم' : language === 'fr' ? "Aujourd'hui" : 'Today'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setTimeFilter('yesterday')}
+                  title={language === 'ar' ? 'عرض مؤشرات الأمس' : language === 'fr' ? "Activité d'hier" : "Yesterday's activity"}
                   className={`px-3 py-1 rounded-md transition-all ${
                     timeFilter === 'yesterday' ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-sm' : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
                   }`}
                 >
-                  {language === 'ar' ? 'أمس' : 'Yesterday'}
+                  {language === 'ar' ? 'أمس' : language === 'fr' ? 'Hier' : 'Yesterday'}
                 </button>
               </div>
             }
@@ -258,7 +260,7 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
                       {language === 'ar' ? 'الكراسي المشغولة حالياً' : 'Fauteuils Occupés'}
                     </span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
+                      <span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                         {activeInChair}
                       </span>
                       <span className="text-xs text-black/55 dark:text-white/55">/ 6 max</span>
@@ -273,7 +275,7 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
                       {language === 'ar' ? 'المواعيد المنتظرة' : 'Rendez-vous à venir'}
                     </span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
+                      <span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                         {pendingOrScheduled}
                       </span>
                       <span className="text-xs text-black/55 dark:text-white/55">{language === 'ar' ? 'اليوم' : 'prévus'}</span>
@@ -297,7 +299,7 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
                   <span className="text-xs font-medium text-black/70 dark:text-white/75">
                     {language === 'ar' ? 'إيراد الخدمات اليوم' : 'Recette Services Aujourd’hui'}
                   </span>
-                  <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums tabular-nums">
+                  <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
                     {formatMoney(todayRevenue)}
                   </span>
                 </div>

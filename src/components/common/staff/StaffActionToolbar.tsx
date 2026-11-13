@@ -35,12 +35,32 @@ export const StaffActionToolbar: React.FC<StaffActionToolbarProps> = ({
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const filterOptions: Array<{ id: 'all' | StaffLifecycleStatus; label: string }> = [
-    { id: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous' },
-    { id: 'active', label: isAr ? 'نشط' : isEn ? 'Active' : 'Actifs' },
-    { id: 'on_leave', label: isAr ? 'عطلة' : isEn ? 'Leave' : 'Congé' },
-    { id: 'frozen', label: isAr ? 'موقوف' : isEn ? 'Paused' : 'Suspendu' },
-    { id: 'terminated', label: isAr ? 'منتهي' : isEn ? 'Ended' : 'Archivé' },
+  const filterOptions: Array<{ id: 'all' | StaffLifecycleStatus; label: string; tooltip: string }> = [
+    {
+      id: 'all',
+      label: isAr ? 'الكل' : isEn ? 'All' : 'Tous',
+      tooltip: isAr ? 'جميع أفراد الطاقم' : isEn ? 'All staff members' : 'Tous les collaborateurs',
+    },
+    {
+      id: 'active',
+      label: isAr ? 'نشط' : isEn ? 'Active' : 'Actifs',
+      tooltip: isAr ? 'الموظفون في الخدمة حالياً' : isEn ? 'Currently active staff' : 'Collaborateurs en poste',
+    },
+    {
+      id: 'on_leave',
+      label: isAr ? 'عطلة' : isEn ? 'Leave' : 'Congé',
+      tooltip: isAr ? 'الموظفون في عطلة' : isEn ? 'Staff on leave' : 'Collaborateurs en congé',
+    },
+    {
+      id: 'frozen',
+      label: isAr ? 'موقوف' : isEn ? 'Paused' : 'Suspendu',
+      tooltip: isAr ? 'الحسابات الموقوفة مؤقتاً' : isEn ? 'Temporarily suspended' : 'Temporairement suspendus',
+    },
+    {
+      id: 'terminated',
+      label: isAr ? 'منتهي' : isEn ? 'Ended' : 'Archivé',
+      tooltip: isAr ? 'عقود العمل المنتهية' : isEn ? 'Terminated or archived' : 'Fin de contrat / Archivés',
+    },
   ];
 
   return (
@@ -72,6 +92,7 @@ export const StaffActionToolbar: React.FC<StaffActionToolbarProps> = ({
           options={filterOptions.map((opt) => ({
             value: opt.id,
             label: opt.label,
+            tooltip: opt.tooltip,
           }))}
           value={statusFilter}
           onValueChange={(val) => onStatusFilterChange(val as 'all' | StaffLifecycleStatus)}

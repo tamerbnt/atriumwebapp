@@ -71,14 +71,14 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
               <Building2 size={22} />
             </div>
             <div>
-              <h3 className="font-bold text-base text-neutral-900 dark:text-white">
+              <h3 className="font-bold text-base text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {isAr ? 'تصدير ملف بريد الجزائر CCP SFP 01 / B1' : 'Export Fichier Algérie Poste CCP (SFP 01 / B1)'}
               </h3>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"
           >
             <X size={18} />
           </button>
@@ -87,15 +87,15 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
         {/* Batch Overview Banner */}
         <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-between">
           <div>
-            <span className="text-[11px] text-neutral-500 block">
+            <span className="text-[11px] text-black/55 dark:text-white/55 block">
               {isAr ? 'المتاجر المشمولة بالدفعة' : 'Commerçants dans le lot'}
             </span>
-            <span className="text-sm font-bold text-neutral-900 dark:text-white">
+            <span className="text-sm font-bold text-black dark:text-white">
               {batches.length} {isAr ? 'تحويلات تجارية' : 'virements marchands'}
             </span>
           </div>
           <div className="text-right">
-            <span className="text-[11px] text-neutral-500 block">
+            <span className="text-[11px] text-black/55 dark:text-white/55 block">
               {isAr ? 'إجمالي مستحقات الدفعة' : 'Total Net à Verser'}
             </span>
             <span className="text-lg font-bold font-mono text-[#d4522f]">
@@ -106,7 +106,7 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
 
         {/* ASCII Code Area */}
         <div className="flex-1 overflow-y-auto space-y-2">
-          <div className="flex items-center justify-between text-xs text-neutral-500 px-1">
+          <div className="flex items-center justify-between text-xs text-black/55 dark:text-white/55 px-1">
             <span>Structure: Centre(5) + Compte(10) + Clé(2) + Centimes(12) + Nom(30)</span>
             <span className="font-mono">{lines.length} lignes</span>
           </div>

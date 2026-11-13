@@ -208,7 +208,7 @@ export const ContractorBoqView: React.FC<any> = () => {
 			minWidth: "110px",
 			cell: (item: any) => /* @__PURE__ */ <div className="flex items-center gap-2">
 <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0"><ClipboardList size={16} /></div>
-<div className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
+<div className="font-mono font-bold text-xs text-black dark:text-white flex items-center gap-1.5">
 {item.itemCode}
 {pinnedIds.has(item.id) && /* @__PURE__ */ <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />}
 </div>
@@ -221,8 +221,8 @@ export const ContractorBoqView: React.FC<any> = () => {
 			sortable: true,
 			minWidth: "240px",
 			cell: (item: any) => /* @__PURE__ */ <div>
-<div className="font-semibold text-xs text-neutral-900 dark:text-neutral-100 line-clamp-2">{item.designation}</div>
-<div className="text-[10px] text-neutral-400">
+<div className="font-semibold text-xs text-black dark:text-white line-clamp-2">{item.designation}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">
 {"Unité: "}
 {item.unit}
 {" • PU: "}
@@ -241,7 +241,7 @@ export const ContractorBoqView: React.FC<any> = () => {
 				const isOverrun = item.executedQty > item.plannedQty;
 				return /* @__PURE__ */ <div className="space-y-1 w-full max-w-[140px]">
 <div className="flex items-center justify-between text-[11px]">
-<span className="font-mono font-bold text-neutral-900 dark:text-white">
+<span className="font-mono font-bold text-black dark:text-white">
 {item.executedQty}
 {" / "}
 {item.plannedQty}
@@ -274,7 +274,7 @@ export const ContractorBoqView: React.FC<any> = () => {
 			sortable: true,
 			minWidth: "130px",
 			cell: (item: any) => /* @__PURE__ */ <div>
-<div className="font-mono font-bold text-xs text-neutral-900 dark:text-white">{formatMoney(item.totalPlannedDzd)}</div>
+<div className="font-mono font-bold text-xs text-black dark:text-white">{formatMoney(item.totalPlannedDzd)}</div>
 <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">
 {"Exécuté: "}
 {formatMoney(item.totalExecutedDzd)}
@@ -322,7 +322,7 @@ export const ContractorBoqView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><ClipboardList size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isAr ? "الكشف الكمي والتقديري (BOQ / BPU)" : "Bordereau Quantitatif & Estimatif (BOQ)"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
@@ -340,16 +340,16 @@ export const ContractorBoqView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "التقييم المالي والإنجاز الكمي للمشروع" : "Suivi Budgétaire & Avancement Métré"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "القيمة الإجمالية المقدرة" : "Montant Prévu (BPU)"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "القيمة الإجمالية المقدرة" : "Montant Prévu (BPU)"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">{formatMoney(totalPlannedValue)}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalPlannedValue)}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">
 {filteredItems.length}
 {" "}
 {isAr ? "بند مقايسة" : "postes au bordereau"}
@@ -357,9 +357,9 @@ export const ContractorBoqView: React.FC<any> = () => {
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "الأشغال المنفذة فعلياً" : "Montant Réalisé (Attachement)"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "الأشغال المنفذة فعلياً" : "Montant Réalisé (Attachement)"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">{formatMoney(totalExecutedValue)}</div>
+<div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalExecutedValue)}</div>
 <p className="text-[11px] text-emerald-500 mt-0.5 font-medium">
 {executionRatio}
 {"% "}
@@ -369,11 +369,11 @@ export const ContractorBoqView: React.FC<any> = () => {
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{isAr ? "المتبقي للإنجاز" : "Reste à Exécuter"}</span>
+<span className="text-[11px] font-medium text-white/80">{isAr ? "المتبقي للإنجاز" : "Reste à Exécuter"}</span>
 <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">Solde Marché</span>
 </div>
 <div>
-<div className="text-2xl font-black text-white font-mono tabular-nums">{formatMoney(Math.max(0, totalPlannedValue - totalExecutedValue))}</div>
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(Math.max(0, totalPlannedValue - totalExecutedValue))}</div>
 <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
 <CheckCircle2 size={11} />
 {isAr ? "مطابق لدفتر الشروط" : "Contrôlé au métré"}
@@ -385,7 +385,7 @@ export const ContractorBoqView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "قائمة بنود المقايسة والتسعير التعاقدي" : "Nomenclature des Postes & Relevés Métrés"}
 </h2>
 </div>
@@ -431,7 +431,7 @@ export const ContractorBoqView: React.FC<any> = () => {
 								setSortDir(dir);
 							}} onItemClick={(item) => {
 								setSelectedItem(item);
-							}} onEdit={openEditModal} onDelete={handleDelete} emptyIcon={<ClipboardList size={32} className="text-neutral-400" />} emptyTitle={isAr ? "لا توجد بنود" : "Aucun poste BOQ trouvé"} emptyDescription={searchQuery ? isAr ? "لا توجد نتائج مطابقة لبحثك" : "Aucun article ne correspond à votre recherche" : isAr ? "قم بإضافة أول بند إلى المقايسة" : "Créez votre premier poste au bordereau"} customActions={[{
+							}} onEdit={openEditModal} onDelete={handleDelete} emptyIcon={<ClipboardList size={32} className="text-black/55 dark:text-white/55" />} emptyTitle={isAr ? "لا توجد بنود" : "Aucun poste BOQ trouvé"} emptyDescription={searchQuery ? isAr ? "لا توجد نتائج مطابقة لبحثك" : "Aucun article ne correspond à votre recherche" : isAr ? "قم بإضافة أول بند إلى المقايسة" : "Créez votre premier poste au bordereau"} customActions={[{
 								id: "advance",
 								label: isAr ? "قيد إنجاز (+10%)" : "Métré (+10%)",
 								icon: /* @__PURE__ */ <TrendingUp size={14} />,
@@ -448,8 +448,8 @@ export const ContractorBoqView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white line-clamp-2">{item.designation}</h3>
-<div className="text-xs text-neutral-500 font-medium mt-0.5">
+<h3 className="text-sm font-bold text-black dark:text-white line-clamp-2">{item.designation}</h3>
+<div className="text-xs text-black/55 dark:text-white/55 font-medium mt-0.5">
 {item.executedQty}
 {" / "}
 {item.plannedQty}
@@ -467,11 +467,11 @@ Dépassement (+
 </div>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
 <div>
-<div className="text-[10px] text-neutral-400 uppercase tracking-wider">Prix Unitaire</div>
-<div className="font-mono font-bold text-neutral-900 dark:text-white mt-0.5">{formatMoney(item.unitPriceDzd)}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">Prix Unitaire</div>
+<div className="font-mono font-bold text-black dark:text-white mt-0.5">{formatMoney(item.unitPriceDzd)}</div>
 </div>
 <div className="text-right">
-<div className="text-[10px] text-neutral-400 uppercase tracking-wider">Montant Exécuté</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">Montant Exécuté</div>
 <div className="font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">{formatMoney(item.totalExecutedDzd)}</div>
 </div>
 </div>
@@ -484,64 +484,64 @@ Dépassement (+
 <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold"><ClipboardList size={18} /></div>
 <div>
 <div className="flex items-center gap-1.5">
-<span className="font-mono font-bold text-xs text-neutral-900 dark:text-white">
+<span className="font-mono font-bold text-xs text-black dark:text-white">
 {"Poste "}
 {selectedItem.itemCode}
 </span>
 </div>
-<p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 line-clamp-1">{selectedItem.designation}</p>
+<p className="text-xs font-semibold text-black/70 dark:text-white/75 line-clamp-1">{selectedItem.designation}</p>
 </div>
 </div>
-<button onClick={() => setSelectedItem(null)} className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800"><X size={16} /></button>
+<button onClick={() => setSelectedItem(null)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"><X size={16} /></button>
 </div>
 <div className="flex items-center gap-1.5 flex-wrap">
 <button onClick={() => handleAdvanceExecution(selectedItem)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-orange-50 text-[#d4522f] hover:bg-orange-100 dark:bg-orange-950/40 dark:hover:bg-orange-900/60 transition-colors">
 <TrendingUp size={12} />
 {isAr ? "قيد إنجاز (+10%)" : "+10% Avancement"}
 </button>
-<button onClick={() => openEditModal(selectedItem)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 transition-colors">
+<button onClick={() => openEditModal(selectedItem)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-neutral-100 text-black/70 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-white/75 transition-colors">
 <Edit size={12} />
 {isAr ? "تعديل" : "Modifier"}
 </button>
 <button onClick={() => handleDelete(selectedItem)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 transition-colors ml-auto"><Trash2 size={12} /></button>
 </div>
 <div className="flex border-b border-neutral-100 dark:border-neutral-800 gap-1 text-xs">
-<button onClick={() => setActiveTab("poste")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "poste" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "البند" : "Fiche Poste"}</button>
-<button onClick={() => setActiveTab("quantites")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "quantites" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "الكميات والمبالغ" : "Métrés & Devis"}</button>
-<button onClick={() => setActiveTab("notes")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "الملاحظات" : "Consignes"}</button>
+<button onClick={() => setActiveTab("poste")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "poste" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80"}`}>{isAr ? "البند" : "Fiche Poste"}</button>
+<button onClick={() => setActiveTab("quantites")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "quantites" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80"}`}>{isAr ? "الكميات والمبالغ" : "Métrés & Devis"}</button>
+<button onClick={() => setActiveTab("notes")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80"}`}>{isAr ? "الملاحظات" : "Consignes"}</button>
 </div>
 {activeTab === "poste" && /* @__PURE__ */ <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Numéro d'article:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">{selectedItem.itemCode}</span>
+<span className="text-black/55 dark:text-white/55">Numéro d'article:</span>
+<span className="font-mono font-bold text-black dark:text-white">{selectedItem.itemCode}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Unité de mesure:</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{selectedItem.unit}</span>
+<span className="text-black/55 dark:text-white/55">Unité de mesure:</span>
+<span className="font-semibold text-black dark:text-white">{selectedItem.unit}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Prix unitaire bordereau:</span>
+<span className="text-black/55 dark:text-white/55">Prix unitaire bordereau:</span>
 <span className="font-mono font-bold text-[#d4522f]">{formatMoney(selectedItem.unitPriceDzd)}</span>
 </div>
 </div>
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-1">
-<span className="text-neutral-500 block">Désignation complète :</span>
-<p className="text-neutral-800 dark:text-neutral-200 leading-relaxed font-medium">{selectedItem.designation}</p>
+<span className="text-black/55 dark:text-white/55 block">Désignation complète :</span>
+<p className="text-black dark:text-white leading-relaxed font-medium">{selectedItem.designation}</p>
 </div>
 </div>}
 {activeTab === "quantites" && /* @__PURE__ */ <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Quantité prévue:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">
+<span className="text-black/55 dark:text-white/55">Quantité prévue:</span>
+<span className="font-mono font-bold text-black dark:text-white">
 {selectedItem.plannedQty}
 {" "}
 {selectedItem.unit}
 </span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Quantité constatée (exécutée):</span>
+<span className="text-black/55 dark:text-white/55">Quantité constatée (exécutée):</span>
 <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
 {selectedItem.executedQty}
 {" "}
@@ -549,11 +549,11 @@ Dépassement (+
 </span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Montant total prévu:</span>
-<span className="font-mono font-semibold text-neutral-800 dark:text-neutral-200">{formatMoney(selectedItem.totalPlannedDzd)}</span>
+<span className="text-black/55 dark:text-white/55">Montant total prévu:</span>
+<span className="font-mono font-semibold text-black dark:text-white">{formatMoney(selectedItem.totalPlannedDzd)}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Montant exécuté validé:</span>
+<span className="text-black/55 dark:text-white/55">Montant exécuté validé:</span>
 <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{formatMoney(selectedItem.totalExecutedDzd)}</span>
 </div>
 </div>
@@ -572,8 +572,8 @@ Conformément au Décret 15-247 (Art. 136), tout volume supérieur à la prévis
 </div>}
 </div>}
 {activeTab === "notes" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
-<p className="text-neutral-500 text-[11px]">Observations de métré, réserves contradictoires et bordereaux d'attachement :</p>
-<textarea rows={6} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} placeholder="Noter les relevés géomètre, tolérances d'épaisseur, validation maître d'œuvre..." className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none" />
+<p className="text-black/55 dark:text-white/55 text-[11px]">Observations de métré, réserves contradictoires et bordereaux d'attachement :</p>
+<textarea rows={6} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} placeholder="Noter les relevés géomètre, tolérances d'épaisseur, validation maître d'œuvre..." className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none" />
 <button onClick={handleSaveNotes} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#d4522f] text-white hover:bg-[#a86246] transition-colors font-medium text-xs shadow-xs">
 {noteSaved ? /* @__PURE__ */ <>
 <Check size={14} />
@@ -593,15 +593,15 @@ Conformément au Décret 15-247 (Art. 136), tout volume supérieur à la prévis
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold"><ClipboardList size={20} /></div>
 <div>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {itemToEdit ? isAr ? "تعديل بند المقايسة" : "Modifier le Poste BOQ" : isAr ? "إضافة بند إلى الكشف التقديري" : "Nouveau Poste au Bordereau BOQ"}
 </h2>
-<p className="text-xs text-neutral-500">
+<p className="text-xs text-black/55 dark:text-white/55">
 {isAr ? "تعريف وحدات العمل والأسعار الأحادية" : "Définition du poste, prix unitaire et quantités contractuelles"}
 </p>
 </div>
 </div>
-<button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
+<button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
 </div>
 <form onSubmit={handleSaveModal} className="space-y-4">
 <div className="grid grid-cols-2 gap-3">

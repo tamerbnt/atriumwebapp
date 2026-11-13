@@ -255,8 +255,8 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 			renderCell: (m: any) => /* @__PURE__ */ <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8]"><Boxes size={18} /></div>
 <div className="min-w-0">
-<div className="font-bold text-xs text-neutral-900 dark:text-white truncate">{m.name}</div>
-<div className="flex items-center gap-2 text-[11px] text-neutral-400 font-mono mt-0.5">
+<div className="font-bold text-xs text-black dark:text-white truncate">{m.name}</div>
+<div className="flex items-center gap-2 text-[11px] text-black/55 dark:text-white/55 font-mono mt-0.5">
 <span className="font-bold text-[#d4522f]">{m.sku}</span>
 <span>•</span>
 <span>{m.warehouseLocation || "Allée A-01"}</span>
@@ -272,9 +272,9 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 			renderCell: (m: any) => {
 				const isLow = m.currentStock <= m.reorderThreshold;
 				return /* @__PURE__ */ <div>
-<div className="flex items-center gap-1.5 font-mono text-xs font-bold text-neutral-900 dark:text-white">
+<div className="flex items-center gap-1.5 font-mono text-xs font-bold text-black dark:text-white">
 <span>{m.availableStock ?? m.currentStock}</span>
-<span className="text-neutral-400 font-sans font-normal">
+<span className="text-black/55 dark:text-white/55 font-sans font-normal">
 {"/ "}
 {m.currentStock}
 {" "}
@@ -297,8 +297,8 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 			width: "2.5*",
 			sortable: true,
 			renderCell: (m: any) => /* @__PURE__ */ <div>
-<div className="font-mono text-xs font-bold text-neutral-900 dark:text-white">{formatMoney(m.currentStock * m.unitCostPmpDzd)}</div>
-<div className="text-[10px] text-neutral-400 font-mono mt-0.5">
+<div className="font-mono text-xs font-bold text-black dark:text-white">{formatMoney(m.currentStock * m.unitCostPmpDzd)}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 font-mono mt-0.5">
 {"PMP: "}
 {formatMoney(m.unitCostPmpDzd)}
 {" / "}
@@ -310,7 +310,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 			key: "category",
 			header: isAr ? "الصنف" : "Catégorie",
 			width: "2.0*",
-			renderCell: (m: any) => /* @__PURE__ */ <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">{m.category}</span>
+			renderCell: (m: any) => /* @__PURE__ */ <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 border border-neutral-200 dark:border-neutral-700">{m.category}</span>
 		}
 	], [isAr]);
 	const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
@@ -345,7 +345,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Warehouse size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {isAr ? "مستودع المواد الأولية وسندات الصرف" : "Dépôt Matières & Mouvements Décret 05-468"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
@@ -363,40 +363,42 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 </div>
 <LiveSegmentedControl size="sm" value={activeSubTab} onValueChange={(val) => setActiveSubTab(val)} options={[{
 					value: "inventory",
-					label: isAr ? "مخزون المواد الأولية PMP" : "Stock & Valorisation PMP",
+					label: isAr ? "مخزون" : "Stock",
+					tooltip: isAr ? "مخزون المواد الأولية PMP" : language === "fr" ? "Stock & Valorisation PMP" : "Raw material stock & PMP valuation",
 					count: materials.length
 				}, {
 					value: "vouchers",
-					label: isAr ? "سجل السندات (BSM / BR)" : "Registre Bons Décret 05-468",
+					label: isAr ? "سندات" : language === "fr" ? "Bons" : "Vouchers",
+					tooltip: isAr ? "سجل السندات (BSM / BR)" : language === "fr" ? "Registre Bons Décret 05-468" : "Movement vouchers registry",
 					count: vouchers.length
 				}]} aria-label="Manufacturing Materials Subtab" />
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">{isAr ? "إجمالي قيمة المخزون PMP" : "Valeur Totale du Dépôt"}</span>
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">{isAr ? "إجمالي قيمة المخزون PMP" : "Valeur Totale du Dépôt"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono">{formatMoney(totalValuation)}</div>
-<p className="text-[11px] text-neutral-400 mt-0.5">{isAr ? "طريقة المتوسط المرجح PMP" : "Calculé au Coût Moyen Unitaire Pondéré"}</p>
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(totalValuation)}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">{isAr ? "طريقة المتوسط المرجح PMP" : "Calculé au Coût Moyen Unitaire Pondéré"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">{isAr ? "المواد تحت العتبة الحرجة" : "Alertes Réapprovisionnement"}</span>
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">{isAr ? "المواد تحت العتبة الحرجة" : "Alertes Réapprovisionnement"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono">{lowStockCount}</div>
-<p className="text-[11px] text-neutral-400 mt-0.5">{isAr ? "تتطلب طلبيات شراء فورية" : "Références sous le stock de sécurité"}</p>
+<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{lowStockCount}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">{isAr ? "تتطلب طلبيات شراء فورية" : "Références sous le stock de sécurité"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-300">{isAr ? "الامتثال للمرسوم 05-468" : "Traçabilité Décret 05-468"}</span>
+<span className="text-xs font-semibold text-white/80">{isAr ? "الامتثال للمرسوم 05-468" : "Traçabilité Décret 05-468"}</span>
 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3D2817] text-[#FB923C]">Conforme</span>
 </div>
 <div>
-<div className="text-2xl font-black text-[#FB923C] font-mono">
+<div className="text-2xl font-black text-[#FB923C] font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
 {vouchers.length}
 {" Bons"}
 </div>
-<p className="text-[11px] text-neutral-400 mt-0.5">Bons de Sortie (BSM) & Réception (BR) signés</p>
+<p className="text-[11px] text-white/75 mt-0.5">Bons de Sortie (BSM) & Réception (BR) signés</p>
 </div>
 </div>
 </div>
@@ -404,8 +406,8 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 {activeSubTab === "inventory" ? /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex items-center gap-2">
-<span className="text-sm font-bold text-neutral-900 dark:text-white">{isAr ? "دليل المواد الأولية" : "Catalogue Matières Premières"}</span>
-<span className="text-xs text-neutral-400 font-semibold font-mono">
+<span className="text-sm font-bold text-black dark:text-white">{isAr ? "دليل المواد الأولية" : "Catalogue Matières Premières"}</span>
+<span className="text-xs text-black/55 dark:text-white/55 font-semibold font-mono">
 (
 {sortedMaterials.length}
 )
@@ -413,26 +415,31 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 </div>
 <div className="flex flex-wrap items-center gap-2.5 ml-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={isAr ? "بحث بالاسم، الرمز، أو الرف..." : "Recherche SKU, matière, casier..."} shutSize={36} openWidth={220} />
-<FilterSelect label={isAr ? "الصنف" : "Catégorie"} value={categoryFilter} onChange={(val) => setCategoryFilter(typeof val === "string" ? val : val.target?.value || val)} options={[
+<FilterSelect label={isAr ? "الصنف" : language === "fr" ? "Catégorie" : "Category"} value={categoryFilter} onChange={(val) => setCategoryFilter(typeof val === "string" ? val : val.target?.value || val)} options={[
 								{
 									value: "All",
-									label: isAr ? "جميع الأصناف" : "Toutes Catégories"
+									label: isAr ? "الكل" : language === "fr" ? "Toutes" : "All",
+									tooltip: isAr ? "جميع الأصناف" : language === "fr" ? "Toutes Catégories" : "All categories"
 								},
 								{
 									value: "Wood",
-									label: "Bois"
+									label: isAr ? "خشب" : language === "fr" ? "Bois" : "Wood",
+									tooltip: isAr ? "مواد الخشب" : "Matières bois"
 								},
 								{
 									value: "Metals",
-									label: "Métaux"
+									label: isAr ? "معادن" : language === "fr" ? "Métaux" : "Metals",
+									tooltip: isAr ? "المعادن والصلب" : "Métaux & alliages"
 								},
 								{
 									value: "Plastics",
-									label: "Plastiques"
+									label: isAr ? "بلاستيك" : language === "fr" ? "Plastiques" : "Plastics",
+									tooltip: isAr ? "البلاستيك والبوليمرات" : "Plastiques & polymères"
 								},
 								{
 									value: "Chemicals",
-									label: "Chimie"
+									label: isAr ? "كيمياء" : language === "fr" ? "Chimie" : "Chemicals",
+									tooltip: isAr ? "المواد الكيميائية" : "Produits chimiques"
 								},
 								{
 									value: "Textiles",
@@ -462,11 +469,11 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 								});
 							}} onItemClick={(m) => setSelectedMaterial(m)} onEdit={handleOpenEdit} renderCard={(m) => /* @__PURE__ */ <div className="flex flex-col items-center justify-center w-full">
 <div className="w-16 h-16 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-xl font-bold mb-3 border border-[#F5E2D8]"><Boxes size={28} /></div>
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white text-center truncate max-w-[200px]">{m.name}</h3>
+<h3 className="text-sm font-bold text-black dark:text-white text-center truncate max-w-[200px]">{m.name}</h3>
 <span className="text-[11px] font-mono text-[#d4522f] font-bold mt-0.5">{m.sku}</span>
 <div className="w-full pt-3 mt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs flex justify-between">
-<span className="text-neutral-400">Stock :</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">
+<span className="text-black/55 dark:text-white/55">Stock :</span>
+<span className="font-mono font-bold text-black dark:text-white">
 {m.currentStock}
 {" "}
 {m.unit}
@@ -479,33 +486,33 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 <div className="flex items-center gap-3 min-w-0">
 <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] text-[#d4522f] font-bold text-sm flex items-center justify-center shrink-0 border border-[#F5E2D8]"><Boxes size={20} /></div>
 <div className="min-w-0">
-<h3 className="font-bold text-sm text-neutral-900 dark:text-white truncate">{selectedMaterial.name}</h3>
-<div className="text-xs text-neutral-400 font-mono truncate">
+<h3 className="font-bold text-sm text-black dark:text-white truncate">{selectedMaterial.name}</h3>
+<div className="text-xs text-black/55 dark:text-white/55 font-mono truncate">
 {selectedMaterial.sku}
 {" • "}
 {selectedMaterial.category}
 </div>
 </div>
 </div>
-<button type="button" onClick={() => setSelectedMaterial(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 cursor-pointer"><X size={16} /></button>
+<button type="button" onClick={() => setSelectedMaterial(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 cursor-pointer"><X size={16} /></button>
 </div>
 <div className="p-4 flex-1 overflow-y-auto space-y-4 text-xs">
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">Données d'Emplacement & Seuil</span>
+<span className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider block">Données d'Emplacement & Seuil</span>
 <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700">
-<span className="text-neutral-500">Emplacement Rack :</span>
-<span className="font-semibold text-neutral-900 dark:text-white">{selectedMaterial.warehouseLocation || "Allée A-01"}</span>
+<span className="text-black/55 dark:text-white/55">Emplacement Rack :</span>
+<span className="font-semibold text-black dark:text-white">{selectedMaterial.warehouseLocation || "Allée A-01"}</span>
 </div>
 <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700">
-<span className="text-neutral-500">Stock Physique Total :</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">
+<span className="text-black/55 dark:text-white/55">Stock Physique Total :</span>
+<span className="font-mono font-bold text-black dark:text-white">
 {selectedMaterial.currentStock}
 {" "}
 {selectedMaterial.unit}
 </span>
 </div>
 <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700">
-<span className="text-neutral-500">Stock Réservé (OFs) :</span>
+<span className="text-black/55 dark:text-white/55">Stock Réservé (OFs) :</span>
 <span className="font-mono text-amber-600 font-bold">
 {selectedMaterial.allocatedStock}
 {" "}
@@ -513,7 +520,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 </span>
 </div>
 <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700">
-<span className="text-neutral-500">Stock Net Disponible :</span>
+<span className="text-black/55 dark:text-white/55">Stock Net Disponible :</span>
 <span className="font-mono text-emerald-600 font-bold">
 {selectedMaterial.availableStock}
 {" "}
@@ -521,8 +528,8 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 </span>
 </div>
 <div className="flex justify-between py-1">
-<span className="text-neutral-500">Seuil Réappro :</span>
-<span className="font-mono font-semibold text-neutral-700 dark:text-neutral-300">
+<span className="text-black/55 dark:text-white/55">Seuil Réappro :</span>
+<span className="font-mono font-semibold text-black/70 dark:text-white/75">
 {selectedMaterial.reorderThreshold}
 {" "}
 {selectedMaterial.unit}
@@ -530,9 +537,9 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 </div>
 </div>
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">Valorisation Comptable PMP</span>
+<span className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider block">Valorisation Comptable PMP</span>
 <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700">
-<span className="text-neutral-500">Coût Unitaire PMP :</span>
+<span className="text-black/55 dark:text-white/55">Coût Unitaire PMP :</span>
 <span className="font-mono font-bold text-[#d4522f]">
 {formatMoney(selectedMaterial.unitCostPmpDzd)}
 {" / "}
@@ -540,12 +547,12 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 </span>
 </div>
 <div className="flex justify-between py-1 font-bold text-sm">
-<span className="text-neutral-900 dark:text-white">Valeur Totale :</span>
-<span className="font-mono text-neutral-900 dark:text-white">{formatMoney(selectedMaterial.currentStock * selectedMaterial.unitCostPmpDzd)}</span>
+<span className="text-black dark:text-white">Valeur Totale :</span>
+<span className="font-mono text-black dark:text-white">{formatMoney(selectedMaterial.currentStock * selectedMaterial.unitCostPmpDzd)}</span>
 </div>
 </div>
 <div className="pt-2 flex gap-2">
-<button type="button" onClick={() => handleOpenEdit(selectedMaterial)} className="flex-1 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-white text-xs font-bold transition-colors cursor-pointer">Modifier Fiche</button>
+<button type="button" onClick={() => handleOpenEdit(selectedMaterial)} className="flex-1 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-black dark:text-white text-xs font-bold transition-colors cursor-pointer">Modifier Fiche</button>
 <button type="button" onClick={() => {
 											setVoucherMaterialId(selectedMaterial.id);
 											setIsVoucherModalOpen(true);
@@ -557,7 +564,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 </div> : /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex items-center justify-between p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
 <div>
-<h2 className="text-sm font-bold text-neutral-900 dark:text-white">
+<h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isAr ? "سجل السندات الرسمية (المرسوم التنفيذي 05-468)" : "Registre Officiel des Bons de Mouvement (Décret 05-468)"}
 </h2>
 </div>
@@ -572,8 +579,8 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 </span>
 </div>
 <div className="space-y-1">
-<div className="text-xs font-bold text-neutral-900 dark:text-white">{v.items[0]?.materialName}</div>
-<div className="text-[11px] text-neutral-500 font-mono">
+<div className="text-xs font-bold text-black dark:text-white">{v.items[0]?.materialName}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
 {"Quantité : "}
 {v.items[0]?.quantity}
 {" "}
@@ -581,13 +588,13 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 {" • "}
 {formatMoney(v.totalValueDzd)}
 </div>
-<div className="text-[11px] text-neutral-400">
+<div className="text-[11px] text-black/55 dark:text-white/55">
 {"Bénéficiaire : "}
 {v.recipientStaffName}
 </div>
 </div>
 <div className="pt-2 border-t border-[#E6DED6] dark:border-neutral-700 flex items-center justify-between text-xs">
-<span className="text-[10px] text-neutral-400 font-mono">{v.transferDate?.split("T")[0]}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 font-mono">{v.transferDate?.split("T")[0]}</span>
 <button type="button" onClick={() => setPrintableVoucher(v)} className="text-[#d4522f] hover:underline font-bold text-xs flex items-center gap-1 cursor-pointer">
 <Printer size={12} />
 <span>{isAr ? "معاينة وطباعة" : "Imprimer"}</span>
@@ -599,10 +606,10 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 {isMaterialModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
 <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 animate-in zoom-in-95 duration-150">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-<h3 className="font-bold text-base text-neutral-900 dark:text-white">
+<h3 className="font-bold text-base text-black dark:text-white">
 {materialToEdit ? isAr ? "تعديل المادة الأولية" : "Modifier la Matière Première" : isAr ? "إضافة مادة أولية جديدة" : "Nouvelle Référence Matière"}
 </h3>
-<button onClick={() => setIsMaterialModalOpen(false)} className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 cursor-pointer">✕</button>
+<button onClick={() => setIsMaterialModalOpen(false)} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 cursor-pointer">✕</button>
 </div>
 <form onSubmit={handleSaveMaterial} className="space-y-4">
 <div className="grid grid-cols-2 gap-3">
@@ -654,10 +661,10 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 {isVoucherModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
 <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 animate-in zoom-in-95 duration-150">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-<h3 className="font-bold text-base text-neutral-900 dark:text-white">
+<h3 className="font-bold text-base text-black dark:text-white">
 {isAr ? "إصدار سند حركة مخزون (مرسوم 05-468)" : "Émission d'un Bon de Mouvement (Décret 05-468)"}
 </h3>
-<button onClick={() => setIsVoucherModalOpen(false)} className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 cursor-pointer">✕</button>
+<button onClick={() => setIsVoucherModalOpen(false)} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 cursor-pointer">✕</button>
 </div>
 <form onSubmit={handleCreateVoucher} className="space-y-4">
 <LabelSelect label={isAr ? "نوع السند" : "Type de Bon"} value={voucherType} onChange={(v) => setVoucherType(v)} options={[
@@ -696,8 +703,8 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Printer size={20} /></div>
 <div>
-<h3 className="font-bold text-base text-neutral-900 dark:text-white">{printableVoucher.voucherNumber}</h3>
-<p className="text-xs text-neutral-400">Document officiel d'inventaire • Décret exécutif N° 05-468</p>
+<h3 className="font-bold text-base text-black dark:text-white">{printableVoucher.voucherNumber}</h3>
+<p className="text-xs text-black/55 dark:text-white/55">Document officiel d'inventaire • Décret exécutif N° 05-468</p>
 </div>
 </div>
 <div className="flex items-center gap-2">
@@ -705,21 +712,21 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 <Printer size={14} />
 <span>{isAr ? "طباعة" : "Imprimer"}</span>
 </button>
-<button type="button" onClick={() => setPrintableVoucher(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 cursor-pointer"><X size={18} /></button>
+<button type="button" onClick={() => setPrintableVoucher(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 cursor-pointer"><X size={18} /></button>
 </div>
 </div>
-<div className="p-6 rounded-2xl bg-white border-2 border-dashed border-neutral-300 text-neutral-900 space-y-5 font-sans">
+<div className="p-6 rounded-2xl bg-white border-2 border-dashed border-neutral-300 text-black space-y-5 font-sans">
 <div className="flex justify-between items-start border-b pb-4">
 <div>
-<div className="font-black text-sm tracking-tight text-[#1F1D1B]">ATRIUM MANUFACTURE & ATELIER PME</div>
-<div className="text-[10px] text-neutral-500 font-medium">RC: 16/00-0988421 • NIF: 001916010044589 • Alger</div>
+<div className="font-black text-sm tracking-tight text-black">ATRIUM MANUFACTURE & ATELIER PME</div>
+<div className="text-[10px] text-black/55 font-medium">RC: 16/00-0988421 • NIF: 001916010044589 • Alger</div>
 <div className="text-xs font-bold text-[#d4522f] mt-1 uppercase">
 {printableVoucher.voucherType === "BonDeSortie" ? "Bon de Sortie Magasin (BSM)" : printableVoucher.voucherType === "BonDeReception" ? "Bon de Réception Magasin (BR)" : "Bon de Transfert Interne (BT)"}
 </div>
 </div>
 <div className="text-right">
 <div className="font-mono font-bold text-sm text-[#d4522f]">{printableVoucher.voucherNumber}</div>
-<div className="text-[11px] text-neutral-500 mt-0.5">
+<div className="text-[11px] text-black/55 mt-0.5">
 {"Date : "}
 {printableVoucher.transferDate?.split("T")[0]}
 </div>
@@ -727,16 +734,16 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 </div>
 <div className="bg-neutral-50 p-3 rounded-xl border border-neutral-200 text-xs space-y-1">
 <div className="flex justify-between">
-<span className="text-neutral-500">Demandeur / Bénéficiaire :</span>
-<span className="font-bold text-neutral-900">{printableVoucher.recipientStaffName}</span>
+<span className="text-black/55">Demandeur / Bénéficiaire :</span>
+<span className="font-bold text-black">{printableVoucher.recipientStaffName}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">Motif de transfert :</span>
-<span className="font-semibold text-neutral-800">{printableVoucher.notes || "Ordre de fabrication"}</span>
+<span className="text-black/55">Motif de transfert :</span>
+<span className="font-semibold text-black">{printableVoucher.notes || "Ordre de fabrication"}</span>
 </div>
 </div>
 <table className="w-full text-xs border border-neutral-200 rounded-lg overflow-hidden">
-<thead className="bg-neutral-100 text-neutral-600 font-semibold border-b border-neutral-200">
+<thead className="bg-neutral-100 text-black/75 font-semibold border-b border-neutral-200">
 <tr>
 <th className="p-2 text-left">Désignation Matière</th>
 <th className="p-2 text-center w-24">Quantité</th>
@@ -757,18 +764,18 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 </tr>)}
 </tbody>
 </table>
-<div className="flex justify-end pt-2 text-xs font-bold text-neutral-900">
+<div className="flex justify-end pt-2 text-xs font-bold text-black">
 <span>{"Total Mouvement : "}</span>
 <span className="font-mono text-[#d4522f]">{formatMoney(printableVoucher.totalValueDzd)}</span>
 </div>
 <div className="grid grid-cols-2 gap-4 pt-6 border-t text-center text-xs">
 <div>
-<span className="text-neutral-400 text-[10px] block">Visa Magasinier (Émetteur)</span>
-<div className="h-10 flex items-center justify-center font-serif text-neutral-700 italic">M. Amine T.</div>
+<span className="text-black/55 text-[10px] block">Visa Magasinier (Émetteur)</span>
+<div className="h-10 flex items-center justify-center font-serif text-black/75 italic">M. Amine T.</div>
 </div>
 <div>
-<span className="text-neutral-400 text-[10px] block">Visa Réceptionnaire (Atelier)</span>
-<div className="h-10 flex items-center justify-center font-serif text-neutral-700 italic">M. Karim B.</div>
+<span className="text-black/55 text-[10px] block">Visa Réceptionnaire (Atelier)</span>
+<div className="h-10 flex items-center justify-center font-serif text-black/75 italic">M. Karim B.</div>
 </div>
 </div>
 </div>

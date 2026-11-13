@@ -247,14 +247,14 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({ 
 <div className="w-9 h-9 rounded-full bg-[#d4522f]/15 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0">{client.fullName.charAt(0)}</div>
 <div className="min-w-0">
 <div className="flex items-center gap-1.5">
-<span className="font-bold text-xs text-neutral-900 dark:text-white truncate">{client.fullName}</span>
+<span className="font-bold text-xs text-black dark:text-white truncate">{client.fullName}</span>
 {isVip && /* @__PURE__ */ <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400">VIP</span>}
 {hasAllergies && /* @__PURE__ */ <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-500/15 text-rose-700 dark:text-rose-400 flex items-center gap-0.5">
 <AlertTriangle className="w-2.5 h-2.5" />
 <span>Alerte</span>
 </span>}
 </div>
-<div className="text-[10px] text-neutral-400 font-mono truncate">{client.phoneNumber || "Sans téléphone"}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 font-mono truncate">{client.phoneNumber || "Sans téléphone"}</div>
 </div>
 </div>;
 			}
@@ -268,12 +268,12 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({ 
 				const hairType = seg?.hairType || "Ondulé";
 				const hairLength = seg?.hairLength || "Mi-long";
 				return /* @__PURE__ */ <div className="text-xs">
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 block">
+<span className="font-semibold text-black dark:text-white block">
 {hairType}
 {" · "}
 {hairLength}
 </span>
-<span className="text-[10px] text-neutral-400">
+<span className="text-[10px] text-black/55 dark:text-white/55">
 {"Cuir: "}
 {seg?.scalpCondition || "Sensible"}
 </span>
@@ -286,11 +286,11 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({ 
 			minWidth: "200px",
 			renderCell: (client: any) => {
 				const formulas = client.segmentData?.colorFormulas;
-				if (!formulas || formulas.length === 0) return /* @__PURE__ */ <span className="text-[11px] text-neutral-400 italic">Aucune formule</span>;
+				if (!formulas || formulas.length === 0) return /* @__PURE__ */ <span className="text-[11px] text-black/55 dark:text-white/55 italic">Aucune formule</span>;
 				const lastFormula = formulas[0];
 				return /* @__PURE__ */ <div className="text-xs">
-<span className="font-mono text-neutral-900 dark:text-neutral-100 font-semibold block truncate max-w-[200px]">{lastFormula.formula}</span>
-<div className="flex items-center gap-1.5 text-[10px] text-neutral-400">
+<span className="font-mono text-black dark:text-white font-semibold block truncate max-w-[200px]">{lastFormula.formula}</span>
+<div className="flex items-center gap-1.5 text-[10px] text-black/55 dark:text-white/55">
 <span>{lastFormula.date}</span>
 <span>·</span>
 <span>{lastFormula.stylist}</span>
@@ -305,7 +305,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({ 
 			sortable: true,
 			renderCell: (client: any) => {
 				const stylistName = client.segmentData?.preferredStylistName || "Sarah Louati";
-				return /* @__PURE__ */ <div className="flex items-center gap-1.5 text-xs text-neutral-700 dark:text-neutral-300">
+				return /* @__PURE__ */ <div className="flex items-center gap-1.5 text-xs text-black/70 dark:text-white/75">
 <User className="w-3.5 h-3.5 text-[#d4522f]" />
 <span className="font-medium">{stylistName}</span>
 </div>;
@@ -318,7 +318,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({ 
 			sortable: true,
 			renderCell: (client: any) => {
 				const visits = client.segmentData?.totalVisits || client.remainingSessions || 1;
-				return /* @__PURE__ */ <span className="text-xs font-semibold tabular-nums text-neutral-900 dark:text-white">
+				return /* @__PURE__ */ <span className="text-xs font-semibold tabular-nums text-black dark:text-white">
 {visits}
 {" visites"}
 </span>;
@@ -339,7 +339,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({ 
 			header: "",
 			width: "100px",
 			renderCell: (client: any) => /* @__PURE__ */ <div className="flex items-center justify-end">
-<button onClick={() => setInspectingClient(client)} className="px-2.5 py-1 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:text-[#d4522f] bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 rounded-lg transition-colors cursor-pointer">Fiche</button>
+<button onClick={() => setInspectingClient(client)} className="px-2.5 py-1 text-xs font-semibold text-black/70 dark:text-white/75 hover:text-[#d4522f] bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 rounded-lg transition-colors cursor-pointer">Fiche</button>
 </div>
 		}
 	];
@@ -380,7 +380,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({ 
 <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><Scissors size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">Fiches & Diagnostics Clientes</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">Fiches & Diagnostics Clientes</h1>
 <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4522f]/15 text-[#d4522f] border border-[#d4522f]/30">
 {salonClients.length}
 {" Clientes"}
@@ -397,15 +397,15 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({ 
 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">Fiches & Dossiers VIP</span>
+<span className="text-xs font-semibold text-black/55 dark:text-white/75">Fiches & Dossiers VIP</span>
 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#d4522f]/10 text-[#d4522f]">
 {metrics.vipCount}
 {" clientes VIP"}
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">{metrics.totalClients}</div>
-<div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{metrics.totalClients}</div>
+<div className="flex items-center gap-1.5 text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 <Star size={13} className="text-amber-500" />
 <span>
 {metrics.vipRatio}
@@ -416,15 +416,15 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({ 
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">Formulations & Sécurité</span>
-<span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
+<span className="text-xs font-semibold text-black/55 dark:text-white/75">Formulations & Sécurité</span>
+<span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75">
 {metrics.totalFormulasCount}
 {" recettes"}
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">{metrics.totalFormulasCount}</div>
-<div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{metrics.totalFormulasCount}</div>
+<div className="flex items-center gap-1.5 text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 {metrics.allergiesCount > 0 ? /* @__PURE__ */ <span className="text-rose-500 font-semibold flex items-center gap-1">
 <AlertTriangle size={13} />
 {metrics.allergiesCount}
@@ -442,13 +442,13 @@ Tolérances cutanées validées
 <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 uppercase tracking-wider">Dossiers Salon</span>
 </div>
 <div className="mt-3">
-<div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">{formatMoney(metrics.totalLifetimeSpend)}</div>
-<div className="flex items-center justify-between text-[11px] text-stone-400 mt-1.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(metrics.totalLifetimeSpend)}</div>
+<div className="flex items-center justify-between text-[11px] text-white/75 mt-1.5">
 <span className="flex items-center gap-1">
 <Award size={12} className="text-[#FB923C]" />
 <span>Cumul historique prestations & soins</span>
 </span>
-<span className="font-mono text-stone-300">DZD</span>
+<span className="font-mono text-white/80">DZD</span>
 </div>
 </div>
 <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#FB923C]/5 rounded-full blur-2xl pointer-events-none" />
@@ -460,7 +460,7 @@ Tolérances cutanées validées
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><Scissors size={18} /></div>
 <div className="flex items-center gap-2">
-<span className="text-sm font-bold text-neutral-900 dark:text-white">Dossiers Clientes & Diagnostics</span>
+<span className="text-sm font-bold text-black dark:text-white">Dossiers Clientes & Diagnostics</span>
 <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#d4522f]/10 text-[#d4522f]">{filteredClients.length}</span>
 </div>
 </div>
@@ -468,47 +468,57 @@ Tolérances cutanées validées
 <LiveSegmentedControl size="sm" value={segmentFilter} onValueChange={(val) => setSegmentFilter(val)} options={[
 											{
 												value: "all",
-												label: language === "ar" ? "جميع الزبائن" : "Toutes",
+												label: language === "ar" ? "الكل" : "Toutes",
+												tooltip: language === "ar" ? "جميع الزبائن" : "Toutes les clientes",
 												count: salonClients.length
 											},
 											{
 												value: "vip",
 												label: "VIP",
+												tooltip: language === "ar" ? "زبائن VIP" : "Clientes VIP",
 												count: metrics.vipCount
 											},
 											{
 												value: "allergies",
 												label: language === "ar" ? "الحساسيات" : "Allergies",
+												tooltip: language === "ar" ? "تنبيهات الحساسية" : "Clientes avec allergies signalées",
 												count: metrics.allergiesCount
 											}
 										]} aria-label="Salon Clients Filter" />
 <FilterSelect value={selectedStylistFilter} onChange={(val) => setSelectedStylistFilter(val?.target?.value ?? String(val))} options={[{
 											value: "All",
-											label: "Toutes stylistes"
+											label: language === "ar" ? "الكل" : "Toutes",
+											tooltip: language === "ar" ? "جميع المصففات" : "Toutes stylistes"
 										}, ...salonStylists.map((s) => ({
 											value: s.fullName,
-											label: s.fullName
+											label: s.fullName,
+											tooltip: s.fullName
 										}))]} />
 <FilterSelect value={selectedHairFilter} onChange={(val) => setSelectedHairFilter(val?.target?.value ?? String(val))} options={[
 											{
 												value: "All",
-												label: "Tous cheveux"
+												label: language === "ar" ? "الكل" : "Tous",
+												tooltip: language === "ar" ? "كل أنواع الشعر" : "Tous types de cheveux"
 											},
 											{
 												value: "Lisse",
-												label: "Lisses"
+												label: "Lisses",
+												tooltip: "Cheveux lisses"
 											},
 											{
 												value: "Ondulé",
-												label: "Ondulés"
+												label: "Ondulés",
+												tooltip: "Cheveux ondulés"
 											},
 											{
 												value: "Bouclé",
-												label: "Bouclés"
+												label: "Bouclés",
+												tooltip: "Cheveux bouclés"
 											},
 											{
 												value: "Frisé",
-												label: "Frisés"
+												label: "Frisés",
+												tooltip: "Cheveux frisés"
 											}
 										]} />
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder="Filtrer cliente, tel, allergie..." shutSize={34} openWidth={220} />
@@ -542,36 +552,36 @@ Tolérances cutanées validées
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-full bg-[#d4522f]/15 text-[#d4522f] font-bold text-sm flex items-center justify-center">{client.fullName.charAt(0)}</div>
 <div>
-<h3 className="font-bold text-xs text-neutral-900 dark:text-white">{client.fullName}</h3>
-<p className="text-[11px] text-neutral-500 font-mono">{client.phoneNumber}</p>
+<h3 className="font-bold text-xs text-black dark:text-white">{client.fullName}</h3>
+<p className="text-[11px] text-black/55 dark:text-white/55 font-mono">{client.phoneNumber}</p>
 </div>
 </div>
-<button type="button" onClick={() => handleTogglePin(client.id)} className={`p-1.5 rounded-lg transition-colors ${isPinned ? "text-[#d4522f] bg-[#d4522f]/10" : "text-neutral-400 hover:text-neutral-600"}`}><Pin className="w-3.5 h-3.5" /></button>
+<button type="button" onClick={() => handleTogglePin(client.id)} className={`p-1.5 rounded-lg transition-colors ${isPinned ? "text-[#d4522f] bg-[#d4522f]/10" : "text-black/55 dark:text-white/55 hover:text-black/80"}`}><Pin className="w-3.5 h-3.5" /></button>
 </div>
 <div className="space-y-2 text-xs pt-2 border-t border-neutral-100 dark:border-neutral-700">
-<div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
+<div className="flex items-center justify-between text-black/70 dark:text-white/75">
 <span>Styliste attitré:</span>
-<span className="font-semibold text-neutral-900 dark:text-white">{seg.preferredStylistName || "Sarah Louati"}</span>
+<span className="font-semibold text-black dark:text-white">{seg.preferredStylistName || "Sarah Louati"}</span>
 </div>
-<div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
+<div className="flex items-center justify-between text-black/70 dark:text-white/75">
 <span>Diagnostic:</span>
-<span className="font-medium text-neutral-800 dark:text-neutral-200">
+<span className="font-medium text-black dark:text-white">
 {seg.hairType || "Ondulé"}
 {" · "}
 {seg.hairLength || "Mi-long"}
 </span>
 </div>
 <div className="flex items-center justify-between">
-<span className="text-neutral-600 dark:text-neutral-400">Total Dépensé:</span>
+<span className="text-black/70 dark:text-white/75">Total Dépensé:</span>
 <span className="font-bold text-[#d4522f] tabular-nums font-mono">{formatMoney(seg.lifetimeSpent || 0)}</span>
 </div>
 </div>
-{seg.colorFormulas?.[0] && /* @__PURE__ */ <div className="mt-3 p-2 bg-neutral-100 dark:bg-neutral-700/60 rounded-xl text-[11px] font-mono text-neutral-700 dark:text-neutral-300 truncate">
+{seg.colorFormulas?.[0] && /* @__PURE__ */ <div className="mt-3 p-2 bg-neutral-100 dark:bg-neutral-700/60 rounded-xl text-[11px] font-mono text-black/70 dark:text-white/75 truncate">
 {"🧪 "}
 {seg.colorFormulas[0].formula}
 </div>}
 <div className="mt-4 pt-2 border-t border-neutral-100 dark:border-neutral-700 flex items-center justify-between">
-<span className="text-[11px] text-neutral-400">
+<span className="text-[11px] text-black/55 dark:text-white/55">
 {seg.totalVisits || 1}
 {" visites"}
 </span>
@@ -589,47 +599,47 @@ Tolérances cutanées validées
 <div className="w-12 h-12 rounded-full bg-[#d4522f]/20 text-[#d4522f] text-lg font-bold flex items-center justify-center">{inspectingClient.fullName.charAt(0)}</div>
 <div>
 <div className="flex items-center gap-2">
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">{inspectingClient.fullName}</h2>
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{inspectingClient.fullName}</h2>
 {inspectingClient.segmentData?.isVip && /* @__PURE__ */ <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20">VIP LOUNGE</span>}
 </div>
-<p className="text-xs text-neutral-500 font-mono mt-0.5">
+<p className="text-xs text-black/55 dark:text-white/55 font-mono mt-0.5">
 {inspectingClient.phoneNumber}
 {" · "}
 {inspectingClient.email || "Sans email"}
 </p>
 </div>
 </div>
-<button type="button" onClick={() => setInspectingClient(null)} className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X className="w-5 h-5" /></button>
+<button type="button" onClick={() => setInspectingClient(null)} className="p-1.5 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X className="w-5 h-5" /></button>
 </div>
 <div className="flex items-center gap-1 px-5 pt-3 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50">
-<button type="button" onClick={() => setDrawerTab("diagnostic")} className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${drawerTab === "diagnostic" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>Diagnostic & Sécurité</button>
-<button type="button" onClick={() => setDrawerTab("formulas")} className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${drawerTab === "formulas" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>
+<button type="button" onClick={() => setDrawerTab("diagnostic")} className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${drawerTab === "diagnostic" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80"}`}>Diagnostic & Sécurité</button>
+<button type="button" onClick={() => setDrawerTab("formulas")} className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${drawerTab === "formulas" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80"}`}>
 Formulations Chimiques (
 {inspectingClient.segmentData?.colorFormulas?.length || 0}
 )
 </button>
-<button type="button" onClick={() => setDrawerTab("history")} className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${drawerTab === "history" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>Historique Visites</button>
-<button type="button" onClick={() => setDrawerTab("preferences")} className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${drawerTab === "preferences" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>Préférences</button>
+<button type="button" onClick={() => setDrawerTab("history")} className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${drawerTab === "history" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80"}`}>Historique Visites</button>
+<button type="button" onClick={() => setDrawerTab("preferences")} className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${drawerTab === "preferences" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80"}`}>Préférences</button>
 </div>
 <div className="flex-1 overflow-y-auto p-5 space-y-6">
 {drawerTab === "diagnostic" && /* @__PURE__ */ <div className="space-y-5">
 <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/60 space-y-3">
-<h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">Fiche Morpho-Capillaire</h3>
+<h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">Fiche Morpho-Capillaire</h3>
 <div className="grid grid-cols-2 gap-3 text-xs">
 <div>
-<span className="text-neutral-400 block text-[11px]">Nature des cheveux</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{inspectingClient.segmentData?.hairType || "Ondulé"}</span>
+<span className="text-black/55 dark:text-white/55 block text-[11px]">Nature des cheveux</span>
+<span className="font-semibold text-black dark:text-white">{inspectingClient.segmentData?.hairType || "Ondulé"}</span>
 </div>
 <div>
-<span className="text-neutral-400 block text-[11px]">Longueur</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{inspectingClient.segmentData?.hairLength || "Long"}</span>
+<span className="text-black/55 dark:text-white/55 block text-[11px]">Longueur</span>
+<span className="font-semibold text-black dark:text-white">{inspectingClient.segmentData?.hairLength || "Long"}</span>
 </div>
 <div>
-<span className="text-neutral-400 block text-[11px]">Cuir Chevelu</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{inspectingClient.segmentData?.scalpCondition || "Sensible"}</span>
+<span className="text-black/55 dark:text-white/55 block text-[11px]">Cuir Chevelu</span>
+<span className="font-semibold text-black dark:text-white">{inspectingClient.segmentData?.scalpCondition || "Sensible"}</span>
 </div>
 <div>
-<span className="text-neutral-400 block text-[11px]">Test de Tolérance (Patch)</span>
+<span className="text-black/55 dark:text-white/55 block text-[11px]">Test de Tolérance (Patch)</span>
 <span className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
 <CheckCircle2 className="w-3.5 h-3.5" />
 <span>
@@ -651,12 +661,12 @@ Validé (
 {"⚠️ "}
 {all}
 </span>)}
-</div> : /* @__PURE__ */ <p className="text-xs text-neutral-500">Aucune allergie cutanée ou sensibilité déclarée par la cliente.</p>}
+</div> : /* @__PURE__ */ <p className="text-xs text-black/55 dark:text-white/55">Aucune allergie cutanée ou sensibilité déclarée par la cliente.</p>}
 </div>
 </div>}
 {drawerTab === "formulas" && /* @__PURE__ */ <div className="space-y-5">
 <form onSubmit={handleAddFormula} className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/60 space-y-3">
-<h3 className="text-xs font-bold text-neutral-900 dark:text-white">Ajouter une Formulation Réalisée</h3>
+<h3 className="text-xs font-bold text-black dark:text-white">Ajouter une Formulation Réalisée</h3>
 <div className="space-y-3">
 <LabelInput label="Formule exacte (Dosages, tubes, oxydant, patine)" value={newFormulaText} onChange={(e) => setNewFormulaText(e.target.value)} placeholder="Ex: Base 6.1 (40g) + Oxy 20vol (40g) + Dialight 9.11" required />
 <div className="grid grid-cols-2 gap-3">
@@ -672,7 +682,7 @@ Validé (
 </div>
 </form>
 <div className="space-y-3">
-<h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+<h3 className="text-xs font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">
 Historique des Recettes (
 {inspectingClient.segmentData?.colorFormulas?.length || 0}
 )
@@ -680,9 +690,9 @@ Historique des Recettes (
 {(inspectingClient.segmentData?.colorFormulas || []).map((f: any) => /* @__PURE__ */ <div key={f.id} className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 space-y-1.5 shadow-2xs">
 <div className="flex items-center justify-between text-xs font-semibold">
 <span className="font-mono text-[#d4522f] font-bold">{f.formula}</span>
-<span className="text-[11px] text-neutral-400 font-mono">{f.date}</span>
+<span className="text-[11px] text-black/55 dark:text-white/55 font-mono">{f.date}</span>
 </div>
-<div className="text-[11px] text-neutral-500 flex items-center justify-between">
+<div className="text-[11px] text-black/55 dark:text-white/55 flex items-center justify-between">
 <span>
 {"Styliste: "}
 {f.stylist}
@@ -694,7 +704,7 @@ Historique des Recettes (
 </div>}
 {drawerTab === "history" && /* @__PURE__ */ <div className="space-y-4">
 <div className="flex items-center justify-between">
-<h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Prestations Effectuées au Salon</h3>
+<h3 className="text-xs font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">Prestations Effectuées au Salon</h3>
 <span className="text-xs font-bold font-mono text-[#d4522f]">
 {"Cumul: "}
 {formatMoney(inspectingClient.segmentData?.lifetimeSpent || 0)}
@@ -703,8 +713,8 @@ Historique des Recettes (
 <div className="space-y-2.5">
 {appointments.filter((a) => a.clientName === inspectingClient.fullName).map((apt) => /* @__PURE__ */ <div key={apt.id} className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 flex items-center justify-between text-xs shadow-2xs">
 <div>
-<span className="font-semibold text-neutral-900 dark:text-white block">{apt.serviceName}</span>
-<span className="text-[11px] text-neutral-500">
+<span className="font-semibold text-black dark:text-white block">{apt.serviceName}</span>
+<span className="text-[11px] text-black/55 dark:text-white/55">
 {apt.date}
 {" à "}
 {apt.startTime}
@@ -712,26 +722,26 @@ Historique des Recettes (
 {apt.staffName}
 </span>
 </div>
-<span className="font-bold font-mono text-neutral-900 dark:text-white tabular-nums">{formatMoney(apt.price)}</span>
+<span className="font-bold font-mono text-black dark:text-white tabular-nums">{formatMoney(apt.price)}</span>
 </div>)}
 </div>
 </div>}
 {drawerTab === "preferences" && /* @__PURE__ */ <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/60 space-y-3">
-<h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">Confort & Accueil Salon</h3>
+<h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">Confort & Accueil Salon</h3>
 <div className="space-y-2 text-xs">
 <div className="flex items-center gap-2">
 <Coffee className="w-4 h-4 text-amber-600" />
-<span className="text-neutral-500">Boisson Préférée:</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{inspectingClient.segmentData?.preferredDrink || "Café noir sans sucre"}</span>
+<span className="text-black/55 dark:text-white/55">Boisson Préférée:</span>
+<span className="font-semibold text-black dark:text-white">{inspectingClient.segmentData?.preferredDrink || "Café noir sans sucre"}</span>
 </div>
 <div className="flex items-center gap-2">
 <User className="w-4 h-4 text-[#d4522f]" />
-<span className="text-neutral-500">Styliste Dédié:</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{inspectingClient.segmentData?.preferredStylistName || "Sarah Louati"}</span>
+<span className="text-black/55 dark:text-white/55">Styliste Dédié:</span>
+<span className="font-semibold text-black dark:text-white">{inspectingClient.segmentData?.preferredStylistName || "Sarah Louati"}</span>
 </div>
 {inspectingClient.notes && /* @__PURE__ */ <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700">
-<span className="text-[11px] text-neutral-400 block mb-1">Notes d'accueil</span>
-<p className="text-xs text-neutral-700 dark:text-neutral-300 italic">
+<span className="text-[11px] text-black/55 dark:text-white/55 block mb-1">Notes d'accueil</span>
+<p className="text-xs text-black/70 dark:text-white/75 italic">
 "
 {inspectingClient.notes}
 "
@@ -741,7 +751,7 @@ Historique des Recettes (
 </div>}
 </div>
 <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex items-center justify-between">
-<span className="text-xs text-neutral-400 font-mono">
+<span className="text-xs text-black/55 dark:text-white/55 font-mono">
 {"ID: "}
 {inspectingClient.id}
 </span>

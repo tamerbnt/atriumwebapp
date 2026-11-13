@@ -485,7 +485,7 @@ export const AppointmentServicesView: React.FC = () => {
                 </span>
               </div>
             </div>
-            <div className="text-2xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums text-black dark:text-white tracking-tight">
+            <div className="text-2xl font-black tabular-nums text-black dark:text-white tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {catalogMetrics.totalServices} <span className="text-xs font-normal text-black/55 dark:text-white/55">soins au barème</span>
             </div>
           </div>
@@ -502,7 +502,7 @@ export const AppointmentServicesView: React.FC = () => {
                 </span>
               </div>
             </div>
-            <div className="text-2xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums text-black dark:text-white tracking-tight">
+            <div className="text-2xl font-black tabular-nums text-black dark:text-white tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {formatMoney(catalogMetrics.avgPrice)}
             </div>
           </div>
@@ -532,7 +532,7 @@ export const AppointmentServicesView: React.FC = () => {
                   Marge Nette ~{catalogMetrics.avgGrossMargin}%
                 </span>
               </div>
-              <div className="text-2xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums tracking-tight text-white">
+              <div className="text-2xl font-black tabular-nums tracking-tight text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 ~{catalogMetrics.avgGrossMargin}% <span className="text-xs font-normal text-white/75">marge brute</span>
               </div>
             </div>

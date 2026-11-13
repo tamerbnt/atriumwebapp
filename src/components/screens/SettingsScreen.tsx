@@ -282,7 +282,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <Settings size={24} />
           </div>
           <div>
-            <h1 className="text-[36px] sm:text-[48px] rtl:text-[30px] rtl:sm:text-[36px] font-extrabold font-['Barlow_Condensed',sans-serif] rtl:font-sans uppercase rtl:normal-case leading-none rtl:leading-tight tracking-[0.01em] rtl:tracking-normal text-black dark:text-white">
+            <h1 className="text-[36px] sm:text-[48px] rtl:text-[30px] rtl:sm:text-[36px] font-extrabold uppercase rtl:normal-case leading-none rtl:leading-tight tracking-[0.01em] rtl:tracking-normal text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {t('settings_title', language)}
             </h1>
           </div>
@@ -772,7 +772,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                 {subscription.isLifetime ? t('settings_lifetime_badge', language) : t('settings_trial_badge', language)}
               </span>
             </div>
-            <h2 className="text-2xl font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white">
+            <h2 className="text-2xl font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
               {subscription.plan.name}
             </h2>
             <p className="text-xs text-black/65 dark:text-white/65">
@@ -840,7 +840,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <span className="text-xs font-semibold text-black/60 dark:text-white/60 block text-[11px]">
               {language === 'ar' ? 'المنشآت' : language === 'fr' ? 'Établissements' : 'Businesses'}
             </span>
-            <span className="text-2xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums mt-1 block">
+            <span className="text-2xl font-black text-black dark:text-white tabular-nums mt-1 block font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {businesses.length} / {subscription.plan.maxBusinesses}
             </span>
           </div>
@@ -848,7 +848,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <span className="text-xs font-semibold text-black/60 dark:text-white/60 block text-[11px]">
               {language === 'ar' ? 'الفروع' : language === 'fr' ? 'Succursales' : 'Branches'}
             </span>
-            <span className="text-2xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums mt-1 block">
+            <span className="text-2xl font-black text-black dark:text-white tabular-nums mt-1 block font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {branches.length} / {subscription.plan.maxBranches}
             </span>
           </div>
@@ -856,7 +856,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <span className="text-xs font-semibold text-black/60 dark:text-white/60 block text-[11px]">
               {language === 'ar' ? 'نقاط البيع' : language === 'fr' ? 'Caisses' : 'Terminals'}
             </span>
-            <span className="text-2xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums mt-1 block">
+            <span className="text-2xl font-black text-black dark:text-white tabular-nums mt-1 block font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {devices.length} / {subscription.plan.maxDevices}
             </span>
           </div>

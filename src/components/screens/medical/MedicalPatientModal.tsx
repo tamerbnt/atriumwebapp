@@ -96,7 +96,7 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
             <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
               <UserPlus size={16} />
             </div>
-            <h3 className="font-bold text-sm text-neutral-900 dark:text-white">
+            <h3 className="font-bold text-sm text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {patientToEdit
                 ? (language === 'ar' ? 'تعديل الملف الطبي' : 'Modifier le Dossier Patient')
                 : (language === 'ar' ? 'فتح ملف مريض جديد (EHR)' : 'Nouveau Dossier Patient (EHR)')}
@@ -104,7 +104,7 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
           >
             <X size={16} />
           </button>
@@ -144,7 +144,7 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
                 onChange={(e) => setDob(e.target.value)}
               />
               <div>
-                <label className="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider mb-1">
                   {language === 'ar' ? 'الجنس' : 'Sexe'}
                 </label>
                 <LiveSegmentedControl

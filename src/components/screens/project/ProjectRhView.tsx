@@ -191,8 +191,8 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 			renderCell: (talent: any) => /* @__PURE__ */ <div className="flex items-center gap-3">
 <img src={talent.portraitPhotoUrl} alt={talent.fullName} className="w-10 h-10 rounded-full object-cover border border-zinc-200 shrink-0" />
 <div className="min-w-0">
-<div className="font-bold text-zinc-900 dark:text-zinc-100 truncate">{talent.fullName}</div>
-<span className="text-[11px] text-zinc-500 truncate block">{talent.phone}</span>
+<div className="font-bold text-black dark:text-white truncate">{talent.fullName}</div>
+<span className="text-[11px] text-black/55 dark:text-white/55 truncate block">{talent.phone}</span>
 </div>
 </div>
 		},
@@ -202,8 +202,8 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 			width: "1.8*",
 			minWidth: "140px",
 			renderCell: (talent: any) => /* @__PURE__ */ <div>
-<div className="font-semibold text-zinc-800 dark:text-zinc-200">{talent.wilayaName}</div>
-<span className="text-[11px] text-zinc-500">{talent.commune}</span>
+<div className="font-semibold text-black dark:text-white">{talent.wilayaName}</div>
+<span className="text-[11px] text-black/55 dark:text-white/55">{talent.commune}</span>
 </div>
 		},
 		{
@@ -211,9 +211,9 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 			header: t("pm_rh_col_ccp"),
 			width: "1.8*",
 			minWidth: "140px",
-			renderCell: (talent: any) => /* @__PURE__ */ <div className="font-mono font-semibold text-zinc-700 dark:text-zinc-300">
+			renderCell: (talent: any) => /* @__PURE__ */ <div className="font-mono font-semibold text-black/70 dark:text-white/75">
 <div>{talent.ccpNumber}</div>
-<span className="text-[10px] text-zinc-400">
+<span className="text-[10px] text-black/55 dark:text-white/55">
 {"Clé: "}
 {talent.ccpKey}
 </span>
@@ -230,7 +230,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 <Star className="w-3.5 h-3.5 fill-amber-400" />
 <span>{talent.consolidatedScore}</span>
 </div>
-<span className="text-[10px] text-zinc-400 block font-normal">
+<span className="text-[10px] text-black/55 dark:text-white/55 block font-normal">
 {talent.completedMissionsCount}
 {" missions"}
 </span>
@@ -242,7 +242,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 			width: "1.5*",
 			minWidth: "120px",
 			renderCell: (talent: any) => /* @__PURE__ */ <div className="space-y-0.5">
-{talent.hasDriverLicense && /* @__PURE__ */ <span className="inline-block px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 mr-1">Permis B</span>}
+{talent.hasDriverLicense && /* @__PURE__ */ <span className="inline-block px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-[10px] font-semibold text-black/70 dark:text-white/75 mr-1">Permis B</span>}
 {talent.isVehicleOwner && /* @__PURE__ */ <span className="inline-block px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/60 text-[10px] font-semibold text-blue-700 dark:text-blue-300">Véhiculé</span>}
 </div>
 		}
@@ -278,16 +278,16 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 <div>
 <div className="flex items-center gap-2">
 <span className="text-xs font-semibold uppercase tracking-wider text-[#d4522f]">{t("pm_rh_badge_title")}</span>
-<span className="text-zinc-400">·</span>
-<span className="text-xs text-zinc-500">{t("pm_rh_badge_sub")}</span>
+<span className="text-black/55 dark:text-white/55">·</span>
+<span className="text-xs text-black/55 dark:text-white/55">{t("pm_rh_badge_sub")}</span>
 </div>
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-zinc-900 dark:text-zinc-100">
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {activeTab === "talents" ? t("pm_rh_title_talents") : activeTab === "dossier" ? t("pm_rh_title_dossier", { name: selectedTalent?.fullName || "Sélection" }) : activeTab === "portal" ? t("pm_rh_title_portal") : t("pm_rh_title_walkin")}
 </h1>
 </div>
 <div className="flex items-center gap-2.5">
 <AtriumButton variant="primary" size="sm" onClick={() => setActiveTab("walkin")} icon={<Plus className="w-4 h-4" />}>{t("pm_rh_btn_new_candidate")}</AtriumButton>
-<button onClick={handleExportTalents} className="px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer">
+<button onClick={handleExportTalents} className="px-3 py-1.5 text-xs font-semibold text-black/70 dark:text-white/75 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer">
 <Download className="w-3.5 h-3.5" />
 {t("pm_rh_btn_export_excel")}
 </button>
@@ -319,40 +319,40 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 				].map((tab) => {
 					const Icon = tab.icon;
 					const isActive = activeTab === tab.id;
-					return /* @__PURE__ */ <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${isActive ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}>
+					return /* @__PURE__ */ <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${isActive ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>
 <Icon className="w-4 h-4" />
 <span>{tab.label}</span>
-{tab.count !== void 0 && tab.count > 0 && /* @__PURE__ */ <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">{tab.count}</span>}
+{tab.count !== void 0 && tab.count > 0 && /* @__PURE__ */ <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-zinc-100 dark:bg-zinc-800 text-black/70 dark:text-white/75">{tab.count}</span>}
 </button>;
 				})}
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">Ressources Humaines & Équipe</h2>
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">Ressources Humaines & Équipe</h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">Total Enrôlé</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">Total Enrôlé</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono">{pmTalents.length}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">Sur 58 wilayas d'Algérie</p>
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{pmTalents.length}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">Sur 58 wilayas d'Algérie</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">Profils Actifs & Disponibles</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">Profils Actifs & Disponibles</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono">{pmTalents.filter((t) => t.status === "active").length}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">Dossiers administratifs certifiés</p>
+<div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{pmTalents.filter((t) => t.status === "active").length}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">Dossiers administratifs certifiés</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">Grille Paie Bancarisée CCP</span>
+<span className="text-[11px] font-medium text-white/80">Grille Paie Bancarisée CCP</span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">PTT SFP 01</span>
 </div>
 <div>
-<div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">100%</div>
-<p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+<div className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">100%</div>
+<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
 <span>Comptes CCP & Clés RIP vérifiés</span>
 </p>
@@ -367,31 +367,37 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 <FilterSelect label="Wilaya" value={selectedWilaya} onChange={(val) => setSelectedWilaya(typeof val === "string" ? val : val.target?.value || val)} options={[
 									{
 										value: "all",
-										label: "58 Wilayas (Toutes)"
+										label: language === "ar" ? "الكل" : language === "fr" ? "Toutes" : "All",
+										tooltip: language === "ar" ? "58 ولاية (الكل)" : language === "fr" ? "58 Wilayas (Toutes)" : "All 58 Wilayas"
 									},
 									{
 										value: "16",
-										label: "16 - Alger"
+										label: language === "ar" ? "الجزائر" : language === "fr" ? "Alger" : "Algiers",
+										tooltip: "16 - Alger"
 									},
 									{
 										value: "31",
-										label: "31 - Oran"
+										label: language === "ar" ? "وهران" : "Oran",
+										tooltip: "31 - Oran"
 									},
 									{
 										value: "25",
-										label: "25 - Constantine"
+										label: language === "ar" ? "قسنطينة" : "Constantine",
+										tooltip: "25 - Constantine"
 									},
 									{
 										value: "19",
-										label: "19 - Sétif"
+										label: language === "ar" ? "سطيف" : "Sétif",
+										tooltip: "19 - Sétif"
 									},
 									{
 										value: "09",
-										label: "09 - Blida"
+										label: language === "ar" ? "البليدة" : "Blida",
+										tooltip: "09 - Blida"
 									}
 								]} />
 </div>
-<div className="text-xs font-semibold text-zinc-500">{t("pm_rh_profiles_found", { count: filteredTalents.length })}</div>
+<div className="text-xs font-semibold text-black/55 dark:text-white/55">{t("pm_rh_profiles_found", { count: filteredTalents.length })}</div>
 </div>
 {selectedTalentIds.size > 0 && /* @__PURE__ */ <div className="flex items-center justify-between px-4 py-3 bg-[#d4522f]/10 border border-[#d4522f]/30 rounded-2xl animate-in fade-in">
 <div className="flex items-center gap-3 text-xs font-semibold text-[#d4522f]">
@@ -399,7 +405,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 {selectedTalentIds.size}
 {" talent(s) sélectionné(s)"}
 </span>
-<button type="button" onClick={() => setSelectedTalentIds(/* @__PURE__ */ new Set())} className="text-zinc-500 hover:text-zinc-800 underline cursor-pointer">Désélectionner</button>
+<button type="button" onClick={() => setSelectedTalentIds(/* @__PURE__ */ new Set())} className="text-black/55 dark:text-white/55 hover:text-black underline cursor-pointer">Désélectionner</button>
 </div>
 <div className="flex items-center gap-2">
 <button type="button" onClick={() => {
@@ -409,7 +415,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 <button type="button" onClick={() => {
 										batchUpdatePmTalentStatus(Array.from(selectedTalentIds), "paused");
 										setSelectedTalentIds(/* @__PURE__ */ new Set());
-									}} className="px-3 py-1.5 text-xs font-semibold text-zinc-700 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-300 rounded-xl transition-colors cursor-pointer">Suspendre</button>
+									}} className="px-3 py-1.5 text-xs font-semibold text-black/70 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-800 dark:text-white/75 rounded-xl transition-colors cursor-pointer">Suspendre</button>
 <button type="button" onClick={() => {
 										batchDeletePmTalents(Array.from(selectedTalentIds));
 										setSelectedTalentIds(/* @__PURE__ */ new Set());
@@ -427,8 +433,8 @@ Supprimer
 							}
 						}} renderCard={(talent) => /* @__PURE__ */ <div className="flex flex-col items-center justify-center w-full">
 <img src={talent.portraitPhotoUrl} alt={talent.fullName} className="w-24 h-24 rounded-full object-cover border-2 border-[#d4522f] shadow-md mb-4" />
-<h3 className="text-[16px] font-bold text-zinc-900 dark:text-zinc-100 truncate max-w-[210px] mb-1 tracking-tight">{talent.fullName}</h3>
-<span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 mb-2 truncate max-w-[200px]">
+<h3 className="text-[16px] font-bold text-black dark:text-white truncate max-w-[210px] mb-1 tracking-tight">{talent.fullName}</h3>
+<span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-black/70 dark:text-white/75 mb-2 truncate max-w-[200px]">
 {talent.wilayaName}
 {" ("}
 {talent.commune}
@@ -437,14 +443,14 @@ Supprimer
 <div className="flex items-center gap-1 font-bold text-amber-500 font-mono text-sm mb-3">
 <Star className="w-4 h-4 fill-amber-400" />
 <span>{talent.consolidatedScore}</span>
-<span className="text-[11px] text-zinc-400 font-normal ml-1">
+<span className="text-[11px] text-black/55 dark:text-white/55 font-normal ml-1">
 {"· "}
 {talent.completedMissionsCount}
 {" missions"}
 </span>
 </div>
 <div className="w-full pt-3 border-t border-zinc-100 dark:border-zinc-800 text-xs space-y-1.5 text-center">
-<div className="font-mono text-zinc-600 dark:text-zinc-400 text-[11px]">
+<div className="font-mono text-black/70 dark:text-white/75 text-[11px]">
 {"CCP: "}
 {talent.ccpNumber}
 {" (Clé: "}
@@ -452,7 +458,7 @@ Supprimer
 )
 </div>
 <div className="flex items-center justify-center gap-1.5 pt-1">
-{talent.hasDriverLicense && /* @__PURE__ */ <span className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400">Permis B</span>}
+{talent.hasDriverLicense && /* @__PURE__ */ <span className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-[10px] font-semibold text-black/70 dark:text-white/75">Permis B</span>}
 {talent.isVehicleOwner && /* @__PURE__ */ <span className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950/60 text-[10px] font-semibold text-blue-700 dark:text-blue-300">Véhiculé</span>}
 </div>
 </div>
@@ -492,13 +498,13 @@ Supprimer
 <img src={selectedTalent.portraitPhotoUrl} alt={selectedTalent.fullName} className="w-16 h-16 rounded-2xl object-cover border-2 border-[#d4522f]" />
 <div>
 <div className="flex items-center gap-2">
-<h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">{selectedTalent.fullName}</h2>
+<h2 className="text-xl font-bold text-black dark:text-white">{selectedTalent.fullName}</h2>
 {selectedTalent.isHrVerified && /* @__PURE__ */ <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold flex items-center gap-1">
 <CheckCircle className="w-3 h-3" />
 {" Vérifié par RH"}
 </span>}
 </div>
-<p className="text-xs text-zinc-500 mt-0.5">
+<p className="text-xs text-black/55 dark:text-white/55 mt-0.5">
 {selectedTalent.age}
 {" ans · Wilaya de "}
 {selectedTalent.wilayaName}
@@ -510,7 +516,7 @@ Supprimer
 </div>
 </div>
 <div className="text-right">
-<span className="text-xs text-zinc-400 block">{t("pm_rh_col_consolidated_score")}</span>
+<span className="text-xs text-black/55 dark:text-white/55 block">{t("pm_rh_col_consolidated_score")}</span>
 <div className="flex items-center gap-1.5 text-xl font-bold font-mono text-amber-500 justify-end">
 <Star className="w-5 h-5 fill-amber-400" />
 <span>
@@ -522,11 +528,11 @@ Supprimer
 </div>
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 <div className="p-4 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-700/60 space-y-2">
-<h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide flex items-center gap-1.5">
+<h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wide flex items-center gap-1.5">
 <Users className="w-4 h-4 text-[#d4522f]" />
 {t("pm_rh_pillar1_title")}
 </h3>
-<div className="text-xs space-y-1 text-zinc-600 dark:text-zinc-400">
+<div className="text-xs space-y-1 text-black/70 dark:text-white/75">
 <p>
 <strong>{t("pm_rh_pillar1_roles")}</strong>
 {" "}
@@ -547,11 +553,11 @@ Supprimer
 </div>
 </div>
 <div className="p-4 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-700/60 space-y-2">
-<h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide flex items-center gap-1.5">
+<h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wide flex items-center gap-1.5">
 <CreditCard className="w-4 h-4 text-emerald-600" />
 {t("pm_rh_pillar2_title")}
 </h3>
-<div className="text-xs space-y-1 font-mono text-zinc-800 dark:text-zinc-200">
+<div className="text-xs space-y-1 font-mono text-black dark:text-white">
 <p>
 <strong>{t("pm_rh_pillar2_ccp")}</strong>
 {" "}
@@ -566,7 +572,7 @@ Supprimer
 </div>
 </div>
 <div className="p-4 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-700/60 space-y-2">
-<h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide flex items-center gap-1.5">
+<h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wide flex items-center gap-1.5">
 <FileText className="w-4 h-4 text-blue-600" />
 {t("pm_rh_pillar3_title")}
 </h3>
@@ -582,11 +588,11 @@ Supprimer
 </div>
 </div>
 <div className="p-4 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-700/60 space-y-2">
-<h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide flex items-center gap-1.5">
+<h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wide flex items-center gap-1.5">
 <Star className="w-4 h-4 text-amber-500" />
 {t("pm_rh_pillar4_title")}
 </h3>
-<div className="text-xs text-zinc-600 dark:text-zinc-400 space-y-1">
+<div className="text-xs text-black/70 dark:text-white/75 space-y-1">
 <p>
 <strong>{t("pm_rh_history_completed")}</strong>
 {" "}
@@ -606,9 +612,9 @@ Supprimer
 </div>
 </div>
 <div className="pt-2 flex justify-end">
-<button onClick={() => setActiveTab("talents")} className="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-100 cursor-pointer">{t("pm_rh_btn_back_pool")}</button>
+<button onClick={() => setActiveTab("talents")} className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-100 cursor-pointer">{t("pm_rh_btn_back_pool")}</button>
 </div>
-</div> : /* @__PURE__ */ <p className="text-xs text-zinc-500 text-center py-8">{t("pm_rh_no_talent_selected")}</p>}
+</div> : /* @__PURE__ */ <p className="text-xs text-black/55 dark:text-white/55 text-center py-8">{t("pm_rh_no_talent_selected")}</p>}
 </div>
 </div>}
 {activeTab === "portal" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
@@ -616,8 +622,8 @@ Supprimer
 <div className="space-y-4">
 <div className="text-center pb-2 border-b border-zinc-200 dark:border-zinc-700">
 <span className="text-[10px] font-bold text-[#d4522f] uppercase tracking-wide">{t("pm_rh_portal_join_title")}</span>
-<h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{t("pm_rh_portal_form_title")}</h3>
-<p className="text-[11px] text-zinc-500">{t("pm_rh_portal_form_sub")}</p>
+<h3 className="text-sm font-bold text-black dark:text-white">{t("pm_rh_portal_form_title")}</h3>
+<p className="text-[11px] text-black/55 dark:text-white/55">{t("pm_rh_portal_form_sub")}</p>
 </div>
 {formSubmittedSuccess && /* @__PURE__ */ <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 text-emerald-800 dark:text-emerald-300 text-xs font-semibold text-center">{t("pm_rh_portal_success")}</div>}
 <form onSubmit={(e) => handleCreateTalent(e, "portal")} className="space-y-3">
@@ -634,7 +640,7 @@ Supprimer
 <LabelInput field="Commune" label={t("pm_rh_field_commune")} value={commune} onChange={setCommune} width="100%" height={46} corner={14} />
 </div>
 <div className="p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-700/60 space-y-2">
-<span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200 block">{t("pm_compta_tab_ccp")}</span>
+<span className="text-[11px] font-bold text-black dark:text-white block">{t("pm_compta_tab_ccp")}</span>
 <div className="grid grid-cols-3 gap-2">
 <div className="col-span-2">
 <LabelInput field="CCP" label={t("pm_rh_field_ccp")} placeholder="0012345678" value={ccpNumber} onChange={setCcpNumber} required width="100%" height={44} corner={12} />
@@ -654,7 +660,7 @@ Supprimer
 <div className="p-6 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs max-w-2xl mx-auto space-y-6">
 <div>
 <span className="text-xs font-semibold text-[#d4522f] uppercase tracking-wide">Écran 5.3B · Saisie Express Agence</span>
-<h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">Enregistrement Direct d'un Candidat Présent en Agence</h2>
+<h2 className="text-xl font-bold text-black dark:text-white mt-1">Enregistrement Direct d'un Candidat Présent en Agence</h2>
 </div>
 <form onSubmit={(e) => handleCreateTalent(e, "walkin")} className="space-y-4">
 <div className="space-y-3">

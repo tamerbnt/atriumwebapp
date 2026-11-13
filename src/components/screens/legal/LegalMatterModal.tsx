@@ -15,9 +15,7 @@ interface LegalMatterModalProps {
 
 
 
-const import_jsx_runtime = require_jsx_runtime();
-
-const LegalMatterModal = ({ isOpen, onClose, onSave, matterToEdit }) => {
+export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({ isOpen, onClose, onSave, matterToEdit }) => {
 	const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
 	const isAr = language === "ar";
 	const [title, setTitle] = React.useState(matterToEdit?.title || "");
@@ -105,12 +103,12 @@ const LegalMatterModal = ({ isOpen, onClose, onSave, matterToEdit }) => {
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center"><Scale size={18} /></div>
 <div>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {matterToEdit ? isAr ? "تعديل ملف القضية" : "Modifier le Dossier Juridique" : isAr ? "فتح ملف قضية جديدة" : "Ouverture de Dossier Juridique"}
 </h2>
 </div>
 </div>
-<button onClick={onClose} className="p-1 rounded-full text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer"><X size={18} /></button>
+<button onClick={onClose} className="p-1 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer"><X size={18} /></button>
 </div>
 <form onSubmit={handleSubmit} className="space-y-4 text-xs">
 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

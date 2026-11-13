@@ -263,14 +263,14 @@ export const FreelanceClientsView: React.FC = () => {
       sortable: true,
       renderCell: (client) => (
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">
+          <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">
             {client.name.charAt(0)}
           </div>
           <div className="min-w-0">
-            <div className="font-semibold text-neutral-900 dark:text-white truncate hover:text-[#d4522f] transition-colors">
+            <div className="font-semibold text-black dark:text-white truncate hover:text-[#d4522f] transition-colors">
               {client.name}
             </div>
-            <div className="text-[11px] text-neutral-400 truncate">
+            <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
               {client.company || t('free_clients_private_client', language)}
             </div>
           </div>
@@ -289,7 +289,7 @@ export const FreelanceClientsView: React.FC = () => {
               ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
               : client.status === 'ProjectBased'
               ? 'bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700'
-              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+              : 'bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75'
           }`}
         >
           {client.status === 'ActiveRetainer'
@@ -308,11 +308,11 @@ export const FreelanceClientsView: React.FC = () => {
       sortable: true,
       renderCell: (client) => (
         <div className="text-xs">
-          <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
+          <span className="font-semibold text-black dark:text-white tabular-nums">
             {formatCurrencyAmount(client.hourlyRate, client.currency)}{t('free_dash_per_hour', language)}
           </span>
           {client.monthlyRetainerHours ? (
-            <span className="block text-[10px] text-neutral-400">
+            <span className="block text-[10px] text-black/55 dark:text-white/55">
               {client.monthlyRetainerHours}h Retainer
             </span>
           ) : null}
@@ -327,7 +327,7 @@ export const FreelanceClientsView: React.FC = () => {
       renderCell: (client) => {
         const count = freelanceProjects.filter((p) => p.clientId === client.id).length;
         return (
-          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 tabular-nums">
+          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 tabular-nums">
             {count} {t('free_nav_deliverables', language)}
           </span>
         );
@@ -345,7 +345,7 @@ export const FreelanceClientsView: React.FC = () => {
             {unbilled.hours}h · {formatCurrencyAmount(unbilled.amount, client.currency)}
           </span>
         ) : (
-          <span className="text-neutral-400 text-xs">0h</span>
+          <span className="text-black/55 dark:text-white/55 text-xs">0h</span>
         );
       },
     },
@@ -488,7 +488,7 @@ export const FreelanceClientsView: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+                <h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
                   {t('free_clients_crm_title', language)}
                 </h1>
               </div>
@@ -515,14 +515,14 @@ export const FreelanceClientsView: React.FC = () => {
           <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
             <div className="flex items-center gap-3">
               <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
-              <span className="text-xs font-bold text-neutral-900 dark:text-white">
+              <span className="text-xs font-bold text-black dark:text-white">
                 {selectedClientIds.size} {language === 'ar' ? 'عملاء محددين' : language === 'fr' ? 'clients sélectionnés' : 'clients selected'}
               </span>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <button
                 onClick={() => setSelectedClientIds(new Set())}
-                className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
+                className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer"
               >
                 {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
               </button>
@@ -554,7 +554,7 @@ export const FreelanceClientsView: React.FC = () => {
         {/* Top Metrics Pod Tray (Screenshot_30: bg-[#F3EDE7], rounded-[24px], p-5) */}
         <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
           <div>
-            <h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
+            <h3 className="text-xs font-bold text-black dark:text-white tracking-tight">
               {language === 'ar' ? 'سعة ومؤشرات شبكة العملاء' : language === 'fr' ? 'Capacité & Santé du Portefeuille Clients' : 'Client Roster & Capacity'}
             </h3>
           </div>
@@ -563,7 +563,7 @@ export const FreelanceClientsView: React.FC = () => {
             {/* Inset White Card 1: Active Retainer Ratio */}
             <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                <span className="text-[11px] font-medium text-black/55 dark:text-white/75">
                   {t('free_clients_total_network', language)}
                 </span>
                 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
@@ -571,13 +571,13 @@ export const FreelanceClientsView: React.FC = () => {
                 </span>
               </div>
               <div>
-                <span className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">
+                <span className="text-2xl font-bold text-black dark:text-white tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                   {totalClientsCount}
                 </span>
-                <span className="text-xs text-neutral-400 ml-1">
+                <span className="text-xs text-black/55 dark:text-white/55 ml-1">
                   / {totalClientsCount} comptes
                 </span>
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                <p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
                   {language === 'ar' ? 'إجمالي العملاء المسجلين' : 'Comptes actifs répertoriés'}
                 </p>
               </div>
@@ -586,7 +586,7 @@ export const FreelanceClientsView: React.FC = () => {
             {/* Inset White Card 2: Active Retainers */}
             <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                <span className="text-[11px] font-medium text-black/55 dark:text-white/75">
                   {t('free_kpi_active_clients', language)}
                 </span>
                 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
@@ -594,13 +594,13 @@ export const FreelanceClientsView: React.FC = () => {
                 </span>
               </div>
               <div>
-                <span className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">
+                <span className="text-2xl font-bold text-black dark:text-white tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                   {activeRetainersCount}
                 </span>
-                <span className="text-xs text-neutral-400 ml-1">
+                <span className="text-xs text-black/55 dark:text-white/55 ml-1">
                   clients
                 </span>
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                <p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
                   {language === 'ar' ? 'عقود حجز شهري نشطة' : 'Sous contrat récurrent actif'}
                 </p>
               </div>
@@ -609,7 +609,7 @@ export const FreelanceClientsView: React.FC = () => {
             {/* Inset Card 3: DARK ESPRESSO CARD (#1F1D1B) — Lifetime Billed */}
             <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-medium text-neutral-400">
+                <span className="text-[11px] font-medium text-white/75">
                   {t('free_kpi_invoiced_ytd', language)}
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 inline-block">
@@ -617,10 +617,10 @@ export const FreelanceClientsView: React.FC = () => {
                 </span>
               </div>
               <div>
-                <span className="text-2xl font-bold text-[#FB923C] tabular-nums tracking-tight font-mono">
+                <span className="text-2xl font-bold text-[#FB923C] tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                   {totalBilledEquiv.toLocaleString()} DZD
                 </span>
-                <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+                <p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
                   <span>{language === 'ar' ? 'إجمالي المقبوضات المسواة' : 'Volume cumulé réglé'}</span>
                 </p>
@@ -636,11 +636,11 @@ export const FreelanceClientsView: React.FC = () => {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
             {/* Title & Count Badge */}
             <div className="flex items-center gap-2">
-              <Users size={18} className="text-neutral-700 dark:text-neutral-300" />
-              <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
+              <Users size={18} className="text-black/70 dark:text-white/75" />
+              <h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {t('free_clients_crm_title', language)}
               </h2>
-              <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">
+              <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-black/70 dark:text-white/75">
                 {filteredClients.length}
               </span>
             </div>
@@ -671,7 +671,7 @@ export const FreelanceClientsView: React.FC = () => {
                     className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
                       selectedStatus === tab.id
                         ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f]'
-                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                        : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
                     }`}
                   >
                     {tab.label}
@@ -683,7 +683,7 @@ export const FreelanceClientsView: React.FC = () => {
               <button
                 type="button"
                 onClick={handleExportCSV}
-                className="h-9 px-3 bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                className="h-9 px-3 bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
                 title="Export CSV"
               >
                 <Download size={13} />
@@ -714,10 +714,10 @@ export const FreelanceClientsView: React.FC = () => {
 
           return (
             <div className="flex flex-col items-center justify-center w-full">
-              <div className="w-24 h-24 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center text-[32px] font-bold shadow-md mb-4 select-none border border-neutral-200 dark:border-neutral-700">
+              <div className="w-24 h-24 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center text-[32px] font-bold shadow-md mb-4 select-none border border-neutral-200 dark:border-neutral-700">
                 {client.name.charAt(0)}
               </div>
-              <h3 className="text-[16px] font-bold text-neutral-900 dark:text-white truncate max-w-[210px] mb-1 tracking-tight">
+              <h3 className="text-[16px] font-bold text-black dark:text-white truncate max-w-[210px] mb-1 tracking-tight">
                 {client.name}
               </h3>
               <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700 mb-3 truncate max-w-[200px]">
@@ -725,15 +725,15 @@ export const FreelanceClientsView: React.FC = () => {
               </span>
 
               <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1.5 text-center">
-                <div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
+                <div className="flex items-center justify-between text-black/70 dark:text-white/75">
                   <span className="text-[11px]">{t('free_clients_hourly_rate', language)}:</span>
-                  <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
+                  <span className="font-semibold text-black dark:text-white tabular-nums">
                     {formatCurrencyAmount(client.hourlyRate, client.currency)}{t('free_dash_per_hour', language)}
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
+                <div className="flex items-center justify-between text-black/70 dark:text-white/75">
                   <span className="text-[11px]">{t('free_kpi_active_projects', language)}:</span>
-                  <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
+                  <span className="font-semibold text-black dark:text-white tabular-nums">
                     {clientProjects.length}
                   </span>
                 </div>
@@ -826,15 +826,15 @@ export const FreelanceClientsView: React.FC = () => {
                 <span className="text-[11px] font-semibold text-[#d4522f] uppercase tracking-wider block">
                   {t('free_clients_profile_360', language)}
                 </span>
-                <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
+                <h2 className="text-lg font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                   {selectedClient.name}
                 </h2>
-                <p className="text-xs text-neutral-500">{selectedClient.company || t('free_clients_private_client', language)}</p>
+                <p className="text-xs text-black/55 dark:text-white/55">{selectedClient.company || t('free_clients_private_client', language)}</p>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedClient(null)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -844,19 +844,19 @@ export const FreelanceClientsView: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-5 space-y-6 text-xs">
               {/* Contact Information */}
               <div className="p-4 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800 space-y-2.5">
-                <div className="flex items-center gap-2 text-neutral-700 dark:text-neutral-300">
-                  <Mail size={13} className="text-neutral-400 shrink-0" />
+                <div className="flex items-center gap-2 text-black/70 dark:text-white/75">
+                  <Mail size={13} className="text-black/55 dark:text-white/55 shrink-0" />
                   <span className="truncate">{selectedClient.email}</span>
                 </div>
                 {selectedClient.phone && (
-                  <div className="flex items-center gap-2 text-neutral-700 dark:text-neutral-300">
-                    <Phone size={13} className="text-neutral-400 shrink-0" />
+                  <div className="flex items-center gap-2 text-black/70 dark:text-white/75">
+                    <Phone size={13} className="text-black/55 dark:text-white/55 shrink-0" />
                     <span>{selectedClient.phone}</span>
                   </div>
                 )}
                 {selectedClient.country && (
-                  <div className="flex items-center gap-2 text-neutral-700 dark:text-neutral-300">
-                    <Globe size={13} className="text-neutral-400 shrink-0" />
+                  <div className="flex items-center gap-2 text-black/70 dark:text-white/75">
+                    <Globe size={13} className="text-black/55 dark:text-white/55 shrink-0" />
                     <span>{selectedClient.country} · {t('free_clients_billing_in', language)} {selectedClient.currency}</span>
                   </div>
                 )}
@@ -864,24 +864,24 @@ export const FreelanceClientsView: React.FC = () => {
 
               {/* Retainer & Rate Parameters */}
               <div className="space-y-2">
-                <span className="font-semibold text-neutral-900 dark:text-white block">
+                <span className="font-semibold text-black dark:text-white block">
                   {t('free_clients_contract_terms', language)}
                 </span>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800">
-                    <span className="text-[10px] text-neutral-400 uppercase tracking-wider block">
+                    <span className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider block">
                       {t('free_clients_hourly_rate', language)}
                     </span>
-                    <span className="text-base font-bold text-neutral-900 dark:text-white tabular-nums">
+                    <span className="text-base font-bold text-black dark:text-white tabular-nums">
                       {formatCurrencyAmount(selectedClient.hourlyRate, selectedClient.currency)}
                     </span>
                   </div>
 
                   <div className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800">
-                    <span className="text-[10px] text-neutral-400 uppercase tracking-wider block">
+                    <span className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider block">
                       {t('free_clients_monthly_retainer', language)}
                     </span>
-                    <span className="text-base font-bold text-neutral-900 dark:text-white tabular-nums">
+                    <span className="text-base font-bold text-black dark:text-white tabular-nums">
                       {selectedClient.monthlyRetainerHours || 0} {t('free_dash_hours_unit', language)}
                     </span>
                   </div>
@@ -891,7 +891,7 @@ export const FreelanceClientsView: React.FC = () => {
               {/* Active Projects & Deliverables */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-neutral-900 dark:text-white">
+                  <span className="font-semibold text-black dark:text-white">
                     {t('free_kpi_active_projects', language)} ({freelanceProjects.filter((p) => p.clientId === selectedClient.id).length})
                   </span>
                   <button
@@ -915,16 +915,16 @@ export const FreelanceClientsView: React.FC = () => {
                         className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/40"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-neutral-900 dark:text-white">
+                          <span className="font-bold text-black dark:text-white">
                             {project.title}
                           </span>
-                          <span className="text-[11px] text-neutral-500">
+                          <span className="text-[11px] text-black/55 dark:text-white/55">
                             {project.stage === 'InProgress' ? t('free_stage_in_progress', language) : project.stage === 'ClientReview' ? t('free_stage_client_review', language) : project.stage === 'Approved' ? t('free_stage_approved', language) : project.stage === 'Briefing' ? (t('pm_status_brief', language) || 'Briefing') : project.stage === 'Billed' ? (t('free_stage_completed', language) || 'Billed') : (project.stage as string)}
                           </span>
                         </div>
-                        <div className="flex items-center gap-3 text-neutral-500 mt-1 text-[11px]">
+                        <div className="flex items-center gap-3 text-black/55 dark:text-white/55 mt-1 text-[11px]">
                           <span>
-                            {t('free_dash_logged_label', language)} <strong className="text-neutral-700 dark:text-neutral-300 tabular-nums">{project.loggedHours}h</strong> / {project.estimatedHours}h
+                            {t('free_dash_logged_label', language)} <strong className="text-black/70 dark:text-white/75 tabular-nums">{project.loggedHours}h</strong> / {project.estimatedHours}h
                           </span>
                           <span>·</span>
                           <span>{t('free_dash_budget_label', language)} {formatCurrencyAmount(project.budget, project.currency)}</span>
@@ -937,7 +937,7 @@ export const FreelanceClientsView: React.FC = () => {
               {/* Unbilled Time Logs */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-neutral-900 dark:text-white">
+                  <span className="font-semibold text-black dark:text-white">
                     {t('free_clients_unbilled_logs', language)}
                   </span>
                   {getClientUnbilledTime(selectedClient.id).count > 0 && (
@@ -961,12 +961,12 @@ export const FreelanceClientsView: React.FC = () => {
                         className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800 text-[11px] flex items-center justify-between"
                       >
                         <div>
-                          <p className="font-medium text-neutral-900 dark:text-white truncate max-w-[200px]">
+                          <p className="font-medium text-black dark:text-white truncate max-w-[200px]">
                             {log.taskDescription}
                           </p>
-                          <span className="text-neutral-400">{log.date}</span>
+                          <span className="text-black/55 dark:text-white/55">{log.date}</span>
                         </div>
-                        <span className="font-bold tabular-nums text-neutral-900 dark:text-white">
+                        <span className="font-bold tabular-nums text-black dark:text-white">
                           {formatDuration(log.durationSeconds)}
                         </span>
                       </div>
@@ -977,10 +977,10 @@ export const FreelanceClientsView: React.FC = () => {
               {/* Notes */}
               {selectedClient.notes && (
                 <div className="space-y-1">
-                  <span className="font-semibold text-neutral-900 dark:text-white block">
+                  <span className="font-semibold text-black dark:text-white block">
                     {t('free_clients_engagement_notes', language)}
                   </span>
-                  <p className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 text-xs">
+                  <p className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-800 text-black/70 dark:text-white/75 text-xs">
                     {selectedClient.notes}
                   </p>
                 </div>
@@ -1000,7 +1000,7 @@ export const FreelanceClientsView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleOpenEditModal(selectedClient)}
-                className="px-3 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                className="px-3 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
               >
                 {t('free_clients_edit', language)}
               </button>
@@ -1023,17 +1023,17 @@ export const FreelanceClientsView: React.FC = () => {
           <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div>
-                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                <h3 className="text-base font-bold text-black dark:text-white">
                   {clientToEdit ? t('free_clients_modal_title_edit', language) : t('free_clients_modal_title_add', language)}
                 </h3>
-                <p className="text-xs text-neutral-500 mt-0.5">
+                <p className="text-xs text-black/55 dark:text-white/55 mt-0.5">
                   {t('free_clients_modal_desc', language)}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -1168,7 +1168,7 @@ export const FreelanceClientsView: React.FC = () => {
               )}
 
               <div>
-                <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
+                <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
                   {t('free_clients_notes', language)}
                 </label>
                 <textarea
@@ -1176,7 +1176,7 @@ export const FreelanceClientsView: React.FC = () => {
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   placeholder={t('free_clients_notes_ph', language)}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#d4522f]"
+                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black dark:text-white focus:outline-none focus:ring-1 focus:ring-[#d4522f]"
                 />
               </div>
 
@@ -1184,7 +1184,7 @@ export const FreelanceClientsView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   {t('free_clients_cancel', language)}
                 </button>
@@ -1209,16 +1209,16 @@ export const FreelanceClientsView: React.FC = () => {
                 <AlertTriangle size={20} />
               </div>
               <div>
-                <h3 className="text-base font-bold text-neutral-900 dark:text-white">{t('free_clients_delete', language)}</h3>
-                <p className="text-xs text-neutral-500">{t('free_clients_delete_warning', language)}</p>
+                <h3 className="text-base font-bold text-black dark:text-white">{t('free_clients_delete', language)}</h3>
+                <p className="text-xs text-black/55 dark:text-white/55">{t('free_clients_delete_warning', language)}</p>
               </div>
             </div>
 
-            <p className="text-xs text-neutral-600 dark:text-neutral-300">
-              {t('free_clients_delete_confirm', language)} <strong className="text-neutral-900 dark:text-white font-semibold">{clientToDelete.name}</strong> ({clientToDelete.company || t('free_clients_private_badge', language)})?
+            <p className="text-xs text-black/70 dark:text-white/75">
+              {t('free_clients_delete_confirm', language)} <strong className="text-black dark:text-white font-semibold">{clientToDelete.name}</strong> ({clientToDelete.company || t('free_clients_private_badge', language)})?
             </p>
 
-            <label className="flex items-start gap-2.5 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs text-neutral-700 dark:text-neutral-300 cursor-pointer">
+            <label className="flex items-start gap-2.5 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs text-black/70 dark:text-white/75 cursor-pointer">
               <input
                 type="checkbox"
                 checked={deleteCascade}
@@ -1226,8 +1226,8 @@ export const FreelanceClientsView: React.FC = () => {
                 className="mt-0.5 rounded text-[#d4522f] focus:ring-[#d4522f]"
               />
               <div>
-                <span className="font-semibold block text-neutral-900 dark:text-white">{t('free_clients_cascade_delete', language)}</span>
-                <span className="text-[11px] text-neutral-500 dark:text-neutral-400 block mt-0.5">
+                <span className="font-semibold block text-black dark:text-white">{t('free_clients_cascade_delete', language)}</span>
+                <span className="text-[11px] text-black/55 dark:text-white/75 block mt-0.5">
                   {t('free_clients_cascade_desc', language)}
                 </span>
               </div>

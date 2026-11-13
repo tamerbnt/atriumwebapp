@@ -41,10 +41,6 @@ type CatalogTab = 'products' | 'services';
 
 
 
-const import_react = /* @__PURE__ */ __toESM(require_react(), 1);
-
-const import_jsx_runtime = require_jsx_runtime();
-
 export const TradingCatalogView: React.FC<any> = () => {
 	const { t, isRtl, language } = useTranslation();
 	const { products, addProduct, updateProduct, deleteProduct, currentBranch, branches, switchBranch, resetTradingMockData, showToast, isSyncing, networkMode, isSyncTimeout, retryCloudSync } = useAtriumStore();
@@ -278,28 +274,28 @@ export const TradingCatalogView: React.FC<any> = () => {
 			key: "sku",
 			header: "Réf. SKU",
 			width: "120px",
-			renderCell: (p: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-neutral-800 dark:text-neutral-200">{p.sku || "N/A"}</span>
+			renderCell: (p: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-black dark:text-white">{p.sku || "N/A"}</span>
 		},
 		{
 			key: "name",
 			header: "Désignation",
 			minWidth: "220px",
 			renderCell: (p: any) => /* @__PURE__ */ <div className="text-xs">
-<span className="font-bold text-neutral-900 dark:text-neutral-100 block">{p.name}</span>
-<span className="text-[10px] text-neutral-400">{p.category}</span>
+<span className="font-bold text-black dark:text-white block">{p.name}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">{p.category}</span>
 </div>
 		},
 		{
 			key: "unit",
 			header: "Unité",
 			width: "70px",
-			renderCell: (p: any) => /* @__PURE__ */ <span className="text-xs font-mono text-neutral-500">{p.unit || "u"}</span>
+			renderCell: (p: any) => /* @__PURE__ */ <span className="text-xs font-mono text-black/55 dark:text-white/55">{p.unit || "u"}</span>
 		},
 		{
 			key: "tva",
 			header: "TVA %",
 			width: "70px",
-			renderCell: (p: any) => /* @__PURE__ */ <span className="text-xs font-mono text-neutral-600 dark:text-neutral-300">
+			renderCell: (p: any) => /* @__PURE__ */ <span className="text-xs font-mono text-black/70 dark:text-white/75">
 {p.taxRate ?? 19}
 %
 </span>
@@ -308,27 +304,27 @@ export const TradingCatalogView: React.FC<any> = () => {
 			key: "price",
 			header: "Prix Vente HT",
 			width: "130px",
-			renderCell: (p: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100 tabular-nums">{formatMoney(p.price?.amount || 0)}</span>
+			renderCell: (p: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">{formatMoney(p.price?.amount || 0)}</span>
 		},
 		{
 			key: "cost",
 			header: "Coût d'Achat HT",
 			width: "120px",
-			renderCell: (p: any) => /* @__PURE__ */ <span className="font-mono text-xs text-neutral-500 tabular-nums">{formatMoney(p.cost?.amount || p.costPrice || 0)}</span>
+			renderCell: (p: any) => /* @__PURE__ */ <span className="font-mono text-xs text-black/55 dark:text-white/55 tabular-nums">{formatMoney(p.cost?.amount || p.costPrice || 0)}</span>
 		},
 		...activeTab === "products" ? [{
 			key: "stock",
 			header: "Stock Réel",
 			width: "100px",
-			renderCell: (p: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs tabular-nums text-neutral-800 dark:text-neutral-200">{p.stockQuantity || 0}</span>
+			renderCell: (p: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs tabular-nums text-black dark:text-white">{p.stockQuantity || 0}</span>
 		}] : [],
 		{
 			key: "actions",
 			header: "",
 			width: "80px",
 			renderCell: (p: any) => /* @__PURE__ */ <div className="flex items-center justify-end gap-1">
-<button onClick={() => handleEdit(p)} className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg"><Edit size={14} /></button>
-<button onClick={() => deleteProduct(p.id)} className="p-1.5 text-neutral-400 hover:text-rose-600 rounded-lg"><Trash2 size={14} /></button>
+<button onClick={() => handleEdit(p)} className="p-1.5 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white rounded-lg"><Edit size={14} /></button>
+<button onClick={() => deleteProduct(p.id)} className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 rounded-lg"><Trash2 size={14} /></button>
 </div>
 		}
 	];
@@ -365,7 +361,7 @@ export const TradingCatalogView: React.FC<any> = () => {
 <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><ShoppingBag size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{t("trading_catalog_title", "Catalogue Produits & Prestations")}</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("trading_catalog_title", "Catalogue Produits & Prestations")}</h1>
 <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4522f]/15 text-[#d4522f] border border-[#d4522f]/30">
 {products.length}
 {" "}
@@ -384,15 +380,15 @@ export const TradingCatalogView: React.FC<any> = () => {
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">{language === "ar" ? "مواد وسلع المخزن" : "Articles & Matériaux"}</span>
+<span className="text-xs font-semibold text-black/55 dark:text-white/75">{language === "ar" ? "مواد وسلع المخزن" : "Articles & Matériaux"}</span>
 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#d4522f]/10 text-[#d4522f]">
 {stats.productsCount}
 {" références"}
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">{stats.productsCount}</div>
-<div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{stats.productsCount}</div>
+<div className="flex items-center gap-1.5 text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 <Tag size={13} className="text-[#d4522f]" />
 <span>
 {"Prix de vente HT moyen: "}
@@ -403,19 +399,19 @@ export const TradingCatalogView: React.FC<any> = () => {
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">{language === "ar" ? "الخدمات والاستشارات" : "Prestations & Services"}</span>
+<span className="text-xs font-semibold text-black/55 dark:text-white/75">{language === "ar" ? "الخدمات والاستشارات" : "Prestations & Services"}</span>
 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
 {stats.servicesCount}
 {" forfaits"}
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">{stats.servicesCount}</div>
-<div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{stats.servicesCount}</div>
+<div className="flex items-center gap-1.5 text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 <Percent size={13} className="text-emerald-500" />
 <span>
 {"Marge commerciale brute: "}
-<strong className="text-neutral-800 dark:text-neutral-200">
+<strong className="text-black dark:text-white">
 {stats.avgMargin}
 %
 </strong>
@@ -431,8 +427,8 @@ export const TradingCatalogView: React.FC<any> = () => {
 <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 uppercase tracking-wider">Coût d'Achat</span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">{formatMoney(stats.totalValuation)}</div>
-<div className="flex items-center justify-between text-[11px] text-stone-400 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(stats.totalValuation)}</div>
+<div className="flex items-center justify-between text-[11px] text-white/75 mt-0.5">
 <span className="flex items-center gap-1">
 <TrendingUp size={12} className="text-[#FB923C]" />
 <span>
@@ -440,7 +436,7 @@ export const TradingCatalogView: React.FC<any> = () => {
 {formatMoney(stats.totalSalesPotential)}
 </span>
 </span>
-<span className="font-mono text-stone-300">DZD</span>
+<span className="font-mono text-white/80">DZD</span>
 </div>
 </div>
 <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#FB923C]/5 rounded-full blur-2xl pointer-events-none" />
@@ -452,7 +448,7 @@ export const TradingCatalogView: React.FC<any> = () => {
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><ShoppingBag size={18} /></div>
 <div className="flex items-center gap-2">
-<span className="text-sm font-bold text-neutral-900 dark:text-white">
+<span className="text-sm font-bold text-black dark:text-white">
 {activeTab === "products" ? t("trading_catalog_articles_title", "Articles de Négoce") : t("trading_catalog_services_title", "Prestations & Forfaits")}
 </span>
 <span className="text-xs px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f] font-semibold font-mono">{filteredItems.length}</span>
@@ -460,35 +456,29 @@ export const TradingCatalogView: React.FC<any> = () => {
 </div>
 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
 <div className="flex items-center gap-1 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl overflow-x-auto self-start">
-<button type="button" onClick={() => setActiveTab("products")} className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${activeTab === "products" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"}`}>
-<span>{t("trading_catalog_tab_products", "Articles & Matériaux de Stock")}</span>
-<span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${activeTab === "products" ? "bg-[#d4522f] text-white" : "bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500"}`}>{stats.productsCount}</span>
-</button>
-<button type="button" onClick={() => setActiveTab("services")} className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${activeTab === "services" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"}`}>
-<span>{t("trading_catalog_tab_services", "Prestations & Services Immatériels")}</span>
-<span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${activeTab === "services" ? "bg-[#d4522f] text-white" : "bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500"}`}>{stats.servicesCount}</span>
-</button>
+<button type="button" onClick={() => setActiveTab("products")} title={`${t("trading_catalog_tab_products", "Articles & Matériaux de Stock")} (${stats.productsCount})`} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${activeTab === "products" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "منتجات" : language === "fr" ? "Produits" : "Products"}</button>
+<button type="button" onClick={() => setActiveTab("services")} title={`${t("trading_catalog_tab_services", "Prestations & Services Immatériels")} (${stats.servicesCount})`} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${activeTab === "services" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "خدمات" : language === "fr" ? "Services" : "Services"}</button>
 </div>
 <div className="self-end sm:self-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={language === "ar" ? "بحث بالاسم، الرمز، الفئة..." : "Filtrer nom, SKU, catégorie..."} shutSize={36} openWidth={240} />
 </div>
-<button type="button" onClick={handleExportCSV} className="h-9 px-3 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs">
+<button type="button" onClick={handleExportCSV} className="h-9 px-3 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs">
 <Download size={13} />
 <span>Exporter</span>
 </button>
-<button type="button" onClick={toggleFullscreen} className="h-9 w-9 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-center transition-colors cursor-pointer shadow-2xs" title="Plein écran"><Maximize2 size={14} /></button>
+<button type="button" onClick={toggleFullscreen} className="h-9 w-9 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-center transition-colors cursor-pointer shadow-2xs" title="Plein écran"><Maximize2 size={14} /></button>
 </div>
 </div>
 {selectedIds.size > 0 && /* @__PURE__ */ <div className="flex items-center justify-between p-3 px-4 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
 <div className="flex items-center gap-3">
 <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
-<span className="text-xs font-bold text-neutral-900 dark:text-white">
+<span className="text-xs font-bold text-black dark:text-white">
 {selectedIds.size}
 {" articles sélectionnés"}
 </span>
 </div>
 <div className="flex items-center gap-2">
-<button type="button" onClick={() => setSelectedIds(/* @__PURE__ */ new Set())} className="px-3 py-1 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer">Désélectionner</button>
+<button type="button" onClick={() => setSelectedIds(/* @__PURE__ */ new Set())} className="px-3 py-1 text-xs text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer">Désélectionner</button>
 <button type="button" onClick={() => {
 										if (window.confirm(`Supprimer ${selectedIds.size} articles ?`)) {
 											selectedIds.forEach((id) => deleteProduct(id));
@@ -532,22 +522,22 @@ export const TradingCatalogView: React.FC<any> = () => {
 										return /* @__PURE__ */ <div className="flex flex-col justify-between w-full h-full">
 <div>
 <div className="flex items-center justify-between mb-2.5">
-<span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200">{p.sku || "N/A"}</span>
+<span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white">{p.sku || "N/A"}</span>
 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f]">{p.category || "Général"}</span>
 </div>
-<h3 className="font-bold text-sm text-neutral-900 dark:text-white line-clamp-1 mb-1">{p.name}</h3>
-<p className="text-xs text-neutral-400 line-clamp-2 min-h-[32px]">{p.description || "Article standard de négoce et distribution Atrium."}</p>
+<h3 className="font-bold text-sm text-black dark:text-white line-clamp-1 mb-1">{p.name}</h3>
+<p className="text-xs text-black/55 dark:text-white/55 line-clamp-2 min-h-[32px]">{p.description || "Article standard de négoce et distribution Atrium."}</p>
 <div className="mt-3 p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-1.5 text-xs">
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Prix Vente HT :</span>
+<span className="text-black/55 dark:text-white/55">Prix Vente HT :</span>
 <span className="font-mono font-bold text-[#d4522f] text-sm tabular-nums">{formatMoney(p.price?.amount || 0)}</span>
 </div>
-<div className="flex items-center justify-between text-[11px] text-neutral-400">
+<div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
 <span>Coût d'Achat :</span>
 <span className="font-mono tabular-nums">{formatMoney(p.cost?.amount || p.costPrice || 0)}</span>
 </div>
 <div className="flex items-center justify-between text-[11px] pt-1 border-t border-neutral-100 dark:border-neutral-700">
-<span className="text-neutral-500">Marge Brute :</span>
+<span className="text-black/55 dark:text-white/55">Marge Brute :</span>
 <span className={`font-semibold font-mono ${marginPercent >= 25 ? "text-emerald-600" : "text-amber-600"}`}>
 {marginPercent}
 %
@@ -559,7 +549,7 @@ export const TradingCatalogView: React.FC<any> = () => {
 {p.unit !== "forfait" ? /* @__PURE__ */ <>
 <div className="flex items-center gap-1.5">
 <span className={`w-2 h-2 rounded-full ${(p.stockQuantity || 0) === 0 ? "bg-rose-500" : isLowStock ? "bg-amber-500 animate-pulse" : "bg-emerald-500"}`} />
-<span className="font-mono font-semibold text-neutral-700 dark:text-neutral-300">
+<span className="font-mono font-semibold text-black/70 dark:text-white/75">
 {p.stockQuantity || 0}
 {" "}
 {p.unit || "u"}
@@ -570,7 +560,7 @@ export const TradingCatalogView: React.FC<any> = () => {
 														e.stopPropagation();
 														handleReplenishStock(p, 10);
 													}} className="px-2.5 py-1 rounded-lg bg-[#d4522f]/10 hover:bg-[#d4522f]/20 text-[#d4522f] text-[11px] font-bold transition-colors cursor-pointer">+10 Stock</button>
-</> : /* @__PURE__ */ <div className="flex items-center gap-1.5 text-neutral-500">
+</> : /* @__PURE__ */ <div className="flex items-center gap-1.5 text-black/55 dark:text-white/55">
 <Sparkles size={13} className="text-[#d4522f]" />
 <span>Prestation au Forfait</span>
 </div>}
@@ -583,22 +573,22 @@ export const TradingCatalogView: React.FC<any> = () => {
 <div className="flex items-center gap-3 min-w-0">
 <div className="w-12 h-12 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-lg font-bold shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs"><ShoppingBag size={22} /></div>
 <div className="min-w-0">
-<h3 className="font-bold text-neutral-900 dark:text-white truncate text-base">{activeProduct.name}</h3>
-<div className="flex items-center gap-1.5 text-xs text-neutral-400">
+<h3 className="font-bold text-black dark:text-white truncate text-base">{activeProduct.name}</h3>
+<div className="flex items-center gap-1.5 text-xs text-black/55 dark:text-white/55">
 <span className="font-mono font-semibold">{activeProduct.sku || "SANS SKU"}</span>
 <span>·</span>
 <span>{activeProduct.category || "Général"}</span>
 </div>
 </div>
 </div>
-<button type="button" onClick={() => setSelectedProduct(null)} className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={16} /></button>
+<button type="button" onClick={() => setSelectedProduct(null)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={16} /></button>
 </div>
 <div className="flex items-center gap-2 pt-1 border-t border-neutral-100 dark:border-neutral-800">
 {activeProduct.unit !== "forfait" && /* @__PURE__ */ <button type="button" onClick={() => handleReplenishStock(activeProduct, 10)} className="flex-1 py-1.5 px-3 rounded-xl bg-[#d4522f] hover:bg-[#B3684A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs">
 <PackagePlus size={13} />
 <span>+10 Stock</span>
 </button>}
-<button type="button" onClick={() => handleEdit(activeProduct)} className="py-1.5 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center gap-1 transition-colors">
+<button type="button" onClick={() => handleEdit(activeProduct)} className="py-1.5 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold flex items-center gap-1 transition-colors">
 <Edit size={13} />
 <span>Modifier</span>
 </button>
@@ -607,30 +597,30 @@ export const TradingCatalogView: React.FC<any> = () => {
 														deleteProduct(activeProduct.id);
 														setSelectedProduct(null);
 													}
-												}} className="p-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-rose-100 dark:hover:bg-rose-950/40 text-neutral-500 hover:text-rose-600 transition-colors"><Trash2 size={13} /></button>
+												}} className="p-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-rose-100 dark:hover:bg-rose-950/40 text-black/55 dark:text-white/55 hover:text-rose-600 transition-colors"><Trash2 size={13} /></button>
 </div>
 <div className="flex items-center bg-neutral-100 dark:bg-neutral-800/80 p-0.5 rounded-xl text-xs font-semibold">
-<button type="button" onClick={() => setDrawerTab("fiche")} className={`flex-1 py-1 text-center rounded-lg transition-all ${drawerTab === "fiche" ? "bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"}`}>Fiche</button>
-<button type="button" onClick={() => setDrawerTab("stock")} className={`flex-1 py-1 text-center rounded-lg transition-all ${drawerTab === "stock" ? "bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"}`}>Stock</button>
-<button type="button" onClick={() => setDrawerTab("marge")} className={`flex-1 py-1 text-center rounded-lg transition-all ${drawerTab === "marge" ? "bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"}`}>Marge</button>
-<button type="button" onClick={() => setDrawerTab("notes")} className={`flex-1 py-1 text-center rounded-lg transition-all ${drawerTab === "notes" ? "bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"}`}>Notes</button>
+<button type="button" onClick={() => setDrawerTab("fiche")} className={`flex-1 py-1 text-center rounded-lg transition-all ${drawerTab === "fiche" ? "bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>Fiche</button>
+<button type="button" onClick={() => setDrawerTab("stock")} className={`flex-1 py-1 text-center rounded-lg transition-all ${drawerTab === "stock" ? "bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>Stock</button>
+<button type="button" onClick={() => setDrawerTab("marge")} className={`flex-1 py-1 text-center rounded-lg transition-all ${drawerTab === "marge" ? "bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>Marge</button>
+<button type="button" onClick={() => setDrawerTab("notes")} className={`flex-1 py-1 text-center rounded-lg transition-all ${drawerTab === "notes" ? "bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>Notes</button>
 </div>
 {drawerTab === "fiche" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl space-y-2 border border-neutral-100 dark:border-neutral-800">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Référence SKU :</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-neutral-100">{activeProduct.sku || "SANS SKU"}</span>
+<span className="text-black/55 dark:text-white/55">Référence SKU :</span>
+<span className="font-mono font-bold text-black dark:text-white">{activeProduct.sku || "SANS SKU"}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Catégorie :</span>
-<span className="font-semibold text-neutral-900 dark:text-neutral-100">{activeProduct.category || "Général"}</span>
+<span className="text-black/55 dark:text-white/55">Catégorie :</span>
+<span className="font-semibold text-black dark:text-white">{activeProduct.category || "Général"}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Unité de vente :</span>
-<span className="font-mono text-neutral-700 dark:text-neutral-300">{activeProduct.unit || "u"}</span>
+<span className="text-black/55 dark:text-white/55">Unité de vente :</span>
+<span className="font-mono text-black/70 dark:text-white/75">{activeProduct.unit || "u"}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Taux de TVA :</span>
+<span className="text-black/55 dark:text-white/55">Taux de TVA :</span>
 <span className="font-mono font-bold text-emerald-600">
 {activeProduct.taxRate ?? 19}
 %
@@ -639,25 +629,25 @@ export const TradingCatalogView: React.FC<any> = () => {
 </div>
 </div>}
 {drawerTab === "stock" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
-{activeProduct.unit === "forfait" ? /* @__PURE__ */ <div className="p-4 text-center text-neutral-400 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl">Cet article est un service/forfait immatériel. Aucun stock physique géré.</div> : /* @__PURE__ */ <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl space-y-3 border border-neutral-100 dark:border-neutral-800">
+{activeProduct.unit === "forfait" ? /* @__PURE__ */ <div className="p-4 text-center text-black/55 dark:text-white/55 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl">Cet article est un service/forfait immatériel. Aucun stock physique géré.</div> : /* @__PURE__ */ <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl space-y-3 border border-neutral-100 dark:border-neutral-800">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Stock Réel Disponible :</span>
-<span className="font-mono font-bold text-base text-neutral-900 dark:text-white">
+<span className="text-black/55 dark:text-white/55">Stock Réel Disponible :</span>
+<span className="font-mono font-bold text-base text-black dark:text-white">
 {activeProduct.stockQuantity || 0}
 {" "}
 {activeProduct.unit || "u"}
 </span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Seuil Réapprovisionnement :</span>
-<span className="font-mono text-neutral-800 dark:text-neutral-200">
+<span className="text-black/55 dark:text-white/55">Seuil Réapprovisionnement :</span>
+<span className="font-mono text-black dark:text-white">
 {activeProduct.reorderLevel || 10}
 {" "}
 {activeProduct.unit || "u"}
 </span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Valorisation Stock HT :</span>
+<span className="text-black/55 dark:text-white/55">Valorisation Stock HT :</span>
 <span className="font-mono font-bold text-[#d4522f]">
 {formatMoney((activeProduct.stockQuantity || 0) * (activeProduct.cost?.amount || activeProduct.costPrice || 0))}
 </span>
@@ -677,21 +667,21 @@ export const TradingCatalogView: React.FC<any> = () => {
 {drawerTab === "marge" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
 <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl space-y-3 border border-neutral-100 dark:border-neutral-800">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Prix de Vente HT :</span>
-<span className="font-mono font-bold text-base text-neutral-900 dark:text-white">{formatMoney(activeProduct.price?.amount || 0)}</span>
+<span className="text-black/55 dark:text-white/55">Prix de Vente HT :</span>
+<span className="font-mono font-bold text-base text-black dark:text-white">{formatMoney(activeProduct.price?.amount || 0)}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Coût d'Achat HT :</span>
-<span className="font-mono text-neutral-800 dark:text-neutral-200">{formatMoney(activeProduct.cost?.amount || activeProduct.costPrice || 0)}</span>
+<span className="text-black/55 dark:text-white/55">Coût d'Achat HT :</span>
+<span className="font-mono text-black dark:text-white">{formatMoney(activeProduct.cost?.amount || activeProduct.costPrice || 0)}</span>
 </div>
 <div className="flex justify-between items-center pt-2 border-t border-neutral-200 dark:border-neutral-700">
-<span className="text-neutral-500">Marge Brute Unitaire :</span>
+<span className="text-black/55 dark:text-white/55">Marge Brute Unitaire :</span>
 <span className="font-mono font-bold text-emerald-600">
 {formatMoney((activeProduct.price?.amount || 0) - (activeProduct.cost?.amount || activeProduct.costPrice || 0))}
 </span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Taux de Marque :</span>
+<span className="text-black/55 dark:text-white/55">Taux de Marque :</span>
 <span className="font-mono font-bold text-emerald-600">
 {(activeProduct.price?.amount || 0) > 0 ? Math.round(((activeProduct.price?.amount || 0) - (activeProduct.cost?.amount || activeProduct.costPrice || 0)) / (activeProduct.price?.amount || 1) * 100) : 0}
 %
@@ -701,20 +691,20 @@ export const TradingCatalogView: React.FC<any> = () => {
 </div>}
 {drawerTab === "notes" && /* @__PURE__ */ <div className="space-y-2 text-xs animate-in fade-in duration-150">
 <div className="flex items-center justify-between">
-<label className="text-neutral-500 font-medium">Spécifications & Consignes :</label>
-{isSavingNotes ? /* @__PURE__ */ <span className="text-[10px] text-neutral-400 animate-pulse">Sauvegarde...</span> : notesSavedNotice ? /* @__PURE__ */ <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+<label className="text-black/55 dark:text-white/55 font-medium">Spécifications & Consignes :</label>
+{isSavingNotes ? /* @__PURE__ */ <span className="text-[10px] text-black/55 dark:text-white/55 animate-pulse">Sauvegarde...</span> : notesSavedNotice ? /* @__PURE__ */ <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
 <Check size={11} />
 {" Sauvegardé"}
 </span> : null}
 </div>
-<textarea rows={6} value={productNotes} onChange={(e) => handleNotesChange(e.target.value)} placeholder="Spécifications techniques, fiches de sécurité, fournisseur de référence, conditionnement..." className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/60 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]" />
+<textarea rows={6} value={productNotes} onChange={(e) => handleNotesChange(e.target.value)} placeholder="Spécifications techniques, fiches de sécurité, fournisseur de référence, conditionnement..." className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/60 text-xs text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]" />
 </div>}
 </div>}
 </div>
 </div>
 {modalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
 <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-6 space-y-4">
-<h2 className="text-base font-bold text-neutral-900 dark:text-neutral-100">{editingProduct ? "Modifier l'Article" : "Ajouter au Catalogue"}</h2>
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{editingProduct ? "Modifier l'Article" : "Ajouter au Catalogue"}</h2>
 <form onSubmit={handleSubmit} className="space-y-3 text-xs">
 <LabelInput label="Désignation Commerciale *" placeholder="Ex: Ciment Portland CPJ-42.5" value={name} onChange={(e) => setName(e.target.value)} required />
 <div className="grid grid-cols-2 gap-3">

@@ -153,7 +153,7 @@ export const VenueDashboardView: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 bg-white min-h-screen p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
+    <div className="flex-1 bg-white dark:bg-[#0C0C0E] min-h-screen p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
       <OfflineRetryBanner
         isOffline={isOffline}
         isTimedOut={isTimedOut}
@@ -192,56 +192,58 @@ export const VenueDashboardView: React.FC = () => {
               </span>
             }
             rightControls={
-              <div className="flex items-center bg-[#F0F2F5] p-0.5 rounded-lg text-xs font-semibold">
+              <div className="flex items-center bg-[#F0F2F5] dark:bg-neutral-800 p-0.5 rounded-lg text-xs font-semibold">
                 <button
                   type="button"
                   onClick={() => setTimeFilter('today')}
+                  title={language === 'ar' ? 'عرض مؤشرات اليوم' : language === 'fr' ? "Activité d'aujourd'hui" : "Today's activity"}
                   className={`px-3 py-1 rounded-md transition-all ${
-                    timeFilter === 'today' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                    timeFilter === 'today' ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-sm' : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
                   }`}
                 >
-                  {language === 'ar' ? 'اليوم' : 'Today'}
+                  {language === 'ar' ? 'اليوم' : language === 'fr' ? "Aujourd'hui" : 'Today'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setTimeFilter('yesterday')}
+                  title={language === 'ar' ? 'عرض مؤشرات الأمس' : language === 'fr' ? "Activité d'hier" : "Yesterday's activity"}
                   className={`px-3 py-1 rounded-md transition-all ${
-                    timeFilter === 'yesterday' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                    timeFilter === 'yesterday' ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-sm' : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
                   }`}
                 >
-                  {language === 'ar' ? 'أمس' : 'Yesterday'}
+                  {language === 'ar' ? 'أمس' : language === 'fr' ? 'Hier' : 'Yesterday'}
                 </button>
               </div>
             }
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <span className="text-xs font-medium text-gray-500 block mb-1">
+                    <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">
                       {language === 'ar' ? 'القاعات المؤجرة الآن' : 'Salles en Location'}
                     </span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold font-mono text-gray-900 tabular-nums">
+                      <span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                         {activeOccupiedUnits}
                       </span>
-                      <span className="text-xs text-gray-400">/ {totalUnitsCount}</span>
+                      <span className="text-xs text-black/55 dark:text-white/55">/ {totalUnitsCount}</span>
                     </div>
                     <span className="inline-block mt-2 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[11px] font-medium rounded-full">
                       ● {occupancyRate}% {language === 'ar' ? 'نسبة الإشغال' : 'Taux d’occupation'}
                     </span>
                   </div>
-                  <div className="w-px h-12 bg-gray-200 mx-4" />
+                  <div className="w-px h-12 bg-neutral-200 dark:bg-neutral-700 mx-4" />
                   <div className="flex-1">
-                    <span className="text-xs font-medium text-gray-500 block mb-1">
+                    <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">
                       {language === 'ar' ? 'تسليم واستلام اليوم' : 'Check-in / Check-out'}
                     </span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold font-mono text-gray-900 tabular-nums">
+                      <span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                         {todayBookings.length}
                       </span>
-                      <span className="text-xs text-gray-400">{language === 'ar' ? 'مواعيد' : 'créneaux'}</span>
+                      <span className="text-xs text-black/55 dark:text-white/55">{language === 'ar' ? 'مواعيد' : 'créneaux'}</span>
                     </div>
                     <span className="inline-block mt-2 px-2 py-0.5 bg-amber-50 text-amber-600 text-[11px] font-medium rounded-full">
                       {language === 'ar' ? 'جاهزية العقود' : 'États des lieux OK'}
@@ -249,30 +251,30 @@ export const VenueDashboardView: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-gray-100">
-                  <span className="text-[11px] text-gray-400 block mb-2">
+                <div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700/60">
+                  <span className="text-[11px] text-black/55 dark:text-white/55 block mb-2">
                     {language === 'ar' ? 'كثافة الفعاليات على مدار 24 ساعة' : 'Charge horaire des événements (24h)'}
                   </span>
                   <HourlyCurveChart data={hourlyData} color="#d4522f" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                 <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-xs font-medium text-gray-500">
+                  <span className="text-xs font-medium text-black/70 dark:text-white/75">
                     {language === 'ar' ? 'إيرادات الإيجار اليوم' : 'Recette Locative Aujourd’hui'}
                   </span>
-                  <span className="text-base font-bold font-mono text-gray-900 tabular-nums">
+                  <span className="text-base font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                     {formatCurrencyAmount(todayRevenue)}
                   </span>
                 </div>
-                <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-1">
+                <div className="w-full bg-neutral-100 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
                   <div
                     className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
                     style={{ width: `${targetPct}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-[11px] text-gray-400">
+                <div className="flex justify-between text-[11px] text-black/55 dark:text-white/55">
                   <span>{targetPct}% {language === 'ar' ? 'من الهدف' : 'de l’objectif journalier'}</span>
                   <span>{formatCurrencyAmount(dailyTarget)}</span>
                 </div>
@@ -287,19 +289,19 @@ export const VenueDashboardView: React.FC = () => {
             title={language === 'ar' ? 'الحجوزات والمساحات' : language === 'fr' ? 'Réservations & Espaces' : 'Booking Growth'}
             icon={<Calendar size={18} className="text-[#d4522f]" />}
             rightControls={
-              <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
+              <div className="flex items-center gap-1 text-xs font-semibold text-black/70 dark:text-white/75">
                 <button
                   type="button"
                   onClick={() => setCurrentMonthIndex((prev) => (prev > 0 ? prev - 1 : 11))}
-                  className="p-1 hover:bg-gray-200 rounded"
+                  className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"
                 >
                   <ChevronLeft size={14} />
                 </button>
-                <span className="px-1 text-gray-800">{months[currentMonthIndex]} 2026</span>
+                <span className="px-1 text-black dark:text-white">{months[currentMonthIndex]} 2026</span>
                 <button
                   type="button"
                   onClick={() => setCurrentMonthIndex((prev) => (prev < 11 ? prev + 1 : 0))}
-                  className="p-1 hover:bg-gray-200 rounded"
+                  className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"
                 >
                   <ChevronRight size={14} />
                 </button>
@@ -334,12 +336,12 @@ export const VenueDashboardView: React.FC = () => {
                 />
               </div>
 
-              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-semibold text-gray-700">
+                  <span className="text-xs font-semibold text-black/70 dark:text-white/75">
                     {language === 'ar' ? 'حجم الحجوزات خلال الأسابيع الـ 4 الماضية' : 'Volume de réservations par semaine'}
                   </span>
-                  <span className="text-[11px] text-gray-400">
+                  <span className="text-[11px] text-black/55 dark:text-white/55">
                     {language === 'ar' ? 'تطور العقود' : '4 dernières semaines'}
                   </span>
                 </div>
@@ -362,40 +364,40 @@ export const VenueDashboardView: React.FC = () => {
             title={language === 'ar' ? 'الإيرادات والأرباح' : language === 'fr' ? 'Revenus & Marges' : 'Revenue & Profit'}
             icon={<TrendingUp size={18} className="text-[#d4522f]" />}
             rightControls={
-              <span className="text-xs font-semibold text-gray-500 uppercase">
+              <span className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase">
                 {months[currentMonthIndex]} 2026
               </span>
             }
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
-                <div className="grid grid-cols-3 gap-2 pb-3 border-b border-gray-100">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+                <div className="grid grid-cols-3 gap-2 pb-3 border-b border-neutral-200 dark:border-neutral-700/60">
                   <div>
-                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'صافي العائد' : 'Net Locatif'}</span>
-                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'صافي العائد' : 'Net Locatif'}</span>
+                    <span className="text-lg font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                       {formatCurrencyAmount(Math.round(todayRevenue * 0.76))}
                     </span>
                     <span className="text-[10px] text-emerald-600 block">+7.5%</span>
                   </div>
                   <div>
-                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'الإيجار الإجمالي' : 'Revenu Brut'}</span>
-                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'الإيجار الإجمالي' : 'Revenu Brut'}</span>
+                    <span className="text-lg font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                       {formatCurrencyAmount(todayRevenue)}
                     </span>
                     <span className="text-[10px] text-emerald-600 block">+8.2%</span>
                   </div>
                   <div>
-                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'صيانة وتنظيف' : 'Charges & Entretien'}</span>
-                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'صيانة وتنظيف' : 'Charges & Entretien'}</span>
+                    <span className="text-lg font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                       {formatCurrencyAmount(Math.round(todayRevenue * 0.24))}
                     </span>
-                    <span className="text-[10px] text-gray-400 block">24% CA</span>
+                    <span className="text-[10px] text-black/55 dark:text-white/55 block">24% CA</span>
                   </div>
                 </div>
 
                 <div className="pt-3">
-                  <span className="text-[11px] text-gray-400 block mb-1">
+                  <span className="text-[11px] text-black/55 dark:text-white/55 block mb-1">
                     {language === 'ar' ? 'منحنى التدفق النقدي على مدار 30 يوماً' : 'Tendance des encaissements sur 30 jours'}
                   </span>
                   <MonthlyAreaChart data={monthlyRevenue} color="#8B5CF6" />
@@ -403,20 +405,20 @@ export const VenueDashboardView: React.FC = () => {
               </div>
 
               {/* 4 KPIs Inset Grid */}
-              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-semibold text-gray-700">
+                  <span className="text-xs font-semibold text-black/70 dark:text-white/75">
                     {language === 'ar' ? 'مؤشرات الأداء العقاري' : 'Indicateurs Métier'}
                   </span>
-                  <Info size={13} className="text-gray-400" />
+                  <Info size={13} className="text-black/55 dark:text-white/55" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
-                    <span className="text-[11px] text-gray-500 block">
+                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
                       {language === 'ar' ? 'عائد الساعة/القاعة' : 'RevPAH (Heure)'}
                     </span>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-mono text-gray-900">
+                      <span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
                         {formatCurrencyAmount(3200)}
                       </span>
                       <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
@@ -425,36 +427,36 @@ export const VenueDashboardView: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
-                    <span className="text-[11px] text-gray-500 block">
+                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
                       {language === 'ar' ? 'مدة الحجز المتوسطة' : 'Durée Moyenne'}
                     </span>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-mono text-gray-900">1.8 j</span>
+                      <span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">1.8 j</span>
                       <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
                         Événement
                       </span>
                     </div>
                   </div>
 
-                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
-                    <span className="text-[11px] text-gray-500 block">
+                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
                       {language === 'ar' ? 'إعادة الإيجار للمستأجرين' : 'Taux Récurrence'}
                     </span>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-mono text-gray-900">68%</span>
+                      <span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">68%</span>
                       <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
                         B2B Corp
                       </span>
                     </div>
                   </div>
 
-                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
-                    <span className="text-[11px] text-gray-500 block">
+                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
                       {language === 'ar' ? 'سلامة الودائع' : 'Restitution Cautions'}
                     </span>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-mono text-gray-900">97%</span>
+                      <span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">97%</span>
                       <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
                         Sans litige
                       </span>
@@ -475,22 +477,22 @@ export const VenueDashboardView: React.FC = () => {
           >
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-gray-700">
+                    <span className="text-xs font-semibold text-black/70 dark:text-white/75">
                       {language === 'ar' ? 'توزيع أنواع المساحات' : 'Typologie des Espaces'}
                     </span>
-                    <Info size={13} className="text-gray-400" />
+                    <Info size={13} className="text-black/55 dark:text-white/55" />
                   </div>
                   <DonutChart segments={spaceCategories} centerLabel={`${totalUnitsCount} Salles`} />
                 </div>
 
-                <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-gray-700">
+                    <span className="text-xs font-semibold text-black/70 dark:text-white/75">
                       {language === 'ar' ? 'الإشغال حسب أيام الأسبوع' : 'Affluence par Jour'}
                     </span>
-                    <Info size={13} className="text-gray-400" />
+                    <Info size={13} className="text-black/55 dark:text-white/55" />
                   </div>
                   <PillBarHistogram
                     data={weekDaysTraffic}

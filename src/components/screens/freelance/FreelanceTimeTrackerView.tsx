@@ -307,7 +307,7 @@ export const FreelanceTimeTrackerView: React.FC<any> = () => {
 				const isPinned = pinnedLogIds.has(entry.id);
 				return /* @__PURE__ */ <div className="flex items-center gap-2">
 {isPinned && /* @__PURE__ */ <span className="w-1.5 h-5 rounded-full bg-[#d4522f] shrink-0" />}
-<span className="text-xs text-neutral-500 tabular-nums">{entry.date}</span>
+<span className="text-xs text-black/55 dark:text-white/55 tabular-nums">{entry.date}</span>
 {isPinned && /* @__PURE__ */ <Pin size={11} className="text-[#d4522f] shrink-0" />}
 </div>;
 			}
@@ -318,8 +318,8 @@ export const FreelanceTimeTrackerView: React.FC<any> = () => {
 			width: "2.4*",
 			sortable: true,
 			renderCell: (entry: any) => /* @__PURE__ */ <div className="min-w-0">
-<span className="font-bold text-sm text-neutral-900 dark:text-white block truncate">{entry.clientName}</span>
-<span className="text-[11px] text-neutral-500 truncate block">{entry.projectTitle}</span>
+<span className="font-bold text-sm text-black dark:text-white block truncate">{entry.clientName}</span>
+<span className="text-[11px] text-black/55 dark:text-white/55 truncate block">{entry.projectTitle}</span>
 </div>
 		},
 		{
@@ -327,7 +327,7 @@ export const FreelanceTimeTrackerView: React.FC<any> = () => {
 			header: t("free_time_field_notes", language),
 			width: "2.4*",
 			renderCell: (entry: any) => /* @__PURE__ */ <div className="min-w-0 max-w-xs">
-<span className="text-xs font-medium text-neutral-800 dark:text-neutral-200 truncate block">{entry.taskDescription}</span>
+<span className="text-xs font-medium text-black dark:text-white truncate block">{entry.taskDescription}</span>
 {entry.deliverableTitle && /* @__PURE__ */ <span className="text-[10px] text-[#d4522f] truncate block mt-0.5">
 {t("free_time_milestone_prefix", language)}
 {": "}
@@ -340,14 +340,14 @@ export const FreelanceTimeTrackerView: React.FC<any> = () => {
 			header: t("free_time_duration", language),
 			width: "1.4*",
 			sortable: true,
-			renderCell: (entry: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs text-neutral-900 dark:text-white tabular-nums">{formatDuration(entry.durationSeconds)}</span>
+			renderCell: (entry: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">{formatDuration(entry.durationSeconds)}</span>
 		},
 		{
 			key: "rate",
 			header: t("free_time_rate", language),
 			width: "1.4*",
 			sortable: true,
-			renderCell: (entry: any) => /* @__PURE__ */ <span className="font-mono text-xs text-neutral-700 dark:text-neutral-300 tabular-nums">
+			renderCell: (entry: any) => /* @__PURE__ */ <span className="font-mono text-xs text-black/70 dark:text-white/75 tabular-nums">
 {formatCurrencyAmount(entry.rateAtMoment, entry.currency)}
 /h
 </span>
@@ -366,7 +366,7 @@ export const FreelanceTimeTrackerView: React.FC<any> = () => {
 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
 {t("free_time_unbilled_badge", language)}
 </span>;
-				return /* @__PURE__ */ <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-500">{t("free_time_non_billable", language)}</span>;
+				return /* @__PURE__ */ <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/55 dark:text-white/55">{t("free_time_non_billable", language)}</span>;
 			}
 		},
 		{
@@ -384,8 +384,8 @@ export const FreelanceTimeTrackerView: React.FC<any> = () => {
 							date: entry.date,
 							isBillable: entry.isBillable
 						});
-					}} className={`p-1.5 rounded-lg transition-colors ${entry.isInvoiced ? "opacity-30 cursor-not-allowed text-neutral-400" : "text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"}`} title={entry.isInvoiced ? t("free_time_no_edit_invoiced_tt", language) : t("free_time_edit_log_tt", language)}><Edit2 size={13} /></button>
-<button type="button" disabled={entry.isInvoiced} onClick={() => setLogToDelete(entry)} className={`p-1.5 rounded-lg transition-colors ${entry.isInvoiced ? "opacity-30 cursor-not-allowed text-neutral-400" : "text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"}`} title={entry.isInvoiced ? t("free_time_no_delete_invoiced_tt", language) : t("free_time_delete_log_tt", language)}><Trash2 size={13} /></button>
+					}} className={`p-1.5 rounded-lg transition-colors ${entry.isInvoiced ? "opacity-30 cursor-not-allowed text-black/55 dark:text-white/55" : "text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"}`} title={entry.isInvoiced ? t("free_time_no_edit_invoiced_tt", language) : t("free_time_edit_log_tt", language)}><Edit2 size={13} /></button>
+<button type="button" disabled={entry.isInvoiced} onClick={() => setLogToDelete(entry)} className={`p-1.5 rounded-lg transition-colors ${entry.isInvoiced ? "opacity-30 cursor-not-allowed text-black/55 dark:text-white/55" : "text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"}`} title={entry.isInvoiced ? t("free_time_no_delete_invoiced_tt", language) : t("free_time_delete_log_tt", language)}><Trash2 size={13} /></button>
 </div>
 		}
 	], [
@@ -423,7 +423,7 @@ export const FreelanceTimeTrackerView: React.FC<any> = () => {
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{t("free_time_title", language)}</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("free_time_title", language)}</h1>
 </div>
 </div>
 <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
@@ -437,7 +437,7 @@ export const FreelanceTimeTrackerView: React.FC<any> = () => {
 <div className="absolute top-0 right-0 w-96 h-96 bg-[#d4522f]/10 rounded-full blur-3xl pointer-events-none" />
 <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
 <div className="space-y-3 text-center lg:text-left">
-<div className="flex items-center justify-center lg:justify-start gap-2 text-xs font-semibold tracking-wider text-neutral-400 uppercase">
+<div className="flex items-center justify-center lg:justify-start gap-2 text-xs font-semibold tracking-wider text-white/75 uppercase">
 <span className={`w-2 h-2 rounded-full ${activeTimer.isRunning && !activeTimer.isPaused ? "bg-emerald-500 animate-pulse" : "bg-neutral-600"}`} />
 <span>
 {activeTimer.isRunning ? activeTimer.isPaused ? t("free_time_timer_paused_status", language) : t("free_time_live_session_status", language) : t("free_time_ready_status", language)}
@@ -448,13 +448,13 @@ export const FreelanceTimeTrackerView: React.FC<any> = () => {
 </span>}
 </div>
 <div className="text-5xl sm:text-7xl font-mono font-black tracking-tight text-white tabular-nums drop-shadow-sm">{formatDuration(activeTimer.elapsedSeconds)}</div>
-{activeTimer.isRunning && /* @__PURE__ */ <div className="text-xs text-neutral-300 font-medium">
+{activeTimer.isRunning && /* @__PURE__ */ <div className="text-xs text-white/80 font-medium">
 {t("free_time_working_on_label", language)}
 {" "}
 <strong className="text-white">{activeTimer.clientName}</strong>
 {" ·"}
 {" "}
-<span className="text-neutral-400">{activeTimer.taskDescription}</span>
+<span className="text-white/75">{activeTimer.taskDescription}</span>
 </div>}
 </div>
 <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -473,7 +473,7 @@ export const FreelanceTimeTrackerView: React.FC<any> = () => {
 <Square size={16} className="fill-current" />
 <span>{t("free_time_timer_stop", language)}</span>
 </button>
-<button type="button" onClick={resetTimer} className="h-12 w-12 rounded-2xl bg-neutral-800 text-neutral-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title={t("free_time_discard_tt", language)}><RotateCcw size={16} /></button>
+<button type="button" onClick={resetTimer} className="h-12 w-12 rounded-2xl bg-neutral-800 text-white/75 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title={t("free_time_discard_tt", language)}><RotateCcw size={16} /></button>
 </div>}
 </div>
 </div>
@@ -493,11 +493,11 @@ export const FreelanceTimeTrackerView: React.FC<any> = () => {
 								}))} placeholder={t("free_time_ph_select_project", language)} height={46} corner={14} />
 <LabelInput field="Task" label={t("free_time_working_on", language)} placeholder={t("free_time_live_what_working_on", language)} value={taskDescription} onChange={setTaskDescription} width="100%" height={46} corner={14} />
 <div className="flex items-center justify-between sm:justify-end gap-4 pt-4 sm:pt-0">
-<label className="flex items-center gap-2 cursor-pointer text-neutral-300">
+<label className="flex items-center gap-2 cursor-pointer text-white/80">
 <input type="checkbox" checked={isBillable} onChange={(e) => setIsBillable(e.target.checked)} className="rounded text-[#d4522f] focus:ring-0" />
 <span>{t("free_time_billable", language)}</span>
 </label>
-<label className="flex items-center gap-2 cursor-pointer text-neutral-300">
+<label className="flex items-center gap-2 cursor-pointer text-white/80">
 <input type="checkbox" checked={isPomodoro} onChange={(e) => setIsPomodoro(e.target.checked)} className="rounded text-amber-500 focus:ring-0" />
 <span>
 {t("free_topbar_pomodoro", language)}
@@ -509,31 +509,31 @@ export const FreelanceTimeTrackerView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {language === "ar" ? "مؤشرات تتبع الوقت والإنتاجية" : language === "fr" ? "Indicateurs de Temps & Productivité" : "Time Tracking & Productivity Metrics"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{t("free_time_total_hours_logged", language)}</span>
-<span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{t("free_time_total_hours_logged", language)}</span>
+<span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75">
 {timeLogs.length}
 {" "}
 {t("free_time_tracked_sessions_unit", language)}
 </span>
 </div>
 <div>
-<div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
+<div className="text-2xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {(totalSecondsAll / 3600).toFixed(1)}
 h
 </div>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">{language === "ar" ? "إجمالي الساعات المسجلة" : "Cumul des heures travaillées"}</p>
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">{language === "ar" ? "إجمالي الساعات المسجلة" : "Cumul des heures travaillées"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{t("free_time_billable_ratio", language)}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{t("free_time_billable_ratio", language)}</span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
 {(billableSeconds / 3600).toFixed(1)}
 {"h "}
@@ -541,26 +541,26 @@ h
 </span>
 </div>
 <div>
-<div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums font-mono">
+<div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {billableRatio}
 %
 </div>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">{language === "ar" ? "نسبة الساعات القابلة للفوترة" : "Taux horaire valorisé"}</p>
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">{language === "ar" ? "نسبة الساعات القابلة للفوترة" : "Taux horaire valorisé"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{t("free_time_unbilled_total", language)}</span>
+<span className="text-[11px] font-medium text-white/80">{t("free_time_unbilled_total", language)}</span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
 {unbilledHours > 0 ? `${unbilledHours}h ${language === "ar" ? "جاهزة" : "à facturer"}` : language === "ar" ? "مفوتر بالكامل" : "À jour"}
 </span>
 </div>
 <div>
-<div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
+<div className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {unbilledHours}
 h
 </div>
-<p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
 <span>{t("free_time_awaiting_invoice", language)}</span>
 </p>
@@ -572,8 +572,8 @@ h
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div className="flex items-center gap-2">
 <Clock size={16} className="text-[#d4522f]" />
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white">{t("free_time_recent_logs", language)}</h3>
-<span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
+<h3 className="text-sm font-bold text-black dark:text-white">{t("free_time_recent_logs", language)}</h3>
+<span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums ml-1">
 (
 {sortedLogs.length}
 )
@@ -598,7 +598,7 @@ h)
 <span>
 {language === "ar" ? "جلسة محددة" : language === "fr" ? "sessions sélectionnées" : "sessions selected"}
 </span>
-<button type="button" onClick={() => setSelectedLogIds(/* @__PURE__ */ new Set())} className="text-neutral-400 hover:text-white underline text-xs cursor-pointer ml-1">
+<button type="button" onClick={() => setSelectedLogIds(/* @__PURE__ */ new Set())} className="text-white/75 hover:text-white underline text-xs cursor-pointer ml-1">
 {language === "ar" ? "إلغاء التحديد" : language === "fr" ? "Désélectionner" : "Deselect all"}
 </button>
 </div>
@@ -627,13 +627,13 @@ h)
 {isPinned && /* @__PURE__ */ <div className="absolute top-3 left-3 text-[#d4522f]"><Pin size={12} className="fill-[#d4522f]" /></div>}
 <div className="flex items-center justify-between pl-4">
 <span className="font-mono text-base font-black text-[#d4522f] tabular-nums">{formatDuration(entry.durationSeconds)}</span>
-<span className="text-xs text-neutral-400 tabular-nums">{entry.date}</span>
+<span className="text-xs text-black/55 dark:text-white/55 tabular-nums">{entry.date}</span>
 </div>
 <div>
-<h4 className="text-sm font-bold text-neutral-900 dark:text-white truncate">{entry.clientName}</h4>
-<p className="text-xs text-neutral-500 truncate">{entry.projectTitle}</p>
+<h4 className="text-sm font-bold text-black dark:text-white truncate">{entry.clientName}</h4>
+<p className="text-xs text-black/55 dark:text-white/55 truncate">{entry.projectTitle}</p>
 </div>
-<p className="text-xs text-neutral-700 dark:text-neutral-300 line-clamp-2">{entry.taskDescription}</p>
+<p className="text-xs text-black/70 dark:text-white/75 line-clamp-2">{entry.taskDescription}</p>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
 <div>
 {entry.isInvoiced ? /* @__PURE__ */ <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
@@ -642,7 +642,7 @@ h)
 </span> : entry.isBillable ? /* @__PURE__ */ <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
 {t("free_time_unbilled_badge", language)}
-</span> : /* @__PURE__ */ <span className="text-[11px] text-neutral-400">{t("free_time_non_billable", language)}</span>}
+</span> : /* @__PURE__ */ <span className="text-[11px] text-black/55 dark:text-white/55">{t("free_time_non_billable", language)}</span>}
 </div>
 <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
 <button type="button" disabled={entry.isInvoiced} onClick={() => {
@@ -655,8 +655,8 @@ h)
 														date: entry.date,
 														isBillable: entry.isBillable
 													});
-												}} className={`p-1.5 rounded-lg transition-colors ${entry.isInvoiced ? "opacity-30 cursor-not-allowed text-neutral-400" : "text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"}`}><Edit2 size={13} /></button>
-<button type="button" disabled={entry.isInvoiced} onClick={() => setLogToDelete(entry)} className={`p-1.5 rounded-lg transition-colors ${entry.isInvoiced ? "opacity-30 cursor-not-allowed text-neutral-400" : "text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"}`}><Trash2 size={13} /></button>
+												}} className={`p-1.5 rounded-lg transition-colors ${entry.isInvoiced ? "opacity-30 cursor-not-allowed text-black/55 dark:text-white/55" : "text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"}`}><Edit2 size={13} /></button>
+<button type="button" disabled={entry.isInvoiced} onClick={() => setLogToDelete(entry)} className={`p-1.5 rounded-lg transition-colors ${entry.isInvoiced ? "opacity-30 cursor-not-allowed text-black/55 dark:text-white/55" : "text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"}`}><Trash2 size={13} /></button>
 </div>
 </div>
 </div>;
@@ -665,8 +665,8 @@ h)
 {isManualModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
 <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">{t("free_time_modal_manual_title", language)}</h3>
-<button type="button" onClick={() => setIsManualModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"><X size={16} /></button>
+<h3 className="text-base font-bold text-black dark:text-white">{t("free_time_modal_manual_title", language)}</h3>
+<button type="button" onClick={() => setIsManualModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"><X size={16} /></button>
 </div>
 <form onSubmit={handleManualLogSubmit} className="space-y-3.5 text-xs">
 <LabelSelect field="Client" label={`${t("free_invoice_client", language)} *`} placeholder={t("free_time_ph_select_client", language)} value={manualForm.clientId} onChange={(val) => handleManualClientChange(val?.target?.value ?? String(val))} options={freelanceClients.map((c) => ({
@@ -705,7 +705,7 @@ h)
 										...manualForm,
 										isBillable: e.target.checked
 									})} className="rounded text-[#d4522f]" />
-<label htmlFor="billableManual" className="font-medium text-neutral-700 dark:text-neutral-300">{t("free_time_billable", language)}</label>
+<label htmlFor="billableManual" className="font-medium text-black/70 dark:text-white/75">{t("free_time_billable", language)}</label>
 </div>
 <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
 <AtriumButton variant="outline" size="sm" type="button" onClick={() => setIsManualModalOpen(false)}>{t("common_cancel", language)}</AtriumButton>
@@ -718,14 +718,14 @@ h)
 <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
 <div>
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">{t("free_time_edit_modal_title", language)}</h3>
-<p className="text-xs text-neutral-500">
+<h3 className="text-base font-bold text-black dark:text-white">{t("free_time_edit_modal_title", language)}</h3>
+<p className="text-xs text-black/55 dark:text-white/55">
 {logToEdit.clientName}
 {" · "}
 {logToEdit.projectTitle}
 </p>
 </div>
-<button type="button" onClick={() => setLogToEdit(null)} className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"><X size={16} /></button>
+<button type="button" onClick={() => setLogToEdit(null)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"><X size={16} /></button>
 </div>
 <form onSubmit={handleEditLogSubmit} className="space-y-3.5 text-xs">
 <LabelInput id="edit-task-summary" label={t("free_time_field_notes", language)} required value={editLogForm.taskDescription} onChange={(e) => setEditLogForm((prev) => ({
@@ -751,7 +751,7 @@ h)
 										...editLogForm,
 										isBillable: e.target.checked
 									})} className="rounded text-[#d4522f]" />
-<label htmlFor="billableEdit" className="font-medium text-neutral-700 dark:text-neutral-300 cursor-pointer">{t("free_time_billable", language)}</label>
+<label htmlFor="billableEdit" className="font-medium text-black/70 dark:text-white/75 cursor-pointer">{t("free_time_billable", language)}</label>
 </div>
 <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
 <AtriumButton variant="outline" size="sm" type="button" onClick={() => setLogToEdit(null)}>{t("common_cancel", language)}</AtriumButton>
@@ -765,15 +765,15 @@ h)
 <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
 <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60"><AlertTriangle size={20} /></div>
 <div>
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">{t("free_time_delete_modal_title", language)}</h3>
-<p className="text-xs text-neutral-500">
+<h3 className="text-base font-bold text-black dark:text-white">{t("free_time_delete_modal_title", language)}</h3>
+<p className="text-xs text-black/55 dark:text-white/55">
 {logToDelete.date}
 {" · "}
 {formatDuration(logToDelete.durationSeconds)}
 </p>
 </div>
 </div>
-<p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+<p className="text-xs text-black/70 dark:text-white/75 leading-relaxed">
 {t("free_time_delete_modal_confirm", language)}
 {" \""}
 {logToDelete.taskDescription}
@@ -792,5 +792,3 @@ h)
 </div>}
 </div>;
 };
-
-export { FreelanceFinanceView_exports as a, FreelanceClientsView_exports as c, Kanban as d, Globe as f, FreelanceInvoicesView_exports as i, Square as l, Briefcase as m, FreelanceStaffView_exports as n, FreelanceDeliverablesView_exports as o, CircleCheckBig as p, FreelanceProposalsView_exports as r, FreelanceDashboardView_exports as s, FreelanceTimeTrackerView_exports as t, Pause as u };

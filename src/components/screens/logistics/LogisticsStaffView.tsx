@@ -25,10 +25,10 @@ export const LogisticsStaffView: React.FC = () => {
             {member.fullName.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <div className="font-semibold text-neutral-900 dark:text-white text-xs truncate">
+            <div className="font-semibold text-black dark:text-white text-xs truncate">
               {member.fullName}
             </div>
-            <div className="text-[11px] text-neutral-500 truncate flex items-center gap-1.5">
+            <div className="text-[11px] text-black/55 dark:text-white/55 truncate flex items-center gap-1.5">
               <span>{member.role}</span>
               {member.assignedVehiclePlate && (
                 <>
@@ -66,7 +66,7 @@ export const LogisticsStaffView: React.FC = () => {
                   : 'bg-neutral-400'
               }`}
             />
-            <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200">
+            <span className="text-xs font-medium text-black dark:text-white">
               {member.status === 'active'
                 ? isPresent
                   ? isAr
@@ -106,7 +106,7 @@ export const LogisticsStaffView: React.FC = () => {
       header: isAr ? 'صنف الرخصة' : isEn ? 'License Class' : 'Permis de Conduire',
       accessorKey: 'drivingLicenseCategory',
       cell: (member) => (
-        <span className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-xs font-mono font-bold text-neutral-800 dark:text-neutral-200">
+        <span className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-xs font-mono font-bold text-black dark:text-white">
           {member.drivingLicenseCategory || 'B'}
         </span>
       ),
@@ -116,7 +116,7 @@ export const LogisticsStaffView: React.FC = () => {
       header: isAr ? 'ولاية / منطقة التوزيع' : isEn ? 'Delivery Zone' : 'Zone / Wilayas',
       accessorKey: 'deliveryZoneWilayas',
       cell: (member) => (
-        <span className="text-xs text-neutral-700 dark:text-neutral-300">
+        <span className="text-xs text-black/70 dark:text-white/75">
           {member.deliveryZoneWilayas || (isAr ? 'المركز الرئيسي' : 'Hub Central')}
         </span>
       ),
@@ -126,7 +126,7 @@ export const LogisticsStaffView: React.FC = () => {
       header: isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone',
       accessorKey: 'phoneNumber',
       cell: (member) => (
-        <span className="text-xs text-neutral-600 dark:text-neutral-300 tabular-nums">
+        <span className="text-xs text-black/70 dark:text-white/75 tabular-nums">
           {member.phoneNumber || '—'}
         </span>
       ),

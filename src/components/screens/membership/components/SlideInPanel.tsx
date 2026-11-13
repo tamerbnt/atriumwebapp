@@ -239,7 +239,7 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
         aria-modal="true"
         aria-hidden={!isOpen}
         aria-labelledby="pnl-title"
-        className={`pnl fixed right-3.5 top-3.5 bottom-3.5 w-[560px] max-w-[calc(100vw-28px)] z-[61] rounded-[30px] bg-white flex flex-col shadow-[-20px_0_60px_rgba(27,25,23,0.22)] border border-[#E6DED6] overflow-hidden ${className}`}
+        className={`pnl fixed right-3.5 top-3.5 bottom-3.5 w-[560px] max-w-[calc(100vw-28px)] z-[61] rounded-[30px] bg-white dark:bg-neutral-800 flex flex-col shadow-[-20px_0_60px_rgba(27,25,23,0.22)] border border-[#E6DED6] overflow-hidden ${className}`}
         style={{
           visibility: isVisible ? 'visible' : 'hidden',
           transform: panelTransform,
@@ -260,13 +260,13 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
           <div className="flex-1 min-w-0">
             <h2
               id="pnl-title"
-              className="m-0 mb-2 font-bold text-[26px] leading-tight text-[#1B1917] tracking-tight truncate"
+              className="m-0 mb-2 font-bold text-[26px] leading-tight text-black dark:text-white tracking-tight truncate"
             >
               {title}
             </h2>
             {pills && <div className="flex gap-1.5 flex-wrap">{pills}</div>}
             {subtitle && (
-              <span className="block mt-2 font-mono text-[11px] text-[#6B635C]">
+              <span className="block mt-2 font-mono text-[11px] text-black/70 dark:text-white/75">
                 {subtitle}
               </span>
             )}
@@ -280,7 +280,7 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
                 disabled={!hasPrev}
                 onClick={onPrev}
                 aria-label="Adhérent précédent"
-                className="w-[34px] h-[34px] rounded-full border border-[#E6DED6] bg-white grid place-items-center text-[#1B1917] disabled:opacity-30 disabled:cursor-not-allowed hover:not-disabled:bg-[#FBE7DF] transition-colors cursor-pointer"
+                className="w-[34px] h-[34px] rounded-full border border-[#E6DED6] bg-white dark:bg-neutral-800 grid place-items-center text-black dark:text-white disabled:opacity-30 disabled:cursor-not-allowed hover:not-disabled:bg-[#FBE7DF] transition-colors cursor-pointer"
               >
                 <ChevronUp className="w-4 h-4" />
               </button>
@@ -291,7 +291,7 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
                 disabled={!hasNext}
                 onClick={onNext}
                 aria-label="Adhérent suivant"
-                className="w-[34px] h-[34px] rounded-full border border-[#E6DED6] bg-white grid place-items-center text-[#1B1917] disabled:opacity-30 disabled:cursor-not-allowed hover:not-disabled:bg-[#FBE7DF] transition-colors cursor-pointer"
+                className="w-[34px] h-[34px] rounded-full border border-[#E6DED6] bg-white dark:bg-neutral-800 grid place-items-center text-black dark:text-white disabled:opacity-30 disabled:cursor-not-allowed hover:not-disabled:bg-[#FBE7DF] transition-colors cursor-pointer"
               >
                 <ChevronDown className="w-4 h-4" />
               </button>
@@ -301,7 +301,7 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
               type="button"
               onClick={onClose}
               aria-label="Fermer la fiche"
-              className="w-[34px] h-[34px] rounded-full border border-[#E6DED6] bg-white grid place-items-center text-[#1B1917] hover:bg-[#FBE7DF] transition-colors cursor-pointer"
+              className="w-[34px] h-[34px] rounded-full border border-[#E6DED6] bg-white dark:bg-neutral-800 grid place-items-center text-black dark:text-white hover:bg-[#FBE7DF] transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>

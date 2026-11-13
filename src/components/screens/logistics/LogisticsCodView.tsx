@@ -133,7 +133,7 @@ export const LogisticsCodView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><CreditCard size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {isAr ? "تحصيل COD ومستحقات التجار وبريد الجزائر" : "Caisse COD & Règlements E-Commerçants"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Paiement à la Livraison</span>
@@ -150,15 +150,15 @@ export const LogisticsCodView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "مؤشرات صندوق التحصيل وأموال التجار" : "Trésorerie des Encaissements & Reversements"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "إجمالي المقبوض نقداً عند الاستلام" : "Total Brut Encaissé (Livreurs)"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "إجمالي المقبوض نقداً عند الاستلام" : "Total Brut Encaissé (Livreurs)"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">{formatMoney(totalCodCollected)}</div>
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalCodCollected)}</div>
 <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">
 {deliveredShipments.length}
 {" "}
@@ -167,19 +167,19 @@ export const LogisticsCodView: React.FC<any> = () => {
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "رسوم التوصيل المستحقة للشركة" : "Commissions & Frais Livraison"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "رسوم التوصيل المستحقة للشركة" : "Commissions & Frais Livraison"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-[#d4522f] font-mono tabular-nums">{formatMoney(totalShippingFees)}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">Chiffre d'affaires prestations</p>
+<div className="text-2xl font-bold tracking-tight text-[#d4522f] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalShippingFees)}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">Chiffre d'affaires prestations</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{isAr ? "صافي مستحقات المتاجر للتحويل" : "Solde Net à Reverser"}</span>
+<span className="text-[11px] font-medium text-white/80">{isAr ? "صافي مستحقات المتاجر للتحويل" : "Solde Net à Reverser"}</span>
 <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">Marchands</span>
 </div>
 <div>
-<div className="text-2xl font-black text-white font-mono tabular-nums">{formatMoney(totalNetToMerchants)}</div>
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalNetToMerchants)}</div>
 <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
 <CheckCircle2 size={11} />
 Prêt pour virement CCP / BaridiMob
@@ -191,28 +191,32 @@ Prêt pour virement CCP / BaridiMob
 <LiveSegmentedControl value={activeTab} onChange={(val) => setActiveTab(val)} size="sm" options={[
 					{
 						id: "shipments",
-						label: isAr ? "تسويات الطرود" : "Rapprochement Colis",
+						label: isAr ? "تسويات" : language === "fr" ? "Colis" : "Parcels",
+						tooltip: isAr ? "تسويات الطرود المسلّمة" : language === "fr" ? "Rapprochement Colis" : "Delivered parcels reconciliation",
 						count: deliveredShipments.length
 					},
 					{
 						id: "discharges",
-						label: isAr ? "تبرئة الذمة" : "Bons de Décharge",
+						label: isAr ? "تبرئة" : language === "fr" ? "Décharges" : "Discharges",
+						tooltip: isAr ? "تبرئة الذمة ومستندات السائقين" : language === "fr" ? "Bons de Décharge" : "Courier discharge vouchers",
 						count: discharges.length
 					},
 					{
 						id: "remittances",
-						label: isAr ? "دفعات CCP" : "Lots CCP SFP 01",
+						label: isAr ? "دفعات" : language === "fr" ? "Lots" : "Batches",
+						tooltip: isAr ? "دفعات حوالات CCP SFP 01" : language === "fr" ? "Lots CCP SFP 01" : "Postal remittance batches (CCP SFP 01)",
 						count: remittances.length
 					},
 					{
 						id: "driver_payroll",
-						label: isAr ? "أجور وعمولات" : "Paie Livreurs"
+						label: isAr ? "أجور" : language === "fr" ? "Paie" : "Payroll",
+						tooltip: isAr ? "أجور وعمولات السائقين" : language === "fr" ? "Paie Livreurs" : "Driver payroll & commissions"
 					}
 				]} />
 {activeTab === "shipments" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex items-center justify-between">
 <div>
-<h2 className="text-sm font-bold text-neutral-900 dark:text-white">{isAr ? "طرود جاهزة لتسوية المستحقات" : "Colis Livrés & Encaissements"}</h2>
+<h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{isAr ? "طرود جاهزة لتسوية المستحقات" : "Colis Livrés & Encaissements"}</h2>
 </div>
 <div className="text-xs font-mono font-bold text-[#d4522f]">
 {deliveredShipments.length}
@@ -231,8 +235,8 @@ Prêt pour virement CCP / BaridiMob
 							id: "merchant",
 							header: isAr ? "المتجر والتاريخ" : "Marchand / E-Boutique",
 							renderCell: (s: any) => /* @__PURE__ */ <div>
-<div className="font-semibold text-xs text-neutral-900 dark:text-white">{s.merchantName}</div>
-<div className="text-[11px] text-neutral-500">
+<div className="font-semibold text-xs text-black dark:text-white">{s.merchantName}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55">
 {s.createdAt.split("T")[0]}
 {" • Dest: "}
 {s.recipientName}
@@ -243,13 +247,13 @@ Prêt pour virement CCP / BaridiMob
 							id: "cod",
 							header: "Brut Encaissé",
 							width: "120px",
-							renderCell: (s: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs text-neutral-900 dark:text-white">{formatMoney(s.codAmountDzd)}</span>
+							renderCell: (s: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs text-black dark:text-white">{formatMoney(s.codAmountDzd)}</span>
 						},
 						{
 							id: "fee",
 							header: "Commission",
 							width: "110px",
-							renderCell: (s: any) => /* @__PURE__ */ <span className="font-mono text-xs text-neutral-500">
+							renderCell: (s: any) => /* @__PURE__ */ <span className="font-mono text-xs text-black/55 dark:text-white/55">
 -
 {formatMoney(s.shippingFeeDzd)}
 </span>
@@ -274,11 +278,11 @@ Prêt pour virement CCP / BaridiMob
 {activeTab === "discharges" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
 <div className="flex items-center justify-between">
 <div>
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+<h3 className="text-sm font-bold text-black dark:text-white">
 {isAr ? "محاضر تبرئة ذمة السائقين (Double-Lock Vault)" : "Registre des Billets de Décharge Chauffeurs"}
 </h3>
 </div>
-<span className="text-xs font-mono font-bold text-neutral-600 dark:text-neutral-300">
+<span className="text-xs font-mono font-bold text-black/70 dark:text-white/75">
 {discharges.length}
 {" procès-verbaux"}
 </span>
@@ -286,7 +290,7 @@ Prêt pour virement CCP / BaridiMob
 <div className="overflow-x-auto">
 <table className="w-full text-left text-xs">
 <thead>
-<tr className="border-b border-neutral-200 dark:border-neutral-700 text-neutral-500 font-medium">
+<tr className="border-b border-neutral-200 dark:border-neutral-700 text-black/55 dark:text-white/55 font-medium">
 <th className="py-2 px-3">N° Décharge</th>
 <th className="py-2 px-3">Chauffeur</th>
 <th className="py-2 px-3">Date & Heure</th>
@@ -300,10 +304,10 @@ Prêt pour virement CCP / BaridiMob
 <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 font-mono">
 {discharges.map((d) => /* @__PURE__ */ <tr key={d.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40">
 <td className="py-2.5 px-3 font-bold text-[#d4522f]">{d.dischargeNumber}</td>
-<td className="py-2.5 px-3 font-sans font-semibold text-neutral-900 dark:text-white">{d.courierStaffId}</td>
-<td className="py-2.5 px-3 text-neutral-500">{d.timestamp.replace("T", " ").slice(0, 16)}</td>
+<td className="py-2.5 px-3 font-sans font-semibold text-black dark:text-white">{d.courierStaffId}</td>
+<td className="py-2.5 px-3 text-black/55 dark:text-white/55">{d.timestamp.replace("T", " ").slice(0, 16)}</td>
 <td className="py-2.5 px-3 text-right">{formatMoney(d.expectedCodDzd)}</td>
-<td className="py-2.5 px-3 text-right font-bold text-neutral-900 dark:text-white">{formatMoney(d.actualCashTurnedInDzd)}</td>
+<td className="py-2.5 px-3 text-right font-bold text-black dark:text-white">{formatMoney(d.actualCashTurnedInDzd)}</td>
 <td className={`py-2.5 px-3 text-right font-bold ${d.discrepancyDzd === 0 ? "text-emerald-600" : d.discrepancyDzd < 0 ? "text-red-600" : "text-blue-600"}`}>{d.discrepancyDzd === 0 ? "0 DZD" : `${d.discrepancyDzd} DZD`}</td>
 <td className="py-2.5 px-3 font-sans">
 <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${d.status === "Clean" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300" : "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300"}`}>{d.status === "Clean" ? "Décharge Conforme" : "Manquant (Shortage)"}</span>
@@ -322,7 +326,7 @@ Prêt pour virement CCP / BaridiMob
 {activeTab === "remittances" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
 <div className="flex items-center justify-between">
 <div>
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+<h3 className="text-sm font-bold text-black dark:text-white">
 {isAr ? "دفعات التحويل البريدي للتجار (Algérie Poste & BaridiMob)" : "Lots de Règlements E-Commerçants"}
 </h3>
 </div>
@@ -331,7 +335,7 @@ Prêt pour virement CCP / BaridiMob
 <div className="overflow-x-auto">
 <table className="w-full text-left text-xs">
 <thead>
-<tr className="border-b border-neutral-200 dark:border-neutral-700 text-neutral-500 font-medium">
+<tr className="border-b border-neutral-200 dark:border-neutral-700 text-black/55 dark:text-white/55 font-medium">
 <th className="py-2 px-3">Lot N°</th>
 <th className="py-2 px-3">Commerçant</th>
 <th className="py-2 px-3">Compte CCP / Clé</th>
@@ -344,8 +348,8 @@ Prêt pour virement CCP / BaridiMob
 <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 font-mono">
 {remittances.map((r) => /* @__PURE__ */ <tr key={r.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40">
 <td className="py-2.5 px-3 font-bold text-[#d4522f]">{r.batchNumber}</td>
-<td className="py-2.5 px-3 font-sans font-semibold text-neutral-900 dark:text-white">{r.merchantName}</td>
-<td className="py-2.5 px-3 text-neutral-600 dark:text-neutral-400">
+<td className="py-2.5 px-3 font-sans font-semibold text-black dark:text-white">{r.merchantName}</td>
+<td className="py-2.5 px-3 text-black/70 dark:text-white/75">
 {r.ccpAccount}
 {" "}
 <span className="text-[#d4522f] font-bold">
@@ -364,7 +368,7 @@ Prêt pour virement CCP / BaridiMob
 {r.status !== "Executed" ? /* @__PURE__ */ <AtriumButton variant="primary" size="xs" onClick={() => {
 												executeRemittance(r.id);
 												showToast(isAr ? `تم تنفيذ التحويل للدفعة ${r.batchNumber}` : `Virement ${r.batchNumber} exécuté`, "success");
-											}} icon={<Send size={12} />}>Exécuter</AtriumButton> : /* @__PURE__ */ <span className="text-[10px] text-neutral-400 font-mono">Archivé</span>}
+											}} icon={<Send size={12} />}>Exécuter</AtriumButton> : /* @__PURE__ */ <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">Archivé</span>}
 </td>
 </tr>)}
 </tbody>
@@ -376,20 +380,20 @@ Prêt pour virement CCP / BaridiMob
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold"><Truck size={18} /></div>
 <div>
-<h3 className="font-bold text-sm text-neutral-900 dark:text-white">{isAr ? "سائق أجير دائم (Salarié CDI)" : "Chauffeur Salarié Flotte Interne"}</h3>
+<h3 className="font-bold text-sm text-black dark:text-white">{isAr ? "سائق أجير دائم (Salarié CDI)" : "Chauffeur Salarié Flotte Interne"}</h3>
 </div>
 </div>
 <div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 space-y-2 text-xs">
 <div className="flex justify-between">
-<span className="text-neutral-500">Base Journalière (48 000 DZD / 26j):</span>
+<span className="text-black/55 dark:text-white/55">Base Journalière (48 000 DZD / 26j):</span>
 <span className="font-mono font-bold">1 846 DZD</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">Prime de Rendement (18 colis × 50 DZD):</span>
+<span className="text-black/55 dark:text-white/55">Prime de Rendement (18 colis × 50 DZD):</span>
 <span className="font-mono font-bold text-emerald-600">+900 DZD</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">Indemnité Carburant / Péage:</span>
+<span className="text-black/55 dark:text-white/55">Indemnité Carburant / Péage:</span>
 <span className="font-mono font-bold">+1 500 DZD</span>
 </div>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex justify-between font-bold text-sm">
@@ -402,18 +406,18 @@ Prêt pour virement CCP / BaridiMob
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold"><UserCheck size={18} /></div>
 <div>
-<h3 className="font-bold text-sm text-neutral-900 dark:text-white">
+<h3 className="font-bold text-sm text-black dark:text-white">
 {isAr ? "سائق مقاول ذاتي (Auto-Entrepreneur)" : "Livreur Sous-Traitant Auto-Entrepreneur"}
 </h3>
 </div>
 </div>
 <div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 space-y-2 text-xs">
 <div className="flex justify-between">
-<span className="text-neutral-500">Colis Livrés (26 × 220 DZD):</span>
+<span className="text-black/55 dark:text-white/55">Colis Livrés (26 × 220 DZD):</span>
 <span className="font-mono font-bold">5 720 DZD</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">Retours Traités (3 × 50 DZD):</span>
+<span className="text-black/55 dark:text-white/55">Retours Traités (3 × 50 DZD):</span>
 <span className="font-mono font-bold">+150 DZD</span>
 </div>
 <div className="flex justify-between text-red-600">

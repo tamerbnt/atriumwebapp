@@ -222,11 +222,11 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 			cell: (p: any) => /* @__PURE__ */ <div className="flex items-center gap-2">
 <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0"><Boxes size={16} /></div>
 <div>
-<div className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
+<div className="font-mono font-bold text-xs text-black dark:text-white flex items-center gap-1.5">
 {p.sku}
 {pinnedIds.has(p.id) && /* @__PURE__ */ <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />}
 </div>
-<div className="text-[10px] text-neutral-400">{p.locationBin}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">{p.locationBin}</div>
 </div>
 </div>
 		},
@@ -237,8 +237,8 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 			sortable: true,
 			minWidth: "220px",
 			cell: (p: any) => /* @__PURE__ */ <div>
-<div className="font-semibold text-xs text-neutral-900 dark:text-neutral-100 line-clamp-1">{p.name}</div>
-<div className="text-[11px] text-neutral-500">{p.category}</div>
+<div className="font-semibold text-xs text-black dark:text-white line-clamp-1">{p.name}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55">{p.category}</div>
 </div>
 		},
 		{
@@ -265,8 +265,8 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 			sortable: true,
 			minWidth: "130px",
 			cell: (p: any) => /* @__PURE__ */ <div>
-<div className="font-mono font-bold text-xs text-neutral-900 dark:text-white">{formatMoney(p.sellingPriceDzd)}</div>
-<div className="text-[10px] text-neutral-400">
+<div className="font-mono font-bold text-xs text-black dark:text-white">{formatMoney(p.sellingPriceDzd)}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">
 {"Achat: "}
 {formatMoney(p.buyingPriceDzd)}
 </div>
@@ -278,7 +278,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 			accessorKey: "locationBin",
 			sortable: true,
 			minWidth: "130px",
-			cell: (p: any) => /* @__PURE__ */ <div className="flex items-center gap-1 text-xs text-neutral-600 dark:text-neutral-300">
+			cell: (p: any) => /* @__PURE__ */ <div className="flex items-center gap-1 text-xs text-black/70 dark:text-white/75">
 <MapPin size={12} className="text-[#d4522f] shrink-0" />
 <span>{p.locationBin}</span>
 </div>
@@ -316,7 +316,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Boxes size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{isAr ? "مخزن قطع الغيار والمستهلكات" : "Magasin Pièces de Rechange"}</h1>
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{isAr ? "مخزن قطع الغيار والمستهلكات" : "Magasin Pièces de Rechange"}</h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
 {parts.length}
 {" "}
@@ -339,16 +339,16 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "مؤشرات المستودع والقطع الحرجة" : "Niveaux de Stock & Approvisionnement"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "إجمالي القطع المتوفرة" : "Unités en Rayon"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "إجمالي القطع المتوفرة" : "Unités en Rayon"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">{totalStockUnits}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{totalStockUnits}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">
 {parts.length}
 {" "}
 {isAr ? "صنف مفهرس" : "références cataloguées"}
@@ -357,23 +357,23 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 </div>
 <div onClick={() => setCategoryFilter(categoryFilter === "LowStock" ? "All" : "LowStock")} className={`p-5 rounded-[20px] bg-white dark:bg-neutral-800 border transition-all cursor-pointer flex flex-col justify-between h-[124px] shadow-2xs ${categoryFilter === "LowStock" ? "border-amber-400 ring-2 ring-amber-400/20" : "border-[#E9EEF0] dark:border-neutral-700/60 hover:border-amber-300"}`}>
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "قطع تحت حد الأمان" : "Alertes Réapprovisionnement"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "قطع تحت حد الأمان" : "Alertes Réapprovisionnement"}</span>
 {lowStockCount > 0 && /* @__PURE__ */ <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">Filtrer</span>}
 </div>
 <div>
-<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono tabular-nums">{lowStockCount}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
+<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{lowStockCount}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">
 {lowStockCount > 0 ? isAr ? "تتطلب طلبية مورد" : "Commande fournisseur requise" : "Aucune rupture"}
 </p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{isAr ? "القيمة التقديرية للمخزون" : "Valeur Estimée Stock"}</span>
+<span className="text-[11px] font-medium text-white/80">{isAr ? "القيمة التقديرية للمخزون" : "Valeur Estimée Stock"}</span>
 <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">Prix Vente Atelier</span>
 </div>
 <div>
-<div className="text-2xl font-black text-white font-mono tabular-nums">{formatMoney(totalValuation)}</div>
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalValuation)}</div>
 <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
 <CheckCircle2 size={11} />
 {isAr ? "مستودع مؤمن ومطابق" : "Valorisation active"}
@@ -385,9 +385,9 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div className="flex flex-wrap items-center justify-between gap-3">
 <div className="flex items-center gap-2">
-<Boxes size={16} className="text-neutral-500" />
-<span className="text-sm font-bold text-neutral-900 dark:text-white">{isAr ? "كتالوج قطع الغيار" : "Catalogue Pièces de Rechange"}</span>
-<span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">{filteredParts.length}</span>
+<Boxes size={16} className="text-black/55 dark:text-white/55" />
+<span className="text-sm font-bold text-black dark:text-white">{isAr ? "كتالوج قطع الغيار" : "Catalogue Pièces de Rechange"}</span>
+<span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums ml-1">{filteredParts.length}</span>
 </div>
 <div className="flex flex-wrap items-center gap-2.5 ml-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={isAr ? "بحث بالرمز، الاسم، الفئة..." : "Rechercher référence, rayon..."} shutSize={36} openWidth={220} />
@@ -395,38 +395,45 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 {[
 									{
 										id: "All",
-										label: isAr ? "الكل" : "Toutes"
+										label: isAr ? "الكل" : language === "fr" ? "Toutes" : "All",
+										tooltip: isAr ? "جميع فئات قطع الغيار" : language === "fr" ? "Toutes les catégories de pièces" : "All spare part categories"
 									},
 									{
 										id: "LowStock",
-										label: isAr ? `⚠️ تنبيهات (${lowStockCount})` : `⚠️ Alertes (${lowStockCount})`
+										label: isAr ? "تنبيهات" : language === "fr" ? "Alertes" : "Alerts",
+										tooltip: isAr ? `تنبيهات نقص المخزون (${lowStockCount})` : language === "fr" ? `Pièces en alerte de stock (${lowStockCount})` : `Low stock alerts (${lowStockCount})`
 									},
 									{
 										id: "Freinage",
-										label: "Freinage"
+										label: "Freinage",
+										tooltip: isAr ? "قطع الفرامل" : "Système de freinage"
 									},
 									{
 										id: "Filtration",
-										label: "Filtration"
+										label: "Filtration",
+										tooltip: isAr ? "فلاتر المحرك" : "Filtres & filtration"
 									},
 									{
 										id: "Suspension",
-										label: "Suspension"
+										label: "Suspension",
+										tooltip: isAr ? "نظام التعليق" : "Pièces de suspension"
 									},
 									{
 										id: "Distribution",
-										label: "Distribution"
+										label: "Distribution",
+										tooltip: isAr ? "أطقم التوزيع" : "Kits de distribution"
 									},
 									{
 										id: "Lubrifiants",
-										label: "Lubrifiants"
+										label: "Lubrifiants",
+										tooltip: isAr ? "الزيوت والسوائل" : "Huiles & lubrifiants"
 									}
 								].map((filter) => {
 									const isActive = categoryFilter === filter.id;
-									return /* @__PURE__ */ <button key={filter.id} type="button" onClick={() => setCategoryFilter(filter.id)} style={{
+									return /* @__PURE__ */ <button key={filter.id} type="button" onClick={() => setCategoryFilter(filter.id)} title={filter.tooltip} style={{
 											backgroundColor: isActive ? "#FCEEE8" : "transparent",
 											color: isActive ? "var(--color-accent)" : "#71717A"
-										}} className={`px-3 py-1 rounded-full cursor-pointer transition-all whitespace-nowrap ${isActive ? "font-bold" : "hover:text-neutral-900 dark:hover:text-white"}`}>{filter.label}</button>;
+										}} className={`px-3 py-1 rounded-full cursor-pointer transition-all whitespace-nowrap ${isActive ? "font-bold" : "hover:text-black dark:hover:text-white"}`}>{filter.label}</button>;
 								})}
 </div>
 <AtriumButton variant="secondary" size="sm" onClick={handleExportCsv} icon={<Download size={13} />}>Export CSV</AtriumButton>
@@ -437,7 +444,8 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 <UniversalDataCollection data={filteredParts} columns={columns} keyExtractor={(p) => p.id} searchQuery={searchQuery} onSearchChange={setSearchQuery} searchPlaceholder={isAr ? "بحث بالرمز، الاسم، الفئة، الموقع..." : "Rechercher par référence, désignation, rayon..."} filterValue={categoryFilter} onFilterChange={setCategoryFilter} filterOptions={[
 								{
 									value: "All",
-									label: isAr ? "جميع الفئات" : "Toutes les catégories"
+									label: isAr ? "الكل" : language === "fr" ? "Toutes" : "All",
+									tooltip: isAr ? "جميع الفئات" : "Toutes les catégories"
 								},
 								{
 									value: "Freinage",
@@ -475,7 +483,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 								setSortDir(dir);
 							}} onItemClick={(p) => {
 								setSelectedPart(p);
-							}} onEdit={openEditModal} onDelete={handleDelete} emptyIcon={<Boxes size={32} className="text-neutral-400" />} emptyTitle={isAr ? "لا توجد قطع غيار" : "Aucune pièce trouvée"} emptyDescription={searchQuery ? isAr ? "لا توجد نتائج مطابقة لبحثك" : "Aucune référence ne correspond à votre recherche" : isAr ? "قم بإضافة أول صنف لمخزن الورشة" : "Enregistrez votre première pièce en stock"} customActions={[{
+							}} onEdit={openEditModal} onDelete={handleDelete} emptyIcon={<Boxes size={32} className="text-black/55 dark:text-white/55" />} emptyTitle={isAr ? "لا توجد قطع غيار" : "Aucune pièce trouvée"} emptyDescription={searchQuery ? isAr ? "لا توجد نتائج مطابقة لبحثك" : "Aucune référence ne correspond à votre recherche" : isAr ? "قم بإضافة أول صنف لمخزن الورشة" : "Enregistrez votre première pièce en stock"} customActions={[{
 								id: "addStock",
 								label: isAr ? "إضافة مخزون (+5)" : "Réappro (+5)",
 								icon: /* @__PURE__ */ <Plus size={14} />,
@@ -491,8 +499,8 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white line-clamp-1">{p.name}</h3>
-<div className="text-xs text-neutral-500 font-medium mt-0.5">
+<h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">{p.name}</h3>
+<div className="text-xs text-black/55 dark:text-white/55 font-medium mt-0.5">
 {p.category}
 {" • Rayon "}
 {p.locationBin}
@@ -500,12 +508,12 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 </div>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
 <div>
-<div className="text-[10px] text-neutral-400 uppercase tracking-wider">Prix Vente</div>
-<div className="font-mono font-bold text-neutral-900 dark:text-white mt-0.5">{formatMoney(p.sellingPriceDzd)}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">Prix Vente</div>
+<div className="font-mono font-bold text-black dark:text-white mt-0.5">{formatMoney(p.sellingPriceDzd)}</div>
 </div>
 <div className="text-right">
-<div className="text-[10px] text-neutral-400 uppercase tracking-wider">Seuil Min</div>
-<div className="font-mono font-semibold text-neutral-600 dark:text-neutral-400 mt-0.5">
+<div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">Seuil Min</div>
+<div className="font-mono font-semibold text-black/70 dark:text-white/75 mt-0.5">
 {p.minThreshold}
 {" u."}
 </div>
@@ -520,56 +528,56 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold"><Boxes size={18} /></div>
 <div>
 <div className="flex items-center gap-1.5">
-<span className="font-mono font-bold text-xs text-neutral-900 dark:text-white">{selectedPart.sku}</span>
+<span className="font-mono font-bold text-xs text-black dark:text-white">{selectedPart.sku}</span>
 {selectedPart.stockQuantity <= selectedPart.minThreshold && /* @__PURE__ */ <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">Seuil Bas</span>}
 </div>
-<p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 line-clamp-1">{selectedPart.name}</p>
+<p className="text-xs font-semibold text-black/70 dark:text-white/75 line-clamp-1">{selectedPart.name}</p>
 </div>
 </div>
-<button onClick={() => setSelectedPart(null)} className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800"><X size={16} /></button>
+<button onClick={() => setSelectedPart(null)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"><X size={16} /></button>
 </div>
 <div className="flex items-center gap-1.5 flex-wrap">
 <button onClick={() => handleQuickAddStock(selectedPart)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 transition-colors">
 <Plus size={12} />
 {isAr ? "+5 مخزون" : "+5 Stock"}
 </button>
-<button onClick={() => openEditModal(selectedPart)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 transition-colors">
+<button onClick={() => openEditModal(selectedPart)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-neutral-100 text-black/70 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-white/75 transition-colors">
 <Edit size={12} />
 {isAr ? "تعديل" : "Modifier"}
 </button>
 <button onClick={() => handleDelete(selectedPart)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 transition-colors ml-auto"><Trash2 size={12} /></button>
 </div>
 <div className="flex border-b border-neutral-100 dark:border-neutral-800 gap-1 text-xs">
-<button onClick={() => setActiveTab("fiche")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "fiche" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "المواصفات" : "Fiche Pièce"}</button>
-<button onClick={() => setActiveTab("stock")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "stock" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "الأسعار والمخزون" : "Prix & Marges"}</button>
-<button onClick={() => setActiveTab("mouvements")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "mouvements" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "التوافق" : "Compatibilité"}</button>
-<button onClick={() => setActiveTab("notes")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "الملاحظات" : "Consignes"}</button>
+<button onClick={() => setActiveTab("fiche")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "fiche" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "المواصفات" : "Fiche Pièce"}</button>
+<button onClick={() => setActiveTab("stock")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "stock" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "الأسعار والمخزون" : "Prix & Marges"}</button>
+<button onClick={() => setActiveTab("mouvements")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "mouvements" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "التوافق" : "Compatibilité"}</button>
+<button onClick={() => setActiveTab("notes")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "الملاحظات" : "Consignes"}</button>
 </div>
 {activeTab === "fiche" && /* @__PURE__ */ <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">{isAr ? "رمز القطعة SKU:" : "Code SKU Atelier:"}</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">{selectedPart.sku}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "رمز القطعة SKU:" : "Code SKU Atelier:"}</span>
+<span className="font-mono font-bold text-black dark:text-white">{selectedPart.sku}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">{isAr ? "الفئة:" : "Catégorie:"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{selectedPart.category}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "الفئة:" : "Catégorie:"}</span>
+<span className="font-semibold text-black dark:text-white">{selectedPart.category}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">{isAr ? "موقع التخزين:" : "Emplacement Rayon:"}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "موقع التخزين:" : "Emplacement Rayon:"}</span>
 <span className="font-semibold text-[#d4522f]">{selectedPart.locationBin}</span>
 </div>
 </div>
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">{isAr ? "الكمية المتوفرة:" : "Quantité en Stock:"}</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">
+<span className="text-black/55 dark:text-white/55">{isAr ? "الكمية المتوفرة:" : "Quantité en Stock:"}</span>
+<span className="font-mono font-bold text-black dark:text-white">
 {selectedPart.stockQuantity}
 {" unités"}
 </span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">{isAr ? "حد الطلب الأدنى:" : "Seuil d’Alerte Min:"}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "حد الطلب الأدنى:" : "Seuil d’Alerte Min:"}</span>
 <span className="font-mono text-amber-600 dark:text-amber-400 font-semibold">
 {selectedPart.minThreshold}
 {" unités"}
@@ -580,39 +588,39 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 {activeTab === "stock" && /* @__PURE__ */ <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">{isAr ? "سعر الشراء (مورد):" : "Prix d’Achat Fournisseur:"}</span>
-<span className="font-mono font-semibold text-neutral-800 dark:text-neutral-200">{formatMoney(selectedPart.buyingPriceDzd)}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "سعر الشراء (مورد):" : "Prix d’Achat Fournisseur:"}</span>
+<span className="font-mono font-semibold text-black dark:text-white">{formatMoney(selectedPart.buyingPriceDzd)}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">{isAr ? "سعر البيع (ورشة):" : "Prix de Vente Client:"}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "سعر البيع (ورشة):" : "Prix de Vente Client:"}</span>
 <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{formatMoney(selectedPart.sellingPriceDzd)}</span>
 </div>
 <div className="flex justify-between items-center pt-1 border-t border-neutral-200 dark:border-neutral-700">
-<span className="text-neutral-500">{isAr ? "الهامش الصافي للقطعة:" : "Marge Brute Unitaire:"}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "الهامش الصافي للقطعة:" : "Marge Brute Unitaire:"}</span>
 <span className="font-mono font-bold text-[#d4522f]">{formatMoney(selectedPart.sellingPriceDzd - selectedPart.buyingPriceDzd)}</span>
 </div>
 </div>
 <div className="p-3 rounded-xl bg-orange-50/50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30">
 <div className="flex justify-between items-center">
-<span className="text-neutral-600 dark:text-neutral-400">Valeur totale en rayon:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">{formatMoney(selectedPart.stockQuantity * selectedPart.sellingPriceDzd)}</span>
+<span className="text-black/70 dark:text-white/75">Valeur totale en rayon:</span>
+<span className="font-mono font-bold text-black dark:text-white">{formatMoney(selectedPart.stockQuantity * selectedPart.sellingPriceDzd)}</span>
 </div>
 </div>
 </div>}
 {activeTab === "mouvements" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
-<p className="text-neutral-500 text-[11px]">Modèles et motorisations compatibles avec cette référence :</p>
+<p className="text-black/55 dark:text-white/55 text-[11px]">Modèles et motorisations compatibles avec cette référence :</p>
 <div className="space-y-1.5">
-{selectedPart.compatibility && selectedPart.compatibility.length > 0 ? selectedPart.compatibility.map((c: any, i: any) => /* @__PURE__ */ <div key={i} className="p-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
+{selectedPart.compatibility && selectedPart.compatibility.length > 0 ? selectedPart.compatibility.map((c: any, i: any) => /* @__PURE__ */ <div key={i} className="p-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 text-black dark:text-white flex items-center gap-2">
 <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
 <span>{c}</span>
-</div>) : /* @__PURE__ */ <div className="text-neutral-400 text-center py-4">Référence universelle / adaptable standard</div>}
+</div>) : /* @__PURE__ */ <div className="text-black/55 dark:text-white/55 text-center py-4">Référence universelle / adaptable standard</div>}
 </div>
 </div>}
 {activeTab === "notes" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
-<p className="text-neutral-500 text-[11px]">
+<p className="text-black/55 dark:text-white/55 text-[11px]">
 {isAr ? "تعليمات التخزين، المورد المفضل، وشروط الضمان:" : "Conditions de stockage, fournisseur référent et consignes magasinier :"}
 </p>
-<textarea rows={6} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} placeholder="Noter les détails de conditionnement, références équivalentes OE..." className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none" />
+<textarea rows={6} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} placeholder="Noter les détails de conditionnement, références équivalentes OE..." className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none" />
 <button onClick={handleSaveNotes} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#d4522f] text-white hover:bg-[#a86246] transition-colors font-medium text-xs shadow-xs">
 {noteSaved ? /* @__PURE__ */ <>
 <Check size={14} />
@@ -632,15 +640,15 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold"><Boxes size={20} /></div>
 <div>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {partToEdit ? isAr ? "تعديل صنف قطعة الغيار" : "Modifier la Référence" : isAr ? "إضافة صنف جديد للمخزن" : "Nouvelle Référence Magasin"}
 </h2>
-<p className="text-xs text-neutral-500">
+<p className="text-xs text-black/55 dark:text-white/55">
 {isAr ? "البيانات الفنية، المخزون، والأسعار" : "Gestion du catalogue pièces et seuils d’alerte"}
 </p>
 </div>
 </div>
-<button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
+<button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
 </div>
 <form onSubmit={handleSaveModal} className="space-y-4">
 <div className="grid grid-cols-2 gap-3">
@@ -696,12 +704,12 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 <div className="flex items-center gap-2.5">
 <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center font-bold"><Package size={20} /></div>
 <div>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isAr ? "طلبية تموين من المورد (Bon de Commande)" : "Bon de Commande Fournisseur Gros"}
 </h2>
 </div>
 </div>
-<button onClick={() => setIsPoModalOpen(false)} className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
+<button onClick={() => setIsPoModalOpen(false)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
 </div>
 <form onSubmit={(e) => {
 							e.preventDefault();
@@ -751,8 +759,8 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 <LabelInput label={isAr ? "سعر الشراء الفردي (دج)" : "Prix Achat Unitaire (DZD)"} type="number" value={poUnitCost} onChange={(e) => setPoUnitCost(e.target.value)} required />
 </div>
 <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 flex items-center justify-between text-xs">
-<span className="text-neutral-500">{isAr ? "إجمالي قيمة الطلبية HT:" : "Montant Total Commande HT:"}</span>
-<span className="font-mono font-bold text-base text-neutral-900 dark:text-white">{formatMoney((parseInt(poQuantity, 10) || 0) * (parseFloat(poUnitCost) || 0))}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "إجمالي قيمة الطلبية HT:" : "Montant Total Commande HT:"}</span>
+<span className="font-mono font-bold text-base text-black dark:text-white">{formatMoney((parseInt(poQuantity, 10) || 0) * (parseFloat(poUnitCost) || 0))}</span>
 </div>
 <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
 <AtriumButton variant="ghost" size="sm" onClick={() => setIsPoModalOpen(false)}>{isAr ? "إلغاء" : "Annuler"}</AtriumButton>

@@ -38,7 +38,7 @@ interface CommercialDocComposerModalProps {
 
 
 
-const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", editingDoc, onSaved }) => {
+export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProps> = ({ isOpen, onClose, initialType = "devis", editingDoc, onSaved }) => {
 	const { t, isRtl, language } = useTranslation();
 	const { b2bClients, warehouses, products, createCommercialDoc, updateCommercialDoc, allCommercialDocs, currentBusiness, currentBranchId } = useAtriumStore();
 	const isEdit = !!editingDoc;
@@ -229,17 +229,17 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold"><FileText size={20} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">{isEdit ? t("trading_composer_edit_title") : t("trading_composer_title")}</h2>
+<h2 className="text-lg font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{isEdit ? t("trading_composer_edit_title") : t("trading_composer_title")}</h2>
 <span className="px-2 py-0.5 rounded text-xs font-mono font-medium bg-[#d4522f]/15 text-[#d4522f]">{generatedDocNumber}</span>
 </div>
-<p className="text-xs text-stone-500 dark:text-stone-400">{t("trading_composer_fiscal_standards")}</p>
+<p className="text-xs text-black/55 dark:text-white/75">{t("trading_composer_fiscal_standards")}</p>
 </div>
 </div>
-<button onClick={onClose} className="p-2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"><X size={20} /></button>
+<button onClick={onClose} className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"><X size={20} /></button>
 </div>
 <div className="p-6 overflow-y-auto space-y-6 flex-1 text-sm">
 <div>
-<label className="block text-xs font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-2">{t("trading_composer_doc_type")}</label>
+<label className="block text-xs font-semibold text-black/70 dark:text-white/75 uppercase tracking-wider mb-2">{t("trading_composer_doc_type")}</label>
 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
 {[
 								{
@@ -269,7 +269,7 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 								}
 							].map((item) => {
 								const isSelected = docType === item.type;
-								return /* @__PURE__ */ <button key={item.type} type="button" onClick={() => setDocType(item.type)} className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium transition-all ${isSelected ? "border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f] shadow-xs font-bold" : "border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 hover:border-stone-300"}`}>
+								return /* @__PURE__ */ <button key={item.type} type="button" onClick={() => setDocType(item.type)} className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium transition-all ${isSelected ? "border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f] shadow-xs font-bold" : "border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-black/70 dark:text-white/75 hover:border-stone-300"}`}>
 <span className="w-2 h-2 rounded-full bg-current opacity-70" />
 <span>{item.label}</span>
 </button>;
@@ -282,18 +282,18 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 											value: c.id,
 											label: `${c.companyName} ${c.city ? `(${c.city})` : ""}`
 										}))} />
-{selectedClient && /* @__PURE__ */ <div className="mt-2 p-2 rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-[11px] space-y-1 text-stone-500">
+{selectedClient && /* @__PURE__ */ <div className="mt-2 p-2 rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-[11px] space-y-1 text-black/55 dark:text-white/55">
 <div className="flex justify-between">
 <span>NIF (15 chiffres):</span>
-<span className="font-mono text-stone-700 dark:text-stone-300">{selectedClient.nif || "Non renseigné"}</span>
+<span className="font-mono text-black/70 dark:text-white/75">{selectedClient.nif || "Non renseigné"}</span>
 </div>
 <div className="flex justify-between">
 <span>Registre Comm. (RC):</span>
-<span className="font-mono text-stone-700 dark:text-stone-300">{selectedClient.rc || "Non renseigné"}</span>
+<span className="font-mono text-black/70 dark:text-white/75">{selectedClient.rc || "Non renseigné"}</span>
 </div>
 <div className="flex justify-between">
 <span>Encours / Crédit:</span>
-<span className="font-mono text-stone-700 dark:text-stone-300">
+<span className="font-mono text-black/70 dark:text-white/75">
 {formatMoney(selectedClient.outstandingBalance || 0)}
 {" / "}
 {formatMoney(selectedClient.creditLimit || 0)}
@@ -306,7 +306,7 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 										value: w.id,
 										label: `${w.code} — ${w.name}`
 									}))} />
-<div className="mt-2 text-[11px] text-stone-500 flex items-center gap-1.5">
+<div className="mt-2 text-[11px] text-black/55 dark:text-white/55 flex items-center gap-1.5">
 <Building2 size={13} className="text-[#d4522f]" />
 <span>
 {selectedDepot?.address}
@@ -378,7 +378,7 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 </div>
 <div>
 <div className="flex items-center justify-between mb-2">
-<h3 className="text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider">
+<h3 className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase tracking-wider">
 {t("trading_composer_items_services")}
 {" ("}
 {items.length}
@@ -391,7 +391,7 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 </div>
 <div className="overflow-x-auto border border-stone-200 dark:border-stone-800 rounded-xl bg-white dark:bg-stone-900">
 <table className="w-full text-left text-xs">
-<thead className="bg-stone-50 dark:bg-stone-800/60 border-b border-stone-200 dark:border-stone-800 text-stone-500">
+<thead className="bg-stone-50 dark:bg-stone-800/60 border-b border-stone-200 dark:border-stone-800 text-black/55 dark:text-white/55">
 <tr>
 <th className="py-2.5 px-3 w-[260px]">Article / Service</th>
 <th className="py-2.5 px-2 w-[80px]">Unité</th>
@@ -406,7 +406,7 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
 {items.map((item: any, idx: number) => /* @__PURE__ */ <tr key={item.id} className="hover:bg-stone-50/50 dark:hover:bg-stone-800/30">
 <td className="p-2 space-y-1">
-<select className="w-full text-xs rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-stone-800 dark:text-stone-200 focus:outline-hidden focus:border-[#d4522f]" value={item.productId || ""} onChange={(e) => handleProductSelect(idx, e.target.value)}>
+<select className="w-full text-xs rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-black dark:text-white focus:outline-hidden focus:border-[#d4522f]" value={item.productId || ""} onChange={(e) => handleProductSelect(idx, e.target.value)}>
 <option value="">-- Choisir dans le catalogue --</option>
 {products.map((p) => /* @__PURE__ */ <option key={p.id} value={p.id}>
 {p.sku ? `[${p.sku}] ` : ""}
@@ -416,7 +416,7 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 {" DA)"}
 </option>)}
 </select>
-<input type="text" placeholder="Désignation détaillée / référence" value={item.description} onChange={(e) => handleItemChange(idx, "description", e.target.value)} className="w-full text-xs rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-stone-800 dark:text-stone-200 focus:outline-hidden focus:border-[#d4522f]" />
+<input type="text" placeholder="Désignation détaillée / référence" value={item.description} onChange={(e) => handleItemChange(idx, "description", e.target.value)} className="w-full text-xs rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-black dark:text-white focus:outline-hidden focus:border-[#d4522f]" />
 </td>
 <td className="p-2">
 <select value={item.unit} onChange={(e) => handleItemChange(idx, "unit", e.target.value)} className="w-full text-xs rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-1 py-1">
@@ -449,9 +449,9 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 <td className="p-2">
 <input type="number" min="0" max="100" value={item.discountPercent || 0} onChange={(e) => handleItemChange(idx, "discountPercent", parseFloat(e.target.value) || 0)} className="w-full text-xs rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-right font-mono" />
 </td>
-<td className="p-2 text-right font-mono font-semibold text-stone-900 dark:text-stone-100 tabular-nums">{formatMoney(item.totalHt)}</td>
+<td className="p-2 text-right font-mono font-semibold text-black dark:text-white tabular-nums">{formatMoney(item.totalHt)}</td>
 <td className="p-2 text-center">
-<button type="button" onClick={() => removeItemRow(idx)} disabled={items.length <= 1} className="p-1 text-stone-400 hover:text-rose-600 disabled:opacity-30 disabled:hover:text-stone-400 transition-colors"><Trash2 size={14} /></button>
+<button type="button" onClick={() => removeItemRow(idx)} disabled={items.length <= 1} className="p-1 text-black/55 dark:text-white/55 hover:text-rose-600 disabled:opacity-30 disabled:hover:text-black/55 dark:disabled:hover:text-white/55 transition-colors"><Trash2 size={14} /></button>
 </td>
 </tr>)}
 </tbody>
@@ -459,7 +459,7 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 </div>
 </div>
 <div className="border border-stone-200 dark:border-stone-800 rounded-xl overflow-hidden">
-<button type="button" onClick={() => setShowAdvancedOptions(!showAdvancedOptions)} className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800/40 flex items-center justify-between text-xs font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800/60 transition-colors">
+<button type="button" onClick={() => setShowAdvancedOptions(!showAdvancedOptions)} className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800/40 flex items-center justify-between text-xs font-semibold text-black/70 dark:text-white/75 hover:bg-stone-100 dark:hover:bg-stone-800/60 transition-colors">
 <div className="flex items-center gap-2">
 <span>{t("trading_composer_advanced_accordion")}</span>
 {(generalDiscountPercent > 0 || guaranteeRetentionPercent > 0 || isCashFiscalStampEnabled) && /* @__PURE__ */ <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#d4522f]/15 text-[#d4522f] font-mono">{t("trading_composer_options_active")}</span>}
@@ -470,16 +470,16 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div>
 <LabelInput type="number" label={t("trading_composer_general_discount")} value={generalDiscountPercent} min={0} max={100} step={0.5} onChange={(e) => setGeneralDiscountPercent(parseFloat(e.target.value) || 0)} />
-<p className="text-[11px] text-stone-400 mt-1">S'applique après les remises à la ligne.</p>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-1">S'applique après les remises à la ligne.</p>
 </div>
 <div>
 <LabelInput type="number" label={t("trading_composer_guarantee_retention")} value={guaranteeRetentionPercent} min={0} max={20} step={1} onChange={(e) => setGuaranteeRetentionPercent(parseFloat(e.target.value) || 0)} />
-<p className="text-[11px] text-stone-400 mt-1">Usuellement 5% ou 10% pour les marchés et chantiers.</p>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-1">Usuellement 5% ou 10% pour les marchés et chantiers.</p>
 </div>
 <div className="flex flex-col justify-end">
 <label className="flex items-center gap-2 cursor-pointer p-2.5 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800">
 <input type="checkbox" checked={isCashFiscalStampEnabled} onChange={(e) => setIsCashFiscalStampEnabled(e.target.checked)} className="rounded text-[#d4522f] focus:ring-[#d4522f]" />
-<span className="text-xs font-medium text-stone-700 dark:text-stone-300">{t("trading_composer_fiscal_stamp")}</span>
+<span className="text-xs font-medium text-black/70 dark:text-white/75">{t("trading_composer_fiscal_stamp")}</span>
 </label>
 </div>
 </div>
@@ -488,7 +488,7 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 <LabelInput label={t("trading_composer_notes_bottom")} placeholder="Ex: Marchandise vendue agréée, aucun retour après 48h..." value={notesBottom} onChange={(e) => setNotesBottom(e.target.value)} />
 </div>
 <div className="pt-1">
-<label className="flex items-center gap-2 cursor-pointer text-xs text-stone-600 dark:text-stone-400">
+<label className="flex items-center gap-2 cursor-pointer text-xs text-black/70 dark:text-white/75">
 <input type="checkbox" checked={includeStampSignature} onChange={(e) => setIncludeStampSignature(e.target.checked)} className="rounded text-[#d4522f] focus:ring-[#d4522f]" />
 <span>{t("trading_composer_include_stamp")}</span>
 </label>
@@ -498,11 +498,11 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/40 space-y-2">
 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono">
 <div>
-<span className="text-stone-500 block text-[11px]">{t("trading_composer_total_raw_ht")}</span>
-<span className="text-stone-800 dark:text-stone-200 font-semibold text-sm">{formatMoney(calculations.totalHtRaw)}</span>
+<span className="text-black/55 dark:text-white/55 block text-[11px]">{t("trading_composer_total_raw_ht")}</span>
+<span className="text-black dark:text-white font-semibold text-sm">{formatMoney(calculations.totalHtRaw)}</span>
 </div>
 {generalDiscountPercent > 0 && /* @__PURE__ */ <div>
-<span className="text-stone-500 block text-[11px]">
+<span className="text-black/55 dark:text-white/55 block text-[11px]">
 {t("trading_composer_general_discount")}
 {" ("}
 {generalDiscountPercent}
@@ -514,22 +514,22 @@ const CommercialDocComposerModal = ({ isOpen, onClose, initialType = "devis", ed
 </span>
 </div>}
 <div>
-<span className="text-stone-500 block text-[11px]">{t("trading_composer_total_final_ht")}</span>
-<span className="text-stone-800 dark:text-stone-200 font-semibold text-sm">{formatMoney(calculations.totalHtFinal)}</span>
+<span className="text-black/55 dark:text-white/55 block text-[11px]">{t("trading_composer_total_final_ht")}</span>
+<span className="text-black dark:text-white font-semibold text-sm">{formatMoney(calculations.totalHtFinal)}</span>
 </div>
 <div>
-<span className="text-stone-500 block text-[11px]">{t("trading_composer_total_tva")}</span>
-<span className="text-stone-800 dark:text-stone-200 font-semibold text-sm">{formatMoney(calculations.totalTva)}</span>
+<span className="text-black/55 dark:text-white/55 block text-[11px]">{t("trading_composer_total_tva")}</span>
+<span className="text-black dark:text-white font-semibold text-sm">{formatMoney(calculations.totalTva)}</span>
 </div>
 {calculations.timbreFiscal > 0 && /* @__PURE__ */ <div>
-<span className="text-stone-500 block text-[11px]">{t("trading_composer_fiscal_stamp")}</span>
+<span className="text-black/55 dark:text-white/55 block text-[11px]">{t("trading_composer_fiscal_stamp")}</span>
 <span className="text-amber-600 font-semibold text-sm">
 +
 {formatMoney(calculations.timbreFiscal)}
 </span>
 </div>}
 {calculations.guaranteeRetentionAmount > 0 && /* @__PURE__ */ <div>
-<span className="text-stone-500 block text-[11px]">
+<span className="text-black/55 dark:text-white/55 block text-[11px]">
 {t("trading_composer_guarantee_retention")}
 {" ("}
 {guaranteeRetentionPercent}

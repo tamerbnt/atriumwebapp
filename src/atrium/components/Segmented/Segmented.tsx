@@ -11,6 +11,7 @@ export interface SegmentedOption<T extends string = string> {
   value: T;
   /** omit for an icon-only option, and give it an aria-label */
   label?: ReactNode;
+  tooltip?: string;
   icon?: ReactNode;
   'aria-label'?: string;
   disabled?: boolean;
@@ -147,6 +148,7 @@ function SegmentedInner<T extends string>(props: SegmentedProps<T>, ref: Ref<HTM
           role="radio"
           aria-checked={i === idx}
           aria-label={o['aria-label']}
+          title={o.tooltip}
           disabled={o.disabled}
           tabIndex={i === idx ? 0 : -1}
           className={cx(s.so, o.label == null && s.ic)}

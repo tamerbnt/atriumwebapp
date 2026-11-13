@@ -815,7 +815,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                     <button
                       type="button"
                       onClick={() => onToggleBlock(activeMember)}
-                      className="wide w-full h-[42px] border-0 rounded-[12px] bg-[#1B1917] dark:bg-[#F2ECE6] text-white dark:text-[#1B1917] font-semibold text-[13.5px] cursor-pointer"
+                      className="wide w-full h-[42px] border-0 rounded-[12px] bg-[#1B1917] dark:bg-[#F2ECE6] text-white dark:text-black font-semibold text-[13.5px] cursor-pointer"
                     >
                       {isBlocked ? 'Débloquer le badge' : 'Bloquer le badge'}
                     </button>

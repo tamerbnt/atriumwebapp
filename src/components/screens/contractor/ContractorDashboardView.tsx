@@ -164,20 +164,22 @@ export const ContractorDashboardView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setTimeFilter('today')}
+                  title={language === 'ar' ? 'عرض مؤشرات اليوم' : language === 'fr' ? "Activité d'aujourd'hui" : "Today's activity"}
                   className={`px-3 py-1 rounded-md transition-all ${
                     timeFilter === 'today' ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-sm' : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
                   }`}
                 >
-                  {language === 'ar' ? 'اليوم' : 'Today'}
+                  {language === 'ar' ? 'اليوم' : language === 'fr' ? "Aujourd'hui" : 'Today'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setTimeFilter('yesterday')}
+                  title={language === 'ar' ? 'عرض مؤشرات الأمس' : language === 'fr' ? "Activité d'hier" : "Yesterday's activity"}
                   className={`px-3 py-1 rounded-md transition-all ${
                     timeFilter === 'yesterday' ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-sm' : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
                   }`}
                 >
-                  {language === 'ar' ? 'أمس' : 'Yesterday'}
+                  {language === 'ar' ? 'أمس' : language === 'fr' ? 'Hier' : 'Yesterday'}
                 </button>
               </div>
             }
@@ -191,7 +193,7 @@ export const ContractorDashboardView: React.FC = () => {
                       {language === 'ar' ? 'الورشات قيد الإنجاز' : 'Chantiers en Cours'}
                     </span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
+                      <span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                         {activeProjects}
                       </span>
                       <span className="text-xs text-black/55 dark:text-white/55">/ 6 max</span>
@@ -206,7 +208,7 @@ export const ContractorDashboardView: React.FC = () => {
                       {language === 'ar' ? 'العمال الميدانيين اليوم' : 'Effectif sur Site'}
                     </span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
+                      <span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                         {workersOnSite}
                       </span>
                       <span className="text-xs text-black/55 dark:text-white/55">{language === 'ar' ? 'عامل' : 'personnes'}</span>
@@ -230,7 +232,7 @@ export const ContractorDashboardView: React.FC = () => {
                   <span className="text-xs font-medium text-black/70 dark:text-white/75">
                     {language === 'ar' ? 'نسبة حضور اليد العاملة اليوم' : 'Taux de Présence Ouvriers'}
                   </span>
-                  <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums tabular-nums">
+                  <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
                     {workersOnSite} / {dailyLaborTarget}
                   </span>
                 </div>

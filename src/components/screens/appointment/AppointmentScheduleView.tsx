@@ -31,6 +31,7 @@ import { useAtriumStore } from '../../../services/store';
 import { Appointment, AppointmentStatus, StaffMember } from '../../../types/index';
 import { AppointmentModal } from '../../modals/AppointmentModal';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
+import { compactFilterLabel } from '../../../utils/filterLexicon';
 import { t, getLocalizedService, getLocalizedServiceCategory, getLocalizedServiceName } from '../../../utils/i18n';
 import { Seek } from '../../ui/Seek';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -157,7 +158,7 @@ export const AppointmentScheduleView: React.FC<any> = () => {
 			renderCell: (apt: any) => /* @__PURE__ */ <div className="flex items-center gap-2">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/10 text-[#d4522f] font-bold text-xs flex flex-col items-center justify-center shrink-0">
 <span className="text-[11px] font-bold leading-tight font-mono">{apt.startTime}</span>
-<span className="text-[9px] text-neutral-400 font-medium font-mono">
+<span className="text-[9px] text-black/55 dark:text-white/55 font-medium font-mono">
 {apt.durationMinutes}
 m
 </span>
@@ -171,8 +172,8 @@ m
 			minWidth: "180px",
 			sortable: true,
 			renderCell: (apt: any) => /* @__PURE__ */ <div className="min-w-0">
-<div className="font-bold text-neutral-900 dark:text-white truncate text-xs">{apt.clientName}</div>
-<div className="text-[10px] text-neutral-400 font-mono truncate">{apt.clientPhone}</div>
+<div className="font-bold text-black dark:text-white truncate text-xs">{apt.clientName}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 font-mono truncate">{apt.clientPhone}</div>
 </div>
 		},
 		{
@@ -182,8 +183,8 @@ m
 			minWidth: "200px",
 			sortable: true,
 			renderCell: (apt: any) => /* @__PURE__ */ <div className="min-w-0 text-xs">
-<div className="font-semibold text-neutral-800 dark:text-neutral-200 truncate">{getLocalizedServiceName(apt.serviceId, apt.serviceName, language)}</div>
-{apt.notes && /* @__PURE__ */ <div className="text-[10px] text-neutral-400 italic truncate">
+<div className="font-semibold text-black dark:text-white truncate">{getLocalizedServiceName(apt.serviceId, apt.serviceName, language)}</div>
+{apt.notes && /* @__PURE__ */ <div className="text-[10px] text-black/55 dark:text-white/55 italic truncate">
 "
 {apt.notes}
 "
@@ -197,8 +198,8 @@ m
 			minWidth: "160px",
 			sortable: true,
 			renderCell: (apt: any) => /* @__PURE__ */ <div className="flex items-center gap-2 min-w-0">
-<div className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-bold text-[10px] flex items-center justify-center shrink-0">{apt.staffName.split(" ").map((n: any) => n[0]).join("")}</div>
-<span className="text-xs text-neutral-700 dark:text-neutral-300 font-medium truncate">{apt.staffName}</span>
+<div className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 font-bold text-[10px] flex items-center justify-center shrink-0">{apt.staffName.split(" ").map((n: any) => n[0]).join("")}</div>
+<span className="text-xs text-black/70 dark:text-white/75 font-medium truncate">{apt.staffName}</span>
 </div>
 		},
 		{
@@ -207,7 +208,7 @@ m
 			width: "1.4*",
 			minWidth: "110px",
 			sortable: true,
-			renderCell: (apt: any) => /* @__PURE__ */ <span className="font-bold text-neutral-900 dark:text-white text-xs tabular-nums font-mono">{formatMoney(apt.price)}</span>
+			renderCell: (apt: any) => /* @__PURE__ */ <span className="font-bold text-black dark:text-white text-xs tabular-nums font-mono">{formatMoney(apt.price)}</span>
 		},
 		{
 			key: "status",
@@ -351,7 +352,7 @@ Ref #
 <div>
 <div className="flex items-center gap-3.5 mb-1">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center shrink-0"><Scissors size={20} /></div>
-<h1 className="text-[32px] sm:text-[40px] font-extrabold uppercase leading-none tracking-[0.01em] text-neutral-900 dark:text-white rtl:text-[26px] rtl:sm:text-[32px] rtl:leading-tight">{t("salon_schedule_title", language)}</h1>
+<h1 className="text-[32px] sm:text-[40px] font-extrabold uppercase leading-none tracking-[0.01em] text-black dark:text-white rtl:text-[26px] rtl:sm:text-[32px] rtl:leading-tight rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("salon_schedule_title", language)}</h1>
 </div>
 </div>
 <div className="flex items-center gap-2.5">
@@ -364,15 +365,15 @@ Ref #
 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">{t("salon_kpi_total_bookings", language)}</span>
+<span className="text-xs font-semibold text-black/55 dark:text-white/75">{t("salon_kpi_total_bookings", language)}</span>
 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#d4522f]/10 text-[#d4522f]">
 {stats.completedCount}
 {" terminés"}
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">{stats.totalBookings}</div>
-<div className="flex items-center gap-1.5 text-[11px] text-neutral-400 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{stats.totalBookings}</div>
+<div className="flex items-center gap-1.5 text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 <Calendar size={13} className="text-[#d4522f]" />
 <span>
 {"Agenda journalier • "}
@@ -383,23 +384,23 @@ Ref #
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">{t("salon_kpi_in_chair", language)}</span>
+<span className="text-xs font-semibold text-black/55 dark:text-white/75">{t("salon_kpi_in_chair", language)}</span>
 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center gap-1">
 <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
 <span>En Fauteuil</span>
 </span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
+<div className="text-2xl lg:text-3xl font-extrabold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {stats.inChairCount}
 {" "}
-<span className="text-xs font-normal text-neutral-400">
+<span className="text-xs font-normal text-black/55 dark:text-white/55">
 {"/ "}
 {salonStylists.length}
 {" postes"}
 </span>
 </div>
-<div className="flex items-center gap-1.5 text-[11px] text-neutral-400 mt-0.5">
+<div className="flex items-center gap-1.5 text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 <Users size={13} className="text-blue-500" />
 <span>
 {salonStylists.length > 0 ? Math.round(stats.inChairCount / salonStylists.length * 100) : 0}
@@ -414,13 +415,13 @@ Ref #
 <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 uppercase tracking-wider">Journée Active</span>
 </div>
 <div>
-<div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">{formatMoney(stats.revenue)}</div>
-<div className="flex items-center justify-between text-[11px] text-stone-400 mt-0.5">
+<div className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(stats.revenue)}</div>
+<div className="flex items-center justify-between text-[11px] text-white/75 mt-0.5">
 <span className="flex items-center gap-1">
 <Sparkles size={12} className="text-[#FB923C]" />
 <span>Recette prévisionnelle TTC</span>
 </span>
-<span className="font-mono text-stone-300">DZD</span>
+<span className="font-mono text-white/80">DZD</span>
 </div>
 </div>
 <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#FB923C]/5 rounded-full blur-2xl pointer-events-none" />
@@ -432,7 +433,7 @@ Ref #
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><Scissors size={18} /></div>
 <div className="flex items-center gap-2">
-<span className="text-sm font-bold text-neutral-900 dark:text-white">
+<span className="text-sm font-bold text-black dark:text-white">
 {viewMode === "calendar" ? language === "ar" ? "مخطط كراسي المصففين" : "Planning des Postes de Coiffure" : language === "ar" ? "سجل المواعيد العام" : "Registre des Rendez-Vous"}
 </span>
 <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#d4522f]/10 text-[#d4522f]">{dayAppointments.length}</span>
@@ -440,39 +441,45 @@ Ref #
 </div>
 <div className="flex items-center gap-2 flex-wrap self-end lg:self-auto">
 <div className="flex items-center gap-1 bg-white dark:bg-neutral-800 p-1 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-2xs text-xs font-bold">
-<button type="button" onClick={handlePrevDay} className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 transition-all cursor-pointer" title={t("salon_btn_prev_day", language)}><ChevronLeft size={14} className="rtl:rotate-180" /></button>
+<button type="button" onClick={handlePrevDay} className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-black/70 dark:text-white/75 transition-all cursor-pointer" title={t("salon_btn_prev_day", language)}><ChevronLeft size={14} className="rtl:rotate-180" /></button>
 <button type="button" onClick={handleToday} className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] shadow-2xs cursor-pointer">{t("salon_btn_today", language)}</button>
-<input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="px-1.5 py-0.5 text-xs font-semibold bg-transparent text-neutral-800 dark:text-neutral-200 border-none focus:outline-none cursor-pointer" />
-<button type="button" onClick={handleNextDay} className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 transition-all cursor-pointer" title={t("salon_btn_next_day", language)}><ChevronRight size={14} className="rtl:rotate-180" /></button>
+<input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="px-1.5 py-0.5 text-xs font-semibold bg-transparent text-black dark:text-white border-none focus:outline-none cursor-pointer" />
+<button type="button" onClick={handleNextDay} className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-black/70 dark:text-white/75 transition-all cursor-pointer" title={t("salon_btn_next_day", language)}><ChevronRight size={14} className="rtl:rotate-180" /></button>
 </div>
 <LiveSegmentedControl size="sm" value={statusFilter} onValueChange={setStatusFilter} options={[
 									{
 										value: "All",
 										label: t("common_all", language),
+										tooltip: language === "ar" ? "جميع المواعيد" : language === "fr" ? "Tous les rendez-vous" : "All appointments",
 										count: statusCounts.all
 									},
 									{
 										value: "Confirmed",
 										label: localizeStatus("Confirmed", language),
+										tooltip: language === "ar" ? "المواعيد المؤكدة" : language === "fr" ? "Rendez-vous confirmés" : "Confirmed appointments",
 										count: statusCounts.confirmed
 									},
 									{
 										value: "InChair",
 										label: localizeStatus("InChair", language),
+										tooltip: language === "ar" ? "العملاء في الجلسة حالياً" : language === "fr" ? "En cours au fauteuil" : "Currently in chair",
 										count: statusCounts.inChair
 									},
 									{
 										value: "Completed",
 										label: localizeStatus("Completed", language),
+										tooltip: language === "ar" ? "المواعيد المكتملة" : language === "fr" ? "Rendez-vous terminés" : "Completed appointments",
 										count: statusCounts.completed
 									}
 								]} aria-label="Appointment Status Filter" />
 <LabelSelect field="Stylist" label={t("salon_filter_stylist", language)} value={selectedStylistId} onChange={(val) => setSelectedStylistId(val?.target?.value ?? String(val))} options={[{
 									value: "All",
-									label: `${t("salon_filter_all_stylists", language)} (${salonStylists.length})`
+									label: t("salon_filter_all_stylists", language),
+									tooltip: `${t("salon_filter_all_stylists", language)} (${salonStylists.length})`
 								}, ...salonStylists.map((st) => ({
 									value: st.id,
-									label: st.fullName,
+									label: compactFilterLabel(st.fullName).label,
+									tooltip: `${st.fullName} — ${st.role}`,
 									sublabel: st.role
 								}))]} width={170} height={34} corner={12} />
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={t("salon_search_placeholder", language)} shutSize={34} openWidth={220} />
@@ -483,8 +490,8 @@ Ref #
 <div className="overflow-x-auto">
 <div className="min-w-[760px]">
 <div className="grid grid-cols-[100px_repeat(auto-fit,minmax(200px,1fr))] border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-900/80">
-<div className="p-3.5 text-center text-xs font-bold text-neutral-500 uppercase tracking-wider border-r border-neutral-200 dark:border-neutral-800 flex items-center justify-center">
-<Clock size={14} className="mr-1 text-neutral-400" />
+<div className="p-3.5 text-center text-xs font-bold text-black/55 dark:text-white/55 uppercase tracking-wider border-r border-neutral-200 dark:border-neutral-800 flex items-center justify-center">
+<Clock size={14} className="mr-1 text-black/55 dark:text-white/55" />
 {" "}
 {t("salon_timeline", language)}
 </div>
@@ -495,15 +502,15 @@ Ref #
 <div className="flex items-center gap-2">
 <div className="w-8 h-8 rounded-full bg-[#d4522f]/15 text-[#d4522f] font-bold text-xs flex items-center justify-center">{stylist.fullName.split(" ").map((n) => n[0]).join("")}</div>
 <div>
-<p className="text-xs font-bold text-neutral-900 dark:text-white leading-tight">{stylist.fullName}</p>
-<p className="text-[10px] text-neutral-500 font-medium">
+<p className="text-xs font-bold text-black dark:text-white leading-tight">{stylist.fullName}</p>
+<p className="text-[10px] text-black/55 dark:text-white/55 font-medium">
 {stylist.role}
 {" • "}
 {t("salon_chair_num", language).replace("{number}", String(index + 1))}
 </p>
 </div>
 </div>
-<span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+<span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75">
 {count === 1 ? t("salon_booking_count_single", language).replace("{count}", "1") : t("salon_booking_count_multi", language).replace("{count}", String(count))}
 </span>
 </div>
@@ -513,17 +520,17 @@ Ref #
 <div className="divide-y divide-neutral-100 dark:divide-neutral-800/60">
 {TIME_SLOTS.map((time) => {
 											return /* @__PURE__ */ <div key={time} className="grid grid-cols-[100px_repeat(auto-fit,minmax(200px,1fr))] min-h-[68px] hover:bg-neutral-50/40 dark:hover:bg-neutral-900/30 transition-colors">
-<div className="p-3 text-xs font-semibold text-neutral-500 text-center border-r border-neutral-200 dark:border-neutral-800 flex items-start justify-center pt-3">{time}</div>
+<div className="p-3 text-xs font-semibold text-black/55 dark:text-white/55 text-center border-r border-neutral-200 dark:border-neutral-800 flex items-start justify-center pt-3">{time}</div>
 {salonStylists.map((stylist, index) => {
 													const apt = dayAppointments.find((a) => a.staffId === stylist.id && a.startTime === time);
 													return /* @__PURE__ */ <div key={stylist.id} className={`p-1.5 relative group ${index < salonStylists.length - 1 ? "border-r border-neutral-200/70 dark:border-neutral-800/70" : ""}`}>
 {apt ? /* @__PURE__ */ <div onClick={() => handleOpenEditModal(apt)} className={`h-full w-full p-2.5 rounded-2xl cursor-pointer transition-all border shadow-xs hover:shadow-md ${apt.status === "InChair" ? "bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700/60 ring-2 ring-amber-400/20" : apt.status === "Completed" ? "bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800" : apt.status === "Cancelled" ? "bg-neutral-100/70 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-800 opacity-60" : "bg-indigo-50/80 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800"}`}>
 <div className="flex items-center justify-between gap-1 mb-1">
-<span className="text-xs font-bold text-neutral-900 dark:text-white truncate">{apt.clientName}</span>
+<span className="text-xs font-bold text-black dark:text-white truncate">{apt.clientName}</span>
 <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider ${apt.status === "InChair" ? "bg-amber-500 text-white animate-pulse" : apt.status === "Completed" ? "bg-emerald-600 text-white" : apt.status === "Cancelled" ? "bg-neutral-400 text-white" : "bg-indigo-600 text-white"}`}>{localizeStatus(apt.status, language)}</span>
 </div>
-<p className="text-[11px] font-medium text-neutral-700 dark:text-neutral-300 truncate mb-1">{getLocalizedServiceName(apt.serviceId, apt.serviceName, language)}</p>
-<div className="flex items-center justify-between text-[10px] text-neutral-500 font-medium">
+<p className="text-[11px] font-medium text-black/70 dark:text-white/75 truncate mb-1">{getLocalizedServiceName(apt.serviceId, apt.serviceName, language)}</p>
+<div className="flex items-center justify-between text-[10px] text-black/55 dark:text-white/55 font-medium">
 <span>
 {apt.startTime}
 {" - "}
@@ -538,7 +545,7 @@ m)
 																		e.stopPropagation();
 																		handleOneClickCheckout(apt);
 																	}} title={t("salon_quick_checkout", language)}>{t("salon_quick_checkout", language)}</AtriumButton>}
-</div> : /* @__PURE__ */ <button type="button" onClick={() => handleOpenAddModal(time, stylist.id)} className="w-full h-full min-h-[50px] rounded-xl border border-dashed border-transparent group-hover:border-neutral-300 dark:group-hover:border-neutral-700 group-hover:bg-neutral-100/50 dark:group-hover:bg-neutral-800/40 flex items-center justify-center text-neutral-400 hover:text-[#d4522f] transition-all opacity-0 group-hover:opacity-100 cursor-pointer">
+</div> : /* @__PURE__ */ <button type="button" onClick={() => handleOpenAddModal(time, stylist.id)} className="w-full h-full min-h-[50px] rounded-xl border border-dashed border-transparent group-hover:border-neutral-300 dark:group-hover:border-neutral-700 group-hover:bg-neutral-100/50 dark:group-hover:bg-neutral-800/40 flex items-center justify-center text-black/55 dark:text-white/55 hover:text-[#d4522f] transition-all opacity-0 group-hover:opacity-100 cursor-pointer">
 <span className="flex items-center gap-1 text-[11px] font-medium">
 <Plus size={13} />
 {" "}
@@ -587,7 +594,7 @@ m)
 						}} renderCard={(apt) => /* @__PURE__ */ <div className="flex flex-col justify-between w-full h-full">
 <div>
 <div className="flex items-center justify-between gap-2 mb-2">
-<span className="font-mono text-xs font-bold text-neutral-900 dark:text-white bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg">
+<span className="font-mono text-xs font-bold text-black dark:text-white bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg">
 {apt.startTime}
 {" ("}
 {apt.durationMinutes}
@@ -598,26 +605,26 @@ m)
 {apt.status === "InChair" ? t("salon_kpi_in_chair", language) : localizeStatus(apt.status, language)}
 </span>
 </div>
-<h3 className="font-bold text-sm text-neutral-900 dark:text-white line-clamp-1 mb-0.5">{apt.clientName}</h3>
-<p className="text-[11px] text-neutral-400 font-mono mb-2">{apt.clientPhone}</p>
+<h3 className="font-bold text-sm text-black dark:text-white line-clamp-1 mb-0.5">{apt.clientName}</h3>
+<p className="text-[11px] text-black/55 dark:text-white/55 font-mono mb-2">{apt.clientPhone}</p>
 <div className="p-2.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl text-xs space-y-1 mb-3">
 <div className="flex items-center justify-between">
-<span className="text-neutral-400 text-[10px] uppercase font-medium">{language === "ar" ? "الخدمة" : "Service"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 truncate max-w-[140px]">{getLocalizedServiceName(apt.serviceId, apt.serviceName, language)}</span>
+<span className="text-black/55 dark:text-white/55 text-[10px] uppercase font-medium">{language === "ar" ? "الخدمة" : "Service"}</span>
+<span className="font-semibold text-black dark:text-white truncate max-w-[140px]">{getLocalizedServiceName(apt.serviceId, apt.serviceName, language)}</span>
 </div>
 <div className="flex items-center justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800">
-<span className="text-neutral-400 text-[10px] uppercase font-medium">{language === "ar" ? "المصفف" : "Staff"}</span>
-<span className="font-medium text-neutral-700 dark:text-neutral-300 truncate max-w-[140px]">{apt.staffName}</span>
+<span className="text-black/55 dark:text-white/55 text-[10px] uppercase font-medium">{language === "ar" ? "المصفف" : "Staff"}</span>
+<span className="font-medium text-black/70 dark:text-white/75 truncate max-w-[140px]">{apt.staffName}</span>
 </div>
 </div>
-{apt.notes && /* @__PURE__ */ <p className="text-[11px] text-neutral-400 italic mb-2 line-clamp-1">
+{apt.notes && /* @__PURE__ */ <p className="text-[11px] text-black/55 dark:text-white/55 italic mb-2 line-clamp-1">
 "
 {apt.notes}
 "
 </p>}
 </div>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-2">
-<span className="text-xs font-bold font-mono text-neutral-900 dark:text-white tabular-nums">{formatMoney(apt.price)}</span>
+<span className="text-xs font-bold font-mono text-black dark:text-white tabular-nums">{formatMoney(apt.price)}</span>
 {apt.status !== "Completed" && apt.status !== "Cancelled" && /* @__PURE__ */ <AtriumButton size="xs" variant="primary" icon={<CreditCard size={12} />} onClick={(e) => {
 										e.stopPropagation();
 										handleOneClickCheckout(apt);

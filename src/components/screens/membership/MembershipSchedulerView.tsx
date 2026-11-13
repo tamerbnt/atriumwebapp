@@ -211,7 +211,7 @@ export const MembershipSchedulerView: React.FC = () => {
       sortable: true,
       renderCell: (event) => (
         <div>
-          <span className="font-bold text-xs text-neutral-900 dark:text-white block">
+          <span className="font-bold text-xs text-black dark:text-white block">
             {event.title}
           </span>
           <span className="text-[10px] font-bold text-[#d4522f] uppercase tracking-wider block mt-0.5">
@@ -228,7 +228,7 @@ export const MembershipSchedulerView: React.FC = () => {
       sortable: true,
       renderCell: (event) => (
         <div>
-          <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 block">
+          <span className="text-xs font-semibold text-black dark:text-white block">
             {getDayName(event.dayOfWeek)}
           </span>
           <div className="flex items-center gap-1 text-[11px] font-mono text-[#d4522f] mt-0.5">
@@ -246,10 +246,10 @@ export const MembershipSchedulerView: React.FC = () => {
       sortable: true,
       renderCell: (event) => (
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-xs font-bold text-neutral-700 dark:text-neutral-300 shrink-0">
+          <div className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-xs font-bold text-black/70 dark:text-white/75 shrink-0">
             {event.trainerOrStaff.charAt(0)}
           </div>
-          <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200 truncate">
+          <span className="text-xs font-medium text-black dark:text-white truncate">
             {event.trainerOrStaff}
           </span>
         </div>
@@ -261,8 +261,8 @@ export const MembershipSchedulerView: React.FC = () => {
       width: '1.5*',
       minWidth: '120px',
       renderCell: (event) => (
-        <div className="flex items-center gap-1.5 text-xs text-neutral-600 dark:text-neutral-300">
-          <MapPin size={12} className="text-neutral-400 shrink-0" />
+        <div className="flex items-center gap-1.5 text-xs text-black/70 dark:text-white/75">
+          <MapPin size={12} className="text-black/55 dark:text-white/55 shrink-0" />
           <span className="truncate">{event.roomOrArea}</span>
         </div>
       ),
@@ -279,10 +279,10 @@ export const MembershipSchedulerView: React.FC = () => {
         return (
           <div className="space-y-1">
             <div className="flex justify-between items-center text-[11px] font-mono tabular-nums">
-              <span className={isFull ? 'text-rose-600 font-bold' : 'text-neutral-700 dark:text-neutral-300 font-medium'}>
+              <span className={isFull ? 'text-rose-600 font-bold' : 'text-black/70 dark:text-white/75 font-medium'}>
                 {event.enrolledCount}/{event.capacity}
               </span>
-              <span className="text-neutral-400 text-[10px]">{fillPercent}%</span>
+              <span className="text-black/55 dark:text-white/55 text-[10px]">{fillPercent}%</span>
             </div>
             <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
               <div
@@ -309,7 +309,7 @@ export const MembershipSchedulerView: React.FC = () => {
               e.stopPropagation();
               setSelectedEvent(event);
             }}
-            className="px-2.5 py-1 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1 cursor-pointer"
+            className="px-2.5 py-1 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-bold text-black/70 dark:text-white/75 flex items-center gap-1 cursor-pointer"
           >
             <Eye size={12} />
             <span>{language === 'ar' ? 'عرض' : 'View'}</span>
@@ -347,7 +347,7 @@ export const MembershipSchedulerView: React.FC = () => {
                   color: isActive ? 'var(--color-accent)' : '#71717A',
                 }}
                 className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
-                  isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
+                  isActive ? 'font-bold' : 'hover:text-black dark:hover:text-white'
                 }`}
               >
                 {d.short}
@@ -355,14 +355,14 @@ export const MembershipSchedulerView: React.FC = () => {
             );
           })}
         </div>
-        <span className="text-xs text-neutral-400 font-semibold tabular-nums">
+        <span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums">
           {days.find((d) => d.id === selectedDay)?.label} · {currentDayEvents.length} {language === 'ar' ? 'حصص' : 'sessions'}
         </span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {currentDayEvents.length === 0 ? (
-          <div className="col-span-full py-16 text-center text-xs text-neutral-400">
+          <div className="col-span-full py-16 text-center text-xs text-black/55 dark:text-white/55">
             No sessions planned for {days.find((d) => d.id === selectedDay)?.label}. Click "New Session" to add one.
           </div>
         ) : (
@@ -378,7 +378,7 @@ export const MembershipSchedulerView: React.FC = () => {
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10px] font-bold uppercase tracking-wide bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 px-2.5 py-0.5 rounded-full">
+                    <span className="text-[10px] font-bold uppercase tracking-wide bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75 px-2.5 py-0.5 rounded-full">
                       {event.category}
                     </span>
                     <span className="text-xs font-mono font-bold text-[#d4522f] flex items-center gap-1">
@@ -387,17 +387,17 @@ export const MembershipSchedulerView: React.FC = () => {
                     </span>
                   </div>
 
-                  <h3 className="font-bold text-sm text-neutral-900 dark:text-white group-hover:text-[#d4522f] transition-colors mb-1">
+                  <h3 className="font-bold text-sm text-black dark:text-white group-hover:text-[#d4522f] transition-colors mb-1">
                     {event.title}
                   </h3>
 
-                  <div className="space-y-1 text-xs text-neutral-500 dark:text-neutral-400">
+                  <div className="space-y-1 text-xs text-black/55 dark:text-white/75">
                     <div className="flex items-center gap-1.5">
-                      <MapPin size={12} className="text-neutral-400" />
+                      <MapPin size={12} className="text-black/55 dark:text-white/55" />
                       <span>{event.roomOrArea}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Users size={12} className="text-neutral-400" />
+                      <Users size={12} className="text-black/55 dark:text-white/55" />
                       <span>{event.trainerOrStaff}</span>
                     </div>
                   </div>
@@ -405,10 +405,10 @@ export const MembershipSchedulerView: React.FC = () => {
 
                 <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-700/60">
                   <div className="flex items-center justify-between text-xs mb-1.5">
-                    <span className="text-neutral-400">
+                    <span className="text-black/55 dark:text-white/55">
                       {isFull ? (language === 'ar' ? 'مكتمل' : 'Full') : (language === 'ar' ? 'الأماكن' : 'Capacity')}
                     </span>
-                    <span className="font-mono font-bold text-neutral-700 dark:text-neutral-300">
+                    <span className="font-mono font-bold text-black/70 dark:text-white/75">
                       {event.enrolledCount}/{event.capacity}
                     </span>
                   </div>
@@ -434,11 +434,11 @@ export const MembershipSchedulerView: React.FC = () => {
       {/* Row 0: Top Header matching Desktop App */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
+          <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-white">
             <Calendar size={22} />
           </div>
           <div>
-            <h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+            <h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {terminology.scheduler}
             </h1>
           </div>
@@ -462,7 +462,7 @@ export const MembershipSchedulerView: React.FC = () => {
       {/* Row 1: Weekly Staff Coverage or Enrolled Athletes KPIs */}
       <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
         <div>
-          <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+          <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
             {language === 'ar' ? 'الطاقة الاستيعابية وجدول التمارين' : 'Weekly Session Matrix & Attendance Roster'}
           </h2>
         </div>
@@ -470,7 +470,7 @@ export const MembershipSchedulerView: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
-              <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+              <span className="text-xs font-semibold text-black/70 dark:text-white/75">
                 {language === 'ar' ? 'إجمالي الحصص المقررة' : 'Scheduled Class Roster'}
               </span>
               <div className="mt-1">
@@ -479,9 +479,9 @@ export const MembershipSchedulerView: React.FC = () => {
                 </span>
               </div>
             </div>
-            <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
+            <div className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {schedule.length}{' '}
-              <span className="text-xs font-normal text-neutral-400">
+              <span className="text-xs font-normal text-black/55 dark:text-white/55">
                 sessions
               </span>
             </div>
@@ -489,7 +489,7 @@ export const MembershipSchedulerView: React.FC = () => {
 
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
-              <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+              <span className="text-xs font-semibold text-black/70 dark:text-white/75">
                 {t('schedule_enrolled_athletes', language)}
               </span>
               <div className="mt-1">
@@ -498,9 +498,9 @@ export const MembershipSchedulerView: React.FC = () => {
                 </span>
               </div>
             </div>
-            <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
+            <div className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {totalEnrolled}{' '}
-              <span className="text-xs font-normal text-neutral-400">
+              <span className="text-xs font-normal text-black/55 dark:text-white/55">
                 {language === 'ar' ? 'حجز مسجل' : 'bookings'}
               </span>
             </div>
@@ -509,7 +509,7 @@ export const MembershipSchedulerView: React.FC = () => {
           {/* Tile 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) — Peak Capacity & Arena */}
           <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-neutral-300">
+              <span className="text-[11px] font-medium text-black/55 dark:text-white/55">
                 {t('schedule_peak_capacity', language)}
               </span>
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
@@ -517,10 +517,10 @@ export const MembershipSchedulerView: React.FC = () => {
               </span>
             </div>
             <div>
-              <div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
+              <div className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 12:00 - 18:30
               </div>
-              <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+              <p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
                 <span>{language === 'ar' ? 'ساعات الذروة والقاعة الرئيسية' : 'Peak Hours Main Arena'}</span>
               </p>
@@ -534,11 +534,11 @@ export const MembershipSchedulerView: React.FC = () => {
           {/* Collection Filter & Action Header */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <Calendar size={16} className="text-neutral-500" />
-              <span className="text-sm font-bold text-neutral-900 dark:text-white">
+              <Calendar size={16} className="text-black/55 dark:text-white/55" />
+              <span className="text-sm font-bold text-black dark:text-white">
                 {language === 'ar' ? 'قائمة الحصص والجلسات العامة' : 'Universal Schedule Collection'}
               </span>
-              <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
+              <span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums ml-1">
                 {sortedCollectionEvents.length}
               </span>
             </div>
@@ -555,12 +555,16 @@ export const MembershipSchedulerView: React.FC = () => {
 
               {/* Day filter */}
               <FilterSelect
-                label={language === 'ar' ? 'اليوم' : 'Day'}
+                label={language === 'ar' ? 'اليوم' : language === 'fr' ? 'Jour' : 'Day'}
                 value={dayFilter}
                 onChange={(val) => setDayFilter(typeof val === 'string' ? val : val.target?.value || val)}
                 options={[
-                  { value: 'All', label: language === 'ar' ? 'جميع الأيام' : 'All Days' },
-                  ...days.map((d) => ({ value: String(d.id), label: d.label })),
+                  {
+                    value: 'All',
+                    label: language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All',
+                    tooltip: language === 'ar' ? 'جميع الأيام' : language === 'fr' ? 'Tous les jours' : 'All Days',
+                  },
+                  ...days.map((d) => ({ value: String(d.id), label: d.label, tooltip: d.label })),
                 ]}
               />
 
@@ -571,7 +575,8 @@ export const MembershipSchedulerView: React.FC = () => {
                 onChange={(val) => setCategoryFilter(typeof val === 'string' ? val : val.target?.value || val)}
                 options={categories.map((c) => ({
                   value: c,
-                  label: c === 'All' ? (language === 'ar' ? 'جميع التخصصات' : 'All Disciplines') : c,
+                  label: c === 'All' ? (language === 'ar' ? 'الكل' : language === 'fr' ? 'Toutes' : 'All') : c,
+                  tooltip: c === 'All' ? (language === 'ar' ? 'جميع التخصصات' : language === 'fr' ? 'Toutes les disciplines' : 'All Disciplines') : c,
                 }))}
               />
 
@@ -589,7 +594,7 @@ export const MembershipSchedulerView: React.FC = () => {
               <button
                 type="button"
                 onClick={toggleFullscreen}
-                className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors shadow-2xs"
+                className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer transition-colors shadow-2xs"
                 title="Toggle Fullscreen"
               >
                 <Maximize2 size={13} />
@@ -657,7 +662,7 @@ export const MembershipSchedulerView: React.FC = () => {
                 <div className="flex flex-col justify-between h-full space-y-3">
                   <div>
                     <div className="flex items-center justify-between gap-2 mb-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75">
                         {event.category}
                       </span>
                       <span className="text-xs font-mono font-bold text-[#d4522f] flex items-center gap-1">
@@ -666,28 +671,28 @@ export const MembershipSchedulerView: React.FC = () => {
                       </span>
                     </div>
 
-                    <h3 className="font-bold text-sm text-neutral-900 dark:text-white line-clamp-1 mb-1">
+                    <h3 className="font-bold text-sm text-black dark:text-white line-clamp-1 mb-1">
                       {event.title}
                     </h3>
 
-                    <div className="flex items-center gap-2 text-xs text-neutral-500 mb-3">
+                    <div className="flex items-center gap-2 text-xs text-black/55 dark:text-white/55 mb-3">
                       <span>{getDayName(event.dayOfWeek)}</span>
                       <span>·</span>
                       <span className="flex items-center gap-1">
-                        <MapPin size={11} className="text-neutral-400" />
+                        <MapPin size={11} className="text-black/55 dark:text-white/55" />
                         <span>{event.roomOrArea}</span>
                       </span>
                     </div>
 
                     <div className="flex items-center gap-2 p-2 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl mb-3">
-                      <div className="w-7 h-7 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-xs font-bold text-neutral-700 dark:text-neutral-300 shrink-0">
+                      <div className="w-7 h-7 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-xs font-bold text-black/70 dark:text-white/75 shrink-0">
                         {event.trainerOrStaff.charAt(0)}
                       </div>
                       <div className="min-w-0">
-                        <span className="text-[10px] text-neutral-400 block font-medium uppercase">
+                        <span className="text-[10px] text-black/55 dark:text-white/55 block font-medium uppercase">
                           {language === 'ar' ? 'المدرب' : 'Instructor'}
                         </span>
-                        <span className="text-xs font-bold text-neutral-900 dark:text-white truncate block">
+                        <span className="text-xs font-bold text-black dark:text-white truncate block">
                           {event.trainerOrStaff}
                         </span>
                       </div>
@@ -696,10 +701,10 @@ export const MembershipSchedulerView: React.FC = () => {
                     {/* Capacity meter */}
                     <div className="space-y-1">
                       <div className="flex justify-between text-[11px] font-mono tabular-nums">
-                        <span className={isFull ? 'text-rose-600 font-bold' : 'text-neutral-600 dark:text-neutral-300'}>
+                        <span className={isFull ? 'text-rose-600 font-bold' : 'text-black/70 dark:text-white/75'}>
                           {event.enrolledCount} / {event.capacity} {language === 'ar' ? 'مشترك' : 'spots'}
                         </span>
-                        <span className="text-neutral-400 font-bold">{fillPercent}%</span>
+                        <span className="text-black/55 dark:text-white/55 font-bold">{fillPercent}%</span>
                       </div>
                       <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
                         <div
@@ -738,7 +743,7 @@ export const MembershipSchedulerView: React.FC = () => {
                       }}
                       className={`h-8 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors ${
                         isFull
-                          ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed'
+                          ? 'bg-neutral-100 dark:bg-neutral-800 text-black/55 dark:text-white/55 cursor-not-allowed'
                           : 'bg-[#d4522f] text-white hover:opacity-90 shadow-2xs'
                       }`}
                     >
@@ -760,14 +765,14 @@ export const MembershipSchedulerView: React.FC = () => {
           <div className="px-6 py-5 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Calendar size={17} className="text-[#d4522f]" />
-              <span className="text-sm font-bold text-neutral-900 dark:text-white">
+              <span className="text-sm font-bold text-black dark:text-white">
                 {language === 'ar' ? 'معاينة الحصة وسجل الحضور' : language === 'fr' ? 'Inspecteur de séance & Roster' : 'Session Inspector & Roster'}
               </span>
             </div>
             <button
               type="button"
               onClick={() => setSelectedEvent(null)}
-              className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 cursor-pointer"
+              className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
             >
               <X size={18} />
             </button>
@@ -776,36 +781,36 @@ export const MembershipSchedulerView: React.FC = () => {
           <div className="flex-1 overflow-y-auto p-6 space-y-6 text-xs">
             <div className="p-5 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700/80 space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-[10px] font-bold uppercase tracking-wide bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200 px-2.5 py-0.5 rounded-full">
+                <span className="text-[10px] font-bold uppercase tracking-wide bg-neutral-200 dark:bg-neutral-700 text-black dark:text-white px-2.5 py-0.5 rounded-full">
                   {selectedEvent.category}
                 </span>
                 <span className="font-mono text-xs font-bold text-[#d4522f]">
                   {selectedEvent.startTime} - {selectedEvent.endTime}
                 </span>
               </div>
-              <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
+              <h3 className="text-lg font-bold text-black dark:text-white">
                 {selectedEvent.title}
               </h3>
-              <p className="text-xs text-neutral-500">
+              <p className="text-xs text-black/55 dark:text-white/55">
                 {getDayName(selectedEvent.dayOfWeek)} · {selectedEvent.roomOrArea}
               </p>
             </div>
 
             <div className="space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-black/55 dark:text-white/55">
                 {language === 'ar' ? 'تفاصيل المدرب والقاعة' : 'Trainer & Studio Info'}
               </h4>
               <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-neutral-400">{language === 'ar' ? 'المدرب المسؤول:' : 'Lead Coach:'}</span>
-                  <span className="font-bold text-neutral-900 dark:text-white">{selectedEvent.trainerOrStaff}</span>
+                  <span className="text-black/55 dark:text-white/55">{language === 'ar' ? 'المدرب المسؤول:' : 'Lead Coach:'}</span>
+                  <span className="font-bold text-black dark:text-white">{selectedEvent.trainerOrStaff}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-400">{language === 'ar' ? 'الموقع:' : 'Studio Area:'}</span>
-                  <span className="font-semibold text-neutral-800 dark:text-neutral-200">{selectedEvent.roomOrArea}</span>
+                  <span className="text-black/55 dark:text-white/55">{language === 'ar' ? 'الموقع:' : 'Studio Area:'}</span>
+                  <span className="font-semibold text-black dark:text-white">{selectedEvent.roomOrArea}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-400">{language === 'ar' ? 'الطاقة الاستيعابية:' : 'Max Capacity:'}</span>
+                  <span className="text-black/55 dark:text-white/55">{language === 'ar' ? 'الطاقة الاستيعابية:' : 'Max Capacity:'}</span>
                   <span className="font-bold font-mono text-[#d4522f]">{selectedEvent.capacity} athletes</span>
                 </div>
               </div>

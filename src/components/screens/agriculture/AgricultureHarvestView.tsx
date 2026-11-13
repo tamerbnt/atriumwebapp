@@ -349,11 +349,11 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 			cell: (t: any) => /* @__PURE__ */ <div className="flex items-center gap-2">
 <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0"><Scale size={16} /></div>
 <div>
-<div className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
+<div className="font-mono font-bold text-xs text-black dark:text-white flex items-center gap-1.5">
 {t.ticketNumber}
 {pinnedIds.has(t.id) && /* @__PURE__ */ <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />}
 </div>
-<div className="text-[10px] text-neutral-400">{t.date}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">{t.date}</div>
 </div>
 </div>
 		},
@@ -364,8 +364,8 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 			sortable: true,
 			minWidth: "220px",
 			cell: (t: any) => /* @__PURE__ */ <div>
-<div className="font-semibold text-xs text-neutral-900 dark:text-neutral-100 line-clamp-1">{t.cropDesignation}</div>
-<div className="text-[11px] text-neutral-500 font-mono">
+<div className="font-semibold text-xs text-black dark:text-white line-clamp-1">{t.cropDesignation}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
 {t.vehiclePlate}
 {" • "}
 {t.driverName}
@@ -383,7 +383,7 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 {t.netWeightKg.toLocaleString()}
 {" Kg"}
 </div>
-<div className="text-[10px] text-neutral-400">
+<div className="text-[10px] text-black/55 dark:text-white/55">
 {t.cratesCount}
 {" caisses"}
 </div>
@@ -396,8 +396,8 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 			sortable: true,
 			minWidth: "140px",
 			cell: (t: any) => /* @__PURE__ */ <div>
-<div className="font-mono font-bold text-xs text-neutral-900 dark:text-white">{formatMoney(t.netFarmPayoutDzd ?? t.paidAmountDzd ?? 0)}</div>
-<div className="text-[10px] text-neutral-400">
+<div className="font-mono font-bold text-xs text-black dark:text-white">{formatMoney(t.netFarmPayoutDzd ?? t.paidAmountDzd ?? 0)}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">
 {"PU: "}
 {t.unitPriceDzdPerKg}
 {" DZD/Kg"}
@@ -410,15 +410,17 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 			accessorKey: "destinationWholesaleMarket",
 			sortable: true,
 			minWidth: "160px",
-			cell: (t: any) => /* @__PURE__ */ <div className="text-xs text-neutral-600 dark:text-neutral-400 truncate max-w-[160px]">{t.destinationWholesaleMarket}</div>
+			cell: (t: any) => /* @__PURE__ */ <div className="text-xs text-black/70 dark:text-white/75 truncate max-w-[160px]">{t.destinationWholesaleMarket}</div>
 		}
 	];
 	const parcelFilterOptions = [{
 		value: "all",
-		label: isAr ? "جميع القطع" : "Toutes les parcelles"
+		label: isAr ? "الكل" : "Toutes",
+		tooltip: isAr ? "جميع القطع الفلاحية" : "Toutes les parcelles"
 	}, ...parcels.map((p) => ({
 		value: p.id,
-		label: p.name
+		label: p.name,
+		tooltip: p.name
 	}))];
 	const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
 		isLoading: isSyncing || networkMode === "force_skeleton",
@@ -454,7 +456,7 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 </div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {activeMode === "tickets" ? isAr ? "وصولات الوزن وجني المحاصيل" : "Pont-Bascule & Bons de Récolte" : isAr ? "دفتر حضور وجني التاشرون (Muster Roll)" : "Pointage Journalier des Tâcherons"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
@@ -472,25 +474,27 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 </div>
 <LiveSegmentedControl value={activeMode} onChange={(val) => setActiveMode(val)} size="sm" options={[{
 					id: "tickets",
-					label: isAr ? "وصولات ميزان الجسر (Pont-Bascule)" : "Bons de Pesée & Expéditions",
+					label: isAr ? "الوزن" : "Pesées",
+					tooltip: isAr ? "وصولات ميزان الجسر (Pont-Bascule)" : "Bons de Pesée & Expéditions",
 					count: filteredTickets.length
 				}, {
 					id: "pointage",
-					label: isAr ? "حضور وجني التاشرون (Muster)" : "Pointage Tâcherons (Muster)",
+					label: isAr ? "الحضور" : "Pointage",
+					tooltip: isAr ? "حضور وجني التاشرون (Muster)" : "Pointage Tâcherons (Muster)",
 					count: pointages.length
 				}]} />
 {activeMode === "tickets" ? /* @__PURE__ */ <>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "إحصائيات الشحن والإنتاج المباع" : "Tonnage Expédié & Recettes Agricoles"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "الحمولة الصافية الإجمالية" : "Tonnage Net Sorti"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "الحمولة الصافية الإجمالية" : "Tonnage Net Sorti"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {(totalNetKg / 1e3).toFixed(1)}
 {" tonnes"}
 </div>
@@ -502,19 +506,19 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "شحنات منقولة للأسواق" : "Rotations Camion Validées"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "شحنات منقولة للأسواق" : "Rotations Camion Validées"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-mono tabular-nums">{filteredTickets.length}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">{isAr ? "وصولات قبان معتمدة" : "Bons avec tare certifiée"}</p>
+<div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{filteredTickets.length}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">{isAr ? "وصولات قبان معتمدة" : "Bons avec tare certifiée"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{isAr ? "صافي مداخيل الجني" : "Recettes Nettes Domaine"}</span>
+<span className="text-[11px] font-medium text-white/80">{isAr ? "صافي مداخيل الجني" : "Recettes Nettes Domaine"}</span>
 <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">Marché de Gros</span>
 </div>
 <div>
-<div className="text-2xl font-black text-white font-mono tabular-nums">{formatMoney(totalNetPayout)}</div>
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalNetPayout)}</div>
 <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
 <CheckCircle2 size={11} />
 {isAr ? "بعد خصم عمولة الوكيل 6%" : "Commission 6% déduite"}
@@ -526,7 +530,7 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "سجل وصولات الجني والوزن (بونت باسكول)" : "Bons de Pesée Pont-Bascule & Expéditions"}
 </h2>
 </div>
@@ -534,21 +538,25 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 {[
 							{
 								id: "all",
-								label: isAr ? "جميع الشحنات" : "Toutes expéditions"
+								label: isAr ? "الكل" : "Toutes",
+								tooltip: isAr ? "جميع الشحنات" : "Toutes expéditions"
 							},
 							{
 								id: "extra",
-								label: "Calibre Extra"
+								label: isAr ? "ممتاز" : "Extra",
+								tooltip: "Calibre Extra"
 							},
 							{
 								id: "cat1",
-								label: "Catégorie I"
+								label: isAr ? "أولى" : "Cat.I",
+								tooltip: "Catégorie I"
 							},
 							{
 								id: "transfo",
-								label: "Transformation"
+								label: isAr ? "تحويل" : "Transfo",
+								tooltip: "Transformation"
 							}
-						].map((tab, idx) => /* @__PURE__ */ <button key={tab.id} onClick={() => setFilterParcel("all")} className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer" style={{
+						].map((tab, idx) => /* @__PURE__ */ <button key={tab.id} type="button" title={tab.tooltip} onClick={() => setFilterParcel("all")} className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer" style={{
 								backgroundColor: idx === 0 && filterParcel === "all" ? "#FCEEE8" : "transparent",
 								color: idx === 0 && filterParcel === "all" ? "var(--color-accent)" : "#71717A"
 							}}>{tab.label}</button>)}
@@ -572,7 +580,7 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 								setSortDir(dir);
 							}} onItemClick={(t) => {
 								setSelectedTicket(t);
-							}} onEdit={openEditModal} onDelete={handleDelete} emptyIcon={<Scale size={32} className="text-neutral-400" />} emptyTitle={isAr ? "لا توجد وصولات وزن" : "Aucun bon de pesée trouvé"} emptyDescription={searchQuery ? isAr ? "لا توجد نتائج مطابقة لبحثك" : "Aucun ticket ne correspond à votre recherche" : isAr ? "قم بتسجيل أول حمولة محصول" : "Enregistrez votre première pesée camion"} customActions={[{
+							}} onEdit={openEditModal} onDelete={handleDelete} emptyIcon={<Scale size={32} className="text-black/55 dark:text-white/55" />} emptyTitle={isAr ? "لا توجد وصولات وزن" : "Aucun bon de pesée trouvé"} emptyDescription={searchQuery ? isAr ? "لا توجد نتائج مطابقة لبحثك" : "Aucun ticket ne correspond à votre recherche" : isAr ? "قم بتسجيل أول حمولة محصول" : "Enregistrez votre première pesée camion"} customActions={[{
 								id: "print",
 								label: isAr ? "طباعة الوصل" : "Imprimer Bon",
 								icon: /* @__PURE__ */ <Printer size={14} />,
@@ -586,8 +594,8 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white line-clamp-1">{t.cropDesignation}</h3>
-<div className="text-xs text-neutral-500 font-medium mt-0.5">
+<h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">{t.cropDesignation}</h3>
+<div className="text-xs text-black/55 dark:text-white/55 font-medium mt-0.5">
 {t.vehiclePlate}
 {" • "}
 {t.driverName}
@@ -595,12 +603,12 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 </div>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
 <div>
-<div className="text-[10px] text-neutral-400 uppercase tracking-wider">Net Domaine</div>
-<div className="font-mono font-bold text-neutral-900 dark:text-white mt-0.5">{formatMoney(t.netFarmPayoutDzd ?? t.paidAmountDzd ?? 0)}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">Net Domaine</div>
+<div className="font-mono font-bold text-black dark:text-white mt-0.5">{formatMoney(t.netFarmPayoutDzd ?? t.paidAmountDzd ?? 0)}</div>
 </div>
 <div className="text-right">
-<div className="text-[10px] text-neutral-400 uppercase tracking-wider">Date</div>
-<div className="font-mono text-neutral-600 dark:text-neutral-400 mt-0.5">{t.date}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">Date</div>
+<div className="font-mono text-black/70 dark:text-white/75 mt-0.5">{t.date}</div>
 </div>
 </div>
 </div>} />
@@ -611,54 +619,54 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold"><Scale size={18} /></div>
 <div>
 <div className="flex items-center gap-1.5">
-<span className="font-mono font-bold text-xs text-neutral-900 dark:text-white">{selectedTicket.ticketNumber}</span>
+<span className="font-mono font-bold text-xs text-black dark:text-white">{selectedTicket.ticketNumber}</span>
 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">Pesée Validée</span>
 </div>
-<p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 line-clamp-1">{selectedTicket.cropDesignation}</p>
+<p className="text-xs font-semibold text-black/70 dark:text-white/75 line-clamp-1">{selectedTicket.cropDesignation}</p>
 </div>
 </div>
-<button onClick={() => setSelectedTicket(null)} className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800"><X size={16} /></button>
+<button onClick={() => setSelectedTicket(null)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"><X size={16} /></button>
 </div>
 <div className="flex items-center gap-1.5 flex-wrap">
 <button onClick={() => handlePrintTicket(selectedTicket)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-orange-50 text-[#d4522f] hover:bg-orange-100 dark:bg-orange-950/40 dark:hover:bg-orange-900/60 transition-colors">
 <Printer size={12} />
 {isAr ? "طباعة الوصل" : "Imprimer"}
 </button>
-<button onClick={() => openEditModal(selectedTicket)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 transition-colors">
+<button onClick={() => openEditModal(selectedTicket)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-neutral-100 text-black/70 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-white/75 transition-colors">
 <Edit size={12} />
 {isAr ? "تعديل" : "Modifier"}
 </button>
 <button onClick={() => handleDelete(selectedTicket)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 transition-colors ml-auto"><Trash2 size={12} /></button>
 </div>
 <div className="flex border-b border-neutral-100 dark:border-neutral-800 gap-1 text-xs">
-<button onClick={() => setActiveTab("ticket")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "ticket" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "البيانات" : "Fiche Pesée"}</button>
-<button onClick={() => setActiveTab("pesee")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "pesee" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "الأوزان" : "Tonnage"}</button>
-<button onClick={() => setActiveTab("finance")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "finance" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "المالية" : "Finance"}</button>
-<button onClick={() => setActiveTab("notes")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "الملاحظات" : "Mentions"}</button>
+<button onClick={() => setActiveTab("ticket")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "ticket" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80"}`}>{isAr ? "البيانات" : "Fiche Pesée"}</button>
+<button onClick={() => setActiveTab("pesee")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "pesee" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80"}`}>{isAr ? "الأوزان" : "Tonnage"}</button>
+<button onClick={() => setActiveTab("finance")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "finance" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80"}`}>{isAr ? "المالية" : "Finance"}</button>
+<button onClick={() => setActiveTab("notes")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80"}`}>{isAr ? "الملاحظات" : "Mentions"}</button>
 </div>
 {activeTab === "ticket" && /* @__PURE__ */ <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Chauffeur:</span>
-<span className="font-semibold text-neutral-900 dark:text-white">{selectedTicket.driverName}</span>
+<span className="text-black/55 dark:text-white/55">Chauffeur:</span>
+<span className="font-semibold text-black dark:text-white">{selectedTicket.driverName}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Véhicule:</span>
+<span className="text-black/55 dark:text-white/55">Véhicule:</span>
 <span className="font-mono font-bold text-[#d4522f]">{selectedTicket.vehiclePlate}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Destination:</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 truncate max-w-[190px]">{selectedTicket.destinationWholesaleMarket}</span>
+<span className="text-black/55 dark:text-white/55">Destination:</span>
+<span className="font-semibold text-black dark:text-white truncate max-w-[190px]">{selectedTicket.destinationWholesaleMarket}</span>
 </div>
 </div>
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Date d'émission:</span>
-<span className="font-mono text-neutral-800 dark:text-neutral-200">{selectedTicket.date}</span>
+<span className="text-black/55 dark:text-white/55">Date d'émission:</span>
+<span className="font-mono text-black dark:text-white">{selectedTicket.date}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Nombre de caisses:</span>
-<span className="font-mono text-neutral-900 dark:text-white font-semibold">
+<span className="text-black/55 dark:text-white/55">Nombre de caisses:</span>
+<span className="font-mono text-black dark:text-white font-semibold">
 {selectedTicket.cratesCount}
 {" unités"}
 </span>
@@ -668,21 +676,21 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 {activeTab === "pesee" && /* @__PURE__ */ <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Poids Brut (Camion + Charge):</span>
-<span className="font-mono font-semibold text-neutral-800 dark:text-neutral-200">
+<span className="text-black/55 dark:text-white/55">Poids Brut (Camion + Charge):</span>
+<span className="font-mono font-semibold text-black dark:text-white">
 {selectedTicket.grossWeightKg.toLocaleString()}
 {" Kg"}
 </span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Tare Camion à vide:</span>
-<span className="font-mono font-semibold text-neutral-800 dark:text-neutral-200">
+<span className="text-black/55 dark:text-white/55">Tare Camion à vide:</span>
+<span className="font-mono font-semibold text-black dark:text-white">
 {(selectedTicket.tareWeightKg ?? selectedTicket.truckTareKg ?? 0).toLocaleString()}
 {" Kg"}
 </span>
 </div>
 <div className="flex justify-between items-center pt-1 border-t border-neutral-200 dark:border-neutral-700">
-<span className="text-neutral-700 font-bold">Poids Net Marchandise:</span>
+<span className="text-black/70 dark:text-white/75 font-bold">Poids Net Marchandise:</span>
 <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">
 {selectedTicket.netWeightKg.toLocaleString()}
 {" Kg"}
@@ -693,20 +701,20 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 {activeTab === "finance" && /* @__PURE__ */ <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Prix unitaire au Kg:</span>
-<span className="font-mono font-semibold text-neutral-800 dark:text-neutral-200">
+<span className="text-black/55 dark:text-white/55">Prix unitaire au Kg:</span>
+<span className="font-mono font-semibold text-black dark:text-white">
 {selectedTicket.unitPriceDzdPerKg}
 {" DZD / Kg"}
 </span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">Total Brut Gros:</span>
-<span className="font-mono text-neutral-800 dark:text-neutral-200 font-semibold">
+<span className="text-black/55 dark:text-white/55">Total Brut Gros:</span>
+<span className="font-mono text-black dark:text-white font-semibold">
 {formatMoney(selectedTicket.totalGrossDzd ?? selectedTicket.subtotalProduceDzd ?? 0)}
 </span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">
+<span className="text-black/55 dark:text-white/55">
 Commission Mandataire (
 {selectedTicket.mandataireFeePercent || 0}
 %):
@@ -717,7 +725,7 @@ Commission Mandataire (
 </span>
 </div>
 <div className="flex justify-between items-center pt-1 border-t border-neutral-200 dark:border-neutral-700">
-<span className="text-neutral-700 font-bold">Net à Payer Domaine:</span>
+<span className="text-black/70 dark:text-white/75 font-bold">Net à Payer Domaine:</span>
 <span className="font-mono font-bold text-[#d4522f] text-sm">
 {formatMoney(selectedTicket.netFarmPayoutDzd ?? selectedTicket.paidAmountDzd ?? 0)}
 </span>
@@ -725,8 +733,8 @@ Commission Mandataire (
 </div>
 </div>}
 {activeTab === "notes" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
-<p className="text-neutral-500 text-[11px]">Observations qualité (degré Brix, fermeté, triage) et décharge de livraison :</p>
-<textarea rows={6} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} placeholder="Noter le calibre des fruits, l'heure de départ du domaine..." className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none" />
+<p className="text-black/55 dark:text-white/55 text-[11px]">Observations qualité (degré Brix, fermeté, triage) et décharge de livraison :</p>
+<textarea rows={6} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} placeholder="Noter le calibre des fruits, l'heure de départ du domaine..." className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none" />
 <button onClick={handleSaveNotes} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#d4522f] text-white hover:bg-[#a86246] transition-colors font-medium text-xs shadow-xs">
 {noteSaved ? /* @__PURE__ */ <>
 <Check size={14} />
@@ -743,15 +751,15 @@ Commission Mandataire (
 </> : /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "مؤشرات جني المحصول ودفتر حضور التاشرون" : "Indicateurs de Récolte & Pointage des Tâcherons"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "العمال الميدانيون الحاضرون" : "Ouvriers & Tâcherons Actifs"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "العمال الميدانيون الحاضرون" : "Ouvriers & Tâcherons Actifs"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">{pointages.length}</div>
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{pointages.length}</div>
 <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">
 {pointages.filter((p) => p.cratesCollected > 0).length}
 {" "}
@@ -760,14 +768,14 @@ Commission Mandataire (
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "إجمالي الصناديق المجنية اليوم" : "Total Caisses Récoltées"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "إجمالي الصناديق المجنية اليوم" : "Total Caisses Récoltées"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono tabular-nums">
+<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {pointages.reduce((sum, p) => sum + p.cratesCollected, 0)}
 {" "}
 {isAr ? "صندوق" : "caisses"}
 </div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">
 ~
 {(pointages.reduce((sum, p) => sum + p.cratesCollected, 0) * 18 / 1e3).toFixed(1)}
 {" tonnes récoltées"}
@@ -776,14 +784,14 @@ Commission Mandataire (
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{isAr ? "صافي مستحقات اليد العاملة" : "Masse Salariale Nette Due"}</span>
+<span className="text-[11px] font-medium text-white/80">{isAr ? "صافي مستحقات اليد العاملة" : "Masse Salariale Nette Due"}</span>
 <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">Muster Pay</span>
 </div>
 <div>
-<div className="text-2xl font-black text-white font-mono tabular-nums">
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {formatMoney(pointages.reduce((sum, p) => sum + (p.isPaid ? 0 : p.netDueDzd), 0))}
 </div>
-<p className="text-[11px] text-neutral-400 mt-0.5 font-medium">
+<p className="text-[11px] text-white/75 mt-0.5 font-medium">
 {pointages.filter((p) => !p.isPaid).length}
 {" "}
 {isAr ? "أجور في انتظار الصرف" : "soldes en attente de caisse"}
@@ -795,7 +803,7 @@ Commission Mandataire (
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "جدول حضور ومردودية العمال (Muster Roll)" : "Registre d’Appel & Rendement des Tâcherons"}
 </h2>
 </div>
@@ -803,16 +811,19 @@ Commission Mandataire (
 								{
 									id: "all",
 									label: isAr ? "الكل" : "Tous",
+									tooltip: isAr ? "جميع سجلات الحضور" : "Tous les pointages",
 									count: pointages.length
 								},
 								{
 									id: "unpaid",
-									label: isAr ? "غير مسدد" : "À régler",
+									label: isAr ? "معلق" : "Impayés",
+									tooltip: isAr ? "غير مسدد" : "À régler",
 									count: pointages.filter((p) => !p.isPaid).length
 								},
 								{
 									id: "paid",
 									label: isAr ? "مسدد" : "Réglés",
+									tooltip: isAr ? "أجور مسددة" : "Pointages réglés",
 									count: pointages.filter((p) => p.isPaid).length
 								}
 							]} />
@@ -823,11 +834,11 @@ Commission Mandataire (
 							return /* @__PURE__ */ <div key={p.id} className="p-4 rounded-2xl bg-white dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs space-y-3 flex flex-col justify-between">
 <div className="flex items-start justify-between gap-2">
 <div>
-<div className="font-bold text-sm text-neutral-900 dark:text-white flex items-center gap-1.5">
+<div className="font-bold text-sm text-black dark:text-white flex items-center gap-1.5">
 <Users size={14} className="text-[#d4522f]" />
 {p.workerName}
 </div>
-<div className="text-[11px] text-neutral-400 font-mono mt-0.5">
+<div className="text-[11px] text-black/55 dark:text-white/55 font-mono mt-0.5">
 {"NIN: "}
 {worker?.ninOrIdCard || "Non renseigné"}
 {" · "}
@@ -838,15 +849,15 @@ Commission Mandataire (
 </div>
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
 <div className="flex items-center justify-between text-xs">
-<span className="text-neutral-500 font-medium">{isAr ? "الصناديق المجنية :" : "Caisses pointées :"}</span>
-<span className="font-mono font-black text-lg text-neutral-900 dark:text-white">
+<span className="text-black/55 dark:text-white/55 font-medium">{isAr ? "الصناديق المجنية :" : "Caisses pointées :"}</span>
+<span className="font-mono font-black text-lg text-black dark:text-white">
 {p.cratesCollected}
 {" "}
-<span className="text-xs font-normal text-neutral-400">caisses</span>
+<span className="text-xs font-normal text-black/55 dark:text-white/55">caisses</span>
 </span>
 </div>
 <div className="grid grid-cols-3 gap-1.5">
-<button onClick={() => handleIncrementCrates(p, -1)} className="py-1.5 px-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-xs font-bold hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-center gap-1 text-neutral-600 dark:text-neutral-300 transition-colors cursor-pointer">
+<button onClick={() => handleIncrementCrates(p, -1)} className="py-1.5 px-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-xs font-bold hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-center gap-1 text-black/70 dark:text-white/75 transition-colors cursor-pointer">
 <Minus size={12} />
 {" 1"}
 </button>
@@ -854,9 +865,9 @@ Commission Mandataire (
 <button onClick={() => handleIncrementCrates(p, 5)} className="py-1.5 px-2 bg-[#d4522f] text-white rounded-lg text-xs font-bold hover:bg-[#b06a4e] flex items-center justify-center gap-1 shadow-2xs transition-colors cursor-pointer">+5</button>
 </div>
 </div>
-<div className="space-y-1.5 text-xs text-neutral-600 dark:text-neutral-300">
+<div className="space-y-1.5 text-xs text-black/70 dark:text-white/75">
 <div className="flex justify-between">
-<span className="text-neutral-400">
+<span className="text-black/55 dark:text-white/55">
 Rémunération brute (
 {worker?.defaultPieceRateDzd || 40}
 {" DA/caisse):"}
@@ -873,7 +884,7 @@ Rémunération brute (
 <button onClick={() => handleUpdateAdvance(p, 500)} className="px-1.5 py-0.5 text-[10px] bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 rounded border border-amber-300 dark:border-amber-700 cursor-pointer">+500</button>
 </div>
 </div>
-<div className="flex justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800 font-bold text-neutral-900 dark:text-white">
+<div className="flex justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800 font-bold text-black dark:text-white">
 <span>Net à verser:</span>
 <span className="font-mono text-sm text-[#d4522f]">{formatMoney(p.netDueDzd)}</span>
 </div>
@@ -898,15 +909,15 @@ Rémunération brute (
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold"><Scale size={20} /></div>
 <div>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {ticketToEdit ? isAr ? "تعديل وصل وزن المحصول" : "Modifier le Bon de Pesée" : isAr ? "تسجيل وصل وزن قبان جديد" : "Nouveau Bon de Pesée Pont-Bascule"}
 </h2>
-<p className="text-xs text-neutral-500">
+<p className="text-xs text-black/55 dark:text-white/55">
 {isAr ? "قياس الحمولة الصافية والأسعار للطن" : "Calcul automatique du poids net et net domaine"}
 </p>
 </div>
 </div>
-<button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
+<button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
 </div>
 <form onSubmit={handleSaveModal} className="space-y-4">
 <LabelSelect label={isAr ? "القطعة الفلاحية المصدر" : "Parcelle d’Origine"} value={parcelId} onChange={(e) => setParcelId(e.target.value)} options={parcelFilterOptions.filter((p) => p.value !== "all")} />
@@ -939,10 +950,10 @@ Rémunération brute (
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Users size={20} /></div>
 <div>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">{isAr ? "تسجيل حضور وجني لعامل" : "Pointer un Ouvrier Saisonnier"}</h2>
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{isAr ? "تسجيل حضور وجني لعامل" : "Pointer un Ouvrier Saisonnier"}</h2>
 </div>
 </div>
-<button onClick={() => setIsPointageModalOpen(false)} className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors"><X size={18} /></button>
+<button onClick={() => setIsPointageModalOpen(false)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white transition-colors"><X size={18} /></button>
 </div>
 <form onSubmit={handleSavePointage} className="space-y-4">
 <LabelSelect label={isAr ? "العامل السيزوني / التاشرون" : "Ouvrier / Tâcheron"} value={pointageWorkerId} onChange={(e) => setPointageWorkerId(e.target.value)} options={workers.map((w) => ({
@@ -959,8 +970,8 @@ Rémunération brute (
 </div>
 <div className="p-3 bg-neutral-50 dark:bg-neutral-800/60 rounded-xl border border-neutral-200 dark:border-neutral-700 text-xs space-y-1">
 <div className="flex justify-between">
-<span className="text-neutral-500">Rémunération calculée :</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">{formatMoney((parseInt(pointageCrates) || 0) * 40)}</span>
+<span className="text-black/55 dark:text-white/55">Rémunération calculée :</span>
+<span className="font-mono font-bold text-black dark:text-white">{formatMoney((parseInt(pointageCrates) || 0) * 40)}</span>
 </div>
 <div className="flex justify-between text-amber-600 dark:text-amber-400">
 <span>Acompte déduit :</span>

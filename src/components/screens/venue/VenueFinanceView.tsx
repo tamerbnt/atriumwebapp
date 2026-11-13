@@ -180,9 +180,9 @@ export const VenueFinanceView: React.FC<any> = () => {
 <div className="space-y-6 animate-in fade-in duration-200">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
 <div className="flex items-center gap-3.5">
-<div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200"><ShieldCheck size={22} /></div>
+<div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-white"><ShieldCheck size={22} /></div>
 <div>
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{t("venue_fin_page_title")}</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("venue_fin_page_title")}</h1>
 </div>
 </div>
 <div className="flex items-center gap-3 relative flex-wrap">
@@ -191,14 +191,14 @@ export const VenueFinanceView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isAr ? "الودائع الضامنة & سيولة الحسابات" : "Trésorerie & Séquestre des Cautions"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">{t("venue_fin_kpi_gross_rev")}</span>
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">{t("venue_fin_kpi_gross_rev")}</span>
 <div className="mt-1">
 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
 {"↗ "}
@@ -208,11 +208,11 @@ export const VenueFinanceView: React.FC<any> = () => {
 </span>
 </div>
 </div>
-<div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">{formatCurrencyAmount(totalBookingRevenue, "DZD")}</div>
+<div className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatCurrencyAmount(totalBookingRevenue, "DZD")}</div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">{t("venue_fin_kpi_released")}</span>
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">{t("venue_fin_kpi_released")}</span>
 <div className="mt-1">
 <span className="text-[10px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-full">
 {"✓ "}
@@ -220,11 +220,11 @@ export const VenueFinanceView: React.FC<any> = () => {
 </span>
 </div>
 </div>
-<div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">{formatCurrencyAmount(totalReleased, "DZD")}</div>
+<div className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatCurrencyAmount(totalReleased, "DZD")}</div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div>
-<span className="text-xs font-medium text-neutral-300">{t("venue_fin_kpi_escrow")}</span>
+<span className="text-xs font-medium text-white/80">{t("venue_fin_kpi_escrow")}</span>
 <div className="text-[11px] text-[#FB923C] font-semibold mt-0.5">
 <span className="bg-[#3D2817] px-2 py-0.5 rounded-full inline-block">
 {totalHeldCount}
@@ -233,7 +233,7 @@ export const VenueFinanceView: React.FC<any> = () => {
 </span>
 </div>
 </div>
-<div className="text-2xl font-black text-white tabular-nums font-mono">{formatCurrencyAmount(totalHeld, "DZD")}</div>
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatCurrencyAmount(totalHeld, "DZD")}</div>
 </div>
 </div>
 </div>
@@ -242,22 +242,26 @@ export const VenueFinanceView: React.FC<any> = () => {
 <UniversalDataCollection title={isAr ? "سجل الودائع الضامنة" : "Registre des Cautions & Séquestres d'Événements"} subtitle={isAr ? "إدارة أموال التأمين المحجوزة للمناسبات" : "Fonds séquestrés, dégradations constatées et déblocages après événement"} headerActions={<LiveSegmentedControl size="sm" value={statusFilter} onValueChange={(val) => setStatusFilter(val)} options={[
 									{
 										value: "All",
-										label: isAr ? "الكل" : "Toutes",
+										label: isAr ? "الكل" : language === "fr" ? "Toutes" : "All",
+										tooltip: isAr ? "جميع الضمانات" : language === "fr" ? "Toutes les cautions" : "All deposits",
 										count: securityDeposits.length
 									},
 									{
 										value: "Held",
-										label: isAr ? "محجوزة" : "Bloquées",
+										label: isAr ? "محجوزة" : language === "fr" ? "Bloquées" : "Held",
+										tooltip: isAr ? "ضمانات قيد الاحتجاز" : language === "fr" ? "Cautions séquestrées" : "Held in escrow",
 										count: totalHeldCount
 									},
 									{
 										value: "Released",
-										label: isAr ? "مستردة" : "Restituées",
+										label: isAr ? "مستردة" : language === "fr" ? "Restituées" : "Released",
+										tooltip: isAr ? "ضمانات مسترجعة" : language === "fr" ? "Cautions restituées" : "Released deposits",
 										count: securityDeposits.filter((d) => d.status === "Released").length
 									},
 									{
 										value: "Deducted",
-										label: isAr ? "مقتطعة" : "Déduites",
+										label: isAr ? "مقتطعة" : language === "fr" ? "Déduites" : "Deducted",
+										tooltip: isAr ? "ضمانات مخصومة" : language === "fr" ? "Cautions déduites" : "Deducted deposits",
 										count: securityDeposits.filter((d) => d.status === "Deducted").length
 									}
 								]} aria-label="Security Deposit Status Filter" />} items={filteredDeposits} keyExtractor={(d) => d.id} searchPlaceholder={t("venue_fin_search_ph")} searchFilter={(d, query) => d.renterName.toLowerCase().includes(query.toLowerCase()) || d.unitName.toLowerCase().includes(query.toLowerCase()) || (d.deductionReason || "").toLowerCase().includes(query.toLowerCase())} onSelectRow={(d) => setSelectedDeposit(d)} customActions={(d) => getDepositActions(d)} columns={[
@@ -265,28 +269,28 @@ export const VenueFinanceView: React.FC<any> = () => {
 									id: "renter",
 									header: t("venue_voucher_renter_name"),
 									renderCell: (d: any) => /* @__PURE__ */ <div>
-<span className="font-bold text-xs text-neutral-900 dark:text-neutral-100 block">{d.renterName}</span>
-<span className="text-[10px] text-neutral-400 font-mono">{d.collectedAt}</span>
+<span className="font-bold text-xs text-black dark:text-white block">{d.renterName}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 font-mono">{d.collectedAt}</span>
 </div>
 								},
 								{
 									id: "unit",
 									header: t("venue_voucher_space"),
 									width: "180px",
-									renderCell: (d: any) => /* @__PURE__ */ <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">{d.unitName}</span>
+									renderCell: (d: any) => /* @__PURE__ */ <span className="text-xs font-medium text-black/70 dark:text-white/75">{d.unitName}</span>
 								},
 								{
 									id: "amount",
 									header: t("venue_col_financials"),
 									width: "140px",
 									sortable: true,
-									renderCell: (d: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white">{formatCurrencyAmount(d.amount, d.currency)}</span>
+									renderCell: (d: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-black dark:text-white">{formatCurrencyAmount(d.amount, d.currency)}</span>
 								},
 								{
 									id: "method",
 									header: isAr ? "طريقة الدفع" : "Mode Paiement",
 									width: "130px",
-									renderCell: (d: any) => /* @__PURE__ */ <span className="text-xs text-neutral-500 font-medium">{d.paymentMethod}</span>
+									renderCell: (d: any) => /* @__PURE__ */ <span className="text-xs text-black/55 dark:text-white/55 font-medium">{d.paymentMethod}</span>
 								},
 								{
 									id: "status",
@@ -304,16 +308,16 @@ export const VenueFinanceView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<h4 className="font-bold text-xs text-neutral-900 dark:text-white line-clamp-1">{d.renterName}</h4>
-<p className="text-[11px] text-neutral-500 mt-0.5">
+<h4 className="font-bold text-xs text-black dark:text-white line-clamp-1">{d.renterName}</h4>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 {d.unitName}
 {" · "}
 {d.paymentMethod}
 </p>
 </div>
-<div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-neutral-400 font-mono">
+<div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-black/55 dark:text-white/55 font-mono">
 <span>{d.collectedAt}</span>
-<span className="font-bold text-neutral-700 dark:text-neutral-300">{d.currency}</span>
+<span className="font-bold text-black/70 dark:text-white/75">{d.currency}</span>
 </div>
 </div>} />
 </div>
@@ -322,48 +326,48 @@ export const VenueFinanceView: React.FC<any> = () => {
 <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><ShieldCheck size={16} /></div>
 <div>
-<h3 className="font-bold text-xs text-neutral-900 dark:text-white flex items-center gap-1.5">Dépôt de Garantie Caution</h3>
-<p className="text-[10px] text-neutral-500 truncate max-w-[210px]">{selectedDeposit.renterName}</p>
+<h3 className="font-bold text-xs text-black dark:text-white flex items-center gap-1.5">Dépôt de Garantie Caution</h3>
+<p className="text-[10px] text-black/55 dark:text-white/55 truncate max-w-[210px]">{selectedDeposit.renterName}</p>
 </div>
 </div>
-<button onClick={() => setSelectedDeposit(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500 transition-colors"><X size={15} /></button>
+<button onClick={() => setSelectedDeposit(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-black/55 dark:text-white/55 transition-colors"><X size={15} /></button>
 </div>
 <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 pt-2 gap-2">
-<button onClick={() => setInspectorTab("caution")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "caution" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"}`}>{isAr ? "الضمان والوديعة" : "Caution"}</button>
-<button onClick={() => setInspectorTab("degradations")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "degradations" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"}`}>{isAr ? "الأضرار والاقتطاع" : "Dégradations"}</button>
-<button onClick={() => setInspectorTab("restitution")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "restitution" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"}`}>{isAr ? "تاريخ الاسترجاع" : "Restitution"}</button>
+<button onClick={() => setInspectorTab("caution")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "caution" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "الضمان والوديعة" : "Caution"}</button>
+<button onClick={() => setInspectorTab("degradations")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "degradations" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "الأضرار والاقتطاع" : "Dégradations"}</button>
+<button onClick={() => setInspectorTab("restitution")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "restitution" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "تاريخ الاسترجاع" : "Restitution"}</button>
 </div>
 <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
 {inspectorTab === "caution" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-4 bg-[#1F1D1B] rounded-xl text-white space-y-2 shadow-sm">
-<div className="flex items-center justify-between text-neutral-300 text-[11px]">
+<div className="flex items-center justify-between text-white/80 text-[11px]">
 <span>Montant Caution Sous Séquestre</span>
 <span className="bg-[#3D2817] text-[#FB923C] text-[10px] font-bold px-2 py-0.5 rounded-full">{selectedDeposit.status}</span>
 </div>
-<div className="text-2xl font-black font-mono tracking-tight text-white">{formatCurrencyAmount(selectedDeposit.amount, selectedDeposit.currency)}</div>
-<p className="text-[10px] text-neutral-400">
+<div className="text-2xl font-black tracking-tight text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatCurrencyAmount(selectedDeposit.amount, selectedDeposit.currency)}</div>
+<p className="text-[10px] text-white/75">
 Bloqué sur compte séquestre de l'établissement jusqu'à l'état des lieux de sortie.
 </p>
 </div>
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Détails de la Réservation</span>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Détails de la Réservation</span>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Espace Loué:</span>
-<span className="font-bold text-neutral-900 dark:text-white">{selectedDeposit.unitName}</span>
+<span className="text-black/55 dark:text-white/55">Espace Loué:</span>
+<span className="font-bold text-black dark:text-white">{selectedDeposit.unitName}</span>
 </div>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Client / Organisateur:</span>
-<span className="font-medium text-neutral-900 dark:text-white">{selectedDeposit.renterName}</span>
+<span className="text-black/55 dark:text-white/55">Client / Organisateur:</span>
+<span className="font-medium text-black dark:text-white">{selectedDeposit.renterName}</span>
 </div>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Moyen de Caution:</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{selectedDeposit.paymentMethod}</span>
+<span className="text-black/55 dark:text-white/55">Moyen de Caution:</span>
+<span className="font-semibold text-black dark:text-white">{selectedDeposit.paymentMethod}</span>
 </div>
 </div>
 {selectedDeposit.status === "Held" && /* @__PURE__ */ <div className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
 <div>
-<span className="font-semibold block text-neutral-900 dark:text-white">Restitution Intégrale</span>
-<span className="text-[10px] text-neutral-500">Après état des lieux sans dégradation</span>
+<span className="font-semibold block text-black dark:text-white">Restitution Intégrale</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">Après état des lieux sans dégradation</span>
 </div>
 <button onClick={() => {
 														releaseSecurityDeposit(selectedDeposit.id);
@@ -377,8 +381,8 @@ Bloqué sur compte séquestre de l'établissement jusqu'à l'état des lieux de 
 </div>}
 {inspectorTab === "degradations" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Constat de Dégradation & Retenue</span>
-<div className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300">
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Constat de Dégradation & Retenue</span>
+<div className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 text-black/70 dark:text-white/75">
 {selectedDeposit.deductionReason || "Aucune dégradation signalée lors de l'état des lieux."}
 </div>
 </div>
@@ -390,15 +394,15 @@ Bloqué sur compte séquestre de l'établissement jusqu'à l'état des lieux de 
 </div>}
 {inspectorTab === "restitution" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Historique des Mouvements</span>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Historique des Mouvements</span>
 <div className="space-y-1.5">
 <div className="flex justify-between">
-<span className="text-neutral-500">Date d'encaissement:</span>
-<span className="font-mono text-neutral-900 dark:text-white">{selectedDeposit.collectedAt}</span>
+<span className="text-black/55 dark:text-white/55">Date d'encaissement:</span>
+<span className="font-mono text-black dark:text-white">{selectedDeposit.collectedAt}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">Date de déblocage:</span>
-<span className="font-mono text-neutral-900 dark:text-white">{selectedDeposit.releasedAt || "Toujours en cours"}</span>
+<span className="text-black/55 dark:text-white/55">Date de déblocage:</span>
+<span className="font-mono text-black dark:text-white">{selectedDeposit.releasedAt || "Toujours en cours"}</span>
 </div>
 </div>
 </div>
@@ -422,15 +426,15 @@ Bloqué sur compte séquestre de l'établissement jusqu'à l'état des lieux de 
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
 <div className="flex items-center gap-2">
 <AlertTriangle size={20} className="text-red-500" />
-<h3 className="font-bold text-base text-neutral-900 dark:text-white">{t("venue_deduct_modal_title")}</h3>
+<h3 className="font-bold text-base text-black dark:text-white">{t("venue_deduct_modal_title")}</h3>
 </div>
-<button onClick={() => setDeductionTarget(null)} className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1"><X size={18} /></button>
+<button onClick={() => setDeductionTarget(null)} className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1"><X size={18} /></button>
 </div>
 <form onSubmit={handleConfirmDeduct} className="space-y-4">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl text-xs space-y-1">
 <div>
 {"Locataire: "}
-<strong className="text-neutral-900 dark:text-white">{deductionTarget.renterName}</strong>
+<strong className="text-black dark:text-white">{deductionTarget.renterName}</strong>
 </div>
 <div>
 {"Montant Caution: "}

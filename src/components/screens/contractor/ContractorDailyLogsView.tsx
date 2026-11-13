@@ -256,7 +256,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Calendar size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isAr ? "سجل العمليات اليومية ومحاضر الورشة" : "Journal de Chantier & Attachements de Travaux"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
@@ -275,17 +275,17 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 </div>
 </div>
 <div className="flex items-center gap-2 p-1.5 bg-neutral-100 dark:bg-neutral-850 rounded-2xl w-fit border border-neutral-200/80 dark:border-neutral-800">
-<button onClick={() => setActiveSection("logs")} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${activeSection === "logs" ? "bg-white dark:bg-neutral-800 text-[#d4522f] shadow-xs" : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900"}`}>
+<button onClick={() => setActiveSection("logs")} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${activeSection === "logs" ? "bg-white dark:bg-neutral-800 text-[#d4522f] shadow-xs" : "text-black/70 dark:text-white/75 hover:text-black"}`}>
 <Calendar size={14} />
 <span>{isAr ? "محاضر الورشة والحضور" : "Journaux & Effectifs"}</span>
 <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-neutral-100 dark:bg-neutral-700">{projectLogs.length}</span>
 </button>
-<button onClick={() => setActiveSection("concrete")} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${activeSection === "concrete" ? "bg-white dark:bg-neutral-800 text-[#d4522f] shadow-xs" : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900"}`}>
+<button onClick={() => setActiveSection("concrete")} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${activeSection === "concrete" ? "bg-white dark:bg-neutral-800 text-[#d4522f] shadow-xs" : "text-black/70 dark:text-white/75 hover:text-black"}`}>
 <Layers size={14} />
 <span>{isAr ? "صبات الخرسانة ومطابقة CTC" : "Coulées Béton & CTC (CBA 93)"}</span>
 <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-neutral-100 dark:bg-neutral-700">{projectConcretePours.length}</span>
 </button>
-<button onClick={() => setActiveSection("equipment")} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${activeSection === "equipment" ? "bg-white dark:bg-neutral-800 text-[#d4522f] shadow-xs" : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900"}`}>
+<button onClick={() => setActiveSection("equipment")} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${activeSection === "equipment" ? "bg-white dark:bg-neutral-800 text-[#d4522f] shadow-xs" : "text-black/70 dark:text-white/75 hover:text-black"}`}>
 <Fuel size={14} />
 <span>{isAr ? "ساعات العتاد والوقود" : "Parc Engins & Gasoil"}</span>
 <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-neutral-100 dark:bg-neutral-700">{projectEquipmentLogs.length}</span>
@@ -293,35 +293,35 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "مؤشرات التواجد الميداني والأمان الفني" : "Pointages Météo, Béton & Effectifs Chantier"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
 <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "التقارير اليومية الموقعة" : "Rapports Journaliers Signés"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "التقارير اليومية الموقعة" : "Rapports Journaliers Signés"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">{projectLogs.length}</div>
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{projectLogs.length}</div>
 <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">{isAr ? "محاضر رسمية معتمدة" : "Attachements contradictoires"}</p>
 </div>
 </div>
 <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "متوسط العمالة اليومية" : "Effectif Moyen sur Site"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "متوسط العمالة اليومية" : "Effectif Moyen sur Site"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-mono tabular-nums">
+<div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {avgHeadcount}
 {" "}
-<span className="text-xs font-sans font-normal text-neutral-500">ouvriers</span>
+<span className="text-xs font-sans font-normal text-black/55 dark:text-white/55">ouvriers</span>
 </div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">{isAr ? "توزيع المهن المتخصصة" : "Pointage 5 corps d’état"}</p>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">{isAr ? "توزيع المهن المتخصصة" : "Pointage 5 corps d’état"}</p>
 </div>
 </div>
 <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "صبات الخرسانة المقبولة" : "Contrôle Éprouvettes CTC"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "صبات الخرسانة المقبولة" : "Contrôle Éprouvettes CTC"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
+<div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {projectConcretePours.filter((cp) => cp.status === "Passed7D" || cp.status === "Passed28D").length}
-<span className="text-xs font-sans font-normal text-neutral-400">
+<span className="text-xs font-sans font-normal text-black/55 dark:text-white/55">
 {" / "}
 {projectConcretePours.length}
 </span>
@@ -334,16 +334,16 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 </div>
 <div className="p-4 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{isAr ? "العتاد & الوقود" : "Engins & Suivi Gasoil"}</span>
+<span className="text-[11px] font-medium text-white/80">{isAr ? "العتاد & الوقود" : "Engins & Suivi Gasoil"}</span>
 <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">100% Opérationnel</span>
 </div>
 <div>
-<div className="text-2xl font-black text-white font-mono tabular-nums">
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {projectEquipmentLogs.length}
 {" "}
-<span className="text-xs font-sans font-normal text-neutral-300">engins pointés</span>
+<span className="text-xs font-sans font-normal text-white/80">engins pointés</span>
 </div>
-<p className="text-[11px] text-neutral-300 mt-0.5 flex items-center gap-1 font-medium">
+<p className="text-[11px] text-white/80 mt-0.5 flex items-center gap-1 font-medium">
 <Fuel size={11} className="text-amber-400" />
 {projectEquipmentLogs.filter((eq) => eq.hasOverconsumptionAlert).length > 0 ? /* @__PURE__ */ <span className="text-amber-400 font-bold">
 {projectEquipmentLogs.filter((eq) => eq.hasOverconsumptionAlert).length}
@@ -357,7 +357,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 {activeSection === "logs" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "محاضر وسجلات الورشة اليومية" : "Registres des Attachements & Météo Chantier"}
 </h2>
 </div>
@@ -373,7 +373,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 									header: isAr ? "التاريخ" : "Date",
 									width: "130px",
 									sortable: true,
-									renderCell: (log: any) => /* @__PURE__ */ <div className="flex items-center gap-2 font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100">
+									renderCell: (log: any) => /* @__PURE__ */ <div className="flex items-center gap-2 font-mono font-bold text-xs text-black dark:text-white">
 <Calendar size={13} className="text-[#d4522f]" />
 <span>{log.date}</span>
 </div>
@@ -402,7 +402,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 									id: "tasks",
 									header: isAr ? "الأعمال المنجزة" : "Travaux Accomplis",
 									renderCell: (log: any) => /* @__PURE__ */ <div className="max-w-md">
-<p className="text-xs text-neutral-800 dark:text-neutral-200 line-clamp-2 leading-relaxed">{log.tasksAccomplished}</p>
+<p className="text-xs text-black dark:text-white line-clamp-2 leading-relaxed">{log.tasksAccomplished}</p>
 </div>
 								},
 								{
@@ -410,8 +410,8 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 									header: isAr ? "العتاد" : "Engins sur Site",
 									width: "170px",
 									renderCell: (log: any) => /* @__PURE__ */ <div className="flex flex-wrap gap-1">
-{log.equipmentOnSite.slice(0, 2).map((eq: any, i: number) => /* @__PURE__ */ <span key={i} className="bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded text-[10px] text-neutral-600 dark:text-neutral-400 font-medium">{eq}</span>)}
-{log.equipmentOnSite.length > 2 && /* @__PURE__ */ <span className="text-[10px] text-neutral-400 font-mono">
+{log.equipmentOnSite.slice(0, 2).map((eq: any, i: number) => /* @__PURE__ */ <span key={i} className="bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded text-[10px] text-black/70 dark:text-white/75 font-medium">{eq}</span>)}
+{log.equipmentOnSite.length > 2 && /* @__PURE__ */ <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
 +
 {log.equipmentOnSite.length - 2}
 </span>}
@@ -421,7 +421,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 									id: "supervisor",
 									header: isAr ? "المشرف" : "Validation HSE",
 									width: "160px",
-									renderCell: (log: any) => /* @__PURE__ */ <div className="flex items-center gap-1.5 text-xs text-neutral-600 dark:text-neutral-400">
+									renderCell: (log: any) => /* @__PURE__ */ <div className="flex items-center gap-1.5 text-xs text-black/70 dark:text-white/75">
 <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
 <span className="truncate font-medium">{log.supervisorSignature}</span>
 </div>
@@ -433,38 +433,38 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><HardHat size={16} /></div>
 <div>
-<h3 className="font-bold text-xs text-neutral-900 dark:text-white flex items-center gap-1.5 font-mono">{selectedLog.date}</h3>
-<p className="text-[10px] text-neutral-500">{selectedProject ? selectedProject.projectName : "Chantier BTP"}</p>
+<h3 className="font-bold text-xs text-black dark:text-white flex items-center gap-1.5 font-mono">{selectedLog.date}</h3>
+<p className="text-[10px] text-black/55 dark:text-white/55">{selectedProject ? selectedProject.projectName : "Chantier BTP"}</p>
 </div>
 </div>
-<button onClick={() => setSelectedLog(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500 transition-colors"><X size={15} /></button>
+<button onClick={() => setSelectedLog(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-black/55 dark:text-white/55 transition-colors"><X size={15} /></button>
 </div>
 <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 pt-2 gap-2 overflow-x-auto">
-<button onClick={() => setInspectorTab("fiche")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 whitespace-nowrap ${inspectorTab === "fiche" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "محضر الأشغال" : "Fiche Chantier"}</button>
-<button onClick={() => setInspectorTab("rollcall")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 whitespace-nowrap ${inspectorTab === "rollcall" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "تعداد المهن" : "Pointage Métiers"}</button>
-<button onClick={() => setInspectorTab("engins")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 whitespace-nowrap ${inspectorTab === "engins" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "العتاد" : "Engins"}</button>
-<button onClick={() => setInspectorTab("hse")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 whitespace-nowrap ${inspectorTab === "hse" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "الأمان" : "Sécurité HSE"}</button>
+<button onClick={() => setInspectorTab("fiche")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 whitespace-nowrap ${inspectorTab === "fiche" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80"}`}>{isAr ? "محضر الأشغال" : "Fiche Chantier"}</button>
+<button onClick={() => setInspectorTab("rollcall")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 whitespace-nowrap ${inspectorTab === "rollcall" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80"}`}>{isAr ? "تعداد المهن" : "Pointage Métiers"}</button>
+<button onClick={() => setInspectorTab("engins")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 whitespace-nowrap ${inspectorTab === "engins" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80"}`}>{isAr ? "العتاد" : "Engins"}</button>
+<button onClick={() => setInspectorTab("hse")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 whitespace-nowrap ${inspectorTab === "hse" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80"}`}>{isAr ? "الأمان" : "Sécurité HSE"}</button>
 </div>
 <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
 {inspectorTab === "fiche" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Conditions de Chantier</span>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Conditions de Chantier</span>
 <div className="flex items-center justify-between">
-<span className="text-neutral-600 dark:text-neutral-400">Date d'exécution:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">{selectedLog.date}</span>
+<span className="text-black/70 dark:text-white/75">Date d'exécution:</span>
+<span className="font-mono font-bold text-black dark:text-white">{selectedLog.date}</span>
 </div>
 <div className="flex items-center justify-between">
-<span className="text-neutral-600 dark:text-neutral-400">Météo constatée:</span>
+<span className="text-black/70 dark:text-white/75">Météo constatée:</span>
 <span className="px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-semibold text-[10px]">{selectedLog.weather}</span>
 </div>
 <div className="flex items-center justify-between">
-<span className="text-neutral-600 dark:text-neutral-400">Superviseur:</span>
-<span className="font-medium text-neutral-900 dark:text-white">{selectedLog.supervisorSignature}</span>
+<span className="text-black/70 dark:text-white/75">Superviseur:</span>
+<span className="font-medium text-black dark:text-white">{selectedLog.supervisorSignature}</span>
 </div>
 </div>
 <div className="space-y-1.5">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold">Tâches Accomplies & Avancement</span>
-<div className="p-3 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 leading-relaxed text-neutral-800 dark:text-neutral-200 font-normal">{selectedLog.tasksAccomplished}</div>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold">Tâches Accomplies & Avancement</span>
+<div className="p-3 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 leading-relaxed text-black dark:text-white font-normal">{selectedLog.tasksAccomplished}</div>
 </div>
 <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/20 rounded-xl border border-emerald-200/50 dark:border-emerald-800/40 space-y-1">
 <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300 font-bold text-xs">
@@ -477,7 +477,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 {inspectorTab === "rollcall" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
 <div className="flex items-center justify-between">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold">Total Ouvriers Pointés</span>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold">Total Ouvriers Pointés</span>
 <span className="text-sm font-bold font-mono text-blue-600 dark:text-blue-400">
 {selectedLog.headcountWorkers}
 {" présents"}
@@ -485,33 +485,33 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 </div>
 </div>
 <div className="space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Ventilation par Corps d’État</span>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Ventilation par Corps d’État</span>
 <div className="space-y-2">
 <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-<span className="font-medium text-neutral-800 dark:text-neutral-200">Maçons & Coffreurs</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">8 ouvriers</span>
+<span className="font-medium text-black dark:text-white">Maçons & Coffreurs</span>
+<span className="font-mono font-bold text-black dark:text-white">8 ouvriers</span>
 </div>
 <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-<span className="font-medium text-neutral-800 dark:text-neutral-200">Ferrailleurs (Armatures)</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">6 ouvriers</span>
+<span className="font-medium text-black dark:text-white">Ferrailleurs (Armatures)</span>
+<span className="font-mono font-bold text-black dark:text-white">6 ouvriers</span>
 </div>
 <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-<span className="font-medium text-neutral-800 dark:text-neutral-200">Manœuvres & Terrassiers</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">5 ouvriers</span>
+<span className="font-medium text-black dark:text-white">Manœuvres & Terrassiers</span>
+<span className="font-mono font-bold text-black dark:text-white">5 ouvriers</span>
 </div>
 <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-<span className="font-medium text-neutral-800 dark:text-neutral-200">Conducteurs d’Engins</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">3 opérateurs</span>
+<span className="font-medium text-black dark:text-white">Conducteurs d’Engins</span>
+<span className="font-mono font-bold text-black dark:text-white">3 opérateurs</span>
 </div>
 <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-<span className="font-medium text-neutral-800 dark:text-neutral-200">Encadrement & Topo</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">2 ingénieurs</span>
+<span className="font-medium text-black dark:text-white">Encadrement & Topo</span>
+<span className="font-mono font-bold text-black dark:text-white">2 ingénieurs</span>
 </div>
 </div>
 </div>
 </div>}
 {inspectorTab === "engins" && /* @__PURE__ */ <div className="space-y-4">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
 Parc d'Engins Mobilisés (
 {selectedLog.equipmentOnSite.length}
 )
@@ -520,7 +520,7 @@ Parc d'Engins Mobilisés (
 {selectedLog.equipmentOnSite.map((eq: any, i: number) => /* @__PURE__ */ <div key={i} className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
 <div className="flex items-center gap-2">
 <Truck size={14} className="text-[#d4522f]" />
-<span className="font-medium text-neutral-800 dark:text-neutral-200">{eq}</span>
+<span className="font-medium text-black dark:text-white">{eq}</span>
 </div>
 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">Opérationnel</span>
 </div>)}
@@ -528,13 +528,13 @@ Parc d'Engins Mobilisés (
 </div>}
 {inspectorTab === "hse" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Rapport d'Incidents & Sécurité HSE</span>
-<div className="p-2 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300">
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Rapport d'Incidents & Sécurité HSE</span>
+<div className="p-2 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 text-black/70 dark:text-white/75">
 {selectedLog.incidentsSafety || "R.A.S. Aucun incident ou blessure à signaler."}
 </div>
 </div>
 <div className="space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Checklist Sécurité du Jour</span>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Checklist Sécurité du Jour</span>
 <div className="space-y-1.5">
 {[
 													"Port du casque et chaussures de sécurité 100%",
@@ -543,7 +543,7 @@ Parc d'Engins Mobilisés (
 													"Trousse de premiers secours approvisionnée"
 												].map((item, i) => /* @__PURE__ */ <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-100 dark:border-neutral-800">
 <Check size={13} className="text-emerald-500 shrink-0" />
-<span className="text-neutral-700 dark:text-neutral-300 text-[11px]">{item}</span>
+<span className="text-black/70 dark:text-white/75 text-[11px]">{item}</span>
 </div>)}
 </div>
 </div>
@@ -560,7 +560,7 @@ Parc d'Engins Mobilisés (
 {activeSection === "concrete" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "سجل صبات الخرسانة ومطابقة المخابر المعتمدة CTC" : "Contrôle des Bétons & Écrasement d’Éprouvettes (CBA 93 / CTC)"}
 </h2>
 </div>
@@ -575,14 +575,14 @@ Parc d'Engins Mobilisés (
 						return /* @__PURE__ */ <div key={pour.id} className="bg-white dark:bg-neutral-850 rounded-[20px] p-4 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col justify-between space-y-3">
 <div className="space-y-1.5">
 <div className="flex items-center justify-between">
-<span className="font-mono text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
+<span className="font-mono text-xs font-bold text-black dark:text-white flex items-center gap-1.5">
 <Calendar size={13} className="text-[#d4522f]" />
 {pour.pourDate}
 </span>
 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#d4522f]/15 text-[#d4522f]">{pour.concreteGrade}</span>
 </div>
-<h3 className="font-bold text-sm text-neutral-900 dark:text-white leading-tight">{pour.elementPoured}</h3>
-<p className="text-[11px] text-neutral-500">
+<h3 className="font-bold text-sm text-black dark:text-white leading-tight">{pour.elementPoured}</h3>
+<p className="text-[11px] text-black/55 dark:text-white/55">
 {pour.supplierName}
 {" · BL: "}
 <span className="font-mono font-semibold">{pour.deliverySlipNumber}</span>
@@ -590,22 +590,22 @@ Parc d'Engins Mobilisés (
 </div>
 <div className="grid grid-cols-3 gap-2 py-2 border-y border-neutral-100 dark:border-neutral-800 text-center">
 <div>
-<span className="text-[10px] text-neutral-400 block">{isAr ? "الحجم" : "Volume"}</span>
-<span className="text-xs font-bold font-mono text-neutral-800 dark:text-neutral-200">
+<span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? "الحجم" : "Volume"}</span>
+<span className="text-xs font-bold font-mono text-black dark:text-white">
 {pour.volumePouredM3}
 {" m³"}
 </span>
 </div>
 <div>
-<span className="text-[10px] text-neutral-400 block">{isAr ? "الهبوط" : "Slump"}</span>
-<span className="text-xs font-bold font-mono text-neutral-800 dark:text-neutral-200">
+<span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? "الهبوط" : "Slump"}</span>
+<span className="text-xs font-bold font-mono text-black dark:text-white">
 {pour.slumpCm}
 {" cm"}
 </span>
 </div>
 <div>
-<span className="text-[10px] text-neutral-400 block">{isAr ? "العينات" : "Éprouvettes"}</span>
-<span className="text-xs font-bold font-mono text-neutral-800 dark:text-neutral-200">
+<span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? "العينات" : "Éprouvettes"}</span>
+<span className="text-xs font-bold font-mono text-black dark:text-white">
 {pour.testCylindersTaken}
 {" cyl."}
 </span>
@@ -613,12 +613,12 @@ Parc d'Engins Mobilisés (
 </div>
 <div className="space-y-1.5">
 <div className="flex items-center justify-between text-xs">
-<span className="text-neutral-500">Résistance 7 jours:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">{pour.strength7DaysMpa ? `${pour.strength7DaysMpa} MPa` : "En attente"}</span>
+<span className="text-black/55 dark:text-white/55">Résistance 7 jours:</span>
+<span className="font-mono font-bold text-black dark:text-white">{pour.strength7DaysMpa ? `${pour.strength7DaysMpa} MPa` : "En attente"}</span>
 </div>
 <div className="flex items-center justify-between text-xs">
-<span className="text-neutral-500">Cible f_c28 requise:</span>
-<span className="font-mono font-semibold text-neutral-600 dark:text-neutral-400">
+<span className="text-black/55 dark:text-white/55">Cible f_c28 requise:</span>
+<span className="font-mono font-semibold text-black/70 dark:text-white/75">
 {targetMpa}
 {" MPa"}
 </span>
@@ -643,7 +643,7 @@ Parc d'Engins Mobilisés (
 {activeSection === "equipment" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "مراقبة العتاد الثقيل واستهلاك الوقود" : "Gestion du Parc Engins & Rapprochement Gasoil"}
 </h2>
 </div>
@@ -651,7 +651,7 @@ Parc d'Engins Mobilisés (
 </div>
 <div className="overflow-x-auto w-full">
 <table className="w-full text-left text-xs border-separate border-spacing-y-1.5">
-<thead className="bg-transparent text-neutral-500 text-[11px]">
+<thead className="bg-transparent text-black/55 dark:text-white/55 text-[11px]">
 <tr>
 <th className="py-2.5 px-4 font-semibold">Date</th>
 <th className="py-2.5 px-4 font-semibold">Engin & Matricule</th>
@@ -667,13 +667,13 @@ Parc d'Engins Mobilisés (
 {projectEquipmentLogs.map((log) => {
 							const anomaly = calculateFuelConsumptionAnomaly(log.operatingHours, log.fuelAddedLiters, log.theoreticalHourlyBurnRate);
 							return /* @__PURE__ */ <tr key={log.id} className="bg-white dark:bg-neutral-850 rounded-xl border border-neutral-200/80 dark:border-neutral-800 shadow-2xs hover:bg-neutral-50/90 dark:hover:bg-neutral-800/80 transition-colors">
-<td className="py-3 px-4 font-mono font-semibold text-neutral-900 dark:text-white">{log.date}</td>
+<td className="py-3 px-4 font-mono font-semibold text-black dark:text-white">{log.date}</td>
 <td className="py-3 px-4">
-<div className="font-bold text-neutral-900 dark:text-white">{log.equipmentName}</div>
-<div className="text-[10px] text-neutral-400 font-mono">{log.matriculeNumber}</div>
+<div className="font-bold text-black dark:text-white">{log.equipmentName}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 font-mono">{log.matriculeNumber}</div>
 </td>
-<td className="py-3 px-4 text-neutral-700 dark:text-neutral-300">{log.operatorName}</td>
-<td className="py-3 px-4 text-right font-mono font-bold text-neutral-900 dark:text-white">
+<td className="py-3 px-4 text-black/70 dark:text-white/75">{log.operatorName}</td>
+<td className="py-3 px-4 text-right font-mono font-bold text-black dark:text-white">
 {log.operatingHours}
 {" h"}
 </td>
@@ -682,12 +682,12 @@ Parc d'Engins Mobilisés (
 {" L"}
 </td>
 <td className="py-3 px-4 text-right font-mono font-bold">
-<span className={anomaly.isAnomaly ? "text-rose-600 dark:text-rose-400" : "text-neutral-900 dark:text-white"}>
+<span className={anomaly.isAnomaly ? "text-rose-600 dark:text-rose-400" : "text-black dark:text-white"}>
 {anomaly.actualRateLph}
 {" L/h"}
 </span>
 </td>
-<td className="py-3 px-4 text-right font-mono text-neutral-500">
+<td className="py-3 px-4 text-right font-mono text-black/55 dark:text-white/55">
 {log.theoreticalHourlyBurnRate}
 {" L/h"}
 </td>
@@ -715,11 +715,11 @@ Surconsommation (+
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
 <div className="flex items-center gap-2">
 <Calendar size={20} className="text-[#d4522f]" />
-<h3 className="font-bold text-base text-neutral-900 dark:text-white">
+<h3 className="font-bold text-base text-black dark:text-white">
 {isAr ? "محضر ورشة يومي وتعداد المهن" : "Nouveau Rapport Journalier & Pointage"}
 </h3>
 </div>
-<button onClick={() => setIsLogModalOpen(false)} className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1"><X size={18} /></button>
+<button onClick={() => setIsLogModalOpen(false)} className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1"><X size={18} /></button>
 </div>
 <form onSubmit={handleCreateLog} className="space-y-4">
 <div className="grid grid-cols-2 gap-3">
@@ -746,8 +746,8 @@ Surconsommation (+
 <div className="p-3.5 bg-neutral-50 dark:bg-neutral-850 rounded-2xl border border-neutral-200 dark:border-neutral-800 space-y-3">
 <div className="flex items-center justify-between">
 <div>
-<span className="text-xs font-bold text-neutral-900 dark:text-white block">{isAr ? "تعداد العمالة الفورية حسب المهن" : "Pointage Rapide par Corps d’État"}</span>
-<span className="text-[10px] text-neutral-500">
+<span className="text-xs font-bold text-black dark:text-white block">{isAr ? "تعداد العمالة الفورية حسب المهن" : "Pointage Rapide par Corps d’État"}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">
 {isAr ? "انقر على الزر للتعديل السريع" : "Cliquez sur + ou - pour ajuster les effectifs"}
 </span>
 </div>
@@ -763,8 +763,8 @@ Surconsommation (+
 <span className="text-xs font-mono font-bold text-[#d4522f]">{craftMasons}</span>
 </div>
 <div className="flex items-center gap-1">
-<button type="button" onClick={() => setCraftMasons((c) => Math.max(0, c - 1))} className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 hover:bg-neutral-200 cursor-pointer"><Minus size={12} /></button>
-<button type="button" onClick={() => setCraftMasons((c) => c + 1)} className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 hover:bg-neutral-200 cursor-pointer"><Plus size={12} /></button>
+<button type="button" onClick={() => setCraftMasons((c) => Math.max(0, c - 1))} className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-neutral-200 cursor-pointer"><Minus size={12} /></button>
+<button type="button" onClick={() => setCraftMasons((c) => c + 1)} className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-neutral-200 cursor-pointer"><Plus size={12} /></button>
 </div>
 </div>
 <div className="p-2 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700/60 flex items-center justify-between">
@@ -773,8 +773,8 @@ Surconsommation (+
 <span className="text-xs font-mono font-bold text-[#d4522f]">{craftIronworkers}</span>
 </div>
 <div className="flex items-center gap-1">
-<button type="button" onClick={() => setCraftIronworkers((c) => Math.max(0, c - 1))} className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 hover:bg-neutral-200 cursor-pointer"><Minus size={12} /></button>
-<button type="button" onClick={() => setCraftIronworkers((c) => c + 1)} className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 hover:bg-neutral-200 cursor-pointer"><Plus size={12} /></button>
+<button type="button" onClick={() => setCraftIronworkers((c) => Math.max(0, c - 1))} className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-neutral-200 cursor-pointer"><Minus size={12} /></button>
+<button type="button" onClick={() => setCraftIronworkers((c) => c + 1)} className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-neutral-200 cursor-pointer"><Plus size={12} /></button>
 </div>
 </div>
 <div className="p-2 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700/60 flex items-center justify-between">
@@ -783,8 +783,8 @@ Surconsommation (+
 <span className="text-xs font-mono font-bold text-[#d4522f]">{craftLaborers}</span>
 </div>
 <div className="flex items-center gap-1">
-<button type="button" onClick={() => setCraftLaborers((c) => Math.max(0, c - 1))} className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 hover:bg-neutral-200 cursor-pointer"><Minus size={12} /></button>
-<button type="button" onClick={() => setCraftLaborers((c) => c + 1)} className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 hover:bg-neutral-200 cursor-pointer"><Plus size={12} /></button>
+<button type="button" onClick={() => setCraftLaborers((c) => Math.max(0, c - 1))} className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-neutral-200 cursor-pointer"><Minus size={12} /></button>
+<button type="button" onClick={() => setCraftLaborers((c) => c + 1)} className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-neutral-200 cursor-pointer"><Plus size={12} /></button>
 </div>
 </div>
 <div className="p-2 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700/60 flex items-center justify-between">
@@ -793,8 +793,8 @@ Surconsommation (+
 <span className="text-xs font-mono font-bold text-[#d4522f]">{craftOperators}</span>
 </div>
 <div className="flex items-center gap-1">
-<button type="button" onClick={() => setCraftOperators((c) => Math.max(0, c - 1))} className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 hover:bg-neutral-200 cursor-pointer"><Minus size={12} /></button>
-<button type="button" onClick={() => setCraftOperators((c) => c + 1)} className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 hover:bg-neutral-200 cursor-pointer"><Plus size={12} /></button>
+<button type="button" onClick={() => setCraftOperators((c) => Math.max(0, c - 1))} className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-neutral-200 cursor-pointer"><Minus size={12} /></button>
+<button type="button" onClick={() => setCraftOperators((c) => c + 1)} className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-neutral-200 cursor-pointer"><Plus size={12} /></button>
 </div>
 </div>
 <div className="p-2 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700/60 flex items-center justify-between">
@@ -803,8 +803,8 @@ Surconsommation (+
 <span className="text-xs font-mono font-bold text-[#d4522f]">{craftSupervisors}</span>
 </div>
 <div className="flex items-center gap-1">
-<button type="button" onClick={() => setCraftSupervisors((c) => Math.max(0, c - 1))} className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 hover:bg-neutral-200 cursor-pointer"><Minus size={12} /></button>
-<button type="button" onClick={() => setCraftSupervisors((c) => c + 1)} className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 hover:bg-neutral-200 cursor-pointer"><Plus size={12} /></button>
+<button type="button" onClick={() => setCraftSupervisors((c) => Math.max(0, c - 1))} className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-neutral-200 cursor-pointer"><Minus size={12} /></button>
+<button type="button" onClick={() => setCraftSupervisors((c) => c + 1)} className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-neutral-200 cursor-pointer"><Plus size={12} /></button>
 </div>
 </div>
 </div>
@@ -827,11 +827,11 @@ Surconsommation (+
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
 <div className="flex items-center gap-2">
 <Layers size={20} className="text-[#d4522f]" />
-<h3 className="font-bold text-base text-neutral-900 dark:text-white">
+<h3 className="font-bold text-base text-black dark:text-white">
 {isAr ? "تسجيل صبة خرسانة وعينات مخبرية CTC" : "Enregistrement Coulée & Prélèvement CTC"}
 </h3>
 </div>
-<button onClick={() => setIsConcreteModalOpen(false)} className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1"><X size={18} /></button>
+<button onClick={() => setIsConcreteModalOpen(false)} className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1"><X size={18} /></button>
 </div>
 <form onSubmit={handleCreateConcretePour} className="space-y-4">
 <div className="grid grid-cols-2 gap-3">
@@ -878,11 +878,11 @@ Surconsommation (+
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
 <div className="flex items-center gap-2">
 <Fuel size={20} className="text-[#d4522f]" />
-<h3 className="font-bold text-base text-neutral-900 dark:text-white">
+<h3 className="font-bold text-base text-black dark:text-white">
 {isAr ? "تسجيل ساعات عمل الآلية والوقود" : "Relevé Compteur Horaire & Plein Gasoil"}
 </h3>
 </div>
-<button onClick={() => setIsEquipmentModalOpen(false)} className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1"><X size={18} /></button>
+<button onClick={() => setIsEquipmentModalOpen(false)} className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1"><X size={18} /></button>
 </div>
 <form onSubmit={handleCreateEquipmentLog} className="space-y-4">
 <div className="grid grid-cols-2 gap-3">

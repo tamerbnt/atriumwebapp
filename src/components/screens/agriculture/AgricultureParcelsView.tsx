@@ -187,11 +187,11 @@ export const AgricultureParcelsView: React.FC<any> = () => {
 			cell: (p: any) => /* @__PURE__ */ <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0"><Sprout size={16} /></div>
 <div>
-<div className="font-semibold text-xs text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
+<div className="font-semibold text-xs text-black dark:text-white flex items-center gap-1.5">
 {p.name}
 {pinnedIds.has(p.id) && /* @__PURE__ */ <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />}
 </div>
-<div className="text-[11px] text-neutral-500 line-clamp-1">{p.currentCrop}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 line-clamp-1">{p.currentCrop}</div>
 </div>
 </div>
 		},
@@ -201,7 +201,7 @@ export const AgricultureParcelsView: React.FC<any> = () => {
 			accessorKey: "surfaceHectares",
 			sortable: true,
 			minWidth: "120px",
-			cell: (p: any) => /* @__PURE__ */ <div className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100">
+			cell: (p: any) => /* @__PURE__ */ <div className="font-mono font-bold text-xs text-black dark:text-white">
 {p.surfaceHectares}
 {" ha"}
 </div>
@@ -212,7 +212,7 @@ export const AgricultureParcelsView: React.FC<any> = () => {
 			accessorKey: "irrigationType",
 			sortable: true,
 			minWidth: "140px",
-			cell: (p: any) => /* @__PURE__ */ <div className="flex items-center gap-1.5 text-xs text-neutral-700 dark:text-neutral-300">
+			cell: (p: any) => /* @__PURE__ */ <div className="flex items-center gap-1.5 text-xs text-black/70 dark:text-white/75">
 <Droplets size={13} className="text-blue-500 shrink-0" />
 <span>
 {p.irrigationType === "Drip" ? "Goutte-à-goutte" : p.irrigationType === "Pivot" ? "Pivot" : p.irrigationType === "Gravity" ? "Gravitaire" : "Bour (Pluvial)"}
@@ -225,7 +225,7 @@ export const AgricultureParcelsView: React.FC<any> = () => {
 			accessorKey: "soilType",
 			sortable: true,
 			minWidth: "150px",
-			cell: (p: any) => /* @__PURE__ */ <div className="text-xs text-neutral-600 dark:text-neutral-400 truncate">{p.soilType}</div>
+			cell: (p: any) => /* @__PURE__ */ <div className="text-xs text-black/70 dark:text-white/75 truncate">{p.soilType}</div>
 		},
 		{
 			id: "status",
@@ -252,7 +252,7 @@ export const AgricultureParcelsView: React.FC<any> = () => {
 			accessorKey: "expectedHarvestDate",
 			sortable: true,
 			minWidth: "130px",
-			cell: (p: any) => /* @__PURE__ */ <div className="text-xs font-mono text-neutral-600 dark:text-neutral-400">{p.expectedHarvestDate || "—"}</div>
+			cell: (p: any) => /* @__PURE__ */ <div className="text-xs font-mono text-black/70 dark:text-white/75">{p.expectedHarvestDate || "—"}</div>
 		}
 	];
 	const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
@@ -291,7 +291,7 @@ export const AgricultureParcelsView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Sprout size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{isAr ? "القطع الفلاحية والبيوت المحمية" : "Parcelles & Blocs de Serres"}</h1>
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">{isAr ? "القطع الفلاحية والبيوت المحمية" : "Parcelles & Blocs de Serres"}</h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
 {parcels.length}
 {" "}
@@ -310,22 +310,22 @@ export const AgricultureParcelsView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "توزيع الأراضي الزراعية ونظم الري" : "Répartition du Domaine & Assolement"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "القطع قيد الإنتاج الفعلي" : "Cultures Actives en Terre"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "القطع قيد الإنتاج الفعلي" : "Cultures Actives en Terre"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">{activeCrops}</div>
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{activeCrops}</div>
 <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">{isAr ? "حالة نباتية مثالية" : "En végétation & récolte active"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "المساحة المسقية بالتقطير" : "Surfaces Goutte-à-Goutte"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "المساحة المسقية بالتقطير" : "Surfaces Goutte-à-Goutte"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-mono tabular-nums">
+<div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {dripSurface.toFixed(1)}
 {" ha"}
 </div>
@@ -334,11 +334,11 @@ export const AgricultureParcelsView: React.FC<any> = () => {
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{isAr ? "المساحة الكلية للمستثمرة" : "Superficie Totale Domaine"}</span>
+<span className="text-[11px] font-medium text-white/80">{isAr ? "المساحة الكلية للمستثمرة" : "Superficie Totale Domaine"}</span>
 <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">Agri-Exploitation</span>
 </div>
 <div>
-<div className="text-2xl font-black text-white font-mono tabular-nums">
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {totalHectares.toFixed(1)}
 {" ha"}
 </div>
@@ -355,29 +355,33 @@ export const AgricultureParcelsView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "سجل القطع الفلاحية والبيوت المحمية" : "Cadastre Parcellaire & Blocs de Serres"}
 </h2>
 </div>
 <LiveSegmentedControl value={filterIrrigation} onChange={setFilterIrrigation} size="sm" options={[
 							{
 								id: "All",
-								label: isAr ? "جميع القطع" : "Toutes parcelles",
+								label: isAr ? "الكل" : "Toutes",
+								tooltip: isAr ? "جميع القطع الفلاحية" : "Toutes les parcelles",
 								count: parcels.length
 							},
 							{
 								id: "Drip",
-								label: "Goutte-à-goutte",
+								label: isAr ? "تقطير" : "Goutte-à-goutte",
+								tooltip: isAr ? "الري بالتقطير" : "Irrigation goutte-à-goutte (Drip)",
 								count: parcels.filter((p) => p.irrigationType === "Drip").length
 							},
 							{
 								id: "Pivot",
-								label: "Pivot",
+								label: isAr ? "محوري" : "Pivot",
+								tooltip: isAr ? "الري المحوري" : "Pivot d’arrosage",
 								count: parcels.filter((p) => p.irrigationType === "Pivot").length
 							},
 							{
 								id: "Gravity",
-								label: "Gravitaire",
+								label: isAr ? "انسيابي" : "Gravitaire",
+								tooltip: isAr ? "الري الانسيابي" : "Irrigation gravitaire",
 								count: parcels.filter((p) => p.irrigationType === "Gravity").length
 							}
 						]} />
@@ -387,23 +391,28 @@ export const AgricultureParcelsView: React.FC<any> = () => {
 <UniversalDataCollection data={filteredParcels} columns={columns} keyExtractor={(p) => p.id} searchQuery={searchQuery} onSearchChange={setSearchQuery} searchPlaceholder={isAr ? "بحث بالقطعة، المحصول، نوع التربة..." : "Rechercher par parcelle, culture, type de sol..."} filterValue={filterIrrigation} onFilterChange={setFilterIrrigation} filterOptions={[
 								{
 									value: "All",
-									label: isAr ? "جميع نظم الري" : "Tous modes d’irrigation"
+									label: isAr ? "الكل" : "Tous",
+									tooltip: isAr ? "جميع نظم الري" : "Tous modes d’irrigation"
 								},
 								{
 									value: "Drip",
-									label: "Goutte-à-goutte (Drip)"
+									label: isAr ? "تقطير" : "Goutte-à-goutte",
+									tooltip: "Goutte-à-goutte (Drip)"
 								},
 								{
 									value: "Pivot",
-									label: "Pivot d’arrosage"
+									label: isAr ? "محوري" : "Pivot",
+									tooltip: "Pivot d’arrosage"
 								},
 								{
 									value: "Gravity",
-									label: "Gravitaire"
+									label: isAr ? "انسيابي" : "Gravitaire",
+									tooltip: "Irrigation gravitaire"
 								},
 								{
 									value: "Rainfed",
-									label: "Bour (Pluvial)"
+									label: isAr ? "بعل" : "Bour",
+									tooltip: "Bour (Pluvial)"
 								}
 							]} viewMode={viewMode} onViewModeChange={setViewMode} selectedIds={selectedIds} onSelectionChange={setSelectedIds} bulkSecondaryAction={{
 								label: isAr ? "تصدير السجل العقاري" : "Exporter Parcelles",
@@ -422,7 +431,7 @@ export const AgricultureParcelsView: React.FC<any> = () => {
 							}} onItemClick={(p) => {
 								setSelectedParcel(p);
 								setSelectedParcelId(p.id);
-							}} onEdit={handleEdit} onDelete={handleDelete} emptyIcon={<Sprout size={32} className="text-neutral-400" />} emptyTitle={isAr ? "لا توجد قطع فلاحية" : "Aucune parcelle trouvée"} emptyDescription={searchQuery ? isAr ? "لا توجد نتائج مطابقة لبحثك" : "Aucun résultat ne correspond à votre recherche" : isAr ? "قم بإضافة أول قطعة زراعية للبدء" : "Créez votre première parcelle de culture"} customActions={[{
+							}} onEdit={handleEdit} onDelete={handleDelete} emptyIcon={<Sprout size={32} className="text-black/55 dark:text-white/55" />} emptyTitle={isAr ? "لا توجد قطع فلاحية" : "Aucune parcelle trouvée"} emptyDescription={searchQuery ? isAr ? "لا توجد نتائج مطابقة لبحثك" : "Aucun résultat ne correspond à votre recherche" : isAr ? "قم بإضافة أول قطعة زراعية للبدء" : "Créez votre première parcelle de culture"} customActions={[{
 								id: "treatment",
 								label: isAr ? "معالجة نباتية" : "Traitement Phyto",
 								icon: /* @__PURE__ */ <ShieldCheck size={14} />,
@@ -441,24 +450,24 @@ export const AgricultureParcelsView: React.FC<any> = () => {
 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${p.status === "Growing" ? "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300" : p.status === "Harvesting" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"}`}>{p.status}</span>
 </div>
 <div>
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white line-clamp-1">{p.name}</h3>
+<h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">{p.name}</h3>
 <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">{p.currentCrop}</div>
 </div>
-<div className="text-xs text-neutral-600 dark:text-neutral-400 flex items-center justify-between bg-neutral-50 dark:bg-neutral-800/50 p-2 rounded-xl">
+<div className="text-xs text-black/70 dark:text-white/75 flex items-center justify-between bg-neutral-50 dark:bg-neutral-800/50 p-2 rounded-xl">
 <div className="flex items-center gap-1.5">
 <Droplets size={13} className="shrink-0 text-blue-500" />
 <span className="text-[11px]">{p.irrigationType}</span>
 </div>
-<span className="text-[10px] text-neutral-400 truncate max-w-[110px]">{p.soilType}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 truncate max-w-[110px]">{p.soilType}</span>
 </div>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-<div className="text-[11px] text-neutral-500">
+<div className="text-[11px] text-black/55 dark:text-white/55">
 {"Semis: "}
-<span className="font-mono text-neutral-700 dark:text-neutral-300">{p.plantingDate || "—"}</span>
+<span className="font-mono text-black/70 dark:text-white/75">{p.plantingDate || "—"}</span>
 </div>
-<div className="text-[11px] text-neutral-500">
+<div className="text-[11px] text-black/55 dark:text-white/55">
 {"Récolte: "}
-<span className="font-mono text-neutral-700 dark:text-neutral-300">{p.expectedHarvestDate || "—"}</span>
+<span className="font-mono text-black/70 dark:text-white/75">{p.expectedHarvestDate || "—"}</span>
 </div>
 </div>
 </div>} />
@@ -469,17 +478,17 @@ export const AgricultureParcelsView: React.FC<any> = () => {
 <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center font-bold"><Sprout size={18} /></div>
 <div>
 <div className="flex items-center gap-1.5">
-<span className="font-bold text-xs text-neutral-900 dark:text-white">{selectedParcel.name}</span>
+<span className="font-bold text-xs text-black dark:text-white">{selectedParcel.name}</span>
 <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${selectedParcel.status === "Growing" ? "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300" : selectedParcel.status === "Harvesting" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"}`}>{selectedParcel.status}</span>
 </div>
-<p className="text-xs text-neutral-500">
+<p className="text-xs text-black/55 dark:text-white/55">
 {selectedParcel.surfaceHectares}
 {" ha • "}
 {selectedParcel.currentCrop}
 </p>
 </div>
 </div>
-<button onClick={() => setSelectedParcel(null)} className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800"><X size={16} /></button>
+<button onClick={() => setSelectedParcel(null)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"><X size={16} /></button>
 </div>
 <div className="flex items-center gap-1.5 flex-wrap">
 <button onClick={() => handleQuickTreatmentLog(selectedParcel)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 transition-colors">
@@ -490,77 +499,77 @@ export const AgricultureParcelsView: React.FC<any> = () => {
 <Activity size={12} />
 {isAr ? "الطور التالي" : "Cycle"}
 </button>
-<button onClick={() => handleEdit(selectedParcel)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 transition-colors">
+<button onClick={() => handleEdit(selectedParcel)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-neutral-100 text-black/70 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-white/75 transition-colors">
 <Edit size={12} />
 {isAr ? "تعديل" : "Modifier"}
 </button>
 <button onClick={() => handleDelete(selectedParcel)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 transition-colors ml-auto"><Trash2 size={12} /></button>
 </div>
 <div className="flex border-b border-neutral-100 dark:border-neutral-800 gap-1 text-xs">
-<button onClick={() => setActiveTab("agronomy")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "agronomy" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "الزراعة" : "Agronomie"}</button>
-<button onClick={() => setActiveTab("treatments")} className={`pb-2 px-2 font-medium border-b-2 transition-colors flex items-center gap-1 ${activeTab === "treatments" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>
+<button onClick={() => setActiveTab("agronomy")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "agronomy" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80"}`}>{isAr ? "الزراعة" : "Agronomie"}</button>
+<button onClick={() => setActiveTab("treatments")} className={`pb-2 px-2 font-medium border-b-2 transition-colors flex items-center gap-1 ${activeTab === "treatments" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80"}`}>
 {isAr ? "المعالجات" : "Phyto & DAR"}
 <span className="text-[10px] bg-neutral-100 dark:bg-neutral-800 px-1 rounded-full">{currentTreatments.length}</span>
 </button>
-<button onClick={() => setActiveTab("harvests")} className={`pb-2 px-2 font-medium border-b-2 transition-colors flex items-center gap-1 ${activeTab === "harvests" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>
+<button onClick={() => setActiveTab("harvests")} className={`pb-2 px-2 font-medium border-b-2 transition-colors flex items-center gap-1 ${activeTab === "harvests" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80"}`}>
 {isAr ? "الحصاد" : "Récolte"}
 <span className="text-[10px] bg-neutral-100 dark:bg-neutral-800 px-1 rounded-full">{currentHarvests.length}</span>
 </button>
-<button onClick={() => setActiveTab("notes")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "الكراس" : "Cahier"}</button>
+<button onClick={() => setActiveTab("notes")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80"}`}>{isAr ? "الكراس" : "Cahier"}</button>
 </div>
 {activeTab === "agronomy" && /* @__PURE__ */ <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">{isAr ? "المساحة:" : "Surface Cadastrale:"}</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">
+<span className="text-black/55 dark:text-white/55">{isAr ? "المساحة:" : "Surface Cadastrale:"}</span>
+<span className="font-mono font-bold text-black dark:text-white">
 {selectedParcel.surfaceHectares}
 {" Hectares"}
 </span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">{isAr ? "المحصول المزروع:" : "Culture en Place:"}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "المحصول المزروع:" : "Culture en Place:"}</span>
 <span className="font-semibold text-emerald-600 dark:text-emerald-400">{selectedParcel.currentCrop}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">{isAr ? "طريقة الري:" : "Système d’Irrigation:"}</span>
-<span className="font-semibold text-neutral-900 dark:text-white">{selectedParcel.irrigationType}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "طريقة الري:" : "Système d’Irrigation:"}</span>
+<span className="font-semibold text-black dark:text-white">{selectedParcel.irrigationType}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">{isAr ? "نوع التربة:" : "Pédologie / Sol:"}</span>
-<span className="text-neutral-800 dark:text-neutral-200">{selectedParcel.soilType}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "نوع التربة:" : "Pédologie / Sol:"}</span>
+<span className="text-black dark:text-white">{selectedParcel.soilType}</span>
 </div>
 </div>
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">{isAr ? "تاريخ الغرس / البذر:" : "Date de Semis:"}</span>
-<span className="text-neutral-800 dark:text-neutral-200 font-mono">{selectedParcel.plantingDate || "—"}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "تاريخ الغرس / البذر:" : "Date de Semis:"}</span>
+<span className="text-black dark:text-white font-mono">{selectedParcel.plantingDate || "—"}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-500">{isAr ? "تاريخ الحصاد المتوقع:" : "Récolte Prévisionnelle:"}</span>
-<span className="text-neutral-800 dark:text-neutral-200 font-mono">{selectedParcel.expectedHarvestDate || "—"}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "تاريخ الحصاد المتوقع:" : "Récolte Prévisionnelle:"}</span>
+<span className="text-black dark:text-white font-mono">{selectedParcel.expectedHarvestDate || "—"}</span>
 </div>
 </div>
 </div>}
 {activeTab === "treatments" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150 max-h-[360px] overflow-y-auto pr-1">
-{currentTreatments.length === 0 ? /* @__PURE__ */ <div className="text-center py-8 text-neutral-400">
+{currentTreatments.length === 0 ? /* @__PURE__ */ <div className="text-center py-8 text-black/55 dark:text-white/55">
 <ShieldCheck size={28} className="mx-auto mb-2 opacity-40" />
 <p>{isAr ? "لا توجد معالجات مسجلة" : "Aucun traitement phytosanitaire consigné"}</p>
 <button onClick={() => handleQuickTreatmentLog(selectedParcel)} className="mt-3 text-emerald-600 hover:underline text-xs font-semibold">{isAr ? "+ قيد معالجة جديدة" : "+ Consigner un traitement"}</button>
 </div> : currentTreatments.map((t) => /* @__PURE__ */ <div key={t.id} className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1.5">
 <div className="flex items-center justify-between">
-<span className="font-semibold text-neutral-900 dark:text-white text-[11px]">{t.commercialProductName}</span>
+<span className="font-semibold text-black dark:text-white text-[11px]">{t.commercialProductName}</span>
 <span className="font-mono text-[10px] bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300 px-1.5 py-0.5 rounded font-bold">
 {"DAR: "}
 {t.darDays}
 j
 </span>
 </div>
-<p className="text-[11px] text-neutral-600 dark:text-neutral-400">
+<p className="text-[11px] text-black/70 dark:text-white/75">
 {t.activeIngredient}
 {" • "}
 {t.dosagePerHa}
 </p>
-<div className="flex items-center justify-between text-[10px] text-neutral-500 pt-1 border-t border-neutral-200/50 dark:border-neutral-700/50">
+<div className="flex items-center justify-between text-[10px] text-black/55 dark:text-white/55 pt-1 border-t border-neutral-200/50 dark:border-neutral-700/50">
 <span>
 {"Date: "}
 {t.treatmentDate}
@@ -573,24 +582,24 @@ j
 </div>)}
 </div>}
 {activeTab === "harvests" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150 max-h-[360px] overflow-y-auto pr-1">
-{currentHarvests.length === 0 ? /* @__PURE__ */ <div className="text-center py-8 text-neutral-400">
+{currentHarvests.length === 0 ? /* @__PURE__ */ <div className="text-center py-8 text-black/55 dark:text-white/55">
 <Package size={28} className="mx-auto mb-2 opacity-40" />
 <p>{isAr ? "لا توجد تذاكر جني مسجلة" : "Aucun bon de pesée / récolte consigné"}</p>
 </div> : currentHarvests.map((h) => /* @__PURE__ */ <div key={h.id} className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1.5">
 <div className="flex items-center justify-between">
 <span className="font-mono font-bold text-[11px] text-[#d4522f]">{h.ticketCode}</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">
+<span className="font-mono font-bold text-black dark:text-white">
 {h.netWeightKg}
 {" Kg"}
 </span>
 </div>
-<div className="text-[11px] text-neutral-600 dark:text-neutral-400">
+<div className="text-[11px] text-black/70 dark:text-white/75">
 {"Variété: "}
 {h.cropVariety}
 {" • Calibre: "}
 {h.qualityGrade}
 </div>
-<div className="text-[10px] text-neutral-500">
+<div className="text-[10px] text-black/55 dark:text-white/55">
 {"Date: "}
 {h.harvestDate}
 {" • "}
@@ -599,10 +608,10 @@ j
 </div>)}
 </div>}
 {activeTab === "notes" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
-<p className="text-neutral-500 text-[11px]">
+<p className="text-black/55 dark:text-white/55 text-[11px]">
 {isAr ? "كراس الحقل والملاحظات الفلاحية وبرامج التسميد والمكافحة:" : "Cahier d’exploitation agronomique, calendrier d’irrigation et doses d’engrais :"}
 </p>
-<textarea rows={6} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} placeholder={isAr ? "سجل ملاحظات التربة، رطوبة الحقل، مكافحة الأعشاب الضارة..." : "Noter les analyses de sève, relevés tensiométriques, apports NPK en fertigation..."} className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none" />
+<textarea rows={6} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} placeholder={isAr ? "سجل ملاحظات التربة، رطوبة الحقل، مكافحة الأعشاب الضارة..." : "Noter les analyses de sève, relevés tensiométriques, apports NPK en fertigation..."} className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none" />
 <button onClick={handleSaveNotes} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#d4522f] text-white hover:bg-[#a86246] transition-colors font-medium text-xs shadow-xs">
 {noteSaved ? /* @__PURE__ */ <>
 <Check size={14} />

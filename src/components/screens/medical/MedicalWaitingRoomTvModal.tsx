@@ -155,7 +155,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
         {/* Center Live Clock */}
         <div className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white/5 border border-white/10">
           <Clock size={20} className="text-[#d4522f]" />
-          <div className="text-2xl font-mono font-bold tracking-wider tabular-nums text-white">
+          <div className="text-2xl font-bold tracking-wider tabular-nums text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
             {currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
           </div>
           <span className="text-xs text-white/50 uppercase tracking-widest pl-2 border-l border-white/10">
@@ -268,7 +268,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
                   </div>
 
                   {/* Patient Initials / Name Display */}
-                  <div className="text-3xl font-bold text-white/90 tracking-tight">
+                  <div className="text-3xl font-bold text-white/90 tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
                     {currentCall.patientName}
                   </div>
                   <p className="text-sm text-white/50 mt-1">
@@ -282,7 +282,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
                     <span className="text-xs uppercase tracking-wider text-[#d4522f] font-semibold block mb-1">
                       Veuillez vous présenter au
                     </span>
-                    <div className="text-3xl font-black text-white tracking-wide">
+                    <div className="text-3xl font-black text-white tracking-wide font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
                       {currentCall.cabinetRoom || 'Cabinet 1'}
                     </div>
                   </div>
@@ -351,7 +351,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
                   <Clock size={18} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Prochains sur la Liste</h3>
+                  <h3 className="text-base font-bold text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">Prochains sur la Liste</h3>
                   <span className="text-xs text-white/40">Ordre d'Appel Estimé</span>
                 </div>
               </div>

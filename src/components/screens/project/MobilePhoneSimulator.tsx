@@ -32,14 +32,14 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
             📱
           </div>
           <div>
-            <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+            <div className="text-xs font-semibold text-black dark:text-white flex items-center gap-2">
               <span>{title}</span>
               <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#d4522f]/20 text-[#d4522f]">
                 {t('pm_sim_badge')}
               </span>
             </div>
             {subtitle && (
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-[11px] text-black/55 dark:text-white/75">
                 {subtitle}
               </p>
             )}
@@ -54,7 +54,7 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               mode === 'mobile'
                 ? 'bg-[#d4522f] text-white shadow-xs'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+                : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
             }`}
           >
             <Smartphone className="w-3.5 h-3.5" />
@@ -67,7 +67,7 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               mode === 'desktop'
                 ? 'bg-[#d4522f] text-white shadow-xs'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+                : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
             }`}
           >
             <Monitor className="w-3.5 h-3.5" />

@@ -29,7 +29,7 @@ interface MedicalOrdonnancePersonalizerModalProps {
 
 
 
-const MedicalOrdonnancePersonalizerModal = ({ isOpen, onClose, practitioners, doctorConfigs, onSaveConfig, initialDoctorId }) => {
+export const MedicalOrdonnancePersonalizerModal: React.FC<MedicalOrdonnancePersonalizerModalProps> = ({ isOpen, onClose, practitioners, doctorConfigs, onSaveConfig, initialDoctorId }) => {
 	const [selectedDoctorId, setSelectedDoctorId] = React.useState(initialDoctorId || practitioners[0]?.id || "doc_01");
 	const [formData, setFormData] = React.useState(() => {
 		return doctorConfigs[selectedDoctorId] || {
@@ -106,10 +106,10 @@ const MedicalOrdonnancePersonalizerModal = ({ isOpen, onClose, practitioners, do
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Sliders size={20} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">Studio de Personnalisation d'Ordonnance</h2>
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">Studio de Personnalisation d'Ordonnance</h2>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#0D9488]/15 text-[#0D9488]">Format A5 & A4</span>
 </div>
-<p className="text-xs text-neutral-500 dark:text-neutral-400">
+<p className="text-xs text-black/55 dark:text-white/75">
 Configurez l'en-tête, le papier pré-imprimé, le cachet officiel et les mentions légales par médecin
 </p>
 </div>
@@ -119,17 +119,17 @@ Configurez l'en-tête, le papier pré-imprimé, le cachet officiel et les mentio
 <Check size={14} />
 {" Modèle enregistré"}
 </span>}
-<button onClick={onClose} className="p-2 rounded-xl text-neutral-400 hover:text-neutral-700 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
+<button onClick={onClose} className="p-2 rounded-xl text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
 </div>
 </div>
 <div className="px-6 py-2.5 bg-neutral-100/70 dark:bg-neutral-800/60 border-b border-neutral-200 dark:border-neutral-800 flex items-center gap-2 overflow-x-auto shrink-0">
-<span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider shrink-0 mr-1">Médecin:</span>
+<span className="text-xs font-semibold text-black/55 dark:text-white/75 uppercase tracking-wider shrink-0 mr-1">Médecin:</span>
 {practitioners.map((p: any) => {
 						const isSelected = p.id === selectedDoctorId;
-						return /* @__PURE__ */ <button key={p.id} onClick={() => setSelectedDoctorId(p.id)} className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${isSelected ? "bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-xs border border-neutral-300 dark:border-neutral-600" : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"}`}>
+						return /* @__PURE__ */ <button key={p.id} onClick={() => setSelectedDoctorId(p.id)} className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${isSelected ? "bg-white dark:bg-neutral-700 text-black dark:text-white shadow-xs border border-neutral-300 dark:border-neutral-600" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>
 <span className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
 <span>{p.fullName}</span>
-<span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-normal">
+<span className="text-[10px] text-black/55 dark:text-white/55 font-normal">
 (
 {p.roomNumber}
 )
@@ -140,35 +140,35 @@ Configurez l'en-tête, le papier pré-imprimé, le cachet officiel et les mentio
 <div className="flex-1 grid grid-cols-12 gap-0 overflow-hidden">
 <div className="col-span-12 lg:col-span-6 p-6 overflow-y-auto space-y-5 border-r border-neutral-200 dark:border-neutral-800">
 <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/60 space-y-3">
-<span className="text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
+<span className="text-xs font-bold uppercase tracking-wider text-black/70 dark:text-white/75 flex items-center gap-2">
 <Printer size={14} className="text-[#d4522f]" />
 Format de Papier & Mode d'Impression
 </span>
 <div className="grid grid-cols-2 gap-3">
 <div>
-<label className="text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 block mb-1">Taille du Papier</label>
+<label className="text-[11px] font-semibold text-black/70 dark:text-white/75 block mb-1">Taille du Papier</label>
 <div className="grid grid-cols-2 gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700">
 <button type="button" onClick={() => setFormData({
 													...formData,
 													paperFormat: "A5"
-												})} className={`py-1.5 text-xs font-bold rounded-lg transition-all ${formData.paperFormat === "A5" ? "bg-[#d4522f] text-white shadow-xs" : "text-neutral-600 dark:text-neutral-400"}`}>A5 (148×210)</button>
+												})} className={`py-1.5 text-xs font-bold rounded-lg transition-all ${formData.paperFormat === "A5" ? "bg-[#d4522f] text-white shadow-xs" : "text-black/70 dark:text-white/75"}`}>A5 (148×210)</button>
 <button type="button" onClick={() => setFormData({
 													...formData,
 													paperFormat: "A4"
-												})} className={`py-1.5 text-xs font-bold rounded-lg transition-all ${formData.paperFormat === "A4" ? "bg-[#d4522f] text-white shadow-xs" : "text-neutral-600 dark:text-neutral-400"}`}>A4 (210×297)</button>
+												})} className={`py-1.5 text-xs font-bold rounded-lg transition-all ${formData.paperFormat === "A4" ? "bg-[#d4522f] text-white shadow-xs" : "text-black/70 dark:text-white/75"}`}>A4 (210×297)</button>
 </div>
 </div>
 <div>
-<label className="text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 block mb-1">Support Papier</label>
+<label className="text-[11px] font-semibold text-black/70 dark:text-white/75 block mb-1">Support Papier</label>
 <div className="grid grid-cols-2 gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700">
 <button type="button" onClick={() => setFormData({
 													...formData,
 													printMode: "full_digital"
-												})} className={`py-1.5 text-[11px] font-semibold rounded-lg transition-all ${formData.printMode === "full_digital" ? "bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 shadow-xs" : "text-neutral-600 dark:text-neutral-400"}`}>En-tête Numérique</button>
+												})} className={`py-1.5 text-[11px] font-semibold rounded-lg transition-all ${formData.printMode === "full_digital" ? "bg-neutral-900 dark:bg-neutral-100 text-white dark:text-white/55 shadow-xs" : "text-black/70 dark:text-white/75"}`}>En-tête Numérique</button>
 <button type="button" onClick={() => setFormData({
 													...formData,
 													printMode: "preprinted_paper"
-												})} className={`py-1.5 text-[11px] font-semibold rounded-lg transition-all ${formData.printMode === "preprinted_paper" ? "bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 shadow-xs" : "text-neutral-600 dark:text-neutral-400"}`}>Papier Pré-imprimé</button>
+												})} className={`py-1.5 text-[11px] font-semibold rounded-lg transition-all ${formData.printMode === "preprinted_paper" ? "bg-neutral-900 dark:bg-neutral-100 text-white dark:text-white/55 shadow-xs" : "text-black/70 dark:text-white/75"}`}>Papier Pré-imprimé</button>
 </div>
 </div>
 </div>
@@ -177,7 +177,7 @@ Mode Pré-imprimé actif: L'en-tête et le logo ne seront pas imprimés pour lai
 </div>}
 </div>
 <div className="space-y-3">
-<span className="text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
+<span className="text-xs font-bold uppercase tracking-wider text-black/70 dark:text-white/75 flex items-center gap-2">
 <Building size={14} className="text-[#d4522f]" />
 Identité & Titres Médicaux
 </span>
@@ -215,14 +215,14 @@ Identité & Titres Médicaux
 </div>
 </div>
 <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/60 space-y-3">
-<span className="text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
+<span className="text-xs font-bold uppercase tracking-wider text-black/70 dark:text-white/75 flex items-center gap-2">
 <Palette size={14} className="text-[#d4522f]" />
 Palette de Style & Sécurité
 </span>
 <div className="flex items-center justify-between">
 <div>
-<span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 block">Couleur d'En-tête Clinique</span>
-<span className="text-[10px] text-neutral-500 dark:text-neutral-400">Bandeau de séparation et lettrage médical</span>
+<span className="text-xs font-semibold text-black/70 dark:text-white/75 block">Couleur d'En-tête Clinique</span>
+<span className="text-[10px] text-black/55 dark:text-white/75">Bandeau de séparation et lettrage médical</span>
 </div>
 <div className="flex items-center gap-2">
 {[
@@ -238,14 +238,14 @@ Palette de Style & Sécurité
 </div>
 </div>
 <div className="flex items-center justify-between pt-2 border-t border-neutral-200 dark:border-neutral-700">
-<span className="text-xs text-neutral-700 dark:text-neutral-300">Filigrane Caducée / Armoirie Médicale en arrière-plan</span>
+<span className="text-xs text-black/70 dark:text-white/75">Filigrane Caducée / Armoirie Médicale en arrière-plan</span>
 <input type="checkbox" checked={formData.showWatermark} onChange={(e) => setFormData({
 												...formData,
 												showWatermark: e.target.checked
 											})} className="w-4 h-4 rounded text-[#d4522f] accent-[#d4522f] cursor-pointer" />
 </div>
 <div className="flex items-center justify-between pt-2 border-t border-neutral-200 dark:border-neutral-700">
-<span className="text-xs text-neutral-700 dark:text-neutral-300">Afficher le Cachet / Tampon Numérique Officiel</span>
+<span className="text-xs text-black/70 dark:text-white/75">Afficher le Cachet / Tampon Numérique Officiel</span>
 <input type="checkbox" checked={formData.isStampEnabled} onChange={(e) => setFormData({
 												...formData,
 												isStampEnabled: e.target.checked
@@ -264,7 +264,7 @@ Palette de Style & Sécurité
 </div>
 </div>
 <div className="col-span-12 lg:col-span-6 bg-neutral-100 dark:bg-neutral-950 p-6 flex flex-col items-center justify-center overflow-y-auto">
-<div className="w-full max-w-[430px] flex items-center justify-between mb-3 text-xs text-neutral-500 dark:text-neutral-400">
+<div className="w-full max-w-[430px] flex items-center justify-between mb-3 text-xs text-black/55 dark:text-white/75">
 <span className="font-semibold flex items-center gap-1.5">
 <Eye size={14} className="text-[#0D9488]" />
 Aperçu Réel Ordonnance (
@@ -275,54 +275,54 @@ Aperçu Réel Ordonnance (
 {formData.printMode === "preprinted_paper" ? "Mode Papier Pré-imprimé" : "Mode Numérique Complet"}
 </span>
 </div>
-<div className={`w-full max-w-[430px] bg-white text-neutral-900 rounded-lg shadow-xl border border-neutral-300 dark:border-neutral-700 p-6 flex flex-col justify-between relative overflow-hidden select-none transition-all ${formData.paperFormat === "A4" ? "min-h-[580px]" : "min-h-[460px]"}`}>
+<div className={`w-full max-w-[430px] bg-white text-black rounded-lg shadow-xl border border-neutral-300 dark:border-neutral-700 p-6 flex flex-col justify-between relative overflow-hidden select-none transition-all ${formData.paperFormat === "A4" ? "min-h-[580px]" : "min-h-[460px]"}`}>
 {formData.showWatermark && /* @__PURE__ */ <div className="absolute inset-0 flex items-center justify-center opacity-[0.04] pointer-events-none" style={{ color: currentAccentHex }}><FileText size={220} /></div>}
 {formData.printMode === "full_digital" ? /* @__PURE__ */ <div className="border-b-2 pb-3" style={{ borderColor: currentAccentHex }}>
 <div className="flex justify-between items-start">
 <div>
-<h3 className="text-base font-extrabold uppercase tracking-wide" style={{ color: currentAccentHex }}>{formData.doctorName}</h3>
-<p className="text-[11px] font-semibold text-neutral-800">{formData.specialtyTitle}</p>
-<p className="text-[9px] text-neutral-500">{formData.academicCredentials}</p>
-<p className="text-[9px] font-mono font-medium text-neutral-600 mt-0.5">{formData.licenseNumber}</p>
+<h3 className="text-base font-extrabold uppercase tracking-wide font-['Barlow_Condensed',sans-serif] rtl:font-sans" style={{ color: currentAccentHex }}>{formData.doctorName}</h3>
+<p className="text-[11px] font-semibold text-black">{formData.specialtyTitle}</p>
+<p className="text-[9px] text-black/55">{formData.academicCredentials}</p>
+<p className="text-[9px] font-mono font-medium text-black/75 mt-0.5">{formData.licenseNumber}</p>
 </div>
-<div className="text-right text-[9px] text-neutral-500 font-mono">
-<p className="font-bold text-neutral-800">POLYCLINIQUE EL-CHIFA</p>
+<div className="text-right text-[9px] text-black/55 font-mono">
+<p className="font-bold text-black">POLYCLINIQUE EL-CHIFA</p>
 <p>{formData.clinicAddress}</p>
 <p>{formData.cabinetPhone}</p>
 {formData.emergencyPhone && /* @__PURE__ */ <p className="text-red-600">{formData.emergencyPhone}</p>}
 </div>
 </div>
-</div> : /* @__PURE__ */ <div className="h-16 border-b border-dashed border-neutral-300 flex items-center justify-center text-[10px] text-neutral-400 font-mono">[ Espace réservé à votre en-tête physique pré-imprimé ]</div>}
+</div> : /* @__PURE__ */ <div className="h-16 border-b border-dashed border-neutral-300 flex items-center justify-center text-[10px] text-black/55 font-mono">[ Espace réservé à votre en-tête physique pré-imprimé ]</div>}
 <div className="my-3 py-1.5 px-3 rounded bg-neutral-50 border border-neutral-200 text-[10px] flex justify-between items-center font-mono">
 <div>
-<span className="text-neutral-500">{"Patient: "}</span>
-<span className="font-bold text-neutral-900">Meriem Haddad (31 ans)</span>
+<span className="text-black/55">{"Patient: "}</span>
+<span className="font-bold text-black">Meriem Haddad (31 ans)</span>
 </div>
 <div>
-<span className="text-neutral-500">{"Alger, le "}</span>
-<span className="font-bold text-neutral-900">10 Mai 2026</span>
+<span className="text-black/55">{"Alger, le "}</span>
+<span className="font-bold text-black">10 Mai 2026</span>
 </div>
 </div>
 <div className="flex-1 space-y-4 my-2 text-xs">
 <div className="text-center">
-<span className="text-xs font-serif italic tracking-widest uppercase font-bold text-neutral-700">ORDONNANCE</span>
+<span className="text-xs font-serif italic tracking-widest uppercase font-bold text-black/75">ORDONNANCE</span>
 </div>
 <div className="space-y-3 font-sans">
 <div className="pl-2 border-l-2" style={{ borderColor: currentAccentHex }}>
-<div className="font-bold text-neutral-900 text-[11px]">1. Metformine 850mg (Comprimés)</div>
-<div className="text-[10px] text-neutral-600 italic">1 comprimé deux fois par jour au milieu des repas pendant 3 mois.</div>
+<div className="font-bold text-black text-[11px]">1. Metformine 850mg (Comprimés)</div>
+<div className="text-[10px] text-black/75 italic">1 comprimé deux fois par jour au milieu des repas pendant 3 mois.</div>
 </div>
 <div className="pl-2 border-l-2" style={{ borderColor: currentAccentHex }}>
-<div className="font-bold text-neutral-900 text-[11px]">2. Gliclazide 30mg (Comprimé LM)</div>
-<div className="text-[10px] text-neutral-600 italic">1 comprimé le matin au petit-déjeuner pendant 3 mois.</div>
+<div className="font-bold text-black text-[11px]">2. Gliclazide 30mg (Comprimé LM)</div>
+<div className="text-[10px] text-black/75 italic">1 comprimé le matin au petit-déjeuner pendant 3 mois.</div>
 </div>
 </div>
 </div>
 <div className="mt-4 pt-3 border-t border-neutral-200 flex justify-between items-end">
 <div className="flex items-center gap-2">
-<div className="w-10 h-10 border border-neutral-300 rounded p-0.5 flex items-center justify-center bg-white"><QrCode size={34} className="text-neutral-800" /></div>
-<div className="text-[8px] font-mono text-neutral-400">
-<span className="block font-bold text-neutral-600">VÉRIFICATION CNAS</span>
+<div className="w-10 h-10 border border-neutral-300 rounded p-0.5 flex items-center justify-center bg-white"><QrCode size={34} className="text-black" /></div>
+<div className="text-[8px] font-mono text-black/55">
+<span className="block font-bold text-black/75">VÉRIFICATION CNAS</span>
 <span>SHA: CF-9921-DZ</span>
 </div>
 </div>
@@ -332,9 +332,9 @@ Aperçu Réel Ordonnance (
 <span className="text-[6.5px] font-mono mt-0.5">{formData.licenseNumber}</span>
 </div>}
 </div>
-{formData.printMode === "full_digital" && /* @__PURE__ */ <div className="mt-3 pt-2 border-t text-[8px] text-neutral-400 text-center font-mono space-y-0.5">
+{formData.printMode === "full_digital" && /* @__PURE__ */ <div className="mt-3 pt-2 border-t text-[8px] text-black/55 text-center font-mono space-y-0.5">
 <p>{formData.footerConsultationHours}</p>
-<p className="font-semibold text-neutral-500">{formData.footerLegalNotice}</p>
+<p className="font-semibold text-black/55">{formData.footerLegalNotice}</p>
 </div>}
 </div>
 </div>

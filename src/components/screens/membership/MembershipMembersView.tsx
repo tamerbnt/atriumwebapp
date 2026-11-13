@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { compactFilterLabel } from '../../../utils/filterLexicon';
 import {
   Users,
   Plus,
@@ -102,7 +103,7 @@ const MembersHeaderBar = React.memo(({ title, addLabel, onAddMember }: any) => /
 <div className="flex items-center gap-3.5">
 <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-white"><Users size={22} /></div>
 <div>
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-['Barlow_Condensed',sans-serif] rtl:font-sans font-extrabold uppercase rtl:normal-case leading-none rtl:leading-tight tracking-[0.01em] rtl:tracking-normal text-black dark:text-white">{title}</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase rtl:normal-case leading-none rtl:leading-tight tracking-[0.01em] rtl:tracking-normal text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{title}</h1>
 </div>
 </div>
 <div className="flex items-end gap-3 relative flex-wrap">
@@ -114,7 +115,7 @@ MembersHeaderBar.displayName = "MembersHeaderBar";
 
 const MembersKpiBanner = React.memo(({ membersLabel, membersLower, language, activeMembersCount, expiringCount, displayCount, activeCountRef, expiringChipCountRef, expiringBigCountRef, inflowChipCountRef, inflowBigCountRef }: any) => /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div>
-<h2 className="text-base font-bold text-black dark:text-white">
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {membersLabel}
 {" & "}
 {language === "ar" ? "مؤشرات التجديد" : language === "fr" ? "Rétention & Renouvellements" : "Retention Health"}
@@ -133,7 +134,7 @@ const MembersKpiBanner = React.memo(({ membersLabel, membersLower, language, act
 </span>
 </div>
 </div>
-<div ref={activeCountRef} className="text-3xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">{activeMembersCount}</div>
+<div ref={activeCountRef} className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{activeMembersCount}</div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
@@ -148,7 +149,7 @@ const MembersKpiBanner = React.memo(({ membersLabel, membersLower, language, act
 </span>
 </div>
 </div>
-<div ref={expiringBigCountRef} className="text-3xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">{expiringCount}</div>
+<div ref={expiringBigCountRef} className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{expiringCount}</div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
@@ -165,7 +166,7 @@ const MembersKpiBanner = React.memo(({ membersLabel, membersLower, language, act
 </span>
 </div>
 <div>
-<div ref={inflowBigCountRef} className="text-2xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans text-[#FB923C] tabular-nums">
+<div ref={inflowBigCountRef} className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 +
 {displayCount}
 </div>
@@ -231,32 +232,38 @@ const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, lang
 {[
 									{
 										val: "All",
-										label: language === "ar" ? "جميع الأعمار" : language === "fr" ? "Tous les âges" : "All Ages"
+										label: language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All",
+										tooltip: language === "ar" ? "جميع الأعمار" : language === "fr" ? "Toutes les tranches d'âge" : "All Ages"
 									},
 									{
 										val: "under18",
-										label: "< 18 ans"
+										label: "<18",
+										tooltip: language === "ar" ? "أقل من 18 سنة" : language === "fr" ? "Moins de 18 ans (< 18 ans)" : "Under 18 years"
 									},
 									{
 										val: "18-25",
-										label: "18 - 25 ans"
+										label: "18-25",
+										tooltip: language === "ar" ? "18 إلى 25 سنة" : language === "fr" ? "De 18 à 25 ans" : "18 to 25 years"
 									},
 									{
 										val: "26-40",
-										label: "26 - 40 ans"
+										label: "26-40",
+										tooltip: language === "ar" ? "26 إلى 40 سنة" : language === "fr" ? "De 26 à 40 ans" : "26 to 40 years"
 									},
 									{
 										val: "41-60",
-										label: "41 - 60 ans"
+										label: "41-60",
+										tooltip: language === "ar" ? "41 إلى 60 سنة" : language === "fr" ? "De 41 à 60 ans" : "41 to 60 years"
 									},
 									{
 										val: "over60",
-										label: "> 60 ans"
+										label: ">60",
+										tooltip: language === "ar" ? "أكثر من 60 سنة" : language === "fr" ? "Plus de 60 ans (> 60 ans)" : "Over 60 years"
 									}
 								].map((ag) => {
 									const isSelected = ageGroupFilter === ag.val;
 									const count = ageGroupCounts[ag.val] ?? 0;
-									return /* @__PURE__ */ <button key={ag.val} type="button" onClick={() => onChangeAgeGroup(ag.val)} className={`h-9 px-2.5 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${isSelected ? "bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs" : "bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-700/40"}`}>
+									return /* @__PURE__ */ <button key={ag.val} type="button" onClick={() => onChangeAgeGroup(ag.val)} title={ag.tooltip} className={`h-9 px-2.5 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${isSelected ? "bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs" : "bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-700/40"}`}>
 <span className="truncate">{ag.label}</span>
 <span className="text-[10px] font-mono opacity-70 tabular-nums ml-1">{count}</span>
 </button>;
@@ -266,19 +273,20 @@ const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, lang
 <div className="space-y-1.5">
 <div className="flex items-center justify-between">
 <label className="text-[11px] font-bold uppercase tracking-wider text-black/70 dark:text-white/75">{t("member_filter_plan_label", language)}</label>
-{planFilter !== "All" && /* @__PURE__ */ <button type="button" onClick={() => onChangePlan("All")} className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer">{language === "ar" ? "عرض الكل" : language === "fr" ? "Toutes" : "Show All"}</button>}
+{planFilter !== "All" && /* @__PURE__ */ <button type="button" onClick={() => onChangePlan("All")} title={language === "ar" ? "عرض كل الباقات" : language === "fr" ? "Afficher toutes les formules" : "Show all plans"} className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer">{language === "ar" ? "الكل" : language === "fr" ? "Toutes" : "All"}</button>}
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-40 overflow-y-auto pr-1">
-<button type="button" onClick={() => onChangePlan("All")} className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${planFilter === "All" ? "bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs" : "bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-700/50"}`}>
+<button type="button" onClick={() => onChangePlan("All")} title={language === "ar" ? "جميع الباقات" : language === "fr" ? "Toutes les formules" : "All plans"} className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${planFilter === "All" ? "bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs" : "bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-700/50"}`}>
 <span className="truncate">{t("member_filter_all_plans", language)}</span>
 <span className="text-[10px] font-mono opacity-70 tabular-nums ml-1">{totalMembersCount}</span>
 </button>
 {dynamicAvailablePlans.map((p: any) => {
 									const isSelected = planFilter === p.id || planFilter === p.name;
 									const count = planCounts.get(p.id) ?? 0;
-									return /* @__PURE__ */ <button key={p.id} type="button" onClick={() => onChangePlan(p.id)} className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${isSelected ? "bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs" : "bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-700/50"}`}>
+									const compactPlan = compactFilterLabel(p.name);
+									return /* @__PURE__ */ <button key={p.id} type="button" onClick={() => onChangePlan(p.id)} title={p.name} className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${isSelected ? "bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs" : "bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-700/50"}`}>
 <div className="min-w-0 text-left rtl:text-right">
-<div className="truncate font-semibold">{p.name}</div>
+<div className="truncate font-semibold">{compactPlan.label}</div>
 {p.price > 0 && /* @__PURE__ */ <div className="text-[10px] text-black/55 dark:text-white/55 font-mono">{formatMoney(p.price)}</div>}
 </div>
 <span className="text-[10px] font-mono opacity-70 tabular-nums ml-2 shrink-0">{count}</span>
@@ -495,17 +503,20 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 	const quickStatusOptions = React.useMemo(() => [
 		{
 			value: "All",
-			label: language === "ar" ? "جميع المشتركين" : language === "fr" ? "Tous les adhérents" : "All Members",
+			label: language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All",
+			tooltip: language === "ar" ? "جميع المشتركين" : language === "fr" ? "Tous les adhérents" : "All Members",
 			count: members.length
 		},
 		{
 			value: "Active",
-			label: language === "ar" ? "اشتراكات نشطة" : language === "fr" ? "Abonnements actifs" : "Active Members",
+			label: language === "ar" ? "نشط" : language === "fr" ? "Actifs" : "Active",
+			tooltip: language === "ar" ? "اشتراكات نشطة" : language === "fr" ? "Abonnements actifs" : "Active Subscriptions",
 			count: activeMembersCount
 		},
 		{
 			value: "Expiring",
-			label: language === "ar" ? "قيد التجديد (<14j)" : language === "fr" ? "À renouveler (<14j)" : "Expiring (<14d)",
+			label: language === "ar" ? "قريب" : language === "fr" ? "Imminent" : "Expiring",
+			tooltip: language === "ar" ? "قيد التجديد خلال أقل من 14 يوماً" : language === "fr" ? "À renouveler sous 14 jours" : "Expiring within 14 days",
 			count: expiringCount
 		}
 	], [
@@ -518,26 +529,31 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 		{
 			value: "All",
 			label: t("member_filter_all", language),
+			tooltip: language === "ar" ? "جميع المشتركين" : language === "fr" ? "Tous les adhérents" : "All members",
 			count: members.length
 		},
 		{
 			value: "Active",
 			label: t("member_filter_active", language),
+			tooltip: language === "ar" ? "اشتراكات نشطة" : language === "fr" ? "Abonnements actifs" : "Active subscriptions",
 			count: activeMembersCount
 		},
 		{
 			value: "Expiring",
 			label: t("member_filter_expiring", language),
+			tooltip: language === "ar" ? "تنتهي خلال 14 يوماً" : language === "fr" ? "À renouveler (< 14 jours)" : "Expiring (< 14 days)",
 			count: expiringCount
 		},
 		{
 			value: "Expired",
 			label: t("member_filter_expired", language),
+			tooltip: language === "ar" ? "اشتراكات منتهية الصلاحية" : language === "fr" ? "Abonnements expirés" : "Expired subscriptions",
 			count: expiredCount
 		},
 		{
 			value: "Archived",
 			label: t("member_filter_archived", language),
+			tooltip: language === "ar" ? "موقوف أو محظور" : language === "fr" ? "Suspendus ou bloqués" : "Suspended or banned",
 			count: archivedCount
 		}
 	], [
@@ -980,7 +996,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div className="flex flex-wrap items-center justify-between gap-3 w-full">
 <div className="flex items-center gap-2.5 shrink-0">
-<h2 className="text-base font-bold text-black dark:text-white tracking-tight">{language === "ar" ? "قائمة المشتركين" : "Liste des adhérents"}</h2>
+<h2 className="text-base font-bold text-black dark:text-white tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">{language === "ar" ? "قائمة المشتركين" : "Liste des adhérents"}</h2>
 <span ref={listBadgeCountRef} className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/70 text-black/75 dark:text-white/80 shadow-2xs tabular-nums">{displayMembers.length}</span>
 </div>
 <div aria-live="polite" className="sr-only">
@@ -1018,40 +1034,35 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 <span className="text-black/55 dark:text-white/55 font-medium text-[11px]">
 {language === "ar" ? "المرشحات النشطة:" : language === "fr" ? "Filtres actifs:" : "Active filters:"}
 </span>
-{genderFilter !== "All" && /* @__PURE__ */ <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
+{genderFilter !== "All" && /* @__PURE__ */ <span title={`${language === "ar" ? "الجنس" : language === "fr" ? "Sexe" : "Gender"}: ${genderFilter === "Male" ? language === "ar" ? "ذكور" : language === "fr" ? "Hommes" : "Male" : genderFilter === "Female" ? language === "ar" ? "إناث" : language === "fr" ? "Femmes" : "Female" : language === "ar" ? "آخر" : language === "fr" ? "Autre" : "Other"}`} className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
 <span>
-{language === "ar" ? "الجنس" : "Sexe"}
-{": "}
-{genderFilter === "Male" ? language === "ar" ? "ذكور" : "Hommes" : genderFilter === "Female" ? language === "ar" ? "إناث" : "Femmes" : language === "ar" ? "آخر" : "Autre"}
+{genderFilter === "Male" ? language === "ar" ? "ذكور" : language === "fr" ? "Hommes" : "Male" : genderFilter === "Female" ? language === "ar" ? "إناث" : language === "fr" ? "Femmes" : "Female" : language === "ar" ? "آخر" : language === "fr" ? "Autre" : "Other"}
 </span>
 <button type="button" onClick={() => setGenderFilter("All")} className="hover:text-black dark:hover:text-white transition-colors cursor-pointer" title="Supprimer filtre" aria-label="Remove gender filter"><X size={12} /></button>
 </span>}
-{ageGroupFilter !== "All" && /* @__PURE__ */ <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
+{ageGroupFilter !== "All" && /* @__PURE__ */ <span title={`${language === "ar" ? "العمر" : language === "fr" ? "Tranche d'âge" : "Age"}: ${ageGroupFilter === "under18" ? "< 18 ans" : ageGroupFilter === "18-25" ? "18 - 25 ans" : ageGroupFilter === "26-40" ? "26 - 40 ans" : ageGroupFilter === "41-60" ? "41 - 60 ans" : ageGroupFilter === "over60" ? "> 60 ans" : "Tous"}`} className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
 <span>
-{language === "ar" ? "العمر" : "Âge"}
-{": "}
-{ageGroupFilter === "under18" ? "< 18 ans" : ageGroupFilter === "18-25" ? "18 - 25 ans" : ageGroupFilter === "26-40" ? "26 - 40 ans" : ageGroupFilter === "41-60" ? "41 - 60 ans" : ageGroupFilter === "over60" ? "> 60 ans" : "Tous"}
+{ageGroupFilter === "under18" ? "<18" : ageGroupFilter === "over60" ? ">60" : ageGroupFilter === "All" ? (language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All") : ageGroupFilter}
 </span>
 <button type="button" onClick={() => setAgeGroupFilter("All")} className="hover:text-black dark:hover:text-white transition-colors cursor-pointer" title="Supprimer filtre" aria-label="Remove age filter"><X size={12} /></button>
 </span>}
-{planFilter !== "All" && /* @__PURE__ */ <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
+{planFilter !== "All" && (() => {
+	const fullPlanName = dynamicAvailablePlans.find((p) => p.id === planFilter)?.name || plans.find((p) => p.id === planFilter)?.name || planFilter;
+	return /* @__PURE__ */ <span title={`${t("member_filter_plan_label", language)}: ${fullPlanName}`} className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
 <span>
-{t("member_filter_plan_label", language)}
-{": "}
-{dynamicAvailablePlans.find((p) => p.id === planFilter)?.name || plans.find((p) => p.id === planFilter)?.name || planFilter}
+{compactFilterLabel(fullPlanName).label}
 </span>
 <button type="button" onClick={() => setPlanFilter("All")} className="hover:text-black dark:hover:text-white transition-colors cursor-pointer" title="Supprimer filtre" aria-label="Remove filter"><X size={12} /></button>
-</span>}
-{(statusFilter === "Expired" || statusFilter === "Archived") && /* @__PURE__ */ <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
+</span>;
+})()}
+{(statusFilter === "Expired" || statusFilter === "Archived") && /* @__PURE__ */ <span title={`${language === "ar" ? "الحالة" : language === "fr" ? "Statut" : "Status"}: ${localizeStatus(statusFilter, language)}`} className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
 <span>
-{language === "ar" ? "الحالة" : language === "fr" ? "Statut" : "Status"}
-{": "}
 {localizeStatus(statusFilter, language)}
 </span>
 <button type="button" onClick={() => setStatusFilter("All")} className="hover:text-black dark:hover:text-white transition-colors cursor-pointer" title="Supprimer filtre" aria-label="Remove filter"><X size={12} /></button>
 </span>}
-<button type="button" onClick={handleResetFilters} className="text-[11px] font-semibold text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white underline cursor-pointer ml-1">
-{language === "ar" ? "إعادة تعيين الكل" : language === "fr" ? "Effacer tout" : "Reset all"}
+<button type="button" onClick={handleResetFilters} title={language === "ar" ? "إعادة تعيين كافة المرشحات" : language === "fr" ? "Réinitialiser tous les filtres" : "Reset all filters"} className="text-[11px] font-semibold text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white underline cursor-pointer ml-1">
+{language === "ar" ? "إعادة" : language === "fr" ? "Effacer" : "Reset"}
 </button>
 </div>}
 <div className="w-full">
@@ -1109,7 +1120,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 											return /* @__PURE__ */ <MemberRow key={member.id} member={memberRowData} isSelected={selectedMemberIds.has(member.id)} isOpen={isDetailOpen && selectedMember?.id === member.id} isExpanded={expandedMemberIds.has(member.id)} isPinned={pinnedMemberIds.has(member.id)} registerRowRefs={registerRowRefs} onSelect={handleSelectRow} onToggleExpand={toggleExpandMember} onOpenDetails={handleOpenRowDetails} onEdit={handleEditRow} onMessage={handleMessageRow} onDelete={handleDeleteRow} onRenew={handleRenewRow} onArchive={handleArchiveRow} onToggleStatus={handleToggleStatusRow} onTogglePin={handleTogglePinRow} onPay={handlePayRow} />;
 										})}
 </div>
-{sortedMembers.length === 0 && /* @__PURE__ */ <p className="empty text-center text-[#6B635C] dark:text-[#A89F95] py-10">Aucun adhérent ne correspond. Modifiez la recherche ou les filtres.</p>}
+{sortedMembers.length === 0 && /* @__PURE__ */ <p className="empty text-center text-black/70 dark:text-[#A89F95] py-10">Aucun adhérent ne correspond. Modifiez la recherche ou les filtres.</p>}
 </div>
 </div>
 </div>

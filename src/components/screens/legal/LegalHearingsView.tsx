@@ -137,14 +137,14 @@ export const LegalHearingsView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs"><Calendar size={18} /></div>
 <div className="min-w-0">
 <div className="flex items-center gap-2">
-<span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+<span className="text-xs font-bold text-black dark:text-white truncate">
 {h.hearingDate}
 {" "}
 {h.hearingTime ? `à ${h.hearingTime}` : ""}
 </span>
 {pinnedIds.has(h.id) && /* @__PURE__ */ <span className="text-[10px] text-amber-500 font-bold">📌 VIP</span>}
 </div>
-<div className="text-[11px] text-neutral-400 font-mono mt-0.5">
+<div className="text-[11px] text-black/55 dark:text-white/55 font-mono mt-0.5">
 {h.courtRoom || "Salle d'Audience"}
 {" · "}
 {h.chamber || "Chambre"}
@@ -157,8 +157,8 @@ export const LegalHearingsView: React.FC<any> = () => {
 			header: isAr ? "المحكمة وهيئة الحكم" : "Juridiction & Siège",
 			width: "3*",
 			renderCell: (h: any) => /* @__PURE__ */ <div className="text-xs">
-<div className="font-semibold text-neutral-800 dark:text-neutral-200 truncate">{h.courtName}</div>
-<div className="text-[10px] text-neutral-400 font-mono mt-0.5">{h.benchJudge || "Président de Chambre"}</div>
+<div className="font-semibold text-black dark:text-white truncate">{h.courtName}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 font-mono mt-0.5">{h.benchJudge || "Président de Chambre"}</div>
 </div>
 		},
 		{
@@ -167,7 +167,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 			width: "3*",
 			renderCell: (h: any) => /* @__PURE__ */ <div className="text-xs">
 <div className="font-bold font-mono text-[#d4522f] truncate">{h.matterNumber}</div>
-<div className="text-neutral-700 dark:text-neutral-300 truncate text-[11px] mt-0.5">{isAr && h.matterTitleAr ? h.matterTitleAr : h.matterTitle}</div>
+<div className="text-black/70 dark:text-white/75 truncate text-[11px] mt-0.5">{isAr && h.matterTitleAr ? h.matterTitleAr : h.matterTitle}</div>
 </div>
 		},
 		{
@@ -175,8 +175,8 @@ export const LegalHearingsView: React.FC<any> = () => {
 			header: isAr ? "الهدف / المرافعة" : "Démarche & Décision",
 			width: "2.5*",
 			renderCell: (h: any) => /* @__PURE__ */ <div className="text-xs">
-<div className="font-medium text-neutral-900 dark:text-white truncate">{h.purpose || "Plaidoirie sur le fond"}</div>
-<div className="text-[10px] text-neutral-400 font-mono mt-0.5">{h.resultSummary || "En attente"}</div>
+<div className="font-medium text-black dark:text-white truncate">{h.purpose || "Plaidoirie sur le fond"}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 font-mono mt-0.5">{h.resultSummary || "En attente"}</div>
 </div>
 		},
 		{
@@ -187,7 +187,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 				const isDone = h.isCompleted;
 				return /* @__PURE__ */ <div className="flex flex-col gap-0.5">
 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full inline-block text-center ${isDone ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" : "bg-amber-500/15 text-amber-700 dark:text-amber-400"}`}>{isDone ? isAr ? "تمت" : "Plaidée" : isAr ? "مبرمجة" : "Fixée"}</span>
-{h.postponementCode && /* @__PURE__ */ <span className="text-[9px] font-mono font-bold text-neutral-500 text-center">
+{h.postponementCode && /* @__PURE__ */ <span className="text-[9px] font-mono font-bold text-black/55 dark:text-white/55 text-center">
 {"Code: "}
 {h.postponementCode}
 </span>}
@@ -279,7 +279,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 	return /* @__PURE__ */ <div className="space-y-6">
 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
 <div>
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white flex items-center gap-2">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 <Scale className="text-[#d4522f]" size={32} />
 <span>
 {activeLegalRole === "notaire_titulaire" ? isAr ? "جدول مواعيد المحافظة العقارية والشهر" : "Conservation Foncière & Cadastre" : activeLegalRole === "expert_comptable" ? isAr ? "رزنامة التصريحات الجبائية والمحاسبية" : "Échéancier Fiscal G50 & CNAS" : activeLegalRole === "secretaire_caisse" ? isAr ? "سجل التبليغات القضائية والمحضرين" : "Huissiers de Justice & Formalités" : isAr ? "رول الجلسات ومواعيد الاستئناف CPCA" : "Rôle des Audiences & Délais CPCA"}
@@ -300,24 +300,24 @@ export const LegalHearingsView: React.FC<any> = () => {
 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 <div className="bg-[#F3EDE7] dark:bg-neutral-900/60 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between">
 <div>
-<div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">{isAr ? "الجلسات المبرمجة" : "Audiences Fixées"}</div>
-<div className="text-2xl font-black text-neutral-900 dark:text-white mt-1">{totalScheduled}</div>
+<div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">{isAr ? "الجلسات المبرمجة" : "Audiences Fixées"}</div>
+<div className="text-2xl font-black text-black dark:text-white mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{totalScheduled}</div>
 <div className="text-[11px] text-[#d4522f] mt-1 font-medium">{isAr ? "مدرجة برول المحكمة" : "Inscrites à l'audiencier"}</div>
 </div>
 <div className="w-12 h-12 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 flex items-center justify-center text-[#d4522f] shadow-2xs"><Gavel size={22} /></div>
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-900/60 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between">
 <div>
-<div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">{isAr ? "مواعيد استئناف عاجلة" : "Délais CPCA Actifs"}</div>
-<div className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">{totalCriticalDeadlines}</div>
+<div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">{isAr ? "مواعيد استئناف عاجلة" : "Délais CPCA Actifs"}</div>
+<div className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{totalCriticalDeadlines}</div>
 <div className="text-[11px] text-amber-600 dark:text-amber-400 mt-1 font-medium">{isAr ? "خطر السقوط (Loi 08-09)" : "Péremption surveillée (Art. 336)"}</div>
 </div>
 <div className="w-12 h-12 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 flex items-center justify-center text-amber-500 shadow-2xs"><Clock size={22} /></div>
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-900/60 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between">
 <div>
-<div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">{isAr ? "قضايا نوقشت / قيد المداولة" : "Affaires Plaidées & Délibérés"}</div>
-<div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{totalCompleted}</div>
+<div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">{isAr ? "قضايا نوقشت / قيد المداولة" : "Affaires Plaidées & Délibérés"}</div>
+<div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{totalCompleted}</div>
 <div className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-medium">{isAr ? "في انتظار النطق بالحكم" : "En délibéré / Rendu de jugement"}</div>
 </div>
 <div className="w-12 h-12 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 flex items-center justify-center text-emerald-500 shadow-2xs"><CheckCircle2 size={22} /></div>
@@ -330,22 +330,26 @@ export const LegalHearingsView: React.FC<any> = () => {
 <LiveSegmentedControl value={filterCategory} onChange={setFilterCategory} size="sm" options={[
 								{
 									id: "All",
-									label: isAr ? "الكل" : "Tous",
+									label: isAr ? "الكل" : language === "fr" ? "Tous" : "All",
+									tooltip: isAr ? "جميع الجلسات القضائية" : language === "fr" ? "Toutes les audiences" : "All hearings",
 									count: hearings.length
 								},
 								{
 									id: "Scheduled",
-									label: isAr ? "مبرمجة" : "Fixées",
+									label: isAr ? "مبرمجة" : language === "fr" ? "Fixées" : "Scheduled",
+									tooltip: isAr ? "جلسات مبرمجة" : language === "fr" ? "Audiences fixées" : "Scheduled hearings",
 									count: totalScheduled
 								},
 								{
 									id: "Postponed",
-									label: isAr ? "مؤجلة" : "Renvois",
+									label: isAr ? "مؤجلة" : language === "fr" ? "Renvois" : "Postponed",
+									tooltip: isAr ? "جلسات مؤجلة" : language === "fr" ? "Audiences renvoyées" : "Postponed hearings",
 									count: hearings.filter((h) => h.status === "Postponed").length
 								},
 								{
 									id: "Completed",
-									label: isAr ? "منتهية" : "Plaidées",
+									label: isAr ? "منتهية" : language === "fr" ? "Plaidées" : "Completed",
+									tooltip: isAr ? "جلسات منتهية ومرافعات مكتملة" : language === "fr" ? "Audiences plaidées" : "Completed hearings",
 									count: totalCompleted
 								}
 							]} />
@@ -354,10 +358,12 @@ export const LegalHearingsView: React.FC<any> = () => {
 <div className="self-end md:self-auto">
 <LiveSegmentedControl value={hybridView} onChange={(val) => setHybridView(val)} size="sm" options={[{
 							id: "docket",
-							label: isAr ? "رول الجلسات" : "Rôle d'Audience"
+							label: isAr ? "الجلسات" : language === "fr" ? "Rôle" : "Docket",
+							tooltip: isAr ? "رول الجلسات اليومي" : language === "fr" ? "Rôle d'Audience" : "Court docket view"
 						}, {
 							id: "register",
-							label: isAr ? "الجدول الشامل" : "Registre UDC"
+							label: isAr ? "السجل" : language === "fr" ? "Registre" : "Registry",
+							tooltip: isAr ? "الجدول الشامل للجلسات" : language === "fr" ? "Registre UDC complet" : "Complete UDC registry"
 						}]} />
 </div>
 </div>
@@ -365,25 +371,25 @@ export const LegalHearingsView: React.FC<any> = () => {
 <div className="flex-1 min-w-0">
 {hybridView === "docket" ? /* @__PURE__ */ <div className="space-y-6">
 {Object.keys(hearingsByDate).length === 0 ? /* @__PURE__ */ <div className="p-12 text-center bg-[#F3EDE7] dark:bg-neutral-900/40 rounded-[28px] border border-dashed border-[#E2E8EC] dark:border-neutral-800">
-<Gavel size={36} className="mx-auto text-neutral-400 mb-3" />
-<p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
+<Gavel size={36} className="mx-auto text-black/55 dark:text-white/55 mb-3" />
+<p className="text-sm font-semibold text-black/70 dark:text-white/75">
 {isAr ? "لا توجد جلسات قضائية مطابقة لمعايير البحث" : "Aucune audience inscrite à l'audiencier"}
 </p>
-<p className="text-xs text-neutral-400 mt-1">
+<p className="text-xs text-black/55 dark:text-white/55 mt-1">
 {isAr ? "قم ببرمجة جلسة جديدة أو تعديل معايير التصفية" : "Cliquez sur \"Nouvelle Audience\" pour inscrire une date."}
 </p>
 </div> : Object.entries(hearingsByDate).map(([date, dateHearings]: [string, any[]]) => /* @__PURE__ */ <div key={date} className="bg-[#F3EDE7] dark:bg-neutral-900/50 rounded-[28px] p-5 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs space-y-4">
 <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
 <div className="flex items-center gap-2">
 <Calendar size={18} className="text-[#d4522f]" />
-<h2 className="text-sm font-black text-neutral-900 dark:text-white uppercase tracking-wider">{isAr ? `جلسة يوم ${date}` : `Audience du ${date}`}</h2>
+<h2 className="text-sm font-black text-black dark:text-white uppercase tracking-wider font-['Barlow_Condensed',sans-serif] rtl:font-sans">{isAr ? `جلسة يوم ${date}` : `Audience du ${date}`}</h2>
 <span className="text-xs bg-[#d4522f]/15 text-[#d4522f] font-bold px-2 py-0.5 rounded-full">
 {dateHearings.length}
 {" "}
 {isAr ? "قضايا" : "dossiers"}
 </span>
 </div>
-<span className="text-[11px] text-neutral-400 font-mono">{dateHearings[0]?.courtName}</span>
+<span className="text-[11px] text-black/55 dark:text-white/55 font-mono">{dateHearings[0]?.courtName}</span>
 </div>
 <div className="grid grid-cols-1 gap-3">
 {dateHearings.map((h: any) => /* @__PURE__ */ <div key={h.id} onClick={() => setSelectedHearing(h)} className={`p-4 rounded-2xl bg-white dark:bg-neutral-800 border transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${selectedHearing?.id === h.id ? "border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm" : "border-[#E9EEF0] dark:border-neutral-700 hover:border-[#d4522f]/50"}`}>
@@ -394,17 +400,17 @@ export const LegalHearingsView: React.FC<any> = () => {
 <div className="min-w-0">
 <div className="flex items-center gap-2">
 <span className="font-bold text-xs text-[#d4522f] font-mono">{h.matterNumber}</span>
-<span className="text-neutral-300 dark:text-neutral-600">·</span>
-<span className="text-xs font-bold text-neutral-900 dark:text-white truncate">{isAr && h.matterTitleAr ? h.matterTitleAr : h.matterTitle}</span>
+<span className="text-black/55 dark:text-white/55">·</span>
+<span className="text-xs font-bold text-black dark:text-white truncate">{isAr && h.matterTitleAr ? h.matterTitleAr : h.matterTitle}</span>
 </div>
-<div className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-2 flex-wrap">
+<div className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 flex items-center gap-2 flex-wrap">
 <span>{h.courtRoom}</span>
 <span>·</span>
 <span>{h.chamber}</span>
 <span>·</span>
-<span className="font-medium text-neutral-600 dark:text-neutral-300">{h.benchJudge}</span>
+<span className="font-medium text-black/70 dark:text-white/75">{h.benchJudge}</span>
 </div>
-<div className="text-[11px] text-neutral-600 dark:text-neutral-300 mt-1 font-medium">
+<div className="text-[11px] text-black/70 dark:text-white/75 mt-1 font-medium">
 {isAr ? "الهدف: " : "Démarche : "}
 {" "}
 {h.purpose}
@@ -412,7 +418,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 </div>
 </div>
 <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-{h.postponementCode && /* @__PURE__ */ <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">{h.postponementCode}</span>}
+{h.postponementCode && /* @__PURE__ */ <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75">{h.postponementCode}</span>}
 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${h.isCompleted ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" : "bg-amber-500/15 text-amber-700 dark:text-amber-400"}`}>{h.isCompleted ? isAr ? "تمت" : "Plaidée" : isAr ? "مبرمجة" : "Fixée"}</span>
 <AtriumButton variant="ghost" size="sm" onClick={(e) => {
 													e.stopPropagation();
@@ -437,10 +443,10 @@ export const LegalHearingsView: React.FC<any> = () => {
 <span className="text-xs font-bold text-[#d4522f] font-mono">{h.matterNumber}</span>
 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${h.isCompleted ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" : "bg-amber-500/15 text-amber-700 dark:text-amber-400"}`}>{h.isCompleted ? isAr ? "تمت" : "Plaidée" : isAr ? "مبرمجة" : "Fixée"}</span>
 </div>
-<h3 className="text-xs font-bold text-neutral-900 dark:text-white truncate">{isAr && h.matterTitleAr ? h.matterTitleAr : h.matterTitle}</h3>
-<div className="text-[11px] text-neutral-500 mt-2 flex items-center justify-between">
+<h3 className="text-xs font-bold text-black dark:text-white truncate">{isAr && h.matterTitleAr ? h.matterTitleAr : h.matterTitle}</h3>
+<div className="text-[11px] text-black/55 dark:text-white/55 mt-2 flex items-center justify-between">
 <span>{h.hearingDate}</span>
-<span className="font-mono text-neutral-400">{h.courtRoom}</span>
+<span className="font-mono text-black/55 dark:text-white/55">{h.courtRoom}</span>
 </div>
 </div>} />}
 </div>
@@ -448,21 +454,21 @@ export const LegalHearingsView: React.FC<any> = () => {
 <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
 <div className="flex items-center gap-2">
 <Gavel size={18} className="text-[#d4522f]" />
-<h3 className="text-sm font-black text-neutral-900 dark:text-white">{isAr ? "معاينة الجلسة القضائية" : "Fiche d'Audience"}</h3>
+<h3 className="text-sm font-black text-black dark:text-white">{isAr ? "معاينة الجلسة القضائية" : "Fiche d'Audience"}</h3>
 </div>
-<button onClick={() => setSelectedHearing(null)} className="p-1 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-400"><X size={16} /></button>
+<button onClick={() => setSelectedHearing(null)} className="p-1 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-800 text-black/55 dark:text-white/55"><X size={16} /></button>
 </div>
 <div className="grid grid-cols-4 gap-1 p-1 bg-neutral-200/50 dark:bg-neutral-800/50 rounded-xl text-[10px] font-bold text-center">
-<button onClick={() => setActiveInspectorTab("audience")} className={`py-1 rounded-lg transition-all ${activeInspectorTab === "audience" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-neutral-500"}`}>{isAr ? "الجلسة" : "Audience"}</button>
-<button onClick={() => setActiveInspectorTab("procedure")} className={`py-1 rounded-lg transition-all ${activeInspectorTab === "procedure" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-neutral-500"}`}>{isAr ? "الدعوى" : "Dossier"}</button>
-<button onClick={() => setActiveInspectorTab("delais")} className={`py-1 rounded-lg transition-all ${activeInspectorTab === "delais" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-neutral-500"}`}>{isAr ? "المواعيد" : "Délais"}</button>
-<button onClick={() => setActiveInspectorTab("notes")} className={`py-1 rounded-lg transition-all ${activeInspectorTab === "notes" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-neutral-500"}`}>{isAr ? "القرارات" : "Renvoi"}</button>
+<button onClick={() => setActiveInspectorTab("audience")} className={`py-1 rounded-lg transition-all ${activeInspectorTab === "audience" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-black/55 dark:text-white/55"}`}>{isAr ? "الجلسة" : "Audience"}</button>
+<button onClick={() => setActiveInspectorTab("procedure")} className={`py-1 rounded-lg transition-all ${activeInspectorTab === "procedure" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-black/55 dark:text-white/55"}`}>{isAr ? "الدعوى" : "Dossier"}</button>
+<button onClick={() => setActiveInspectorTab("delais")} className={`py-1 rounded-lg transition-all ${activeInspectorTab === "delais" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-black/55 dark:text-white/55"}`}>{isAr ? "المواعيد" : "Délais"}</button>
+<button onClick={() => setActiveInspectorTab("notes")} className={`py-1 rounded-lg transition-all ${activeInspectorTab === "notes" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-black/55 dark:text-white/55"}`}>{isAr ? "القرارات" : "Renvoi"}</button>
 </div>
 {activeInspectorTab === "audience" && /* @__PURE__ */ <div className="space-y-4 text-xs">
 <div>
-<div className="text-[10px] font-bold text-neutral-400 uppercase">{isAr ? "المحكمة والهيئة القضائية" : "Juridiction & Siège"}</div>
-<div className="font-bold text-neutral-900 dark:text-white mt-1">{selectedHearing.courtName}</div>
-<div className="text-neutral-500 mt-0.5">
+<div className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase">{isAr ? "المحكمة والهيئة القضائية" : "Juridiction & Siège"}</div>
+<div className="font-bold text-black dark:text-white mt-1">{selectedHearing.courtName}</div>
+<div className="text-black/55 dark:text-white/55 mt-0.5">
 {selectedHearing.chamber}
 {" · "}
 {selectedHearing.courtRoom}
@@ -470,30 +476,30 @@ export const LegalHearingsView: React.FC<any> = () => {
 </div>
 <div className="grid grid-cols-2 gap-2 p-3 bg-white dark:bg-neutral-800 rounded-xl border border-[#E6DED6] dark:border-neutral-700">
 <div>
-<div className="text-[10px] text-neutral-400">{isAr ? "تاريخ الجلسة" : "Date d'Audience"}</div>
-<div className="font-bold font-mono text-neutral-900 dark:text-white mt-0.5">{selectedHearing.hearingDate}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">{isAr ? "تاريخ الجلسة" : "Date d'Audience"}</div>
+<div className="font-bold font-mono text-black dark:text-white mt-0.5">{selectedHearing.hearingDate}</div>
 </div>
 <div>
-<div className="text-[10px] text-neutral-400">{isAr ? "ساعة النداء" : "Heure d'Appel"}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">{isAr ? "ساعة النداء" : "Heure d'Appel"}</div>
 <div className="font-bold font-mono text-[#d4522f] mt-0.5">{selectedHearing.hearingTime || "09:30"}</div>
 </div>
 </div>
 <div>
-<div className="text-[10px] font-bold text-neutral-400 uppercase">{isAr ? "القاضي رئيس الجلسة" : "Magistrat du Siège"}</div>
-<div className="font-semibold text-neutral-800 dark:text-neutral-200 mt-1">{selectedHearing.benchJudge || "Président de Chambre"}</div>
+<div className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase">{isAr ? "القاضي رئيس الجلسة" : "Magistrat du Siège"}</div>
+<div className="font-semibold text-black dark:text-white mt-1">{selectedHearing.benchJudge || "Président de Chambre"}</div>
 </div>
 </div>}
 {activeInspectorTab === "procedure" && /* @__PURE__ */ <div className="space-y-4 text-xs">
 <div>
-<div className="text-[10px] font-bold text-neutral-400 uppercase">{isAr ? "رقم القضية والموضوع" : "N° Dossier & Intitulé"}</div>
+<div className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase">{isAr ? "رقم القضية والموضوع" : "N° Dossier & Intitulé"}</div>
 <div className="font-mono font-bold text-[#d4522f] mt-1">{selectedHearing.matterNumber}</div>
-<div className="font-semibold text-neutral-900 dark:text-white mt-1">
+<div className="font-semibold text-black dark:text-white mt-1">
 {isAr && selectedHearing.matterTitleAr ? selectedHearing.matterTitleAr : selectedHearing.matterTitle}
 </div>
 </div>
 <div>
-<div className="text-[10px] font-bold text-neutral-400 uppercase">{isAr ? "الهدف من الجلسة" : "Démarche Procédurale"}</div>
-<div className="p-3 bg-white dark:bg-neutral-800 rounded-xl border border-[#E6DED6] dark:border-neutral-700 mt-1 text-neutral-700 dark:text-neutral-300">{selectedHearing.purpose || "Plaidoirie sur le fond"}</div>
+<div className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase">{isAr ? "الهدف من الجلسة" : "Démarche Procédurale"}</div>
+<div className="p-3 bg-white dark:bg-neutral-800 rounded-xl border border-[#E6DED6] dark:border-neutral-700 mt-1 text-black/70 dark:text-white/75">{selectedHearing.purpose || "Plaidoirie sur le fond"}</div>
 </div>
 </div>}
 {activeInspectorTab === "delais" && /* @__PURE__ */ <div className="space-y-4 text-xs">
@@ -513,17 +519,17 @@ export const LegalHearingsView: React.FC<any> = () => {
 </div>}
 {activeInspectorTab === "notes" && /* @__PURE__ */ <div className="space-y-4 text-xs">
 <div>
-<div className="text-[10px] font-bold text-neutral-400 uppercase">{isAr ? "قرار المحكمة ورمز التأجيل" : "Décision / Code Renvoi"}</div>
+<div className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase">{isAr ? "قرار المحكمة ورمز التأجيل" : "Décision / Code Renvoi"}</div>
 <div className="flex items-center gap-2 mt-1">
-<span className="font-mono font-bold text-sm bg-neutral-200 dark:bg-neutral-800 px-2 py-0.5 rounded text-neutral-800 dark:text-neutral-200">{selectedHearing.postponementCode || "RPP"}</span>
-<span className="text-neutral-500">
+<span className="font-mono font-bold text-sm bg-neutral-200 dark:bg-neutral-800 px-2 py-0.5 rounded text-black dark:text-white">{selectedHearing.postponementCode || "RPP"}</span>
+<span className="text-black/55 dark:text-white/55">
 {selectedHearing.postponementCode === "RPP" ? isAr ? "تأجيل لتبادل الوثائق" : "Renvoi pour pièces" : selectedHearing.postponementCode === "RPO" ? isAr ? "تأجيل للإدلاء بالملاحظات" : "Renvoi pour observations" : isAr ? "مداولة" : "En délibéré"}
 </span>
 </div>
 </div>
 <div>
-<div className="text-[10px] font-bold text-neutral-400 uppercase">{isAr ? "ملاحظات المحامي" : "Consignes & Compte-rendu"}</div>
-<div className="p-3 bg-white dark:bg-neutral-800 rounded-xl border border-[#E6DED6] dark:border-neutral-700 mt-1 text-neutral-700 dark:text-neutral-300">{selectedHearing.resultSummary || "En attente d'audience."}</div>
+<div className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase">{isAr ? "ملاحظات المحامي" : "Consignes & Compte-rendu"}</div>
+<div className="p-3 bg-white dark:bg-neutral-800 rounded-xl border border-[#E6DED6] dark:border-neutral-700 mt-1 text-black/70 dark:text-white/75">{selectedHearing.resultSummary || "En attente d'audience."}</div>
 </div>
 </div>}
 <div className="pt-3 border-t border-[#E6DED6] dark:border-neutral-800 flex items-center gap-2">
@@ -563,9 +569,9 @@ export const LegalHearingsView: React.FC<any> = () => {
 <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
 <div className="flex items-center gap-2">
 <Gavel size={20} className="text-[#d4522f]" />
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">{isAr ? "برمجة جلسة جديدة برول المحكمة" : "Inscrire une Audience Judiciaire"}</h3>
+<h3 className="text-base font-bold text-black dark:text-white">{isAr ? "برمجة جلسة جديدة برول المحكمة" : "Inscrire une Audience Judiciaire"}</h3>
 </div>
-<button onClick={() => setIsNewHearingModalOpen(false)} className="p-1 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400"><X size={18} /></button>
+<button onClick={() => setIsNewHearingModalOpen(false)} className="p-1 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-black/55 dark:text-white/55"><X size={18} /></button>
 </div>
 <form onSubmit={handleCreateHearing} className="space-y-4">
 <div>

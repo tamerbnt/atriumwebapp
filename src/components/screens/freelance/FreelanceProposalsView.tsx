@@ -233,10 +233,10 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 			minWidth: "220px",
 			sortable: true,
 			renderCell: (proposal: any) => /* @__PURE__ */ <div className="flex items-center gap-3">
-<div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700"><FileText size={16} /></div>
+<div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700"><FileText size={16} /></div>
 <div className="min-w-0">
-<div className="font-semibold text-neutral-900 dark:text-white truncate hover:text-[#d4522f] transition-colors">{proposal.title}</div>
-<div className="text-[11px] text-neutral-400 truncate flex items-center gap-1.5">
+<div className="font-semibold text-black dark:text-white truncate hover:text-[#d4522f] transition-colors">{proposal.title}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 truncate flex items-center gap-1.5">
 <span>{proposal.clientName}</span>
 {proposal.clientCompany && /* @__PURE__ */ <>
 <span>·</span>
@@ -253,8 +253,8 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 			minWidth: "150px",
 			sortable: true,
 			renderCell: (proposal: any) => /* @__PURE__ */ <div>
-<span className="font-bold text-neutral-900 dark:text-white tabular-nums block">{formatCurrencyAmount(proposal.proposedBudget, proposal.currency)}</span>
-<span className="text-[10px] text-neutral-400">
+<span className="font-bold text-black dark:text-white tabular-nums block">{formatCurrencyAmount(proposal.proposedBudget, proposal.currency)}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">
 {proposal.pricingModel}
 {" · "}
 {proposal.estimatedTimelineWeeks}
@@ -279,8 +279,8 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 			width: "1.5*",
 			minWidth: "120px",
 			sortable: true,
-			renderCell: (proposal: any) => /* @__PURE__ */ <div className="flex items-center gap-1.5 text-xs text-neutral-700 dark:text-neutral-300">
-<Calendar size={12} className="text-neutral-400" />
+			renderCell: (proposal: any) => /* @__PURE__ */ <div className="flex items-center gap-1.5 text-xs text-black/70 dark:text-white/75">
+<Calendar size={12} className="text-black/55 dark:text-white/55" />
 <span>{proposal.validUntil}</span>
 </div>
 		}
@@ -396,10 +396,10 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
 <div className="flex items-center gap-3.5">
-<div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200"><FileText size={22} /></div>
+<div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-white"><FileText size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{t("free_prop_title")}</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("free_prop_title")}</h1>
 </div>
 </div>
 </div>
@@ -410,14 +410,14 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {language === "ar" ? "مؤشرات العروض التجارية والفرص التعاقدية" : language === "fr" ? "Indicateurs des Devis & Opportunités" : "Proposals & Deal Pipeline Indicators"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "عروض قيد المراجعة" : language === "fr" ? "Devis en Négociation" : "Pending Review"}
 </span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
@@ -427,15 +427,15 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<div className="text-2xl font-black text-amber-600 dark:text-amber-400 tabular-nums font-mono">{draftOrPendingProposals.length}</div>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+<div className="text-2xl font-black text-amber-600 dark:text-amber-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{draftOrPendingProposals.length}</div>
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
 {language === "ar" ? "بانتظار موافقة وتوقيع العملاء" : "En attente de signature client"}
 </p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "قيمة خط العروض (Pipeline)" : language === "fr" ? "Pipeline Devis Actif" : "Active Pipeline"}
 </span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
@@ -445,15 +445,15 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<div className="text-2xl font-black text-blue-600 dark:text-blue-400 tabular-nums font-mono">{formatCurrencyAmount(pipelineValue, "EUR")}</div>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+<div className="text-2xl font-black text-blue-600 dark:text-blue-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatCurrencyAmount(pipelineValue, "EUR")}</div>
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
 {language === "ar" ? "إجمالي الميزانيات المقترحة" : "Cumul prévisionnel des devis"}
 </p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">
+<span className="text-[11px] font-medium text-white/80">
 {language === "ar" ? "عقود موقّعة ومحققة" : language === "fr" ? "Contrats Signés & Gagnés" : "Won Contracts Value"}
 </span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
@@ -463,8 +463,8 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">{formatCurrencyAmount(wonValue, "EUR")}</div>
-<p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+<div className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatCurrencyAmount(wonValue, "EUR")}</div>
+<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
 <span>
 {language === "ar" ? "قيمة المشاريع المحولة للإنتاج" : "Volume converti en projets"}
@@ -478,14 +478,14 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 {selectedProposalIds.size > 0 && /* @__PURE__ */ <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
 <div className="flex items-center gap-3">
 <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
-<span className="text-xs font-bold text-neutral-900 dark:text-white">
+<span className="text-xs font-bold text-black dark:text-white">
 {selectedProposalIds.size}
 {" "}
 {language === "ar" ? "عروض محددة" : language === "fr" ? "devis sélectionnés" : "proposals selected"}
 </span>
 </div>
 <div className="flex items-center gap-2 flex-wrap">
-<button onClick={() => setSelectedProposalIds(/* @__PURE__ */ new Set())} className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer">
+<button onClick={() => setSelectedProposalIds(/* @__PURE__ */ new Set())} className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer">
 {language === "ar" ? "إلغاء التحديد" : language === "fr" ? "Désélectionner" : "Deselect"}
 </button>
 <button onClick={handleBatchAccept} className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs">
@@ -519,22 +519,22 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 <div>
 <div className="flex items-start justify-between gap-2">
 <div>
-<span className="text-[11px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider block">{proposal.clientCompany || proposal.clientName}</span>
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white mt-0.5 leading-snug">{proposal.title}</h3>
+<span className="text-[11px] font-bold text-black/55 dark:text-white/75 uppercase tracking-wider block">{proposal.clientCompany || proposal.clientName}</span>
+<h3 className="text-sm font-bold text-black dark:text-white mt-0.5 leading-snug">{proposal.title}</h3>
 </div>
 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${proposal.status === "Accepted" ? "text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200" : proposal.status === "Declined" ? "text-rose-700 bg-rose-50 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200" : "text-amber-700 bg-amber-50 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-200"}`}>
 {proposal.status === "Accepted" ? language === "ar" ? "موقّع ونشط" : language === "fr" ? "Signé & Actif" : "Signed & Active" : proposal.status === "Declined" ? t("free_prop_status_rejected") : language === "ar" ? "بانتظار المراجعة" : language === "fr" ? "En attente" : "Awaiting Review"}
 </span>
 </div>
-<p className="text-xs text-neutral-600 dark:text-neutral-300 mt-2 line-clamp-2 leading-relaxed">{proposal.overview}</p>
+<p className="text-xs text-black/70 dark:text-white/75 mt-2 line-clamp-2 leading-relaxed">{proposal.overview}</p>
 <div className="mt-3 pt-2.5 border-t border-neutral-100 dark:border-neutral-800/80 space-y-1 text-[11px]">
-<span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
+<span className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider block">
 {t("free_prop_scope")}
 {" ("}
 {proposal.scopeItems.length}
 )
 </span>
-{proposal.scopeItems.slice(0, 3).map((item, idx) => /* @__PURE__ */ <div key={idx} className="flex items-start gap-1.5 text-neutral-700 dark:text-neutral-300 truncate">
+{proposal.scopeItems.slice(0, 3).map((item, idx) => /* @__PURE__ */ <div key={idx} className="flex items-start gap-1.5 text-black/70 dark:text-white/75 truncate">
 <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] mt-1 shrink-0" />
 <span className="truncate">{item}</span>
 </div>)}
@@ -542,9 +542,9 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 </div>
 <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800/80 flex items-center justify-between gap-2">
 <div>
-<span className="text-[10px] text-neutral-400 uppercase tracking-wider block">{t("free_prop_total_quote")}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider block">{t("free_prop_total_quote")}</span>
 <span className="text-base font-black text-[#d4522f] tabular-nums block">{formatCurrencyAmount(proposal.proposedBudget, proposal.currency)}</span>
-<span className="text-[10px] text-neutral-500">
+<span className="text-[10px] text-black/55 dark:text-white/55">
 {proposal.estimatedTimelineWeeks}
 {"w · "}
 {proposal.validUntil}
@@ -595,8 +595,8 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 {isDraftModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
 <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">{t("free_prop_modal_new_title")}</h3>
-<button type="button" onClick={() => setIsDraftModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"><X size={16} /></button>
+<h3 className="text-base font-bold text-black dark:text-white">{t("free_prop_modal_new_title")}</h3>
+<button type="button" onClick={() => setIsDraftModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"><X size={16} /></button>
 </div>
 <form onSubmit={handleSubmitProposal} className="space-y-3.5 text-xs">
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -618,15 +618,15 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 									title: e.target.value
 								})} />
 <div>
-<label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">{t("free_prop_exec_summary", language)}</label>
+<label className="font-semibold text-black/70 dark:text-white/75 block mb-1">{t("free_prop_exec_summary", language)}</label>
 <textarea rows={2} placeholder={t("free_prop_scope_ph", language)} value={formData.overview} onChange={(e) => setFormData({
 									...formData,
 									overview: e.target.value
-								})} className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white" />
+								})} className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black dark:text-white" />
 </div>
 <div className="space-y-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
 <div className="flex items-center justify-between">
-<span className="font-semibold text-neutral-900 dark:text-white">{t("free_prop_scope", language)}</span>
+<span className="font-semibold text-black dark:text-white">{t("free_prop_scope", language)}</span>
 <button type="button" onClick={handleAddScopeItem} className="text-[#d4522f] hover:underline font-semibold cursor-pointer">{t("free_prop_btn_add_item", language)}</button>
 </div>
 <div className="space-y-2">
@@ -634,7 +634,7 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 <div className="flex-1">
 <LabelInput field={`ScopeItem-${idx}`} label={`${t("free_prop_deliverable_item", language)} ${idx + 1}`} value={item} onChange={(v) => handleScopeItemChange(idx, String(v?.target?.value || v || ""))} width="100%" height={44} corner={12} />
 </div>
-{formData.scopeItems.length > 1 && /* @__PURE__ */ <button type="button" onClick={() => handleRemoveScopeItem(idx)} className="p-1.5 text-neutral-400 hover:text-rose-500 cursor-pointer"><X size={14} /></button>}
+{formData.scopeItems.length > 1 && /* @__PURE__ */ <button type="button" onClick={() => handleRemoveScopeItem(idx)} className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-500 cursor-pointer"><X size={14} /></button>}
 </div>)}
 </div>
 </div>
@@ -678,10 +678,10 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 {proposalToEdit && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
 <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">
+<h3 className="text-base font-bold text-black dark:text-white">
 {language === "ar" ? "تعديل عرض السعر ونطاق العمل" : language === "fr" ? "Modifier le Devis & Périmètre" : "Edit Proposal Scope & Terms"}
 </h3>
-<button type="button" onClick={() => setProposalToEdit(null)} className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"><X size={16} /></button>
+<button type="button" onClick={() => setProposalToEdit(null)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"><X size={16} /></button>
 </div>
 <form onSubmit={handleEditProposalSubmit} className="space-y-4 text-xs">
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -699,17 +699,17 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 									title: e.target.value
 								})} />
 <div>
-<label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
+<label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
 {language === "ar" ? "ملخص تنفيذي للمشروع" : language === "fr" ? "Résumé Exécutif du Projet" : "Executive Overview"}
 </label>
 <textarea rows={2} value={editFormData.overview} onChange={(e) => setEditFormData({
 									...editFormData,
 									overview: e.target.value
-								})} className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white" />
+								})} className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black dark:text-white" />
 </div>
 <div className="space-y-2">
 <div className="flex items-center justify-between">
-<label className="font-semibold text-neutral-700 dark:text-neutral-300">{t("free_prop_scope")}</label>
+<label className="font-semibold text-black/70 dark:text-white/75">{t("free_prop_scope")}</label>
 <button type="button" onClick={() => setEditFormData({
 											...editFormData,
 											scopeItems: [...editFormData.scopeItems, ""]
@@ -731,7 +731,7 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 {editFormData.scopeItems.length > 1 && /* @__PURE__ */ <button type="button" onClick={() => setEditFormData({
 											...editFormData,
 											scopeItems: editFormData.scopeItems.filter((_, i) => i !== idx)
-										})} className="text-neutral-400 hover:text-rose-600 p-1 cursor-pointer"><X size={14} /></button>}
+										})} className="text-black/55 dark:text-white/55 hover:text-rose-600 p-1 cursor-pointer"><X size={14} /></button>}
 </div>)}
 </div>
 <div className="grid grid-cols-3 gap-3">
@@ -776,13 +776,13 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
 <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60"><AlertTriangle size={20} /></div>
 <div>
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">
+<h3 className="text-base font-bold text-black dark:text-white">
 {language === "ar" ? "حذف عرض السعر" : language === "fr" ? "Supprimer le Devis" : "Delete Proposal"}
 </h3>
-<p className="text-xs text-neutral-500">{proposalToDelete.clientName}</p>
+<p className="text-xs text-black/55 dark:text-white/55">{proposalToDelete.clientName}</p>
 </div>
 </div>
-<p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+<p className="text-xs text-black/70 dark:text-white/75 leading-relaxed">
 {language === "ar" ? `هل أنت متأكد من رغبتك في حذف عرض السعر "${proposalToDelete.title}"؟ سيتم حذف هذا العرض نهائياً من خط العمل.` : language === "fr" ? `Êtes-vous sûr de vouloir supprimer le devis "${proposalToDelete.title}" ? Cette action retirera le devis de votre pipeline.` : `Are you sure you want to delete proposal "${proposalToDelete.title}"? This will remove the proposal draft from your pipeline.`}
 </p>
 <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">

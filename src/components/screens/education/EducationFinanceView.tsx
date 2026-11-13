@@ -185,10 +185,10 @@ export const EducationFinanceView: React.FC<any> = () => {
 			minWidth: "200px",
 			sortable: true,
 			renderCell: (enr: any) => /* @__PURE__ */ <div className="flex items-center gap-3">
-<div className="w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">{enr.studentName.charAt(0)}</div>
+<div className="w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">{enr.studentName.charAt(0)}</div>
 <div className="min-w-0">
-<div className="font-semibold text-neutral-900 dark:text-white truncate">{enr.studentName}</div>
-<div className="text-[10px] text-neutral-400">
+<div className="font-semibold text-black dark:text-white truncate">{enr.studentName}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">
 {"ID: "}
 {enr.studentId}
 </div>
@@ -202,8 +202,8 @@ export const EducationFinanceView: React.FC<any> = () => {
 			minWidth: "170px",
 			sortable: true,
 			renderCell: (enr: any) => /* @__PURE__ */ <div className="min-w-0">
-<span className="font-medium text-neutral-800 dark:text-neutral-200 block truncate">{enr.cohortName}</span>
-<span className="text-[10px] text-neutral-400">{enr.enrolledAt ? `Depuis ${enr.enrolledAt.split("T")[0]}` : "Actif"}</span>
+<span className="font-medium text-black dark:text-white block truncate">{enr.cohortName}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">{enr.enrolledAt ? `Depuis ${enr.enrolledAt.split("T")[0]}` : "Actif"}</span>
 </div>
 		},
 		{
@@ -212,7 +212,7 @@ export const EducationFinanceView: React.FC<any> = () => {
 			width: "1.4*",
 			minWidth: "120px",
 			sortable: true,
-			renderCell: (enr: any) => /* @__PURE__ */ <span className="font-bold text-neutral-900 dark:text-white tabular-nums">{formatMoney(enr.agreedTuition)}</span>
+			renderCell: (enr: any) => /* @__PURE__ */ <span className="font-bold text-black dark:text-white tabular-nums">{formatMoney(enr.agreedTuition)}</span>
 		},
 		{
 			key: "paidAndBalance",
@@ -242,12 +242,12 @@ export const EducationFinanceView: React.FC<any> = () => {
 				const insts = enr.installments || [];
 				insts.filter((i: any) => i.isPaid).length;
 				return /* @__PURE__ */ <div className="flex items-center gap-1.5 flex-wrap">
-{insts.length > 0 ? insts.map((inst: any, idx: number) => /* @__PURE__ */ <span key={idx} title={`${formatMoney(inst.amount)} - Échéance ${inst.dueDate} (${inst.isPaid ? "Payée" : "En attente"})`} className={`px-1.5 py-0.5 rounded text-[10px] font-semibold tabular-nums border ${inst.isPaid ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800" : "bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:border-neutral-700"}`}>
+{insts.length > 0 ? insts.map((inst: any, idx: number) => /* @__PURE__ */ <span key={idx} title={`${formatMoney(inst.amount)} - Échéance ${inst.dueDate} (${inst.isPaid ? "Payée" : "En attente"})`} className={`px-1.5 py-0.5 rounded text-[10px] font-semibold tabular-nums border ${inst.isPaid ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800" : "bg-neutral-100 text-black/70 border-neutral-200 dark:bg-neutral-800 dark:text-white/75 dark:border-neutral-700"}`}>
 V
 {idx + 1}
 {": "}
 {inst.isPaid ? "✓" : formatMoney(inst.amount).replace("DZD", "").trim()}
-</span>) : /* @__PURE__ */ <span className="text-[11px] text-neutral-400">Paiement unique</span>}
+</span>) : /* @__PURE__ */ <span className="text-[11px] text-black/55 dark:text-white/55">Paiement unique</span>}
 </div>;
 			}
 		},
@@ -280,7 +280,7 @@ V
 							date: enr.enrolledAt ? enr.enrolledAt.split("T")[0] : (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
 							receiptNumber: `REC-${enr.id.slice(-6)}`
 						});
-					}} className="px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer flex items-center gap-1">
+					}} className="px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer flex items-center gap-1">
 <Receipt size={12} />
 <span>Reçu</span>
 </button>}
@@ -320,7 +320,7 @@ V
 <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><Wallet size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{t("edu_finance_title")}</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("edu_finance_title")}</h1>
 </div>
 </div>
 </div>
@@ -336,10 +336,10 @@ V
 {selectedEnrollmentIds.size > 0 && /* @__PURE__ */ <div className="p-3 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 rounded-2xl flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-150">
 <div className="flex items-center gap-2">
 <span className="w-6 h-6 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs font-bold">{selectedEnrollmentIds.size}</span>
-<span className="text-xs font-semibold text-neutral-900 dark:text-white">{language === "ar" ? "عقود محددة" : "dossiers sélectionnés"}</span>
+<span className="text-xs font-semibold text-black dark:text-white">{language === "ar" ? "عقود محددة" : "dossiers sélectionnés"}</span>
 </div>
 <div className="flex items-center gap-2 flex-wrap">
-<button type="button" onClick={() => setSelectedEnrollmentIds(/* @__PURE__ */ new Set())} className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer">{language === "ar" ? "إلغاء التحديد" : "Désélectionner"}</button>
+<button type="button" onClick={() => setSelectedEnrollmentIds(/* @__PURE__ */ new Set())} className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer">{language === "ar" ? "إلغاء التحديد" : "Désélectionner"}</button>
 <button type="button" onClick={handleBatchMarkInstallmentPaid} className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs">
 <CheckCircle2 size={13} />
 <span>{language === "ar" ? "تسجيل سداد القسط" : "Encaisser Versement"}</span>
@@ -352,14 +352,14 @@ V
 </div>}
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
 <div>
-<h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
+<h3 className="text-xs font-bold text-black dark:text-white tracking-tight">
 {language === "ar" ? "مؤشرات التحصيل والذمم المالية" : language === "fr" ? "Performance Financière & Recouvrement" : "Tuition & Receivables Performance"}
 </h3>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "سرعة التحصيل" : language === "fr" ? "Taux de Recouvrement" : "Collection Rate"}
 </span>
 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
@@ -369,38 +369,38 @@ V
 </span>
 </div>
 <div>
-<span className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">{formatMoney(totalCollected)}</span>
-<span className="text-xs text-neutral-400 tabular-nums ml-1">
+<span className="text-2xl font-bold text-black dark:text-white tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalCollected)}</span>
+<span className="text-xs text-black/55 dark:text-white/55 tabular-nums ml-1">
 {"/ "}
 {formatMoney(totalBilled)}
 </span>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">{language === "ar" ? "رسوم محصلة فعلياً" : "Total des frais scolaires perçus"}</p>
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">{language === "ar" ? "رسوم محصلة فعلياً" : "Total des frais scolaires perçus"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{t("edu_fin_receivables")}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{t("edu_fin_receivables")}</span>
 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
 {eduEnrollments.filter((e) => e.balanceDue > 0).length}
 {" en attente"}
 </span>
 </div>
 <div>
-<span className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">{formatMoney(totalOutstanding)}</span>
-<span className="text-xs text-neutral-400 ml-1">restant à percevoir</span>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+<span className="text-2xl font-bold text-black dark:text-white tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalOutstanding)}</span>
+<span className="text-xs text-black/55 dark:text-white/55 ml-1">restant à percevoir</span>
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
 {language === "ar" ? "أقساط مجدولة قيد التحصيل" : "Échéances en cours de règlement"}
 </p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-400">{t("edu_fin_overdue")}</span>
+<span className="text-[11px] font-medium text-white/75">{t("edu_fin_overdue")}</span>
 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 inline-block">Relances Nécessaires</span>
 </div>
 <div>
-<span className="text-2xl font-bold text-[#FB923C] tabular-nums tracking-tight font-mono">{formatMoney(overdueBalance)}</span>
-<p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+<span className="text-2xl font-bold text-[#FB923C] tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(overdueBalance)}</span>
+<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
 <span>
 {language === "ar" ? "متأخرات تستوجب المتابعة" : "Créances échues avec relance"}
@@ -413,9 +413,9 @@ V
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
 <div className="flex items-center gap-2">
-<Wallet size={18} className="text-neutral-700 dark:text-neutral-300" />
-<h2 className="text-sm font-bold text-neutral-900 dark:text-white">{t("edu_finance_title")}</h2>
-<span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">{filteredEnrollments.length}</span>
+<Wallet size={18} className="text-black/70 dark:text-white/75" />
+<h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("edu_finance_title")}</h2>
+<span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-black/70 dark:text-white/75">{filteredEnrollments.length}</span>
 </div>
 <div className="flex items-center gap-2.5 flex-wrap">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder="Search accounts by learner name or cohort..." openWidth={260} shutSize={36} />
@@ -423,27 +423,32 @@ V
 {[
 											{
 												id: "all",
-												label: "All Accounts"
+												label: t("edu_filter_all"),
+												tooltip: language === "ar" ? "جميع الحسابات" : language === "fr" ? "Tous les comptes" : "All Accounts"
 											},
 											{
 												id: "pending",
-												label: t("edu_tuition_unpaid")
+												label: language === "ar" ? "معلق" : language === "fr" ? "Impayé" : "Unpaid",
+												tooltip: t("edu_tuition_unpaid")
 											},
 											{
 												id: "partial",
-												label: t("edu_tuition_partial")
+												label: language === "ar" ? "جزئي" : language === "fr" ? "Partiel" : "Partial",
+												tooltip: t("edu_tuition_partial")
 											},
 											{
 												id: "overdue",
-												label: t("edu_tuition_overdue")
+												label: language === "ar" ? "متأخر" : language === "fr" ? "Retard" : "Overdue",
+												tooltip: t("edu_tuition_overdue")
 											},
 											{
 												id: "paid",
-												label: t("edu_tuition_paid")
+												label: language === "ar" ? "مدفوع" : language === "fr" ? "Payé" : "Paid",
+												tooltip: t("edu_tuition_paid")
 											}
-										].map((tab) => /* @__PURE__ */ <button key={tab.id} type="button" onClick={() => setFilterKey(tab.id)} className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap cursor-pointer ${filterKey === tab.id ? "bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f]" : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"}`}>{tab.label}</button>)}
+										].map((tab) => /* @__PURE__ */ <button key={tab.id} type="button" title={tab.tooltip} onClick={() => setFilterKey(tab.id)} className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap cursor-pointer ${filterKey === tab.id ? "bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f]" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>{tab.label}</button>)}
 </div>
-<button type="button" onClick={handleExportCSV} className="h-9 px-3 bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer" title="Export CSV">
+<button type="button" onClick={handleExportCSV} className="h-9 px-3 bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer" title="Export CSV">
 <Download size={13} />
 <span className="hidden sm:inline">CSV</span>
 </button>
@@ -458,13 +463,13 @@ V
 							}} renderCard={(enr) => {
 								const percent = enr.agreedTuition > 0 ? Math.round(enr.paidAmount / enr.agreedTuition * 100) : 0;
 								return /* @__PURE__ */ <div className="flex flex-col items-center justify-center w-full">
-<div className="w-16 h-16 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center text-xl font-bold shadow-xs mb-3 select-none border border-neutral-200 dark:border-neutral-700">{enr.studentName.charAt(0)}</div>
-<h3 className="text-sm font-bold text-neutral-900 dark:text-white truncate max-w-[210px] mb-0.5 tracking-tight">{enr.studentName}</h3>
+<div className="w-16 h-16 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center text-xl font-bold shadow-xs mb-3 select-none border border-neutral-200 dark:border-neutral-700">{enr.studentName.charAt(0)}</div>
+<h3 className="text-sm font-bold text-black dark:text-white truncate max-w-[210px] mb-0.5 tracking-tight">{enr.studentName}</h3>
 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700 mb-3 truncate max-w-[200px]">{enr.cohortName}</span>
 <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-2">
 <div className="flex items-center justify-between text-[11px]">
-<span className="text-neutral-400">Contrat Total</span>
-<span className="font-bold text-neutral-900 dark:text-white tabular-nums">{formatMoney(enr.agreedTuition)}</span>
+<span className="text-black/55 dark:text-white/55">Contrat Total</span>
+<span className="font-bold text-black dark:text-white tabular-nums">{formatMoney(enr.agreedTuition)}</span>
 </div>
 <div className="flex items-center justify-between text-[11px]">
 <span className="text-emerald-600 font-semibold">{formatMoney(enr.paidAmount)}</span>
@@ -498,13 +503,13 @@ V
 {selectedEnrollmentForPayment && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
 <div className="relative w-full max-w-md bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6 space-y-4">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">{t("edu_payment_modal_title")}</h2>
-<button type="button" onClick={() => setSelectedEnrollmentForPayment(null)} className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("edu_payment_modal_title")}</h2>
+<button type="button" onClick={() => setSelectedEnrollmentForPayment(null)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
 </div>
 <form onSubmit={handleConfirmPayment} className="space-y-4 text-xs">
 <div className="p-3.5 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 space-y-1">
-<div className="font-bold text-neutral-900 dark:text-white">{selectedEnrollmentForPayment.studentName}</div>
-<div className="text-neutral-500">
+<div className="font-bold text-black dark:text-white">{selectedEnrollmentForPayment.studentName}</div>
+<div className="text-black/55 dark:text-white/55">
 {t("edu_label_cohort")}
 {": "}
 {selectedEnrollmentForPayment.cohortName}
@@ -516,18 +521,18 @@ V
 </div>
 </div>
 {selectedEnrollmentForPayment.installments && selectedEnrollmentForPayment.installments.length > 0 && /* @__PURE__ */ <div className="space-y-1.5">
-<label className="text-[11px] font-semibold text-neutral-600 dark:text-neutral-400">Sélectionner l'échéance à solder</label>
+<label className="text-[11px] font-semibold text-black/70 dark:text-white/75">Sélectionner l'échéance à solder</label>
 <div className="grid grid-cols-2 gap-2">
 {selectedEnrollmentForPayment.installments.map((inst: any, idx: number) => /* @__PURE__ */ <button key={idx} type="button" onClick={() => {
 											setSelectedInstallmentIndex(idx);
 											setPaymentAmount(inst.isPaid ? 0 : inst.amount);
-										}} className={`p-2 rounded-xl border text-left rtl:text-right transition-colors cursor-pointer ${selectedInstallmentIndex === idx ? "bg-[#FCEEE8] dark:bg-neutral-800 border-[#d4522f] text-[#d4522f] font-bold" : "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300"}`}>
-<div className="text-[10px] text-neutral-400">
+										}} className={`p-2 rounded-xl border text-left rtl:text-right transition-colors cursor-pointer ${selectedInstallmentIndex === idx ? "bg-[#FCEEE8] dark:bg-neutral-800 border-[#d4522f] text-[#d4522f] font-bold" : "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75"}`}>
+<div className="text-[10px] text-black/55 dark:text-white/55">
 Échéance #
 {idx + 1}
 </div>
 <div className="font-bold tabular-nums">{formatMoney(inst.amount)}</div>
-<div className="text-[10px] text-neutral-500">{inst.isPaid ? "✓ Soldée" : `Due le ${inst.dueDate}`}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">{inst.isPaid ? "✓ Soldée" : `Due le ${inst.dueDate}`}</div>
 </button>)}
 </div>
 </div>}
@@ -563,32 +568,32 @@ V
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-2xl bg-[#FCEEE8] text-[#d4522f] flex items-center justify-center font-bold text-sm">{detailEnrollment.studentName.charAt(0)}</div>
 <div>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">{detailEnrollment.studentName}</h2>
-<p className="text-xs text-neutral-500">{detailEnrollment.cohortName}</p>
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{detailEnrollment.studentName}</h2>
+<p className="text-xs text-black/55 dark:text-white/55">{detailEnrollment.cohortName}</p>
 </div>
 </div>
-<button type="button" onClick={() => setDetailEnrollment(null)} className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
+<button type="button" onClick={() => setDetailEnrollment(null)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
 </div>
 <div className="grid grid-cols-2 gap-3">
 <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-800">
-<span className="text-[11px] text-neutral-400 block mb-0.5">Frais de Scolarité</span>
-<span className="text-lg font-bold text-neutral-900 dark:text-white tabular-nums">{formatMoney(detailEnrollment.agreedTuition)}</span>
+<span className="text-[11px] text-black/55 dark:text-white/55 block mb-0.5">Frais de Scolarité</span>
+<span className="text-lg font-bold text-black dark:text-white tabular-nums">{formatMoney(detailEnrollment.agreedTuition)}</span>
 </div>
 <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-800">
-<span className="text-[11px] text-neutral-400 block mb-0.5">Solde Restant</span>
+<span className="text-[11px] text-black/55 dark:text-white/55 block mb-0.5">Solde Restant</span>
 <span className="text-lg font-bold text-rose-600 dark:text-rose-400 tabular-nums">{formatMoney(detailEnrollment.balanceDue)}</span>
 </div>
 </div>
 <div className="space-y-3">
-<h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500">Échéancier des versements</h3>
+<h3 className="text-xs font-bold uppercase tracking-wider text-black/55 dark:text-white/55">Échéancier des versements</h3>
 <div className="space-y-2">
 {detailEnrollment.installments?.map((inst: any, idx: number) => /* @__PURE__ */ <div key={idx} className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs">
 <div>
-<div className="font-semibold text-neutral-900 dark:text-white">
+<div className="font-semibold text-black dark:text-white">
 Versement #
 {idx + 1}
 </div>
-<div className="text-[11px] text-neutral-400">
+<div className="text-[11px] text-black/55 dark:text-white/55">
 {"Échéance : "}
 {inst.dueDate}
 {" "}
@@ -596,7 +601,7 @@ Versement #
 </div>
 </div>
 <div className="text-right">
-<div className="font-bold text-neutral-900 dark:text-white tabular-nums">{formatMoney(inst.amount)}</div>
+<div className="font-bold text-black dark:text-white tabular-nums">{formatMoney(inst.amount)}</div>
 <span className={`text-[10px] font-semibold ${inst.isPaid ? "text-emerald-600" : "text-amber-600"}`}>{inst.isPaid ? "✓ Soldé" : "En attente"}</span>
 </div>
 </div>)}
@@ -624,11 +629,11 @@ Versement #
 <div className="relative w-full max-w-sm bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6 space-y-4">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
 <div className="text-xs font-bold uppercase tracking-wider text-[#d4522f]">Official Tuition Receipt</div>
-<button type="button" onClick={() => setReceiptToPrint(null)} className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
+<button type="button" onClick={() => setReceiptToPrint(null)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
 </div>
 <div className="text-center py-2 space-y-1">
-<div className="font-bold text-neutral-900 dark:text-white text-sm">{currentBusiness?.displayName || "Atlas Academy"}</div>
-<div className="text-xs text-neutral-400">
+<div className="font-bold text-black dark:text-white text-sm">{currentBusiness?.displayName || "Atlas Academy"}</div>
+<div className="text-xs text-black/55 dark:text-white/55">
 Receipt #
 {receiptToPrint.receiptNumber}
 {" · "}
@@ -637,19 +642,19 @@ Receipt #
 </div>
 <div className="p-4 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 space-y-2 text-xs">
 <div className="flex justify-between">
-<span className="text-neutral-500">
+<span className="text-black/55 dark:text-white/55">
 {language === "ar" ? "المترشح / المتدرب:" : language === "fr" ? "Apprenant :" : "Learner:"}
 </span>
-<span className="font-bold text-neutral-900 dark:text-white">{receiptToPrint.studentName}</span>
+<span className="font-bold text-black dark:text-white">{receiptToPrint.studentName}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">
+<span className="text-black/55 dark:text-white/55">
 {language === "ar" ? "الفوج / الدورة التدريبية:" : language === "fr" ? "Promotion / Formation :" : "Cohort / Course:"}
 </span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{receiptToPrint.cohortName}</span>
+<span className="font-semibold text-black dark:text-white">{receiptToPrint.cohortName}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">
+<span className="text-black/55 dark:text-white/55">
 {t("edu_field_pay_method")}
 :
 </span>

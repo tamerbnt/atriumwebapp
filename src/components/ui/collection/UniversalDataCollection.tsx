@@ -92,7 +92,7 @@ export interface UniversalDataCollectionProps<T> {
   searchPlaceholder?: string;
   filterValue?: string;
   onFilterChange?: (val: string) => void;
-  filterOptions?: { value: string; label: string; count?: number | string }[];
+  filterOptions?: { value: string; label: string; tooltip?: string; count?: number | string }[];
   viewMode?: 'list' | 'grid' | 'calendar';
   onViewModeChange?:
     | ((mode: 'list' | 'grid' | 'calendar') => void)
@@ -481,6 +481,7 @@ export function UniversalDataCollection<T>({
                   options={filterOptions.map((opt) => ({
                     value: opt.value,
                     label: opt.label,
+                    tooltip: opt.tooltip,
                     count: opt.count,
                   }))}
                   value={filterValue || filterOptions[0].value}

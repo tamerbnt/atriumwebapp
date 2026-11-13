@@ -119,8 +119,8 @@ export const EducationCohortsView: React.FC<any> = () => {
 			renderCell: (cohort: any) => /* @__PURE__ */ <div className="flex items-center gap-3">
 <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700"><BookOpen size={16} /></div>
 <div className="min-w-0">
-<div className="font-bold text-neutral-900 dark:text-white truncate hover:text-[#d4522f] transition-colors">{cohort.name}</div>
-<div className="text-[11px] text-neutral-400 truncate">{cohort.courseTitle}</div>
+<div className="font-bold text-black dark:text-white truncate hover:text-[#d4522f] transition-colors">{cohort.name}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 truncate">{cohort.courseTitle}</div>
 </div>
 </div>
 		},
@@ -130,8 +130,8 @@ export const EducationCohortsView: React.FC<any> = () => {
 			width: "2*",
 			minWidth: "180px",
 			renderCell: (cohort: any) => /* @__PURE__ */ <div className="space-y-0.5 text-xs">
-<div className="font-medium text-neutral-800 dark:text-neutral-200 truncate">{cohort.instructorName}</div>
-<div className="text-[11px] text-neutral-400 truncate">{cohort.classroomName || "Room 1"}</div>
+<div className="font-medium text-black dark:text-white truncate">{cohort.instructorName}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 truncate">{cohort.classroomName || "Room 1"}</div>
 </div>
 		},
 		{
@@ -140,8 +140,8 @@ export const EducationCohortsView: React.FC<any> = () => {
 			width: "2*",
 			minWidth: "170px",
 			renderCell: (cohort: any) => /* @__PURE__ */ <div className="space-y-0.5 text-xs">
-<div className="text-neutral-700 dark:text-neutral-300 font-medium">{cohort.scheduleSummary}</div>
-<div className="text-[10px] text-neutral-400 font-mono">
+<div className="text-black/70 dark:text-white/75 font-medium">{cohort.scheduleSummary}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 font-mono">
 {cohort.startDate}
 {" — "}
 {cohort.endDate}
@@ -158,7 +158,7 @@ export const EducationCohortsView: React.FC<any> = () => {
 				const pct = Math.min(100, Math.round(cohort.enrolledCount / cohort.maxStudents * 100));
 				return /* @__PURE__ */ <div className="space-y-1 text-xs">
 <div className="flex items-center justify-between text-[11px]">
-<span className="font-semibold text-neutral-700 dark:text-neutral-300 tabular-nums">
+<span className="font-semibold text-black/70 dark:text-white/75 tabular-nums">
 {cohort.enrolledCount}
 {" / "}
 {cohort.maxStudents}
@@ -180,7 +180,7 @@ export const EducationCohortsView: React.FC<any> = () => {
 			width: "1.5*",
 			minWidth: "130px",
 			sortable: true,
-			renderCell: (cohort: any) => /* @__PURE__ */ <span className="font-bold text-neutral-900 dark:text-white tabular-nums">{formatMoney(cohort.tuitionFee)}</span>
+			renderCell: (cohort: any) => /* @__PURE__ */ <span className="font-bold text-black dark:text-white tabular-nums">{formatMoney(cohort.tuitionFee)}</span>
 		},
 		{
 			key: "status",
@@ -191,7 +191,7 @@ export const EducationCohortsView: React.FC<any> = () => {
 				const isEnrolling = cohort.status === "Enrolling";
 				const isRunning = cohort.status === "InProgress";
 				const isCompleted = cohort.status === "Completed";
-				return /* @__PURE__ */ <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${isEnrolling ? "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300" : isRunning ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : isCompleted ? "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400" : "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"}`}>{cohort.status}</span>;
+				return /* @__PURE__ */ <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${isEnrolling ? "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300" : isRunning ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : isCompleted ? "bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75" : "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"}`}>{cohort.status}</span>;
 			}
 		}
 	], [language, t]);
@@ -374,7 +374,7 @@ export const EducationCohortsView: React.FC<any> = () => {
 <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><GraduationCap size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{t("edu_cohorts_title")}</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("edu_cohorts_title")}</h1>
 </div>
 </div>
 </div>
@@ -385,14 +385,14 @@ export const EducationCohortsView: React.FC<any> = () => {
 {selectedCohortIds.size > 0 && /* @__PURE__ */ <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
 <div className="flex items-center gap-3">
 <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
-<span className="text-xs font-bold text-neutral-900 dark:text-white">
+<span className="text-xs font-bold text-black dark:text-white">
 {selectedCohortIds.size}
 {" "}
 {language === "ar" ? "أفواج محددة" : language === "fr" ? "cohortes sélectionnées" : "cohortes selected"}
 </span>
 </div>
 <div className="flex items-center gap-2 flex-wrap">
-<button onClick={() => setSelectedCohortIds(/* @__PURE__ */ new Set())} className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer">
+<button onClick={() => setSelectedCohortIds(/* @__PURE__ */ new Set())} className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer">
 {language === "ar" ? "إلغاء التحديد" : language === "fr" ? "Désélectionner" : "Deselect"}
 </button>
 <button onClick={handleBatchStart} className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs">
@@ -415,32 +415,32 @@ export const EducationCohortsView: React.FC<any> = () => {
 </div>}
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
 <div>
-<h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
+<h3 className="text-xs font-bold text-black dark:text-white tracking-tight">
 {language === "ar" ? "طاقة استيعاب الأفواج والبرامج" : language === "fr" ? "Capacité & Santé des Cohortes" : "Capacity & Cohorts Health"}
 </h3>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "نسبة الأفواج النشطة" : language === "fr" ? "Ratio de cohortes" : "Active Cohorts Ratio"}
 </span>
 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">↗ 100%</span>
 </div>
 <div>
-<span className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">{eduCohorts.length}</span>
-<span className="text-xs text-neutral-400 tabular-nums ml-1">
+<span className="text-2xl font-bold text-black dark:text-white tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">{eduCohorts.length}</span>
+<span className="text-xs text-black/55 dark:text-white/55 tabular-nums ml-1">
 {"/ "}
 {eduCohorts.length}
 {" "}
 {language === "ar" ? "دفعات دراسية" : "batches"}
 </span>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">{language === "ar" ? "دفعات دراسية نشطة" : "Cohortes en cycle actif"}</p>
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">{language === "ar" ? "دفعات دراسية نشطة" : "Cohortes en cycle actif"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "نسبة امتلاء المقاعد" : language === "fr" ? "Taux de remplissage" : "Seat Fill Rate"}
 </span>
 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
@@ -451,23 +451,23 @@ export const EducationCohortsView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<span className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">
+<span className="text-2xl font-bold text-black dark:text-white tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {globalOccupancy}
 %
 </span>
-<span className="text-xs text-neutral-400 ml-1">
+<span className="text-xs text-black/55 dark:text-white/55 ml-1">
 {totalEnrolled}
 {" / "}
 {totalSeats}
 {" "}
 {language === "ar" ? "مقعد" : "seats"}
 </span>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">{language === "ar" ? "نسبة إشغال القاعات" : "Taux d'occupation global"}</p>
+<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">{language === "ar" ? "نسبة إشغال القاعات" : "Taux d'occupation global"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-400">
+<span className="text-[11px] font-medium text-white/75">
 {language === "ar" ? "القيمة الإجمالية للدورات" : language === "fr" ? "Valeur Financière Cohortes" : "Cohort Tuition Value"}
 </span>
 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 inline-block">
@@ -475,8 +475,8 @@ export const EducationCohortsView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<span className="text-2xl font-bold text-[#FB923C] tabular-nums tracking-tight font-mono">{formatMoney(totalCohortValue)}</span>
-<p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+<span className="text-2xl font-bold text-[#FB923C] tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalCohortValue)}</span>
+<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
 <span>{language === "ar" ? "إجمالي الرسوم التعاقدية" : "Volume scolarité engagé"}</span>
 </p>
@@ -487,11 +487,11 @@ export const EducationCohortsView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
 <div className="flex items-center gap-2">
-<BookOpen size={18} className="text-neutral-700 dark:text-neutral-300" />
-<h2 className="text-sm font-bold text-neutral-900 dark:text-white">
+<BookOpen size={18} className="text-black/70 dark:text-white/75" />
+<h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {language === "ar" ? "الأفواج والبرامج الدراسية" : language === "fr" ? "Cohortes & Programmes" : "Academic Cohorts"}
 </h2>
-<span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">{filteredCohorts.length}</span>
+<span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-black/70 dark:text-white/75">{filteredCohorts.length}</span>
 </div>
 <div className="flex items-center gap-2.5 flex-wrap">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={t("edu_search_cohorts_ph")} shutSize={36} openWidth={220} />
@@ -499,27 +499,32 @@ export const EducationCohortsView: React.FC<any> = () => {
 {[
 											{
 												id: "All",
-												label: t("edu_filter_all_programs")
+												label: t("edu_filter_all_programs"),
+												tooltip: language === "ar" ? "جميع البرامج" : language === "fr" ? "Tous les programmes" : "All programs"
 											},
 											{
 												id: "Language",
-												label: "Languages"
+												label: language === "ar" ? "لغات" : language === "fr" ? "Langues" : "Languages",
+												tooltip: language === "ar" ? "اللغات الأجنبية" : language === "fr" ? "Langues étrangères" : "Foreign Languages"
 											},
 											{
 												id: "Technology",
-												label: "Tech & Code"
+												label: language === "ar" ? "تقنية" : "Tech",
+												tooltip: "Tech & Code"
 											},
 											{
 												id: "Academic",
-												label: "Academic"
+												label: language === "ar" ? "أكاديمي" : language === "fr" ? "Soutien" : "Academic",
+												tooltip: language === "ar" ? "الدعم المدرسي والأكاديمي" : language === "fr" ? "Soutien Académique" : "Academic Support"
 											},
 											{
 												id: "Arts",
-												label: "Arts"
+												label: language === "ar" ? "فنون" : "Arts",
+												tooltip: "Arts & Design"
 											}
-										].map((tab) => /* @__PURE__ */ <button key={tab.id} type="button" onClick={() => setCategoryFilter(tab.id)} className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap cursor-pointer ${categoryFilter === tab.id ? "bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f]" : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"}`}>{tab.label}</button>)}
+										].map((tab) => /* @__PURE__ */ <button key={tab.id} type="button" title={tab.tooltip} onClick={() => setCategoryFilter(tab.id)} className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap cursor-pointer ${categoryFilter === tab.id ? "bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f]" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>{tab.label}</button>)}
 </div>
-<button type="button" onClick={handleExportCSV} className="h-9 px-3 bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer" title="Export CSV">
+<button type="button" onClick={handleExportCSV} className="h-9 px-3 bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer" title="Export CSV">
 <Download size={13} />
 <span className="hidden sm:inline">CSV</span>
 </button>
@@ -537,15 +542,15 @@ export const EducationCohortsView: React.FC<any> = () => {
 								const totalMilestones = cohort.syllabusMilestones?.length || 0;
 								return /* @__PURE__ */ <div className="flex flex-col items-center justify-center w-full">
 <div className="w-20 h-20 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-[28px] font-bold shadow-md mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700"><BookOpen size={28} /></div>
-<h3 className="text-[16px] font-bold text-neutral-900 dark:text-white truncate max-w-[210px] mb-1 tracking-tight text-center">{cohort.name}</h3>
-<span className="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 mb-2 truncate max-w-[200px]">{cohort.courseTitle}</span>
+<h3 className="text-[16px] font-bold text-black dark:text-white truncate max-w-[210px] mb-1 tracking-tight text-center">{cohort.name}</h3>
+<span className="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 mb-2 truncate max-w-[200px]">{cohort.courseTitle}</span>
 <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-2">
 <div className="flex items-center justify-between text-[11px]">
-<span className="text-neutral-400">{cohort.instructorName}</span>
-<span className="font-bold text-neutral-900 dark:text-white tabular-nums">{formatMoney(cohort.tuitionFee)}</span>
+<span className="text-black/55 dark:text-white/55">{cohort.instructorName}</span>
+<span className="font-bold text-black dark:text-white tabular-nums">{formatMoney(cohort.tuitionFee)}</span>
 </div>
 <div className="flex items-center justify-between text-[11px]">
-<span className="text-neutral-500 font-medium">
+<span className="text-black/55 dark:text-white/55 font-medium">
 {cohort.enrolledCount}
 {" / "}
 {cohort.maxStudents}
@@ -561,7 +566,7 @@ export const EducationCohortsView: React.FC<any> = () => {
 <div className="h-full bg-[#d4522f] rounded-full transition-all" style={{ width: `${occupancyPercent}%` }} />
 </div>
 <div className="flex items-center justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800/80 text-[11px]">
-<span className="text-neutral-400">
+<span className="text-black/55 dark:text-white/55">
 {totalMilestones > 0 ? `${completedMilestones}/${totalMilestones} Milestones` : cohort.scheduleSummary}
 </span>
 <span className="font-semibold text-emerald-600 dark:text-emerald-400">{cohort.status}</span>
@@ -598,37 +603,37 @@ export const EducationCohortsView: React.FC<any> = () => {
 <div className="p-5 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
 <div>
 <span className="text-[11px] font-semibold text-[#d4522f] uppercase tracking-wider block">Class Details</span>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">{selectedCohort.name}</h2>
-<p className="text-xs text-neutral-500">
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{selectedCohort.name}</h2>
+<p className="text-xs text-black/55 dark:text-white/55">
 {selectedCohort.courseTitle}
 {" · "}
 {selectedCohort.scheduleSummary}
 </p>
 </div>
-<button type="button" onClick={() => setSelectedCohort(null)} className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
+<button type="button" onClick={() => setSelectedCohort(null)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
 </div>
 <div className="flex-1 overflow-y-auto p-5 space-y-6 text-xs">
 <div className="grid grid-cols-2 gap-3">
 <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800">
-<span className="text-[10px] text-neutral-400 block uppercase font-medium">
+<span className="text-[10px] text-black/55 dark:text-white/55 block uppercase font-medium">
 {language === "ar" ? "المدرّب / الأستاذ" : language === "fr" ? "Formateur" : "Instructor"}
 </span>
-<span className="font-semibold text-neutral-900 dark:text-white">{selectedCohort.instructorName}</span>
+<span className="font-semibold text-black dark:text-white">{selectedCohort.instructorName}</span>
 </div>
 <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800">
-<span className="text-[10px] text-neutral-400 block uppercase font-medium">
+<span className="text-[10px] text-black/55 dark:text-white/55 block uppercase font-medium">
 {language === "ar" ? "القاعة الدراسية" : language === "fr" ? "Salle" : "Classroom"}
 </span>
-<span className="font-semibold text-neutral-900 dark:text-white">{selectedCohort.classroomName || "Room 1"}</span>
+<span className="font-semibold text-black dark:text-white">{selectedCohort.classroomName || "Room 1"}</span>
 </div>
 <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800">
-<span className="text-[10px] text-neutral-400 block uppercase font-medium">
+<span className="text-[10px] text-black/55 dark:text-white/55 block uppercase font-medium">
 {language === "ar" ? "رسوم الدورة" : language === "fr" ? "Frais d'inscription" : "Tuition Fee"}
 </span>
-<span className="font-semibold text-neutral-900 dark:text-white">{formatMoney(selectedCohort.tuitionFee)}</span>
+<span className="font-semibold text-black dark:text-white">{formatMoney(selectedCohort.tuitionFee)}</span>
 </div>
 <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800">
-<span className="text-[10px] text-neutral-400 block uppercase font-medium">
+<span className="text-[10px] text-black/55 dark:text-white/55 block uppercase font-medium">
 {language === "ar" ? "المقاعد المحجوزة" : language === "fr" ? "Places occupées" : "Seats Filled"}
 </span>
 <span className="font-semibold text-[#d4522f]">
@@ -642,32 +647,32 @@ export const EducationCohortsView: React.FC<any> = () => {
 </div>
 </div>
 <div>
-<h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider mb-2.5">
+<h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider mb-2.5">
 {language === "ar" ? "مراحل ومحاور المنهاج" : language === "fr" ? "Progression du programme" : "Syllabus Milestones & Progress"}
 </h3>
 <div className="space-y-2">
 {selectedCohort.syllabusMilestones?.map((milestone: any, idx: number) => /* @__PURE__ */ <div key={idx} onClick={() => handleToggleMilestone(selectedCohort.id, idx)} className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${milestone.completed ? "border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/30 dark:bg-emerald-950/20" : "border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"}`}>
 <button type="button" className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 ${milestone.completed ? "bg-emerald-600 text-white" : "border border-neutral-300 dark:border-neutral-700"}`}>{milestone.completed && /* @__PURE__ */ <Check size={12} />}</button>
 <div className="min-w-0">
-<span className={`font-semibold text-xs block ${milestone.completed ? "text-neutral-500 dark:text-neutral-400 line-through" : "text-neutral-900 dark:text-white"}`}>{milestone.title}</span>
-<span className="text-[10px] text-neutral-400">{milestone.completed ? "Milestone Cleared" : "In Progress"}</span>
+<span className={`font-semibold text-xs block ${milestone.completed ? "text-black/55 dark:text-white/75 line-through" : "text-black dark:text-white"}`}>{milestone.title}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">{milestone.completed ? "Milestone Cleared" : "In Progress"}</span>
 </div>
 </div>)}
 </div>
 </div>
 <div>
 <div className="flex items-center justify-between mb-2.5">
-<h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
+<h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
 Enrolled Students Roster (
 {cohortEnrolledStudents.length}
 )
 </h3>
 </div>
-{cohortEnrolledStudents.length === 0 ? /* @__PURE__ */ <p className="text-neutral-400 italic">No students enrolled yet in this cohort.</p> : /* @__PURE__ */ <div className="space-y-1.5">
+{cohortEnrolledStudents.length === 0 ? /* @__PURE__ */ <p className="text-black/55 dark:text-white/55 italic">No students enrolled yet in this cohort.</p> : /* @__PURE__ */ <div className="space-y-1.5">
 {cohortEnrolledStudents.map(({ enrollment, student }) => /* @__PURE__ */ <div key={enrollment.id} className="flex items-center justify-between p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900">
 <div>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 block">{enrollment.studentName}</span>
-<span className="text-[10px] text-neutral-400">
+<span className="font-semibold text-black dark:text-white block">{enrollment.studentName}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">
 {student?.phone || "No phone"}
 {" · Paid: "}
 {formatMoney(enrollment.paidAmount)}
@@ -683,8 +688,8 @@ Enrolled Students Roster (
 {isAddCohortModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
 <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6">
 <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">{t("edu_modal_add_cohort")}</h2>
-<button type="button" onClick={() => setIsAddCohortModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("edu_modal_add_cohort")}</h2>
+<button type="button" onClick={() => setIsAddCohortModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
 </div>
 <form onSubmit={handleCreateCohort} className="space-y-3.5 pt-4 text-xs">
 <LabelSelect field="CourseCurriculum" label={t("edu_field_course_title")} value={formData.courseId} onChange={(val) => setFormData({
@@ -742,7 +747,7 @@ Enrolled Students Roster (
 									scheduleSummary: val?.target?.value ?? val
 								})} placeholder="e.g. Sat & Tue 14:00 - 16:30" width="100%" height={40} corner={12} />
 <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
-<button type="button" onClick={() => setIsAddCohortModalOpen(false)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold cursor-pointer">{t("common_cancel")}</button>
+<button type="button" onClick={() => setIsAddCohortModalOpen(false)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer">{t("common_cancel")}</button>
 <button type="submit" className="px-5 py-2 rounded-xl bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs">{t("edu_btn_save_cohort")}</button>
 </div>
 </form>

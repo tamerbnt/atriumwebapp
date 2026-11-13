@@ -103,7 +103,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><ShieldCheck size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {isAr ? "مراقبة الجودة والتكاليف الصناعية" : "Contrôle Qualité & Coûts de Revient"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Norme ISO 9001</span>
@@ -119,32 +119,32 @@ export const ManufacturingQcView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "مؤشرات المطابقة ونسب الفاقد" : "Indicateurs de Conformité & Maîtrise des Rebuts"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "معدل المطابقة للمواصفات" : "Taux de Conformité Moyen"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "معدل المطابقة للمواصفات" : "Taux de Conformité Moyen"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">98.8%</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">{isAr ? "مطابق لشهادة الجودة ISO 9001" : "Conforme aux tolérances ISO"}</p>
+<div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">98.8%</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">{isAr ? "مطابق لشهادة الجودة ISO 9001" : "Conforme aux tolérances ISO"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "نسبة الفاقد / التالف (Scrap)" : "Taux de Rebut (Scrap)"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "نسبة الفاقد / التالف (Scrap)" : "Taux de Rebut (Scrap)"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono tabular-nums">1.2%</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">{isAr ? "ضمن الحدود الآمنة المقبولة" : "Inférieur au seuil max (2%)"}</p>
+<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">1.2%</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">{isAr ? "ضمن الحدود الآمنة المقبولة" : "Inférieur au seuil max (2%)"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{isAr ? "شهادات الإفراج عن الدفعات" : "Libération des Lots"}</span>
+<span className="text-[11px] font-medium text-white/80">{isAr ? "شهادات الإفراج عن الدفعات" : "Libération des Lots"}</span>
 <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">Contrôle 100%</span>
 </div>
 <div>
-<div className="text-2xl font-black text-white font-mono tabular-nums">100%</div>
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">100%</div>
 <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
 <CheckCircle2 size={11} />
 {orders.length}
@@ -158,7 +158,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "سجل الفحص المخبري ومراقبة الجودة (QC / ISO)" : "Registre des Contrôles Qualité Libératoires (AQL)"}
 </h2>
 </div>
@@ -196,8 +196,8 @@ export const ManufacturingQcView: React.FC<any> = () => {
 										id: "product",
 										header: isAr ? "المنتج & الدفعة" : "Article Fabriqué & Lot",
 										renderCell: (o: any) => /* @__PURE__ */ <div>
-<span className="font-bold text-xs text-neutral-900 dark:text-neutral-100 block">{o.productName}</span>
-<span className="text-[10px] text-neutral-400 font-mono">
+<span className="font-bold text-xs text-black dark:text-white block">{o.productName}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
 {"Lot: "}
 {o.batchLotNumber || "LOT-2026-STD"}
 </span>
@@ -208,7 +208,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
 										header: isAr ? "الكمية" : "Quantité",
 										width: "120px",
 										sortable: true,
-										renderCell: (o: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white">
+										renderCell: (o: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-black dark:text-white">
 {o.actualQuantityProduced || o.targetQuantity}
 {" pcs"}
 </span>
@@ -227,7 +227,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
 										renderCell: (o: any) => {
 											const qty = o.actualQuantityProduced || o.targetQuantity || 1;
 											const unitCost = Math.round(o.totalCostDzd / qty);
-											return /* @__PURE__ */ <span className="font-mono text-xs font-bold text-neutral-700 dark:text-neutral-300">{formatMoney(unitCost, language)}</span>;
+											return /* @__PURE__ */ <span className="font-mono text-xs font-bold text-black/70 dark:text-white/75">{formatMoney(unitCost, language)}</span>;
 										}
 									},
 									{
@@ -248,8 +248,8 @@ export const ManufacturingQcView: React.FC<any> = () => {
 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">98.8% Conforme</span>
 </div>
 <div>
-<h4 className="font-bold text-xs text-neutral-900 dark:text-white line-clamp-2">{o.productName}</h4>
-<p className="text-[10px] text-neutral-400 font-mono mt-0.5">
+<h4 className="font-bold text-xs text-black dark:text-white line-clamp-2">{o.productName}</h4>
+<p className="text-[10px] text-black/55 dark:text-white/55 font-mono mt-0.5">
 {"Lot: "}
 {o.batchLotNumber || "LOT-2026-STD"}
 {" · "}
@@ -259,8 +259,8 @@ export const ManufacturingQcView: React.FC<any> = () => {
 </div>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
 <div>
-<span className="text-[10px] text-neutral-400 block">Coût Unitaire</span>
-<span className="font-mono font-bold text-neutral-700 dark:text-neutral-300">{formatMoney(unitCost, language)}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 block">Coût Unitaire</span>
+<span className="font-mono font-bold text-black/70 dark:text-white/75">{formatMoney(unitCost, language)}</span>
 </div>
 <span className="text-emerald-600 font-bold text-xs">Libéré ✓</span>
 </div>
@@ -272,59 +272,59 @@ export const ManufacturingQcView: React.FC<any> = () => {
 <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Award size={16} /></div>
 <div>
-<h3 className="font-bold text-xs text-neutral-900 dark:text-white flex items-center gap-1.5 font-mono">{selectedOrder.orderNumber}</h3>
-<p className="text-[10px] text-neutral-500 truncate max-w-[210px]">
+<h3 className="font-bold text-xs text-black dark:text-white flex items-center gap-1.5 font-mono">{selectedOrder.orderNumber}</h3>
+<p className="text-[10px] text-black/55 dark:text-white/55 truncate max-w-[210px]">
 {"Lot: "}
 {selectedOrder.batchLotNumber || "LOT-2026-05"}
 </p>
 </div>
 </div>
-<button onClick={() => setSelectedOrder(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500 transition-colors"><X size={15} /></button>
+<button onClick={() => setSelectedOrder(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-black/55 dark:text-white/55 transition-colors"><X size={15} /></button>
 </div>
 <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 pt-2 gap-2">
-<button onClick={() => setInspectorTab("cq")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "cq" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"}`}>{isAr ? "فحص الجودة" : "Contrôle CQ"}</button>
-<button onClick={() => setInspectorTab("metrologie")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "metrologie" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"}`}>{isAr ? "القياس والتفاوت" : "Métrologie"}</button>
-<button onClick={() => setInspectorTab("couts")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "couts" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"}`}>{isAr ? "التكلفة والتالف" : "Coûts & Scrap"}</button>
+<button onClick={() => setInspectorTab("cq")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "cq" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "فحص الجودة" : "Contrôle CQ"}</button>
+<button onClick={() => setInspectorTab("metrologie")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "metrologie" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "القياس والتفاوت" : "Métrologie"}</button>
+<button onClick={() => setInspectorTab("couts")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "couts" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "التكلفة والتالف" : "Coûts & Scrap"}</button>
 </div>
 <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
 {inspectorTab === "cq" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-4 bg-[#1F1D1B] rounded-xl text-white space-y-2 shadow-sm">
-<div className="flex items-center justify-between text-neutral-300 text-[11px]">
+<div className="flex items-center justify-between text-white/80 text-[11px]">
 <span>Statut Libération du Lot</span>
 <span className="bg-[#3D2817] text-[#FB923C] text-[10px] font-bold px-2 py-0.5 rounded-full">ISO 9001</span>
 </div>
-<div className="text-2xl font-black font-mono tracking-tight text-white">98.8% Conforme</div>
-<p className="text-[10px] text-neutral-400">Échantillonnage AQL 1.5 validé par le laboratoire de métrologie interne.</p>
+<div className="text-2xl font-black tracking-tight text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">98.8% Conforme</div>
+<p className="text-[10px] text-white/75">Échantillonnage AQL 1.5 validé par le laboratoire de métrologie interne.</p>
 </div>
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Spécifications de Fabrication</span>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Spécifications de Fabrication</span>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Désignation:</span>
-<span className="font-bold text-neutral-900 dark:text-white">{selectedOrder.productName}</span>
+<span className="text-black/55 dark:text-white/55">Désignation:</span>
+<span className="font-bold text-black dark:text-white">{selectedOrder.productName}</span>
 </div>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Taille du Lot:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">
+<span className="text-black/55 dark:text-white/55">Taille du Lot:</span>
+<span className="font-mono font-bold text-black dark:text-white">
 {selectedOrder.actualQuantityProduced || selectedOrder.targetQuantity}
 {" unités"}
 </span>
 </div>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Inspecteur Responsable:</span>
-<span className="font-medium text-neutral-900 dark:text-white">Ing. Sami Mansour (CQ)</span>
+<span className="text-black/55 dark:text-white/55">Inspecteur Responsable:</span>
+<span className="font-medium text-black dark:text-white">Ing. Sami Mansour (CQ)</span>
 </div>
 </div>
 <div className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
 <div>
-<span className="font-semibold block text-neutral-900 dark:text-white">Libération du Lot</span>
-<span className="text-[10px] text-neutral-500">Autoriser l'expédition vers stock fini</span>
+<span className="font-semibold block text-black dark:text-white">Libération du Lot</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">Autoriser l'expédition vers stock fini</span>
 </div>
 <button onClick={() => handleReleaseLot(selectedOrder)} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#d4522f] hover:bg-[#b06a4e] text-white transition-colors">Libérer ✓</button>
 </div>
 </div>}
 {inspectorTab === "metrologie" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Rapport Dimensionnel & Tolérances</span>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Rapport Dimensionnel & Tolérances</span>
 <div className="space-y-2">
 <div className="flex justify-between p-2 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
 <span>Cote Critique Longueur (±0.5mm):</span>
@@ -343,17 +343,17 @@ export const ManufacturingQcView: React.FC<any> = () => {
 </div>}
 {inspectorTab === "couts" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Décomposition Coût de Revient</span>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Décomposition Coût de Revient</span>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Matières Premières:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">{formatMoney(selectedOrder.totalMaterialCostDzd)}</span>
+<span className="text-black/55 dark:text-white/55">Matières Premières:</span>
+<span className="font-mono font-bold text-black dark:text-white">{formatMoney(selectedOrder.totalMaterialCostDzd)}</span>
 </div>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Main d'Œuvre Directe:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">{formatMoney(selectedOrder.totalLaborCostDzd)}</span>
+<span className="text-black/55 dark:text-white/55">Main d'Œuvre Directe:</span>
+<span className="font-mono font-bold text-black dark:text-white">{formatMoney(selectedOrder.totalLaborCostDzd)}</span>
 </div>
 <div className="flex items-center justify-between pt-1 border-t border-neutral-200 dark:border-neutral-800">
-<span className="font-semibold text-neutral-900 dark:text-white">Coût Total Lot:</span>
+<span className="font-semibold text-black dark:text-white">Coût Total Lot:</span>
 <span className="font-mono font-bold text-[#d4522f]">{formatMoney(selectedOrder.totalCostDzd)}</span>
 </div>
 </div>
@@ -370,10 +370,10 @@ export const ManufacturingQcView: React.FC<any> = () => {
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold"><ShieldCheck size={22} /></div>
 <div>
-<h3 className="font-bold text-base text-neutral-900 dark:text-white">
+<h3 className="font-bold text-base text-black dark:text-white">
 {isAr ? "شهادة المطابقة الصناعية IANOR / ISO" : "Certificat de Conformité & Libération Lot"}
 </h3>
-<p className="text-xs text-neutral-400">Norme ISO 9001:2015 & IANOR NA 1620</p>
+<p className="text-xs text-black/55 dark:text-white/55">Norme ISO 9001:2015 & IANOR NA 1620</p>
 </div>
 </div>
 <div className="flex items-center gap-2">
@@ -381,14 +381,14 @@ export const ManufacturingQcView: React.FC<any> = () => {
 <Printer size={14} />
 <span>{isAr ? "طباعة" : "Imprimer"}</span>
 </button>
-<button type="button" onClick={() => setOrderForCertificate(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 cursor-pointer"><X size={18} /></button>
+<button type="button" onClick={() => setOrderForCertificate(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 cursor-pointer"><X size={18} /></button>
 </div>
 </div>
-<div className="p-6 rounded-2xl bg-white border-2 border-emerald-600/40 text-neutral-900 space-y-5 font-sans shadow-xs">
+<div className="p-6 rounded-2xl bg-white border-2 border-emerald-600/40 text-black space-y-5 font-sans shadow-xs">
 <div className="flex justify-between items-start border-b pb-4">
 <div>
-<div className="font-black text-sm tracking-tight text-[#1F1D1B]">ATRIUM MANUFACTURE & CONTRÔLE QUALITÉ</div>
-<div className="text-[10px] text-neutral-500 font-medium">Laboratoire de Métrologie Industrielle • Alger • Agrément ONML N° 2026/88</div>
+<div className="font-black text-sm tracking-tight text-black">ATRIUM MANUFACTURE & CONTRÔLE QUALITÉ</div>
+<div className="text-[10px] text-black/55 font-medium">Laboratoire de Métrologie Industrielle • Alger • Agrément ONML N° 2026/88</div>
 <div className="text-xs font-bold text-emerald-700 mt-1 uppercase tracking-wide">BULLETIN D'ANALYSE & CERTIFICAT DE CONFORMITÉ PRODUIT FINI</div>
 </div>
 <div className="text-right">
@@ -396,7 +396,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
 CERT-2026-
 {orderForCertificate.orderNumber.replace(/[^0-9]/g, "")}
 </div>
-<div className="text-[11px] text-neutral-500 mt-0.5">
+<div className="text-[11px] text-black/55 mt-0.5">
 {"Date : "}
 {(/* @__PURE__ */ new Date()).toISOString().split("T")[0]}
 </div>
@@ -404,19 +404,19 @@ CERT-2026-
 </div>
 <div className="bg-neutral-50 p-3.5 rounded-xl border border-neutral-200 text-xs space-y-1.5">
 <div className="flex justify-between">
-<span className="text-neutral-500">Article inspecté :</span>
-<span className="font-bold text-neutral-900">{orderForCertificate.productName}</span>
+<span className="text-black/55">Article inspecté :</span>
+<span className="font-bold text-black">{orderForCertificate.productName}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">Ordre de Fabrication :</span>
-<span className="font-mono font-semibold text-neutral-900">{orderForCertificate.orderNumber}</span>
+<span className="text-black/55">Ordre de Fabrication :</span>
+<span className="font-mono font-semibold text-black">{orderForCertificate.orderNumber}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">N° de Lot de Traçabilité :</span>
+<span className="text-black/55">N° de Lot de Traçabilité :</span>
 <span className="font-mono font-bold text-[#d4522f]">{orderForCertificate.batchLotNumber || "LOT-202610-0089"}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">Quantité libérée :</span>
+<span className="text-black/55">Quantité libérée :</span>
 <span className="font-mono font-bold text-emerald-700">
 {orderForCertificate.actualQuantityProduced || orderForCertificate.quantityProduced || orderForCertificate.targetQuantity}
 {" unités conformes"}
@@ -424,7 +424,7 @@ CERT-2026-
 </div>
 </div>
 <div className="space-y-1.5">
-<div className="text-xs font-bold text-neutral-800 uppercase tracking-wider">Résultats des Contrôles Métrologiques & Essais</div>
+<div className="text-xs font-bold text-black uppercase tracking-wider">Résultats des Contrôles Métrologiques & Essais</div>
 <div className="p-3 bg-emerald-50/60 rounded-xl border border-emerald-200 text-xs space-y-1">
 <div className="flex justify-between">
 <span>Tolérance dimensionnelle (Calibre Vernier) :</span>
@@ -440,17 +440,17 @@ CERT-2026-
 </div>
 </div>
 </div>
-<div className="p-3 bg-neutral-100 rounded-xl text-[11px] text-neutral-700 font-medium">
+<div className="p-3 bg-neutral-100 rounded-xl text-[11px] text-black/75 font-medium">
 Le Responsable Assurance Qualité atteste que le lot ci-dessus référencé répond strictement aux spécifications techniques du cahier des charges et est libéré pour livraison client.
 </div>
 <div className="grid grid-cols-2 gap-4 pt-6 border-t text-center text-xs">
 <div>
-<span className="text-neutral-400 text-[10px] block">Ingénieur Métrologie & CQ</span>
-<div className="h-10 flex items-center justify-center font-serif text-neutral-800 italic">Ing. Sofiane Mokrani</div>
+<span className="text-black/55 text-[10px] block">Ingénieur Métrologie & CQ</span>
+<div className="h-10 flex items-center justify-center font-serif text-black italic">Ing. Sofiane Mokrani</div>
 </div>
 <div>
-<span className="text-neutral-400 text-[10px] block">Cachet & Signature Direction</span>
-<div className="h-10 flex items-center justify-center font-serif text-neutral-800 italic">Direction Qualité Atrium</div>
+<span className="text-black/55 text-[10px] block">Cachet & Signature Direction</span>
+<div className="h-10 flex items-center justify-center font-serif text-black italic">Direction Qualité Atrium</div>
 </div>
 </div>
 </div>

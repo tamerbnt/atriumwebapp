@@ -170,9 +170,9 @@ export const MembershipHistoryView: React.FC<any> = () => {
 			width: "1.5*",
 			minWidth: "130px",
 			sortable: true,
-			renderCell: (sale: any) => /* @__PURE__ */ <div className="text-xs text-neutral-600 dark:text-neutral-300 tabular-nums">
+			renderCell: (sale: any) => /* @__PURE__ */ <div className="text-xs text-black/70 dark:text-white/75 tabular-nums">
 <span>{new Date(sale.createdAt).toLocaleDateString()}</span>
-<span className="text-neutral-400 ml-1.5 font-mono text-[11px]">
+<span className="text-black/55 dark:text-white/55 ml-1.5 font-mono text-[11px]">
 {new Date(sale.createdAt).toLocaleTimeString([], {
 						hour: "2-digit",
 						minute: "2-digit"
@@ -187,12 +187,12 @@ export const MembershipHistoryView: React.FC<any> = () => {
 			minWidth: "150px",
 			sortable: true,
 			renderCell: (sale: any) => /* @__PURE__ */ <div className="flex items-center gap-2">
-<div className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-xs font-bold text-neutral-700 dark:text-neutral-300 shrink-0">{(sale.memberName || "G").charAt(0).toUpperCase()}</div>
+<div className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-xs font-bold text-black/70 dark:text-white/75 shrink-0">{(sale.memberName || "G").charAt(0).toUpperCase()}</div>
 <div className="min-w-0">
-<span className="text-xs font-bold text-neutral-900 dark:text-white truncate block">
+<span className="text-xs font-bold text-black dark:text-white truncate block">
 {sale.memberName || (language === "ar" ? "زائر غير مسجل" : language === "fr" ? "Client de passage" : "Guest Walk-In")}
 </span>
-{sale.customerPhone && /* @__PURE__ */ <span className="text-[10px] text-neutral-400 font-mono block">{sale.customerPhone}</span>}
+{sale.customerPhone && /* @__PURE__ */ <span className="text-[10px] text-black/55 dark:text-white/55 font-mono block">{sale.customerPhone}</span>}
 </div>
 </div>
 		},
@@ -202,12 +202,12 @@ export const MembershipHistoryView: React.FC<any> = () => {
 			width: "2.5*",
 			minWidth: "180px",
 			renderCell: (sale: any) => /* @__PURE__ */ <div className="flex items-center gap-1.5 flex-wrap">
-{sale.items.slice(0, 3).map((it: any, idx: number) => /* @__PURE__ */ <span key={idx} className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[11px] font-medium text-neutral-700 dark:text-neutral-300">
+{sale.items.slice(0, 3).map((it: any, idx: number) => /* @__PURE__ */ <span key={idx} className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[11px] font-medium text-black/70 dark:text-white/75">
 {it.quantity}
 {"x "}
 {it.productName}
 </span>)}
-{sale.items.length > 3 && /* @__PURE__ */ <span className="text-[10px] text-neutral-400 font-bold">
+{sale.items.length > 3 && /* @__PURE__ */ <span className="text-[10px] text-black/55 dark:text-white/55 font-bold">
 +
 {sale.items.length - 3}
 </span>}
@@ -224,7 +224,7 @@ export const MembershipHistoryView: React.FC<any> = () => {
 			minWidth: "130px",
 			sortable: true,
 			renderCell: (sale: any) => /* @__PURE__ */ <div className="flex items-center gap-1.5">
-<span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+<span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75">
 {sale.paymentMethod === "Cash" && /* @__PURE__ */ <Banknote size={13} className="text-emerald-600" />}
 {sale.paymentMethod === "Card" && /* @__PURE__ */ <CreditCard size={13} className="text-blue-600" />}
 {sale.paymentMethod === "Split" && /* @__PURE__ */ <CreditCard size={13} className="text-purple-600" />}
@@ -241,7 +241,7 @@ export const MembershipHistoryView: React.FC<any> = () => {
 			minWidth: "110px",
 			sortable: true,
 			renderCell: (sale: any) => /* @__PURE__ */ <div className="text-right tabular-nums">
-<div className={`text-xs font-black font-mono ${sale.status === "Refunded" ? "line-through text-neutral-400" : "text-neutral-900 dark:text-white"}`}>{formatMoney(sale.totalAmount)}</div>
+<div className={`text-xs font-black font-mono ${sale.status === "Refunded" ? "line-through text-black/55 dark:text-white/55" : "text-black dark:text-white"}`}>{formatMoney(sale.totalAmount)}</div>
 {sale.status === "Refunded" && /* @__PURE__ */ <div className="text-[10px] font-bold text-rose-600 dark:text-rose-400">{language === "ar" ? "تم الإلغاء" : language === "fr" ? "Annulé" : "Cancelled"}</div>}
 </div>
 		}
@@ -261,9 +261,9 @@ export const MembershipHistoryView: React.FC<any> = () => {
 </div>}
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 <div className="flex items-center gap-3.5">
-<div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200"><History size={22} /></div>
+<div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-white"><History size={22} /></div>
 <div>
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{t("history_sales_ledger", language)}</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("history_sales_ledger", language)}</h1>
 </div>
 </div>
 <div className="flex items-center gap-3 relative">
@@ -272,14 +272,14 @@ export const MembershipHistoryView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {language === "ar" ? "التسويات المالية ومؤشرات التدقيق" : language === "fr" ? "Règlements financiers & Piste d'audit" : "Payments & Audit"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "إجمالي الحجم المحصل" : language === "fr" ? "Volume total rapproché" : "Total Reconciled Volume"}
 </span>
 <div className="mt-1">
@@ -289,11 +289,11 @@ export const MembershipHistoryView: React.FC<any> = () => {
 </span>
 </div>
 </div>
-<div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">{formatMoney(totalSettledAmount)}</div>
+<div className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalSettledAmount)}</div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "نسبة الدفع النقدي" : language === "fr" ? "Part des espèces" : "Cash Tender Ratio"}
 </span>
 <div className="mt-1">
@@ -304,17 +304,17 @@ export const MembershipHistoryView: React.FC<any> = () => {
 </span>
 </div>
 </div>
-<div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
+<div className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {sales.length}
 {" "}
-<span className="text-xs font-normal text-neutral-400">
+<span className="text-xs font-normal text-black/55 dark:text-white/55">
 {language === "ar" ? "وصل صادر" : language === "fr" ? "reçus émis" : "receipts issued"}
 </span>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">
+<span className="text-[11px] font-medium text-white/80">
 {language === "ar" ? "حالة نقطة البيع النشطة" : language === "fr" ? "État du terminal actif" : "Active Terminal State"}
 </span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">POS-01</span>
@@ -326,7 +326,7 @@ export const MembershipHistoryView: React.FC<any> = () => {
 {language === "ar" ? "متصل ومحدث" : language === "fr" ? "En Ligne & Synchronisé" : "Online & Synchronized"}
 </span>
 </div>
-<p className="text-[11px] text-neutral-400 mt-0.5">
+<p className="text-[11px] text-white/75 mt-0.5">
 {language === "ar" ? "صندوق الاستقبال POS-01" : language === "fr" ? "Caisse d'accueil POS-01" : "Frontdesk Register POS-01"}
 </p>
 </div>
@@ -336,11 +336,11 @@ export const MembershipHistoryView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div className="flex flex-wrap items-center justify-between gap-3">
 <div className="flex items-center gap-2">
-<Receipt size={16} className="text-neutral-500" />
-<span className="text-sm font-bold text-neutral-900 dark:text-white">
+<Receipt size={16} className="text-black/55 dark:text-white/55" />
+<span className="text-sm font-bold text-black dark:text-white">
 {language === "ar" ? "سجل العمليات والوصولات" : language === "fr" ? "Journal des transactions" : "Transactions & Sales Collection"}
 </span>
-<span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">{filteredSales.length}</span>
+<span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums ml-1">{filteredSales.length}</span>
 </div>
 <div className="flex flex-wrap items-center gap-2.5 ml-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={language === "ar" ? "البحث عن رقم الوصل، المشترك، المنتج..." : language === "fr" ? "Rechercher ticket, client, produit..." : "Search receipt ID, member, item..."} shutSize={36} openWidth={230} />
@@ -348,39 +348,47 @@ export const MembershipHistoryView: React.FC<any> = () => {
 									{
 										value: "All",
 										label: language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All",
+										tooltip: language === "ar" ? "جميع المعاملات" : language === "fr" ? "Toutes les transactions" : "All transactions",
 										count: statusCounts.all
 									},
 									{
 										value: "Settled",
 										label: language === "ar" ? "مسدد" : language === "fr" ? "Encaissé" : "Settled",
+										tooltip: language === "ar" ? "العمليات المسددة" : language === "fr" ? "Transactions encaissées" : "Settled payments",
 										count: statusCounts.settled
 									},
 									{
 										value: "Refunded",
 										label: language === "ar" ? "مسترجع" : language === "fr" ? "Remboursé" : "Refunded",
+										tooltip: language === "ar" ? "العمليات المسترجعة" : language === "fr" ? "Transactions remboursées" : "Refunded transactions",
 										count: statusCounts.refunded
 									}
 								]} aria-label="Billing Status Filter" />
 <LiveSegmentedControl size="sm" value={methodFilter} onValueChange={(val) => setMethodFilter(val)} options={[
 									{
 										value: "All",
-										label: language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All"
+										label: language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All",
+										tooltip: language === "ar" ? "كل طرق الدفع" : language === "fr" ? "Tous moyens de paiement" : "All payment methods"
 									},
 									{
 										value: "Cash",
-										label: language === "ar" ? "نقداً" : language === "fr" ? "Espèces" : "Cash"
+										label: language === "ar" ? "نقداً" : language === "fr" ? "Espèces" : "Cash",
+										tooltip: language === "ar" ? "نقداً" : language === "fr" ? "Paiement en espèces" : "Cash payment"
 									},
 									{
 										value: "Card",
-										label: language === "ar" ? "بطاقة CIB" : language === "fr" ? "Carte" : "Card"
+										label: language === "ar" ? "بطاقة" : language === "fr" ? "Carte" : "Card",
+										tooltip: language === "ar" ? "بطاقة CIB / الذهبية" : language === "fr" ? "Carte CIB / Dahabia" : "Card (CIB / Dahabia)"
 									},
 									{
 										value: "Split",
-										label: language === "ar" ? "مقسم" : language === "fr" ? "Mixte" : "Split"
+										label: language === "ar" ? "مقسم" : language === "fr" ? "Mixte" : "Split",
+										tooltip: language === "ar" ? "دفع مقسم" : language === "fr" ? "Paiement mixte" : "Split payment"
 									},
 									{
 										value: "MemberBalance",
-										label: language === "ar" ? "الرصيد" : language === "fr" ? "Solde" : "Balance"
+										label: language === "ar" ? "الرصيد" : language === "fr" ? "Solde" : "Balance",
+										tooltip: language === "ar" ? "من رصيد المشترك" : language === "fr" ? "Débit sur solde adhérent" : "Member balance"
 									}
 								]} aria-label="Payment Method Filter" />
 <AtriumButton variant="secondary" onClick={handleExportCSV} icon={<Download size={13} />} size="sm">
@@ -388,7 +396,7 @@ export const MembershipHistoryView: React.FC<any> = () => {
 {language === "ar" ? "تصدير السجل" : language === "fr" ? "Exporter le journal" : "Export Ledger"}
 </span>
 </AtriumButton>
-<button type="button" onClick={toggleFullscreen} className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors shadow-2xs" title="Toggle Fullscreen"><Maximize2 size={13} /></button>
+<button type="button" onClick={toggleFullscreen} className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer transition-colors shadow-2xs" title="Toggle Fullscreen"><Maximize2 size={13} /></button>
 </div>
 </div>
 <UniversalDataCollection items={sortedSales} keyExtractor={(s) => s.id} defaultViewMode="list" sortBy={saleSortBy} sortDirection={saleSortDir} onSortChange={(key) => {
@@ -411,7 +419,7 @@ export const MembershipHistoryView: React.FC<any> = () => {
 #
 {sale.id}
 </span>
-<span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+<span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75">
 {sale.paymentMethod === "Cash" && /* @__PURE__ */ <Banknote size={12} className="text-emerald-600" />}
 {sale.paymentMethod === "Card" && /* @__PURE__ */ <CreditCard size={12} className="text-blue-600" />}
 {sale.paymentMethod === "Split" && /* @__PURE__ */ <CreditCard size={12} className="text-purple-600" />}
@@ -420,12 +428,12 @@ export const MembershipHistoryView: React.FC<any> = () => {
 </span>
 </div>
 <div className="flex items-center gap-2 mb-2">
-<div className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-xs font-bold text-neutral-700 dark:text-neutral-300 shrink-0">{(sale.memberName || "G").charAt(0).toUpperCase()}</div>
+<div className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-xs font-bold text-black/70 dark:text-white/75 shrink-0">{(sale.memberName || "G").charAt(0).toUpperCase()}</div>
 <div className="min-w-0">
-<h3 className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+<h3 className="text-xs font-bold text-black dark:text-white truncate">
 {sale.memberName || (language === "ar" ? "زائر غير مسجل" : language === "fr" ? "Client de passage" : "Guest Walk-In")}
 </h3>
-<p className="text-[10px] text-neutral-400 font-mono">
+<p className="text-[10px] text-black/55 dark:text-white/55 font-mono">
 {new Date(sale.createdAt).toLocaleDateString()}
 {" "}
 {new Date(sale.createdAt).toLocaleTimeString([], {
@@ -436,26 +444,26 @@ export const MembershipHistoryView: React.FC<any> = () => {
 </div>
 </div>
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-2.5 rounded-xl space-y-1 text-xs">
-{sale.items.map((it: any, idx: number) => /* @__PURE__ */ <div key={idx} className="flex justify-between text-[11px] text-neutral-600 dark:text-neutral-300">
+{sale.items.map((it: any, idx: number) => /* @__PURE__ */ <div key={idx} className="flex justify-between text-[11px] text-black/70 dark:text-white/75">
 <span className="truncate max-w-[150px]">
 {it.quantity}
 {"x "}
 {it.productName}
 </span>
-<span className="font-mono text-neutral-500 tabular-nums">{formatMoney(it.totalPrice)}</span>
+<span className="font-mono text-black/55 dark:text-white/55 tabular-nums">{formatMoney(it.totalPrice)}</span>
 </div>)}
 </div>
 </div>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
 <div>
-<span className="text-[10px] text-neutral-400 block uppercase font-medium">{language === "ar" ? "الإجمالي" : "Total"}</span>
-<span className={`text-sm font-black font-mono ${sale.status === "Refunded" ? "line-through text-neutral-400" : "text-neutral-900 dark:text-white"}`}>{formatMoney(sale.totalAmount)}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 block uppercase font-medium">{language === "ar" ? "الإجمالي" : "Total"}</span>
+<span className={`text-sm font-black font-mono ${sale.status === "Refunded" ? "line-through text-black/55 dark:text-white/55" : "text-black dark:text-white"}`}>{formatMoney(sale.totalAmount)}</span>
 </div>
 <div className="flex items-center gap-1.5">
 <button type="button" onClick={(e) => {
 										e.stopPropagation();
 										setSelectedSale(sale);
-									}} className="px-2.5 py-1 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1 cursor-pointer">
+									}} className="px-2.5 py-1 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-bold text-black/70 dark:text-white/75 flex items-center gap-1 cursor-pointer">
 <Eye size={12} />
 <span>{language === "ar" ? "عرض" : "View"}</span>
 </button>
@@ -475,11 +483,11 @@ export const MembershipHistoryView: React.FC<any> = () => {
 <div className="px-6 py-5 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
 <div className="flex items-center gap-2">
 <Receipt size={17} className="text-[#d4522f]" />
-<span className="text-sm font-bold text-neutral-900 dark:text-white">
+<span className="text-sm font-bold text-black dark:text-white">
 {language === "ar" ? "معاينة وتدقيق الوصل" : language === "fr" ? "Inspecteur du reçu" : "Receipt Audit Inspector"}
 </span>
 </div>
-<button type="button" onClick={() => setSelectedSale(null)} className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 cursor-pointer"><X size={18} /></button>
+<button type="button" onClick={() => setSelectedSale(null)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"><X size={18} /></button>
 </div>
 <div className="flex-1 overflow-y-auto p-6 space-y-6 text-xs">
 {selectedSale.status === "Refunded" && /* @__PURE__ */ <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900/60 space-y-1">
@@ -495,7 +503,7 @@ export const MembershipHistoryView: React.FC<any> = () => {
 </div>}
 <div className="p-4 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700/80 space-y-2">
 <div className="flex justify-between items-center">
-<span className="text-neutral-400">
+<span className="text-black/55 dark:text-white/55">
 {language === "ar" ? "رقم الوصل:" : language === "fr" ? "Réf ticket :" : "Receipt Ref:"}
 </span>
 <span className="font-mono font-bold text-[#d4522f]">
@@ -504,32 +512,32 @@ export const MembershipHistoryView: React.FC<any> = () => {
 </span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-400">
+<span className="text-black/55 dark:text-white/55">
 {language === "ar" ? "الوقت والتاريخ:" : language === "fr" ? "Date & heure :" : "Timestamp:"}
 </span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 tabular-nums">{new Date(selectedSale.createdAt).toLocaleString()}</span>
+<span className="font-semibold text-black dark:text-white tabular-nums">{new Date(selectedSale.createdAt).toLocaleString()}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-400">{language === "ar" ? "العميل:" : language === "fr" ? "Client :" : "Customer:"}</span>
-<span className="font-bold text-neutral-900 dark:text-white">
+<span className="text-black/55 dark:text-white/55">{language === "ar" ? "العميل:" : language === "fr" ? "Client :" : "Customer:"}</span>
+<span className="font-bold text-black dark:text-white">
 {selectedSale.memberName || (language === "ar" ? "زائر غير مسجل" : language === "fr" ? "Client de passage" : "Guest Walk-In")}
 </span>
 </div>
 {selectedSale.customerPhone && /* @__PURE__ */ <div className="flex justify-between items-center">
-<span className="text-neutral-400">{language === "ar" ? "الهاتف:" : language === "fr" ? "Téléphone :" : "Phone:"}</span>
-<span className="font-mono font-semibold text-neutral-800 dark:text-neutral-200">{selectedSale.customerPhone}</span>
+<span className="text-black/55 dark:text-white/55">{language === "ar" ? "الهاتف:" : language === "fr" ? "Téléphone :" : "Phone:"}</span>
+<span className="font-mono font-semibold text-black dark:text-white">{selectedSale.customerPhone}</span>
 </div>}
 <div className="flex justify-between items-center">
-<span className="text-neutral-400">
+<span className="text-black/55 dark:text-white/55">
 {language === "ar" ? "طريقة الدفع:" : language === "fr" ? "Mode de règlement :" : "Payment Tender:"}
 </span>
-<span className="font-bold text-neutral-900 dark:text-white">{selectedSale.paymentMethod}</span>
+<span className="font-bold text-black dark:text-white">{selectedSale.paymentMethod}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-neutral-400">
+<span className="text-black/55 dark:text-white/55">
 {language === "ar" ? "نقطة البيع:" : language === "fr" ? "Poste de caisse :" : "Facility Station:"}
 </span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">
+<span className="font-semibold text-black dark:text-white">
 {currentBranch?.name || "Atrium 1"}
 {" (POS-01)"}
 </span>
@@ -542,10 +550,10 @@ export const MembershipHistoryView: React.FC<any> = () => {
 {language === "ar" ? "الملاحظات / الإسناد" : language === "fr" ? "Attribution / Notes" : "Attribution / Notes"}
 </span>
 </span>
-<p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">{selectedSale.notes}</p>
+<p className="text-xs font-semibold text-black dark:text-white">{selectedSale.notes}</p>
 </div>}
 <div className="space-y-2">
-<span className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
+<span className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
 {language === "ar" ? "الأصناف المشتراة" : language === "fr" ? "Articles" : "Line Items"}
 {" ("}
 {selectedSale.items.length}
@@ -554,15 +562,15 @@ export const MembershipHistoryView: React.FC<any> = () => {
 <div className="border border-neutral-200 dark:border-neutral-800 rounded-2xl divide-y divide-neutral-200 dark:divide-neutral-800 overflow-hidden">
 {selectedSale.items.map((item: any, idx: number) => /* @__PURE__ */ <div key={idx} className="p-3.5 flex justify-between items-center bg-white dark:bg-neutral-800/40">
 <div>
-<div className="font-bold text-neutral-900 dark:text-white">{item.productName}</div>
-<div className="text-[11px] text-neutral-400 tabular-nums mt-0.5">
+<div className="font-bold text-black dark:text-white">{item.productName}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 tabular-nums mt-0.5">
 {item.quantity}
 {" × "}
 {formatMoney(item.unitPrice)}
 {item.discount ? ` (disc: -${formatMoney(item.discount)})` : ""}
 </div>
 </div>
-<span className="font-black text-neutral-900 dark:text-white tabular-nums">{formatMoney(item.totalPrice)}</span>
+<span className="font-black text-black dark:text-white tabular-nums">{formatMoney(item.totalPrice)}</span>
 </div>)}
 </div>
 </div>
@@ -571,11 +579,11 @@ export const MembershipHistoryView: React.FC<any> = () => {
 <span className="text-xs font-bold text-[#d4522f]">
 {language === "ar" ? "إجمالي المدفوع" : language === "fr" ? "Total Encaissé" : "Total Settled"}
 </span>
-<div className="text-[11px] text-neutral-500">
+<div className="text-[11px] text-black/55 dark:text-white/55">
 {language === "ar" ? "شامل الرسوم والضرائب" : language === "fr" ? "TTC (Toutes taxes comprises)" : "Includes VAT & taxes"}
 </div>
 </div>
-<span className={`text-2xl font-black tabular-nums ${selectedSale.status === "Refunded" ? "line-through text-neutral-400" : "text-[#d4522f]"}`}>{formatMoney(selectedSale.totalAmount)}</span>
+<span className={`text-2xl font-black tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans ${selectedSale.status === "Refunded" ? "line-through text-black/55 dark:text-white/55" : "text-[#d4522f]"}`}>{formatMoney(selectedSale.totalAmount)}</span>
 </div>
 <div className="space-y-2 pt-2">
 {selectedSale.status !== "Refunded" && /* @__PURE__ */ <button type="button" onClick={() => setIsRefundModalOpen(true)} className="w-full h-10 rounded-full border border-rose-200 dark:border-rose-800 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/40 text-xs font-bold text-rose-700 dark:text-rose-300 flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-2xs">
@@ -602,10 +610,10 @@ export const MembershipHistoryView: React.FC<any> = () => {
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-2xl bg-rose-100 dark:bg-rose-950 text-rose-600 flex items-center justify-center"><RotateCcw size={20} /></div>
 <div>
-<h3 className="text-base font-bold text-neutral-900 dark:text-white">
+<h3 className="text-base font-bold text-black dark:text-white">
 {language === "ar" ? "تأكيد استرجاع المعاملة" : language === "fr" ? "Confirmer le remboursement" : "Confirm Transaction Refund"}
 </h3>
-<p className="text-xs text-neutral-500">
+<p className="text-xs text-black/55 dark:text-white/55">
 {language === "ar" ? "معاملة" : "Sale"}
 {" #"}
 {selectedSale.id}

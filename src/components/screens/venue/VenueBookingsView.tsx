@@ -117,9 +117,9 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
 			minWidth: "220px",
 			sortable: true,
 			renderCell: (b: any) => /* @__PURE__ */ <div className="min-w-0">
-<div className="font-semibold text-neutral-900 dark:text-white truncate">{b.purpose}</div>
-<div className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate flex items-center gap-1.5 mt-0.5">
-<span className="font-medium text-neutral-700 dark:text-neutral-300">{b.renterName}</span>
+<div className="font-semibold text-black dark:text-white truncate">{b.purpose}</div>
+<div className="text-[11px] text-black/55 dark:text-white/75 truncate flex items-center gap-1.5 mt-0.5">
+<span className="font-medium text-black/70 dark:text-white/75">{b.renterName}</span>
 {b.renterCompany && /* @__PURE__ */ <span>
 (
 {b.renterCompany}
@@ -135,8 +135,8 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
 			minWidth: "140px",
 			sortable: true,
 			renderCell: (b: any) => /* @__PURE__ */ <div>
-<span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 block truncate">{b.unitName}</span>
-<span className="text-[10px] text-neutral-400 block mt-0.5">{t("venue_guests_count", language, { count: b.attendeeCount })}</span>
+<span className="text-xs font-semibold text-black dark:text-white block truncate">{b.unitName}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 block mt-0.5">{t("venue_guests_count", language, { count: b.attendeeCount })}</span>
 </div>
 		},
 		{
@@ -146,8 +146,8 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
 			minWidth: "170px",
 			sortable: true,
 			renderCell: (b: any) => /* @__PURE__ */ <div className="text-xs space-y-0.5">
-<div className="font-medium text-neutral-800 dark:text-neutral-200 font-mono text-[11px]">{b.startDateTime.replace("T", " ").slice(0, 16)}</div>
-<div className="text-[10px] text-neutral-400 flex items-center gap-1">
+<div className="font-medium text-black dark:text-white font-mono text-[11px]">{b.startDateTime.replace("T", " ").slice(0, 16)}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 flex items-center gap-1">
 <Clock size={10} />
 <span>
 {b.durationHours}
@@ -164,8 +164,8 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
 			minWidth: "130px",
 			sortable: true,
 			renderCell: (b: any) => /* @__PURE__ */ <div>
-<div className="font-bold text-neutral-900 dark:text-white tabular-nums font-mono text-xs">{formatCurrencyAmount(b.totalAmount, b.currency)}</div>
-<div className="text-[10px] text-neutral-400">
+<div className="font-bold text-black dark:text-white tabular-nums font-mono text-xs">{formatCurrencyAmount(b.totalAmount, b.currency)}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">
 {t("venue_col_caution")}
 {": "}
 {formatCurrencyAmount(b.depositAmount, b.currency)}
@@ -183,7 +183,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
 				const isConfirmed = b.status === "Confirmed";
 				const isTentative = b.status === "Tentative";
 				const isCompleted = b.status === "Completed";
-				return /* @__PURE__ */ <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase ${isCheckedIn ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300" : isConfirmed ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" : isTentative ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" : isCompleted ? "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300" : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"}`}>
+				return /* @__PURE__ */ <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase ${isCheckedIn ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300" : isConfirmed ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" : isTentative ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" : isCompleted ? "bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75" : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"}`}>
 {isCheckedIn && /* @__PURE__ */ <span className="w-1.5 h-1.5 rounded-full bg-purple-600 animate-pulse" />}
 {isCheckedIn ? t("venue_filter_in_use") : isConfirmed ? t("venue_filter_confirmed") : isTentative ? t("venue_filter_inquiries") : isCompleted ? t("venue_filter_completed") : b.status}
 </span>;
@@ -272,13 +272,13 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
 <div className="space-y-6">
 {!hideHeader && /* @__PURE__ */ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 <div className="flex items-center gap-3.5">
-<div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200"><Calendar size={22} /></div>
+<div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-white"><Calendar size={22} /></div>
 <div>
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{t("venue_bookings_page_title")}</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("venue_bookings_page_title")}</h1>
 </div>
 </div>
 <div className="flex items-center gap-3 relative flex-wrap">
-<button type="button" onClick={() => setIsCloudSyncModalOpen(true)} className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-2xs" title="Inspect Supabase live tables and row writes">
+<button type="button" onClick={() => setIsCloudSyncModalOpen(true)} className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-black dark:text-white rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-2xs" title="Inspect Supabase live tables and row writes">
 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
 <Cloud size={14} className="text-purple-600 dark:text-purple-400" />
 <span className="hidden sm:inline">Supabase</span>
@@ -288,14 +288,14 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
 </div>}
 {!hideHeader && !hideKpis && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {language === "ar" ? "سجل الحجوزات & مؤشرات الاستغلال" : language === "fr" ? "Réservations & Indicateurs d'Activité" : "Bookings Pipeline & Utilization Indicators"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "الحجوزات المؤكدة" : language === "fr" ? "Réservations Confirmées" : "Confirmed Bookings"}
 </span>
 <div className="mt-1">
@@ -307,11 +307,11 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
 </span>
 </div>
 </div>
-<div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">{confirmedCount}</div>
+<div className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{confirmedCount}</div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "جلسات قيد الاستخدام الآن" : language === "fr" ? "Sessions En Cours (Live)" : "In-Session Spaces"}
 </span>
 <div className="mt-1">
@@ -323,11 +323,11 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
 </span>
 </div>
 </div>
-<div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">{inUseCount}</div>
+<div className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{inUseCount}</div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div>
-<span className="text-xs font-medium text-neutral-300">
+<span className="text-xs font-medium text-white/80">
 {language === "ar" ? "إجمالي المداخيل المحجوزة" : language === "fr" ? "Volume Réservé Cumulé" : "Total Booked Turnover"}
 </span>
 <div className="text-[11px] text-[#FB923C] font-semibold mt-0.5">
@@ -338,53 +338,58 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
 </span>
 </div>
 </div>
-<div className="text-2xl font-black text-white tabular-nums font-mono">{formatCurrencyAmount(totalRevenue, "DZD")}</div>
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatCurrencyAmount(totalRevenue, "DZD")}</div>
 </div>
 </div>
 </div>}
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div className="flex flex-wrap items-center justify-between gap-3">
 <div className="flex items-center gap-2">
-<Calendar size={16} className="text-neutral-500" />
-<span className="text-sm font-bold text-neutral-900 dark:text-white">
+<Calendar size={16} className="text-black/55 dark:text-white/55" />
+<span className="text-sm font-bold text-black dark:text-white">
 {language === "ar" ? "جدول الحجوزات" : language === "fr" ? "Planning des Réservations" : "Bookings Register"}
 </span>
-<span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">{sortedBookings.length}</span>
+<span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums ml-1">{sortedBookings.length}</span>
 </div>
 <div className="flex flex-wrap items-center gap-2.5 ml-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={t("venue_search_bookings_placeholder")} shutSize={36} openWidth={220} />
 <LiveSegmentedControl size="sm" value={selectedStatus} onValueChange={setSelectedStatus} options={[
 												{
 													value: "All",
-													label: t("venue_filter_all"),
+													label: language === "ar" ? "الكل" : language === "fr" ? "Toutes" : "All",
+													tooltip: t("venue_filter_all"),
 													count: rentalBookings.length
 												},
 												{
 													value: "InUse",
-													label: t("venue_filter_in_use"),
+													label: language === "ar" ? "مشغولة" : language === "fr" ? "Occupées" : "Active",
+													tooltip: t("venue_filter_in_use"),
 													count: rentalBookings.filter((b) => b.status === "Confirmed").length
 												},
 												{
 													value: "Confirmed",
-													label: t("venue_filter_confirmed"),
+													label: language === "ar" ? "مؤكدة" : language === "fr" ? "Confirmées" : "Confirmed",
+													tooltip: t("venue_filter_confirmed"),
 													count: rentalBookings.filter((b) => b.status === "Confirmed").length
 												},
 												{
 													value: "Tentative",
-													label: t("venue_filter_inquiries"),
+													label: language === "ar" ? "معلقة" : language === "fr" ? "Options" : "Hold",
+													tooltip: t("venue_filter_inquiries"),
 													count: rentalBookings.filter((b) => b.status === "Tentative").length
 												},
 												{
 													value: "Completed",
-													label: t("venue_filter_completed"),
+													label: language === "ar" ? "مكتملة" : language === "fr" ? "Terminées" : "Completed",
+													tooltip: t("venue_filter_completed"),
 													count: rentalBookings.filter((b) => b.status === "Completed").length
 												}
 											]} aria-label="Venue Bookings Status Filter" />
-<button type="button" onClick={handleExportBookingsCSV} className="h-9 px-3 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs">
+<button type="button" onClick={handleExportBookingsCSV} className="h-9 px-3 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs">
 <Download size={13} />
 <span>{language === "ar" ? "تصدير" : language === "fr" ? "Exporter" : "Export CSV"}</span>
 </button>
-<button type="button" onClick={toggleFullscreen} className="h-9 w-9 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-center transition-colors cursor-pointer shadow-2xs" title="Fullscreen"><Maximize2 size={14} /></button>
+<button type="button" onClick={toggleFullscreen} className="h-9 w-9 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-center transition-colors cursor-pointer shadow-2xs" title="Fullscreen"><Maximize2 size={14} /></button>
 </div>
 </div>
 <UniversalDataCollection items={sortedBookings} keyExtractor={(b) => b.id} defaultViewMode="list" columns={bookingColumns} sortBy={bookingSortBy} sortDirection={bookingSortDir} onSortChange={(key) => {
@@ -396,39 +401,39 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
 								}} renderCard={(b) => /* @__PURE__ */ <div className="flex flex-col justify-between w-full h-full">
 <div>
 <div className="flex items-center justify-between gap-2 mb-2">
-<span className="text-xs font-bold text-neutral-900 dark:text-white truncate">{b.unitName}</span>
-<span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase ${b.status === "CheckedIn" ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300" : b.status === "Confirmed" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" : b.status === "Tentative" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" : b.status === "Completed" ? "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300" : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"}`}>
+<span className="text-xs font-bold text-black dark:text-white truncate">{b.unitName}</span>
+<span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase ${b.status === "CheckedIn" ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300" : b.status === "Confirmed" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" : b.status === "Tentative" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" : b.status === "Completed" ? "bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75" : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"}`}>
 {b.status === "CheckedIn" ? t("venue_filter_in_use") : b.status === "Confirmed" ? t("venue_filter_confirmed") : b.status === "Tentative" ? t("venue_filter_inquiries") : b.status === "Completed" ? t("venue_filter_completed") : b.status}
 </span>
 </div>
-<h3 className="font-bold text-sm text-neutral-900 dark:text-white line-clamp-1 mb-1">{b.purpose}</h3>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400 line-clamp-1 mb-2">
+<h3 className="font-bold text-sm text-black dark:text-white line-clamp-1 mb-1">{b.purpose}</h3>
+<p className="text-[11px] text-black/55 dark:text-white/75 line-clamp-1 mb-2">
 {b.renterName}
 {" "}
 {b.renterCompany && `· ${b.renterCompany}`}
 </p>
 <div className="p-2.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl text-xs space-y-1 mb-3">
 <div className="flex items-center justify-between font-mono text-[11px]">
-<span className="text-neutral-500">{b.startDateTime.split("T")[0]}</span>
-<span className="font-medium text-neutral-800 dark:text-neutral-200">
+<span className="text-black/55 dark:text-white/55">{b.startDateTime.split("T")[0]}</span>
+<span className="font-medium text-black dark:text-white">
 {b.startDateTime.split("T")[1]?.slice(0, 5)}
 {" - "}
 {b.endDateTime.split("T")[1]?.slice(0, 5)}
 </span>
 </div>
 <div className="flex items-center justify-between text-[11px] pt-1 border-t border-neutral-100 dark:border-neutral-800">
-<span className="text-neutral-400">{t("venue_inv_capacity")}</span>
-<span className="font-medium text-neutral-700 dark:text-neutral-300">{t("venue_guests_count", language, { count: b.attendeeCount })}</span>
+<span className="text-black/55 dark:text-white/55">{t("venue_inv_capacity")}</span>
+<span className="font-medium text-black/70 dark:text-white/75">{t("venue_guests_count", language, { count: b.attendeeCount })}</span>
 </div>
 </div>
 <div className="flex items-center justify-between text-xs mb-3">
 <div>
-<span className="text-[10px] text-neutral-400 uppercase font-medium block">{t("venue_col_financials")}</span>
-<span className="font-bold text-neutral-900 dark:text-white tabular-nums font-mono">{formatCurrencyAmount(b.totalAmount, b.currency)}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 uppercase font-medium block">{t("venue_col_financials")}</span>
+<span className="font-bold text-black dark:text-white tabular-nums font-mono">{formatCurrencyAmount(b.totalAmount, b.currency)}</span>
 </div>
 <div className="text-right">
-<span className="text-[10px] text-neutral-400 uppercase font-medium block">{t("venue_col_caution")}</span>
-<span className="font-mono text-neutral-600 dark:text-neutral-300 tabular-nums">{formatCurrencyAmount(b.depositAmount, b.currency)}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 uppercase font-medium block">{t("venue_col_caution")}</span>
+<span className="font-mono text-black/70 dark:text-white/75 tabular-nums">{formatCurrencyAmount(b.depositAmount, b.currency)}</span>
 </div>
 </div>
 </div>
@@ -448,7 +453,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
 </button> : /* @__PURE__ */ <button type="button" onClick={(e) => {
 												e.stopPropagation();
 												setPrintedBooking(b);
-											}} className="flex-1 py-1.5 px-3 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+											}} className="flex-1 py-1.5 px-3 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-black/70 dark:text-white/75 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
 <Printer size={13} />
 <span>{t("venue_btn_print_voucher")}</span>
 </button>}
@@ -524,7 +529,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
 										message: `${ids.size} réservations supprimées.`
 									});
 								}} emptyTitle={t("venue_no_bookings_match")} emptyDescription={t("venue_bookings_page_sub")} primaryActionLabel={t("venue_btn_new_res")} onAddFirstItem={handleNewBooking} />
-<div className="pt-2 text-center text-xs text-neutral-400 font-medium">
+<div className="pt-2 text-center text-xs text-black/55 dark:text-white/55 font-medium">
 {sortedBookings.length}
 {" "}
 {language === "ar" ? "حجوزات معروضة" : language === "fr" ? "réservations affichées" : "bookings displayed"}
@@ -535,32 +540,32 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
 <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-neutral-200 dark:border-neutral-800 max-w-xl w-full p-6 space-y-6 shadow-2xl">
 <div className="flex justify-between items-center border-b border-neutral-200 dark:border-neutral-800 pb-4">
 <div>
-<h3 className="text-lg font-bold text-neutral-900 dark:text-white">{t("venue_voucher_title")}</h3>
-<span className="text-xs font-mono text-neutral-400">{t("venue_voucher_ref", language, { id: printedBooking.id })}</span>
+<h3 className="text-lg font-bold text-black dark:text-white">{t("venue_voucher_title")}</h3>
+<span className="text-xs font-mono text-black/55 dark:text-white/55">{t("venue_voucher_ref", language, { id: printedBooking.id })}</span>
 </div>
-<button type="button" onClick={() => setPrintedBooking(null)} className="p-1.5 text-neutral-400 hover:text-neutral-700 rounded-lg cursor-pointer"><X size={18} /></button>
+<button type="button" onClick={() => setPrintedBooking(null)} className="p-1.5 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 rounded-lg cursor-pointer"><X size={18} /></button>
 </div>
 <div className="space-y-4 text-xs">
 <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-neutral-200 dark:border-neutral-700/60 space-y-2">
 <div className="flex justify-between">
-<span className="text-neutral-500">{t("venue_voucher_renter_name")}</span>
-<span className="font-semibold text-neutral-900 dark:text-white">{printedBooking.renterName}</span>
+<span className="text-black/55 dark:text-white/55">{t("venue_voucher_renter_name")}</span>
+<span className="font-semibold text-black dark:text-white">{printedBooking.renterName}</span>
 </div>
 {printedBooking.renterCompany && /* @__PURE__ */ <div className="flex justify-between">
-<span className="text-neutral-500">{t("venue_voucher_company")}</span>
-<span className="font-medium text-neutral-800 dark:text-neutral-200">{printedBooking.renterCompany}</span>
+<span className="text-black/55 dark:text-white/55">{t("venue_voucher_company")}</span>
+<span className="font-medium text-black dark:text-white">{printedBooking.renterCompany}</span>
 </div>}
 <div className="flex justify-between">
-<span className="text-neutral-500">{t("venue_voucher_phone")}</span>
-<span className="font-mono text-neutral-800 dark:text-neutral-200">{printedBooking.renterPhone}</span>
+<span className="text-black/55 dark:text-white/55">{t("venue_voucher_phone")}</span>
+<span className="font-mono text-black dark:text-white">{printedBooking.renterPhone}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">{t("venue_voucher_space")}</span>
-<span className="font-semibold text-neutral-900 dark:text-white">{printedBooking.unitName}</span>
+<span className="text-black/55 dark:text-white/55">{t("venue_voucher_space")}</span>
+<span className="font-semibold text-black dark:text-white">{printedBooking.unitName}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">{t("venue_voucher_window")}</span>
-<span className="font-mono text-neutral-900 dark:text-white">
+<span className="text-black/55 dark:text-white/55">{t("venue_voucher_window")}</span>
+<span className="font-mono text-black dark:text-white">
 {printedBooking.startDateTime.replace("T", " ").slice(0, 16)}
 {" - "}
 {printedBooking.endDateTime.split("T")[1]?.slice(0, 5)}
@@ -568,11 +573,11 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
 </div>
 </div>
 <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-neutral-200 dark:border-neutral-700/60 space-y-2">
-<div className="flex justify-between font-semibold text-neutral-900 dark:text-white">
+<div className="flex justify-between font-semibold text-black dark:text-white">
 <span>{t("venue_voucher_total_hire")}</span>
 <span className="tabular-nums font-mono">{formatCurrencyAmount(printedBooking.totalAmount, printedBooking.currency)}</span>
 </div>
-<div className="flex justify-between text-neutral-600 dark:text-neutral-400">
+<div className="flex justify-between text-black/70 dark:text-white/75">
 <span>{t("venue_voucher_caution_held")}</span>
 <span className="font-medium text-emerald-600 tabular-nums font-mono">
 {formatCurrencyAmount(printedBooking.depositAmount, printedBooking.currency)}
@@ -581,12 +586,12 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
 )
 </span>
 </div>
-<div className="flex justify-between text-neutral-600 dark:text-neutral-400">
+<div className="flex justify-between text-black/70 dark:text-white/75">
 <span>{t("venue_voucher_balance_due")}</span>
 <span className="font-medium tabular-nums font-mono">{formatCurrencyAmount(printedBooking.balanceDue, printedBooking.currency)}</span>
 </div>
 </div>
-<div className="p-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">{t("venue_voucher_disclaimer")}</div>
+<div className="p-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-[11px] text-black/55 dark:text-white/75 leading-relaxed">{t("venue_voucher_disclaimer")}</div>
 </div>
 <div className="flex justify-end rtl:justify-start gap-2 pt-2 border-t border-neutral-200 dark:border-neutral-800">
 <button type="button" onClick={() => window.print()} className="px-5 py-2 bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs">

@@ -28,9 +28,7 @@ interface MedicalAppointmentModalProps {
 
 
 
-const import_jsx_runtime = require_jsx_runtime();
-
-const MedicalAppointmentModal = ({ isOpen, onClose, practitioners, patients, onSaveAppointment, existingAppointments = [], initialDoctorId, initialDate, initialTime }) => {
+export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = ({ isOpen, onClose, practitioners, patients, onSaveAppointment, existingAppointments = [], initialDoctorId, initialDate, initialTime }) => {
 	const [doctorId, setDoctorId] = React.useState(initialDoctorId || practitioners[0]?.id || "doc_01");
 	const [selectedPatientId, setSelectedPatientId] = React.useState("");
 	const [patientName, setPatientName] = React.useState("");
@@ -106,10 +104,10 @@ const MedicalAppointmentModal = ({ isOpen, onClose, practitioners, patients, onS
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#0D9488]/15 text-[#0D9488] flex items-center justify-center font-bold"><Calendar size={20} /></div>
 <div>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">Nouveau Rendez-vous Médical</h2>
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">Nouveau Rendez-vous Médical</h2>
 </div>
 </div>
-<button onClick={onClose} className="p-2 rounded-xl text-neutral-400 hover:text-neutral-700 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
+<button onClick={onClose} className="p-2 rounded-xl text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
 </div>
 <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto max-h-[75vh]">
 {errorMsg && /* @__PURE__ */ <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
@@ -152,12 +150,12 @@ const MedicalAppointmentModal = ({ isOpen, onClose, practitioners, patients, onS
 <LabelInput label="Motif du Rendez-vous" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="ex: Bilan annuel, Consultation cardiologique" required />
 <div className="flex items-center justify-between p-3 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700">
 <div>
-<span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 block">Niveau de Priorité</span>
-<span className="text-[11px] text-neutral-500">Normal ou Prioritaire</span>
+<span className="text-xs font-semibold text-black dark:text-white block">Niveau de Priorité</span>
+<span className="text-[11px] text-black/55 dark:text-white/55">Normal ou Prioritaire</span>
 </div>
 <div className="flex items-center gap-2">
-<button type="button" onClick={() => setUrgency("Normal")} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${urgency === "Normal" ? "bg-[#0D9488] text-white shadow-xs" : "text-neutral-600 dark:text-neutral-400"}`}>Normal</button>
-<button type="button" onClick={() => setUrgency("Prioritaire")} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${urgency === "Prioritaire" ? "bg-[#d4522f] text-white shadow-xs" : "text-neutral-600 dark:text-neutral-400"}`}>Prioritaire</button>
+<button type="button" onClick={() => setUrgency("Normal")} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${urgency === "Normal" ? "bg-[#0D9488] text-white shadow-xs" : "text-black/70 dark:text-white/75"}`}>Normal</button>
+<button type="button" onClick={() => setUrgency("Prioritaire")} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${urgency === "Prioritaire" ? "bg-[#d4522f] text-white shadow-xs" : "text-black/70 dark:text-white/75"}`}>Prioritaire</button>
 </div>
 </div>
 <div className="p-3 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-2">

@@ -5,6 +5,7 @@ import { LiveBadge } from './live/LiveBadge';
 export interface FilterOption<T extends string = string> {
   key: T;
   label: string;
+  tooltip?: string;
   count?: number | string;
   disabled?: boolean;
 }
@@ -29,6 +30,7 @@ export function FilterCapsules<T extends string = string>({
   const segmentedOptions = options.map((option) => ({
     value: option.key,
     label: option.label,
+    tooltip: option.tooltip,
     count: option.count,
     disabled: option.disabled,
   }));

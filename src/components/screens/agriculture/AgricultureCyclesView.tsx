@@ -67,7 +67,7 @@ export const AgricultureCyclesView: React.FC<any> = () => {
 		switch (phase) {
 			case "planned": return {
 				label: isAr ? "مخطط (Budget)" : "Planifié",
-				bg: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+				bg: "bg-zinc-100 text-black/70 dark:bg-zinc-800 dark:text-white/75"
 			};
 			case "sowing": return {
 				label: isAr ? "بذر / شتل" : "Semis en cours",
@@ -87,11 +87,11 @@ export const AgricultureCyclesView: React.FC<any> = () => {
 			};
 			case "closed": return {
 				label: isAr ? "مكتمل ومغلق" : "Clôturé",
-				bg: "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
+				bg: "bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75"
 			};
 			default: return {
 				label: phase,
-				bg: "bg-neutral-100 text-neutral-600"
+				bg: "bg-neutral-100 text-black/70 dark:text-white/75"
 			};
 		}
 	};
@@ -255,8 +255,8 @@ export const AgricultureCyclesView: React.FC<any> = () => {
 			cell: (c: any) => /* @__PURE__ */ <div className="flex items-center gap-3">
 <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shrink-0"><Sprout size={16} /></div>
 <div>
-<div className="font-bold text-xs text-neutral-900 dark:text-white">{c.cropName}</div>
-<div className="text-[10px] text-neutral-400">
+<div className="font-bold text-xs text-black dark:text-white">{c.cropName}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">
 {c.variety}
 {" • Campagne "}
 {c.campaignYear}
@@ -270,9 +270,9 @@ export const AgricultureCyclesView: React.FC<any> = () => {
 			accessorKey: "parcelId",
 			sortable: true,
 			minWidth: "160px",
-			cell: (c: any) => /* @__PURE__ */ <div className="text-xs text-neutral-700 dark:text-neutral-300">
+			cell: (c: any) => /* @__PURE__ */ <div className="text-xs text-black/70 dark:text-white/75">
 <div className="font-medium truncate max-w-[150px]">{parcelNameMap.get(c.parcelId) || c.parcelId}</div>
-<div className="text-[10px] text-neutral-400 font-mono">
+<div className="text-[10px] text-black/55 dark:text-white/55 font-mono">
 {c.surfaceAllocatedHa}
 {" ha alloués"}
 </div>
@@ -284,12 +284,12 @@ export const AgricultureCyclesView: React.FC<any> = () => {
 			accessorKey: "sowingDate",
 			sortable: true,
 			minWidth: "150px",
-			cell: (c: any) => /* @__PURE__ */ <div className="text-xs text-neutral-600 dark:text-neutral-400">
+			cell: (c: any) => /* @__PURE__ */ <div className="text-xs text-black/70 dark:text-white/75">
 <div>
 {"Semis: "}
-<span className="font-mono text-neutral-900 dark:text-white">{c.sowingDate}</span>
+<span className="font-mono text-black dark:text-white">{c.sowingDate}</span>
 </div>
-<div className="text-[10px] text-neutral-400">
+<div className="text-[10px] text-black/55 dark:text-white/55">
 {"Récolte: "}
 <span className="font-mono">{c.projectedHarvestDate}</span>
 </div>
@@ -302,12 +302,12 @@ export const AgricultureCyclesView: React.FC<any> = () => {
 			sortable: true,
 			minWidth: "140px",
 			cell: (c: any) => /* @__PURE__ */ <div className="text-xs">
-<div className="font-mono font-bold text-neutral-900 dark:text-white">
+<div className="font-mono font-bold text-black dark:text-white">
 {c.actualYieldQtx ? `${c.actualYieldQtx} / ` : ""}
 {c.projectedYieldQtx}
 {" Qtx"}
 </div>
-<div className="text-[10px] text-neutral-400">
+<div className="text-[10px] text-black/55 dark:text-white/55">
 {Math.round(c.projectedYieldQtx / (c.surfaceAllocatedHa || 1))}
 {" Qtx/ha"}
 </div>
@@ -342,8 +342,8 @@ export const AgricultureCyclesView: React.FC<any> = () => {
 			cell: (t: any) => /* @__PURE__ */ <div className="flex items-center gap-3">
 <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-600 flex items-center justify-center font-bold shrink-0"><ShieldCheck size={16} /></div>
 <div>
-<div className="font-bold text-xs text-neutral-900 dark:text-white">{t.commercialProductName}</div>
-<div className="text-[10px] text-neutral-400">{t.activeIngredient}</div>
+<div className="font-bold text-xs text-black dark:text-white">{t.commercialProductName}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55">{t.activeIngredient}</div>
 </div>
 </div>
 		},
@@ -353,9 +353,9 @@ export const AgricultureCyclesView: React.FC<any> = () => {
 			accessorKey: "targetPestDisease",
 			sortable: true,
 			minWidth: "160px",
-			cell: (t: any) => /* @__PURE__ */ <div className="text-xs text-neutral-700 dark:text-neutral-300">
+			cell: (t: any) => /* @__PURE__ */ <div className="text-xs text-black/70 dark:text-white/75">
 <div className="font-medium">{t.targetPestDisease}</div>
-<div className="text-[10px] text-neutral-400 font-mono">
+<div className="text-[10px] text-black/55 dark:text-white/55 font-mono">
 {"Dose: "}
 {t.dosagePerHa}
 </div>
@@ -367,7 +367,7 @@ export const AgricultureCyclesView: React.FC<any> = () => {
 			accessorKey: "parcelId",
 			sortable: true,
 			minWidth: "140px",
-			cell: (t: any) => /* @__PURE__ */ <div className="text-xs text-neutral-600 dark:text-neutral-400">{parcelNameMap.get(t.parcelId) || t.parcelId}</div>
+			cell: (t: any) => /* @__PURE__ */ <div className="text-xs text-black/70 dark:text-white/75">{parcelNameMap.get(t.parcelId) || t.parcelId}</div>
 		},
 		{
 			id: "dar",
@@ -389,9 +389,9 @@ export const AgricultureCyclesView: React.FC<any> = () => {
 j restants)
 </span>}
 </div>
-<div className="text-[10px] text-neutral-400 mt-0.5">
+<div className="text-[10px] text-black/55 dark:text-white/55 mt-0.5">
 {"Autorisé: "}
-<span className="font-mono text-neutral-700 dark:text-neutral-300">{t.harvestAllowedDate}</span>
+<span className="font-mono text-black/70 dark:text-white/75">{t.harvestAllowedDate}</span>
 </div>
 </div>;
 			}
@@ -402,9 +402,9 @@ j restants)
 			accessorKey: "operatorName",
 			sortable: true,
 			minWidth: "140px",
-			cell: (t: any) => /* @__PURE__ */ <div className="text-xs text-neutral-600 dark:text-neutral-400">
+			cell: (t: any) => /* @__PURE__ */ <div className="text-xs text-black/70 dark:text-white/75">
 <div>{t.operatorName}</div>
-<div className="text-[10px] text-neutral-400 font-mono">{t.treatmentDate}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 font-mono">{t.treatmentDate}</div>
 </div>
 		}
 	];
@@ -460,7 +460,7 @@ j restants)
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Sprout size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isAr ? "دورات المحاصيل والسجل الصحي النباتي" : "Cycles de Culture & Carnet Phyto"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
@@ -477,12 +477,12 @@ j restants)
 </div>
 </div>
 <div className="flex items-center gap-2 border-b border-neutral-200 dark:border-neutral-800 pb-2">
-<button type="button" onClick={() => setActiveTabMode("cycles")} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${activeTabMode === "cycles" ? "bg-[#d4522f] text-white shadow-xs" : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"}`}>
+<button type="button" onClick={() => setActiveTabMode("cycles")} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${activeTabMode === "cycles" ? "bg-[#d4522f] text-white shadow-xs" : "text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-800"}`}>
 <Sprout size={15} />
 {isAr ? "دورات المحاصيل والمواسم الفلاحية" : "Cycles de Culture & Assolement"}
 <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20 ml-1">{cropCycles.length}</span>
 </button>
-<button type="button" onClick={() => setActiveTabMode("treatments")} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${activeTabMode === "treatments" ? "bg-[#d4522f] text-white shadow-xs" : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"}`}>
+<button type="button" onClick={() => setActiveTabMode("treatments")} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${activeTabMode === "treatments" ? "bg-[#d4522f] text-white shadow-xs" : "text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-800"}`}>
 <ShieldCheck size={15} />
 {isAr ? "السجل الصحي وفترة الأمان DAR" : "Carnet Phyto & Délais DAR"}
 <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20 ml-1">{treatmentLogs.length}</span>
@@ -501,11 +501,11 @@ j restants)
 </div>}
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500">{isAr ? "المساحة الإجمالية للدورات" : "Superficie Assolement Actif"}</span>
-<div className="text-2xl font-bold font-mono text-neutral-900 dark:text-white mt-1">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/55">{isAr ? "المساحة الإجمالية للدورات" : "Superficie Assolement Actif"}</span>
+<div className="text-2xl font-bold text-black dark:text-white mt-1 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {totalAllocatedHa.toFixed(1)}
 {" "}
-<span className="text-xs font-normal text-neutral-500">ha</span>
+<span className="text-xs font-normal text-black/55 dark:text-white/55">ha</span>
 </div>
 <p className="text-[10.5px] text-[#d4522f] mt-0.5">
 {cropCycles.length}
@@ -514,18 +514,18 @@ j restants)
 </p>
 </div>
 <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500">{isAr ? "جاهز للحصاد والجني" : "Cultures Prêtes pour Récolte"}</span>
-<div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/55">{isAr ? "جاهز للحصاد والجني" : "Cultures Prêtes pour Récolte"}</span>
+<div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {readyHarvestCount}
 {" "}
-<span className="text-xs font-normal text-neutral-500">{isAr ? "محاصيل" : "parcelles"}</span>
+<span className="text-xs font-normal text-black/55 dark:text-white/55">{isAr ? "محاصيل" : "parcelles"}</span>
 </div>
-<p className="text-[10.5px] text-neutral-400 mt-0.5">{isAr ? "تم استيفاء شروط النضج والأمان" : "Conformes pour pesée pont-bascule"}</p>
+<p className="text-[10.5px] text-black/55 dark:text-white/55 mt-0.5">{isAr ? "تم استيفاء شروط النضج والأمان" : "Conformes pour pesée pont-bascule"}</p>
 </div>
 <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500">{isAr ? "معالجات المقيدة بالسجل" : "Traitements Phyto Enregistrés"}</span>
-<div className="text-2xl font-bold font-mono text-amber-600 dark:text-amber-400 mt-1">{totalTreatmentsLogged}</div>
-<p className="text-[10.5px] text-neutral-400 mt-0.5">
+<span className="text-[11px] font-medium text-black/55 dark:text-white/55">{isAr ? "معالجات المقيدة بالسجل" : "Traitements Phyto Enregistrés"}</span>
+<div className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{totalTreatmentsLogged}</div>
+<p className="text-[10.5px] text-black/55 dark:text-white/55 mt-0.5">
 {activeDarCyclesCount}
 {" "}
 {isAr ? "فترات أمان نشطة حالياً" : "DAR actifs en cours"}
@@ -559,8 +559,8 @@ j restants)
 <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Sprout size={16} /></div>
 <div>
-<h3 className="text-xs font-bold text-neutral-900 dark:text-white">{c.cropName}</h3>
-<p className="text-[10px] text-neutral-400">
+<h3 className="text-xs font-bold text-black dark:text-white">{c.cropName}</h3>
+<p className="text-[10px] text-black/55 dark:text-white/55">
 {c.variety}
 {" • Campagne "}
 {c.campaignYear}
@@ -571,15 +571,15 @@ j restants)
 </div>
 <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-neutral-100 dark:border-neutral-800">
 <div>
-<span className="text-neutral-400">{"Surface: "}</span>
-<span className="font-mono font-bold text-neutral-700 dark:text-neutral-300">
+<span className="text-black/55 dark:text-white/55">{"Surface: "}</span>
+<span className="font-mono font-bold text-black/70 dark:text-white/75">
 {c.surfaceAllocatedHa}
 {" ha"}
 </span>
 </div>
 <div>
-<span className="text-neutral-400">{"Prévu: "}</span>
-<span className="font-mono font-bold text-neutral-700 dark:text-neutral-300">
+<span className="text-black/55 dark:text-white/55">{"Prévu: "}</span>
+<span className="font-mono font-bold text-black/70 dark:text-white/75">
 {c.projectedYieldQtx}
 {" Qtx"}
 </span>
@@ -618,8 +618,8 @@ j restants)
 <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Sprout size={16} /></div>
 <div>
-<h2 className="text-xs font-bold text-neutral-900 dark:text-white">{selectedCycle.cropName}</h2>
-<p className="text-[10px] text-neutral-400">
+<h2 className="text-xs font-bold text-black dark:text-white">{selectedCycle.cropName}</h2>
+<p className="text-[10px] text-black/55 dark:text-white/55">
 {selectedCycle.variety}
 {" • Campagne "}
 {selectedCycle.campaignYear}
@@ -629,34 +629,34 @@ j restants)
 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${getPhaseConfig(selectedCycle.currentPhase).bg}`}>{getPhaseConfig(selectedCycle.currentPhase).label}</span>
 </div>
 <div className="flex border-b border-neutral-200 dark:border-neutral-800 text-xs">
-<button type="button" onClick={() => setInspectorTab("details")} className={`pb-2 px-2 font-bold border-b-2 transition ${inspectorTab === "details" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500"}`}>{isAr ? "البيانات" : "Détails"}</button>
-<button type="button" onClick={() => setInspectorTab("rendement")} className={`pb-2 px-2 font-bold border-b-2 transition ${inspectorTab === "rendement" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500"}`}>{isAr ? "المردود" : "Rendement"}</button>
-<button type="button" onClick={() => setInspectorTab("couts")} className={`pb-2 px-2 font-bold border-b-2 transition ${inspectorTab === "couts" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500"}`}>{isAr ? "التكاليف" : "Coûts"}</button>
+<button type="button" onClick={() => setInspectorTab("details")} className={`pb-2 px-2 font-bold border-b-2 transition ${inspectorTab === "details" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55"}`}>{isAr ? "البيانات" : "Détails"}</button>
+<button type="button" onClick={() => setInspectorTab("rendement")} className={`pb-2 px-2 font-bold border-b-2 transition ${inspectorTab === "rendement" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55"}`}>{isAr ? "المردود" : "Rendement"}</button>
+<button type="button" onClick={() => setInspectorTab("couts")} className={`pb-2 px-2 font-bold border-b-2 transition ${inspectorTab === "couts" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55"}`}>{isAr ? "التكاليف" : "Coûts"}</button>
 </div>
 {inspectorTab === "details" && /* @__PURE__ */ <div className="space-y-3 text-xs">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-2">
 <div className="flex justify-between">
-<span className="text-neutral-400">Parcelle:</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{parcelNameMap.get(selectedCycle.parcelId) || selectedCycle.parcelId}</span>
+<span className="text-black/55 dark:text-white/55">Parcelle:</span>
+<span className="font-semibold text-black dark:text-white">{parcelNameMap.get(selectedCycle.parcelId) || selectedCycle.parcelId}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">Surface Allouée:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">
+<span className="text-black/55 dark:text-white/55">Surface Allouée:</span>
+<span className="font-mono font-bold text-black dark:text-white">
 {selectedCycle.surfaceAllocatedHa}
 {" ha"}
 </span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">Lot Semence:</span>
-<span className="font-mono text-neutral-700 dark:text-neutral-300">{selectedCycle.seedLotNumber || "CCLS-Standard"}</span>
+<span className="text-black/55 dark:text-white/55">Lot Semence:</span>
+<span className="font-mono text-black/70 dark:text-white/75">{selectedCycle.seedLotNumber || "CCLS-Standard"}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">Date Semis:</span>
-<span className="font-mono text-neutral-700 dark:text-neutral-300">{selectedCycle.sowingDate}</span>
+<span className="text-black/55 dark:text-white/55">Date Semis:</span>
+<span className="font-mono text-black/70 dark:text-white/75">{selectedCycle.sowingDate}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">Récolte Prévue:</span>
-<span className="font-mono text-neutral-700 dark:text-neutral-300">{selectedCycle.projectedHarvestDate}</span>
+<span className="text-black/55 dark:text-white/55">Récolte Prévue:</span>
+<span className="font-mono text-black/70 dark:text-white/75">{selectedCycle.projectedHarvestDate}</span>
 </div>
 </div>
 {selectedCycle.activeDarLockoutUntil && /* @__PURE__ */ <div className="p-3 bg-amber-500/10 border border-amber-500/25 rounded-xl text-amber-800 dark:text-amber-300 text-xs flex items-start gap-2">
@@ -672,14 +672,14 @@ j restants)
 {inspectorTab === "rendement" && /* @__PURE__ */ <div className="space-y-3 text-xs">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-2.5">
 <div className="flex justify-between">
-<span className="text-neutral-400">Objectif Prévu:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">
+<span className="text-black/55 dark:text-white/55">Objectif Prévu:</span>
+<span className="font-mono font-bold text-black dark:text-white">
 {selectedCycle.projectedYieldQtx}
 {" Qtx"}
 </span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">Réalisé:</span>
+<span className="text-black/55 dark:text-white/55">Réalisé:</span>
 <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
 {selectedCycle.actualYieldQtx || 0}
 {" Qtx"}
@@ -688,7 +688,7 @@ j restants)
 <div className="w-full bg-neutral-200 dark:bg-neutral-700 h-2 rounded-full overflow-hidden">
 <div className="bg-[#d4522f] h-full" style={{ width: `${Math.min(100, Math.round((selectedCycle.actualYieldQtx || 0) / (selectedCycle.projectedYieldQtx || 1) * 100))}%` }} />
 </div>
-<div className="text-[10.5px] text-neutral-400 text-right">
+<div className="text-[10.5px] text-black/55 dark:text-white/55 text-right">
 Taux de réalisation :
 {" "}
 {Math.round((selectedCycle.actualYieldQtx || 0) / (selectedCycle.projectedYieldQtx || 1) * 100)}
@@ -699,16 +699,16 @@ Taux de réalisation :
 {inspectorTab === "couts" && /* @__PURE__ */ <div className="space-y-3 text-xs">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-2">
 <div className="flex justify-between">
-<span className="text-neutral-400">Intrants & Semences:</span>
-<span className="font-mono text-neutral-800 dark:text-neutral-200">{formatMoney(selectedCycle.totalInputCostDzd || 0)}</span>
+<span className="text-black/55 dark:text-white/55">Intrants & Semences:</span>
+<span className="font-mono text-black dark:text-white">{formatMoney(selectedCycle.totalInputCostDzd || 0)}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">Main d'œuvre Tâcherons:</span>
-<span className="font-mono text-neutral-800 dark:text-neutral-200">{formatMoney(selectedCycle.totalLaborCostDzd || 0)}</span>
+<span className="text-black/55 dark:text-white/55">Main d'œuvre Tâcherons:</span>
+<span className="font-mono text-black dark:text-white">{formatMoney(selectedCycle.totalLaborCostDzd || 0)}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">Matériel & Carburant:</span>
-<span className="font-mono text-neutral-800 dark:text-neutral-200">{formatMoney(selectedCycle.totalMachineryCostDzd || 0)}</span>
+<span className="text-black/55 dark:text-white/55">Matériel & Carburant:</span>
+<span className="font-mono text-black dark:text-white">{formatMoney(selectedCycle.totalMachineryCostDzd || 0)}</span>
 </div>
 <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700 flex justify-between font-bold">
 <span>Total Coûts Engagés:</span>
@@ -721,15 +721,15 @@ Taux de réalisation :
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex gap-2">
 <AtriumButton variant="outline" size="sm" className="w-full" onClick={() => handleOpenEditCycle(selectedCycle)} icon={<Edit size={13} />}>{isAr ? "تعديل الدورة" : "Modifier le Cycle"}</AtriumButton>
 </div>
-</div> : /* @__PURE__ */ <div className="text-center py-10 text-neutral-400 text-xs">
+</div> : /* @__PURE__ */ <div className="text-center py-10 text-black/55 dark:text-white/55 text-xs">
 {isAr ? "حدد دورة محصول لمعاينة التفاصيل" : "Sélectionnez un cycle pour afficher l’inspecteur"}
 </div> : selectedTreatment ? /* @__PURE__ */ <div className="space-y-4">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
 <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-600 flex items-center justify-center font-bold"><ShieldCheck size={16} /></div>
 <div>
-<h2 className="text-xs font-bold text-neutral-900 dark:text-white">{selectedTreatment.commercialProductName}</h2>
-<p className="text-[10px] text-neutral-400">{selectedTreatment.activeIngredient}</p>
+<h2 className="text-xs font-bold text-black dark:text-white">{selectedTreatment.commercialProductName}</h2>
+<p className="text-[10px] text-black/55 dark:text-white/55">{selectedTreatment.activeIngredient}</p>
 </div>
 </div>
 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300">
@@ -739,33 +739,33 @@ j DAR
 </div>
 <div className="p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-2 text-xs">
 <div className="flex justify-between">
-<span className="text-neutral-400">Cible / Maladie:</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{selectedTreatment.targetPestDisease}</span>
+<span className="text-black/55 dark:text-white/55">Cible / Maladie:</span>
+<span className="font-semibold text-black dark:text-white">{selectedTreatment.targetPestDisease}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">Parcelle:</span>
-<span className="text-neutral-800 dark:text-neutral-200">{parcelNameMap.get(selectedTreatment.parcelId) || selectedTreatment.parcelId}</span>
+<span className="text-black/55 dark:text-white/55">Parcelle:</span>
+<span className="text-black dark:text-white">{parcelNameMap.get(selectedTreatment.parcelId) || selectedTreatment.parcelId}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">Dose appliquée:</span>
+<span className="text-black/55 dark:text-white/55">Dose appliquée:</span>
 <span className="font-mono font-semibold">{selectedTreatment.dosagePerHa}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">Date Application:</span>
+<span className="text-black/55 dark:text-white/55">Date Application:</span>
 <span className="font-mono">{selectedTreatment.treatmentDate}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">Récolte Autorisée:</span>
+<span className="text-black/55 dark:text-white/55">Récolte Autorisée:</span>
 <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{selectedTreatment.harvestAllowedDate}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-400">Applicateur:</span>
+<span className="text-black/55 dark:text-white/55">Applicateur:</span>
 <span>{selectedTreatment.operatorName}</span>
 </div>
 </div>
 <div className="p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl text-xs space-y-1">
-<span className="text-neutral-400 font-medium">Consignes & Météo:</span>
-<p className="text-neutral-700 dark:text-neutral-300 italic text-[11px]">
+<span className="text-black/55 dark:text-white/55 font-medium">Consignes & Météo:</span>
+<p className="text-black/70 dark:text-white/75 italic text-[11px]">
 "
 {selectedTreatment.notes || "Aucune observation particulière."}
 "
@@ -774,7 +774,7 @@ j DAR
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex gap-2">
 <AtriumButton variant="outline" size="sm" className="w-full" onClick={() => handleOpenEditTreatment(selectedTreatment)} icon={<Edit size={13} />}>{isAr ? "تعديل المعالجة" : "Modifier le Traitement"}</AtriumButton>
 </div>
-</div> : /* @__PURE__ */ <div className="text-center py-10 text-neutral-400 text-xs">
+</div> : /* @__PURE__ */ <div className="text-center py-10 text-black/55 dark:text-white/55 text-xs">
 {isAr ? "حدد معالجة لمعاينة التفاصيل" : "Sélectionnez un traitement pour afficher l’inspecteur"}
 </div>}
 </div>

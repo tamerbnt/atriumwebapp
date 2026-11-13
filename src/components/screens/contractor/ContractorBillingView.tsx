@@ -165,11 +165,11 @@ export const ContractorBillingView: React.FC<any> = () => {
 				return /* @__PURE__ */ <div className="flex items-center gap-3">
 <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800"><Building2 size={16} /></div>
 <div className="min-w-0">
-<div className="font-bold text-xs text-neutral-900 dark:text-white flex items-center gap-1.5 truncate">
+<div className="font-bold text-xs text-black dark:text-white flex items-center gap-1.5 truncate">
 {d.dgpNumber}
 {isPinned && /* @__PURE__ */ <span className="text-xs text-amber-500">📌</span>}
 </div>
-<div className="text-[11px] text-neutral-400 truncate max-w-[180px]">{d.periodLabel}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 truncate max-w-[180px]">{d.periodLabel}</div>
 </div>
 </div>;
 			}
@@ -179,7 +179,7 @@ export const ContractorBillingView: React.FC<any> = () => {
 			header: isAr ? "المبلغ الإجمالي HT" : "Montant Brut HT",
 			sortable: true,
 			minWidth: "140px",
-			renderCell: (d: any) => /* @__PURE__ */ <div className="font-mono text-xs text-neutral-800 dark:text-neutral-200">{formatMoney(d.periodGrossDzd)}</div>
+			renderCell: (d: any) => /* @__PURE__ */ <div className="font-mono text-xs text-black dark:text-white">{formatMoney(d.periodGrossDzd)}</div>
 		},
 		{
 			key: "retentionGuaranteeDzd",
@@ -236,7 +236,7 @@ export const ContractorBillingView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Wallet size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isAr ? "الكشوفات المالية والضمان (DGP)" : "Décomptes Généraux Provisoires (DGP)"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
@@ -253,32 +253,32 @@ export const ContractorBillingView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "الوضعية المالية للمشروع" : "Situation Financière & Retenues du Projet"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "الكشوفات المحررة" : "Situations Émises"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "الكشوفات المحررة" : "Situations Émises"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">{projectDgps.length}</div>
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{projectDgps.length}</div>
 <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">{isAr ? "مقبولة من مكتب الدراسات" : "Approuvées par le BET"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "اقتطاع الضمان المحجوز (5%)" : "Retenue de Garantie Cumulée"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "اقتطاع الضمان المحجوز (5%)" : "Retenue de Garantie Cumulée"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono tabular-nums">{formatMoney(totalRetention)}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">{isAr ? "تسترجع عند الاستلام النهائي" : "Libérée à la réception définitive"}</p>
+<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalRetention)}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">{isAr ? "تسترجع عند الاستلام النهائي" : "Libérée à la réception définitive"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{isAr ? "إجمالي الصافي المستحق" : "Net des Situations Travaux"}</span>
+<span className="text-[11px] font-medium text-white/80">{isAr ? "إجمالي الصافي المستحق" : "Net des Situations Travaux"}</span>
 <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">TVA 19% Incluse</span>
 </div>
 <div>
-<div className="text-2xl font-black text-white font-mono tabular-nums">{formatMoney(totalNetPayable)}</div>
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalNetPayable)}</div>
 <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
 <CheckCircle2 size={11} />
 {isAr ? "بعد خصم التسبيق واقتطاع الضمان" : "Déduction des avances effectuée"}
@@ -290,24 +290,27 @@ export const ContractorBillingView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "كشوف الحساب والوضعيات المالية (DGP)" : "Décomptes Généraux & Situations de Travaux (DGP)"}
 </h2>
 </div>
 <LiveSegmentedControl value={billingStatus} onChange={(val) => setBillingStatus(val)} size="sm" options={[
 							{
 								id: "all",
-								label: isAr ? "جميع الكشوفات" : "Toutes les situations",
+								label: isAr ? "الكل" : "Toutes",
+								tooltip: isAr ? "جميع الكشوفات" : "Toutes les situations",
 								count: projectDgps.length
 							},
 							{
 								id: "bet",
-								label: isAr ? "مقبولة BET" : "Approuvées BET",
+								label: isAr ? "مقبولة" : "Validées",
+								tooltip: isAr ? "كشوفات مقبولة BET" : "Approuvées BET",
 								count: projectDgps.filter((d) => d.status !== "Paid").length
 							},
 							{
 								id: "paid",
-								label: isAr ? "مسددة" : "Mandatées / Réglées",
+								label: isAr ? "مسددة" : "Réglées",
+								tooltip: isAr ? "كشوفات مسددة" : "Mandatées / Réglées",
 								count: projectDgps.filter((d) => d.status === "Paid").length
 							}
 						]} />
@@ -323,7 +326,7 @@ export const ContractorBillingView: React.FC<any> = () => {
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={isAr ? "بحث برقم الكشف..." : "Filtrer situation, libellé..."} />
 </div>
 </div>
-<div className="text-xs text-neutral-500 dark:text-neutral-400">
+<div className="text-xs text-black/55 dark:text-white/75">
 {sortedDgps.length}
 {" "}
 {isAr ? "كشوفات" : "situations"}
@@ -350,17 +353,17 @@ export const ContractorBillingView: React.FC<any> = () => {
 								const isPinned = pinnedIds.has(d.id);
 								return /* @__PURE__ */ <div className="flex flex-col w-full space-y-3">
 <div className="flex items-center justify-between">
-<span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+<span className="text-xs font-bold text-black dark:text-white truncate">
 {d.dgpNumber}
 {" "}
 {isPinned && "📌"}
 </span>
 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">{d.status === "Paid" ? "Réglé" : "Approuvé BET"}</span>
 </div>
-<div className="text-xs text-neutral-500 line-clamp-1">{d.periodLabel}</div>
+<div className="text-xs text-black/55 dark:text-white/55 line-clamp-1">{d.periodLabel}</div>
 <div className="bg-neutral-50 dark:bg-neutral-900/60 rounded-xl p-3 space-y-1.5 font-mono text-xs">
 <div className="flex justify-between">
-<span className="text-neutral-400">Montant Brut HT:</span>
+<span className="text-black/55 dark:text-white/55">Montant Brut HT:</span>
 <span>{formatMoney(d.periodGrossDzd)}</span>
 </div>
 <div className="flex justify-between text-amber-600 dark:text-amber-400">
@@ -370,12 +373,12 @@ export const ContractorBillingView: React.FC<any> = () => {
 {formatMoney(d.retentionGuaranteeDzd)}
 </span>
 </div>
-<div className="flex justify-between font-bold text-neutral-900 dark:text-white pt-1 border-t border-neutral-200 dark:border-neutral-700">
+<div className="flex justify-between font-bold text-black dark:text-white pt-1 border-t border-neutral-200 dark:border-neutral-700">
 <span>Net TTC:</span>
 <span className="text-[#d4522f]">{formatMoney(d.netPayableDzd)}</span>
 </div>
 </div>
-<div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-neutral-400">
+<div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-black/55 dark:text-white/55">
 <span>
 {"Date: "}
 {d.issuedDate}
@@ -390,8 +393,8 @@ export const ContractorBillingView: React.FC<any> = () => {
 <div className="flex items-center gap-3 min-w-0">
 <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-950/60 text-[#d4522f] font-bold text-sm flex items-center justify-center shrink-0 border border-orange-200/60"><Wallet size={18} /></div>
 <div className="min-w-0">
-<h3 className="font-bold text-sm text-neutral-900 dark:text-white truncate">{selectedDgp.dgpNumber}</h3>
-<div className="flex items-center gap-1.5 text-xs text-neutral-400">
+<h3 className="font-bold text-sm text-black dark:text-white truncate">{selectedDgp.dgpNumber}</h3>
+<div className="flex items-center gap-1.5 text-xs text-black/55 dark:text-white/55">
 <span className="font-mono">
 {"Date: "}
 {selectedDgp.issuedDate}
@@ -399,21 +402,21 @@ export const ContractorBillingView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<button type="button" onClick={() => setSelectedDgp(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={16} /></button>
+<button type="button" onClick={() => setSelectedDgp(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={16} /></button>
 </div>
 <div className="flex items-center border-b border-neutral-100 dark:border-neutral-800 px-4 bg-white dark:bg-neutral-850 text-xs">
-<button type="button" onClick={() => setActiveInspectorTab("decompte")} className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${activeInspectorTab === "decompte" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200"}`}>{isAr ? "البيان المالي" : "Décompte"}</button>
-<button type="button" onClick={() => setActiveInspectorTab("certificat")} className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${activeInspectorTab === "certificat" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200"}`}>{isAr ? "الشهادة والضمان" : "Certificat"}</button>
-<button type="button" onClick={() => setActiveInspectorTab("actions")} className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${activeInspectorTab === "actions" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200"}`}>{isAr ? "الإجراءات" : "Actions"}</button>
+<button type="button" onClick={() => setActiveInspectorTab("decompte")} className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${activeInspectorTab === "decompte" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{isAr ? "البيان المالي" : "Décompte"}</button>
+<button type="button" onClick={() => setActiveInspectorTab("certificat")} className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${activeInspectorTab === "certificat" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{isAr ? "الشهادة والضمان" : "Certificat"}</button>
+<button type="button" onClick={() => setActiveInspectorTab("actions")} className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${activeInspectorTab === "actions" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{isAr ? "الإجراءات" : "Actions"}</button>
 </div>
 <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
 {activeInspectorTab === "decompte" && /* @__PURE__ */ <div className="space-y-4 animate-in fade-in duration-150">
 <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-2 font-mono">
-<div className="flex justify-between items-center text-neutral-600 dark:text-neutral-400">
+<div className="flex justify-between items-center text-black/70 dark:text-white/75">
 <span>Cumul précédent:</span>
 <span>{formatMoney(selectedDgp.previousCumulDzd || 0)}</span>
 </div>
-<div className="flex justify-between items-center text-sm font-bold text-neutral-900 dark:text-white">
+<div className="flex justify-between items-center text-sm font-bold text-black dark:text-white">
 <span>Montant du mois HT:</span>
 <span>{formatMoney(selectedDgp.periodGrossDzd)}</span>
 </div>
@@ -424,7 +427,7 @@ export const ContractorBillingView: React.FC<any> = () => {
 {formatMoney(selectedDgp.retentionGuaranteeDzd)}
 </span>
 </div>
-<div className="flex justify-between items-center text-neutral-500">
+<div className="flex justify-between items-center text-black/55 dark:text-white/55">
 <span>Amortissement avances:</span>
 <span>
 -
@@ -452,11 +455,11 @@ Métrés contradictoires signés sur chantier avec le conducteur de travaux et l
 </div>}
 {activeInspectorTab === "certificat" && /* @__PURE__ */ <div className="space-y-3 animate-in fade-in duration-150">
 <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-2">
-<div className="flex items-center gap-2 font-bold text-neutral-900 dark:text-white">
+<div className="flex items-center gap-2 font-bold text-black dark:text-white">
 <ShieldCheck size={16} className="text-[#d4522f]" />
 <span>Certificat de Paiement BTP</span>
 </div>
-<div className="space-y-1.5 font-mono text-[11px] text-neutral-600 dark:text-neutral-400">
+<div className="space-y-1.5 font-mono text-[11px] text-black/70 dark:text-white/75">
 <div>
 {"Marché: "}
 {selectedProject?.projectCode}
@@ -484,7 +487,7 @@ La retenue de garantie cumulée (
 Imprimer décompte provisoire
 </span>
 </button>
-<button type="button" onClick={() => handleTogglePin(selectedDgp.id)} className="w-full p-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold flex items-center justify-between hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer">
+<button type="button" onClick={() => handleTogglePin(selectedDgp.id)} className="w-full p-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white font-semibold flex items-center justify-between hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer">
 <span className="flex items-center gap-2">
 <Pin size={16} />
 {pinnedIds.has(selectedDgp.id) ? "Détacher" : "Épingler la situation"}
@@ -513,9 +516,9 @@ Marquer comme réglée
 <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
 <div className="flex items-center gap-2">
 <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Plus size={16} /></div>
-<h3 className="font-bold text-sm text-neutral-900 dark:text-white">{isAr ? "تحرير كشف حساب جديد (DGP)" : "Établir une Nouvelle Situation DGP"}</h3>
+<h3 className="font-bold text-sm text-black dark:text-white">{isAr ? "تحرير كشف حساب جديد (DGP)" : "Établir une Nouvelle Situation DGP"}</h3>
 </div>
-<button type="button" onClick={() => setIsModalOpen(false)} className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={16} /></button>
+<button type="button" onClick={() => setIsModalOpen(false)} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={16} /></button>
 </div>
 <form onSubmit={handleCreateDgp} className="space-y-4">
 <LabelInput label="Libellé de la période" value={periodLabel} onChange={(e) => setPeriodLabel(e.target.value)} required />
@@ -526,10 +529,10 @@ Marquer comme réglée
 <LabelInput label="Amortissement avances forfaitaires (DZD)" type="number" value={advanceAmort} onChange={(e) => setAdvanceAmort(e.target.value)} />
 <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
 <div>
-<div className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+<div className="text-xs font-semibold text-black dark:text-white">
 {isAr ? "تعويض اقتطاع الضمان بكفالة بنكية" : "Caution bancaire de substitution"}
 </div>
-<div className="text-[11px] text-neutral-500">
+<div className="text-[11px] text-black/55 dark:text-white/55">
 {isAr ? "إلغاء الاقتطاع المالي 5% بموجب كفالة معتمدة" : "Dispense de retenue 5% (Art. 99 Décret 15-247)"}
 </div>
 </div>

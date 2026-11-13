@@ -16,9 +16,7 @@ interface RealEstatePropertyModalProps {
 
 
 
-const import_jsx_runtime = require_jsx_runtime();
-
-const RealEstatePropertyModal = ({ isOpen, onClose, onSave, propertyToEdit }) => {
+export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = ({ isOpen, onClose, onSave, propertyToEdit }) => {
 	const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
 	const [activeTab, setActiveTab] = React.useState("general");
 	const [title, setTitle] = React.useState(propertyToEdit?.title || "");
@@ -125,21 +123,21 @@ const RealEstatePropertyModal = ({ isOpen, onClose, onSave, propertyToEdit }) =>
 		onClose();
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-<div className="bg-white dark:bg-[#18181B] rounded-[28px] max-w-2xl w-full p-6 md:p-8 shadow-2xl border border-[#E9EEF0] dark:border-[#27272A] space-y-5 my-8 text-[#18181B] dark:text-[#FAFAFA]">
+<div className="bg-white dark:bg-[#18181B] rounded-[28px] max-w-2xl w-full p-6 md:p-8 shadow-2xl border border-[#E9EEF0] dark:border-[#27272A] space-y-5 my-8 text-black dark:text-[#FAFAFA]">
 <div className="flex items-center justify-between border-b border-[#E2E8EC] dark:border-[#27272A] pb-4">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Building2 className="w-5 h-5" /></div>
 <div>
-<h3 className="font-bold text-lg text-[#18181B] dark:text-white">
+<h3 className="font-bold text-lg text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {propertyToEdit ? "Modifier le Bien & Passeport Foncier" : "Nouveau Bien Immobilier & Passeport Cadastral"}
 </h3>
 </div>
 </div>
-<button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-[#64748B] hover:text-[#18181B] dark:hover:text-white"><X className="w-5 h-5" /></button>
+<button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"><X className="w-5 h-5" /></button>
 </div>
 <div className="flex items-center gap-2 border-b border-[#E2E8EC] dark:border-[#27272A] pb-1">
-<button type="button" onClick={() => setActiveTab("general")} className={`px-4 py-2 text-xs font-semibold rounded-xl transition-colors ${activeTab === "general" ? "bg-[#d4522f] text-white shadow-xs" : "text-[#64748B] hover:text-[#18181B] dark:hover:text-white"}`}>1. Descriptif & Mandant</button>
-<button type="button" onClick={() => setActiveTab("cadastre")} className={`px-4 py-2 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors ${activeTab === "cadastre" ? "bg-[#d4522f] text-white shadow-xs" : "text-[#64748B] hover:text-[#18181B] dark:hover:text-white"}`}>
+<button type="button" onClick={() => setActiveTab("general")} className={`px-4 py-2 text-xs font-semibold rounded-xl transition-colors ${activeTab === "general" ? "bg-[#d4522f] text-white shadow-xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>1. Descriptif & Mandant</button>
+<button type="button" onClick={() => setActiveTab("cadastre")} className={`px-4 py-2 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors ${activeTab === "cadastre" ? "bg-[#d4522f] text-white shadow-xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>
 <ShieldCheck className="w-3.5 h-3.5" />
 <span>2. Passeport Foncier & Titre Légal</span>
 <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${titleStrength.score >= 80 ? "bg-emerald-500/20 text-emerald-300" : "bg-amber-500/20 text-amber-200"}`}>
@@ -206,8 +204,8 @@ const RealEstatePropertyModal = ({ isOpen, onClose, onSave, propertyToEdit }) =>
 </> : /* @__PURE__ */ <>
 <div className="p-3.5 rounded-2xl bg-[#FDF4F0] dark:bg-[#1C1816] border border-[#d4522f]/30 flex items-center justify-between">
 <div>
-<div className="text-xs text-[#64748B] dark:text-[#A1A1AA]">Niveau de Sécurité Juridique</div>
-<div className="text-sm font-bold text-[#18181B] dark:text-white flex items-center gap-1.5">
+<div className="text-xs text-black/70 dark:text-[#A1A1AA]">Niveau de Sécurité Juridique</div>
+<div className="text-sm font-bold text-black dark:text-white flex items-center gap-1.5">
 <span>{titleStrength.labelFr}</span>
 <span className="text-xs font-mono text-[#d4522f]">
 (
@@ -282,7 +280,7 @@ const RealEstatePropertyModal = ({ isOpen, onClose, onSave, propertyToEdit }) =>
 </div>
 </>}
 <div className="flex items-center justify-between pt-4 border-t border-[#E2E8EC] dark:border-[#27272A]">
-{activeTab === "general" ? /* @__PURE__ */ <button type="button" onClick={() => setActiveTab("cadastre")} className="text-xs text-[#d4522f] font-semibold hover:underline">Passer au Passeport Foncier →</button> : /* @__PURE__ */ <button type="button" onClick={() => setActiveTab("general")} className="text-xs text-[#64748B] font-semibold hover:underline">← Retour au Descriptif</button>}
+{activeTab === "general" ? /* @__PURE__ */ <button type="button" onClick={() => setActiveTab("cadastre")} className="text-xs text-[#d4522f] font-semibold hover:underline">Passer au Passeport Foncier →</button> : /* @__PURE__ */ <button type="button" onClick={() => setActiveTab("general")} className="text-xs text-black/70 dark:text-white/75 font-semibold hover:underline">← Retour au Descriptif</button>}
 <div className="flex items-center gap-2.5">
 <AtriumButton variant="secondary" onClick={onClose} type="button">Annuler</AtriumButton>
 <AtriumButton variant="primary" icon={<CheckCircle size={14} />} type="submit">Enregistrer le Bien</AtriumButton>

@@ -169,11 +169,11 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 									else next.add(proj.id);
 									return next;
 								});
-							}} className={`p-1.5 rounded-lg transition-colors cursor-pointer ${isPinned ? "text-[#d4522f] bg-[#d4522f]/10" : "text-zinc-300 hover:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"}`} title={isPinned ? "Détacher le projet" : "Épingler en haut"}><Pin className={`w-3.5 h-3.5 ${isPinned ? "fill-current" : ""}`} /></button>
+							}} className={`p-1.5 rounded-lg transition-colors cursor-pointer ${isPinned ? "text-[#d4522f] bg-[#d4522f]/10" : "text-black/55 dark:text-white/55 hover:text-black/80 hover:bg-zinc-100 dark:hover:bg-zinc-800"}`} title={isPinned ? "Détacher le projet" : "Épingler en haut"}><Pin className={`w-3.5 h-3.5 ${isPinned ? "fill-current" : ""}`} /></button>
 <div className="w-9 h-9 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0">{proj.title.substring(0, 2).toUpperCase()}</div>
 <div className="min-w-0">
-<div className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs truncate max-w-[200px]">{proj.title}</div>
-<div className="text-[11px] text-zinc-500 truncate">
+<div className="font-semibold text-black dark:text-white text-xs truncate max-w-[200px]">{proj.title}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55 truncate">
 {proj.clientName}
 {" · "}
 <span className="font-mono text-[10px]">{proj.id.slice(0, 8)}</span>
@@ -189,7 +189,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 			minWidth: "150px",
 			sortable: true,
 			align: "right",
-			renderCell: (proj: any) => /* @__PURE__ */ <div className="font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">{formatMoney(proj.budgetCapDzd, "DZD")}</div>
+			renderCell: (proj: any) => /* @__PURE__ */ <div className="font-mono text-xs font-semibold text-black dark:text-white tabular-nums">{formatMoney(proj.budgetCapDzd, "DZD")}</div>
 		},
 		{
 			key: "margin",
@@ -209,10 +209,10 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 			width: "1.5*",
 			minWidth: "160px",
 			sortable: true,
-			renderCell: (proj: any) => /* @__PURE__ */ <div className="text-xs text-zinc-600 dark:text-zinc-400 font-mono">
+			renderCell: (proj: any) => /* @__PURE__ */ <div className="text-xs text-black/70 dark:text-white/75 font-mono">
 {proj.startDate}
 {" "}
-<span className="text-zinc-400">➔</span>
+<span className="text-black/55 dark:text-white/55">➔</span>
 {" "}
 {proj.endDate}
 </div>
@@ -222,14 +222,14 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 			header: "Équipe Responsable",
 			width: "1.5*",
 			minWidth: "170px",
-			renderCell: (proj: any) => /* @__PURE__ */ <div className="text-[11px] text-zinc-600 dark:text-zinc-400 space-y-0.5">
+			renderCell: (proj: any) => /* @__PURE__ */ <div className="text-[11px] text-black/70 dark:text-white/75 space-y-0.5">
 <div>
-<span className="text-zinc-400 font-medium">CDP:</span>
+<span className="text-black/55 dark:text-white/55 font-medium">CDP:</span>
 {" "}
 {proj.projectManagerName}
 </div>
 <div>
-<span className="text-zinc-400 font-medium">Créa:</span>
+<span className="text-black/55 dark:text-white/55 font-medium">Créa:</span>
 {" "}
 {proj.leadCreativeName}
 </div>
@@ -247,7 +247,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 					framing: {
 						label: "Cahier des charges",
 						bg: "bg-zinc-100 dark:bg-zinc-800",
-						text: "text-zinc-700 dark:text-zinc-300"
+						text: "text-black/70 dark:text-white/75"
 					},
 					creative_kv: {
 						label: "KV Créa",
@@ -277,12 +277,12 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 					archived: {
 						label: "Archivé",
 						bg: "bg-zinc-100 dark:bg-zinc-800",
-						text: "text-zinc-500"
+						text: "text-black/55 dark:text-white/55"
 					}
 				} as Record<string, any>)[proj.status] || {
 					label: proj.status,
 					bg: "bg-zinc-100",
-					text: "text-zinc-700"
+					text: "text-black/70 dark:text-white/75"
 				};
 				return /* @__PURE__ */ <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badge.bg} ${badge.text}`}>{badge.label}</span>;
 			}
@@ -393,11 +393,11 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 <div>
 {currentScreen !== "dashboard" && /* @__PURE__ */ <div className="flex items-center gap-2 mb-1">
 <span className="text-xs font-semibold uppercase tracking-wider text-[#d4522f]">{t("pm_role_direction_badge")}</span>
-<span className="text-zinc-400">·</span>
-<span className="text-xs text-zinc-500">Direction Générale & Arbitrage</span>
+<span className="text-black/55 dark:text-white/55">·</span>
+<span className="text-xs text-black/55 dark:text-white/55">Direction Générale & Arbitrage</span>
 </div>}
 <div className="flex items-center gap-3.5">
-{currentScreen === "dashboard" && /* @__PURE__ */ <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
+{currentScreen === "dashboard" && /* @__PURE__ */ <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 flex items-center justify-center text-black dark:text-white">
 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
 <rect x="3" y="3" width="7" height="7" rx="1.5" />
 <rect x="14" y="3" width="7" height="7" rx="1.5" />
@@ -405,7 +405,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 <rect x="3" y="14" width="7" height="7" rx="1.5" />
 </svg>
 </div>}
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-zinc-900 dark:text-zinc-100">
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {currentScreen === "dashboard" ? t("nav_dashboard", language) : currentScreen === "projects" ? "Portefeuille Projets" : currentScreen === "new_project" ? t("pm_btn_new_project") : currentScreen === "approvals" ? "Approbations & Décaissements" : t("nav_pm_dir_reports")}
 </h1>
 </div>
@@ -446,10 +446,10 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 				].map((tab) => {
 					const Icon = tab.icon;
 					const isActive = currentScreen === tab.id;
-					return /* @__PURE__ */ <button key={tab.id} onClick={() => setActivePmSubScreen(tab.id)} className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${isActive ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}>
+					return /* @__PURE__ */ <button key={tab.id} onClick={() => setActivePmSubScreen(tab.id)} className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${isActive ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>
 <Icon className="w-4 h-4" />
 <span>{tab.label}</span>
-{tab.count !== void 0 && tab.count > 0 && /* @__PURE__ */ <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${tab.id === "approvals" ? "bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300"}`}>{tab.count}</span>}
+{tab.count !== void 0 && tab.count > 0 && /* @__PURE__ */ <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${tab.id === "approvals" ? "bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300" : "bg-zinc-100 dark:bg-zinc-800 text-black/70 dark:text-white/75"}`}>{tab.count}</span>}
 </button>;
 				})}
 </div>
@@ -460,7 +460,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 {pmProjects.length}
 {" "}
 {language === "ar" ? "مشاريع نشطة" : "Campagnes Actives"}
-</span>} rightControls={<span className="text-xs font-semibold text-gray-500">
+</span>} rightControls={<span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {pmTalents.length}
 {" "}
 {language === "ar" ? "فريق معتمد" : "Talents Mobilisés"}
@@ -469,28 +469,28 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
 <div className="flex items-center justify-between">
 <div className="flex-1">
-<span className="text-xs font-medium text-gray-500 dark:text-neutral-400 block mb-1">{language === "ar" ? "الحملات قيد التنفيذ" : "Campagnes Terrain"}</span>
+<span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">{language === "ar" ? "الحملات قيد التنفيذ" : "Campagnes Terrain"}</span>
 <div className="flex items-baseline gap-2">
-<span className="text-3xl font-bold font-mono text-gray-900 dark:text-white tabular-nums">{pmProjects.length}</span>
-<span className="text-xs text-gray-400">/ 12 obj</span>
+<span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{pmProjects.length}</span>
+<span className="text-xs text-black/55 dark:text-white/55">/ 12 obj</span>
 </div>
 <span className="inline-block mt-2 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[11px] font-medium rounded-full">
 {"● "}
 {language === "ar" ? "تسليم في الموعد" : "Dans les délais"}
 </span>
 </div>
-<div className="w-px h-12 bg-gray-200 dark:bg-neutral-700 mx-4" />
+<div className="w-px h-12 bg-neutral-200 dark:bg-neutral-700 mx-4" />
 <div className="flex-1">
-<span className="text-xs font-medium text-gray-500 dark:text-neutral-400 block mb-1">{language === "ar" ? "تأشيرات معلقة" : "Approbations Requises"}</span>
+<span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">{language === "ar" ? "تأشيرات معلقة" : "Approbations Requises"}</span>
 <div className="flex items-baseline gap-2">
-<span className="text-3xl font-bold font-mono text-gray-900 dark:text-white tabular-nums">{totalPendingApprovals}</span>
-<span className="text-xs text-gray-400">{language === "ar" ? "ملفات" : "décaissements"}</span>
+<span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{totalPendingApprovals}</span>
+<span className="text-xs text-black/55 dark:text-white/55">{language === "ar" ? "ملفات" : "décaissements"}</span>
 </div>
 <span className="inline-block mt-2 px-2 py-0.5 bg-amber-50 text-amber-600 text-[11px] font-medium rounded-full">{language === "ar" ? "بانتظار الإدارة" : "En attente DG"}</span>
 </div>
 </div>
-<div className="mt-4 pt-3 border-t border-gray-100 dark:border-neutral-700">
-<span className="text-[11px] text-gray-400 block mb-2">
+<div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-700">
+<span className="text-[11px] text-black/55 dark:text-white/55 block mb-2">
 {language === "ar" ? "كثافة نشاط الفريق على مدار 24 ساعة" : "Courbe horaire de cadence agence (24h)"}
 </span>
 <HourlyCurveChart data={[
@@ -504,15 +504,15 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 </div>
 <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
 <div className="flex justify-between items-center mb-1.5">
-<span className="text-xs font-medium text-gray-500 dark:text-neutral-400">
+<span className="text-xs font-medium text-black/70 dark:text-white/75">
 {language === "ar" ? "نسبة إنجاز مراحل المشاريع" : "Burn-Down & Avancement Lots"}
 </span>
-<span className="text-base font-bold font-mono text-gray-900 dark:text-white tabular-nums">88%</span>
+<span className="text-base font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">88%</span>
 </div>
-<div className="w-full bg-gray-100 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
+<div className="w-full bg-neutral-100 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
 <div className="bg-[#d4522f] h-full rounded-full transition-all duration-500" style={{ width: "88%" }} />
 </div>
-<div className="flex justify-between text-[11px] text-gray-400">
+<div className="flex justify-between text-[11px] text-black/55 dark:text-white/55">
 <span>
 {"88% "}
 {language === "ar" ? "منجز" : "réalisé"}
@@ -524,7 +524,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 </DashboardPod>
 </div>
 <div className="lg:col-span-7 flex flex-col">
-<DashboardPod title={language === "ar" ? "محفظة المشاريع والعملاء" : language === "fr" ? "Portefeuille & Contrats" : "Portfolio & Contracts"} icon={<FolderKanban size={18} className="text-[#d4522f]" />} rightControls={<span className="text-xs font-semibold text-gray-500">58 Wilayas Coverage</span>} className="flex-1 flex flex-col justify-between">
+<DashboardPod title={language === "ar" ? "محفظة المشاريع والعملاء" : language === "fr" ? "Portefeuille & Contrats" : "Portfolio & Contracts"} icon={<FolderKanban size={18} className="text-[#d4522f]" />} rightControls={<span className="text-xs font-semibold text-black/70 dark:text-white/75">58 Wilayas Coverage</span>} className="flex-1 flex flex-col justify-between">
 <div className="space-y-4">
 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 <DashboardMetricCard label={language === "ar" ? "حملات نشطة" : "Campagnes Actives"} value={pmProjects.length} badgeText={language === "ar" ? "سارية" : "En cours"} badgeVariant="success" tooltip={language === "ar" ? "مشاريع قيد التنفيذ" : "Projets déployés"} />
@@ -533,10 +533,10 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 </div>
 <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
 <div className="flex justify-between items-center mb-3">
-<span className="text-xs font-semibold text-gray-700 dark:text-neutral-200">
+<span className="text-xs font-semibold text-black/70 dark:text-white">
 {language === "ar" ? "إنجاز المراحل أسبوعياً" : "Jalons & Livrables clôturés (4 semaines)"}
 </span>
-<span className="text-[11px] text-gray-400">{language === "ar" ? "مقارنة شهرية" : "4 dernières semaines"}</span>
+<span className="text-[11px] text-black/55 dark:text-white/55">{language === "ar" ? "مقارنة شهرية" : "4 dernières semaines"}</span>
 </div>
 <PillBarHistogram data={[
 											{
@@ -563,7 +563,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 </div>
 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 <div className="lg:col-span-5 flex flex-col">
-<DashboardPod title={language === "ar" ? "الإيرادات والأرباح" : language === "fr" ? "Revenus & Marges" : "Revenue & Profit"} subtitle={language === "ar" ? "تتبع الإيرادات المفوترة، تكاليف المواهب وهامش الربحية" : language === "fr" ? "Suivi de la facturation client, coûts talents et marge nette" : "Billing milestones, talent fees and gross margins"} icon={<DollarSign size={18} className="text-[#d4522f]" />} rightControls={<span className="text-xs font-semibold text-gray-500 font-mono">{language === "ar" ? "نوفمبر 2026" : "NOVEMBRE 2026"}</span>}>
+<DashboardPod title={language === "ar" ? "الإيرادات والأرباح" : language === "fr" ? "Revenus & Marges" : "Revenue & Profit"} subtitle={language === "ar" ? "تتبع الإيرادات المفوترة، تكاليف المواهب وهامش الربحية" : language === "fr" ? "Suivi de la facturation client, coûts talents et marge nette" : "Billing milestones, talent fees and gross margins"} icon={<DollarSign size={18} className="text-[#d4522f]" />} rightControls={<span className="text-xs font-semibold text-black/70 dark:text-white/75 font-mono">{language === "ar" ? "نوفمبر 2026" : "NOVEMBRE 2026"}</span>}>
 <div className="space-y-4">
 <div className="grid grid-cols-3 gap-2">
 <DashboardMetricCard label={language === "ar" ? "صافي الهامش" : language === "fr" ? "Marge Nette" : "Net Margin"} value={`${Math.round(totalTurnoverDzd * .42).toLocaleString()} DA`} subtext={language === "ar" ? "42% نسبة الهامش" : "42.0% ratio"} trend="+8.4%" trendDirection="up" />
@@ -572,7 +572,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 </div>
 <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
 <div className="flex items-center justify-between mb-2">
-<span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "الفوترة والتحصيل (30 يوماً)" : language === "fr" ? "Facturation & Recouvrement (30j)" : "Billing & Collections (30d)"}
 </span>
 <span className="text-[11px] font-mono text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full font-semibold">+12.6% M/M</span>
@@ -612,31 +612,31 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 </div>
 <div className="grid grid-cols-2 gap-2 pt-1">
 <div className="bg-white dark:bg-neutral-800 p-3 rounded-[16px] border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
-<span className="text-[11px] text-gray-500 dark:text-gray-400 block">
+<span className="text-[11px] text-black/70 dark:text-white/75 block">
 {language === "ar" ? "نسبة التحصيل" : language === "fr" ? "Taux de Recouvrement" : "Collection Rate"}
 </span>
-<span className="text-base font-bold font-mono text-gray-900 dark:text-white tabular-nums">92.4%</span>
+<span className="text-base font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">92.4%</span>
 <span className="text-[10px] text-emerald-600 font-semibold block mt-0.5">{language === "ar" ? "ممتاز" : "Optimal"}</span>
 </div>
 <div className="bg-white dark:bg-neutral-800 p-3 rounded-[16px] border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
-<span className="text-[11px] text-gray-500 dark:text-gray-400 block">
+<span className="text-[11px] text-black/70 dark:text-white/75 block">
 {language === "ar" ? "متوسط السداد (DSO)" : language === "fr" ? "Délai Paiement Client" : "Average DSO"}
 </span>
-<span className="text-base font-bold font-mono text-gray-900 dark:text-white tabular-nums">28j</span>
+<span className="text-base font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">28j</span>
 <span className="text-[10px] text-blue-600 font-semibold block mt-0.5">{language === "ar" ? "تحت الهدف" : "< 30 jours"}</span>
 </div>
 <div className="bg-white dark:bg-neutral-800 p-3 rounded-[16px] border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
-<span className="text-[11px] text-gray-500 dark:text-gray-400 block">
+<span className="text-[11px] text-black/70 dark:text-white/75 block">
 {language === "ar" ? "انحراف الميزانية" : language === "fr" ? "Dérapage Budgétaire" : "Budget Variance"}
 </span>
-<span className="text-base font-bold font-mono text-gray-900 dark:text-white tabular-nums">0.0%</span>
+<span className="text-base font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">0.0%</span>
 <span className="text-[10px] text-emerald-600 font-semibold block mt-0.5">{language === "ar" ? "مضبوط" : "Sous contrôle"}</span>
 </div>
 <div className="bg-white dark:bg-neutral-800 p-3 rounded-[16px] border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
-<span className="text-[11px] text-gray-500 dark:text-gray-400 block">
+<span className="text-[11px] text-black/70 dark:text-white/75 block">
 {language === "ar" ? "المشاريع الرابحة" : language === "fr" ? "Projets Rentables" : "Profitable Projects"}
 </span>
-<span className="text-base font-bold font-mono text-gray-900 dark:text-white tabular-nums">94%</span>
+<span className="text-base font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">94%</span>
 <span className="text-[10px] text-emerald-600 font-semibold block mt-0.5">↗ +4.0%</span>
 </div>
 </div>
@@ -648,7 +648,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 <div className="space-y-4">
 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-3.5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
-<span className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-2">
+<span className="text-xs font-semibold text-black/70 dark:text-white/75 block mb-2">
 {language === "ar" ? "توزيع ساعات العمل" : language === "fr" ? "Répartition Heures / Pôle" : "Hours by Discipline"}
 </span>
 <DonutChart segments={[
@@ -675,7 +675,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 											]} size={110} />
 </div>
 <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-3.5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm flex flex-col justify-between">
-<span className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-2">
+<span className="text-xs font-semibold text-black/70 dark:text-white/75 block mb-2">
 {language === "ar" ? "وتيرة إنجاز المهام (أسبوعياً)" : language === "fr" ? "Cadence Livrables / Semaine" : "Weekly Deliverable Cadence"}
 </span>
 <PillBarHistogram bars={[
@@ -708,34 +708,39 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 {currentScreen === "projects" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {language === "ar" ? "سجل محفظة المشاريع والتعاقدات" : "Portefeuille Projets & Gouvernance Grands Comptes"}
 </h2>
 </div>
 <LiveSegmentedControl size="sm" value={projectStatusFilter} onValueChange={(val) => setProjectStatusFilter(val)} options={[
 								{
 									value: "all",
-									label: language === "ar" ? "جميع المشاريع" : "Tous les comptes",
+									label: language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All",
+									tooltip: language === "ar" ? "جميع المشاريع" : language === "fr" ? "Tous les comptes" : "All accounts",
 									count: pmProjects.length
 								},
 								{
 									value: "framing",
-									label: language === "ar" ? "دفتر الشروط" : "Cahier des charges",
+									label: language === "ar" ? "تأطير" : language === "fr" ? "Cadrage" : "Scoping",
+									tooltip: language === "ar" ? "دفتر الشروط" : language === "fr" ? "Cahier des charges" : "Project specifications",
 									count: pmProjects.filter((p) => p.status === "framing").length
 								},
 								{
 									value: "production",
-									label: language === "ar" ? "قيد الإنتاج" : "En production",
+									label: language === "ar" ? "إنتاج" : language === "fr" ? "Production" : "Production",
+									tooltip: language === "ar" ? "قيد الإنتاج" : language === "fr" ? "En production" : "In production",
 									count: pmProjects.filter((p) => p.status === "production" || p.status === "crea_active" || p.status === "print_ready").length
 								},
 								{
 									value: "field_execution",
-									label: language === "ar" ? "الميدان الحي" : "Terrain live",
+									label: language === "ar" ? "الميدان" : language === "fr" ? "Terrain" : "Field",
+									tooltip: language === "ar" ? "الميدان الحي" : language === "fr" ? "Terrain live" : "Live field execution",
 									count: pmProjects.filter((p) => p.status === "field_execution" || p.status === "field_active").length
 								},
 								{
 									value: "completed",
-									label: language === "ar" ? "مكتملة ومقفلة" : "Clôturés",
+									label: language === "ar" ? "مكتملة" : language === "fr" ? "Clôturés" : "Closed",
+									tooltip: language === "ar" ? "مكتملة ومقفلة" : language === "fr" ? "Clôturés" : "Completed & closed",
 									count: pmProjects.filter((p) => p.status === "completed" || p.status === "closed").length
 								}
 							]} />
@@ -746,35 +751,43 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 <FilterSelect label="Statut" value={projectStatusFilter} onChange={(val) => setProjectStatusFilter(typeof val === "string" ? val : val.target?.value || val)} options={[
 									{
 										value: "all",
-										label: "Tous les statuts"
+										label: language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All",
+										tooltip: language === "ar" ? "جميع الحالات" : language === "fr" ? "Tous les statuts" : "All statuses"
 									},
 									{
 										value: "framing",
-										label: "Cahier des charges"
+										label: language === "ar" ? "تأطير" : language === "fr" ? "Cadrage" : "Scoping",
+										tooltip: language === "ar" ? "دفتر الشروط" : language === "fr" ? "Cahier des charges" : "Project specifications"
 									},
 									{
 										value: "creative_kv",
-										label: "KV Créa"
+										label: language === "ar" ? "تصميم" : language === "fr" ? "Créa" : "Creative",
+										tooltip: language === "ar" ? "تصميم مفتاح الحملة" : language === "fr" ? "KV Créa" : "Key visual creative"
 									},
 									{
 										value: "client_validated",
-										label: "Validé Client"
+										label: language === "ar" ? "مُصدّق" : language === "fr" ? "Validé" : "Approved",
+										tooltip: language === "ar" ? "مصادق من العميل" : language === "fr" ? "Validé Client" : "Client approved"
 									},
 									{
 										value: "production",
-										label: "En Production"
+										label: language === "ar" ? "إنتاج" : language === "fr" ? "Production" : "Production",
+										tooltip: language === "ar" ? "قيد الإنتاج" : language === "fr" ? "En Production" : "In production"
 									},
 									{
 										value: "field_execution",
-										label: "Terrain Live"
+										label: language === "ar" ? "ميدان" : language === "fr" ? "Terrain" : "Field",
+										tooltip: language === "ar" ? "التنفيذ الميداني" : language === "fr" ? "Terrain Live" : "Live field execution"
 									},
 									{
 										value: "completed",
-										label: "Clôturé"
+										label: language === "ar" ? "مغلق" : language === "fr" ? "Clôturé" : "Closed",
+										tooltip: language === "ar" ? "مكتمل ومغلق" : language === "fr" ? "Clôturé" : "Completed & closed"
 									},
 									{
 										value: "archived",
-										label: "Archivé"
+										label: language === "ar" ? "مؤرشف" : language === "fr" ? "Archivé" : "Archived",
+										tooltip: language === "ar" ? "مشروع مؤرشف" : language === "fr" ? "Archivé" : "Archived project"
 									}
 								]} />
 </div>
@@ -788,7 +801,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 {selectedProjectIds.size}
 {" projet(s) sélectionné(s)"}
 </span>
-<button type="button" onClick={() => setSelectedProjectIds(/* @__PURE__ */ new Set())} className="text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 underline cursor-pointer">Désélectionner</button>
+<button type="button" onClick={() => setSelectedProjectIds(/* @__PURE__ */ new Set())} className="text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white underline cursor-pointer">Désélectionner</button>
 </div>
 <div className="flex items-center gap-2">
 <button type="button" onClick={() => {
@@ -823,19 +836,19 @@ Supprimer
 %
 </span>
 </div>
-<h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 line-clamp-1">{proj.title}</h3>
-<p className="text-xs text-zinc-500 line-clamp-2">{proj.scopeOfWork}</p>
+<h3 className="text-base font-bold text-black dark:text-white line-clamp-1">{proj.title}</h3>
+<p className="text-xs text-black/55 dark:text-white/55 line-clamp-2">{proj.scopeOfWork}</p>
 </div>
 <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 space-y-2 text-xs">
 <div className="flex justify-between items-center">
-<span className="text-zinc-400">Plafond Budget:</span>
-<span className="font-mono font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{formatMoney(proj.budgetCapDzd, "DZD")}</span>
+<span className="text-black/55 dark:text-white/55">Plafond Budget:</span>
+<span className="font-mono font-bold text-black dark:text-white tabular-nums">{formatMoney(proj.budgetCapDzd, "DZD")}</span>
 </div>
 <div className="flex justify-between items-center">
-<span className="text-zinc-400">Plafond Terrain:</span>
-<span className="font-mono text-zinc-600 dark:text-zinc-400 tabular-nums">{formatMoney(proj.maxFieldExpensesDzd, "DZD")}</span>
+<span className="text-black/55 dark:text-white/55">Plafond Terrain:</span>
+<span className="font-mono text-black/70 dark:text-white/75 tabular-nums">{formatMoney(proj.maxFieldExpensesDzd, "DZD")}</span>
 </div>
-<div className="flex justify-between items-center text-[11px] text-zinc-500">
+<div className="flex justify-between items-center text-[11px] text-black/55 dark:text-white/55">
 <span>
 {"CDP: "}
 {proj.projectManagerName.split(" ")[0]}
@@ -851,7 +864,7 @@ Supprimer
 {currentScreen === "new_project" && /* @__PURE__ */ <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs max-w-4xl mx-auto space-y-6">
 <div>
 <span className="text-xs font-semibold text-[#d4522f] uppercase tracking-wide">{t("pm_dir_screen_new_badge")}</span>
-<h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">{t("pm_dir_screen_new_title")}</h2>
+<h2 className="text-xl font-bold text-black dark:text-white mt-1">{t("pm_dir_screen_new_title")}</h2>
 </div>
 {projectCreatedSuccess && /* @__PURE__ */ <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 flex items-center gap-3 text-xs font-semibold animate-in fade-in">
 <CheckCircle className="w-5 h-5 text-emerald-600" />
@@ -876,8 +889,8 @@ Supprimer
 <LabelInput field="Margin" label={t("pm_dir_field_margin")} type="number" value={newProjectMargin} onChange={setNewProjectMargin} width="100%" height={48} corner={14} />
 </div>
 <div className="sm:col-span-2">
-<label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">{t("pm_dir_field_scope")}</label>
-<textarea rows={4} required placeholder={t("pm_dir_field_scope_ph")} value={newProjectScope} onChange={(e) => setNewProjectScope(e.target.value)} className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#d4522f]" />
+<label className="text-xs font-semibold text-black/70 dark:text-white/75 block mb-1">{t("pm_dir_field_scope")}</label>
+<textarea rows={4} required placeholder={t("pm_dir_field_scope_ph")} value={newProjectScope} onChange={(e) => setNewProjectScope(e.target.value)} className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]" />
 </div>
 <div>
 <LabelInput field="StartDate" label={t("pm_dir_field_start_date")} type="date" value={newProjectStartDate} onChange={setNewProjectStartDate} width="100%" height={48} corner={14} />
@@ -904,7 +917,7 @@ Supprimer
 <button type="button" onClick={() => {
 									setNewProjectTitle("");
 									setNewProjectScope("");
-								}} className="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 cursor-pointer">Réinitialiser</button>
+								}} className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 hover:text-black cursor-pointer">Réinitialiser</button>
 <AtriumButton type="submit" variant="primary" size="md" icon={<Sparkles className="w-4 h-4" />}>Lancer le Projet & Dispatcher ➔</AtriumButton>
 </div>
 </form>
@@ -913,32 +926,19 @@ Supprimer
 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
 <div>
 <span className="text-xs font-semibold text-[#d4522f] uppercase tracking-wide">{t("pm_dir_approvals_badge")}</span>
-<h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-0.5">{t("pm_dir_approvals_title")}</h2>
+<h2 className="text-xl font-bold text-black dark:text-white mt-0.5">{t("pm_dir_approvals_title")}</h2>
 </div>
 <div className="flex flex-wrap items-center gap-2">
 <Seek value={approvalSearch} onChange={setApprovalSearch} placeholder={t("common_search")} openWidth={260} shutSize={38} />
 <div className="flex items-center gap-1.5 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-xs">
-<button type="button" onClick={() => setApprovalsTab("all")} className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${approvalsTab === "all" ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-xs" : "text-zinc-500 hover:text-zinc-900"}`}>
-{t("pm_dir_filter_all")}
-{" ("}
-{totalPendingApprovals}
-)
-</button>
-<button type="button" onClick={() => setApprovalsTab("payroll")} className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${approvalsTab === "payroll" ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-xs" : "text-zinc-500 hover:text-zinc-900"}`}>
-Lots de Paie (
-{pendingPayrollBatches.length}
-)
-</button>
-<button type="button" onClick={() => setApprovalsTab("expenses")} className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${approvalsTab === "expenses" ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-xs" : "text-zinc-500 hover:text-zinc-900"}`}>
-Notes de Frais (
-{pendingExpenses.length}
-)
-</button>
+<button type="button" onClick={() => setApprovalsTab("all")} title={language === "ar" ? `جميع الموافقات المعلقة (${totalPendingApprovals})` : language === "fr" ? `Toutes les approbations (${totalPendingApprovals})` : `All pending approvals (${totalPendingApprovals})`} className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${approvalsTab === "all" ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All"}</button>
+<button type="button" onClick={() => setApprovalsTab("payroll")} title={language === "ar" ? `دفعات الرواتب المعلقة (${pendingPayrollBatches.length})` : language === "fr" ? `Lots de Paie (${pendingPayrollBatches.length})` : `Payroll batches (${pendingPayrollBatches.length})`} className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${approvalsTab === "payroll" ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "الرواتب" : language === "fr" ? "Paie" : "Payroll"}</button>
+<button type="button" onClick={() => setApprovalsTab("expenses")} title={language === "ar" ? `مذكرات المصاريف المعلقة (${pendingExpenses.length})` : language === "fr" ? `Notes de Frais (${pendingExpenses.length})` : `Expense claims (${pendingExpenses.length})`} className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${approvalsTab === "expenses" ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "المصاريف" : language === "fr" ? "Frais" : "Expenses"}</button>
 </div>
 </div>
 </div>
 {(approvalsTab === "all" || approvalsTab === "payroll") && /* @__PURE__ */ <div className="space-y-3">
-<div className="flex items-center justify-between text-xs font-bold text-zinc-700 dark:text-zinc-300 px-1">
+<div className="flex items-center justify-between text-xs font-bold text-black/70 dark:text-white/75 px-1">
 <span>Lots de Paie Terrain en Attente de Déblocage</span>
 {pendingPayrollBatches.length > 0 && /* @__PURE__ */ <button type="button" onClick={() => batchApprovePmPayrollBatches(pendingPayrollBatches.map((b) => b.id))} className="text-xs text-emerald-600 font-semibold hover:underline cursor-pointer">
 Valider tous les lots de paie (
@@ -946,15 +946,15 @@ Valider tous les lots de paie (
 )
 </button>}
 </div>
-{pendingPayrollBatches.length === 0 ? /* @__PURE__ */ <div className="p-8 text-center bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500">Aucun lot de paie en attente d'approbation.</div> : pendingPayrollBatches.map((batch) => /* @__PURE__ */ <div key={batch.id} className="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
+{pendingPayrollBatches.length === 0 ? /* @__PURE__ */ <div className="p-8 text-center bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs text-black/55 dark:text-white/55">Aucun lot de paie en attente d'approbation.</div> : pendingPayrollBatches.map((batch) => /* @__PURE__ */ <div key={batch.id} className="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
 <div className="space-y-1">
 <div className="flex items-center gap-2">
 <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">Lot de Paie</span>
-<span className="font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">{batch.batchNumber}</span>
-<span className="text-zinc-400">·</span>
-<span className="text-xs text-zinc-700 dark:text-zinc-300 font-medium">{batch.projectTitle}</span>
+<span className="font-mono text-xs font-semibold text-black dark:text-white">{batch.batchNumber}</span>
+<span className="text-black/55 dark:text-white/55">·</span>
+<span className="text-xs text-black/70 dark:text-white/75 font-medium">{batch.projectTitle}</span>
 </div>
-<p className="text-xs text-zinc-500">
+<p className="text-xs text-black/55 dark:text-white/55">
 {"Mission "}
 <span className="font-mono font-semibold">{batch.missionCode}</span>
 {" · "}
@@ -964,8 +964,8 @@ Valider tous les lots de paie (
 </div>
 <div className="flex items-center gap-4 shrink-0">
 <div className="text-right">
-<span className="text-[10px] text-zinc-400 block uppercase font-medium">{t("common_amount")}</span>
-<span className="font-mono font-bold text-lg text-zinc-900 dark:text-zinc-100 tabular-nums">{formatMoney(batch.totalAmountDzd, "DZD")}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 block uppercase font-medium">{t("common_amount")}</span>
+<span className="font-bold text-lg text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(batch.totalAmountDzd, "DZD")}</span>
 </div>
 <button type="button" onClick={() => approvePmPayrollBatch(batch.id)} className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer">
 <CheckCircle className="w-4 h-4" />
@@ -975,7 +975,7 @@ Valider tous les lots de paie (
 </div>)}
 </div>}
 {(approvalsTab === "all" || approvalsTab === "expenses") && /* @__PURE__ */ <div className="space-y-3 pt-2">
-<div className="flex items-center justify-between text-xs font-bold text-zinc-700 dark:text-zinc-300 px-1">
+<div className="flex items-center justify-between text-xs font-bold text-black/70 dark:text-white/75 px-1">
 <span>Achats & Notes de Frais Terrain Déclarés</span>
 {pendingExpenses.length > 0 && /* @__PURE__ */ <button type="button" onClick={() => batchApprovePmExpenses(pendingExpenses.map((e) => e.id))} className="text-xs text-emerald-600 font-semibold hover:underline cursor-pointer">
 Valider toutes les notes de frais (
@@ -983,14 +983,14 @@ Valider toutes les notes de frais (
 )
 </button>}
 </div>
-{pendingExpenses.length === 0 ? /* @__PURE__ */ <div className="p-8 text-center bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500">Aucun frais d'activation en attente d'arbitrage.</div> : pendingExpenses.map((expense) => /* @__PURE__ */ <div key={expense.id} className="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
+{pendingExpenses.length === 0 ? /* @__PURE__ */ <div className="p-8 text-center bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs text-black/55 dark:text-white/55">Aucun frais d'activation en attente d'arbitrage.</div> : pendingExpenses.map((expense) => /* @__PURE__ */ <div key={expense.id} className="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
 <div className="space-y-1">
 <div className="flex items-center gap-2">
 <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">{expense.category}</span>
-<span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">{expense.title}</span>
+<span className="text-xs font-semibold text-black dark:text-white">{expense.title}</span>
 {expense.hasFiscalInvoice && /* @__PURE__ */ <span className="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">Facture Fiscale</span>}
 </div>
-<p className="text-xs text-zinc-500">
+<p className="text-xs text-black/55 dark:text-white/55">
 {"Déclaré par "}
 {expense.declaredByUserName}
 {" ("}
@@ -1000,13 +1000,13 @@ Valider toutes les notes de frais (
 </p>
 </div>
 <div className="flex items-center gap-3 shrink-0">
-{expense.receiptPhotoUrl && /* @__PURE__ */ <button type="button" onClick={() => setSelectedReceiptUrl(expense.receiptPhotoUrl || null)} className="px-3 py-1.5 text-xs text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-1.5 cursor-pointer">
+{expense.receiptPhotoUrl && /* @__PURE__ */ <button type="button" onClick={() => setSelectedReceiptUrl(expense.receiptPhotoUrl || null)} className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-1.5 cursor-pointer">
 <Eye className="w-3.5 h-3.5" />
 Justificatif
 </button>}
 <div className="text-right">
-<span className="text-[10px] text-zinc-400 block uppercase font-medium">{t("common_amount")}</span>
-<span className="font-mono font-bold text-base text-zinc-900 dark:text-zinc-100 tabular-nums">{formatMoney(expense.amountDzd, "DZD")}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 block uppercase font-medium">{t("common_amount")}</span>
+<span className="font-bold text-base text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(expense.amountDzd, "DZD")}</span>
 </div>
 <button type="button" onClick={() => approvePmExpense(expense.id)} className="px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-xs transition-colors flex items-center gap-1 cursor-pointer">
 <CheckCircle className="w-3.5 h-3.5" />
@@ -1022,38 +1022,38 @@ Valider
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
 <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">Écran 1.4 · Rapports d'Activité & Marges</span>
-<h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Audit Financier Consolidé — Année 2026</h2>
+<h2 className="text-xl font-bold text-black dark:text-white">Audit Financier Consolidé — Année 2026</h2>
 </div>
 <LiquidExportButton size="md" onExport={handleExportAuditCsv} idleLabel={language === "ar" ? "تحميل التدقيق المالي" : language === "fr" ? "TÉLÉCHARGER AUDIT (CSV)" : "DOWNLOAD AUDIT (CSV)"} id="pm-dir-audit-export-btn" />
 </div>
 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
 <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40">
-<span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">{t("pm_dir_kpi_cumul_ca")}</span>
-<div className="text-2xl font-mono font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">58,4 M DA</div>
+<span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block mb-1">{t("pm_dir_kpi_cumul_ca")}</span>
+<div className="text-2xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">58,4 M DA</div>
 <span className="text-[11px] text-emerald-600 font-semibold">{t("pm_dir_vs_2025")}</span>
 </div>
 <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40">
-<span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">{t("pm_dir_kpi_avg_margin")}</span>
-<div className="text-2xl font-mono font-bold text-emerald-600 tabular-nums">31,4 %</div>
-<span className="text-[11px] text-zinc-500">{t("pm_dir_target_objective")}</span>
+<span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block mb-1">{t("pm_dir_kpi_avg_margin")}</span>
+<div className="text-2xl font-bold text-emerald-600 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">31,4 %</div>
+<span className="text-[11px] text-black/55 dark:text-white/55">{t("pm_dir_target_objective")}</span>
 </div>
 <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40">
-<span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">{t("pm_dir_kpi_closed_missions")}</span>
-<div className="text-2xl font-mono font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">48</div>
-<span className="text-[11px] text-zinc-500">{t("pm_dir_coverage_wilayas")}</span>
+<span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block mb-1">{t("pm_dir_kpi_closed_missions")}</span>
+<div className="text-2xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">48</div>
+<span className="text-[11px] text-black/55 dark:text-white/55">{t("pm_dir_coverage_wilayas")}</span>
 </div>
 <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40">
-<span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">{t("pm_dir_kpi_attendance_rate")}</span>
-<div className="text-2xl font-mono font-bold text-blue-600 tabular-nums">98,2 %</div>
-<span className="text-[11px] text-zinc-500">{t("pm_dir_rating_avg")}</span>
+<span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block mb-1">{t("pm_dir_kpi_attendance_rate")}</span>
+<div className="text-2xl font-bold text-blue-600 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">98,2 %</div>
+<span className="text-[11px] text-black/55 dark:text-white/55">{t("pm_dir_rating_avg")}</span>
 </div>
 </div>
 </div>
 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
-<h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
+<h3 className="text-sm font-semibold text-black dark:text-white flex items-center justify-between">
 <span>{t("pm_dir_client_profitability")}</span>
-<span className="text-xs text-zinc-400 font-normal">{t("pm_dir_turnover_share")}</span>
+<span className="text-xs text-black/55 dark:text-white/55 font-normal">{t("pm_dir_turnover_share")}</span>
 </h3>
 <div className="space-y-3">
 {[
@@ -1087,8 +1087,8 @@ Valider
 								}
 							].map((cli) => /* @__PURE__ */ <div key={cli.name} className="space-y-1 text-xs">
 <div className="flex justify-between items-center">
-<span className="font-semibold text-zinc-800 dark:text-zinc-200">{cli.name}</span>
-<span className="font-mono text-zinc-500">
+<span className="font-semibold text-black dark:text-white">{cli.name}</span>
+<span className="font-mono text-black/55 dark:text-white/55">
 {cli.ca}
 {" · Marge "}
 {cli.margin}
@@ -1099,9 +1099,9 @@ Valider
 </div>
 </div>
 <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
-<h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
+<h3 className="text-sm font-semibold text-black dark:text-white flex items-center justify-between">
 <span>Ventilation des Dépenses par Poste</span>
-<span className="text-xs text-zinc-400 font-normal">Terrain & Logistique</span>
+<span className="text-xs text-black/55 dark:text-white/55 font-normal">Terrain & Logistique</span>
 </h3>
 <div className="space-y-3">
 {[
@@ -1131,8 +1131,8 @@ Valider
 								}
 							].map((item) => /* @__PURE__ */ <div key={item.label} className="space-y-1 text-xs">
 <div className="flex justify-between items-center">
-<span className="font-semibold text-zinc-800 dark:text-zinc-200">{item.label}</span>
-<span className="font-mono text-zinc-500">{item.amount}</span>
+<span className="font-semibold text-black dark:text-white">{item.label}</span>
+<span className="font-mono text-black/55 dark:text-white/55">{item.amount}</span>
 </div>
 <div className="w-full h-2 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden"><div className={`h-full ${item.color}`} style={{ width: `${item.pct}%` }} /></div>
 </div>)}
@@ -1143,15 +1143,15 @@ Valider
 {selectedReceiptUrl && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
 <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
 <div className="flex items-center justify-between">
-<h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+<h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
 <Receipt className="w-4 h-4 text-[#d4522f]" />
 Justificatif Fiscal de Paiement
 </h3>
-<button type="button" onClick={() => setSelectedReceiptUrl(null)} className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 cursor-pointer"><X className="w-4 h-4" /></button>
+<button type="button" onClick={() => setSelectedReceiptUrl(null)} className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-black/55 dark:text-white/55 hover:text-black/80 cursor-pointer"><X className="w-4 h-4" /></button>
 </div>
 <img src={selectedReceiptUrl} alt="Scan Justificatif" className="w-full h-72 object-cover rounded-xl border border-zinc-200 dark:border-zinc-800" />
 <div className="flex justify-end">
-<button type="button" onClick={() => setSelectedReceiptUrl(null)} className="px-4 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 rounded-xl cursor-pointer">Fermer</button>
+<button type="button" onClick={() => setSelectedReceiptUrl(null)} className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 rounded-xl cursor-pointer">Fermer</button>
 </div>
 </div>
 </div>}
@@ -1162,14 +1162,14 @@ Justificatif Fiscal de Paiement
 <Ban className="w-4 h-4" />
 Motif du Rejet de la Dépense
 </h3>
-<button type="button" onClick={() => setRejectionModalId(null)} className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 cursor-pointer"><X className="w-4 h-4" /></button>
+<button type="button" onClick={() => setRejectionModalId(null)} className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-black/55 dark:text-white/55 hover:text-black/80 cursor-pointer"><X className="w-4 h-4" /></button>
 </div>
-<p className="text-xs text-zinc-500">
+<p className="text-xs text-black/55 dark:text-white/55">
 Veuillez préciser la raison du refus (ex: justificatif illisible, montant hors barème APC, achat non approuvé).
 </p>
-<textarea rows={3} value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} placeholder="Ex: Facture proforma non conforme ou facture fiscale manquante..." className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-red-500" />
+<textarea rows={3} value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} placeholder="Ex: Facture proforma non conforme ou facture fiscale manquante..." className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500" />
 <div className="flex justify-end gap-2">
-<button type="button" onClick={() => setRejectionModalId(null)} className="px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 cursor-pointer">Annuler</button>
+<button type="button" onClick={() => setRejectionModalId(null)} className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 hover:text-black cursor-pointer">Annuler</button>
 <button type="button" onClick={handleRejectConfirm} className="px-4 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs cursor-pointer">Confirmer le Rejet</button>
 </div>
 </div>

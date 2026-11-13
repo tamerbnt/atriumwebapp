@@ -176,7 +176,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
               <Building2 size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">
+              <h2 className="text-lg font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {isEdit
                   ? isSupplier
                     ? t('trading_entity_modal_edit_supplier')
@@ -185,14 +185,14 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                   ? t('trading_entity_modal_new_supplier')
                   : t('trading_entity_modal_new_client')}
               </h2>
-              <p className="text-xs text-stone-500">
+              <p className="text-xs text-black/55 dark:text-white/55">
                 {t('trading_entity_modal_sub')}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
           >
             <X size={20} />
           </button>
@@ -202,7 +202,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6 flex-1 text-sm">
           {/* Identity & Contact */}
           <div>
-            <h3 className="text-xs font-semibold text-stone-600 dark:text-stone-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <h3 className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase tracking-wider mb-3 flex items-center gap-2">
               <Building2 size={14} className="text-[#d4522f]" />
               <span>{t('trading_entity_company_identity')}</span>
             </h3>
@@ -270,12 +270,12 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
 
           {/* Legal & Fiscal Algerian Prerequisite Fields */}
           <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/20 space-y-4">
-            <h3 className="text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider flex items-center justify-between">
+            <h3 className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase tracking-wider flex items-center justify-between">
               <span className="flex items-center gap-2">
                 <FileText size={14} className="text-[#d4522f]" />
                 <span>{t('trading_entity_fiscal_ids')}</span>
               </span>
-              <span className="text-[10px] text-stone-400 font-normal">
+              <span className="text-[10px] text-black/55 dark:text-white/55 font-normal">
                 {t('trading_entity_fiscal_sub')}
               </span>
             </h3>
@@ -330,7 +330,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
 
           {/* Primary Contact Person */}
           <div>
-            <h3 className="text-xs font-semibold text-stone-600 dark:text-stone-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <h3 className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase tracking-wider mb-3 flex items-center gap-2">
               <User size={14} className="text-[#d4522f]" />
               <span>{t('trading_entity_primary_contact')}</span>
             </h3>
@@ -378,7 +378,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
 
           {/* Commercial & Financial Conditions */}
           <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 space-y-4">
-            <h3 className="text-xs font-semibold text-stone-600 dark:text-stone-400 uppercase tracking-wider flex items-center gap-2">
+            <h3 className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase tracking-wider flex items-center gap-2">
               <CreditCard size={14} className="text-[#d4522f]" />
               <span>{t('trading_entity_commercial_terms')}</span>
             </h3>

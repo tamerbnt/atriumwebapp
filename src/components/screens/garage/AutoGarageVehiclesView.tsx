@@ -212,7 +212,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs"><Car size={18} /></div>
 <div className="min-w-0">
 <div className="flex items-center gap-2">
-<span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+<span className="text-xs font-bold text-black dark:text-white truncate">
 {v.brand}
 {" "}
 {v.model}
@@ -225,13 +225,13 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 {isAr ? "في الورشة" : "En Atelier"}
 </span>}
 </div>
-<div className="flex items-center gap-2 mt-0.5 text-[11px] text-neutral-400 font-mono">
-<span className="px-1.5 py-0.2 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-bold">{v.plateNumber}</span>
+<div className="flex items-center gap-2 mt-0.5 text-[11px] text-black/55 dark:text-white/55 font-mono">
+<span className="px-1.5 py-0.2 rounded bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white font-bold">{v.plateNumber}</span>
 <span>·</span>
 <span>{v.year}</span>
 {v.fuelType && /* @__PURE__ */ <>
 <span>·</span>
-<span className="text-neutral-500">{v.fuelType}</span>
+<span className="text-black/55 dark:text-white/55">{v.fuelType}</span>
 </>}
 </div>
 </div>
@@ -243,11 +243,11 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 			header: isAr ? "المالك / الحظيرة" : "Propriétaire & Flotte",
 			width: "2.5*",
 			renderCell: (v: any) => /* @__PURE__ */ <div>
-<div className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 truncate flex items-center gap-1.5">
+<div className="text-xs font-semibold text-black dark:text-white truncate flex items-center gap-1.5">
 {v.isFleet ? /* @__PURE__ */ <Building2 size={12} className="text-[#d4522f] shrink-0" /> : null}
 <span>{v.ownerName}</span>
 </div>
-<div className="text-[11px] font-mono text-neutral-400 mt-0.5">{v.ownerPhone}</div>
+<div className="text-[11px] font-mono text-black/55 dark:text-white/55 mt-0.5">{v.ownerPhone}</div>
 </div>
 		},
 		{
@@ -259,19 +259,19 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 				const estKm = calculateEstimatedMileage(v.mileageKm, v.lastServiceDate, v.dailyAvgKm || 50);
 				const needsOilChange = estKm - (v.lastServiceKm || v.mileageKm - 5e3) >= 9500;
 				return /* @__PURE__ */ <div className="space-y-0.5">
-<div className="text-xs font-mono font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5">
+<div className="text-xs font-mono font-bold text-black dark:text-white flex items-center gap-1.5">
 <Gauge size={13} className="text-[#d4522f]" />
 <span>
 {estKm.toLocaleString()}
 {" km"}
 </span>
-<span className="text-[9px] text-neutral-400 font-normal">(est.)</span>
+<span className="text-[9px] text-black/55 dark:text-white/55 font-normal">(est.)</span>
 </div>
 <div className="flex items-center gap-1.5">
 {needsOilChange ? /* @__PURE__ */ <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 flex items-center gap-0.5">
 <AlertTriangle size={9} />
 {" Vidange requise"}
-</span> : /* @__PURE__ */ <span className="text-[9px] font-medium text-neutral-500">
+</span> : /* @__PURE__ */ <span className="text-[9px] font-medium text-black/55 dark:text-white/55">
 {"Dernière: "}
 {v.lastServiceKm ? `${v.lastServiceKm.toLocaleString()} km` : v.lastServiceDate || "—"}
 </span>}
@@ -333,7 +333,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Car size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {language === "ar" ? "سجل المركبات وحظيرة الزبائن" : "Parc Véhicules & Immatriculations"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
@@ -351,37 +351,37 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {language === "ar" ? "مؤشرات الحظيرة ونشاط الصيانة" : "Indicateurs de Flotte & Atelier"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">{language === "ar" ? "إجمالي الحظيرة المسجلة" : "Parc Total Enregistré"}</span>
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">{language === "ar" ? "إجمالي الحظيرة المسجلة" : "Parc Total Enregistré"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono">{vehicles.length}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{vehicles.length}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 {language === "ar" ? "مركبات في قاعدة بيانات الورشة" : "Fiches techniques complètes"}
 </p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "مركبات في الورشة حالياً" : "Véhicules en Atelier (Travaux)"}
 </span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono">{activeVehiclesInShop}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">{language === "ar" ? "أوامر إصلاح قيد الإنجاز" : "Ordres de réparation actifs"}</p>
+<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{activeVehiclesInShop}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">{language === "ar" ? "أوامر إصلاح قيد الإنجاز" : "Ordres de réparation actifs"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-300">{language === "ar" ? "معايير الفحص التقني" : "Contrôle & Sécurité"}</span>
+<span className="text-xs font-semibold text-white/80">{language === "ar" ? "معايير الفحص التقني" : "Contrôle & Sécurité"}</span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">100% HOMOLOGUÉ</span>
 </div>
 <div>
-<div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">100%</div>
-<p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+<div className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">100%</div>
+<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
 <span>N° Châssis & Immatriculations certifiés</span>
 </p>
@@ -392,8 +392,8 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex items-center gap-2">
-<span className="text-sm font-bold text-neutral-900 dark:text-white">{language === "ar" ? "دليل السيارات" : "Registre Automobile"}</span>
-<span className="text-xs text-neutral-400 font-semibold tabular-nums">
+<span className="text-sm font-bold text-black dark:text-white">{language === "ar" ? "دليل السيارات" : "Registre Automobile"}</span>
+<span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums">
 (
 {sortedVehicles.length}
 )
@@ -404,32 +404,38 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 <LiveSegmentedControl size="sm" value={filterSegment} onValueChange={(val) => setFilterSegment(val)} options={[
 									{
 										value: "All",
-										label: isAr ? "الكل" : "Tous",
+										label: isAr ? "الكل" : language === "fr" ? "Tous" : "All",
+										tooltip: isAr ? "جميع المركبات المسجلة" : language === "fr" ? "Tous les véhicules enregistrés" : "All registered vehicles",
 										count: vehicles.length
 									},
 									{
 										value: "Fleet",
-										label: isAr ? "أساطيل B2B" : "Flottes B2B",
+										label: isAr ? "أساطيل" : language === "fr" ? "Flottes" : "Fleets",
+										tooltip: isAr ? "أساطيل الشركات B2B" : language === "fr" ? "Flottes d'entreprises B2B" : "Corporate B2B fleets",
 										count: fleetVehiclesCount
 									},
 									{
 										value: "Individual",
-										label: isAr ? "أفراد" : "Particuliers",
+										label: isAr ? "أفراد" : language === "fr" ? "Particuliers" : "Private",
+										tooltip: isAr ? "مركبات الأفراد" : language === "fr" ? "Véhicules de particuliers" : "Individual owners",
 										count: vehicles.length - fleetVehiclesCount
 									},
 									{
 										value: "Renault",
 										label: "Renault",
+										tooltip: isAr ? "مركبات رينو" : "Véhicules Renault",
 										count: vehicles.filter((v) => v.brand.toLowerCase() === "renault").length
 									},
 									{
 										value: "Peugeot",
 										label: "Peugeot",
+										tooltip: isAr ? "مركبات بيجو" : "Véhicules Peugeot",
 										count: vehicles.filter((v) => v.brand.toLowerCase() === "peugeot").length
 									},
 									{
 										value: "Toyota",
 										label: "Toyota",
+										tooltip: isAr ? "مركبات تويوتا" : "Véhicules Toyota",
 										count: vehicles.filter((v) => v.brand.toLowerCase() === "toyota").length
 									}
 								]} aria-label="Garage Vehicles Filter" />
@@ -438,14 +444,14 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 {selectedIds.size > 0 && /* @__PURE__ */ <div className="flex items-center justify-between p-3 px-4 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in">
 <div className="flex items-center gap-3">
 <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
-<span className="text-xs font-bold text-neutral-900 dark:text-white">
+<span className="text-xs font-bold text-black dark:text-white">
 {selectedIds.size}
 {" "}
 {isAr ? "مركبات محددة" : "véhicules sélectionnés"}
 </span>
 </div>
 <div className="flex items-center gap-2">
-<button type="button" onClick={() => setSelectedIds(/* @__PURE__ */ new Set())} className="px-3 py-1 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 font-medium cursor-pointer">{isAr ? "إلغاء التحديد" : "Désélectionner"}</button>
+<button type="button" onClick={() => setSelectedIds(/* @__PURE__ */ new Set())} className="px-3 py-1 text-xs text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer">{isAr ? "إلغاء التحديد" : "Désélectionner"}</button>
 <button type="button" onClick={() => {
 									selectedIds.forEach((id) => deleteVehicle(id));
 									setSelectedIds(/* @__PURE__ */ new Set());
@@ -477,9 +483,9 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 									const estKm = calculateEstimatedMileage(v.mileageKm, v.lastServiceDate, v.dailyAvgKm || 50);
 									const isDue = estKm - (v.lastServiceKm || v.mileageKm - 5e3) >= 9500;
 									return /* @__PURE__ */ <div className="flex flex-col items-center justify-center w-full">
-<div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700"><Car size={32} /></div>
+<div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums"><Car size={32} /></div>
 <div className="flex items-center gap-1.5 max-w-[210px] mb-0.5">
-<h3 className="text-base font-bold text-neutral-900 dark:text-white truncate tracking-tight">
+<h3 className="text-base font-bold text-black dark:text-white truncate tracking-tight">
 {v.brand}
 {" "}
 {v.model}
@@ -487,17 +493,17 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 {isPinned && /* @__PURE__ */ <span className="text-xs text-amber-500">📌</span>}
 </div>
 <div className="flex items-center gap-1.5 mb-3">
-<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">{v.plateNumber}</span>
+<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 border border-neutral-200 dark:border-neutral-700">{v.plateNumber}</span>
 {v.isFleet && /* @__PURE__ */ <span className="text-[9px] px-1.5 py-0.2 rounded bg-blue-50 text-blue-700 font-bold border border-blue-200">B2B</span>}
 </div>
 <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1 text-center">
-<div className="text-neutral-800 dark:text-neutral-200 font-semibold text-[11px] truncate">
+<div className="text-black dark:text-white font-semibold text-[11px] truncate">
 {v.ownerName}
 {" · "}
-<span className="font-mono text-neutral-500">{v.ownerPhone}</span>
+<span className="font-mono text-black/55 dark:text-white/55">{v.ownerPhone}</span>
 </div>
-<div className="flex items-center justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800 text-[10px] text-neutral-400">
-<span className="font-mono font-bold text-neutral-700 dark:text-neutral-300">
+<div className="flex items-center justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800 text-[10px] text-black/55 dark:text-white/55">
+<span className="font-mono font-bold text-black/70 dark:text-white/75">
 {estKm.toLocaleString()}
 {" km"}
 </span>
@@ -526,65 +532,65 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 <div className="flex items-center gap-3 min-w-0">
 <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] text-[#d4522f] font-bold text-sm flex items-center justify-center shrink-0 border border-[#F5E2D8]"><Car size={20} /></div>
 <div className="min-w-0">
-<h3 className="font-bold text-sm text-neutral-900 dark:text-white truncate">
+<h3 className="font-bold text-sm text-black dark:text-white truncate">
 {selectedVehicle.brand}
 {" "}
 {selectedVehicle.model}
 </h3>
-<div className="flex items-center gap-1.5 text-xs text-neutral-400 font-mono">
+<div className="flex items-center gap-1.5 text-xs text-black/55 dark:text-white/55 font-mono">
 <span>{selectedVehicle.plateNumber}</span>
 <span>·</span>
 <span>{selectedVehicle.year}</span>
 </div>
 </div>
 </div>
-<button type="button" onClick={() => setSelectedVehicle(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200/50 dark:hover:bg-neutral-700 transition-colors"><X size={16} /></button>
+<button type="button" onClick={() => setSelectedVehicle(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-neutral-200/50 dark:hover:bg-neutral-700 transition-colors"><X size={16} /></button>
 </div>
 <div className="px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800/40 border-b border-neutral-100 dark:border-neutral-800 flex items-center gap-2">
 <button type="button" onClick={() => handleOpenNewOrder(selectedVehicle)} className="flex-1 py-1.5 px-2 rounded-lg bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-colors">
 <Wrench size={13} />
 <span>{isAr ? "فتح أمر إصلاح" : "Nouvel OR"}</span>
 </button>
-<button type="button" onClick={() => handleOpenEdit(selectedVehicle)} className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 text-xs font-semibold transition-colors" title="Modifier"><Edit size={14} /></button>
-<button type="button" onClick={() => handleTogglePin(selectedVehicle.id)} className={`p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold transition-colors ${pinnedIds.has(selectedVehicle.id) ? "text-amber-500" : "text-neutral-400 hover:text-neutral-700"}`} title="Épingler"><Pin size={14} /></button>
+<button type="button" onClick={() => handleOpenEdit(selectedVehicle)} className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-neutral-100 text-xs font-semibold transition-colors" title="Modifier"><Edit size={14} /></button>
+<button type="button" onClick={() => handleTogglePin(selectedVehicle.id)} className={`p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold transition-colors ${pinnedIds.has(selectedVehicle.id) ? "text-amber-500" : "text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`} title="Épingler"><Pin size={14} /></button>
 </div>
 <div className="flex border-b border-neutral-100 dark:border-neutral-800 text-xs font-semibold px-2 bg-white dark:bg-neutral-850">
-<button type="button" onClick={() => setActiveTab("fiche")} className={`py-2 px-2.5 border-b-2 transition-colors ${activeTab === "fiche" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-900"}`}>{isAr ? "البطاقة" : "Fiche"}</button>
-<button type="button" onClick={() => setActiveTab("owner")} className={`py-2 px-2.5 border-b-2 transition-colors ${activeTab === "owner" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-900"}`}>
+<button type="button" onClick={() => setActiveTab("fiche")} className={`py-2 px-2.5 border-b-2 transition-colors ${activeTab === "fiche" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{isAr ? "البطاقة" : "Fiche"}</button>
+<button type="button" onClick={() => setActiveTab("owner")} className={`py-2 px-2.5 border-b-2 transition-colors ${activeTab === "owner" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>
 {selectedVehicle.isFleet ? isAr ? "الأسطول" : "Flotte B2B" : isAr ? "المالك" : "Client"}
 </button>
-<button type="button" onClick={() => setActiveTab("orders")} className={`py-2 px-2.5 border-b-2 transition-colors ${activeTab === "orders" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-900"}`}>{isAr ? "أوامر OR" : "Historique OR"}</button>
-<button type="button" onClick={() => setActiveTab("maintenance")} className={`py-2 px-2.5 border-b-2 transition-colors ${activeTab === "maintenance" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-900"}`}>{isAr ? "الصيانة" : "Entretien"}</button>
+<button type="button" onClick={() => setActiveTab("orders")} className={`py-2 px-2.5 border-b-2 transition-colors ${activeTab === "orders" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{isAr ? "أوامر OR" : "Historique OR"}</button>
+<button type="button" onClick={() => setActiveTab("maintenance")} className={`py-2 px-2.5 border-b-2 transition-colors ${activeTab === "maintenance" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{isAr ? "الصيانة" : "Entretien"}</button>
 </div>
 <div className="flex-1 overflow-y-auto p-4 space-y-4">
 {activeTab === "fiche" && /* @__PURE__ */ <div className="space-y-3 text-xs">
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">{isAr ? "المواصفات الفنية" : "Données Constructeur"}</div>
+<div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">{isAr ? "المواصفات الفنية" : "Données Constructeur"}</div>
 <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-<span className="text-neutral-500">{isAr ? "رقم الشاسيه (VIN)" : "N° Châssis (VIN)"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 font-mono">{selectedVehicle.vin}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "رقم الشاسيه (VIN)" : "N° Châssis (VIN)"}</span>
+<span className="font-semibold text-black dark:text-white font-mono">{selectedVehicle.vin}</span>
 </div>
 <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-<span className="text-neutral-500">{isAr ? "الترقيم" : "Immatriculation"}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "الترقيم" : "Immatriculation"}</span>
 <span className="font-bold text-[#d4522f] font-mono">{selectedVehicle.plateNumber}</span>
 </div>
 <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-<span className="text-neutral-500">{isAr ? "نوع الوقود" : "Motorisation / Carburant"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200">{selectedVehicle.fuelType || "Diesel"}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "نوع الوقود" : "Motorisation / Carburant"}</span>
+<span className="font-semibold text-black dark:text-white">{selectedVehicle.fuelType || "Diesel"}</span>
 </div>
 <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-<span className="text-neutral-500">{isAr ? "سنة الصنع" : "Année modèle"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 font-mono">{selectedVehicle.year}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "سنة الصنع" : "Année modèle"}</span>
+<span className="font-semibold text-black dark:text-white font-mono">{selectedVehicle.year}</span>
 </div>
 <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-<span className="text-neutral-500">{isAr ? "العداد الكيلومتري" : "Compteur Enregistré"}</span>
-<span className="font-bold text-neutral-900 dark:text-white font-mono">
+<span className="text-black/55 dark:text-white/55">{isAr ? "العداد الكيلومتري" : "Compteur Enregistré"}</span>
+<span className="font-bold text-black dark:text-white font-mono">
 {selectedVehicle.mileageKm.toLocaleString()}
 {" km"}
 </span>
 </div>
 <div className="flex justify-between py-1">
-<span className="text-neutral-500">{isAr ? "العداد التقديري الحالي" : "Compteur Estimé (IA)"}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "العداد التقديري الحالي" : "Compteur Estimé (IA)"}</span>
 <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">
 {calculateEstimatedMileage(selectedVehicle.mileageKm, selectedVehicle.lastServiceDate, selectedVehicle.dailyAvgKm || 50).toLocaleString()}
 {" km"}
@@ -598,47 +604,47 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 <Building2 size={16} />
 <span>{selectedVehicle.fleetName || "Compte Entreprise B2B"}</span>
 </div>
-<div className="text-[11px] text-neutral-600 dark:text-neutral-300">
+<div className="text-[11px] text-black/70 dark:text-white/75">
 {isAr ? "مركبة مرتبطة بأسطول اتفاقية صيانة معتمدة" : "Véhicule rattaché à une flotte conventionnée avec facturation mensuelle DGI groupée."}
 </div>
 <div className="pt-2 border-t border-orange-200/50 space-y-1">
 <div className="flex justify-between">
-<span className="text-neutral-500">Contact Flotte:</span>
-<span className="font-bold text-neutral-900 dark:text-white">{selectedVehicle.ownerName}</span>
+<span className="text-black/55 dark:text-white/55">Contact Flotte:</span>
+<span className="font-bold text-black dark:text-white">{selectedVehicle.ownerName}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">Téléphone:</span>
-<span className="font-mono text-neutral-800 dark:text-neutral-200">{selectedVehicle.ownerPhone}</span>
+<span className="text-black/55 dark:text-white/55">Téléphone:</span>
+<span className="font-mono text-black dark:text-white">{selectedVehicle.ownerPhone}</span>
 </div>
 </div>
 </div> : /* @__PURE__ */ <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">{isAr ? "بيانات المالك" : "Coordonnées Client"}</div>
+<div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">{isAr ? "بيانات المالك" : "Coordonnées Client"}</div>
 <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-<span className="text-neutral-500">{isAr ? "الاسم الكامل" : "Nom & Prénom"}</span>
-<span className="font-bold text-neutral-900 dark:text-white">{selectedVehicle.ownerName}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "الاسم الكامل" : "Nom & Prénom"}</span>
+<span className="font-bold text-black dark:text-white">{selectedVehicle.ownerName}</span>
 </div>
 <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-<span className="text-neutral-500">{isAr ? "الهاتف" : "Téléphone"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 font-mono">{selectedVehicle.ownerPhone}</span>
+<span className="text-black/55 dark:text-white/55">{isAr ? "الهاتف" : "Téléphone"}</span>
+<span className="font-semibold text-black dark:text-white font-mono">{selectedVehicle.ownerPhone}</span>
 </div>
 <div className="flex justify-between py-1">
-<span className="text-neutral-500">Carte Grise</span>
-<span className="font-mono text-neutral-600">{selectedVehicle.carteGriseNumber || "Non renseignée"}</span>
+<span className="text-black/55 dark:text-white/55">Carte Grise</span>
+<span className="font-mono text-black/70 dark:text-white/75">{selectedVehicle.carteGriseNumber || "Non renseignée"}</span>
 </div>
 </div>}
 </div>}
 {activeTab === "orders" && /* @__PURE__ */ <div className="space-y-2 text-xs">
 {(vehicleOrdersMap.get(selectedVehicle.plateNumber) || []).length > 0 ? (vehicleOrdersMap.get(selectedVehicle.plateNumber) || []).map((o: any) => /* @__PURE__ */ <div key={o.id} className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-1.5">
 <div className="flex items-center justify-between">
-<span className="font-bold text-neutral-900 dark:text-white">{o.orderNumber}</span>
-<span className="text-[10px] text-neutral-400 font-mono">{new Date(o.intakeDate).toLocaleDateString()}</span>
+<span className="font-bold text-black dark:text-white">{o.orderNumber}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 font-mono">{new Date(o.intakeDate).toLocaleDateString()}</span>
 </div>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400">{o.diagnosticNotes}</p>
+<p className="text-[11px] text-black/55 dark:text-white/75">{o.diagnosticNotes}</p>
 <div className="flex items-center justify-between pt-1 border-t border-neutral-200/50 dark:border-neutral-700/50">
 <span className="text-[10px] font-semibold text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded">{o.status}</span>
 <span className="font-mono font-bold text-[#d4522f]">{formatMoney(o.finalCostDzd || o.estimatedCostDzd)}</span>
 </div>
-</div>) : /* @__PURE__ */ <div className="text-center py-8 text-neutral-400">
+</div>) : /* @__PURE__ */ <div className="text-center py-8 text-black/55 dark:text-white/55">
 <Wrench size={28} className="mx-auto mb-2 opacity-40" />
 <p>
 {isAr ? "لا توجد أوامر إصلاح سابقة لهذه المركبة" : "Aucun ordre de réparation enregistré."}
@@ -661,7 +667,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2 overflow-hidden">
 <div className={`h-full ${isOverdue ? "bg-amber-500" : "bg-emerald-500"}`} style={{ width: `${Math.min(100, Math.round(kmSince / 1e4 * 100))}%` }} />
 </div>
-<div className="flex justify-between text-[11px] text-neutral-500 font-mono">
+<div className="flex justify-between text-[11px] text-black/55 dark:text-white/55 font-mono">
 <span>
 {"Effectuée: "}
 {lastKm.toLocaleString()}
@@ -677,9 +683,9 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200/80 space-y-1.5">
 <div className="flex justify-between font-bold">
 <span>Courroie de Distribution (60,000 km)</span>
-<span className="text-neutral-500">Contrôle annuel</span>
+<span className="text-black/55 dark:text-white/55">Contrôle annuel</span>
 </div>
-<div className="text-[11px] text-neutral-500">Prochaine vérification tension & craquelures préconisée au prochain OR.</div>
+<div className="text-[11px] text-black/55 dark:text-white/55">Prochaine vérification tension & craquelures préconisée au prochain OR.</div>
 </div>
 <AtriumButton variant="primary" size="sm" className="w-full" icon={<Wrench size={13} />} onClick={() => handleOpenNewOrder(selectedVehicle)}>{isAr ? "جدولة صيانة وقائية" : "Planifier Révision Atelier"}</AtriumButton>
 </div>;
@@ -715,5 +721,3 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 				}} />}
 </div>;
 };
-
-export { AutoGarageDashboardView_exports as a, Car as c, AutoGarageOrdersView_exports as i, Camera as l, AutoGarageStaffView_exports as n, AutoGarageBillingView_exports as o, AutoGaragePartsView_exports as r, Wrench as s, AutoGarageVehiclesView_exports as t, Boxes as u };

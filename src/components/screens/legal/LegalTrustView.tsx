@@ -293,7 +293,7 @@ export const LegalTrustView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Lock size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {isAr ? "حساب الحراسة والودائع العقارية (Séquestre Notarial)" : "Compte Séquestre Notarial & Consignations"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">Double-Verrou Obligatoire</span>
@@ -309,16 +309,16 @@ export const LegalTrustView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "مؤشرات حسابات الودائع والحراسة العقارية" : "Fonds Mandants & Prix de Vente Séquestrés"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "إجمالي الودائع المودعة" : "Total Fonds Consignés"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "إجمالي الودائع المودعة" : "Total Fonds Consignés"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">{formatMoney(totalEscrowDeposited, language)}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalEscrowDeposited, language)}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">
 {escrowAccounts.length}
 {" "}
 {isAr ? "حسابات مودعة" : "comptes sous mandat"}
@@ -326,19 +326,19 @@ export const LegalTrustView: React.FC<any> = () => {
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "حسابات بانتظار الإشهار العقاري" : "En Attente Publicité Foncière"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "حسابات بانتظار الإشهار العقاري" : "En Attente Publicité Foncière"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono tabular-nums">{lockedEscrowsCount}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">{isAr ? "معلقة إلى حين صدور رقم المجلد" : "Bloqués (Conservation Foncière)"}</p>
+<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{lockedEscrowsCount}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">{isAr ? "معلقة إلى حين صدور رقم المجلد" : "Bloqués (Conservation Foncière)"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{isAr ? "الرصيد المحمي تحت الحراسة" : "Solde Séquestre Actuel"}</span>
+<span className="text-[11px] font-medium text-white/80">{isAr ? "الرصيد المحمي تحت الحراسة" : "Solde Séquestre Actuel"}</span>
 <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">Protégé Trésor</span>
 </div>
 <div>
-<div className="text-2xl font-black text-white font-mono tabular-nums">{formatMoney(totalEscrowBalance, language)}</div>
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalEscrowBalance, language)}</div>
 <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
 <CheckCircle2 size={11} />
 {isAr ? "حساب مصرفي مخصص مستقل" : "Sous-compte Trésor séparé"}
@@ -376,8 +376,8 @@ export const LegalTrustView: React.FC<any> = () => {
 										id: "parties",
 										header: isAr ? "المشتري ➔ البائع المستفيد" : "Acquéreur ➔ Vendeur",
 										renderCell: (a: any) => /* @__PURE__ */ <div className="text-xs">
-<span className="font-bold text-neutral-900 dark:text-white block">{a.clientName}</span>
-<span className="text-[11px] text-neutral-500">
+<span className="font-bold text-black dark:text-white block">{a.clientName}</span>
+<span className="text-[11px] text-black/55 dark:text-white/55">
 {"➔ "}
 {a.beneficiaryName}
 </span>
@@ -420,33 +420,33 @@ export const LegalTrustView: React.FC<any> = () => {
 <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Lock size={16} /></div>
 <div>
-<h3 className="font-bold text-xs text-neutral-900 dark:text-white font-mono">{selectedEscrow.matterReference}</h3>
-<p className="text-[10px] text-neutral-500 truncate max-w-[210px]">{selectedEscrow.clientName}</p>
+<h3 className="font-bold text-xs text-black dark:text-white font-mono">{selectedEscrow.matterReference}</h3>
+<p className="text-[10px] text-black/55 dark:text-white/55 truncate max-w-[210px]">{selectedEscrow.clientName}</p>
 </div>
 </div>
-<button onClick={() => setSelectedEscrow(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500 transition-colors"><X size={15} /></button>
+<button onClick={() => setSelectedEscrow(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-black/55 dark:text-white/55 transition-colors"><X size={15} /></button>
 </div>
 <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 pt-2 gap-2 text-xs">
-<button onClick={() => setEscrowTab("double_lock")} className={`pb-2 font-semibold border-b-2 transition-colors px-2 ${escrowTab === "double_lock" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "القفل المزدوج" : "Double-Verrou"}</button>
-<button onClick={() => setEscrowTab("transactions")} className={`pb-2 font-semibold border-b-2 transition-colors px-2 ${escrowTab === "transactions" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "المعاملات" : "Historique"}</button>
-<button onClick={() => setEscrowTab("virement")} className={`pb-2 font-semibold border-b-2 transition-colors px-2 ${escrowTab === "virement" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "أمر التحويل" : "Ordre Virement"}</button>
+<button onClick={() => setEscrowTab("double_lock")} className={`pb-2 font-semibold border-b-2 transition-colors px-2 ${escrowTab === "double_lock" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "القفل المزدوج" : "Double-Verrou"}</button>
+<button onClick={() => setEscrowTab("transactions")} className={`pb-2 font-semibold border-b-2 transition-colors px-2 ${escrowTab === "transactions" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "المعاملات" : "Historique"}</button>
+<button onClick={() => setEscrowTab("virement")} className={`pb-2 font-semibold border-b-2 transition-colors px-2 ${escrowTab === "virement" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "أمر التحويل" : "Ordre Virement"}</button>
 </div>
 <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
 {escrowTab === "double_lock" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-4 bg-[#1F1D1B] rounded-xl text-white space-y-2">
-<div className="flex items-center justify-between text-neutral-300 text-[11px]">
+<div className="flex items-center justify-between text-white/80 text-[11px]">
 <span>Solde Sous Séquestre Notarial</span>
 <span className="bg-[#3D2817] text-[#FB923C] text-[10px] font-bold px-2 py-0.5 rounded-full">{selectedEscrow.isLocked ? "Verrouillé 🔒" : "Prêt / Libéré 🔓"}</span>
 </div>
-<div className="text-2xl font-black font-mono text-white">{formatMoney(selectedEscrow.currentBalanceDzd, language)}</div>
-<p className="text-[10px] text-neutral-400">
+<div className="text-2xl font-black text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(selectedEscrow.currentBalanceDzd, language)}</div>
+<p className="text-[10px] text-white/75">
 {"Bénéficiaire désigné : "}
 {selectedEscrow.beneficiaryName}
 </p>
 </div>
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-200 dark:border-neutral-800 space-y-3">
 <div className="flex items-center justify-between">
-<span className="text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
+<span className="text-xs font-bold text-black dark:text-white flex items-center gap-1.5">
 <Building2 size={14} className="text-[#d4522f]" />
 {isAr ? "الشرط الأول: الإشهار بالمحافظة العقارية" : "Verrou 1 : Publicité Foncière"}
 </span>
@@ -475,7 +475,7 @@ export const LegalTrustView: React.FC<any> = () => {
 </div>}
 </div>
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-200 dark:border-neutral-800 space-y-3">
-<span className="text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
+<span className="text-xs font-bold text-black dark:text-white flex items-center gap-1.5">
 <Key size={14} className="text-[#d4522f]" />
 {isAr ? "الشرط الثاني: رمز الأمان للموثق Titulaire" : "Verrou 2 : Code PIN Notaire Titulaire"}
 </span>
@@ -490,18 +490,18 @@ export const LegalTrustView: React.FC<any> = () => {
 </div>
 </div>}
 {escrowTab === "transactions" && /* @__PURE__ */ <div className="space-y-3">
-<span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider block">Mouvements Bancaires & Trésor</span>
+<span className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider block">Mouvements Bancaires & Trésor</span>
 {selectedEscrow.transactions.map((tx: any) => /* @__PURE__ */ <div key={tx.id} className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 space-y-1 bg-white dark:bg-neutral-900">
 <div className="flex items-center justify-between font-mono">
-<span className="text-[10px] text-neutral-400">{tx.date}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">{tx.date}</span>
 <span className={`text-xs font-bold ${tx.type === "deposit_received" ? "text-emerald-600" : "text-blue-600"}`}>
 {tx.type === "deposit_received" ? "+" : "-"}
 {" "}
 {formatMoney(tx.amountDzd, language)}
 </span>
 </div>
-<p className="text-xs text-neutral-800 dark:text-neutral-200 font-medium">{tx.notes}</p>
-<div className="text-[10px] text-neutral-400 flex items-center justify-between">
+<p className="text-xs text-black dark:text-white font-medium">{tx.notes}</p>
+<div className="text-[10px] text-black/55 dark:text-white/55 flex items-center justify-between">
 <span>
 {"Mode : "}
 {tx.paymentMode}
@@ -513,9 +513,9 @@ export const LegalTrustView: React.FC<any> = () => {
 {escrowTab === "virement" && /* @__PURE__ */ <div className="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl space-y-3 text-xs">
 <div className="text-center pb-2 border-b border-neutral-200 dark:border-neutral-800">
 <span className="font-bold uppercase tracking-wider text-[#d4522f] block">Étude Notariale · Ordre de Virement Séquestre</span>
-<span className="text-[10px] text-neutral-400">République Algérienne Démocratique et Populaire</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">République Algérienne Démocratique et Populaire</span>
 </div>
-<div className="space-y-1.5 text-neutral-700 dark:text-neutral-300">
+<div className="space-y-1.5 text-black/70 dark:text-white/75">
 <div>
 <strong>Donneur d'ordre :</strong>
 {" Maître Notaire Titulaire"}
@@ -532,7 +532,7 @@ export const LegalTrustView: React.FC<any> = () => {
 <div>
 <strong>Montant :</strong>
 {" "}
-<span className="font-mono font-bold text-neutral-900 dark:text-white">{formatMoney(selectedEscrow.currentBalanceDzd, language)}</span>
+<span className="font-mono font-bold text-black dark:text-white">{formatMoney(selectedEscrow.currentBalanceDzd, language)}</span>
 </div>
 <div>
 <strong>Motif :</strong>
@@ -565,7 +565,7 @@ export const LegalTrustView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Scale size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {isAr ? "دفتر الأستاذ وميزان المراجعة SCF (القانون 07-11)" : "Grand Livre & Journaux SCF (Loi 07-11)"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Partie Double Équilibrée</span>
@@ -578,16 +578,16 @@ export const LegalTrustView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "المؤشرات المحاسبية وميزان المراجعة" : "Balance des Écritures & Conformité SCF"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "إجمالي حركات المدين (Débit)" : "Total Mouvements Débit"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "إجمالي حركات المدين (Débit)" : "Total Mouvements Débit"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">{formatMoney(totalDebitAll, language)}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalDebitAll, language)}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">
 {scfEntries.length}
 {" "}
 {isAr ? "قيد مسجل" : "écritures passées"}
@@ -595,19 +595,19 @@ export const LegalTrustView: React.FC<any> = () => {
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "إجمالي حركات الدائن (Crédit)" : "Total Mouvements Crédit"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "إجمالي حركات الدائن (Crédit)" : "Total Mouvements Crédit"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">{formatMoney(totalCreditAll, language)}</div>
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalCreditAll, language)}</div>
 <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">{isLedgerBalanced ? "✓ Équilibre Parfait (Δ = 0)" : "Déséquilibre détecté"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{isAr ? "توازن النظام المحاسبي" : "Statut Grand Livre"}</span>
+<span className="text-[11px] font-medium text-white/80">{isAr ? "توازن النظام المحاسبي" : "Statut Grand Livre"}</span>
 <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">SCF 07-11</span>
 </div>
 <div>
-<div className="text-2xl font-black text-white font-mono tabular-nums">100% Conforme</div>
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">100% Conforme</div>
 <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
 <CheckCircle2 size={11} />
 {isAr ? "قيود مدققة ومطابقة" : "Zéro écart de clôture"}
@@ -618,20 +618,20 @@ export const LegalTrustView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex items-center justify-between">
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "سجل القيود المحاسبية اليومية" : "Journal Général des Écritures Comptables"}
 </h2>
 <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200 dark:border-neutral-700 shadow-2xs">
 {[
-								"ALL",
-								"VE",
-								"CA",
-								"BQ",
-								"OD"
-							].map((code) => /* @__PURE__ */ <button key={code} onClick={() => setScfJournalFilter(code)} className="px-3 py-1 rounded-full text-xs font-semibold cursor-pointer transition-all" style={{
+								{ code: "ALL", tip: isAr ? "جميع دفاتر اليومية" : language === "fr" ? "Tous les journaux comptables" : "All accounting journals" },
+								{ code: "VE", tip: isAr ? "يومية المبيعات والأتعاب" : language === "fr" ? "Journal des Ventes / Honoraires (VE)" : "Sales & Fees Journal (VE)" },
+								{ code: "CA", tip: isAr ? "يومية الصندوق النقدي" : language === "fr" ? "Journal de Caisse (CA)" : "Cash Journal (CA)" },
+								{ code: "BQ", tip: isAr ? "يومية البنك وحساب CARPA" : language === "fr" ? "Journal de Banque / CARPA (BQ)" : "Bank & Escrow Journal (BQ)" },
+								{ code: "OD", tip: isAr ? "العمليات المتنوعة والتسوية" : language === "fr" ? "Opérations Diverses (OD)" : "Miscellaneous Operations (OD)" }
+							].map(({ code, tip }) => /* @__PURE__ */ <button key={code} onClick={() => setScfJournalFilter(code)} title={tip} className="px-3 py-1 rounded-full text-xs font-semibold cursor-pointer transition-all" style={{
 									backgroundColor: scfJournalFilter === code ? "#FCEEE8" : "transparent",
 									color: scfJournalFilter === code ? "var(--color-accent)" : "#71717A"
-								}}>{code === "ALL" ? isAr ? "الكل" : "Tous" : code}</button>)}
+								}}>{code === "ALL" ? isAr ? "الكل" : language === "fr" ? "Tous" : "All" : code}</button>)}
 </div>
 </div>
 <div className="flex flex-col lg:flex-row gap-6 items-start">
@@ -648,14 +648,14 @@ export const LegalTrustView: React.FC<any> = () => {
 										id: "journal",
 										header: "Jrn",
 										width: "60px",
-										renderCell: (e: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">{e.journalCode}</span>
+										renderCell: (e: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75">{e.journalCode}</span>
 									},
 									{
 										id: "libelle",
 										header: isAr ? "البيان والمرجع" : "Libellé & Justificatif",
 										renderCell: (e: any) => /* @__PURE__ */ <div>
-<span className="font-bold text-xs text-neutral-900 dark:text-white block">{e.libelle}</span>
-<span className="text-[11px] text-neutral-400 font-mono">
+<span className="font-bold text-xs text-black dark:text-white block">{e.libelle}</span>
+<span className="text-[11px] text-black/55 dark:text-white/55 font-mono">
 {"Réf: "}
 {e.pieceJustificativeRef}
 {" · "}
@@ -668,14 +668,14 @@ export const LegalTrustView: React.FC<any> = () => {
 										header: isAr ? "المدين" : "Débit",
 										width: "130px",
 										sortable: true,
-										renderCell: (e: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white">{formatMoney(e.totalDebitDzd, language)}</span>
+										renderCell: (e: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-black dark:text-white">{formatMoney(e.totalDebitDzd, language)}</span>
 									},
 									{
 										id: "credit",
 										header: isAr ? "الدائن" : "Crédit",
 										width: "130px",
 										sortable: true,
-										renderCell: (e: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white">{formatMoney(e.totalCreditDzd, language)}</span>
+										renderCell: (e: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-black dark:text-white">{formatMoney(e.totalCreditDzd, language)}</span>
 									},
 									{
 										id: "status",
@@ -693,8 +693,8 @@ export const LegalTrustView: React.FC<any> = () => {
 <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Scale size={16} /></div>
 <div>
-<h3 className="font-bold text-xs text-neutral-900 dark:text-white font-mono">{selectedSCFEntry.entryNumber}</h3>
-<p className="text-[10px] text-neutral-500">
+<h3 className="font-bold text-xs text-black dark:text-white font-mono">{selectedSCFEntry.entryNumber}</h3>
+<p className="text-[10px] text-black/55 dark:text-white/55">
 {"Journal "}
 {selectedSCFEntry.journalCode}
 {" · "}
@@ -702,33 +702,33 @@ export const LegalTrustView: React.FC<any> = () => {
 </p>
 </div>
 </div>
-<button onClick={() => setSelectedSCFEntry(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500 transition-colors"><X size={15} /></button>
+<button onClick={() => setSelectedSCFEntry(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-black/55 dark:text-white/55 transition-colors"><X size={15} /></button>
 </div>
 <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-200 dark:border-neutral-800 space-y-1.5">
-<span className="text-[10px] uppercase font-bold text-neutral-400 block">Objet & Pièce Justificative</span>
-<p className="font-semibold text-neutral-900 dark:text-white">{selectedSCFEntry.libelle}</p>
-<p className="text-[11px] text-neutral-500 font-mono">
+<span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block">Objet & Pièce Justificative</span>
+<p className="font-semibold text-black dark:text-white">{selectedSCFEntry.libelle}</p>
+<p className="text-[11px] text-black/55 dark:text-white/55 font-mono">
 {"Pièce: "}
 {selectedSCFEntry.pieceJustificativeRef}
 </p>
 </div>
 <div className="space-y-2">
-<span className="text-[10px] uppercase font-bold text-neutral-400 block">Ventilation des Lignes Comptables</span>
+<span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block">Ventilation des Lignes Comptables</span>
 {selectedSCFEntry.lines.map((l: any) => /* @__PURE__ */ <div key={l.id} className="p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 space-y-1">
 <div className="flex items-center justify-between">
 <span className="font-mono font-bold text-xs text-[#d4522f]">{l.accountNumber}</span>
 <div className="font-mono text-xs font-bold">
-{l.debitDzd > 0 ? /* @__PURE__ */ <span className="text-neutral-900 dark:text-white">
+{l.debitDzd > 0 ? /* @__PURE__ */ <span className="text-black dark:text-white">
 {"D: "}
 {formatMoney(l.debitDzd, language)}
-</span> : /* @__PURE__ */ <span className="text-neutral-500">
+</span> : /* @__PURE__ */ <span className="text-black/55 dark:text-white/55">
 {"C: "}
 {formatMoney(l.creditDzd, language)}
 </span>}
 </div>
 </div>
-<p className="text-[11px] text-neutral-600 dark:text-neutral-400 truncate">{l.accountLabel}</p>
+<p className="text-[11px] text-black/70 dark:text-white/75 truncate">{l.accountLabel}</p>
 </div>)}
 </div>
 <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800/40 text-emerald-800 dark:text-emerald-300 text-center font-bold font-mono">
@@ -744,7 +744,7 @@ export const LegalTrustView: React.FC<any> = () => {
 <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
 <div className="flex items-center gap-2">
 <Scale size={20} className="text-[#d4522f]" />
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">{isAr ? "تسجيل قيد محاسبي مزدوج (SCF)" : "Saisie d'une Écriture Comptable SCF"}</h2>
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{isAr ? "تسجيل قيد محاسبي مزدوج (SCF)" : "Saisie d'une Écriture Comptable SCF"}</h2>
 </div>
 <button onClick={() => setIsSCFModalOpen(false)} className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"><X size={18} /></button>
 </div>
@@ -823,7 +823,7 @@ export const LegalTrustView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><CreditCard size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {isAr ? "الصندوق وطابع المادة 317 ومحضر الإغلاق" : "Caisse Journalière & Timbre Art. 317 (Arrêté)"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">Espèces & Droit de Timbre</span>
@@ -837,16 +837,16 @@ export const LegalTrustView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "حالة الصندوق والسيولة النقدية" : "Situation de Caisse & Droits de Timbre"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "الرصيد النظري للصندوق" : "Solde Théorique en Caisse"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "الرصيد النظري للصندوق" : "Solde Théorique en Caisse"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">{formatMoney(dailyClosure.theoreticalCashDzd || 0, language)}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(dailyClosure.theoreticalCashDzd || 0, language)}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">
 {cashReceipts.length}
 {" "}
 {isAr ? "وصولات مقبوضة" : "quittances émises"}
@@ -854,19 +854,19 @@ export const LegalTrustView: React.FC<any> = () => {
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "طابع المادة 317 المحصل" : "Timbre Fiscal Art. 317 Collecté"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "طابع المادة 317 المحصل" : "Timbre Fiscal Art. 317 Collecté"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono tabular-nums">{formatMoney(dailyClosure.totalTimbreAccruedDzd || 0, language)}</div>
+<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(dailyClosure.totalTimbreAccruedDzd || 0, language)}</div>
 <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">{isAr ? "مستحق الدفع لمفتشية الضرائب" : "À reverser à la recette des impôts"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{isAr ? "مطابقة الجرد الفعلي" : "Arrêté Physique"}</span>
+<span className="text-[11px] font-medium text-white/80">{isAr ? "مطابقة الجرد الفعلي" : "Arrêté Physique"}</span>
 <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">{dailyClosure.status === "balanced" ? "Conforme" : "Écart"}</span>
 </div>
 <div>
-<div className="text-2xl font-black text-white font-mono tabular-nums">{formatMoney(dailyClosure.actualPhysicalCashCountedDzd || 0, language)}</div>
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(dailyClosure.actualPhysicalCashCountedDzd || 0, language)}</div>
 <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
 <CheckCircle2 size={11} />
 {isAr ? "مطابق تماماً بدون أي فارق" : "Écart = 0 DZD (Validé)"}
@@ -890,15 +890,15 @@ export const LegalTrustView: React.FC<any> = () => {
 									id: "client",
 									header: isAr ? "الموكل والملف" : "Client & Prestation",
 									renderCell: (r: any) => /* @__PURE__ */ <div>
-<span className="font-bold text-xs text-neutral-900 dark:text-white block">{r.clientName}</span>
-<span className="text-[11px] text-neutral-400">{r.matterTitle}</span>
+<span className="font-bold text-xs text-black dark:text-white block">{r.clientName}</span>
+<span className="text-[11px] text-black/55 dark:text-white/55">{r.matterTitle}</span>
 </div>
 								},
 								{
 									id: "totalHt",
 									header: "HT",
 									width: "110px",
-									renderCell: (r: any) => /* @__PURE__ */ <span className="font-mono text-xs text-neutral-700 dark:text-neutral-300">{formatMoney(r.totalHtDzd, language)}</span>
+									renderCell: (r: any) => /* @__PURE__ */ <span className="font-mono text-xs text-black/70 dark:text-white/75">{formatMoney(r.totalHtDzd, language)}</span>
 								},
 								{
 									id: "timbre",
@@ -923,33 +923,33 @@ export const LegalTrustView: React.FC<any> = () => {
 <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Receipt size={16} /></div>
 <div>
-<h3 className="font-bold text-xs text-neutral-900 dark:text-white font-mono">{selectedReceipt.receiptNumber}</h3>
-<p className="text-[10px] text-neutral-500">{selectedReceipt.clientName}</p>
+<h3 className="font-bold text-xs text-black dark:text-white font-mono">{selectedReceipt.receiptNumber}</h3>
+<p className="text-[10px] text-black/55 dark:text-white/55">{selectedReceipt.clientName}</p>
 </div>
 </div>
-<button onClick={() => setSelectedReceipt(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500 transition-colors"><X size={15} /></button>
+<button onClick={() => setSelectedReceipt(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-black/55 dark:text-white/55 transition-colors"><X size={15} /></button>
 </div>
 <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
 <div className="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl space-y-3">
 <div className="text-center pb-2 border-b border-neutral-200 dark:border-neutral-800">
 <span className="font-bold text-sm text-[#d4522f] block">وصل تسليم نقدية رسمي</span>
-<span className="text-[10px] text-neutral-400">Quittance de Versement en Espèces</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">Quittance de Versement en Espèces</span>
 </div>
 <div className="space-y-2 text-xs">
 <div className="flex justify-between">
-<span className="text-neutral-500">Reçu de :</span>
-<span className="font-bold text-neutral-900 dark:text-white">{selectedReceipt.clientName}</span>
+<span className="text-black/55 dark:text-white/55">Reçu de :</span>
+<span className="font-bold text-black dark:text-white">{selectedReceipt.clientName}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">Motif :</span>
-<span className="font-medium text-neutral-800 dark:text-neutral-200">{selectedReceipt.matterTitle}</span>
+<span className="text-black/55 dark:text-white/55">Motif :</span>
+<span className="font-medium text-black dark:text-white">{selectedReceipt.matterTitle}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">Montant HT :</span>
+<span className="text-black/55 dark:text-white/55">Montant HT :</span>
 <span className="font-mono">{formatMoney(selectedReceipt.totalHtDzd, language)}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-neutral-500">TVA 19% :</span>
+<span className="text-black/55 dark:text-white/55">TVA 19% :</span>
 <span className="font-mono">{formatMoney(selectedReceipt.tvaDzd, language)}</span>
 </div>
 <div className="flex justify-between text-amber-600 font-bold">
@@ -964,7 +964,7 @@ export const LegalTrustView: React.FC<any> = () => {
 <span className="font-mono">{formatMoney(selectedReceipt.netCollectedDzd, language)}</span>
 </div>
 </div>
-<div className="pt-2 text-[10px] text-neutral-400 border-t border-neutral-100 dark:border-neutral-800 flex justify-between">
+<div className="pt-2 text-[10px] text-black/55 dark:text-white/55 border-t border-neutral-100 dark:border-neutral-800 flex justify-between">
 <span>
 {"Caissier : "}
 {selectedReceipt.cashierName}
@@ -988,7 +988,7 @@ export const LegalTrustView: React.FC<any> = () => {
 <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
 <div className="flex items-center gap-2">
 <CreditCard size={20} className="text-[#d4522f]" />
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isAr ? "قبض مبلغ نقدي مع طابع المادة 317" : "Encaissement Espèces & Timbre Art. 317"}
 </h2>
 </div>
@@ -1024,7 +1024,7 @@ export const LegalTrustView: React.FC<any> = () => {
 <span>Total Net à Encaisser en Espèces:</span>
 <span>{formatMoney(netCollected, language)}</span>
 </div>
-<p className="text-[10px] text-neutral-400 font-sans mt-1">
+<p className="text-[10px] text-black/55 dark:text-white/55 font-sans mt-1">
 {"Droit de timbre gradué (Art. 317 du Code du Timbre) : Exonéré < 500 DA, 20-200 DA, puis 1% plafonné à 2 500 DA."}
 </p>
 </div>;
@@ -1047,7 +1047,7 @@ export const LegalTrustView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><CreditCard size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {isAr ? "حساب الحراسة والودائع والأتعاب (Séquestre CARPA)" : "Compte Séquestre CARPA & Honoraires Avocat"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">Ordre des Avocats</span>
@@ -1063,16 +1063,16 @@ export const LegalTrustView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div>
-<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "إدارة أموال الموكلين والودائع القضائية" : "Comptabilité des Fonds Mandants & Diligences"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "أتعاب الدفاع والخدمات" : "Honoraires & Diligences"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "أتعاب الدفاع والخدمات" : "Honoraires & Diligences"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">{formatMoney(totalRetainers, language)}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalRetainers, language)}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">
 {matters.length}
 {" "}
 {isAr ? "قضية محصلة" : "affaires conventionnées"}
@@ -1080,19 +1080,19 @@ export const LegalTrustView: React.FC<any> = () => {
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "قضايا مودعة تحت الحراسة" : "Dossiers Sous Séquestre"}</span>
+<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "قضايا مودعة تحت الحراسة" : "Dossiers Sous Séquestre"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-mono tabular-nums">{matters.filter((m) => (m.trustEscrowBalanceDzd || 0) > 0).length}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">{isAr ? "خاضعة لإشراف نقابة المحامين" : "Contrôlés sous égide déontologique"}</p>
+<div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{matters.filter((m) => (m.trustEscrowBalanceDzd || 0) > 0).length}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">{isAr ? "خاضعة لإشراف نقابة المحامين" : "Contrôlés sous égide déontologique"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-neutral-300">{isAr ? "إجمالي الودائع (Séquestre)" : "Fonds Séquestre Protégés"}</span>
+<span className="text-[11px] font-medium text-white/80">{isAr ? "إجمالي الودائع (Séquestre)" : "Fonds Séquestre Protégés"}</span>
 <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">Séquestre CARPA</span>
 </div>
 <div>
-<div className="text-2xl font-black text-white font-mono tabular-nums">{formatMoney(totalTrust, language)}</div>
+<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalTrust, language)}</div>
 <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
 <CheckCircle2 size={11} />
 {matters.length}
@@ -1118,8 +1118,8 @@ export const LegalTrustView: React.FC<any> = () => {
 									id: "matter",
 									header: isAr ? "الموضوع" : "Affaire & Objet",
 									renderCell: (m: any) => /* @__PURE__ */ <div>
-<span className="font-bold text-xs text-neutral-900 dark:text-neutral-100 block">{m.title}</span>
-<span className="text-[11px] text-neutral-500">
+<span className="font-bold text-xs text-black dark:text-white block">{m.title}</span>
+<span className="text-[11px] text-black/55 dark:text-white/55">
 {m.category}
 {" · "}
 {m.courtJurisdiction || "Tribunal"}
@@ -1131,8 +1131,8 @@ export const LegalTrustView: React.FC<any> = () => {
 									header: isAr ? "الموكل" : "Client Mandant",
 									width: "180px",
 									renderCell: (m: any) => /* @__PURE__ */ <div className="text-xs">
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 block truncate">{m.clientName}</span>
-<span className="text-[10px] text-neutral-400 font-mono">{m.clientPhone || "0550 00 00 00"}</span>
+<span className="font-semibold text-black dark:text-white block truncate">{m.clientName}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 font-mono">{m.clientPhone || "0550 00 00 00"}</span>
 </div>
 								},
 								{
@@ -1140,7 +1140,7 @@ export const LegalTrustView: React.FC<any> = () => {
 									header: isAr ? "أتعاب المكتب" : "Honoraires",
 									width: "140px",
 									sortable: true,
-									renderCell: (m: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white">{formatMoney(m.retainerAmountDzd, language)}</span>
+									renderCell: (m: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-black dark:text-white">{formatMoney(m.retainerAmountDzd, language)}</span>
 								},
 								{
 									id: "trust",
@@ -1165,52 +1165,52 @@ export const LegalTrustView: React.FC<any> = () => {
 <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><CreditCard size={16} /></div>
 <div>
-<h3 className="font-bold text-xs text-neutral-900 dark:text-white font-mono">{selectedMatter.matterNumber}</h3>
-<p className="text-[10px] text-neutral-500 truncate max-w-[210px]">{selectedMatter.clientName}</p>
+<h3 className="font-bold text-xs text-black dark:text-white font-mono">{selectedMatter.matterNumber}</h3>
+<p className="text-[10px] text-black/55 dark:text-white/55 truncate max-w-[210px]">{selectedMatter.clientName}</p>
 </div>
 </div>
-<button onClick={() => setSelectedMatter(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500 transition-colors"><X size={15} /></button>
+<button onClick={() => setSelectedMatter(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-black/55 dark:text-white/55 transition-colors"><X size={15} /></button>
 </div>
 <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 pt-2 gap-2 text-xs">
-<button onClick={() => setCarpaTab("sequestre")} className={`pb-2 font-semibold border-b-2 transition-colors px-2 ${carpaTab === "sequestre" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "الودائع Séquestre" : "Séquestre"}</button>
-<button onClick={() => setCarpaTab("honoraires")} className={`pb-2 font-semibold border-b-2 transition-colors px-2 ${carpaTab === "honoraires" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "الأتعاب والمصاريف" : "Honoraires"}</button>
-<button onClick={() => setCarpaTab("deontologie")} className={`pb-2 font-semibold border-b-2 transition-colors px-2 ${carpaTab === "deontologie" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-700"}`}>{isAr ? "المطابقة النقابية" : "CARPA & Éthique"}</button>
+<button onClick={() => setCarpaTab("sequestre")} className={`pb-2 font-semibold border-b-2 transition-colors px-2 ${carpaTab === "sequestre" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "الودائع Séquestre" : "Séquestre"}</button>
+<button onClick={() => setCarpaTab("honoraires")} className={`pb-2 font-semibold border-b-2 transition-colors px-2 ${carpaTab === "honoraires" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "الأتعاب والمصاريف" : "Honoraires"}</button>
+<button onClick={() => setCarpaTab("deontologie")} className={`pb-2 font-semibold border-b-2 transition-colors px-2 ${carpaTab === "deontologie" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "المطابقة النقابية" : "CARPA & Éthique"}</button>
 </div>
 <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
 {carpaTab === "sequestre" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-4 bg-[#1F1D1B] rounded-xl text-white space-y-2 shadow-sm">
-<div className="flex items-center justify-between text-neutral-300 text-[11px]">
+<div className="flex items-center justify-between text-white/80 text-[11px]">
 <span>Fonds Mandant Sous Séquestre</span>
 <span className="bg-[#3D2817] text-[#FB923C] text-[10px] font-bold px-2 py-0.5 rounded-full">Inaliénable</span>
 </div>
-<div className="text-2xl font-black font-mono tracking-tight text-white">{formatMoney(selectedMatter.trustEscrowBalanceDzd || 0, language)}</div>
-<p className="text-[10px] text-neutral-400">Montant bloqué sur sous-compte CARPA jusqu'à décision judiciaire exécutoire.</p>
+<div className="text-2xl font-black tracking-tight text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(selectedMatter.trustEscrowBalanceDzd || 0, language)}</div>
+<p className="text-[10px] text-white/75">Montant bloqué sur sous-compte CARPA jusqu'à décision judiciaire exécutoire.</p>
 </div>
 <div className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
 <div>
-<span className="font-semibold block text-neutral-900 dark:text-white">Déblocage de Séquestre</span>
-<span className="text-[10px] text-neutral-500">Sur présentation du jugement définitif</span>
+<span className="font-semibold block text-black dark:text-white">Déblocage de Séquestre</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">Sur présentation du jugement définitif</span>
 </div>
 <button onClick={() => handleReleaseTrustFunds(selectedMatter)} disabled={!selectedMatter.trustEscrowBalanceDzd || selectedMatter.trustEscrowBalanceDzd === 0} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#d4522f] hover:bg-[#b06a4e] text-white disabled:opacity-50 transition-colors">Débloquer</button>
 </div>
 </div>}
 {carpaTab === "honoraires" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Décompte d'Honoraires & Diligences</span>
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Décompte d'Honoraires & Diligences</span>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Convention d'honoraires:</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">{formatMoney(selectedMatter.retainerAmountDzd, language)}</span>
+<span className="text-black/55 dark:text-white/55">Convention d'honoraires:</span>
+<span className="font-mono font-bold text-black dark:text-white">{formatMoney(selectedMatter.retainerAmountDzd, language)}</span>
 </div>
 <div className="flex items-center justify-between">
-<span className="text-neutral-500">Droits de plaidoirie & timbres:</span>
-<span className="font-mono text-neutral-700 dark:text-neutral-300">12 000 DZD</span>
+<span className="text-black/55 dark:text-white/55">Droits de plaidoirie & timbres:</span>
+<span className="font-mono text-black/70 dark:text-white/75">12 000 DZD</span>
 </div>
 </div>
 </div>}
 {carpaTab === "deontologie" && /* @__PURE__ */ <div className="space-y-4">
 <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">Conformité Déontologique Ordre des Avocats</span>
-<div className="space-y-1.5 text-neutral-700 dark:text-neutral-300">
+<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Conformité Déontologique Ordre des Avocats</span>
+<div className="space-y-1.5 text-black/70 dark:text-white/75">
 <div className="flex items-center gap-2">
 <FileCheck size={14} className="text-emerald-500" />
 <span>Séparation hermétique des comptes de cabinet</span>

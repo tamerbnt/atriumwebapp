@@ -4,6 +4,7 @@ import { LiveSegmentedControl } from '../../../ui/live/LiveSegmentedControl';
 export interface StatusTabItem {
   id: string;
   label: string;
+  tooltip?: string;
   count: number;
 }
 
@@ -31,6 +32,7 @@ export const StatusTabs: React.FC<StatusTabsProps> = ({
       options={tabs.map((tab) => ({
         value: tab.id,
         label: tab.label,
+        tooltip: tab.tooltip,
         count: tab.count,
       }))}
       value={activeTab}

@@ -130,7 +130,7 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 <div className="w-11 h-11 rounded-2xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-sm"><FileText className="w-6 h-6" /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{isAr ? "سجل الوكالات والوساطة العقارية" : "Registre des Mandats d'Agence"}</h1>
+<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{isAr ? "سجل الوكالات والوساطة العقارية" : "Registre des Mandats d'Agence"}</h1>
 <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">Décret 09-18 Conforme</span>
 </div>
 </div>
@@ -142,23 +142,23 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 </div>
 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
 <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-<div className="text-xs text-neutral-500 dark:text-neutral-400 uppercase font-semibold">{isAr ? "وكالات سارية" : "Mandats Actifs"}</div>
-<div className="text-2xl font-bold text-neutral-900 dark:text-white mt-1 font-mono">{activeCount}</div>
+<div className="text-xs text-black/55 dark:text-white/75 uppercase font-semibold">{isAr ? "وكالات سارية" : "Mandats Actifs"}</div>
+<div className="text-2xl font-bold text-black dark:text-white mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{activeCount}</div>
 <div className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1">{isAr ? "قيد الاستغلال" : "En cours d'exploitation"}</div>
 </div>
 <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-<div className="text-xs text-neutral-500 dark:text-neutral-400 uppercase font-semibold">{isAr ? "تنتهي خلال 15 يوماً" : "Expirant sous 15j"}</div>
-<div className="text-2xl font-bold text-amber-600 dark:text-amber-500 mt-1 font-mono">{expiringCount}</div>
+<div className="text-xs text-black/55 dark:text-white/75 uppercase font-semibold">{isAr ? "تنتهي خلال 15 يوماً" : "Expirant sous 15j"}</div>
+<div className="text-2xl font-bold text-amber-600 dark:text-amber-500 mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{expiringCount}</div>
 <div className="text-[11px] text-amber-600 dark:text-amber-400 mt-1">{isAr ? "يتطلب ملحق تمديد" : "Avenant de prorogation requis"}</div>
 </div>
 <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-<div className="text-xs text-neutral-500 dark:text-neutral-400 uppercase font-semibold">{isAr ? "وكالات حصرية" : "Mandats Exclusifs"}</div>
-<div className="text-2xl font-bold text-[#d4522f] mt-1 font-mono">{exclusiveCount}</div>
-<div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">{isAr ? "حق الوساطة الحصري" : "Portefeuille sous exclusivité"}</div>
+<div className="text-xs text-black/55 dark:text-white/75 uppercase font-semibold">{isAr ? "وكالات حصرية" : "Mandats Exclusifs"}</div>
+<div className="text-2xl font-bold text-[#d4522f] mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{exclusiveCount}</div>
+<div className="text-[11px] text-black/55 dark:text-white/75 mt-1">{isAr ? "حق الوساطة الحصري" : "Portefeuille sous exclusivité"}</div>
 </div>
 <div className="p-4 rounded-2xl bg-[#1F1D1B] border border-neutral-800 text-white shadow-sm">
-<div className="text-xs text-neutral-400 uppercase font-semibold">{isAr ? "قيمة المحفظة" : "Valeur Portefeuille"}</div>
-<div className="text-2xl font-bold text-white mt-1 font-mono">{formatMoney(totalVolumeDzd, language)}</div>
+<div className="text-xs text-white/75 uppercase font-semibold">{isAr ? "قيمة المحفظة" : "Valeur Portefeuille"}</div>
+<div className="text-2xl font-bold text-white mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(totalVolumeDzd, language)}</div>
 <div className="text-[11px] text-emerald-400 mt-1">{isAr ? "إجمالي الأصول تحت الوكالة" : "Volume total sous mandat"}</div>
 </div>
 </div>
@@ -166,22 +166,26 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 <LiveSegmentedControl size="sm" value={statusFilter} onValueChange={setStatusFilter} options={[
 								{
 									value: "all",
-									label: isAr ? "جميع الوكالات" : "Tous les Mandats",
+									label: isAr ? "الكل" : language === "fr" ? "Tous" : "All",
+									tooltip: isAr ? "جميع الوكالات" : language === "fr" ? "Tous les Mandats" : "All mandates",
 									count: mandates.length
 								},
 								{
 									value: "active",
-									label: isAr ? "سارية" : "Actifs",
+									label: isAr ? "سارية" : language === "fr" ? "Actifs" : "Active",
+									tooltip: isAr ? "وكالات سارية" : language === "fr" ? "Mandats actifs" : "Active mandates",
 									count: activeCount
 								},
 								{
 									value: "expiring",
-									label: isAr ? "تنتهي قريباً" : "Expirant",
+									label: isAr ? "تنتهي" : language === "fr" ? "Expirant" : "Expiring",
+									tooltip: isAr ? "تنتهي قريباً" : language === "fr" ? "Mandats expirant bientôt" : "Mandates expiring soon",
 									count: expiringCount
 								},
 								{
 									value: "exclusive",
-									label: isAr ? "حصرية" : "Exclusifs",
+									label: isAr ? "حصرية" : language === "fr" ? "Exclusifs" : "Exclusive",
+									tooltip: isAr ? "وكالات حصرية" : language === "fr" ? "Mandats exclusifs" : "Exclusive mandates",
 									count: exclusiveCount
 								}
 							]} aria-label="Real Estate Mandates Filter" />
@@ -195,17 +199,17 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 <span>{m.mandateNumber}</span>
 {m.isExclusive && /* @__PURE__ */ <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-sm bg-[#d4522f]/15 text-[#d4522f]">Exclusif</span>}
 </div>
-<div className="text-sm font-semibold text-neutral-900 dark:text-white truncate max-w-xs mt-0.5">{m.propertyTitle}</div>
-<div className="text-xs text-neutral-500 dark:text-neutral-400">{m.propertyAddress}</div>
+<div className="text-sm font-semibold text-black dark:text-white truncate max-w-xs mt-0.5">{m.propertyTitle}</div>
+<div className="text-xs text-black/55 dark:text-white/75">{m.propertyAddress}</div>
 </div>
 							},
 							{
 								id: "owner",
 								header: isAr ? "الموكل (المالك)" : "Mandant (Propriétaire)",
 								renderCell: (m: any) => /* @__PURE__ */ <div className="text-xs">
-<div className="font-semibold text-neutral-900 dark:text-white">{m.ownerFullName}</div>
-<div className="text-neutral-500 dark:text-neutral-400 font-mono">{m.ownerPhone}</div>
-<div className="text-[11px] text-neutral-400">
+<div className="font-semibold text-black dark:text-white">{m.ownerFullName}</div>
+<div className="text-black/55 dark:text-white/75 font-mono">{m.ownerPhone}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55">
 {"CNI: "}
 {m.ownerNationalId}
 </div>
@@ -216,8 +220,8 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 								header: isAr ? "السعر المطلوب" : "Type & Prix Demandé",
 								sortable: true,
 								renderCell: (m: any) => /* @__PURE__ */ <div className="text-xs">
-<div className="font-mono font-bold text-sm text-neutral-900 dark:text-white">{formatMoney(m.askingPriceDzd, language)}</div>
-<div className="text-neutral-500 dark:text-neutral-400 mt-0.5">
+<div className="font-mono font-bold text-sm text-black dark:text-white">{formatMoney(m.askingPriceDzd, language)}</div>
+<div className="text-black/55 dark:text-white/75 mt-0.5">
 {m.mandateType.replace("_", " ")}
 {" · "}
 {m.listingType === "Sale" ? "Vente" : "Location"}
@@ -230,7 +234,7 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 								sortable: true,
 								renderCell: (m: any) => /* @__PURE__ */ <div className="text-xs">
 <div className="font-mono font-bold text-[#d4522f]">{formatMoney(m.commissionEstimatedTtcDzd, language)}</div>
-<div className="text-[11px] text-neutral-500 dark:text-neutral-400">
+<div className="text-[11px] text-black/55 dark:text-white/75">
 {m.commissionCalculationMode === "DecreeTranches" ? "Barème Décret 09-18" : `${m.commissionRatePercent}% Négocié`}
 </div>
 </div>
@@ -239,8 +243,8 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 								id: "validity",
 								header: isAr ? "المدة والصلاحية" : "Période & Validité",
 								renderCell: (m: any) => /* @__PURE__ */ <div className="text-xs">
-<div className="text-neutral-900 dark:text-white flex items-center gap-1 font-mono">
-<Calendar className="w-3.5 h-3.5 text-neutral-500" />
+<div className="text-black dark:text-white flex items-center gap-1 font-mono">
+<Calendar className="w-3.5 h-3.5 text-black/55 dark:text-white/55" />
 <span>
 {"Jusqu'au "}
 {m.endDate}
@@ -258,7 +262,7 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 							{
 								id: "negotiator",
 								header: isAr ? "الوكيل المفاوض" : "Négociateur",
-								renderCell: (m: any) => /* @__PURE__ */ <div className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">{m.negotiatorName || "Karim Zerrouki"}</div>
+								renderCell: (m: any) => /* @__PURE__ */ <div className="text-xs text-black/55 dark:text-white/75 font-medium">{m.negotiatorName || "Karim Zerrouki"}</div>
 							}
 						]} renderCard={(m) => /* @__PURE__ */ <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-700/60 bg-white dark:bg-neutral-800 space-y-3">
 <div className="flex items-center justify-between">
@@ -266,8 +270,8 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${m.status === "Expiring" ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300" : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"}`}>{m.status}</span>
 </div>
 <div>
-<h4 className="font-bold text-sm text-neutral-900 dark:text-white truncate">{m.propertyTitle}</h4>
-<p className="text-xs text-neutral-500 truncate">
+<h4 className="font-bold text-sm text-black dark:text-white truncate">{m.propertyTitle}</h4>
+<p className="text-xs text-black/55 dark:text-white/55 truncate">
 {m.ownerFullName}
 {" • "}
 {m.ownerPhone}
@@ -275,11 +279,11 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 </div>
 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between text-xs">
 <div>
-<span className="text-[10px] text-neutral-400 block">Prix Demandé</span>
-<span className="font-mono font-bold text-neutral-900 dark:text-white">{formatMoney(m.askingPriceDzd, language)}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 block">Prix Demandé</span>
+<span className="font-mono font-bold text-black dark:text-white">{formatMoney(m.askingPriceDzd, language)}</span>
 </div>
 <div className="text-right">
-<span className="text-[10px] text-neutral-400 block">Com. TTC (09-18)</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 block">Com. TTC (09-18)</span>
 <span className="font-mono font-bold text-[#d4522f]">{formatMoney(m.commissionEstimatedTtcDzd, language)}</span>
 </div>
 </div>
@@ -290,23 +294,23 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800">
 <div>
 <span className="text-[11px] font-mono font-bold text-[#d4522f]">{selectedMandate.mandateNumber}</span>
-<h3 className="text-lg font-bold text-neutral-900 dark:text-white">{isAr ? "تفاصيل الوكالة القانونية" : "Détail du Mandat Légal"}</h3>
+<h3 className="text-lg font-bold text-black dark:text-white">{isAr ? "تفاصيل الوكالة القانونية" : "Détail du Mandat Légal"}</h3>
 </div>
-<button onClick={() => setIsDrawerOpen(false)} className="p-2 rounded-xl text-neutral-500 hover:text-neutral-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"><X className="w-5 h-5" /></button>
+<button onClick={() => setIsDrawerOpen(false)} className="p-2 rounded-xl text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"><X className="w-5 h-5" /></button>
 </div>
 <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-1">
 <div className="flex items-center justify-between text-xs">
-<span className="text-neutral-500 dark:text-neutral-400">Statut Juridique:</span>
+<span className="text-black/55 dark:text-white/75">Statut Juridique:</span>
 <span className="font-semibold text-emerald-600 dark:text-emerald-400">
 {selectedMandate.status === "Active" ? "Actif & Conforme" : selectedMandate.status}
 </span>
 </div>
 <div className="flex items-center justify-between text-xs">
-<span className="text-neutral-500 dark:text-neutral-400">Régime:</span>
-<span className="font-semibold text-neutral-900 dark:text-white">{selectedMandate.isExclusive ? "Exclusivité Totale (3 Mois)" : "Mandat Simple"}</span>
+<span className="text-black/55 dark:text-white/75">Régime:</span>
+<span className="font-semibold text-black dark:text-white">{selectedMandate.isExclusive ? "Exclusivité Totale (3 Mois)" : "Mandat Simple"}</span>
 </div>
 <div className="flex items-center justify-between text-xs">
-<span className="text-neutral-500 dark:text-neutral-400">Renouvellements:</span>
+<span className="text-black/55 dark:text-white/75">Renouvellements:</span>
 <span className="font-mono">
 {selectedMandate.renewalCount}
 {" avenant(s)"}
@@ -316,13 +320,13 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 <div className="space-y-2">
 <span className="text-xs font-semibold uppercase text-[#d4522f]">Bien Sous Contrat</span>
 <div className="p-3.5 rounded-xl border border-[#E9EEF0] dark:border-neutral-700/60 text-xs space-y-1">
-<div className="font-bold text-neutral-900 dark:text-white">{selectedMandate.propertyTitle}</div>
-<div className="text-neutral-500 dark:text-neutral-400">{selectedMandate.propertyAddress}</div>
-<div className="pt-2 flex justify-between font-mono font-bold text-sm text-neutral-900 dark:text-white">
+<div className="font-bold text-black dark:text-white">{selectedMandate.propertyTitle}</div>
+<div className="text-black/55 dark:text-white/75">{selectedMandate.propertyAddress}</div>
+<div className="pt-2 flex justify-between font-mono font-bold text-sm text-black dark:text-white">
 <span>Prix Demandé:</span>
 <span>{formatMoney(selectedMandate.askingPriceDzd, language)}</span>
 </div>
-<div className="flex justify-between text-neutral-500 text-[11px]">
+<div className="flex justify-between text-black/55 dark:text-white/55 text-[11px]">
 <span>Seuil Minimal Négociable:</span>
 <span className="font-mono">{formatMoney(selectedMandate.minimumAcceptablePriceDzd, language)}</span>
 </div>
@@ -331,13 +335,13 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 <div className="space-y-2">
 <span className="text-xs font-semibold uppercase text-[#d4522f]">Identité du Mandant</span>
 <div className="p-3.5 rounded-xl border border-[#E9EEF0] dark:border-neutral-700/60 text-xs space-y-1.5">
-<div className="font-semibold text-neutral-900 dark:text-white">{selectedMandate.ownerFullName}</div>
-<div className="text-neutral-500 font-mono">{selectedMandate.ownerPhone}</div>
-<div className="text-[11px] text-neutral-500">
+<div className="font-semibold text-black dark:text-white">{selectedMandate.ownerFullName}</div>
+<div className="text-black/55 dark:text-white/55 font-mono">{selectedMandate.ownerPhone}</div>
+<div className="text-[11px] text-black/55 dark:text-white/55">
 {"CNI / Passeport: "}
 <span className="font-mono font-semibold">{selectedMandate.ownerNationalId}</span>
 </div>
-{selectedMandate.ownerIdIssueDate && /* @__PURE__ */ <div className="text-[11px] text-neutral-400">
+{selectedMandate.ownerIdIssueDate && /* @__PURE__ */ <div className="text-[11px] text-black/55 dark:text-white/55">
 {"Délivré le "}
 {selectedMandate.ownerIdIssueDate}
 {" à "}

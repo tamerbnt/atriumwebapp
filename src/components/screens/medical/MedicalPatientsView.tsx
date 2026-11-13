@@ -203,17 +203,17 @@ export const MedicalPatientsView: React.FC<any> = () => {
 <div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">{p.fullName.charAt(0).toUpperCase()}</div>
 <div className="min-w-0">
 <div className="flex items-center gap-2">
-<span className="text-xs font-bold text-neutral-900 dark:text-white capitalize truncate">{p.fullName}</span>
+<span className="text-xs font-bold text-black dark:text-white capitalize truncate">{p.fullName}</span>
 {isPinned && /* @__PURE__ */ <span className="text-[10px] text-amber-500 font-bold flex items-center gap-0.5">📌 VIP</span>}
 {hasVigilance && /* @__PURE__ */ <span className="text-[10px] text-rose-500 font-semibold flex items-center gap-0.5"><ShieldAlert size={11} /></span>}
 </div>
-<div className="flex items-center gap-2 mt-0.5 text-[11px] text-neutral-400 font-mono">
+<div className="flex items-center gap-2 mt-0.5 text-[11px] text-black/55 dark:text-white/55 font-mono">
 <span>
 {"NSS: "}
 {p.nationalId ? p.nationalId.slice(0, 8) + "..." : "CHIFA-OK"}
 </span>
 <span>·</span>
-<span className="text-neutral-500">
+<span className="text-black/55 dark:text-white/55">
 {p.gender === "Male" ? language === "ar" ? "ذكر" : "Homme" : language === "ar" ? "أنثى" : "Femme"}
 </span>
 </div>
@@ -226,8 +226,8 @@ export const MedicalPatientsView: React.FC<any> = () => {
 			header: language === "ar" ? "الهاتف والطوارئ" : "Téléphone & Urgence",
 			width: "2.4*",
 			renderCell: (p: any) => /* @__PURE__ */ <div>
-<div className="text-xs font-mono font-medium text-neutral-800 dark:text-neutral-200">{p.phone}</div>
-{p.emergencyContact && /* @__PURE__ */ <div className="text-[11px] text-neutral-400 truncate max-w-[170px] mt-0.5">
+<div className="text-xs font-mono font-medium text-black dark:text-white">{p.phone}</div>
+{p.emergencyContact && /* @__PURE__ */ <div className="text-[11px] text-black/55 dark:text-white/55 truncate max-w-[170px] mt-0.5">
 {p.emergencyContact}
 {" ("}
 {p.emergencyPhone || "—"}
@@ -250,7 +250,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
 {p.allergies[0]}
 </span>}
 </div>
-{p.chronicConditions && p.chronicConditions.length > 0 && /* @__PURE__ */ <span className="text-[10px] text-neutral-400 truncate max-w-[150px]">{p.chronicConditions.join(", ")}</span>}
+{p.chronicConditions && p.chronicConditions.length > 0 && /* @__PURE__ */ <span className="text-[10px] text-black/55 dark:text-white/55 truncate max-w-[150px]">{p.chronicConditions.join(", ")}</span>}
 </div>;
 			}
 		},
@@ -311,7 +311,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><UserCheck size={20} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">{language === "ar" ? "سجل ودليل المرضى (EHR)" : "Dossiers Patients & EHR"}</h1>
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{language === "ar" ? "سجل ودليل المرضى (EHR)" : "Dossiers Patients & EHR"}</h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
 {patients.length}
 {" "}
@@ -327,37 +327,37 @@ export const MedicalPatientsView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div>
-<h2 className="text-base font-bold text-neutral-900 dark:text-white">
+<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {language === "ar" ? "مؤشرات الرعاية الصحية والسجلات" : "Indicateurs de Prise en Charge Clinique"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">{language === "ar" ? "إجمالي المرضى المسجلين" : "Base Totale Patients"}</span>
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">{language === "ar" ? "إجمالي المرضى المسجلين" : "Base Totale Patients"}</span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono">{patients.length}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">{language === "ar" ? "ملفات طبية مؤرشفة ومحدثة" : "Dossiers médicaux actifs"}</p>
+<div className="text-2xl font-bold tracking-tight text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{patients.length}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">{language === "ar" ? "ملفات طبية مؤرشفة ومحدثة" : "Dossiers médicaux actifs"}</p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-<span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+<span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "ملفات بحاجة لرعاية خاصة" : "Allergies & Vigilances Chroniques"}
 </span>
 <div>
-<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono">{sensitiveCount}</div>
-<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
+<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{sensitiveCount}</div>
+<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">
 {language === "ar" ? "تنبيهات حساسية ومتابعة مستمرة" : "Alertes contre-indications actives"}
 </p>
 </div>
 </div>
 <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-neutral-300">{language === "ar" ? "معايير الأمان الصحي" : "Dossier Médical Partagé"}</span>
+<span className="text-xs font-semibold text-white/80">{language === "ar" ? "معايير الأمان الصحي" : "Dossier Médical Partagé"}</span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">EHR / NUMÉRIQUE</span>
 </div>
 <div>
-<div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">100%</div>
-<p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+<div className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">100%</div>
+<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
 <span>Cartes Chifa & Identifiants vérifiés</span>
 </p>
@@ -368,8 +368,8 @@ export const MedicalPatientsView: React.FC<any> = () => {
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
 <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex items-center gap-2">
-<span className="text-sm font-bold text-neutral-900 dark:text-white">{language === "ar" ? "دليل المرضى" : "Registre des Patients"}</span>
-<span className="text-xs text-neutral-400 font-semibold tabular-nums">
+<span className="text-sm font-bold text-black dark:text-white">{language === "ar" ? "دليل المرضى" : "Registre des Patients"}</span>
+<span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums">
 (
 {sortedPatients.length}
 )
@@ -380,17 +380,20 @@ export const MedicalPatientsView: React.FC<any> = () => {
 <LiveSegmentedControl value={filterCondition} onChange={(val) => setFilterCondition(val)} size="sm" options={[
 								{
 									id: "All",
-									label: language === "ar" ? "الكل" : "Tous",
+									label: language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All",
+									tooltip: language === "ar" ? "جميع المرضى" : language === "fr" ? "Tous les patients" : "All patients",
 									count: patients.length
 								},
 								{
 									id: "Sensitive",
-									label: language === "ar" ? "حساسيات & مزمن" : "Vigilances",
+									label: language === "ar" ? "حساسيات" : language === "fr" ? "Vigilances" : "Alerts",
+									tooltip: language === "ar" ? "مرضى الحساسيات والأمراض المزمنة" : language === "fr" ? "Allergies & pathologies chroniques" : "Allergies & chronic conditions",
 									count: sensitiveCount
 								},
 								{
 									id: "Regular",
-									label: language === "ar" ? "عادي" : "Standards",
+									label: language === "ar" ? "عادي" : language === "fr" ? "Standards" : "Regular",
+									tooltip: language === "ar" ? "ملفات قياسية" : language === "fr" ? "Dossiers standards" : "Regular patient files",
 									count: patients.length - sensitiveCount
 								}
 							]} />
@@ -426,20 +429,20 @@ export const MedicalPatientsView: React.FC<any> = () => {
 								const isPinned = pinnedIds.has(p.id);
 								const hasVigilance = p.allergies && p.allergies.length > 0 || p.chronicConditions && p.chronicConditions.length > 0;
 								return /* @__PURE__ */ <div className="flex flex-col items-center justify-center w-full">
-<div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">{p.fullName.charAt(0).toUpperCase()}</div>
+<div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{p.fullName.charAt(0).toUpperCase()}</div>
 <div className="flex items-center gap-1.5 max-w-[210px] mb-0.5">
-<h3 className="text-base font-bold text-neutral-900 dark:text-white truncate tracking-tight">{p.fullName}</h3>
+<h3 className="text-base font-bold text-black dark:text-white truncate tracking-tight">{p.fullName}</h3>
 {isPinned && /* @__PURE__ */ <span className="text-xs text-amber-500">📌</span>}
 </div>
 <div className="flex items-center gap-1.5 mb-3">
 <span className="px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold text-xs font-mono">{p.bloodGroup || "O+"}</span>
-<span className="text-[11px] font-semibold text-neutral-400">
+<span className="text-[11px] font-semibold text-black/55 dark:text-white/55">
 {p.gender === "Male" ? language === "ar" ? "ذكر" : "Homme" : language === "ar" ? "أنثى" : "Femme"}
 </span>
 </div>
 <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1 text-center">
-<div className="font-mono text-neutral-600 dark:text-neutral-400 text-[11px]">{p.phone}</div>
-<div className="truncate text-neutral-400 text-[11px]">
+<div className="font-mono text-black/70 dark:text-white/75 text-[11px]">{p.phone}</div>
+<div className="truncate text-black/55 dark:text-white/55 text-[11px]">
 {hasVigilance ? /* @__PURE__ */ <span className="text-rose-500 font-medium">
 {"⚠️ "}
 {p.allergies?.[0] || p.chronicConditions?.[0]}
@@ -457,8 +460,8 @@ export const MedicalPatientsView: React.FC<any> = () => {
 <div className="flex items-center gap-3 min-w-0">
 <div className="w-10 h-10 rounded-full bg-[#FCEEE8] text-[#d4522f] font-bold text-sm flex items-center justify-center shrink-0 border border-[#F5E2D8]">{selectedPatient.fullName.charAt(0).toUpperCase()}</div>
 <div className="min-w-0">
-<h3 className="font-bold text-sm text-neutral-900 dark:text-white truncate">{selectedPatient.fullName}</h3>
-<div className="flex items-center gap-1.5 text-xs text-neutral-400 font-mono">
+<h3 className="font-bold text-sm text-black dark:text-white truncate">{selectedPatient.fullName}</h3>
+<div className="flex items-center gap-1.5 text-xs text-black/55 dark:text-white/55 font-mono">
 <span>
 {"NSS: "}
 {selectedPatient.nationalId || "CHIFA-VALIDE"}
@@ -468,49 +471,49 @@ export const MedicalPatientsView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<button type="button" onClick={() => setSelectedPatient(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200/50 dark:hover:bg-neutral-700 transition-colors"><X size={16} /></button>
+<button type="button" onClick={() => setSelectedPatient(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-neutral-200/50 dark:hover:bg-neutral-700 transition-colors"><X size={16} /></button>
 </div>
 <div className="px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800/40 border-b border-neutral-100 dark:border-neutral-800 flex items-center gap-2">
 <button type="button" onClick={() => handleOpenConsultation(selectedPatient)} className="flex-1 py-1.5 px-2 rounded-lg bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-colors">
 <Stethoscope size={13} />
 <span>{language === "ar" ? "فحص سريري" : "Consulter"}</span>
 </button>
-<button type="button" onClick={() => handleOpenEdit(selectedPatient)} className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 text-xs font-semibold transition-colors" title="Modifier"><Edit size={14} /></button>
-<button type="button" onClick={() => handleTogglePin(selectedPatient.id)} className={`p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold transition-colors ${pinnedIds.has(selectedPatient.id) ? "text-amber-500" : "text-neutral-400 hover:text-neutral-700"}`} title="Épingler"><Pin size={14} /></button>
+<button type="button" onClick={() => handleOpenEdit(selectedPatient)} className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-neutral-100 text-xs font-semibold transition-colors" title="Modifier"><Edit size={14} /></button>
+<button type="button" onClick={() => handleTogglePin(selectedPatient.id)} className={`p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold transition-colors ${pinnedIds.has(selectedPatient.id) ? "text-amber-500" : "text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`} title="Épingler"><Pin size={14} /></button>
 </div>
 <div className="flex border-b border-neutral-100 dark:border-neutral-800 text-xs font-semibold px-2 bg-white dark:bg-neutral-850 overflow-x-auto no-scrollbar">
-<button type="button" onClick={() => setActiveTab("dossier")} className={`py-2 px-2.5 border-b-2 whitespace-nowrap transition-colors ${activeTab === "dossier" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-900"}`}>{language === "ar" ? "الملف" : "Dossier"}</button>
-<button type="button" onClick={() => setActiveTab("vitals")} className={`py-2 px-2.5 border-b-2 whitespace-nowrap transition-colors flex items-center gap-1 ${activeTab === "vitals" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-900"}`}>
+<button type="button" onClick={() => setActiveTab("dossier")} className={`py-2 px-2.5 border-b-2 whitespace-nowrap transition-colors ${activeTab === "dossier" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "الملف" : "Dossier"}</button>
+<button type="button" onClick={() => setActiveTab("vitals")} className={`py-2 px-2.5 border-b-2 whitespace-nowrap transition-colors flex items-center gap-1 ${activeTab === "vitals" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>
 <Activity size={12} />
 <span>{language === "ar" ? "المؤشرات الحيوية" : "Constantes"}</span>
 </button>
-<button type="button" onClick={() => setActiveTab("allergies")} className={`py-2 px-2.5 border-b-2 whitespace-nowrap transition-colors ${activeTab === "allergies" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-900"}`}>{language === "ar" ? "الحساسيات" : "Vigilances"}</button>
-<button type="button" onClick={() => setActiveTab("labs")} className={`py-2 px-2.5 border-b-2 whitespace-nowrap transition-colors flex items-center gap-1 ${activeTab === "labs" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-900"}`}>
+<button type="button" onClick={() => setActiveTab("allergies")} className={`py-2 px-2.5 border-b-2 whitespace-nowrap transition-colors ${activeTab === "allergies" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "الحساسيات" : "Vigilances"}</button>
+<button type="button" onClick={() => setActiveTab("labs")} className={`py-2 px-2.5 border-b-2 whitespace-nowrap transition-colors flex items-center gap-1 ${activeTab === "labs" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>
 <Microscope size={12} />
 <span>{language === "ar" ? "المخابر" : "Biologie"}</span>
 </button>
-<button type="button" onClick={() => setActiveTab("history")} className={`py-2 px-2.5 border-b-2 whitespace-nowrap transition-colors ${activeTab === "history" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-900"}`}>{language === "ar" ? "الفحوصات" : "Historique"}</button>
-<button type="button" onClick={() => setActiveTab("notes")} className={`py-2 px-2.5 border-b-2 whitespace-nowrap transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-neutral-500 hover:text-neutral-900"}`}>{language === "ar" ? "الملاحظات" : "Notes"}</button>
+<button type="button" onClick={() => setActiveTab("history")} className={`py-2 px-2.5 border-b-2 whitespace-nowrap transition-colors ${activeTab === "history" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "الفحوصات" : "Historique"}</button>
+<button type="button" onClick={() => setActiveTab("notes")} className={`py-2 px-2.5 border-b-2 whitespace-nowrap transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "الملاحظات" : "Notes"}</button>
 </div>
 <div className="flex-1 overflow-y-auto p-4 space-y-4">
 {activeTab === "dossier" && /* @__PURE__ */ <div className="space-y-3 text-xs">
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">{language === "ar" ? "بيانات المريض" : "État Civil & Contact"}</div>
+<div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">{language === "ar" ? "بيانات المريض" : "État Civil & Contact"}</div>
 <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-<span className="text-neutral-500">{language === "ar" ? "تاريخ الميلاد" : "Date de naissance"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 font-mono">{selectedPatient.dateOfBirth || "—"}</span>
+<span className="text-black/55 dark:text-white/55">{language === "ar" ? "تاريخ الميلاد" : "Date de naissance"}</span>
+<span className="font-semibold text-black dark:text-white font-mono">{selectedPatient.dateOfBirth || "—"}</span>
 </div>
 <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-<span className="text-neutral-500">{language === "ar" ? "الهاتف" : "Téléphone"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 font-mono">{selectedPatient.phone}</span>
+<span className="text-black/55 dark:text-white/55">{language === "ar" ? "الهاتف" : "Téléphone"}</span>
+<span className="font-semibold text-black dark:text-white font-mono">{selectedPatient.phone}</span>
 </div>
 <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-<span className="text-neutral-500">{language === "ar" ? "بطاقة الشفاء / الهوية" : "NSS / Chifa"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 font-mono">{selectedPatient.nationalId || "N/A"}</span>
+<span className="text-black/55 dark:text-white/55">{language === "ar" ? "بطاقة الشفاء / الهوية" : "NSS / Chifa"}</span>
+<span className="font-semibold text-black dark:text-white font-mono">{selectedPatient.nationalId || "N/A"}</span>
 </div>
 <div className="flex justify-between py-1">
-<span className="text-neutral-500">{language === "ar" ? "تاريخ التسجيل" : "Date d'inscription"}</span>
-<span className="font-semibold text-neutral-800 dark:text-neutral-200 font-mono">
+<span className="text-black/55 dark:text-white/55">{language === "ar" ? "تاريخ التسجيل" : "Date d'inscription"}</span>
+<span className="font-semibold text-black dark:text-white font-mono">
 {selectedPatient.createdAt ? new Date(selectedPatient.createdAt).toLocaleDateString() : "2026-05-01"}
 </span>
 </div>
@@ -522,8 +525,8 @@ export const MedicalPatientsView: React.FC<any> = () => {
 {language === "ar" ? "جهة الاتصال في حالات الطوارئ" : "Personne à contacter en urgence"}
 </span>
 </div>
-<div className="font-semibold text-neutral-900 dark:text-white pt-1">{selectedPatient.emergencyContact}</div>
-<div className="text-neutral-600 dark:text-neutral-400 font-mono text-xs">{selectedPatient.emergencyPhone || "—"}</div>
+<div className="font-semibold text-black dark:text-white pt-1">{selectedPatient.emergencyContact}</div>
+<div className="text-black/70 dark:text-white/75 font-mono text-xs">{selectedPatient.emergencyPhone || "—"}</div>
 </div>}
 </div>}
 {activeTab === "vitals" && /* @__PURE__ */ <div className="space-y-4 text-xs">
@@ -549,25 +552,25 @@ export const MedicalPatientsView: React.FC<any> = () => {
 											return /* @__PURE__ */ <div className="space-y-3">
 <div className="grid grid-cols-2 gap-2">
 <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800">
-<span className="text-[10px] font-semibold text-neutral-400 block uppercase">Indice de Masse Corporelle</span>
+<span className="text-[10px] font-semibold text-black/55 dark:text-white/55 block uppercase">Indice de Masse Corporelle</span>
 <div className="flex items-baseline gap-1.5 mt-0.5">
-<span className="text-xl font-bold font-mono text-neutral-900 dark:text-white">{bmi}</span>
-<span className="text-[10px] text-neutral-400">kg/m²</span>
+<span className="text-xl font-bold font-mono text-black dark:text-white">{bmi}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">kg/m²</span>
 </div>
 <span className={`inline-block mt-1 px-1.5 py-0.5 rounded text-[10px] font-semibold border ${bmiColor}`}>{bmiLabel}</span>
 </div>
 <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800">
-<span className="text-[10px] font-semibold text-neutral-400 block uppercase">Saturation O₂ & Pouls</span>
+<span className="text-[10px] font-semibold text-black/55 dark:text-white/55 block uppercase">Saturation O₂ & Pouls</span>
 <div className="flex items-baseline gap-1.5 mt-0.5">
-<span className="text-xl font-bold font-mono text-neutral-900 dark:text-white">
+<span className="text-xl font-bold font-mono text-black dark:text-white">
 {latest?.spO2 || 98}
 %
 </span>
-<span className="text-[10px] text-neutral-400">SpO₂</span>
+<span className="text-[10px] text-black/55 dark:text-white/55">SpO₂</span>
 </div>
-<div className="text-[11px] font-mono text-neutral-500 mt-1">
+<div className="text-[11px] font-mono text-black/55 dark:text-white/55 mt-1">
 {"FC: "}
-<strong className="text-neutral-800 dark:text-neutral-200">{latest?.heartRateBpm || 74}</strong>
+<strong className="text-black dark:text-white">{latest?.heartRateBpm || 74}</strong>
 {" bpm"}
 </div>
 </div>
@@ -576,7 +579,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
 <div className="flex items-center justify-between mb-2">
 <div className="flex items-center gap-1.5">
 <Activity size={13} className="text-[#d4522f]" />
-<span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+<span className="text-xs font-bold text-black dark:text-white">
 {language === "ar" ? "منحنى ضغط الدم (mmHg)" : "Courbe Tension Artérielle (mmHg)"}
 </span>
 </div>
@@ -622,56 +625,56 @@ export const MedicalPatientsView: React.FC<any> = () => {
 </div>
 <div className="mt-2 space-y-1">
 {history.slice(-3).reverse().map((h: any, i: number) => /* @__PURE__ */ <div key={i} className="flex items-center justify-between text-[11px] py-1 border-b border-neutral-100 dark:border-neutral-800 last:border-0 font-mono">
-<span className="text-neutral-400">{h.date}</span>
-<span className="font-bold text-neutral-800 dark:text-neutral-200">
+<span className="text-black/55 dark:text-white/55">{h.date}</span>
+<span className="font-bold text-black dark:text-white">
 {h.systolicBp}
 /
 {h.diastolicBp}
 {" mmHg"}
 </span>
-<span className="text-neutral-500">
+<span className="text-black/55 dark:text-white/55">
 {h.heartRateBpm}
 {" bpm"}
 </span>
-<span className="text-neutral-500">{h.bloodSugarMgDl ? `${h.bloodSugarMgDl} g/l` : "—"}</span>
+<span className="text-black/55 dark:text-white/55">{h.bloodSugarMgDl ? `${h.bloodSugarMgDl} g/l` : "—"}</span>
 </div>)}
 </div>
 </div>
-{!showAddVitals ? /* @__PURE__ */ <button type="button" onClick={() => setShowAddVitals(true)} className="w-full py-2 px-3 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:border-[#d4522f] flex items-center justify-center gap-1.5 transition-colors">
+{!showAddVitals ? /* @__PURE__ */ <button type="button" onClick={() => setShowAddVitals(true)} className="w-full py-2 px-3 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:border-[#d4522f] flex items-center justify-center gap-1.5 transition-colors">
 <Plus size={13} />
 <span>{language === "ar" ? "تسجيل قراءة جديدة" : "Prendre de nouvelles constantes"}</span>
 </button> : /* @__PURE__ */ <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 space-y-2.5">
-<div className="text-[11px] font-bold text-neutral-700 dark:text-neutral-300 uppercase">Nouvelle Prise de Constantes</div>
+<div className="text-[11px] font-bold text-black/70 dark:text-white/75 uppercase">Nouvelle Prise de Constantes</div>
 <div className="grid grid-cols-3 gap-2">
 <div>
-<label className="text-[10px] text-neutral-500">Sys (mmHg)</label>
+<label className="text-[10px] text-black/55 dark:text-white/55">Sys (mmHg)</label>
 <input type="number" value={newSys} onChange={(e) => setNewSys(e.target.value)} className="w-full px-2 py-1 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded text-xs font-mono" />
 </div>
 <div>
-<label className="text-[10px] text-neutral-500">Dia (mmHg)</label>
+<label className="text-[10px] text-black/55 dark:text-white/55">Dia (mmHg)</label>
 <input type="number" value={newDia} onChange={(e) => setNewDia(e.target.value)} className="w-full px-2 py-1 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded text-xs font-mono" />
 </div>
 <div>
-<label className="text-[10px] text-neutral-500">Pouls (bpm)</label>
+<label className="text-[10px] text-black/55 dark:text-white/55">Pouls (bpm)</label>
 <input type="number" value={newHr} onChange={(e) => setNewHr(e.target.value)} className="w-full px-2 py-1 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded text-xs font-mono" />
 </div>
 </div>
 <div className="grid grid-cols-3 gap-2">
 <div>
-<label className="text-[10px] text-neutral-500">Poids (kg)</label>
+<label className="text-[10px] text-black/55 dark:text-white/55">Poids (kg)</label>
 <input type="number" value={newWeight} onChange={(e) => setNewWeight(e.target.value)} className="w-full px-2 py-1 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded text-xs font-mono" />
 </div>
 <div>
-<label className="text-[10px] text-neutral-500">Glycémie (g/L)</label>
+<label className="text-[10px] text-black/55 dark:text-white/55">Glycémie (g/L)</label>
 <input type="number" step="0.01" value={newSugar} onChange={(e) => setNewSugar(e.target.value)} className="w-full px-2 py-1 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded text-xs font-mono" />
 </div>
 <div>
-<label className="text-[10px] text-neutral-500">SpO₂ (%)</label>
+<label className="text-[10px] text-black/55 dark:text-white/55">SpO₂ (%)</label>
 <input type="number" value={newSpo2} onChange={(e) => setNewSpo2(e.target.value)} className="w-full px-2 py-1 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded text-xs font-mono" />
 </div>
 </div>
 <div className="flex justify-end gap-2 pt-1">
-<button type="button" onClick={() => setShowAddVitals(false)} className="px-2.5 py-1 text-xs text-neutral-500 hover:text-neutral-800">Annuler</button>
+<button type="button" onClick={() => setShowAddVitals(false)} className="px-2.5 py-1 text-xs text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white">Annuler</button>
 <button type="button" onClick={() => {
 																		const sysVal = parseInt(newSys) || 120;
 																		const diaVal = parseInt(newDia) || 80;
@@ -710,7 +713,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
 </div>}
 {activeTab === "labs" && /* @__PURE__ */ <div className="space-y-3 text-xs">
 <div className="flex items-center justify-between">
-<span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">{language === "ar" ? "التحاليل البيولوجية" : "Bilans Biologiques"}</span>
+<span className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">{language === "ar" ? "التحاليل البيولوجية" : "Bilans Biologiques"}</span>
 <button type="button" onClick={() => {
 													setSelectedLabRecord(null);
 													setIsLabModalOpen(true);
@@ -727,14 +730,14 @@ export const MedicalPatientsView: React.FC<any> = () => {
 														setIsLabModalOpen(true);
 													}} className="p-3 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-[#d4522f] cursor-pointer transition-all shadow-2xs">
 <div className="flex items-center justify-between mb-1">
-<span className="font-bold text-neutral-900 dark:text-white">{record.panelName || record.testCategory}</span>
+<span className="font-bold text-black dark:text-white">{record.panelName || record.testCategory}</span>
 {abnormalCount > 0 ? /* @__PURE__ */ <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-600 border border-rose-200 dark:border-rose-800">
 {abnormalCount}
 {" anomalie"}
 {abnormalCount > 1 ? "s" : ""}
 </span> : /* @__PURE__ */ <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 border border-emerald-200">Normal</span>}
 </div>
-<div className="text-[11px] text-neutral-400 font-mono flex items-center justify-between">
+<div className="text-[11px] text-black/55 dark:text-white/55 font-mono flex items-center justify-between">
 <span>
 {record.testDate || record.date}
 {" · "}
@@ -744,7 +747,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
 </div>
 </div>;
 											})}
-</div> : /* @__PURE__ */ <div className="text-center py-8 text-neutral-400">
+</div> : /* @__PURE__ */ <div className="text-center py-8 text-black/55 dark:text-white/55">
 <Microscope size={28} className="mx-auto mb-2 opacity-40" />
 <p>
 {language === "ar" ? "لا توجد تحاليل بيولوجية مسجلة" : "Aucun bilan biologique pour ce patient."}
@@ -762,21 +765,21 @@ export const MedicalPatientsView: React.FC<any> = () => {
 {"⚠️ "}
 {allergy}
 </span>)}
-</div> : /* @__PURE__ */ <p className="text-neutral-500 italic pt-1">
+</div> : /* @__PURE__ */ <p className="text-black/55 dark:text-white/55 italic pt-1">
 {language === "ar" ? "لا توجد حساسيات دوائية مسجلة" : "Aucune allergie médicamenteuse déclarée."}
 </p>}
 </div>
 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<div className="text-[11px] font-bold text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
+<div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider flex items-center gap-1.5">
 <HeartPulse size={12} />
 <span>{language === "ar" ? "الأمراض المزمنة" : "Pathologies Chroniques"}</span>
 </div>
 {selectedPatient.chronicConditions && selectedPatient.chronicConditions.length > 0 ? /* @__PURE__ */ <div className="space-y-1.5 pt-1">
-{selectedPatient.chronicConditions.map((cond: any, i: number) => /* @__PURE__ */ <div key={i} className="p-2 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 font-medium text-neutral-800 dark:text-neutral-200">
+{selectedPatient.chronicConditions.map((cond: any, i: number) => /* @__PURE__ */ <div key={i} className="p-2 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 font-medium text-black dark:text-white">
 {"• "}
 {cond}
 </div>)}
-</div> : /* @__PURE__ */ <p className="text-neutral-500 italic pt-1">
+</div> : /* @__PURE__ */ <p className="text-black/55 dark:text-white/55 italic pt-1">
 {language === "ar" ? "لا توجد أمراض مزمنة مسجلة" : "Aucun antécédent chronique majeur."}
 </p>}
 </div>
@@ -784,11 +787,11 @@ export const MedicalPatientsView: React.FC<any> = () => {
 {activeTab === "history" && /* @__PURE__ */ <div className="space-y-2 text-xs">
 {consultations.filter((c) => c.patientId === selectedPatient.id).length > 0 ? consultations.filter((c) => c.patientId === selectedPatient.id).map((c) => /* @__PURE__ */ <div key={c.id} className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-1.5">
 <div className="flex items-center justify-between">
-<span className="font-bold text-neutral-900 dark:text-white">{c.diagnosis || c.chiefComplaint}</span>
-<span className="text-[10px] text-neutral-400 font-mono">{new Date(c.consultationDate).toLocaleDateString()}</span>
+<span className="font-bold text-black dark:text-white">{c.diagnosis || c.chiefComplaint}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 font-mono">{new Date(c.consultationDate).toLocaleDateString()}</span>
 </div>
-<p className="text-[11px] text-neutral-500 dark:text-neutral-400">{c.clinicalExam}</p>
-{c.vitals && /* @__PURE__ */ <div className="flex items-center gap-2 pt-1 font-mono text-[10px] text-neutral-400">
+<p className="text-[11px] text-black/55 dark:text-white/75">{c.clinicalExam}</p>
+{c.vitals && /* @__PURE__ */ <div className="flex items-center gap-2 pt-1 font-mono text-[10px] text-black/55 dark:text-white/55">
 <span>
 {"TA: "}
 {c.vitals.bloodPressure}
@@ -806,7 +809,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
 {" bpm"}
 </span>
 </div>}
-</div>) : /* @__PURE__ */ <div className="text-center py-8 text-neutral-400">
+</div>) : /* @__PURE__ */ <div className="text-center py-8 text-black/55 dark:text-white/55">
 <Stethoscope size={28} className="mx-auto mb-2 opacity-40" />
 <p>
 {language === "ar" ? "لا توجد فحوصات سابقة لهذا المريض" : "Aucune consultation enregistrée."}
@@ -814,12 +817,12 @@ export const MedicalPatientsView: React.FC<any> = () => {
 </div>}
 </div>}
 {activeTab === "notes" && /* @__PURE__ */ <div className="space-y-3 text-xs">
-<label className="block text-[11px] font-bold text-neutral-500 uppercase">
+<label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase">
 {language === "ar" ? "الملاحظات السريرية والتوصيات" : "Observations Cliniques & Suivi"}
 </label>
-<textarea value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} rows={8} placeholder={language === "ar" ? "أدخل ملاحظات الطبيب..." : "Saisir les remarques médicales, consignes, prescriptions spécifiques..."} className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-2 focus:ring-[#d4522f] outline-none" />
+<textarea value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} rows={8} placeholder={language === "ar" ? "أدخل ملاحظات الطبيب..." : "Saisir les remarques médicales, consignes, prescriptions spécifiques..."} className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-2 focus:ring-[#d4522f] outline-none" />
 <div className="flex items-center justify-between pt-1">
-<span className="text-[11px] text-neutral-400">
+<span className="text-[11px] text-black/55 dark:text-white/55">
 {noteSaved && /* @__PURE__ */ <span className="text-emerald-600 font-bold flex items-center gap-1">
 <Check size={12} />
 {" "}

@@ -1,10 +1,12 @@
 import React from 'react';
 import { LiveSelect, SelectOption } from './live/LiveSelect';
 import { LiveBadge } from './live/LiveBadge';
+import { compactFilterLabel } from '../../utils/filterLexicon';
 
 export interface FilterSelectOption {
   value: string | number;
   label: string;
+  tooltip?: string;
   count?: number;
   icon?: React.ReactNode;
   disabled?: boolean;
@@ -36,16 +38,20 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
 }) => {
   const normalizedOptions: SelectOption[] = options.map((opt) => {
     if (typeof opt === 'string' || typeof opt === 'number') {
+      const compact = compactFilterLabel(String(opt));
       return {
         value: String(opt),
-        label: String(opt),
+        label: compact.label,
+        tooltip: compact.tooltip,
       };
     }
+    const compact = compactFilterLabel(opt.label, undefined, opt.tooltip);
     return {
       value: String(opt.value),
+      tooltip: compact.tooltip,
       label: (
         <span className="inline-flex items-center gap-1.5">
-          <span>{opt.label}</span>
+          <span>{compact.label}</span>
           {typeof opt.count === 'number' && (
             <LiveBadge value={opt.count} floating={false} max={999} showZero />
           )}
@@ -68,14 +74,18 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
   };
 
   return (
-    <div className={`inline-flex items-center gap-1.5 ${className}`}>
+    <div className={`inline-flex items-center gap-1.5 ${className}`} title={label || ariaLabel}>
       {icon && <span className="text-black/65 dark:text-white/70 shrink-0">{icon}</span>}
-      {label && <span className="text-black/70 dark:text-white/75 text-xs font-medium">{label}:</span>}
+      {label && (
+        <span className="text-black/70 dark:text-white/75 text-xs font-medium" title={label}>
+          {compactFilterLabel(label).label}:
+        </span>
+      )}
       <LiveSelect
         options={normalizedOptions}
         value={controlledValue !== undefined ? String(controlledValue) : undefined}
         onValueChange={handleValueChange}
-        placeholder={placeholder}
+        placeholder={compactFilterLabel(placeholder).label}
         tone="soft"
         size="md"
         disabled={disabled}
