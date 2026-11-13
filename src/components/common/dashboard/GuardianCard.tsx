@@ -3,7 +3,7 @@ import { Shield, Sparkles } from 'lucide-react';
 
 export interface GuardianCardProps {
   title: string;
-  subtitle: string;
+  subtitle?: string;
   score: number; // 0 to 100
   scoreLabel?: string;
   metricLabel?: string;
@@ -51,20 +51,15 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
     <div
       className={`bg-[#1F1D1B] rounded-[20px] p-5 sm:p-6 border border-white/[0.08] text-white relative overflow-hidden flex flex-col justify-between shadow-md ${className}`}
     >
-      {/* Top row: Title + Subtitle and Toggle */}
-      <div className="flex items-start justify-between gap-4">
+      {/* Top row: Title and Toggle */}
+      <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-white/[0.08] border border-white/[0.08] text-[#FB923C] flex items-center justify-center shrink-0">
             <Shield size={16} />
           </div>
-          <div>
-            <h4 className="text-[15px] font-semibold text-white tracking-[-0.015em] leading-snug">
-              {title}
-            </h4>
-            <p className="text-[12px] text-white/70 mt-0.5 leading-snug">
-              {subtitle}
-            </p>
-          </div>
+          <h4 className="text-[15px] font-semibold text-white tracking-[-0.015em] leading-snug">
+            {title}
+          </h4>
         </div>
 
         {/* Toggle pill */}

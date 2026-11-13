@@ -66,14 +66,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       ? 'Tableau'
       : 'Dashboard');
 
-  const displaySubtitle =
-    subtitle ||
-    (language === 'ar'
-      ? 'النشاط اليومي'
-      : language === 'fr'
-      ? 'Activité du jour'
-      : 'Daily activity');
-
   const [exportProgress, setExportProgress] = React.useState<number | undefined>(undefined);
 
   const handleExport = async () => {
@@ -118,8 +110,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             ))}
           </div>
         )}
-        <div className="flex items-start gap-3.5 sm:gap-4">
-          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#F3EDE7] dark:bg-white/[0.07] border border-[#E6DED6] dark:border-neutral-700/70 shadow-2xs flex items-center justify-center text-black dark:text-white shrink-0 mt-0.5">
+        <div className="flex items-center gap-3.5 sm:gap-4">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#F3EDE7] dark:bg-white/[0.07] border border-[#E6DED6] dark:border-neutral-700/70 shadow-2xs flex items-center justify-center text-black dark:text-white shrink-0">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1">
               <rect x="3" y="3" width="7" height="7" rx="1.5" />
               <rect x="14" y="3" width="7" height="7" rx="1.5" />
@@ -131,11 +123,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             <h1 className="text-[34px] sm:text-[42px] font-extrabold uppercase leading-[0.98] tracking-[0.012em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:text-[28px] rtl:sm:text-[34px] rtl:leading-tight rtl:tracking-normal">
               {displayTitle}
             </h1>
-            {displaySubtitle && (
-              <p className="text-[13.5px] sm:text-[14px] text-black/68 dark:text-white/70 leading-relaxed mt-1.5 max-w-2xl">
-                {displaySubtitle}
-              </p>
-            )}
           </div>
         </div>
       </div>
