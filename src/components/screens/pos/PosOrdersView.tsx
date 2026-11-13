@@ -540,7 +540,7 @@ export const PosOrdersView: React.FC = () => {
         </div>
 
         {/* Top Metrics Pod Tray (SurfaceBgElevated: #F3EDE7, CornerRadius 24px) */}
-        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+        <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             
             {/* Card 1: Volume Brut des Ventes */}
@@ -616,7 +616,7 @@ export const PosOrdersView: React.FC = () => {
         </div>
 
         {/* Bottom Collection Pod Tray (SurfaceBgElevated: #F3EDE7) */}
-        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
           
           {/* Subtab Segmented Switcher & Search Bar */}
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
@@ -628,9 +628,6 @@ export const PosOrdersView: React.FC = () => {
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-black dark:text-white">
                   {language === 'ar' ? 'سجل تذاكر المبيعات' : 'Grand Livre des Encaissements'}
-                </span>
-                <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#d4522f]/10 text-[#d4522f]">
-                  {activeSubTab === 'sales' ? filteredSales.length : parkedOrders.length}
                 </span>
               </div>
             </div>

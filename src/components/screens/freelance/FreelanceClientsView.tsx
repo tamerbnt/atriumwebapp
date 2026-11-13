@@ -552,7 +552,7 @@ export const FreelanceClientsView: React.FC = () => {
         )}
 
         {/* Top Metrics Pod Tray (Screenshot_30: bg-[#F3EDE7], rounded-[24px], p-5) */}
-        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
+        <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-3">
           <div>
             <h3 className="text-xs font-bold text-black dark:text-white tracking-tight">
               {language === 'ar' ? 'سعة ومؤشرات شبكة العملاء' : language === 'fr' ? 'Capacité & Santé du Portefeuille Clients' : 'Client Roster & Capacity'}
@@ -630,7 +630,7 @@ export const FreelanceClientsView: React.FC = () => {
         </div>
 
         {/* Bottom Collection Pod Tray (Screenshot_30: bg-[#F3EDE7], rounded-[24px], p-5) */}
-        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
           
           {/* Integrated Toolbar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -640,9 +640,6 @@ export const FreelanceClientsView: React.FC = () => {
               <h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {t('free_clients_crm_title', language)}
               </h2>
-              <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-black/70 dark:text-white/75">
-                {filteredClients.length}
-              </span>
             </div>
 
             {/* Right Controls: Seek + Filter Capsules + Export CSV */}

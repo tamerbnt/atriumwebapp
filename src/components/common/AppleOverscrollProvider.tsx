@@ -3,15 +3,19 @@ import {
   calculateRubberBandOffset,
   stepSpring1D,
   DEFAULT_APPLE_SPRING,
+  APPLE_RESISTANCE_COEFFICIENT,
 } from '../../utils/applePhysics';
 
 interface ActiveOverscroll {
   container: HTMLElement;
   target: HTMLElement;
   direction: 'y' | 'x';
+  edgeSign: 1 | -1; // 1 = pulling from start edge (top/left, positive offset), -1 = pulling from end edge (bottom/right, negative offset)
   rawDelta: number;
+  targetOffset: number;
   offset: number;
   velocity: number;
+  isReleasing: boolean;
 }
 
 /**
@@ -31,41 +35,64 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) return;
 
-    // Helper: Find closest scrollable ancestor
-    const findScrollableAncestor = (
+    // Helper: Find the scrollable container that should either scroll natively or rubber-band
+    // deltaSign: < 0 means scrolling toward start (top/left), > 0 means scrolling toward end (bottom/right)
+    const resolveScrollContainer = (
       el: HTMLElement | null,
-      axis: 'y' | 'x'
-    ): HTMLElement | null => {
+      axis: 'y' | 'x',
+      deltaSign: number
+    ): { container: HTMLElement; canScrollNatively: boolean; edgeSign: 1 | -1 } | null => {
       let current = el;
+      let fallbackEdge: { container: HTMLElement; edgeSign: 1 | -1 } | null = null;
+
       while (current && current !== document.body && current !== document.documentElement) {
         if (current.hasAttribute('data-no-rubber-band')) {
           return null;
         }
 
-        const style = window.getComputedStyle(current);
-        if (axis === 'y') {
-          const overflowY = style.overflowY;
-          if (
-            (overflowY === 'auto' || overflowY === 'scroll') &&
-            current.scrollHeight > current.clientHeight + 2
-          ) {
-            return current;
-          }
-        } else {
-          const overflowX = style.overflowX;
-          if (
-            (overflowX === 'auto' || overflowX === 'scroll') &&
-            current.scrollWidth > current.clientWidth + 2
-          ) {
-            return current;
+        const isY = axis === 'y';
+        const sizeDiff = isY
+          ? current.scrollHeight - current.clientHeight
+          : current.scrollWidth - current.clientWidth;
+
+        if (sizeDiff > 2) {
+          const style = window.getComputedStyle(current);
+          const overflowProp = isY ? style.overflowY : style.overflowX;
+
+          if (overflowProp === 'auto' || overflowProp === 'scroll') {
+            const pos = isY ? current.scrollTop : current.scrollLeft;
+            const max = Math.max(0, sizeDiff);
+            const atStart = pos <= 1;
+            const atEnd = pos >= max - 1;
+            const atEdgeInDirection = (deltaSign < 0 && atStart) || (deltaSign > 0 && atEnd);
+            const edgeSign: 1 | -1 = deltaSign < 0 ? 1 : -1;
+
+            if (!atEdgeInDirection) {
+              return { container: current, canScrollNatively: true, edgeSign };
+            }
+
+            if (!fallbackEdge) {
+              fallbackEdge = { container: current, edgeSign };
+            }
+
+            const overscrollBehavior = isY ? style.overscrollBehaviorY : style.overscrollBehaviorX;
+            if (overscrollBehavior === 'contain' || overscrollBehavior === 'none') {
+              return { container: current, canScrollNatively: false, edgeSign };
+            }
+            // Otherwise overscroll-behavior is 'auto': keep walking up to see if an ancestor can scroll natively
           }
         }
+
         current = current.parentElement;
+      }
+
+      if (fallbackEdge) {
+        return { container: fallbackEdge.container, canScrollNatively: false, edgeSign: fallbackEdge.edgeSign };
       }
       return null;
     };
 
-    const stopSpring = () => {
+    const stopLoop = () => {
       if (animFrameId.current !== null) {
         cancelAnimationFrame(animFrameId.current);
         animFrameId.current = null;
@@ -74,7 +101,7 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
 
     const applyTransform = (active: ActiveOverscroll) => {
       const { target, direction, offset } = active;
-      if (offset === 0) {
+      if (Math.abs(offset) < 0.05) {
         target.style.transform = '';
         target.style.willChange = '';
       } else {
@@ -85,11 +112,16 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
       }
     };
 
-    const startSpring = () => {
-      stopSpring();
-      const active = activeRef.current;
-      if (!active || active.offset === 0) return;
+    const clearActive = () => {
+      stopLoop();
+      if (activeRef.current) {
+        applyTransform({ ...activeRef.current, offset: 0 });
+        activeRef.current = null;
+      }
+    };
 
+    const startLoop = () => {
+      if (animFrameId.current !== null) return;
       lastTimeRef.current = performance.now();
 
       const loop = (now: number) => {
@@ -99,8 +131,30 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
           return;
         }
 
-        const dt = Math.min((now - lastTimeRef.current) / 1000, 0.033);
+        const dt = Math.min(Math.max((now - lastTimeRef.current) / 1000, 0.001), 0.033);
         lastTimeRef.current = now;
+
+        if (!currentActive.isReleasing) {
+          // Smoothly chase targetOffset during active wheel input (eliminates harsh 1-frame jumps on stepped mouse wheels)
+          const diff = currentActive.targetOffset - currentActive.offset;
+          const chaseAlpha = 1 - Math.exp(-24 * dt);
+          const nextOffset = currentActive.offset + diff * chaseAlpha;
+          currentActive.velocity = (nextOffset - currentActive.offset) / dt;
+          currentActive.offset = nextOffset;
+          applyTransform(currentActive);
+
+          if (Math.abs(diff) < 0.05 && Math.abs(currentActive.targetOffset) < 0.05) {
+            currentActive.offset = 0;
+            currentActive.velocity = 0;
+            applyTransform(currentActive);
+            activeRef.current = null;
+            animFrameId.current = null;
+            return;
+          }
+
+          animFrameId.current = requestAnimationFrame(loop);
+          return;
+        }
 
         const step = stepSpring1D(
           currentActive.offset,
@@ -112,19 +166,29 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
 
         currentActive.offset = step.pos;
         currentActive.velocity = step.vel;
-
         applyTransform(currentActive);
 
         if (step.settled) {
-          applyTransform({ ...currentActive, offset: 0 });
-          activeRef.current = null;
-          animFrameId.current = null;
+          clearActive();
         } else {
           animFrameId.current = requestAnimationFrame(loop);
         }
       };
 
       animFrameId.current = requestAnimationFrame(loop);
+    };
+
+    const triggerRelease = () => {
+      const active = activeRef.current;
+      if (!active) return;
+      active.rawDelta = 0;
+      active.targetOffset = 0;
+      active.isReleasing = true;
+      if (Math.abs(active.offset) < 0.05) {
+        clearActive();
+      } else {
+        startLoop();
+      }
     };
 
     // Global Wheel Listener (Trackpads and Mouse Wheels)
@@ -134,72 +198,82 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
 
       const isVerticalDominant = Math.abs(e.deltaY) >= Math.abs(e.deltaX);
       const axis: 'y' | 'x' = isVerticalDominant ? 'y' : 'x';
-      const container = findScrollableAncestor(targetEl, axis);
-      if (!container) return;
+      const rawAxisDelta = axis === 'y' ? e.deltaY : e.deltaX;
+      if (Math.abs(rawAxisDelta) < 0.1) return;
 
-      let delta = axis === 'y' ? e.deltaY : e.deltaX;
-      if (e.deltaMode === 1) delta *= 20;
+      const resolved = resolveScrollContainer(targetEl, axis, rawAxisDelta);
+      if (!resolved) return;
+
+      const { container, canScrollNatively, edgeSign } = resolved;
+
+      let delta = rawAxisDelta;
+      if (e.deltaMode === 1) delta *= 18;
       else if (e.deltaMode === 2) delta *= axis === 'y' ? container.clientHeight : container.clientWidth;
 
-      if (Math.abs(delta) < 0.1) return;
-
-      let atEdge = false;
-      if (axis === 'y') {
-        const scrollTop = container.scrollTop;
-        const maxScroll = Math.max(0, container.scrollHeight - container.clientHeight);
-        atEdge = (scrollTop <= 1 && delta < 0) || (scrollTop >= maxScroll - 1 && delta > 0);
-      } else {
-        const scrollLeft = container.scrollLeft;
-        const maxScroll = Math.max(0, container.scrollWidth - container.clientWidth);
-        atEdge = (scrollLeft <= 1 && delta < 0) || (scrollLeft >= maxScroll - 1 && delta > 0);
-      }
-
-      // If active already on this container or hitting edge
       const isAlreadyOverscrolling =
-        activeRef.current && activeRef.current.container === container && activeRef.current.offset !== 0;
+        activeRef.current &&
+        activeRef.current.container === container &&
+        activeRef.current.direction === axis &&
+        Math.abs(activeRef.current.offset) > 0.05;
 
-      if (!atEdge && !isAlreadyOverscrolling) {
+      if (canScrollNatively && !isAlreadyOverscrolling) {
         return; // Allow native in-bounds scrolling
       }
 
-      stopSpring();
-
-      if (!activeRef.current || activeRef.current.container !== container) {
+      if (
+        !activeRef.current ||
+        activeRef.current.container !== container ||
+        activeRef.current.direction !== axis
+      ) {
+        if (activeRef.current) {
+          clearActive();
+        }
         const transformTarget = (container.firstElementChild as HTMLElement) || container;
         activeRef.current = {
           container,
           target: transformTarget,
           direction: axis,
+          edgeSign,
           rawDelta: 0,
+          targetOffset: 0,
           offset: 0,
           velocity: 0,
+          isReleasing: false,
         };
       }
 
       const active = activeRef.current;
-      active.rawDelta -= delta * 0.7;
+      active.isReleasing = false;
 
-      const dimension = axis === 'y' ? container.clientHeight : container.clientWidth;
-      active.offset = calculateRubberBandOffset(
-        active.rawDelta,
-        dimension,
-        0.55,
-        DEFAULT_APPLE_SPRING.maxBounce
-      );
-      active.velocity = -delta * 0.5;
+      // Soft wheel gain with per-event impulse clamp so discrete wheel clicks glide rather than jump
+      const scaledImpulse = Math.max(-52, Math.min(52, -delta * 0.45));
+      const nextRaw = active.rawDelta + scaledImpulse;
 
-      applyTransform(active);
+      // Never allow opposite-direction wheel input to flip rubber-band past zero into the wrong side
+      if ((active.edgeSign > 0 && nextRaw <= 0) || (active.edgeSign < 0 && nextRaw >= 0)) {
+        active.rawDelta = 0;
+        active.targetOffset = 0;
+        active.isReleasing = true;
+      } else {
+        active.rawDelta = nextRaw;
+        const dimension = axis === 'y' ? container.clientHeight : container.clientWidth;
+        active.targetOffset = calculateRubberBandOffset(
+          active.rawDelta,
+          dimension,
+          APPLE_RESISTANCE_COEFFICIENT,
+          DEFAULT_APPLE_SPRING.maxBounce
+        );
+      }
 
-      // Debounce spring back when wheel ticks end
+      startLoop();
+
+      // Debounce spring back when wheel ticks pause
       if (wheelTimeoutRef.current !== null) {
         window.clearTimeout(wheelTimeoutRef.current);
       }
       wheelTimeoutRef.current = window.setTimeout(() => {
-        if (activeRef.current) {
-          activeRef.current.rawDelta = 0;
-          startSpring();
-        }
-      }, 75);
+        triggerRelease();
+      }, 95);
     };
 
     // Global Touch Listeners (Mobile & Touch Devices)
@@ -208,7 +282,7 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
       const targetEl = e.target as HTMLElement | null;
       if (!targetEl || targetEl.closest?.('[data-no-rubber-band]')) return;
 
-      stopSpring();
+      stopLoop();
       touchStartRef.current = {
         x: e.touches[0].clientX,
         y: e.touches[0].clientY,
@@ -226,55 +300,62 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
 
       const isVertical = Math.abs(deltaY) >= Math.abs(deltaX);
       const axis: 'y' | 'x' = isVertical ? 'y' : 'x';
-      const container = findScrollableAncestor(touchStartRef.current.target, axis);
-      if (!container) return;
-
-      let atEdge = false;
       const touchDelta = axis === 'y' ? deltaY : deltaX;
+      if (Math.abs(touchDelta) < 0.5) return;
 
-      if (axis === 'y') {
-        const scrollTop = container.scrollTop;
-        const maxScroll = Math.max(0, container.scrollHeight - container.clientHeight);
-        atEdge = (scrollTop <= 1 && deltaY > 0) || (scrollTop >= maxScroll - 1 && deltaY < 0);
-      } else {
-        const scrollLeft = container.scrollLeft;
-        const maxScroll = Math.max(0, container.scrollWidth - container.clientWidth);
-        atEdge = (scrollLeft <= 1 && deltaX > 0) || (scrollLeft >= maxScroll - 1 && deltaX < 0);
-      }
+      // Positive touchDelta drags content down/right (toward scrollTop = 0, so scroll direction is negative)
+      const scrollDeltaSign = -touchDelta;
+      const resolved = resolveScrollContainer(touchStartRef.current.target, axis, scrollDeltaSign);
+      if (!resolved || resolved.canScrollNatively) return;
 
-      if (!atEdge) return;
+      const { container, edgeSign } = resolved;
 
-      if (!activeRef.current || activeRef.current.container !== container) {
+      if (
+        !activeRef.current ||
+        activeRef.current.container !== container ||
+        activeRef.current.direction !== axis
+      ) {
+        if (activeRef.current) {
+          clearActive();
+        }
         const transformTarget = (container.firstElementChild as HTMLElement) || container;
         activeRef.current = {
           container,
           target: transformTarget,
           direction: axis,
+          edgeSign,
           rawDelta: 0,
+          targetOffset: 0,
           offset: 0,
           velocity: 0,
+          isReleasing: false,
         };
       }
 
       const active = activeRef.current;
+      active.isReleasing = false;
       active.rawDelta = touchDelta;
 
       const dimension = axis === 'y' ? container.clientHeight : container.clientWidth;
-      active.offset = calculateRubberBandOffset(
+      const nextOffset = calculateRubberBandOffset(
         active.rawDelta,
         dimension,
-        0.55,
+        APPLE_RESISTANCE_COEFFICIENT,
         DEFAULT_APPLE_SPRING.maxBounce
       );
+      active.targetOffset = nextOffset;
+      active.offset = nextOffset;
+      active.velocity = 0;
 
       applyTransform(active);
     };
 
     const handleGlobalTouchEnd = () => {
       touchStartRef.current = null;
-      if (activeRef.current && activeRef.current.offset !== 0) {
-        activeRef.current.rawDelta = 0;
-        startSpring();
+      if (activeRef.current && Math.abs(activeRef.current.offset) > 0.05) {
+        triggerRelease();
+      } else if (activeRef.current) {
+        clearActive();
       }
     };
 
@@ -290,14 +371,10 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
       window.removeEventListener('touchmove', handleGlobalTouchMove);
       window.removeEventListener('touchend', handleGlobalTouchEnd);
       window.removeEventListener('touchcancel', handleGlobalTouchEnd);
-      stopSpring();
       if (wheelTimeoutRef.current !== null) {
         window.clearTimeout(wheelTimeoutRef.current);
       }
-      if (activeRef.current) {
-        applyTransform({ ...activeRef.current, offset: 0 });
-        activeRef.current = null;
-      }
+      clearActive();
     };
   }, []);
 

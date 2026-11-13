@@ -322,7 +322,7 @@ export const VenueRentersView: React.FC<any> = () => {
 <AtriumButton type="button" variant="primary" onClick={handleOpenAdd} icon={<Plus size={15} strokeWidth={2.5} />}><span>{t("venue_renters_btn_add")}</span></AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div>
 <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {language === "ar" ? "دليل المستأجرين & مؤشرات النشاط" : language === "fr" ? "Dossiers Locataires & Indicateurs" : "Renters Directory & Portfolio Health"}
@@ -372,14 +372,13 @@ export const VenueRentersView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div className="flex flex-wrap items-center justify-between gap-3">
 <div className="flex items-center gap-2">
 <Users size={16} className="text-black/55 dark:text-white/55" />
 <span className="text-sm font-bold text-black dark:text-white">
 {language === "ar" ? "دليل المستأجرين" : language === "fr" ? "Dossiers Locataires" : "Venue Renters"}
 </span>
-<span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums ml-1">{sortedRenters.length}</span>
 </div>
 <div className="flex flex-wrap items-center gap-2.5 ml-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={t("venue_renters_search_ph")} shutSize={36} openWidth={220} />

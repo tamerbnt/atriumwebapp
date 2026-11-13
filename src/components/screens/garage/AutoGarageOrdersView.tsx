@@ -334,7 +334,7 @@ P
 <span className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 text-[11px] font-mono flex items-center justify-center font-bold">{colOrders.length}</span>
 </div>
 <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[550px] pr-1">
-{colOrders.length === 0 ? /* @__PURE__ */ <div className="text-center py-8 text-black/55 dark:text-white/55 text-xs italic">{isAr ? "لا توجد سيارات" : "Aucun véhicule"}</div> : colOrders.map((order) => /* @__PURE__ */ <div key={order.id} onClick={() => setSelectedOrder(order)} className={`p-3 rounded-2xl border transition-all cursor-pointer space-y-2 ${selectedOrder?.id === order.id ? "bg-[#FDF4F0] dark:bg-neutral-800 border-[#d4522f] shadow-xs" : "bg-[#F3EDE7] dark:bg-neutral-800/40 border-neutral-200/60 dark:border-neutral-700/60 hover:border-neutral-400"}`}>
+{colOrders.length === 0 ? /* @__PURE__ */ <div className="text-center py-8 text-black/55 dark:text-white/55 text-xs italic">{isAr ? "لا توجد سيارات" : "Aucun véhicule"}</div> : colOrders.map((order) => /* @__PURE__ */ <div key={order.id} onClick={() => setSelectedOrder(order)} className={`p-3 rounded-2xl border transition-all cursor-pointer space-y-2 ${selectedOrder?.id === order.id ? "bg-[#FDF4F0] dark:bg-neutral-800 border-[#d4522f] shadow-xs" : "bg-[#F3EDE7] dark:bg-[#141312] border-neutral-200/60 dark:border-neutral-700/60 hover:border-neutral-400"}`}>
 <div className="flex items-center justify-between">
 <span className="font-mono text-xs font-bold text-[#d4522f]">{order.orderNumber}</span>
 <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">{order.bayName || "Cour"}</span>

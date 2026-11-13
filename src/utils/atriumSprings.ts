@@ -300,6 +300,13 @@ export const removeBody = (b: SpringBody) => {
 const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
 const fmt = (v: number) => (Math.round(v * 100) / 100).toString();
 
+const SEGMENT_COLOR_MIX: string[] = Array.from({ length: 51 }, (_, i) => {
+  const pct = i * 2;
+  if (pct <= 0) return 'var(--atr-ink)';
+  if (pct >= 100) return 'var(--atr-onacc)';
+  return `color-mix(in srgb, var(--atr-onacc) ${pct}%, var(--atr-ink))`;
+});
+
 /**
  * Button Liquid Ripple & Magnetic Press Controller
  */
@@ -314,6 +321,8 @@ export class ButtonLiquidController implements SpringBody {
   cov = 2;
   px = 0.5;
   py = 0.5;
+  private lastClip = '';
+  private lastTf = '';
 
   x = new Spring(0.5, 260, 0.8);
   y = new Spring(0.5, 260, 0.8);
@@ -358,20 +367,32 @@ export class ButtonLiquidController implements SpringBody {
 
   render() {
     if (Motion.isInstant) {
-      this.el.style.transform = '';
-      if (this.lq) this.lq.style.clipPath = '';
+      if (this.lastTf !== '') {
+        this.el.style.transform = '';
+        this.lastTf = '';
+      }
+      if (this.lq && this.lastClip !== '') {
+        this.lq.style.clipPath = '';
+        this.lastClip = '';
+      }
       return;
     }
     const e = this.H;
     if (this.lq) {
       const radius = Math.max(0, this.r.x) * Math.max(e, Math.min(this.w * 0.5, 120));
-      this.lq.style.clipPath = `circle(${fmt(radius)}px at ${fmt(
-        this.x.x * this.w
-      )}px ${fmt(this.y.x * e)}px)`;
+      const clip = `circle(${fmt(radius)}px at ${fmt(this.x.x * this.w)}px ${fmt(this.y.x * e)}px)`;
+      if (clip !== this.lastClip) {
+        this.lq.style.clipPath = clip;
+        this.lastClip = clip;
+      }
     }
-    this.el.style.transform = `translate(${fmt(this.bx.x * e)}px, ${fmt(this.by.x * e)}px) scale(${fmt(
+    const tf = `translate3d(${fmt(this.bx.x * e)}px, ${fmt(this.by.x * e)}px, 0) scale(${fmt(
       this.sx.x
     )}, ${fmt(this.sy.x)})`;
+    if (tf !== this.lastTf) {
+      this.el.style.transform = tf;
+      this.lastTf = tf;
+    }
   }
 
   settled(): boolean {
@@ -390,7 +411,10 @@ export class ButtonLiquidController implements SpringBody {
 
   onSleep() {
     this.el.style.willChange = '';
-    if (!Motion.isInstant) this.el.style.transform = '';
+    if (!Motion.isInstant && this.lastTf !== '') {
+      this.el.style.transform = '';
+      this.lastTf = '';
+    }
   }
 
   isVisible(): boolean {
@@ -416,8 +440,6 @@ export function getButtonController(el: HTMLElement): ButtonLiquidController {
   }
   return c;
 }
-
-let isGlobalDelegationActive = false;
 
 export function initGlobalButtonDelegation() {
   // Legacy button delegation disabled in favor of official @/atrium motion engine
@@ -501,13 +523,8 @@ export class SegmentedBlobController implements SpringBody {
       const g = this.geo[i];
       const span = g[1] - g[0];
       const cov = span > 0 ? clamp((Math.min(rightEdge, g[1]) - Math.max(leftEdge, g[0])) / span, 0, 1) : 0;
-      const pct = Math.round(cov * 50) * 2;
-      const color =
-        pct <= 0
-          ? 'var(--atr-ink)'
-          : pct >= 100
-          ? 'var(--atr-onacc)'
-          : `color-mix(in srgb, var(--atr-onacc) ${pct}%, var(--atr-ink))`;
+      const stepIdx = Math.round(cov * 50);
+      const color = SEGMENT_COLOR_MIX[stepIdx];
       if (color !== this.lastColors[i]) {
         this.opts[i].style.color = color;
         this.lastColors[i] = color;
@@ -525,11 +542,20 @@ export class SegmentedBlobController implements SpringBody {
     this.R.snap();
   }
 
+  onWake() {
+    this.blob.style.willChange = 'clip-path';
+  }
+
+  onSleep() {
+    this.blob.style.willChange = '';
+  }
+
   isVisible(): boolean {
     return this.group.isConnected;
   }
 
   dispose() {
+    this.blob.style.willChange = '';
     removeBody(this);
   }
 }
@@ -552,6 +578,12 @@ export class PopoverMenuController implements SpringBody {
   hover: [number, number] | null = null;
   H = 0;
   R = 8;
+
+  private lastVis = '';
+  private lastClip = '';
+  private lastPanelTf = '';
+  private lastHlKey = '';
+  private lastChevTf = '';
 
   constructor(panel: HTMLElement, hl: HTMLElement, chev: HTMLElement | null, onClosed: () => void) {
     this.panel = panel;
@@ -616,25 +648,53 @@ export class PopoverMenuController implements SpringBody {
     const e = this.lv.x;
     const ps = this.panel.style;
     if (e < 0.003 && !this.open) {
-      ps.visibility = 'hidden';
-      if (this.chev) this.chev.style.transform = '';
+      if (this.lastVis !== 'hidden') {
+        ps.visibility = 'hidden';
+        this.lastVis = 'hidden';
+      }
+      if (this.chev && this.lastChevTf !== '') {
+        this.chev.style.transform = '';
+        this.lastChevTf = '';
+      }
       return;
     }
-    ps.visibility = 'visible';
+    if (this.lastVis !== 'visible') {
+      ps.visibility = 'visible';
+      this.lastVis = 'visible';
+    }
     const curtain = Math.max(0, this.H * (1 - e));
-    ps.clipPath =
+    const clip =
       this.side === 'down'
         ? `inset(0 0 ${fmt(curtain)}px 0 round ${fmt(this.R)}px)`
         : `inset(${fmt(curtain)}px 0 0 0 round ${fmt(this.R)}px)`;
-    ps.transform = e > 1 ? `scaleY(${fmt(1 + (e - 1) * 0.5)})` : '';
+    if (clip !== this.lastClip) {
+      ps.clipPath = clip;
+      this.lastClip = clip;
+    }
+    const ptf = e > 1 ? `scaleY(${fmt(1 + (e - 1) * 0.5)})` : '';
+    if (ptf !== this.lastPanelTf) {
+      ps.transform = ptf;
+      this.lastPanelTf = ptf;
+    }
 
-    const hs = this.hl.style;
-    hs.opacity = fmt(clamp(this.ho.x, 0, 1));
-    hs.height = `${fmt(Math.max(0, this.hh.x) + clamp(Math.abs(this.hy.v) * 0.03, 0, 10))}px`;
-    hs.transform = `translateY(${fmt(this.hy.x - clamp(Math.abs(this.hy.v) * 0.015, 0, 5))}px)`;
+    const op = fmt(clamp(this.ho.x, 0, 1));
+    const hhVal = fmt(Math.max(0, this.hh.x) + clamp(Math.abs(this.hy.v) * 0.03, 0, 10));
+    const hyVal = fmt(this.hy.x - clamp(Math.abs(this.hy.v) * 0.015, 0, 5));
+    const hlKey = `${op}|${hhVal}|${hyVal}`;
+    if (hlKey !== this.lastHlKey) {
+      this.lastHlKey = hlKey;
+      const hs = this.hl.style;
+      hs.opacity = op;
+      hs.height = `${hhVal}px`;
+      hs.transform = `translate3d(0, ${hyVal}px, 0)`;
+    }
 
     if (this.chev) {
-      this.chev.style.transform = `rotate(${fmt(clamp(e, 0, 1.2) * 180)}deg)`;
+      const chevTf = `rotate(${fmt(clamp(e, 0, 1.2) * 180)}deg)`;
+      if (chevTf !== this.lastChevTf) {
+        this.chev.style.transform = chevTf;
+        this.lastChevTf = chevTf;
+      }
     }
   }
 
@@ -650,17 +710,26 @@ export class PopoverMenuController implements SpringBody {
     this.ho.snap();
   }
 
+  onWake() {
+    this.panel.style.willChange = 'clip-path, transform';
+    this.hl.style.willChange = 'transform, opacity';
+  }
+
   isVisible(): boolean {
     return this.panel.isConnected;
   }
 
   onSleep() {
+    this.panel.style.willChange = '';
+    this.hl.style.willChange = '';
     if (!this.open) {
       this.onClosed();
     }
   }
 
   dispose() {
+    this.panel.style.willChange = '';
+    this.hl.style.willChange = '';
     removeBody(this);
   }
 }

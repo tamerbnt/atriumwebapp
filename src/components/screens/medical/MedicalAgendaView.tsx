@@ -92,7 +92,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
 						}} icon={<Plus size={15} />}>Nouveau RDV</AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs flex flex-wrap items-center justify-between gap-3">
 <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
 <button onClick={() => setSelectedDoctorFilter("all")} title={language === "ar" ? `جميع الأطباء (${practitioners.length})` : language === "fr" ? `Tous les Médecins (${practitioners.length})` : `All Doctors (${practitioners.length})`} className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${selectedDoctorFilter === "all" ? "bg-neutral-900 dark:bg-white text-white dark:text-black shadow-xs" : "bg-white dark:bg-neutral-800 text-black/70 dark:text-white/75 border border-neutral-200 dark:border-neutral-700"}`}>
 {language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All"}

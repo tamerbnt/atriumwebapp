@@ -210,6 +210,7 @@ export const Seek: React.FC<SeekProps> = ({
           style={{
             left: `${shutSize}px`,
             right: isOpen && value ? '34px' : '14px',
+            width: `calc(100% - ${shutSize + (isOpen && value ? 34 : 14)}px)`,
             pointerEvents: isOpen ? 'auto' : 'none',
           }}
         />
@@ -218,8 +219,9 @@ export const Seek: React.FC<SeekProps> = ({
         {isOpen && value && value.length > 0 && (
           <button
             type="button"
+            data-no-liquid="true"
             onClick={handleClear}
-            className="sek-clear absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center text-black/55 hover:text-black dark:text-white/60 dark:hover:text-white transition-colors cursor-pointer z-10"
+            className="sek-clear absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center text-black/55 hover:text-black hover:bg-black/[0.06] dark:text-white/60 dark:hover:text-white dark:hover:bg-white/10 transition-colors cursor-pointer z-20"
             title="Clear search"
             aria-label="Clear search"
           >

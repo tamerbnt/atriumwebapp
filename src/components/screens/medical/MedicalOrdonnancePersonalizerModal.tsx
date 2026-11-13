@@ -101,7 +101,7 @@ export const MedicalOrdonnancePersonalizerModal: React.FC<MedicalOrdonnancePerso
 	const currentAccentHex = getAccentColor(formData.themeAccent);
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
 <div className="bg-white dark:bg-neutral-900 w-full max-w-6xl max-h-[92vh] rounded-[28px] border border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col overflow-hidden">
-<div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between shrink-0 bg-[#F3EDE7] dark:bg-neutral-800/40">
+<div className="px-6 py-4 border-b border-neutral-200 dark:border-[#33302D] flex items-center justify-between shrink-0 bg-[#F3EDE7] dark:bg-[#141312]">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Sliders size={20} /></div>
 <div>
@@ -339,7 +339,7 @@ Aperçu Réel Ordonnance (
 </div>
 </div>
 </div>
-<div className="px-6 py-3.5 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between shrink-0 bg-[#F3EDE7] dark:bg-neutral-800/40">
+<div className="px-6 py-3.5 border-t border-neutral-200 dark:border-[#33302D] flex items-center justify-between shrink-0 bg-[#F3EDE7] dark:bg-[#141312]">
 <AtriumButton variant="ghost" onClick={onClose}>Annuler</AtriumButton>
 <AtriumButton variant="primary" onClick={handleSave} icon={<Check size={16} />}>Enregistrer le Modèle d'Ordonnance</AtriumButton>
 </div>

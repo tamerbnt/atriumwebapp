@@ -237,7 +237,7 @@ export const MedicalBillingView: React.FC<any> = () => {
 <button type="button" onClick={() => setBillingMainTab("consumables")} className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${billingMainTab === "consumables" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-2xs font-bold" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>{isAr ? "المستهلكات والمخزون" : "Consommables & Stock"}</button>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "مؤشرات التحصيل الطبي والتأمين" : "Indicateurs de Recouvrement & Tiers-Payant"}
@@ -281,14 +281,13 @@ export const MedicalBillingView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-{billingMainTab === "invoices" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+{billingMainTab === "invoices" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div className="flex flex-wrap items-center justify-between gap-3">
 <div className="flex items-center gap-2">
 <CreditCard size={16} className="text-black/55 dark:text-white/55" />
 <span className="text-sm font-bold text-black dark:text-white">
 {isAr ? "دفتر الفواتير والتحصيل الطبي" : "Journal de Facturation & Recouvrement"}
 </span>
-<span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums ml-1">{sortedConsultations.length}</span>
 </div>
 <div className="flex flex-wrap items-center gap-2.5 ml-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={isAr ? "بحث برقم الفاتورة أو اسم المريض..." : "Rechercher facture, patient..."} shutSize={36} openWidth={220} />
@@ -465,7 +464,7 @@ Imprimer quittance patient
 </div>}
 </div>
 </div>}
-{billingMainTab === "bordereau" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+{billingMainTab === "bordereau" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-neutral-200 dark:border-neutral-700">
 <div>
 <h2 className="text-sm font-bold text-black dark:text-white flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans">
@@ -557,7 +556,7 @@ Période: Mai 2026 · Bordereau N° BOR-2026-05-ALGER · Centre de Paiement CNAS
 </table>
 </div>
 </div>}
-{billingMainTab === "honoraires" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+{billingMainTab === "honoraires" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-neutral-200 dark:border-neutral-700">
 <div>
 <h2 className="text-sm font-bold text-black dark:text-white flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans">
@@ -616,7 +615,7 @@ Net Médecin (
 					})}
 </div>
 </div>}
-{billingMainTab === "caisse" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+{billingMainTab === "caisse" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-neutral-200 dark:border-neutral-700">
 <div>
 <h2 className="text-sm font-bold text-black dark:text-white flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans">
@@ -686,7 +685,7 @@ Net Médecin (
 </div>
 </div>
 </div>}
-{billingMainTab === "consumables" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs animate-in fade-in duration-150">
+{billingMainTab === "consumables" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs animate-in fade-in duration-150">
 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 <div>
 <h3 className="font-bold text-sm text-black dark:text-white flex items-center gap-2">

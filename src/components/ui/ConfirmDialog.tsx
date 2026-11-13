@@ -32,12 +32,20 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         onClose();
       }
     };
+    let didLockBody = false;
+    let prevOverflow = '';
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      if (document.documentElement.scrollHeight > document.documentElement.clientHeight) {
+        prevOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        didLockBody = true;
+      }
       window.addEventListener('keydown', handleKeyDown);
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      if (didLockBody) {
+        document.body.style.overflow = prevOverflow;
+      }
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose, isLoading]);
@@ -68,7 +76,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-200"
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs transform-gpu transition-opacity duration-200"
         onClick={!isLoading ? onClose : undefined}
       />
 
@@ -76,7 +84,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       <div
         role="alertdialog"
         aria-modal="true"
-        className="relative w-full max-w-md z-10 overflow-hidden rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xl animate-in fade-in zoom-in-95 duration-150 p-6"
+        style={{ contain: 'layout paint' }}
+        className="relative w-full max-w-md z-10 overflow-hidden rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xl transform-gpu animate-in fade-in zoom-in-95 duration-150 p-6"
       >
         <div className="flex items-start gap-4">
           <div className={`w-12 h-12 rounded-2xl shrink-0 flex items-center justify-center ${variantStyles.iconBg}`}>
@@ -92,6 +101,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           </div>
           <button
             type="button"
+            data-no-liquid="true"
             onClick={onClose}
             disabled={isLoading}
             className="absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center text-black/60 hover:text-black dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"

@@ -116,7 +116,7 @@ export const VenueTimelineView: React.FC<any> = () => {
 								}} icon={<Plus size={16} strokeWidth={2.5} />}>{t("venue_btn_new_booking")}</AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div>
 <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {language === "ar" ? "المخطط الزمني وإشغال القاعات" : language === "fr" ? "Planning des Salles & Occupation" : "Timeline Matrix & Facility Utilization"}
@@ -166,7 +166,7 @@ export const VenueTimelineView: React.FC<any> = () => {
 </div>
 </div>
 {viewMode !== "calendar" ? /* @__PURE__ */ <VenueBookingsView hideHeader hideKpis viewMode={viewMode} onViewModeChange={setViewMode} showViewToggle onSwitchToTimeline={() => setViewMode("calendar")} /> : /* @__PURE__ */ <div className="space-y-4">
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-wrap items-center justify-between gap-3">
 <div className="flex items-center bg-white dark:bg-neutral-800 rounded-xl p-1 border border-neutral-200/80 dark:border-neutral-700 shadow-2xs">
 <button type="button" onClick={handlePrevDay} className="p-1.5 text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"><ChevronLeft size={16} className="rtl:rotate-180" /></button>

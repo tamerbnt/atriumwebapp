@@ -449,7 +449,7 @@ h
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {language === "ar" ? "مؤشرات إنجاز المشاريع والمهام" : language === "fr" ? "Indicateurs des Livrables & Projets" : "Deliverables & Production Performance"}
@@ -541,14 +541,13 @@ h
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-[#E6DED6] dark:border-neutral-800/60">
 <div className="flex items-center gap-2.5 flex-wrap">
 <div className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-center text-black/70 dark:text-white/75"><Layers size={16} /></div>
 <div>
 <div className="flex items-center gap-2">
 <h3 className="text-sm font-bold text-black dark:text-white">{t("free_deliv_title", language)}</h3>
-<span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 text-black/70 dark:text-white/75">{flattenedDeliverables.length}</span>
 </div>
 </div>
 <div className="ml-2">
@@ -624,7 +623,7 @@ h
 </button>
 </div>
 </div>}
-{freelanceProjects.length === 0 ? /* @__PURE__ */ <div className="p-12 text-center rounded-3xl border border-dashed border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/40 space-y-3">
+{freelanceProjects.length === 0 ? /* @__PURE__ */ <div className="p-12 text-center rounded-3xl border border-dashed border-neutral-200 dark:border-[#33302D] bg-[#F3EDE7] dark:bg-[#141312] space-y-3">
 <Kanban size={36} className="mx-auto text-black/55 dark:text-white/55" />
 <h3 className="text-base font-bold text-black dark:text-white">{t("free_deliv_empty_column", language)}</h3>
 <p className="text-xs text-black/55 dark:text-white/55 max-w-sm mx-auto">{t("free_deliv_modal_add_desc", language)}</p>

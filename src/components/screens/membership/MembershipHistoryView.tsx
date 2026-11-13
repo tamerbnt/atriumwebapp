@@ -270,7 +270,7 @@ export const MembershipHistoryView: React.FC<any> = () => {
 <AtriumButton type="button" variant="primary" onClick={() => setScreen("shop")} icon={<Receipt size={15} strokeWidth={2.5} />}><span>{t("shop_title", language)}</span></AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div>
 <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">
 {language === "ar" ? "التسويات المالية ومؤشرات التدقيق" : language === "fr" ? "Règlements financiers & Piste d'audit" : "Payments & Audit"}
@@ -330,14 +330,13 @@ export const MembershipHistoryView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div className="flex flex-wrap items-center justify-between gap-3">
 <div className="flex items-center gap-2.5">
 <Receipt size={16} className="text-black/62 dark:text-white/65" />
 <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">
 {language === "ar" ? "سجل العمليات والوصولات" : language === "fr" ? "Journal des transactions" : "Transactions & Sales Collection"}
 </h2>
-<span className="px-2 py-0.5 rounded-md bg-white dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] text-[11px] font-semibold text-black/68 dark:text-white/75 tabular-nums shadow-2xs">{filteredSales.length}</span>
 </div>
 <div className="flex flex-wrap items-center gap-2.5 ml-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={language === "ar" ? "البحث عن رقم الوصل، المشترك، المنتج..." : language === "fr" ? "Rechercher ticket, client, produit..." : "Search receipt ID, member, item..."} shutSize={36} openWidth={230} />

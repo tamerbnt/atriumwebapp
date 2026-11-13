@@ -176,7 +176,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 </div>
 <div className="flex-1 overflow-y-auto p-6 space-y-6">
 {activeTab === "intake" && /* @__PURE__ */ <div className="space-y-5 animate-in fade-in">
-<div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700/80 space-y-4">
+<div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200/80 dark:border-neutral-700/80 space-y-4">
 <LabelSelect label={language === "ar" ? "المركبة والماتريكيل" : "Véhicule & Matricule"} value={selectedVehicleId} onChange={setSelectedVehicleId} options={vehicleOptions} />
 {activeVehicle && /* @__PURE__ */ <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-white dark:bg-neutral-900 p-3 rounded-xl border border-neutral-200/60 dark:border-neutral-800">
 <div>

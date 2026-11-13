@@ -923,7 +923,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </button>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
 <div>
 <h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
@@ -1000,7 +1000,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 {activeTab === "register" && /* @__PURE__ */ <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 <div className="lg:col-span-7 xl:col-span-8 space-y-4">
 <form onSubmit={handleBarcodeSubmit} className="p-1 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs flex items-center gap-2">

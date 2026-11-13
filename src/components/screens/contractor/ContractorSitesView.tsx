@@ -427,7 +427,7 @@ export const ContractorSitesView: React.FC = () => {
       </div>
 
       {/* Canonical 3-Card Top Metrics Pod Tray */}
-      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
         <div>
           <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
             {isAr ? 'توزيع الورشات والالتزامات التعاقدية' : 'Suivi Opérationnel & Engagements BTP'}
@@ -489,16 +489,13 @@ export const ContractorSitesView: React.FC = () => {
       </div>
 
       {/* Bottom Workstation Pod Tray */}
-      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
         {/* Table Control Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <HardHat size={16} className="text-black/70 dark:text-white/75" />
             <span className="text-sm font-bold text-black dark:text-white">
               {isAr ? 'دليل الورشات والمشاريع' : 'Registre Général des Chantiers'}
-            </span>
-            <span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums ml-1">
-              {filteredProjects.length}
             </span>
           </div>
 

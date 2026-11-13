@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import {
   X,
@@ -207,9 +207,8 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
     const holdQ = Math.round(hp * 100);
     if (holdQ !== lastHoldQRef.current) {
       lastHoldQRef.current = holdQ;
-      const pctInset = Math.max(0, 100 - holdQ);
       if (holdFillRef.current) {
-        holdFillRef.current.style.clipPath = holdQ === 0 ? 'inset(100% 0 0 0)' : `inset(${pctInset}% 0 0 0)`;
+        holdFillRef.current.style.transform = `translate3d(0, 0, 0) scaleY(${hp})`;
       }
       if (holdTextWrapRef.current) {
         holdTextWrapRef.current.style.color = hp > 0.4 ? '#FFFFFF' : '';
@@ -340,9 +339,10 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
   }, [sessionPct, isOpen, activeTab]);
 
   // Prev / Next step through filtered+sorted list
-  const currentIndex = activeMember
-    ? allMembers.findIndex((m) => m.id === activeMember.id)
-    : -1;
+  const currentIndex = useMemo(
+    () => (activeMember ? allMembers.findIndex((m) => m.id === activeMember.id) : -1),
+    [allMembers, activeMember?.id]
+  );
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex >= 0 && currentIndex < allMembers.length - 1;
 
@@ -556,6 +556,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
               <div className="pnav flex gap-1.5 shrink-0">
                 <button
                   type="button"
+                  data-no-liquid="true"
                   disabled={!hasPrev}
                   onClick={() => handleStep(-1)}
                   aria-label="Adhérent précédent"
@@ -566,6 +567,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                 </button>
                 <button
                   type="button"
+                  data-no-liquid="true"
                   disabled={!hasNext}
                   onClick={() => handleStep(1)}
                   aria-label="Adhérent suivant"
@@ -577,6 +579,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                 <button
                   ref={closeBtnRef}
                   type="button"
+                  data-no-liquid="true"
                   onClick={onClose}
                   aria-label="Fermer la fiche"
                   title="Fermer"
@@ -624,9 +627,9 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
               })}
             </div>
 
-            {/* SCROLLABLE BODY (.pb) WITH REPLAYABLE SECTION ENTRANCES */}
+            {/* SCROLLABLE BODY (.pb) WITH REPLAYABLE SECTION ENTRANCES (toggles data-anim without remounting DOM) */}
             <div
-              key={entranceEpoch}
+              data-anim={entranceEpoch & 1}
               role="tabpanel"
               className="pb flex-1 overflow-y-auto px-[26px] pt-1.5 pb-[18px] select-text"
             >
@@ -637,6 +640,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                     <div className="qa grid grid-cols-4 gap-2.5">
                       <button
                         type="button"
+                        data-no-liquid="true"
                         onClick={() => onCheckIn(activeMember)}
                         className="flex flex-col items-center gap-2 pt-3.5 px-1.5 pb-3 rounded-[16px] border border-[#d4522f]/25 dark:border-[#52291F] bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] text-[12px] font-medium leading-tight text-center cursor-pointer"
                       >
@@ -648,6 +652,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
 
                       <button
                         type="button"
+                        data-no-liquid="true"
                         onClick={(e) => onEdit(activeMember, e.currentTarget)}
                         className="flex flex-col items-center gap-2 pt-3.5 px-1.5 pb-3 rounded-[16px] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-white dark:bg-[#262422] text-[var(--atr-ink,#000000)] dark:text-white text-[12px] font-medium leading-tight text-center cursor-pointer"
                       >
@@ -659,6 +664,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
 
                       <button
                         type="button"
+                        data-no-liquid="true"
                         onClick={() => onToggleBlock(activeMember)}
                         className="flex flex-col items-center gap-2 pt-3.5 px-1.5 pb-3 rounded-[16px] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-white dark:bg-[#262422] text-[var(--atr-ink,#000000)] dark:text-white text-[12px] font-medium leading-tight text-center cursor-pointer"
                       >
@@ -674,6 +680,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
 
                       <button
                         type="button"
+                        data-no-liquid="true"
                         onClick={() => onRenew(activeMember)}
                         className="flex flex-col items-center gap-2 pt-3.5 px-1.5 pb-3 rounded-[16px] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-white dark:bg-[#262422] text-[var(--atr-ink,#000000)] dark:text-white text-[12px] font-medium leading-tight text-center cursor-pointer"
                       >
@@ -975,12 +982,13 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                   }
                 }}
                 aria-label="Maintenir pour supprimer l'adhérent"
+                data-no-liquid="true"
                 className="relative overflow-hidden h-10 px-4 rounded-[12px] border border-[#F5BDB3] dark:border-[#5C2B24] text-[var(--atr-danger,#c0283d)] dark:text-[#FF8D7A] font-semibold text-[13px] flex items-center gap-2 cursor-pointer bg-[#FDE4DF]/45 dark:bg-[#3D1E1A]/40"
               >
                 <span
                   ref={holdFillRef}
-                  className="absolute inset-0 bg-[#c0283d] pointer-events-none"
-                  style={{ clipPath: 'inset(100% 0 0 0)' }}
+                  className="absolute inset-0 bg-[#c0283d] pointer-events-none origin-bottom transform-gpu"
+                  style={{ transform: 'translate3d(0, 0, 0) scaleY(0)' }}
                 />
                 <span ref={holdTextWrapRef} className="relative z-10 flex items-center gap-2">
                   <Trash2 className="w-4 h-4" />

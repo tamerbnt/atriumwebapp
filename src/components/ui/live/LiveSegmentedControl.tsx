@@ -124,7 +124,11 @@ export const LiveSegmentedControl = React.memo(forwardRef<HTMLDivElement, LiveSe
       onChange?.(val);
     };
 
-    // Initialize controller and resize observer (single pre-paint measure + ResizeObserver)
+    const optionsLayoutKey = options
+      .map((o) => `${getOptVal(o)}_${String(o.label)}_${o.count}`)
+      .join('|');
+
+    // Initialize controller only when option count or fullWidth layout mode changes
     useLayoutEffect(() => {
       const root = rootRef.current;
       const blob = blobRef.current;
@@ -167,11 +171,16 @@ export const LiveSegmentedControl = React.memo(forwardRef<HTMLDivElement, LiveSe
         controllerRef.current = null;
         root.removeAttribute('data-live');
       };
-    }, [
-      options.length,
-      fullWidth,
-      options.map((o) => `${getOptVal(o)}_${String(o.label)}_${o.count}`).join('|')
-    ]);
+    }, [options.length, fullWidth]);
+
+    // Re-measure button geometry in place if labels or badge counts change (zero controller teardown)
+    useLayoutEffect(() => {
+      const ctrl = controllerRef.current;
+      if (!ctrl) return;
+      ctrl.opts = itemRefs.current.slice(0, options.length).filter(Boolean) as HTMLButtonElement[];
+      ctrl.measure();
+      ctrl.setIndex(indexRef.current, false);
+    }, [optionsLayoutKey, options.length]);
 
     // Animate blob when index changes
     useEffect(() => {

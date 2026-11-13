@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
+import React, { useLayoutEffect, useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { Check, ChevronDown } from 'lucide-react';
 import { RowFan } from './RowFan';
 import { RowDetailIsland } from './RowDetailIsland';
@@ -45,6 +45,12 @@ export interface MemberRowProps {
   className?: string;
 }
 
+const STATUS_PILLS = {
+  blocked: 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]',
+  expired: 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]',
+  active: 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]',
+} as const;
+
 const MemberRowInner: React.FC<MemberRowProps> = ({
   member,
   isSelected = false,
@@ -79,7 +85,6 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
   useEffect(() => {
     if (isExpanded) {
       if (detailMounted) return;
-      // Delay keeping detail alive for collapse fade until after initial expand spring kicks off
       const timer = setTimeout(() => {
         setDetailMounted(true);
       }, 280);
@@ -108,33 +113,51 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
     };
   }, [memberIdStr, registerRowRefs]);
 
-  const getStatusClasses = () => {
+  const statusPillClass = useMemo(() => {
+    if (member.statusVariant) return STATUS_PILLS[member.statusVariant];
+    if (member.isBlocked) return STATUS_PILLS.blocked;
     const s = member.status.toLowerCase();
-    if (s.includes('bloq') || s.includes('block') || member.statusVariant === 'blocked' || member.isBlocked) {
-      return {
-        pill: 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]',
-      };
-    }
-    if (s.includes('expir') || member.statusVariant === 'expired') {
-      return {
-        pill: 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]',
-      };
-    }
-    return {
-      pill: 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]',
-    };
-  };
+    if (s.includes('bloq') || s.includes('block')) return STATUS_PILLS.blocked;
+    if (s.includes('expir')) return STATUS_PILLS.expired;
+    return STATUS_PILLS.active;
+  }, [member.statusVariant, member.isBlocked, member.status]);
 
-  const statusStyle = getStatusClasses();
-  const initials =
-    member.avatarText ||
-    member.name
+  const initials = useMemo(() => {
+    if (member.avatarText) return member.avatarText;
+    return member.name
       .split(' ')
       .filter(Boolean)
       .map((w) => w[0])
       .join('')
       .slice(0, 2)
       .toUpperCase();
+  }, [member.avatarText, member.name]);
+
+  const contactInfo = useMemo(
+    () => ({ phone: member.phone, email: member.email }),
+    [member.phone, member.email]
+  );
+
+  const planInfo = useMemo(
+    () => ({
+      planName: member.planName,
+      expiry: member.expiryDate,
+      daysLeft: member.daysRemainingLabel,
+      remainingSessions: member.remainingSessions,
+    }),
+    [member.planName, member.expiryDate, member.daysRemainingLabel, member.remainingSessions]
+  );
+
+  const handleOpenFromRow = useCallback(() => onOpenDetails?.(member.id, rowRef.current), [onOpenDetails, member.id]);
+  const handleRenewRow = useCallback(() => onRenew?.(member.id), [onRenew, member.id]);
+  const handleArchiveRow = useCallback(() => onArchive?.(member.id), [onArchive, member.id]);
+  const handleToggleStatusRow = useCallback(() => onToggleStatus?.(member.id), [onToggleStatus, member.id]);
+  const handleTogglePinRow = useCallback(() => onTogglePin?.(member.id), [onTogglePin, member.id]);
+  const handlePayRow = useCallback(() => onPay?.(member.id), [onPay, member.id]);
+
+  const handleEditFan = useCallback((e: React.MouseEvent<HTMLButtonElement>) => onEdit?.(member.id, e.currentTarget), [onEdit, member.id]);
+  const handleMessageFan = useCallback(() => onMessage?.(member.id), [onMessage, member.id]);
+  const handleDeleteFan = useCallback(() => onDelete?.(member.id), [onDelete, member.id]);
 
   return (
     <div
@@ -167,22 +190,17 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
         detRef={detRef}
         dcRef={dcRef}
         renderContent={shouldRenderDetail}
-        contactInfo={{ phone: member.phone, email: member.email }}
-        planInfo={{
-          planName: member.planName,
-          expiry: member.expiryDate,
-          daysLeft: member.daysRemainingLabel,
-          remainingSessions: member.remainingSessions,
-        }}
+        contactInfo={contactInfo}
+        planInfo={planInfo}
         notes={member.notes}
         isBlocked={member.isBlocked || member.statusVariant === 'blocked'}
         isPinned={isPinned || member.isPinned}
-        onOpenDetails={() => onOpenDetails?.(member.id, rowRef.current)}
-        onRenew={() => onRenew?.(member.id)}
-        onArchive={() => onArchive?.(member.id)}
-        onToggleStatus={() => onToggleStatus?.(member.id)}
-        onTogglePin={() => onTogglePin?.(member.id)}
-        onPay={() => onPay?.(member.id)}
+        onOpenDetails={handleOpenFromRow}
+        onRenew={handleRenewRow}
+        onArchive={handleArchiveRow}
+        onToggleStatus={handleToggleStatusRow}
+        onTogglePin={handleTogglePinRow}
+        onPay={handlePayRow}
       />
 
       {/* 3. Row Inner Content (.in) - adapts seamlessly between list & grid via CSS [data-v] */}
@@ -259,7 +277,7 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
         {/* Status Pill (.c-st) */}
         <span className="c-st">
           <span
-            className={`pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-md text-[12px] font-medium whitespace-nowrap ${statusStyle.pill}`}
+            className={`pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-md text-[12px] font-medium whitespace-nowrap ${statusPillClass}`}
           >
             <i className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
             {member.status}
@@ -293,9 +311,9 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
       {/* 4. Hover Fan Actions (.act) - right:15px top:15px, hidden in grid via CSS */}
       <RowFan
         memberName={member.name}
-        onEdit={(e) => onEdit?.(member.id, e.currentTarget)}
-        onMessage={() => onMessage?.(member.id)}
-        onDelete={() => onDelete?.(member.id)}
+        onEdit={handleEditFan}
+        onMessage={handleMessageFan}
+        onDelete={handleDeleteFan}
       />
 
       {/* 5. Expand Chevron Button (.rb) - 38x38 at right:12px top:12px, z-index 3, hidden in grid via CSS */}

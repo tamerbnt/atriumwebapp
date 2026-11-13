@@ -180,7 +180,7 @@ export const ManufacturingWorkstationView: React.FC<any> = () => {
 </div>
 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 <div className="lg:col-span-5 space-y-6">
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex items-center justify-between">
 <span className="text-xs font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">{isAr ? "أمر التصنيع المخصص" : "Sélection Ordre de Fabrication"}</span>
 <span className="text-xs font-mono font-bold text-[#d4522f]">
@@ -232,7 +232,7 @@ export const ManufacturingWorkstationView: React.FC<any> = () => {
 </div>
 </div>}
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex items-center justify-between">
 <div className="flex items-center gap-2">
 <ShieldCheck size={18} className="text-[#d4522f]" />
@@ -266,7 +266,7 @@ export const ManufacturingWorkstationView: React.FC<any> = () => {
 </div>
 </div>
 <div className="lg:col-span-7 space-y-6">
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[28px] p-6 sm:p-8 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs flex flex-col items-center justify-center text-center space-y-6">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[28px] p-6 sm:p-8 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs flex flex-col items-center justify-center text-center space-y-6">
 <div className="flex items-center gap-2 text-xs font-semibold text-black/55 dark:text-white/55 uppercase tracking-widest">
 <Clock size={16} className="text-[#d4522f]" />
 <span>{isAr ? "عداد وقت التشغيل النشط" : "Temps de Cycle Machine"}</span>

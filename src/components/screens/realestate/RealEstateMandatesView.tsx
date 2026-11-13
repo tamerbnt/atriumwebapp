@@ -124,7 +124,7 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 			}
 		]} hasIcon hasFacility hasActionBtn actionBtnWidth={140} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 p-6 rounded-[28px] border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-6">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] p-6 rounded-[28px] border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-6">
 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-1">
 <div className="flex items-center gap-3.5">
 <div className="w-11 h-11 rounded-2xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-sm"><FileText className="w-6 h-6" /></div>

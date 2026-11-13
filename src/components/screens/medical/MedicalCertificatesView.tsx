@@ -141,7 +141,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
 <AtriumButton variant="primary" onClick={() => setIsCreateModalOpen(true)} icon={<Plus size={15} />}>Établir un Certificat</AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex items-center justify-between">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">Activité des Certifications Médicales</h2>
@@ -262,7 +262,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
 </div>
 {isCreateModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
 <div className="bg-white dark:bg-neutral-900 w-full max-w-lg rounded-[28px] border border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col overflow-hidden">
-<div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-[#F3EDE7] dark:bg-neutral-800/40">
+<div className="px-6 py-4 border-b border-neutral-200 dark:border-[#33302D] flex items-center justify-between bg-[#F3EDE7] dark:bg-[#141312]">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><FileBadge size={20} /></div>
 <div>

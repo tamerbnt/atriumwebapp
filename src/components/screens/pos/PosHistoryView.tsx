@@ -308,7 +308,7 @@ export const PosHistoryView: React.FC = () => {
       </div>
 
       {/* TOP METRICS POD TRAY */}
-      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
           <div className="flex items-center gap-2">
             <Activity size={18} className="text-[#d4522f]" />
@@ -396,7 +396,7 @@ export const PosHistoryView: React.FC = () => {
       </div>
 
       {/* BOTTOM COLLECTION POD TRAY */}
-      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
         {/* Controls Bar: Left Anchor + Seek Search + FilterSelect + Actions */}
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           {/* Left Title / Icon / Count Anchor */}
@@ -407,9 +407,6 @@ export const PosHistoryView: React.FC = () => {
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-black dark:text-white">
                 {language === 'ar' ? 'سجل حركات المخزون والمراجعة' : 'Registre des Mouvements de Stock'}
-              </span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f] font-semibold font-mono">
-                {sortedMovements.length}
               </span>
             </div>
           </div>

@@ -18,7 +18,7 @@ import { KebabMenuItem } from './CollectionKebabMenu';
 import { SkeletonTable, SkeletonCardGrid } from '../skeleton/StructuralSkeletons';
 import { SkeletonText, SkeletonBox } from '../skeleton/SkeletonPrimitives';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumSelector } from '../../../services/store';
 import { LiveSegmentedControl, LiveButton } from '../live';
 import { LiquidExportButton } from '../liquid/LiquidExportButton';
 
@@ -224,27 +224,31 @@ export function UniversalDataCollection<T>({
   };
 
   const effectiveSearchQuery = searchQuery !== undefined ? searchQuery : internalSearchQuery;
-  let rawItems = items || data || [];
-  if (searchFilter && effectiveSearchQuery.trim()) {
-    rawItems = rawItems.filter((item) => searchFilter(item, effectiveSearchQuery));
-  }
+  const sourceItems = items || data || [];
+  const rawItems = useMemo(() => {
+    const q = effectiveSearchQuery.trim();
+    if (searchFilter && q) {
+      return sourceItems.filter((item) => searchFilter(item, effectiveSearchQuery));
+    }
+    return sourceItems;
+  }, [sourceItems, searchFilter, effectiveSearchQuery]);
 
-  // Resilient internal sorting fallback so all headers sort even without explicit parent handlers
+  // Resilient internal sorting fallback with hoisted column lookup (O(N log N) instead of O(N log N * C))
   const sortedItems = useMemo(() => {
     if (onSortChange || !effectiveSortBy) return rawItems;
+    const colDef = columns.find(
+      (c) => (c.key || c.id || c.accessorKey) === effectiveSortBy || c.accessorKey === effectiveSortBy
+    );
+    const field = colDef?.accessorKey || colDef?.key || colDef?.id || effectiveSortBy;
+    const dirSign = effectiveSortDir === 'asc' ? 1 : -1;
+    const collator = new Intl.Collator(undefined, { sensitivity: 'base' });
     return [...rawItems].sort((a: any, b: any) => {
-      const colDef = columns.find(
-        (c) => (c.key || c.id || c.accessorKey) === effectiveSortBy || c.accessorKey === effectiveSortBy
-      );
-      const field = colDef?.accessorKey || colDef?.key || colDef?.id || effectiveSortBy;
       const aVal = a?.[field] ?? '';
       const bVal = b?.[field] ?? '';
       if (typeof aVal === 'number' && typeof bVal === 'number') {
-        return effectiveSortDir === 'asc' ? aVal - bVal : bVal - aVal;
+        return (aVal - bVal) * dirSign;
       }
-      const aStr = String(aVal).toLowerCase();
-      const bStr = String(bVal).toLowerCase();
-      return effectiveSortDir === 'asc' ? aStr.localeCompare(bStr) : bStr.localeCompare(aStr);
+      return collator.compare(String(aVal), String(bVal)) * dirSign;
     });
   }, [rawItems, onSortChange, effectiveSortBy, effectiveSortDir, columns]);
 
@@ -350,14 +354,20 @@ export function UniversalDataCollection<T>({
     }
   };
 
-  const store = useAtriumStore();
-  const effectiveIsLoading = isLoading !== undefined ? isLoading : (store.isSyncing || store.networkMode === 'force_skeleton');
-  const effectiveIsOffline = isOffline !== undefined ? isOffline : (store.networkMode === 'offline');
-  const effectiveIsTimedOut = isTimedOut !== undefined ? isTimedOut : store.isSyncTimeout;
-  const effectiveLastSyncedAt = lastSyncedAt !== undefined ? lastSyncedAt : store.lastSyncedAt;
-  const effectiveOnRetrySync = onRetrySync !== undefined ? onRetrySync : store.retryCloudSync;
+  const storeIsSyncing = useAtriumSelector((s) => s.isSyncing);
+  const storeNetworkMode = useAtriumSelector((s) => s.networkMode);
+  const storeIsSyncTimeout = useAtriumSelector((s) => s.isSyncTimeout);
+  const storeLastSyncedAt = useAtriumSelector((s) => s.lastSyncedAt);
+  const storeRetryCloudSync = useAtriumSelector((s) => s.retryCloudSync);
+  const storeLanguage = useAtriumSelector((s) => s.language);
 
-  const shouldRenderSkeleton = (effectiveIsLoading && actualItems.length === 0) || store.networkMode === 'force_skeleton';
+  const effectiveIsLoading = isLoading !== undefined ? isLoading : (storeIsSyncing || storeNetworkMode === 'force_skeleton');
+  const effectiveIsOffline = isOffline !== undefined ? isOffline : (storeNetworkMode === 'offline');
+  const effectiveIsTimedOut = isTimedOut !== undefined ? isTimedOut : storeIsSyncTimeout;
+  const effectiveLastSyncedAt = lastSyncedAt !== undefined ? lastSyncedAt : storeLastSyncedAt;
+  const effectiveOnRetrySync = onRetrySync !== undefined ? onRetrySync : storeRetryCloudSync;
+
+  const shouldRenderSkeleton = (effectiveIsLoading && actualItems.length === 0) || storeNetworkMode === 'force_skeleton';
 
   // Render Loading Skeleton State (Cold Start / No Cached Data OR Force Skeleton)
   if (shouldRenderSkeleton) {
@@ -460,9 +470,6 @@ export function UniversalDataCollection<T>({
             <div>
               <div className="flex items-center gap-2.5">
                 <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">{title}</h2>
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] text-black/72 dark:text-white/78 font-mono tabular-nums">
-                  {actualItems.length}
-                </span>
                 {effectiveIsLoading && (
                   <span className="text-[11px] text-[#d4522f] dark:text-[#FB923C] font-medium">
                     Syncing...
@@ -502,7 +509,7 @@ export function UniversalDataCollection<T>({
               <div className="w-56">
                 <input
                   type="text"
-                  placeholder={searchPlaceholder || (store.language === 'ar' ? 'بحث...' : store.language === 'fr' ? 'Rechercher...' : 'Search...')}
+                  placeholder={searchPlaceholder || (storeLanguage === 'ar' ? 'بحث...' : storeLanguage === 'fr' ? 'Rechercher...' : 'Search...')}
                   value={effectiveSearchQuery}
                   onChange={(e) => {
                     setInternalSearchQuery(e.target.value);
@@ -549,7 +556,7 @@ export function UniversalDataCollection<T>({
                     ? 'bg-[#d4522f]/30 border-[#d4522f] text-white'
                     : 'border-[#D4C8BC] dark:border-neutral-600 hover:border-[#b9aba0]'
                 }`}
-                title={store.language === 'ar' ? 'تحديد الكل' : store.language === 'fr' ? 'Tout sélectionner' : 'Select All'}
+                title={storeLanguage === 'ar' ? 'تحديد الكل' : storeLanguage === 'fr' ? 'Tout sélectionner' : 'Select All'}
               >
                 {(isAllSelected || isPartiallySelected) && (
                   <Check className="w-3 h-3 stroke-[3]" />
@@ -743,7 +750,7 @@ export function UniversalDataCollection<T>({
               {effectiveSelectedIds.size}
             </span>
             <span className="text-xs font-medium text-white/90 whitespace-nowrap">
-              {store.language === 'ar' ? `${effectiveSelectedIds.size} محدد` : store.language === 'fr' ? `${effectiveSelectedIds.size} sélectionné${effectiveSelectedIds.size > 1 ? 's' : ''}` : `${effectiveSelectedIds.size} selected`}
+              {storeLanguage === 'ar' ? `${effectiveSelectedIds.size} محدد` : storeLanguage === 'fr' ? `${effectiveSelectedIds.size} sélectionné${effectiveSelectedIds.size > 1 ? 's' : ''}` : `${effectiveSelectedIds.size} selected`}
             </span>
           </div>
 
@@ -767,7 +774,7 @@ export function UniversalDataCollection<T>({
             <LiquidExportButton
               size="sm"
               onExport={handleDefaultSecondaryAction}
-              idleLabel={store.language === 'ar' ? 'تصدير' : store.language === 'fr' ? 'EXPORTER' : 'EXPORT'}
+              idleLabel={storeLanguage === 'ar' ? 'تصدير' : storeLanguage === 'fr' ? 'EXPORTER' : 'EXPORT'}
               id="bulk-toolbar-export-btn"
             />
           )}
@@ -790,10 +797,10 @@ export function UniversalDataCollection<T>({
             type="button"
             onClick={handleBulkDelete}
             className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
-            title={store.language === 'ar' ? 'حذف' : store.language === 'fr' ? 'Supprimer' : 'Delete'}
+            title={storeLanguage === 'ar' ? 'حذف' : storeLanguage === 'fr' ? 'Supprimer' : 'Delete'}
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span>{store.language === 'ar' ? 'حذف' : store.language === 'fr' ? 'Supprimer' : 'Delete'}</span>
+            <span>{storeLanguage === 'ar' ? 'حذف' : storeLanguage === 'fr' ? 'Supprimer' : 'Delete'}</span>
           </button>
 
           {/* Cancel button */}
@@ -805,7 +812,7 @@ export function UniversalDataCollection<T>({
             }}
             className="text-xs text-white/75 hover:text-white px-2 py-1 transition-colors cursor-pointer ml-1"
           >
-            {store.language === 'ar' ? 'إلغاء' : store.language === 'fr' ? 'Annuler' : 'Cancel'}
+            {storeLanguage === 'ar' ? 'إلغاء' : storeLanguage === 'fr' ? 'Annuler' : 'Cancel'}
           </button>
         </div>
         );

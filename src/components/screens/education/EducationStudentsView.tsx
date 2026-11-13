@@ -474,7 +474,7 @@ export const EducationStudentsView: React.FC<any> = () => {
 </button>
 </div>
 </div>}
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-3">
 <div>
 <h3 className="text-xs font-bold text-black dark:text-white tracking-tight">
 {language === "ar" ? "مؤشرات الانضباط والتحصيل الدراسي" : language === "fr" ? "Effectifs & Assiduité Scolaire" : "Student Body & Attendance Health"}
@@ -542,14 +542,13 @@ export const EducationStudentsView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
 <div className="flex items-center gap-2">
 <Users size={18} className="text-black/70 dark:text-white/75" />
 <h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {language === "ar" ? "دليل الطلبة" : language === "fr" ? "Répertoire des Étudiants" : "Students Directory"}
 </h2>
-<span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-black/70 dark:text-white/75">{filteredStudents.length}</span>
 </div>
 <div className="flex items-center gap-2.5 flex-wrap">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={t("edu_search_students_ph")} shutSize={36} openWidth={240} />

@@ -269,7 +269,7 @@ export const LegalMattersView: React.FC<any> = () => {
 						}} icon={<Plus size={14} />}>{isAr ? "فتح ملف قضية" : "Nouveau Dossier"}</AtriumButton>}
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[28px] p-6 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[28px] p-6 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 {activeLegalRole === "notaire_titulaire" ? /* @__PURE__ */ <UniversalDataCollection items={filteredDeeds} keyExtractor={(d) => d.id} columns={notaryColumns} searchQuery={searchQuery} onSearchChange={setSearchQuery} searchPlaceholder={isAr ? "بحث في الفهرس، الأطراف، أو رقم العقد..." : "Rechercher au répertoire, partie, référence..."} filterOptions={[
 						{
 							value: "All",

@@ -291,7 +291,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-neutral-100 dark:bg-neutral-700">{projectEquipmentLogs.length}</span>
 </button>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "مؤشرات التواجد الميداني والأمان الفني" : "Pointages Météo, Béton & Effectifs Chantier"}
@@ -354,7 +354,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-{activeSection === "logs" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+{activeSection === "logs" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
@@ -557,7 +557,7 @@ Parc d'Engins Mobilisés (
 </div>}
 </div>
 </div>}
-{activeSection === "concrete" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+{activeSection === "concrete" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
@@ -640,7 +640,7 @@ Parc d'Engins Mobilisés (
 					})}
 </div>
 </div>}
-{activeSection === "equipment" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+{activeSection === "equipment" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">

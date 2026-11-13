@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback, useDeferredValue } from 'react';
 import { createPortal } from 'react-dom';
 import { compactFilterLabel } from '../../../utils/filterLexicon';
 import {
@@ -32,7 +32,7 @@ import {
   List,
   LayoutGrid,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumSelector } from '../../../services/store';
 import { Member, MemberStatus } from '../../../types/index';
 import { calculateDaysRemaining, formatMoney, localizeStatus } from '../../../utils/rules';
 import { AppointmentModal } from '../../modals/AppointmentModal';
@@ -60,20 +60,18 @@ const EXPORT_BTN_STYLE = {
 	width: "148px"
 };
 
-const getMemberAge = (dobString: any) => {
+const computeMemberAge = (dobString: any, refYear: number, refMonth: number, refDate: number): number | null => {
 	if (!dobString) return null;
 	const dob = new Date(dobString);
 	if (isNaN(dob.getTime())) return null;
-	const now = /* @__PURE__ */ new Date();
-	let age = now.getFullYear() - dob.getFullYear();
-	const m = now.getMonth() - dob.getMonth();
-	if (m < 0 || m === 0 && now.getDate() < dob.getDate()) age--;
+	let age = refYear - dob.getFullYear();
+	const m = refMonth - dob.getMonth();
+	if (m < 0 || (m === 0 && refDate < dob.getDate())) age--;
 	return age >= 0 ? age : null;
 };
 
-const matchesAgeGroup = (dobString: any, group: any) => {
+const matchesAgeValue = (age: number | null, group: string) => {
 	if (group === "All") return true;
-	const age = getMemberAge(dobString);
 	if (group === "unspecified") return age === null;
 	if (age === null) return false;
 	if (group === "under18") return age < 18;
@@ -108,7 +106,10 @@ const MembersHeaderBar = React.memo(({ title, addLabel, onAddMember }: any) => /
 
 MembersHeaderBar.displayName = "MembersHeaderBar";
 
-const MembersKpiBanner = React.memo(({ membersLabel, membersLower, language, activeMembersCount, expiringCount, displayCount, activeCountRef, expiringChipCountRef, expiringBigCountRef, inflowChipCountRef, inflowBigCountRef }: any) => /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
+const MembersKpiBanner = React.memo(({ membersLabel, membersLower, language, activeMembersCount, expiringCount, displayCount, statusFilter, onToggleStatusFilter, activeCountRef, expiringChipCountRef, expiringBigCountRef, inflowChipCountRef, inflowBigCountRef }: any) => {
+	const isActiveFilterOn = statusFilter === "Active";
+	const isExpiringFilterOn = statusFilter === "Expiring";
+	return /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div>
 <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] text-black dark:text-white">
 {membersLabel}
@@ -117,41 +118,72 @@ const MembersKpiBanner = React.memo(({ membersLabel, membersLower, language, act
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-4.5 sm:p-5 rounded-[18px] bg-white dark:bg-neutral-800/90 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between min-h-[132px]">
-<div>
+<button
+	type="button"
+	data-no-liquid="true"
+	onClick={() => onToggleStatusFilter("Active")}
+	aria-pressed={isActiveFilterOn}
+	title={language === "ar" ? "تصفية حسب المشتركين النشطين" : language === "fr" ? "Filtrer les adhérents actifs" : "Filter active members"}
+	className={`group relative overflow-hidden p-4.5 sm:p-5 rounded-[18px] bg-white dark:bg-neutral-800/90 border text-left rtl:text-right flex flex-col justify-between min-h-[132px] w-full cursor-pointer select-none transform-gpu transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:scale-[1.008] active:translate-y-0 active:scale-[0.995] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70 motion-reduce:transition-none motion-reduce:hover:transform-none ${
+		isActiveFilterOn
+			? "border-emerald-500/70 dark:border-emerald-400/70 ring-2 ring-emerald-500/20 shadow-[0_10px_24px_-6px_rgba(16,185,129,0.22),0_4px_10px_-2px_rgba(20,16,12,0.06)] dark:shadow-[0_12px_26px_-6px_rgba(16,185,129,0.25),inset_0_1px_0_rgba(255,255,255,0.1)]"
+			: "border-[#E6DED6] dark:border-neutral-700/60 shadow-[0_2px_8px_rgba(20,16,12,0.05),0_1px_2px_rgba(20,16,12,0.04)] dark:shadow-[0_4px_14px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-[#D5C9BE] dark:hover:border-neutral-600/80 hover:shadow-[0_12px_28px_-6px_rgba(20,16,12,0.12),0_4px_10px_-2px_rgba(20,16,12,0.06)] dark:hover:shadow-[0_14px_30px_-6px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.1)]"
+	}`}
+>
+<div className={`pointer-events-none absolute inset-0 transition-opacity duration-300 bg-[radial-gradient(240px_circle_at_90%_10%,rgba(16,185,129,0.09),transparent_70%)] dark:bg-[radial-gradient(240px_circle_at_90%_10%,rgba(16,185,129,0.14),transparent_70%)] ${isActiveFilterOn ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} />
+<div className="relative z-10 w-full">
+<div className="flex items-center justify-between gap-2">
 <span className="text-[12px] font-medium text-black/68 dark:text-white/72">
 {language === "ar" ? `قاعدة ${membersLabel} النشطة` : language === "fr" ? `Base active ${membersLower}` : `Active ${membersLabel} Base`}
 </span>
+{isActiveFilterOn && <span className="text-[10px] font-bold uppercase tracking-[0.04em] text-emerald-700 dark:text-emerald-300 bg-emerald-500/12 px-1.5 py-0.5 rounded-md">{language === "ar" ? "مُصفّى" : language === "fr" ? "Filtré" : "Filtered"}</span>}
+</div>
 <div className="mt-1.5">
-<span className="text-[10.5px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50/90 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
+<span className="inline-block text-[10.5px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50/90 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5">
 {"↗ 100% "}
 {language === "ar" ? "نشط" : language === "fr" ? "Actifs" : "Active"}
 </span>
 </div>
 </div>
-<div ref={activeCountRef} className="text-[30px] lg:text-[32px] leading-[0.95] font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{activeMembersCount}</div>
-</div>
-<div className="p-4.5 sm:p-5 rounded-[18px] bg-white dark:bg-neutral-800/90 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between min-h-[132px]">
-<div>
+<div ref={activeCountRef} className="relative z-10 text-[30px] lg:text-[32px] leading-[0.95] font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-left rtl:origin-right group-hover:scale-[1.03]">{activeMembersCount}</div>
+</button>
+<button
+	type="button"
+	data-no-liquid="true"
+	onClick={() => onToggleStatusFilter("Expiring")}
+	aria-pressed={isExpiringFilterOn}
+	title={language === "ar" ? "تصفية حسب الاشتراكات التي تنتهي قريباً" : language === "fr" ? "Filtrer les renouvellements imminents" : "Filter expiring memberships"}
+	className={`group relative overflow-hidden p-4.5 sm:p-5 rounded-[18px] bg-white dark:bg-neutral-800/90 border text-left rtl:text-right flex flex-col justify-between min-h-[132px] w-full cursor-pointer select-none transform-gpu transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:scale-[1.008] active:translate-y-0 active:scale-[0.995] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4522f]/70 motion-reduce:transition-none motion-reduce:hover:transform-none ${
+		isExpiringFilterOn
+			? "border-[#d4522f]/75 dark:border-[#e8643f]/75 ring-2 ring-[#d4522f]/20 shadow-[0_10px_24px_-6px_rgba(212,82,47,0.22),0_4px_10px_-2px_rgba(20,16,12,0.06)] dark:shadow-[0_12px_26px_-6px_rgba(232,100,63,0.25),inset_0_1px_0_rgba(255,255,255,0.1)]"
+			: "border-[#E6DED6] dark:border-neutral-700/60 shadow-[0_2px_8px_rgba(20,16,12,0.05),0_1px_2px_rgba(20,16,12,0.04)] dark:shadow-[0_4px_14px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-[#D5C9BE] dark:hover:border-neutral-600/80 hover:shadow-[0_12px_28px_-6px_rgba(20,16,12,0.12),0_4px_10px_-2px_rgba(20,16,12,0.06)] dark:hover:shadow-[0_14px_30px_-6px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.1)]"
+	}`}
+>
+<div className={`pointer-events-none absolute inset-0 transition-opacity duration-300 bg-[radial-gradient(240px_circle_at_90%_10%,rgba(212,82,47,0.09),transparent_70%)] dark:bg-[radial-gradient(240px_circle_at_90%_10%,rgba(232,100,63,0.14),transparent_70%)] ${isExpiringFilterOn ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} />
+<div className="relative z-10 w-full">
+<div className="flex items-center justify-between gap-2">
 <span className="text-[12px] font-medium text-black/68 dark:text-white/72">
 {language === "ar" ? "تنبيهات انتهاء الاشتراك" : language === "fr" ? "Alertes de renouvellement" : "Renewal & Retention Alert"}
 </span>
+{isExpiringFilterOn && <span className="text-[10px] font-bold uppercase tracking-[0.04em] text-[#d4522f] dark:text-[#FF8D7A] bg-[#d4522f]/12 px-1.5 py-0.5 rounded-md">{language === "ar" ? "مُصفّى" : language === "fr" ? "Filtré" : "Filtered"}</span>}
+</div>
 <div className="mt-1.5">
-<span className="text-[10.5px] font-semibold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded-md">
+<span className="inline-block text-[10.5px] font-semibold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded-md transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5">
 <span ref={expiringChipCountRef}>{expiringCount}</span>
 {" "}
 {language === "ar" ? "تنتهي قريباً (<14j)" : language === "fr" ? "expirent sous 14j" : "expiring (<14d)"}
 </span>
 </div>
 </div>
-<div ref={expiringBigCountRef} className="text-[30px] lg:text-[32px] leading-[0.95] font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{expiringCount}</div>
-</div>
-<div className="p-4.5 sm:p-5 rounded-[18px] bg-[#1F1D1B] border border-white/[0.08] text-white flex flex-col justify-between min-h-[132px] shadow-sm">
-<div className="flex items-center justify-between gap-2">
+<div ref={expiringBigCountRef} className="relative z-10 text-[30px] lg:text-[32px] leading-[0.95] font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-left rtl:origin-right group-hover:scale-[1.03]">{expiringCount}</div>
+</button>
+<div className="group relative overflow-hidden p-4.5 sm:p-5 rounded-[18px] bg-[#1F1D1B] border border-white/[0.08] text-white flex flex-col justify-between min-h-[132px] shadow-[0_4px_14px_rgba(20,16,12,0.16),0_1px_3px_rgba(20,16,12,0.12)] dark:shadow-[0_6px_18px_rgba(0,0,0,0.48),inset_0_1px_0_rgba(255,255,255,0.07)] transform-gpu transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:scale-[1.008] hover:border-[#FB923C]/35 hover:shadow-[0_14px_30px_-6px_rgba(212,82,47,0.24),0_6px_14px_-2px_rgba(0,0,0,0.3)] dark:hover:shadow-[0_16px_32px_-6px_rgba(0,0,0,0.72),0_0_0_1px_rgba(251,146,60,0.22)] motion-reduce:transition-none motion-reduce:hover:transform-none">
+<div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(260px_circle_at_88%_12%,rgba(251,146,60,0.14),transparent_70%)]" />
+<div className="relative z-10 flex items-center justify-between gap-2">
 <span className="text-[12px] font-medium text-white/75">
 {language === "ar" ? "الوافدون الجدد شهرياً" : language === "fr" ? "Adhésions du mois" : "Monthly Inflow"}
 </span>
-<span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/25">
+<span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/25 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-0.5 rtl:group-hover:translate-x-0.5">
 <span ref={inflowChipCountRef}>
 +
 {displayCount}
@@ -160,8 +192,8 @@ const MembersKpiBanner = React.memo(({ membersLabel, membersLower, language, act
 {membersLower}
 </span>
 </div>
-<div>
-<div ref={inflowBigCountRef} className="text-[30px] lg:text-[32px] leading-[0.95] font-bold text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+<div className="relative z-10">
+<div ref={inflowBigCountRef} className="text-[30px] lg:text-[32px] leading-[0.95] font-bold text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-left rtl:origin-right group-hover:scale-[1.03]">
 +
 {displayCount}
 </div>
@@ -171,16 +203,17 @@ const MembersKpiBanner = React.memo(({ membersLabel, membersLower, language, act
 </div>
 </div>
 </div>
-</div>);
+</div>;
+});
 
 MembersKpiBanner.displayName = "MembersKpiBanner";
 
 const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, language, displayCount, totalMembersCount, membersLower, membersUpper, hasActiveAdvancedFilters, onResetFilters, genderFilter, onChangeGender, ageGroupFilter, onChangeAgeGroup, ageGroupCounts, planFilter, onChangePlan, dynamicAvailablePlans, planCounts, statusFilter, onChangeStatus, extendedStatusOptions, genderFilterOptions }: any) => {
 	if (!isOpen) return null;
-	return createPortal(/* @__PURE__ */ <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 bg-black/45 dark:bg-black/70 animate-in fade-in duration-150" onClick={(e) => {
+	return createPortal(/* @__PURE__ */ <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 bg-black/45 dark:bg-black/70 transform-gpu animate-in fade-in duration-150" onClick={(e) => {
 			if (e.target === e.currentTarget) onClose();
 		}} role="dialog" aria-modal="true" aria-label={language === "ar" ? "مرشحات متقدمة" : language === "fr" ? "Filtres avancés" : "Advanced Filters"}>
-<div ref={filterPopoverRef} className="w-full max-w-lg max-h-[85vh] bg-white dark:bg-[#1C1B1A] rounded-[26px] border border-[#E6DED6] dark:border-[#3A3734] shadow-[0_18px_48px_rgba(0,0,0,0.22)] p-5 sm:p-6 space-y-4 animate-in zoom-in-95 duration-150 text-black dark:text-white overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+<div ref={filterPopoverRef} style={{ contain: 'layout paint' }} className="w-full max-w-lg max-h-[85vh] bg-white dark:bg-[#1C1B1A] rounded-[26px] border border-[#E6DED6] dark:border-[#3A3734] shadow-[0_18px_48px_rgba(0,0,0,0.22)] p-5 sm:p-6 space-y-4 transform-gpu animate-in zoom-in-95 duration-150 text-black dark:text-white overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
 <div className="flex items-center justify-between pb-3.5 border-b border-[#E6DED6] dark:border-[#3A3734] shrink-0">
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-full bg-[#d4522f]/12 dark:bg-[#d4522f]/20 flex items-center justify-center text-[#d4522f] shadow-2xs"><SlidersHorizontal size={16} /></div>
@@ -196,13 +229,13 @@ const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, lang
 </div>
 </div>
 <div className="flex items-center gap-2">
-{hasActiveAdvancedFilters && /* @__PURE__ */ <button type="button" onClick={onResetFilters} className="text-xs font-semibold text-[#d4522f] hover:underline flex items-center gap-1 cursor-pointer transition-colors px-2 py-1 rounded-md">
+{hasActiveAdvancedFilters && /* @__PURE__ */ <button type="button" data-no-liquid="true" onClick={onResetFilters} className="text-xs font-semibold text-[#d4522f] hover:underline flex items-center gap-1 cursor-pointer transition-colors px-2 py-1 rounded-md">
 <RotateCcw size={12} />
 <span>
 {language === "ar" ? "إعادة ضبط" : language === "fr" ? "Réinitialiser" : "Reset"}
 </span>
 </button>}
-<button type="button" onClick={onClose} className="w-8 h-8 rounded-full hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 text-black/62 dark:text-white/68 hover:text-black dark:hover:text-white flex items-center justify-center cursor-pointer transition-colors" aria-label="Close filters"><X size={16} /></button>
+<button type="button" data-no-liquid="true" onClick={onClose} className="w-8 h-8 rounded-full hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 text-black/62 dark:text-white/68 hover:text-black dark:hover:text-white flex items-center justify-center cursor-pointer transition-colors" aria-label="Close filters"><X size={16} /></button>
 </div>
 </div>
 <div className="space-y-4 overflow-y-auto pr-1 max-h-[58vh] -mr-1">
@@ -255,7 +288,7 @@ const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, lang
 								].map((ag) => {
 									const isSelected = ageGroupFilter === ag.val;
 									const count = ageGroupCounts[ag.val] ?? 0;
-									return /* @__PURE__ */ <button key={ag.val} type="button" onClick={() => onChangeAgeGroup(ag.val)} title={ag.tooltip} className={`h-9 px-2.5 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${isSelected ? "bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-semibold shadow-2xs" : "bg-[#FBF8F5] dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/40"}`}>
+									return /* @__PURE__ */ <button key={ag.val} type="button" data-no-liquid="true" onClick={() => onChangeAgeGroup(ag.val)} title={ag.tooltip} className={`h-9 px-2.5 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${isSelected ? "bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-semibold shadow-2xs" : "bg-[#FBF8F5] dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/40"}`}>
 <span className="truncate">{ag.label}</span>
 <span className="text-[11px] font-mono opacity-75 tabular-nums ml-1">{count}</span>
 </button>;
@@ -265,10 +298,10 @@ const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, lang
 <div className="space-y-1.5">
 <div className="flex items-center justify-between">
 <label className="text-[11.5px] font-semibold uppercase tracking-[0.06em] rtl:normal-case rtl:tracking-normal text-black/72 dark:text-white/75">{t("member_filter_plan_label", language)}</label>
-{planFilter !== "All" && /* @__PURE__ */ <button type="button" onClick={() => onChangePlan("All")} title={language === "ar" ? "عرض كل الباقات" : language === "fr" ? "Afficher toutes les formules" : "Show all plans"} className="text-[11px] text-[#d4522f] font-semibold hover:underline cursor-pointer">{language === "ar" ? "الكل" : language === "fr" ? "Toutes" : "All"}</button>}
+{planFilter !== "All" && /* @__PURE__ */ <button type="button" data-no-liquid="true" onClick={() => onChangePlan("All")} title={language === "ar" ? "عرض كل الباقات" : language === "fr" ? "Afficher toutes les formules" : "Show all plans"} className="text-[11px] text-[#d4522f] font-semibold hover:underline cursor-pointer">{language === "ar" ? "الكل" : language === "fr" ? "Toutes" : "All"}</button>}
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-40 overflow-y-auto pr-1">
-<button type="button" onClick={() => onChangePlan("All")} title={language === "ar" ? "جميع الباقات" : language === "fr" ? "Toutes les formules" : "All plans"} className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${planFilter === "All" ? "bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-semibold shadow-2xs" : "bg-[#FBF8F5] dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/50"}`}>
+<button type="button" data-no-liquid="true" onClick={() => onChangePlan("All")} title={language === "ar" ? "جميع الباقات" : language === "fr" ? "Toutes les formules" : "All plans"} className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${planFilter === "All" ? "bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-semibold shadow-2xs" : "bg-[#FBF8F5] dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/50"}`}>
 <span className="truncate">{t("member_filter_all_plans", language)}</span>
 <span className="text-[11px] font-mono opacity-75 tabular-nums ml-1">{totalMembersCount}</span>
 </button>
@@ -276,7 +309,7 @@ const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, lang
 									const isSelected = planFilter === p.id || planFilter === p.name;
 									const count = planCounts.get(p.id) ?? 0;
 									const compactPlan = compactFilterLabel(p.name);
-									return /* @__PURE__ */ <button key={p.id} type="button" onClick={() => onChangePlan(p.id)} title={p.name} className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${isSelected ? "bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-semibold shadow-2xs" : "bg-[#FBF8F5] dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/50"}`}>
+									return /* @__PURE__ */ <button key={p.id} type="button" data-no-liquid="true" onClick={() => onChangePlan(p.id)} title={p.name} className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${isSelected ? "bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-semibold shadow-2xs" : "bg-[#FBF8F5] dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/50"}`}>
 <div className="min-w-0 text-left rtl:text-right">
 <div className="truncate font-semibold">{compactPlan.label}</div>
 {p.price > 0 && /* @__PURE__ */ <div className="text-[11px] text-black/62 dark:text-white/65 font-mono tabular-nums">{formatMoney(p.price)}</div>}
@@ -319,7 +352,21 @@ const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, lang
 MembersFilterModal.displayName = "MembersFilterModal";
 
 export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, onEditMember }) => {
-	const { members, plans, businesses, branches, currentBusiness, currentBusinessId, currentBranch, terminology, language, appointments, sales, schedule, switchBusiness, switchBranch, selectedMember, isDetailOpen, selectMember, closeDetail, updateMember, deleteMember, checkInMember, setScreen, showToast, isSyncing, networkMode, retryCloudSync, lastSyncedAt, isSyncTimeout } = useAtriumStore();
+	const members = useAtriumSelector((s) => s.members);
+	const plans = useAtriumSelector((s) => s.plans);
+	const terminology = useAtriumSelector((s) => s.terminology);
+	const language = useAtriumSelector((s) => s.language);
+	const selectedMember = useAtriumSelector((s) => s.selectedMember);
+	const isDetailOpen = useAtriumSelector((s) => s.isDetailOpen);
+	const selectMember = useAtriumSelector((s) => s.selectMember);
+	const closeDetail = useAtriumSelector((s) => s.closeDetail);
+	const updateMember = useAtriumSelector((s) => s.updateMember);
+	const deleteMember = useAtriumSelector((s) => s.deleteMember);
+	const checkInMember = useAtriumSelector((s) => s.checkInMember);
+	const showToast = useAtriumSelector((s) => s.showToast);
+	const isSyncing = useAtriumSelector((s) => s.isSyncing);
+	const networkMode = useAtriumSelector((s) => s.networkMode);
+	const retryCloudSync = useAtriumSelector((s) => s.retryCloudSync);
 	const [statusFilter, setStatusFilter] = React.useState("All");
 	const [genderFilter, setGenderFilter] = React.useState("All");
 	const [ageGroupFilter, setAgeGroupFilter] = React.useState("All");
@@ -327,6 +374,11 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 	const [searchQuery, setSearchQuery] = React.useState("");
 	const [planFilter, setPlanFilter] = React.useState("All");
 	const [viewMode, setViewMode] = React.useState<"list" | "grid">("list");
+	const deferredSearchQuery = useDeferredValue(searchQuery);
+	const deferredStatusFilter = useDeferredValue(statusFilter);
+	const deferredPlanFilter = useDeferredValue(planFilter);
+	const deferredGenderFilter = useDeferredValue(genderFilter);
+	const deferredAgeGroupFilter = useDeferredValue(ageGroupFilter);
 	const [selectedIds, setSelectedIds] = React.useState<any[]>([]);
 	const [selectedMemberIds, setSelectedMemberIds] = React.useState<Set<string>>(() => /* @__PURE__ */ new Set());
 	const [pinnedMemberIds, setPinnedMemberIds] = React.useState<Set<string>>(() => /* @__PURE__ */ new Set());
@@ -404,65 +456,57 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 		}
 		return cache;
 	}, [members]);
-	const { activeMembersCount, expiringCount, expiredCount, archivedCount } = React.useMemo(() => {
+	// Pre-index member metadata once per [members, daysRemainingByDate] so keystrokes & filter switches do O(N) simple field checks
+	const preparedMembers = React.useMemo(() => {
+		const now = new Date();
+		const refYear = now.getFullYear();
+		const refMonth = now.getMonth();
+		const refDate = now.getDate();
+		return members.map((member) => {
+			const daysRemaining = daysRemainingByDate.get(member.expirationDate || "") ?? calculateDaysRemaining(false, member.expirationDate);
+			const age = computeMemberAge(member.dateOfBirth, refYear, refMonth, refDate);
+			const fullNameLower = (member.fullName || "").toLowerCase();
+			const phone = member.phoneNumber || "";
+			const cardLower = (member.cardId || "").toLowerCase();
+			const remainingText = daysRemaining > 0 ? `${daysRemaining} j restants` : daysRemaining === 0 ? "Expire aujourd’hui" : "Expiré";
+			const isBlocked = member.status === "Suspended" || member.status === "Banned" || Boolean((member as any).isBlocked);
+			const isExp = member.status === "Expired" || daysRemaining <= 0;
+			const rowData: MemberRowData = {
+				id: member.id,
+				name: member.fullName || "Adhérent",
+				phone,
+				email: member.email || "",
+				planName: member.membershipPlanName || "Full Access Monthly",
+				status: isBlocked ? "Bloqué" : isExp ? "Expiré" : "Actif",
+				statusVariant: isBlocked ? "blocked" : isExp ? "expired" : "active",
+				expiryDate: member.expirationDate || "Non spécifié",
+				daysRemainingLabel: remainingText,
+				balance: member.balance || 0,
+				balanceLabel: member.balance ? `${Math.round(member.balance).toLocaleString()} DZD` : "Soldé",
+				avatarColor: getMemberInitialsColor(member.fullName),
+				remainingSessions: member.remainingSessions ?? 24,
+				notes: member.notes,
+				isBlocked
+			};
+			return {
+				member,
+				daysRemaining,
+				age,
+				searchHaystack: `${fullNameLower}\0${phone}\0${cardLower}`,
+				balanceNum: Number(member.balance || 0),
+				expStr: member.expirationDate || "",
+				rowData
+			};
+		});
+	}, [members, daysRemainingByDate]);
+
+	const { activeMembersCount, expiringCount, expiredCount, archivedCount, ageGroupCounts, planCounts } = React.useMemo(() => {
 		let active = 0;
 		let expiring = 0;
 		let expired = 0;
 		let archived = 0;
-		for (let i = 0; i < members.length; i++) {
-			const m = members[i];
-			if (m.status === "Active") active++;
-			else if (m.status === "Expired") expired++;
-			else if (m.status === "Banned" || m.status === "Suspended") archived++;
-			const d = daysRemainingByDate.get(m.expirationDate || "") ?? 999;
-			if (d <= 14 && d > 0) expiring++;
-		}
-		return {
-			activeMembersCount: active,
-			expiringCount: expiring,
-			expiredCount: expired,
-			archivedCount: archived
-		};
-	}, [members, daysRemainingByDate]);
-	const displayMembers = React.useMemo(() => {
-		const q = searchQuery.trim().toLowerCase();
-		return members.filter((member) => {
-			if (statusFilter !== "All") {
-				if (statusFilter === "Active" && member.status !== "Active") return false;
-				if (statusFilter === "Expired" && member.status !== "Expired") return false;
-				if (statusFilter === "Expiring") {
-					if ((daysRemainingByDate.get(member.expirationDate || "") ?? calculateDaysRemaining(false, member.expirationDate)) > 14) return false;
-				}
-				if (statusFilter === "Archived" && member.status !== "Banned" && member.status !== "Suspended") return false;
-			}
-			if (planFilter !== "All") {
-				if (member.membershipPlanId !== planFilter && member.membershipPlanName !== planFilter) return false;
-			}
-			if (genderFilter !== "All") {
-				if (genderFilter === "Other") {
-					if (member.gender === "Male" || member.gender === "Female") return false;
-				} else if (member.gender !== genderFilter) return false;
-			}
-			if (ageGroupFilter !== "All") {
-				if (!matchesAgeGroup(member.dateOfBirth, ageGroupFilter)) return false;
-			}
-			if (q) {
-				if (!member.fullName.toLowerCase().includes(q) && !member.phoneNumber.includes(q) && !member.cardId?.toLowerCase().includes(q)) return false;
-			}
-			return true;
-		});
-	}, [
-		members,
-		daysRemainingByDate,
-		statusFilter,
-		planFilter,
-		genderFilter,
-		ageGroupFilter,
-		searchQuery
-	]);
-	const { ageGroupCounts, planCounts } = React.useMemo(() => {
 		const ag = {
-			All: members.length,
+			All: preparedMembers.length,
 			under18: 0,
 			"18-25": 0,
 			"26-40": 0,
@@ -471,9 +515,14 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 			unspecified: 0
 		};
 		const pc = /* @__PURE__ */ new Map();
-		for (let i = 0; i < members.length; i++) {
-			const m = members[i];
-			const age = getMemberAge(m.dateOfBirth);
+		for (let i = 0; i < preparedMembers.length; i++) {
+			const item = preparedMembers[i];
+			const m = item.member;
+			if (m.status === "Active") active++;
+			else if (m.status === "Expired") expired++;
+			else if (m.status === "Banned" || m.status === "Suspended") archived++;
+			if (item.daysRemaining <= 14 && item.daysRemaining > 0) expiring++;
+			const age = item.age;
 			if (age === null) ag.unspecified++;
 			else if (age < 18) ag.under18++;
 			else if (age <= 25) ag["18-25"]++;
@@ -488,10 +537,91 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 			if (!pc.has(p.id) && pc.has(p.name)) pc.set(p.id, pc.get(p.name));
 		}
 		return {
+			activeMembersCount: active,
+			expiringCount: expiring,
+			expiredCount: expired,
+			archivedCount: archived,
 			ageGroupCounts: ag,
 			planCounts: pc
 		};
-	}, [members, dynamicAvailablePlans]);
+	}, [preparedMembers, dynamicAvailablePlans]);
+
+	// Pre-sort ONCE when members / pins / sort column change — never during typing or filtering!
+	const sortedPreparedMembers = React.useMemo(() => {
+		const list = [...preparedMembers];
+		list.sort((a, b) => {
+			const aPinned = pinnedMemberIds.has(a.member.id) ? 1 : 0;
+			const bPinned = pinnedMemberIds.has(b.member.id) ? 1 : 0;
+			if (aPinned !== bPinned) return bPinned - aPinned;
+			if (memberSortBy === "member") {
+				const comp = MEMBER_COLLATOR.compare(a.member.fullName, b.member.fullName);
+				return memberSortDir === "asc" ? comp : -comp;
+			}
+			if (memberSortBy === "plan") {
+				const comp = MEMBER_COLLATOR.compare(a.member.membershipPlanName || "", b.member.membershipPlanName || "");
+				return memberSortDir === "asc" ? comp : -comp;
+			}
+			if (memberSortBy === "status") {
+				const comp = MEMBER_COLLATOR.compare(a.member.status, b.member.status);
+				return memberSortDir === "asc" ? comp : -comp;
+			}
+			if (memberSortBy === "expiration") {
+				const comp = a.expStr < b.expStr ? -1 : a.expStr > b.expStr ? 1 : 0;
+				return memberSortDir === "asc" ? comp : -comp;
+			}
+			if (memberSortBy === "balance") {
+				const comp = a.balanceNum - b.balanceNum;
+				return memberSortDir === "asc" ? comp : -comp;
+			}
+			return 0;
+		});
+		return list;
+	}, [preparedMembers, pinnedMemberIds, memberSortBy, memberSortDir]);
+
+	// Filter already-sorted array (filtering preserves order -> zero sort overhead during keystrokes/filter taps)
+	const sortedMembers = React.useMemo(() => {
+		const q = deferredSearchQuery.trim().toLowerCase();
+		const hasStatus = deferredStatusFilter !== "All";
+		const hasPlan = deferredPlanFilter !== "All";
+		const hasGender = deferredGenderFilter !== "All";
+		const hasAge = deferredAgeGroupFilter !== "All";
+		const hasQuery = q.length > 0;
+		if (!hasStatus && !hasPlan && !hasGender && !hasAge && !hasQuery) {
+			return sortedPreparedMembers.map((item) => item.member);
+		}
+		const result: Member[] = [];
+		for (let i = 0; i < sortedPreparedMembers.length; i++) {
+			const item = sortedPreparedMembers[i];
+			const member = item.member;
+			if (hasStatus) {
+				if (deferredStatusFilter === "Active" && member.status !== "Active") continue;
+				if (deferredStatusFilter === "Expired" && member.status !== "Expired") continue;
+				if (deferredStatusFilter === "Expiring" && item.daysRemaining > 14) continue;
+				if (deferredStatusFilter === "Archived" && member.status !== "Banned" && member.status !== "Suspended") continue;
+			}
+			if (hasPlan) {
+				if (member.membershipPlanId !== deferredPlanFilter && member.membershipPlanName !== deferredPlanFilter) continue;
+			}
+			if (hasGender) {
+				if (deferredGenderFilter === "Other") {
+					if (member.gender === "Male" || member.gender === "Female") continue;
+				} else if (member.gender !== deferredGenderFilter) continue;
+			}
+			if (hasAge && !matchesAgeValue(item.age, deferredAgeGroupFilter)) continue;
+			if (hasQuery && !item.searchHaystack.includes(q)) continue;
+			result.push(member);
+		}
+		return result;
+	}, [
+		sortedPreparedMembers,
+		deferredStatusFilter,
+		deferredPlanFilter,
+		deferredGenderFilter,
+		deferredAgeGroupFilter,
+		deferredSearchQuery
+	]);
+	const displayMembers = sortedMembers;
+
 	const quickStatusOptions = React.useMemo(() => [
 		{
 			value: "All",
@@ -583,46 +713,9 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 		icon: /* @__PURE__ */ <LayoutGrid className="w-4 h-4" />,
 		"aria-label": "Grid View"
 	}], []);
-	const sortedMembers = React.useMemo(() => {
-		const list = [...displayMembers];
-		list.sort((a, b) => {
-			const aPinned = pinnedMemberIds.has(a.id) ? 1 : 0;
-			const bPinned = pinnedMemberIds.has(b.id) ? 1 : 0;
-			if (aPinned !== bPinned) return bPinned - aPinned;
-			if (memberSortBy === "member") {
-				const comp = MEMBER_COLLATOR.compare(a.fullName, b.fullName);
-				return memberSortDir === "asc" ? comp : -comp;
-			}
-			if (memberSortBy === "plan") {
-				const comp = MEMBER_COLLATOR.compare(a.membershipPlanName || "", b.membershipPlanName || "");
-				return memberSortDir === "asc" ? comp : -comp;
-			}
-			if (memberSortBy === "status") {
-				const comp = MEMBER_COLLATOR.compare(a.status, b.status);
-				return memberSortDir === "asc" ? comp : -comp;
-			}
-			if (memberSortBy === "expiration") {
-				const ea = a.expirationDate || "";
-				const eb = b.expirationDate || "";
-				const comp = ea < eb ? -1 : ea > eb ? 1 : 0;
-				return memberSortDir === "asc" ? comp : -comp;
-			}
-			if (memberSortBy === "balance") {
-				const comp = Number(a.balance || 0) - Number(b.balance || 0);
-				return memberSortDir === "asc" ? comp : -comp;
-			}
-			return 0;
-		});
-		return list;
-	}, [
-		displayMembers,
-		pinnedMemberIds,
-		memberSortBy,
-		memberSortDir
-	]);
 	const scrollContainerRef = React.useRef<any>(null);
 	const rowsElRef = React.useRef<any>(null);
-	const filterKey = `${statusFilter}|${planFilter}|${genderFilter}|${ageGroupFilter}|${searchQuery}`;
+	const filterKey = `${deferredStatusFilter}|${deferredPlanFilter}|${deferredGenderFilter}|${deferredAgeGroupFilter}|${deferredSearchQuery}`;
 	const handlePruneSelection = React.useCallback((hiddenIds: any[]) => {
 		if (hiddenIds.length === 0) return;
 		setSelectedMemberIds((prev) => {
@@ -639,8 +732,6 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 	const handleFilterScrollReset = React.useCallback(() => {
 		const scr = scrollContainerRef.current;
 		if (scr && scr.scrollTop > 0) scr.scrollTop = 0;
-		const outerScroll = scr?.closest("main, [data-scroll-container]");
-		if (outerScroll && outerScroll.scrollTop > 0) outerScroll.scrollTop = 0;
 	}, []);
 	const { renderedRows, registerRowRefs } = useKineticRowLayout({
 		matchingMembers: sortedMembers,
@@ -656,34 +747,13 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 	const lastRowDataMapRef = React.useRef(/* @__PURE__ */ new Map());
 	const memberRowDataMap = React.useMemo(() => {
 		const map = /* @__PURE__ */ new Map();
-		for (let i = 0; i < members.length; i++) {
-			const member = members[i];
-			const daysRemaining = daysRemainingByDate.get(member.expirationDate || "") ?? calculateDaysRemaining(false, member.expirationDate);
-			const remainingText = daysRemaining > 0 ? `${daysRemaining} j restants` : daysRemaining === 0 ? "Expire aujourd’hui" : "Expiré";
-			const isBlocked = member.status === "Suspended" || member.status === "Banned" || Boolean((member as any).isBlocked);
-			const isExp = member.status === "Expired" || daysRemaining <= 0;
-			const rowData = {
-				id: member.id,
-				name: member.fullName || "Adhérent",
-				phone: member.phoneNumber || "",
-				email: member.email || "",
-				planName: member.membershipPlanName || "Full Access Monthly",
-				status: isBlocked ? "Bloqué" : isExp ? "Expiré" : "Actif",
-				statusVariant: isBlocked ? "blocked" : isExp ? "expired" : "active",
-				expiryDate: member.expirationDate || "Non spécifié",
-				daysRemainingLabel: remainingText,
-				balance: member.balance || 0,
-				balanceLabel: member.balance ? `${Math.round(member.balance).toLocaleString()} DZD` : "Soldé",
-				avatarColor: getMemberInitialsColor(member.fullName),
-				remainingSessions: member.remainingSessions ?? 24,
-				notes: member.notes,
-				isBlocked
-			};
-			map.set(member.id, rowData);
-			lastRowDataMapRef.current.set(member.id, rowData);
+		for (let i = 0; i < preparedMembers.length; i++) {
+			const item = preparedMembers[i];
+			map.set(item.member.id, item.rowData);
+			lastRowDataMapRef.current.set(item.member.id, item.rowData);
 		}
 		return map;
-	}, [members, daysRemainingByDate]);
+	}, [preparedMembers]);
 	const sortedMembersRef = React.useRef(sortedMembers);
 	sortedMembersRef.current = sortedMembers;
 	const membersByIdRef = React.useRef(/* @__PURE__ */ new Map());
@@ -918,7 +988,6 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 	const expiringBigCountRef = useSpringCountRef(expiringCount);
 	const inflowChipCountRef = useSpringCountRef(displayMembers.length, { prefix: "+" });
 	const inflowBigCountRef = useSpringCountRef(displayMembers.length, { prefix: "+" });
-	const listBadgeCountRef = useSpringCountRef(displayMembers.length);
 	const displayMembersRef = React.useRef(displayMembers);
 	displayMembersRef.current = displayMembers;
 	const handleExportCSV = React.useCallback(() => {
@@ -952,6 +1021,9 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 		link.click();
 		document.body.removeChild(link);
 	}, [language]);
+	const handleToggleKpiStatusFilter = React.useCallback((targetStatus: "Active" | "Expiring") => {
+		setStatusFilter((prev) => (prev === targetStatus ? "All" : targetStatus));
+	}, []);
 	const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
 		isLoading: isSyncing || networkMode === "force_skeleton",
 		hasCachedData: members.length > 0
@@ -984,12 +1056,11 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 		]} viewMode={viewMode} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200 relative">
 <MembersHeaderBar title={terminology.members} addLabel={`${t("action_add", language)} ${terminology.memberSingle}`} onAddMember={onAddMember} />
-<MembersKpiBanner membersLabel={terminology.members} membersLower={terminology.members.toLowerCase()} language={language} activeMembersCount={activeMembersCount} expiringCount={expiringCount} displayCount={displayMembers.length} activeCountRef={activeCountRef} expiringChipCountRef={expiringChipCountRef} expiringBigCountRef={expiringBigCountRef} inflowChipCountRef={inflowChipCountRef} inflowBigCountRef={inflowBigCountRef} />
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-4 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
+<MembersKpiBanner membersLabel={terminology.members} membersLower={terminology.members.toLowerCase()} language={language} activeMembersCount={activeMembersCount} expiringCount={expiringCount} displayCount={displayMembers.length} statusFilter={statusFilter} onToggleStatusFilter={handleToggleKpiStatusFilter} activeCountRef={activeCountRef} expiringChipCountRef={expiringChipCountRef} expiringBigCountRef={expiringBigCountRef} inflowChipCountRef={inflowChipCountRef} inflowBigCountRef={inflowBigCountRef} />
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div className="flex flex-wrap items-center justify-between gap-3 w-full">
 <div className="flex items-center gap-2.5 shrink-0">
 <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">{language === "ar" ? "قائمة المشتركين" : "Liste des adhérents"}</h2>
-<span ref={listBadgeCountRef} className="px-2 py-0.5 text-[11px] font-semibold rounded-md bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/70 text-black/72 dark:text-white/80 shadow-2xs tabular-nums">{displayMembers.length}</span>
 </div>
 <div aria-live="polite" className="sr-only">
 {displayMembers.length === 0 ? "Aucun adhérent ne correspond" : `${displayMembers.length} adhérent${displayMembers.length > 1 ? "s" : ""} trouvé${displayMembers.length > 1 ? "s" : ""}`}
@@ -1058,9 +1129,9 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 </button>
 </div>}
 <div className="w-full">
-<div className="w-full overflow-x-auto">
-<div className="w-full flex flex-col min-w-[940px]">
-<div className="th th-adherents bg-white dark:bg-[#1C1B1A] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[var(--atr-ink,#000000)] dark:text-white box-border select-none" data-v={viewMode === "grid" ? "g" : "l"} aria-hidden={viewMode === "grid"}>
+<div className="w-full members-x-wrap">
+<div className="w-full flex flex-col min-w-[940px] h-[560px] sm:h-[702px]">
+<div className="th th-adherents shrink-0 bg-white dark:bg-[#1C1B1A] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[var(--atr-ink,#000000)] dark:text-white box-border select-none" data-v={viewMode === "grid" ? "g" : "l"} aria-hidden={viewMode === "grid"}>
 <button type="button" role="checkbox" tabIndex={viewMode === "grid" ? -1 : 0} aria-checked={selectedMemberIds.size === 0 ? "false" : selectedMemberIds.size === sortedMembers.length && sortedMembers.length > 0 ? "true" : "mixed"} aria-label="Tout sélectionner" onClick={() => {
 											if (selectedMemberIds.size === sortedMembers.length) setSelectedMemberIds(/* @__PURE__ */ new Set());
 											else setSelectedMemberIds(new Set(sortedMembers.map((m) => m.id)));
@@ -1103,7 +1174,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 </button>;
 									})}
 </div>
-<div ref={scrollContainerRef} className="scr relative mt-2.5 overflow-y-auto overflow-x-hidden pr-1 pb-[70px] max-h-[640px]">
+<div ref={scrollContainerRef} className="scr relative mt-2.5 overflow-y-auto overflow-x-hidden pr-1 pb-[70px] flex-1 min-h-0">
 <div ref={rowsElRef} role="list" aria-label="Adhérents" data-v={viewMode === "grid" ? "g" : "l"} className="rows relative w-full">
 {renderedRows.map((rowItem) => {
 											const member = rowItem.member;

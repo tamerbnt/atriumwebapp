@@ -60,6 +60,7 @@ export type SpringListener = (value: number, spring: Sp) => void;
 export type FrameCallback = () => void;
 
 const activeSprings = new Set<Sp>();
+const runningSprings = new Set<Sp>();
 const frameSubscribers = new Set<FrameCallback>();
 const cleanupSubscribers = new Set<FrameCallback>();
 
@@ -67,6 +68,7 @@ let rafId = 0;
 let prevTime = 0;
 
 export const getActiveSpringCount = (): number => activeSprings.size;
+export const getRunningSpringCount = (): number => runningSprings.size;
 export const isLoopRunning = (): boolean => rafId !== 0;
 
 export const subscribeFrame = (fn: FrameCallback): (() => void) => {
@@ -91,6 +93,15 @@ function notifyCleanupSubscribers(): void {
   cleanupSubscribers.forEach((fn) => fn());
 }
 
+function syncDirtySpringsFromLegacyWrites(): void {
+  if (runningSprings.size > 0 || activeSprings.size === 0) return;
+  activeSprings.forEach((s) => {
+    if (s.x !== s.t || s.v !== 0) {
+      runningSprings.add(s);
+    }
+  });
+}
+
 export const frame = (timestamp: number): void => {
   rafId = 0;
   const dt = prevTime ? clamp((timestamp - prevTime) / 16.67, 0, 2.5) : 1;
@@ -98,26 +109,26 @@ export const frame = (timestamp: number): void => {
 
   const reduced = checkReducedMotion();
 
-  activeSprings.forEach((s) => s.step(dt, reduced));
-  notifyFrameSubscribers();
-  notifyCleanupSubscribers();
-
-  let allRest = true;
-  for (const s of activeSprings) {
-    if (!s.rest()) {
-      allRest = false;
-      break;
+  if (runningSprings.size > 0) {
+    const toRemove: Sp[] = [];
+    runningSprings.forEach((s) => {
+      s.step(dt, reduced);
+      if (s.rest()) {
+        if (s.x !== s.t || s.v !== 0) {
+          s.snap();
+        }
+        toRemove.push(s);
+      }
+    });
+    for (let i = 0; i < toRemove.length; i++) {
+      runningSprings.delete(toRemove[i]);
     }
   }
 
-  if (allRest) {
-    activeSprings.forEach((s) => {
-      if (s.x !== s.t || s.v !== 0) {
-        s.snap();
-      }
-    });
-    notifyFrameSubscribers();
-    notifyCleanupSubscribers();
+  notifyFrameSubscribers();
+  notifyCleanupSubscribers();
+
+  if (runningSprings.size === 0) {
     prevTime = 0;
   } else {
     rafId = requestAnimationFrame(frame);
@@ -125,12 +136,14 @@ export const frame = (timestamp: number): void => {
 };
 
 export const wake = (): void => {
+  syncDirtySpringsFromLegacyWrites();
   if (checkReducedMotion()) {
-    activeSprings.forEach((s) => {
+    runningSprings.forEach((s) => {
       if (s.x !== s.t || s.v !== 0) {
         s.snap();
       }
     });
+    runningSprings.clear();
     notifyFrameSubscribers();
     notifyCleanupSubscribers();
     prevTime = 0;
@@ -142,17 +155,18 @@ export const wake = (): void => {
 };
 
 export class Sp {
-  x: number;
-  v = 0;
-  t: number;
+  private _x: number;
+  private _v = 0;
+  private _t: number;
+  private _destroyed = false;
   k: number;
   d: number;
   tune: number;
   private listeners = new Set<SpringListener>();
 
   constructor(x: number, tune = 24) {
-    this.x = x;
-    this.t = x;
+    this._x = x;
+    this._t = x;
     this.tune = tune;
     const coeff = computeSpringCoefficients(tune);
     this.k = coeff.k;
@@ -160,8 +174,43 @@ export class Sp {
     activeSprings.add(this);
   }
 
+  get x(): number {
+    return this._x;
+  }
+
+  set x(val: number) {
+    this._x = val;
+    if (!this._destroyed && (this._t !== val || this._v !== 0)) {
+      runningSprings.add(this);
+    }
+  }
+
+  get v(): number {
+    return this._v;
+  }
+
+  set v(val: number) {
+    this._v = val;
+    if (!this._destroyed && (val !== 0 || this._t !== this._x)) {
+      runningSprings.add(this);
+    }
+  }
+
+  get t(): number {
+    return this._t;
+  }
+
+  set t(val: number) {
+    if (this._t !== val) {
+      this._t = val;
+      if (!this._destroyed && (val !== this._x || this._v !== 0)) {
+        runningSprings.add(this);
+      }
+    }
+  }
+
   get target(): number {
-    return this.t;
+    return this._t;
   }
 
   set target(val: number) {
@@ -169,44 +218,46 @@ export class Sp {
   }
 
   step(dt: number, reduced = checkReducedMotion()): void {
-    if (this.x === this.t && this.v === 0) return;
+    if (this._x === this._t && this._v === 0) return;
     if (reduced) {
-      this.x = this.t;
-      this.v = 0;
+      this._x = this._t;
+      this._v = 0;
       this.notify();
       return;
     }
 
-    this.v += (this.t - this.x) * this.k * dt;
-    this.v *= Math.pow(this.d, dt);
-    this.x += this.v * dt;
+    this._v += (this._t - this._x) * this.k * dt;
+    this._v *= Math.pow(this.d, dt);
+    this._x += this._v * dt;
 
     if (this.rest()) {
-      this.x = this.t;
-      this.v = 0;
+      this._x = this._t;
+      this._v = 0;
     }
 
     this.notify();
   }
 
   rest(): boolean {
-    return Math.abs(this.t - this.x) < 0.02 && Math.abs(this.v) < 0.02;
+    return Math.abs(this._t - this._x) < 0.02 && Math.abs(this._v) < 0.02;
   }
 
   snap(): void {
-    this.x = this.t;
-    this.v = 0;
+    this._x = this._t;
+    this._v = 0;
+    runningSprings.delete(this);
     this.notify();
   }
 
   setTarget(target: number): void {
-    if (this.t !== target) {
-      this.t = target;
+    if (this._t !== target) {
+      this._t = target;
       if (checkReducedMotion()) {
         this.snap();
         notifyFrameSubscribers();
         notifyCleanupSubscribers();
       } else {
+        if (!this._destroyed) runningSprings.add(this);
         wake();
       }
     }
@@ -214,7 +265,7 @@ export class Sp {
 
   subscribe(listener: SpringListener): () => void {
     this.listeners.add(listener);
-    listener(this.x, this);
+    listener(this._x, this);
     return () => {
       this.listeners.delete(listener);
     };
@@ -222,11 +273,13 @@ export class Sp {
 
   notify(): void {
     if (this.listeners.size === 0) return;
-    this.listeners.forEach((fn) => fn(this.x, this));
+    this.listeners.forEach((fn) => fn(this._x, this));
   }
 
   destroy(): void {
+    this._destroyed = true;
     activeSprings.delete(this);
+    runningSprings.delete(this);
     this.listeners.clear();
   }
 }

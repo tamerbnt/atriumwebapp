@@ -484,7 +484,7 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 					count: pointages.length
 				}]} />
 {activeMode === "tickets" ? /* @__PURE__ */ <>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "إحصائيات الشحن والإنتاج المباع" : "Tonnage Expédié & Recettes Agricoles"}
@@ -527,7 +527,7 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
@@ -749,7 +749,7 @@ Commission Mandataire (
 </div>
 </div>
 </> : /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "مؤشرات جني المحصول ودفتر حضور التاشرون" : "Indicateurs de Récolte & Pointage des Tâcherons"}
@@ -800,7 +800,7 @@ Commission Mandataire (
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">

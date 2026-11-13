@@ -307,7 +307,7 @@ export const LegalTrustView: React.FC<any> = () => {
 							}} icon={<Printer size={14} />}>{isAr ? "طباعة السجل" : "Imprimer Registre"}</AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "مؤشرات حسابات الودائع والحراسة العقارية" : "Fonds Mandants & Prix de Vente Séquestrés"}
@@ -347,7 +347,7 @@ export const LegalTrustView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-col lg:flex-row gap-6 items-start">
 <div className="flex-1 min-w-0 w-full">
 <UniversalDataCollection title={isAr ? "سجل حسابات الحراسة العقارية" : "Registre des Comptes Séquestres Immobiliers"} subtitle={isAr ? "متابعة مبالغ الشراء المحجوزة لحين نقل الملكية" : "Comptes affectés aux ventes immobilières et mainlevées"} items={escrowAccounts} keyExtractor={(a) => a.id} searchPlaceholder={isAr ? "بحث برقم الملف، المشتري أو البائع..." : "Rechercher dossier, acheteur, vendeur, conservation..."} searchFilter={(a, q) => a.matterReference.toLowerCase().includes(q.toLowerCase()) || a.clientName.toLowerCase().includes(q.toLowerCase()) || a.beneficiaryName.toLowerCase().includes(q.toLowerCase())} onSelectRow={(a) => setSelectedEscrow(a)} customActions={(a) => [{
@@ -576,7 +576,7 @@ export const LegalTrustView: React.FC<any> = () => {
 <AtriumButton variant="primary" onClick={() => setIsSCFModalOpen(true)} icon={<Plus size={14} />}>{isAr ? "قيد محاسبي جديد" : "Nouvelle Écriture SCF"}</AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "المؤشرات المحاسبية وميزان المراجعة" : "Balance des Écritures & Conformité SCF"}
@@ -616,7 +616,7 @@ export const LegalTrustView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex items-center justify-between">
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "سجل القيود المحاسبية اليومية" : "Journal Général des Écritures Comptables"}
@@ -835,7 +835,7 @@ export const LegalTrustView: React.FC<any> = () => {
 <AtriumButton variant="primary" onClick={() => setIsNewReceiptModalOpen(true)} icon={<Plus size={14} />}>{isAr ? "قبض نقدي جديد" : "Encaisser Espèces"}</AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "حالة الصندوق والسيولة النقدية" : "Situation de Caisse & Droits de Timbre"}
@@ -875,7 +875,7 @@ export const LegalTrustView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-col lg:flex-row gap-6 items-start">
 <div className="flex-1 min-w-0 w-full">
 <UniversalDataCollection title={isAr ? "سجل وصولات القبض النقدية" : "Quittances de Caisse & Timbre Fiscal"} subtitle={isAr ? "الوصولات المسلمة للزبائن مع تفصيل الطابع الجبائي" : "Reçus de paiement en espèces selon Art. 317"} items={cashReceipts} keyExtractor={(r) => r.id} searchPlaceholder={isAr ? "بحث برقم الوصل، الموكل أو الملف..." : "Rechercher N° quittance, client, affaire..."} searchFilter={(r, q) => r.receiptNumber.toLowerCase().includes(q.toLowerCase()) || r.clientName.toLowerCase().includes(q.toLowerCase()) || r.matterTitle.toLowerCase().includes(q.toLowerCase())} onSelectRow={(r) => setSelectedReceipt(r)} columns={[
@@ -1061,7 +1061,7 @@ export const LegalTrustView: React.FC<any> = () => {
 						}} icon={<Printer size={14} />}>{isAr ? "كشف CARPA" : "Relevé CARPA"}</AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "إدارة أموال الموكلين والودائع القضائية" : "Comptabilité des Fonds Mandants & Diligences"}
@@ -1103,7 +1103,7 @@ export const LegalTrustView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-col lg:flex-row gap-6 items-start">
 <div className="flex-1 min-w-0 w-full">
 <UniversalDataCollection title={isAr ? "سجل الحسابات والودائع" : "Relevé des Comptes Séquestres CARPA & Honoraires"} subtitle={isAr ? "متابعة الودائع وتصفية الأموال" : "Comptes affectés et décomptes déontologiques du barreau"} items={matters} keyExtractor={(m) => m.id} searchPlaceholder={isAr ? "بحث برقم القضية، الموكل، الموضوع..." : "Rechercher dossier, client, affaire, CARPA..."} searchFilter={(m, query) => m.title.toLowerCase().includes(query.toLowerCase()) || m.clientName.toLowerCase().includes(query.toLowerCase()) || m.matterNumber.toLowerCase().includes(query.toLowerCase()) || (m.assignedLawyer || "").toLowerCase().includes(query.toLowerCase())} onSelectRow={(m) => setSelectedMatter(m)} customActions={(m) => getCarpaActions(m)} columns={[

@@ -507,7 +507,7 @@ export const FreelanceTimeTrackerView: React.FC<any> = () => {
 </div>
 </div>}
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {language === "ar" ? "مؤشرات تتبع الوقت والإنتاجية" : language === "fr" ? "Indicateurs de Temps & Productivité" : "Time Tracking & Productivity Metrics"}
@@ -568,16 +568,11 @@ h
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div className="flex items-center gap-2">
 <Clock size={16} className="text-[#d4522f]" />
 <h3 className="text-sm font-bold text-black dark:text-white">{t("free_time_recent_logs", language)}</h3>
-<span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums ml-1">
-(
-{sortedLogs.length}
-)
-</span>
 </div>
 <div className="flex items-center gap-2.5 flex-wrap">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={t("free_time_ph_search_logs", language)} shutSize={36} openWidth={220} />

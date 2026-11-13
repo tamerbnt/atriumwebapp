@@ -28,12 +28,20 @@ export const Modal: React.FC<ModalProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) onClose();
     };
+    let didLockBody = false;
+    let prevOverflow = '';
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      if (document.documentElement.scrollHeight > document.documentElement.clientHeight) {
+        prevOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        didLockBody = true;
+      }
       window.addEventListener('keydown', handleKeyDown);
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      if (didLockBody) {
+        document.body.style.overflow = prevOverflow;
+      }
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose]);
@@ -51,13 +59,14 @@ export const Modal: React.FC<ModalProps> = ({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-200"
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs transform-gpu transition-opacity duration-200"
         onClick={onClose}
       />
 
       {/* Dialog Surface */}
       <div
-        className={`relative w-full ${widthClasses} z-10 max-h-[90vh] flex flex-col overflow-hidden rounded-[28px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xl animate-in fade-in zoom-in-95 duration-200`}
+        style={{ contain: 'layout paint' }}
+        className={`relative w-full ${widthClasses} z-10 max-h-[90vh] flex flex-col overflow-hidden rounded-[28px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xl transform-gpu animate-in fade-in zoom-in-95 duration-200`}
         role="dialog"
         aria-modal="true"
       >
@@ -73,6 +82,7 @@ export const Modal: React.FC<ModalProps> = ({
           </div>
           <button
             type="button"
+            data-no-liquid="true"
             onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center text-black/60 hover:text-black dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
             aria-label="Close modal"

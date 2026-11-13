@@ -408,7 +408,7 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 <AtriumButton variant="primary" size="sm" glow icon={<Plus size={14} />} onClick={() => setIsDraftModalOpen(true)}><span>{t("free_prop_btn_new")}</span></AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {language === "ar" ? "مؤشرات العروض التجارية والفرص التعاقدية" : language === "fr" ? "Indicateurs des Devis & Opportunités" : "Proposals & Deal Pipeline Indicators"}
@@ -474,7 +474,7 @@ export const FreelanceProposalsView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 {selectedProposalIds.size > 0 && /* @__PURE__ */ <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
 <div className="flex items-center gap-3">
 <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />

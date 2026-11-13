@@ -204,7 +204,7 @@ export const TradingFinanceView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
@@ -268,7 +268,7 @@ export const TradingFinanceView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-3">
 <div className="flex items-center justify-between">
 <span className="text-xs font-bold uppercase tracking-wider text-black/55 dark:text-white/55">
 {language === "ar" ? "تحليل أعمار الديون (Balance Âgée)" : "Balance Âgée des Créances Commerciales (4 Paliers)"}
@@ -300,7 +300,7 @@ export const TradingFinanceView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
 <div className="flex items-center gap-1.5 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl self-start">
 <button type="button" onClick={() => setFilterMode("unpaid")} title={`${language === "ar" ? "فواتير غير مسددة" : language === "fr" ? "En Attente d'Encaissement" : "Pending Collection"} (${agingAnalysis.unpaidCount})`} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${filterMode === "unpaid" ? "bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "معلقة" : language === "fr" ? "Attente" : "Unpaid"}</button>

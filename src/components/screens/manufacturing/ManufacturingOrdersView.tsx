@@ -313,7 +313,7 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
 <AtriumButton type="button" variant="primary" onClick={handleOpenAdd} icon={<Plus size={15} strokeWidth={2.5} />}><span>{language === "ar" ? "أمر تصنيع جديد" : "Nouvel OF"}</span></AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div>
 <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {language === "ar" ? "مؤشرات خطوط الإنتاج والورشة" : "Indicateurs de Cadence & Encours Atelier"}
@@ -349,15 +349,10 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex items-center gap-2">
 <span className="text-sm font-bold text-black dark:text-white">{language === "ar" ? "دليل أوامر التصنيع" : "Ordres de Fabrication"}</span>
-<span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums">
-(
-{sortedOrders.length}
-)
-</span>
 </div>
 <div className="flex flex-wrap items-center gap-2.5 ml-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={language === "ar" ? "بحث بالرقم أو المنتج أو رقم الدفعة..." : "Recherche OF, produit, lot..."} shutSize={36} openWidth={220} />

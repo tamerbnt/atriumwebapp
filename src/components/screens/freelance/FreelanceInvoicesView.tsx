@@ -428,7 +428,7 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {language === "ar" ? "مؤشرات الفوترة والمستحقات المالية" : language === "fr" ? "Indicateurs de Facturation & Recouvrement" : "Billing & Cash Flow Indicators"}
@@ -492,14 +492,13 @@ export const FreelanceInvoicesView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-[#E6DED6] dark:border-neutral-800/60">
 <div className="flex items-center gap-2.5 flex-wrap">
 <div className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-center text-black/70 dark:text-white/75"><FileText size={16} /></div>
 <div>
 <div className="flex items-center gap-2">
 <h3 className="text-sm font-bold text-black dark:text-white">{t("free_inv_title", language)}</h3>
-<span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 text-black/70 dark:text-white/75">{freelanceInvoices.length}</span>
 </div>
 </div>
 <div className="ml-2">

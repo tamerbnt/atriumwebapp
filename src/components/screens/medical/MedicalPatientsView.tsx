@@ -325,7 +325,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
 <AtriumButton type="button" variant="primary" onClick={handleOpenAdd} icon={<UserPlus size={15} strokeWidth={2.5} />}><span>{language === "ar" ? "مريض جديد" : "Nouveau Patient"}</span></AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div>
 <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {language === "ar" ? "مؤشرات الرعاية الصحية والسجلات" : "Indicateurs de Prise en Charge Clinique"}
@@ -365,15 +365,10 @@ export const MedicalPatientsView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex items-center gap-2">
 <span className="text-sm font-bold text-black dark:text-white">{language === "ar" ? "دليل المرضى" : "Registre des Patients"}</span>
-<span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums">
-(
-{sortedPatients.length}
-)
-</span>
 </div>
 <div className="flex flex-wrap items-center gap-2.5 ml-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={language === "ar" ? "بحث بالاسم أو الهاتف أو بطاقة الشفاء..." : "Recherche nom, tél, Chifa..."} shutSize={36} openWidth={220} />

@@ -11,33 +11,33 @@ export interface SpringConfig {
 }
 
 export const DEFAULT_APPLE_SPRING: Required<SpringConfig> = {
-  stiffness: 380,
-  damping: 32,
-  mass: 0.82,
-  maxBounce: 64,
+  stiffness: 210,
+  damping: 29,
+  mass: 1,
+  maxBounce: 40,
 };
 
-export const APPLE_RESISTANCE_COEFFICIENT = 0.55;
+export const APPLE_RESISTANCE_COEFFICIENT = 0.44;
 
 /**
- * Apple Rubber-Band Formula:
- * b = (x * c * d) / (d + c * |x|) * sign(x)
- * Asymptotically approaches dimension d, giving progressive mechanical resistance.
+ * Smooth Apple Rubber-Band Formula:
+ * Combines UIKit hyperbolic resistance with a smooth asymptotic ceiling
+ * so displacement progressively cushions without hitting a hard clamp.
  */
 export function calculateRubberBandOffset(
   rawDelta: number,
   dimension: number = 800,
   constant: number = APPLE_RESISTANCE_COEFFICIENT,
-  maxBounce: number = 64
+  maxBounce: number = DEFAULT_APPLE_SPRING.maxBounce
 ): number {
   if (rawDelta === 0) return 0;
   const absDelta = Math.abs(rawDelta);
   const sign = Math.sign(rawDelta);
-  const d = Math.max(dimension, 200);
+  const d = Math.max(dimension, 240);
 
-  // Apple UIKit formula
   const displacement = (absDelta * constant * d) / (d + constant * absDelta);
-  return sign * Math.min(displacement, maxBounce);
+  const smoothCap = maxBounce > 0 ? (displacement * maxBounce) / (displacement + maxBounce) : displacement;
+  return sign * smoothCap;
 }
 
 /**
@@ -61,7 +61,7 @@ export function stepSpring1D(
   config: Required<SpringConfig> = DEFAULT_APPLE_SPRING
 ): { pos: number; vel: number; settled: boolean } {
   // Clamp dt to avoid instability on frame drops
-  const safeDt = Math.min(dt, 0.033);
+  const safeDt = Math.min(Math.max(dt, 0.001), 0.033);
 
   const displacement = currentPos - targetPos;
   const springForce = -config.stiffness * displacement;
@@ -71,8 +71,8 @@ export function stepSpring1D(
   const nextVel = currentVel + acceleration * safeDt;
   const nextPos = currentPos + nextVel * safeDt;
 
-  const isPositionSettled = Math.abs(nextPos - targetPos) < 0.15;
-  const isVelocitySettled = Math.abs(nextVel) < 0.15;
+  const isPositionSettled = Math.abs(nextPos - targetPos) < 0.08;
+  const isVelocitySettled = Math.abs(nextVel) < 0.5;
 
   if (isPositionSettled && isVelocitySettled) {
     return { pos: targetPos, vel: 0, settled: true };

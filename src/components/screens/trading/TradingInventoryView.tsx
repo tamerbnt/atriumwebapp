@@ -263,7 +263,7 @@ export const TradingInventoryView: React.FC<any> = () => {
 <AtriumButton variant="primary" size="sm" onClick={() => setMovementModalOpen(true)} icon={<Plus size={15} />}>{t("trading_inventory_new_movement", "Nouveau Bon de Mouvement")}</AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
@@ -328,7 +328,7 @@ Niveaux de stocks nominaux
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-3">
 <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800/60">
 <div className="flex items-center gap-2.5">
 <div className="w-8 h-8 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><Warehouse size={16} /></div>
@@ -361,16 +361,13 @@ Niveaux de stocks nominaux
 </button>)}
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><Boxes size={18} /></div>
 <div className="flex items-center gap-2">
 <span className="text-sm font-bold text-black dark:text-white">
 {viewMode === "stock_state" ? t("trading_inventory_tab_state", "État des Stocks") : t("trading_inventory_tab_vouchers", "Bons de Mouvements")}
-</span>
-<span className="text-xs px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f] font-semibold font-mono">
-{viewMode === "stock_state" ? filteredProducts.length : filteredVouchers.length}
 </span>
 </div>
 </div>

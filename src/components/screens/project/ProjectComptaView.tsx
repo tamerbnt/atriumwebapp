@@ -391,7 +391,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 </button>;
 				})}
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">Trésorerie Agence & Décaissements Postaux</h2>
 </div>
@@ -432,7 +432,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 </div>
 </div>
 </div>
-{activeTab === "payroll" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+{activeTab === "payroll" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 <div>
 <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">Génération des Mandats Postaux (Slide 10)</span>
@@ -475,7 +475,7 @@ Générer CCP
 </div>)}
 </div>
 </div>}
-{activeTab === "ccp" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+{activeTab === "ccp" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex items-center justify-between">
 <Seek value={ccpSearch} onChange={setCcpSearch} placeholder="Rechercher par animateur, compte CCP ou wilaya..." openWidth={360} shutSize={38} />
 <span className="text-xs text-black/55 dark:text-white/55 font-semibold">
@@ -530,7 +530,7 @@ Mandat
 </div>
 </div>} />
 </div>}
-{activeTab === "expenses" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+{activeTab === "expenses" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex items-center justify-between">
 <Seek value={expenseSearch} onChange={setExpenseSearch} placeholder="Rechercher par titre de frais ou déclarant..." openWidth={360} shutSize={38} />
 {selectedExpenseIds.size > 0 && /* @__PURE__ */ <div className="flex items-center gap-2">
@@ -565,7 +565,7 @@ Supprimer
 </div>
 </div>} />
 </div>}
-{activeTab === "stock" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+{activeTab === "stock" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-wrap items-center justify-between gap-4">
 <div className="flex flex-wrap items-center gap-3 text-xs flex-1 max-w-xl">
 <Seek value={stockSearch} onChange={setStockSearch} placeholder="Rechercher équipement par code actif ou nom..." openWidth={360} shutSize={38} />

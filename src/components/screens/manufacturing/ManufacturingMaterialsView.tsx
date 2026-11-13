@@ -372,7 +372,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 					tooltip: isAr ? "سجل السندات (BSM / BR)" : language === "fr" ? "Registre Bons Décret 05-468" : "Movement vouchers registry",
 					count: vouchers.length
 				}]} aria-label="Manufacturing Materials Subtab" />
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <span className="text-xs font-semibold text-black/70 dark:text-white/75">{isAr ? "إجمالي قيمة المخزون PMP" : "Valeur Totale du Dépôt"}</span>
@@ -403,15 +403,10 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-{activeSubTab === "inventory" ? /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+{activeSubTab === "inventory" ? /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex items-center gap-2">
 <span className="text-sm font-bold text-black dark:text-white">{isAr ? "دليل المواد الأولية" : "Catalogue Matières Premières"}</span>
-<span className="text-xs text-black/55 dark:text-white/55 font-semibold font-mono">
-(
-{sortedMaterials.length}
-)
-</span>
 </div>
 <div className="flex flex-wrap items-center gap-2.5 ml-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={isAr ? "بحث بالاسم، الرمز، أو الرف..." : "Recherche SKU, matière, casier..."} shutSize={36} openWidth={220} />
@@ -561,7 +556,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 </div>
 </div>}
 </div>
-</div> : /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+</div> : /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex items-center justify-between p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div>
 <h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">

@@ -375,7 +375,7 @@ export const AppointmentFinanceView: React.FC = () => {
       </div>
 
       {/* TOP METRICS POD TRAY */}
-      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
           <div className="flex items-center gap-2">
             <Wallet size={18} className="text-[#d4522f]" />
@@ -463,7 +463,7 @@ export const AppointmentFinanceView: React.FC = () => {
       </div>
 
       {/* TENDER BREAKDOWN POD TRAY */}
-      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
+      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-3">
         <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800/60">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
@@ -544,7 +544,7 @@ export const AppointmentFinanceView: React.FC = () => {
       </div>
 
       {/* BOTTOM COLLECTION POD TRAY */}
-      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
         {/* Controls Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>

@@ -321,7 +321,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 </button>;
 				})}
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">Ressources Humaines & Équipe</h2>
 </div>
@@ -355,7 +355,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 </div>
 </div>
 </div>
-{activeTab === "talents" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+{activeTab === "talents" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-wrap items-center justify-between gap-4">
 <div className="flex flex-wrap items-center gap-3 text-xs flex-1 max-w-xl">
 <Seek value={searchTerm} onChange={setSearchTerm} placeholder={t("pm_rh_search_ph")} openWidth={360} shutSize={38} />
@@ -485,7 +485,7 @@ Supprimer
 							});
 						}} isPinned={(talent) => pinnedTalentIds.has(talent.id)} selectedIds={selectedTalentIds} onSelectionChange={setSelectedTalentIds} emptyTitle={t("pm_rh_no_talents") || "Aucun talent trouvé"} emptyDescription="Essayez de modifier votre filtre par wilaya ou vos termes de recherche." />
 </div>}
-{activeTab === "dossier" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+{activeTab === "dossier" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="p-6 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs max-w-4xl mx-auto space-y-6">
 {selectedTalent ? /* @__PURE__ */ <div className="space-y-6">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E6DED6] dark:border-neutral-800">
@@ -612,7 +612,7 @@ Supprimer
 </div> : /* @__PURE__ */ <p className="text-xs text-black/55 dark:text-white/55 text-center py-8">{t("pm_rh_no_talent_selected")}</p>}
 </div>
 </div>}
-{activeTab === "portal" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+{activeTab === "portal" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <MobilePhoneSimulator title={t("pm_rh_title_portal")} subtitle={t("pm_rh_portal_sub")} defaultMode="mobile">
 <div className="space-y-4">
 <div className="text-center pb-2 border-b border-[#E6DED6] dark:border-neutral-700">
@@ -651,7 +651,7 @@ Supprimer
 </div>
 </MobilePhoneSimulator>
 </div>}
-{activeTab === "walkin" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+{activeTab === "walkin" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="p-6 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs max-w-2xl mx-auto space-y-6">
 <div>
 <span className="text-xs font-semibold text-[#d4522f] uppercase tracking-wide">Écran 5.3B · Saisie Express Agence</span>

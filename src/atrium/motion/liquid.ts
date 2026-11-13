@@ -35,6 +35,8 @@ class LiquidBody implements Body {
   bx = new Spring(0, 230);
   by = new Spring(0, 230);
   private all = [this.x, this.y, this.r, this.sx, this.sy, this.bx, this.by];
+  private lastClip = '';
+  private lastTf = '';
 
   constructor(
     readonly el: HTMLElement,
@@ -68,15 +70,29 @@ class LiquidBody implements Body {
   render(): void {
     if (motion.instant) {
       // tier "off": CSS :hover / :active take over
-      this.el.style.transform = '';
-      if (this.lq) this.lq.style.clipPath = '';
+      if (this.lastTf !== '') {
+        this.el.style.transform = '';
+        this.lastTf = '';
+      }
+      if (this.lq && this.lastClip !== '') {
+        this.lq.style.clipPath = '';
+        this.lastClip = '';
+      }
       return;
     }
     const H = this.H;
     if (this.lq) {
-      this.lq.style.clipPath = `circle(${f(Math.max(0, this.r.x) * H)}px at ${f(this.x.x * this.w)}px ${f(this.y.x * H)}px)`;
+      const clip = `circle(${f(Math.max(0, this.r.x) * H)}px at ${f(this.x.x * this.w)}px ${f(this.y.x * H)}px)`;
+      if (clip !== this.lastClip) {
+        this.lq.style.clipPath = clip;
+        this.lastClip = clip;
+      }
     }
-    this.el.style.transform = `translate(${f(this.bx.x * H)}px,${f(this.by.x * H)}px) scale(${f(this.sx.x)},${f(this.sy.x)})`;
+    const tf = `translate3d(${f(this.bx.x * H)}px,${f(this.by.x * H)}px,0) scale(${f(this.sx.x)},${f(this.sy.x)})`;
+    if (tf !== this.lastTf) {
+      this.el.style.transform = tf;
+      this.lastTf = tf;
+    }
   }
 
   settled(): boolean {
@@ -95,7 +111,10 @@ class LiquidBody implements Body {
   onSleep(): void {
     this.el.style.willChange = '';
     // leave no transform behind at rest: it would create a stacking context for nothing
-    if (!motion.instant) this.el.style.transform = '';
+    if (!motion.instant && this.lastTf !== '') {
+      this.el.style.transform = '';
+      this.lastTf = '';
+    }
   }
 
   isVisible(): boolean {

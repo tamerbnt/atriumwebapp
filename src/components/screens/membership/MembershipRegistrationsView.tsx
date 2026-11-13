@@ -325,7 +325,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 <AtriumButton type="button" variant="primary" onClick={onAddLead} icon={<Plus size={15} strokeWidth={2.5} />}><span>{t("reg_add_lead", language)}</span></AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div>
 <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">{t("reg_pipeline_health_title", language)}</h2>
 </div>
@@ -369,7 +369,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div className="flex flex-wrap items-center justify-between gap-3">
 <div className="flex items-center gap-2.5">
 <ClipboardList size={16} className="text-black/62 dark:text-white/65" />
@@ -378,7 +378,6 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 {" "}
 {t("reg_requests_title", language)}
 </h2>
-<span className="px-2 py-0.5 rounded-md bg-white dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] text-[11px] font-semibold text-black/68 dark:text-white/75 tabular-nums shadow-2xs">{filteredLeads.length}</span>
 </div>
 <div className="flex flex-wrap items-center gap-2.5 ml-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={language === "ar" ? "بحث باسم المتقدم، الهاتف، البريد..." : language === "fr" ? "Rechercher nom, tél, e-mail..." : "Search applicant name, phone, email..."} shutSize={36} openWidth={240} />

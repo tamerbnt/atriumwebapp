@@ -350,7 +350,7 @@ V
 </button>
 </div>
 </div>}
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-3">
 <div>
 <h3 className="text-xs font-bold text-black dark:text-white tracking-tight">
 {language === "ar" ? "مؤشرات التحصيل والذمم المالية" : language === "fr" ? "Performance Financière & Recouvrement" : "Tuition & Receivables Performance"}
@@ -410,12 +410,11 @@ V
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
 <div className="flex items-center gap-2">
 <Wallet size={18} className="text-black/70 dark:text-white/75" />
 <h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("edu_finance_title")}</h2>
-<span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-black/70 dark:text-white/75">{filteredEnrollments.length}</span>
 </div>
 <div className="flex items-center gap-2.5 flex-wrap">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder="Search accounts by learner name or cohort..." openWidth={260} shutSize={36} />
@@ -575,11 +574,11 @@ V
 <button type="button" onClick={() => setDetailEnrollment(null)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
 </div>
 <div className="grid grid-cols-2 gap-3">
-<div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-800">
+<div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-[#141312] border border-[#E6DED6] dark:border-[#33302D]">
 <span className="text-[11px] text-black/55 dark:text-white/55 block mb-0.5">Frais de Scolarité</span>
 <span className="text-lg font-bold text-black dark:text-white tabular-nums">{formatMoney(detailEnrollment.agreedTuition)}</span>
 </div>
-<div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-800">
+<div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-[#141312] border border-[#E6DED6] dark:border-[#33302D]">
 <span className="text-[11px] text-black/55 dark:text-white/55 block mb-0.5">Solde Restant</span>
 <span className="text-lg font-bold text-rose-600 dark:text-rose-400 tabular-nums">{formatMoney(detailEnrollment.balanceDue)}</span>
 </div>

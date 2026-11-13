@@ -98,7 +98,7 @@ export const MedicalLabViewerModal: React.FC<MedicalLabViewerModalProps> = ({ is
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
 <div className="bg-white dark:bg-neutral-900 w-full max-w-3xl rounded-[28px] border border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col max-h-[88vh] overflow-hidden">
-<div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-[#F3EDE7] dark:bg-neutral-800/40">
+<div className="px-6 py-4 border-b border-neutral-200 dark:border-[#33302D] flex items-center justify-between bg-[#F3EDE7] dark:bg-[#141312]">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#0D9488]/15 text-[#0D9488] flex items-center justify-center font-bold"><Microscope size={20} /></div>
 <div>
@@ -123,7 +123,7 @@ Bilans (
 </div>
 <div className="p-6 overflow-y-auto flex-1">
 {activeTab === "list" ? patientLabs.length > 0 ? /* @__PURE__ */ <div className="space-y-4">
-{patientLabs.map((lab: any) => /* @__PURE__ */ <div key={lab.id} className="p-5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-3">
+{patientLabs.map((lab: any) => /* @__PURE__ */ <div key={lab.id} className="p-5 rounded-2xl bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200 dark:border-neutral-700 space-y-3">
 <div className="flex items-center justify-between">
 <div className="flex items-center gap-2">
 <span className="font-bold text-xs text-black dark:text-white">{lab.testCategory}</span>
@@ -212,7 +212,7 @@ Rapport d'Imagerie (
 									label: p.fullName
 								}))} />
 </div>
-<div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-3">
+<div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200 dark:border-neutral-700 space-y-3">
 <span className="text-xs font-bold text-black/70 dark:text-white/75 uppercase tracking-wider block">Valeurs Biologiques Mesurées</span>
 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
 <LabelInput label="Glycémie (0.7-1.1 g/L)" value={glycemieVal} onChange={(e) => setGlycemieVal(e.target.value)} />

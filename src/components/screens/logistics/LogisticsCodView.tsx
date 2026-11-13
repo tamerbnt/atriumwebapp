@@ -148,7 +148,7 @@ export const LogisticsCodView: React.FC<any> = () => {
 						}} icon={<ArrowUpRight size={14} />}>{isAr ? "تصدير كشف التسوية" : "Bordereau Marchands"}</AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "مؤشرات صندوق التحصيل وأموال التجار" : "Trésorerie des Encaissements & Reversements"}
@@ -213,7 +213,7 @@ Prêt pour virement CCP / BaridiMob
 						tooltip: isAr ? "أجور وعمولات السائقين" : language === "fr" ? "Paie Livreurs" : "Driver payroll & commissions"
 					}
 				]} />
-{activeTab === "shipments" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+{activeTab === "shipments" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex items-center justify-between">
 <div>
 <h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{isAr ? "طرود جاهزة لتسوية المستحقات" : "Colis Livrés & Encaissements"}</h2>
@@ -275,7 +275,7 @@ Prêt pour virement CCP / BaridiMob
 						}
 					]} />
 </div>}
-{activeTab === "discharges" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
+{activeTab === "discharges" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-3">
 <div className="flex items-center justify-between">
 <div>
 <h3 className="text-sm font-bold text-black dark:text-white">
@@ -323,7 +323,7 @@ Prêt pour virement CCP / BaridiMob
 </table>
 </div>
 </div>}
-{activeTab === "remittances" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
+{activeTab === "remittances" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-3">
 <div className="flex items-center justify-between">
 <div>
 <h3 className="text-sm font-bold text-black dark:text-white">
@@ -376,7 +376,7 @@ Prêt pour virement CCP / BaridiMob
 </div>
 </div>}
 {activeTab === "driver_payroll" && /* @__PURE__ */ <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-<div className="p-5 rounded-[24px] bg-[#F3EDE7] dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-800/60 space-y-4">
+<div className="p-5 rounded-[24px] bg-[#F3EDE7] dark:bg-[#141312] border border-[#E6DED6] dark:border-[#33302D] space-y-4">
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold"><Truck size={18} /></div>
 <div>
@@ -402,7 +402,7 @@ Prêt pour virement CCP / BaridiMob
 </div>
 </div>
 </div>
-<div className="p-5 rounded-[24px] bg-[#F3EDE7] dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-800/60 space-y-4">
+<div className="p-5 rounded-[24px] bg-[#F3EDE7] dark:bg-[#141312] border border-[#E6DED6] dark:border-[#33302D] space-y-4">
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold"><UserCheck size={18} /></div>
 <div>

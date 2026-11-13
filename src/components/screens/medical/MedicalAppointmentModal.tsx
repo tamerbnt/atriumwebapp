@@ -100,7 +100,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
 <div className="bg-white dark:bg-neutral-900 w-full max-w-lg rounded-[28px] border border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col overflow-hidden">
-<div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-[#F3EDE7] dark:bg-neutral-800/40">
+<div className="px-6 py-4 border-b border-neutral-200 dark:border-[#33302D] flex items-center justify-between bg-[#F3EDE7] dark:bg-[#141312]">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#0D9488]/15 text-[#0D9488] flex items-center justify-center font-bold"><Calendar size={20} /></div>
 <div>
@@ -148,7 +148,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 								]} />
 </div>
 <LabelInput label="Motif du Rendez-vous" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="ex: Bilan annuel, Consultation cardiologique" required />
-<div className="flex items-center justify-between p-3 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700">
+<div className="flex items-center justify-between p-3 rounded-2xl bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200 dark:border-neutral-700">
 <div>
 <span className="text-xs font-semibold text-black dark:text-white block">Niveau de Priorité</span>
 <span className="text-[11px] text-black/55 dark:text-white/55">Normal ou Prioritaire</span>
@@ -158,7 +158,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 <button type="button" onClick={() => setUrgency("Prioritaire")} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${urgency === "Prioritaire" ? "bg-[#d4522f] text-white shadow-xs" : "text-black/70 dark:text-white/75"}`}>Prioritaire</button>
 </div>
 </div>
-<div className="p-3 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-2">
+<div className="p-3 rounded-2xl bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200 dark:border-neutral-700 space-y-2">
 <label className="flex items-center gap-2.5 cursor-pointer select-none">
 <input type="checkbox" checked={isEmergencyBypass} onChange={(e) => setIsEmergencyBypass(e.target.checked)} className="w-4 h-4 rounded text-[#d4522f] accent-[#d4522f] cursor-pointer" />
 <span className="text-xs font-bold text-amber-700 dark:text-amber-400">Sur-réservation d'urgence (Bypass de conflit)</span>

@@ -338,7 +338,7 @@ export const ContractorBoqView: React.FC<any> = () => {
 <AtriumButton variant="primary" onClick={openCreateModal} icon={<Plus size={14} />}>{isAr ? "إضافة بند" : "Nouveau Poste"}</AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "التقييم المالي والإنجاز الكمي للمشروع" : "Suivi Budgétaire & Avancement Métré"}
@@ -382,7 +382,7 @@ export const ContractorBoqView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">

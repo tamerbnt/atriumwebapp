@@ -239,7 +239,7 @@ export const MedicalQueueView: React.FC<any> = () => {
 </div>
 </div>
 {activeSubView === "agenda" ? /* @__PURE__ */ <MedicalAgendaView /> : /* @__PURE__ */ <>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "مؤشرات تدفق المرضى وأوقات الانتظار" : "Flux Salle d'Attente & Triage des Urgences"}
@@ -279,12 +279,11 @@ export const MedicalQueueView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div className="flex flex-wrap items-center justify-between gap-3">
 <div className="flex items-center gap-2">
 <HeartPulse size={16} className="text-black/55 dark:text-white/55" />
 <span className="text-sm font-bold text-black dark:text-white">{isAr ? "سجل الاستشارات والفرز" : "Registre des Consultations & Triage"}</span>
-<span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums ml-1">{sortedConsultations.length}</span>
 </div>
 <div className="flex flex-wrap items-center gap-2.5 ml-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={isAr ? "بحث عن مريض أو تشخيص..." : "Rechercher patient ou motif..."} shutSize={36} openWidth={220} />

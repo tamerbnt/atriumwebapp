@@ -323,7 +323,7 @@ mm
 						}
 					]} aria-label="Creative Studio Subtab" />
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">Indicateurs Pré-Presse & Livrables BAT</h2>
 </div>
@@ -363,7 +363,7 @@ mm
 </div>
 </div>
 </div>
-{activeTab === "kanban" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+{activeTab === "kanban" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 <div className="space-y-3">
 <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
@@ -417,7 +417,7 @@ mm
 </div>
 </div>
 </div>}
-{activeTab === "production" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+{activeTab === "production" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <Seek value={creaSearch} onChange={setCreaSearch} placeholder="Rechercher par livrable, campagne ou format..." openWidth={360} shutSize={38} />
 <button onClick={handleExportBatCsv} className="px-3 py-1.5 text-xs font-semibold text-black/70 dark:text-white/75 bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700 hover:bg-[#FBF8F5] rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer">
@@ -474,7 +474,7 @@ Supprimer
 </div>
 </div>} />
 </div>}
-{activeTab === "upload" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+{activeTab === "upload" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="p-6 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs max-w-3xl mx-auto space-y-6">
 <div>
 <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">Dépôt & Conformité Pré-Presse (Slide 8)</span>
@@ -535,7 +535,7 @@ Livrable BAT enregistré et transmis au Chef de Projet !
 </form>
 </div>
 </div>}
-{activeTab === "briefs" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+{activeTab === "briefs" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 {pmProjects.map((p) => /* @__PURE__ */ <div key={p.id} className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-3">
 <div className="flex items-center justify-between text-xs">

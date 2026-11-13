@@ -193,7 +193,7 @@ export const MembershipFinanceView: React.FC = () => {
       </div>
 
       {/* 4-KPI Elevated Pod Tray */}
-      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
+      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
         <div>
           <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">
             {isAr ? 'ملخص الخزينة والتدفقات' : isEn ? 'Treasury Overview' : 'Trésorerie & Encaissements'}
@@ -281,16 +281,13 @@ export const MembershipFinanceView: React.FC = () => {
       </div>
 
       {/* Bottom Pod Tray: Control Bar + Transactions Ledger */}
-      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
+      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-0">
             <div className="flex items-center gap-2.5 shrink-0 mr-1 rtl:mr-0 rtl:ml-1">
               <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">
                 {isAr ? 'سجل المدفوعات' : isEn ? 'Transactions Ledger' : 'Journal des règlements'}
               </h2>
-              <span className="px-2 py-0.5 text-[11px] font-semibold rounded-md bg-white dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] text-black/75 dark:text-white/80 tabular-nums">
-                {filteredTransactions.length}
-              </span>
             </div>
 
             <div className="w-64">

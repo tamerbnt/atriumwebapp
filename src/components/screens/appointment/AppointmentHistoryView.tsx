@@ -248,7 +248,7 @@ m)
 <AtriumButton variant="secondary" size="sm" icon={<Download className="w-3.5 h-3.5" />} onClick={handleExportCSV}>Export CSV</AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
 <div className="flex items-center gap-2">
 <Activity size={18} className="text-[#d4522f]" />
@@ -314,7 +314,7 @@ m)
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
 <div>
 <h2 className="text-base font-black text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">Registre Chronologique des Prestations</h2>

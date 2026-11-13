@@ -33,6 +33,36 @@ import {
   Settings,
   Maximize2,
   Minimize2,
+  BarChart2,
+  ClipboardList,
+  History,
+  ShoppingBag,
+  Calendar,
+  Wallet,
+  FileText,
+  Kanban,
+  DoorOpen,
+  ShieldCheck,
+  GraduationCap,
+  Award,
+  BookOpen,
+  Boxes,
+  Receipt,
+  Truck,
+  Stethoscope,
+  Wrench,
+  Car,
+  Factory,
+  Scale,
+  HardHat,
+  Sprout,
+  Package,
+  Key,
+  FileCheck,
+  CheckCircle2,
+  Landmark,
+  Building,
+  User,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../services/store';
 import { formatDuration } from '../../utils/rules';
@@ -85,6 +115,16 @@ export const TopBar: React.FC<TopBarProps> = ({
     stopTimer,
     openDesktopUpgradeModal,
     activePmRole,
+    setActivePmRole,
+    setActivePmSubScreen,
+    activeGarageRole,
+    activeRealEstateRole,
+    activeManufacturingRole,
+    activeLegalRole,
+    activeLogisticsRole,
+    activeContractorRole,
+    activeAgriRole,
+    activePosRole,
     unreadNotificationCount,
     networkMode,
     setNetworkMode,
@@ -218,8 +258,72 @@ export const TopBar: React.FC<TopBarProps> = ({
   const isProjectMilestone = currentBusiness?.category === 'project_milestone';
   const isTrading = currentBusiness?.category === 'trading_commercial';
 
+  type BreadcrumbIcon = React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
+
+  interface BreadcrumbNode {
+    id: string;
+    label: string;
+    icon?: BreadcrumbIcon;
+    onClick?: () => void;
+    isHome?: boolean;
+  }
+
+  const renderBreadcrumbTrail = (nodes: BreadcrumbNode[]) => {
+    return (
+      <nav
+        aria-label="Breadcrumb"
+        className="inline-flex items-center gap-0.5 sm:gap-1 h-[34px] px-1.5 rounded-full bg-[#F3EDE7]/85 dark:bg-neutral-800/80 border border-[#E6DED6]/90 dark:border-neutral-700/65 shadow-2xs max-w-full min-w-0"
+      >
+        {nodes.map((node, idx) => {
+          const isLast = idx === nodes.length - 1;
+          const CurrentIcon = node.icon || (node.isHome ? Home : Layers);
+          return (
+            <React.Fragment key={node.id}>
+              {idx > 0 && (
+                <ChevronRight
+                  size={12}
+                  strokeWidth={2.2}
+                  aria-hidden="true"
+                  className="text-black/32 dark:text-white/35 shrink-0 rtl:rotate-180"
+                />
+              )}
+              {isLast ? (
+                <span
+                  aria-current="page"
+                  className="inline-flex items-center gap-1.5 h-[24px] text-[12px] font-semibold text-black dark:text-white min-w-0 pl-1 pr-2 rtl:pl-2 rtl:pr-1"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="w-4.5 h-4.5 rounded-full bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[#d4522f] dark:text-[#FB923C] flex items-center justify-center shrink-0"
+                  >
+                    <CurrentIcon size={11} strokeWidth={2.3} />
+                  </span>
+                  <span className="truncate max-w-[150px] sm:max-w-[230px]">{node.label}</span>
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  data-no-liquid="true"
+                  onClick={node.onClick}
+                  className="inline-flex items-center gap-1.5 h-[24px] px-2 rounded-full text-[12px] font-medium text-black/62 dark:text-white/68 hover:text-[#d4522f] dark:hover:text-[#FB923C] hover:bg-white/85 dark:hover:bg-neutral-700/75 active:scale-[0.98] transition-all duration-150 cursor-pointer min-w-0 shrink-0"
+                >
+                  {node.isHome && <Home size={12} strokeWidth={2.1} className="shrink-0 opacity-85" />}
+                  <span className="truncate max-w-[110px] sm:max-w-[160px]">{node.label}</span>
+                </button>
+              )}
+            </React.Fragment>
+          );
+        })}
+      </nav>
+    );
+  };
+
   const getBreadcrumb = () => {
     const cat = currentBusiness?.category;
+    const isAr = language === 'ar';
+    const isFr = language === 'fr';
+    const l3 = (ar: string, fr: string, en: string) => (isAr ? ar : isFr ? fr : en);
+
     const homeLabel = isProjectMilestone
       ? t('nav_home', language)
       : isFreelance
@@ -233,475 +337,530 @@ export const TopBar: React.FC<TopBarProps> = ({
       : isTrading
       ? t('nav_trading_dashboard', language)
       : cat === 'medical_clinic'
-      ? (language === 'ar' ? 'العيادة' : language === 'fr' ? 'Clinique' : 'Clinic')
+      ? l3('العيادة', 'Clinique', 'Clinic')
       : cat === 'auto_garage'
-      ? (language === 'ar' ? 'الورشة' : language === 'fr' ? 'Garage' : 'Garage')
+      ? l3('الورشة', 'Garage', 'Garage')
       : cat === 'real_estate'
-      ? (language === 'ar' ? 'العقارات' : language === 'fr' ? 'Immobilier' : 'Real Estate')
+      ? l3('العقارات', 'Immobilier', 'Real Estate')
       : cat === 'manufacturing_production'
-      ? (language === 'ar' ? 'المصنع' : language === 'fr' ? 'Usine' : 'Factory')
+      ? l3('المصنع', 'Usine', 'Factory')
       : cat === 'legal_accounting'
-      ? (language === 'ar' ? 'المكتب' : language === 'fr' ? 'Cabinet' : 'Practice')
+      ? l3('المكتب', 'Cabinet', 'Practice')
       : cat === 'logistics_delivery'
-      ? (language === 'ar' ? 'التوصيل' : language === 'fr' ? 'Livraison' : 'Logistics')
+      ? l3('التوصيل', 'Livraison', 'Logistics')
       : cat === 'construction_contractor'
-      ? (language === 'ar' ? 'المشاريع' : language === 'fr' ? 'Chantiers' : 'Projects')
+      ? l3('المشاريع', 'Chantiers', 'Projects')
       : cat === 'agriculture_farming'
-      ? (language === 'ar' ? 'المزرعة' : language === 'fr' ? 'Domaine' : 'Farm')
+      ? l3('المزرعة', 'Domaine', 'Farm')
       : t('nav_home', language);
 
-    // Dedicated settings breadcrumb
+    const homeTarget: 'pm_dir_dashboard' | 'trading_dashboard' | 'shop' | 'dashboard' =
+      isProjectMilestone || activeScreen.startsWith('pm_')
+        ? 'pm_dir_dashboard'
+        : isTrading || activeScreen.startsWith('trading_')
+        ? 'trading_dashboard'
+        : isPOS && activePosRole === 'staff'
+        ? 'shop'
+        : 'dashboard';
+
+    const goHome = () => {
+      if (selectedMember) selectMember(null);
+      if (isProjectMilestone || activeScreen.startsWith('pm_')) {
+        setActivePmRole('direction');
+        setActivePmSubScreen('dashboard');
+      }
+      setScreen(homeTarget);
+    };
+
+    const homeNode: BreadcrumbNode = {
+      id: 'home',
+      label: homeLabel,
+      icon: Home,
+      isHome: true,
+      onClick: goHome,
+    };
+
+    // Settings
     if (activeScreen === 'settings') {
-      return (
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
-          <button
-            type="button"
-            onClick={() => setScreen(isProjectMilestone ? 'pm_dir_dashboard' : 'dashboard')}
-            className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-          >
-            <Home size={12} />
-            <span>{homeLabel}</span>
-          </button>
-          <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
-          <span className="text-black dark:text-white font-semibold">
-            {t('nav_settings', language)}
-          </span>
-        </nav>
-      );
+      return renderBreadcrumbTrail([
+        homeNode,
+        { id: 'settings', label: t('nav_settings', language), icon: Settings },
+      ]);
     }
 
-    // If in Project & Milestone category or navigating a PM screen, render role & screen breadcrumb
+    // Staff screen
+    if (activeScreen === 'staff') {
+      return renderBreadcrumbTrail([
+        homeNode,
+        { id: 'staff', label: l3('الفريق', 'Équipe', 'Staff'), icon: Users },
+      ]);
+    }
+
+    // Project & Milestone category / PM screens
     if (isProjectMilestone || activeScreen.startsWith('pm_')) {
-      const pmScreenTitles: Record<string, { role: string; screen: string }> = {
-        pm_dir_dashboard: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_dashboard') },
-        pm_dir_new_project: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_new_project') },
-        pm_dir_projects: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_projects') },
-        pm_dir_approvals: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_approvals') },
-        pm_dir_reports: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_reports') },
-        pm_cp_projects: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_projects') },
-        pm_cp_catalog: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_catalog') },
-        pm_cp_orders: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_orders') },
-        pm_cp_files: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_deliverables') },
-        pm_cp_deliverables: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_deliverables') },
-        pm_cp_expenses: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_expenses') },
-        pm_crea_kanban: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_kanban') },
-        pm_crea_production: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_production') },
-        pm_crea_upload: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_upload') },
-        pm_crea_briefs: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_briefs') },
-        pm_sup_missions: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_missions') },
-        pm_sup_attendance: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_attendance') },
-        pm_sup_staffing: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_staffing') },
-        pm_sup_expenses: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_expenses') },
-        pm_rh_talents: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_talents') },
-        pm_rh_dossier: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_dossier') },
-        pm_rh_portal: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_portal') },
-        pm_rh_walkin: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_walkin') },
-        pm_compta_payroll: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_payroll') },
-        pm_compta_ccp: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_ccp') },
-        pm_compta_expenses: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_expenses') },
-        pm_compta_stock: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_stock') },
-        // Standard ID fallbacks for agency category
-        dashboard: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_dashboard') },
-        scheduler: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_projects') },
-        registrations: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_kanban') },
-        analytics: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_missions') },
-        members: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_talents') },
-        finance: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_payroll') },
-        shop: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_stock') },
-        history: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_attendance') },
+      const pmRoleLandings: Record<string, { role: 'direction' | 'chef_projet' | 'crea' | 'superviseur' | 'rh' | 'compta'; screen: 'pm_dir_dashboard' | 'pm_cp_projects' | 'pm_crea_kanban' | 'pm_sup_missions' | 'pm_rh_talents' | 'pm_compta_payroll'; sub: string }> = {
+        direction: { role: 'direction', screen: 'pm_dir_dashboard', sub: 'dashboard' },
+        chef_projet: { role: 'chef_projet', screen: 'pm_cp_projects', sub: 'portfolio' },
+        crea: { role: 'crea', screen: 'pm_crea_kanban', sub: 'demandes' },
+        superviseur: { role: 'superviseur', screen: 'pm_sup_missions', sub: 'missions' },
+        rh: { role: 'rh', screen: 'pm_rh_talents', sub: 'talents' },
+        compta: { role: 'compta', screen: 'pm_compta_payroll', sub: 'payroll' },
       };
 
+      const pmScreenTitles: Record<string, { roleKey: keyof typeof pmRoleLandings; role: string; screen: string; icon: BreadcrumbIcon }> = {
+        pm_dir_dashboard: { roleKey: 'direction', role: t('pm_role_direction_name'), screen: t('pm_screen_dir_dashboard'), icon: TrendingUp },
+        pm_dir_new_project: { roleKey: 'direction', role: t('pm_role_direction_name'), screen: t('pm_screen_dir_new_project'), icon: FileText },
+        pm_dir_projects: { roleKey: 'direction', role: t('pm_role_direction_name'), screen: t('pm_screen_dir_projects'), icon: Kanban },
+        pm_dir_approvals: { roleKey: 'direction', role: t('pm_role_direction_name'), screen: t('pm_screen_dir_approvals'), icon: ShieldCheck },
+        pm_dir_reports: { roleKey: 'direction', role: t('pm_role_direction_name'), screen: t('pm_screen_dir_reports'), icon: BarChart2 },
+        pm_cp_projects: { roleKey: 'chef_projet', role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_projects'), icon: Kanban },
+        pm_cp_catalog: { roleKey: 'chef_projet', role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_catalog'), icon: ShoppingBag },
+        pm_cp_orders: { roleKey: 'chef_projet', role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_orders'), icon: Sparkles },
+        pm_cp_files: { roleKey: 'chef_projet', role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_deliverables'), icon: FileText },
+        pm_cp_deliverables: { roleKey: 'chef_projet', role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_deliverables'), icon: FileText },
+        pm_cp_expenses: { roleKey: 'chef_projet', role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_expenses'), icon: Wallet },
+        pm_crea_kanban: { roleKey: 'crea', role: t('pm_role_crea_name'), screen: t('pm_screen_crea_kanban'), icon: Layers },
+        pm_crea_production: { roleKey: 'crea', role: t('pm_role_crea_name'), screen: t('pm_screen_crea_production'), icon: Sparkles },
+        pm_crea_upload: { roleKey: 'crea', role: t('pm_role_crea_name'), screen: t('pm_screen_crea_upload'), icon: FileText },
+        pm_crea_briefs: { roleKey: 'crea', role: t('pm_role_crea_name'), screen: t('pm_screen_crea_briefs'), icon: FileText },
+        pm_sup_missions: { roleKey: 'superviseur', role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_missions'), icon: Radio },
+        pm_sup_attendance: { roleKey: 'superviseur', role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_attendance'), icon: Clock },
+        pm_sup_staffing: { roleKey: 'superviseur', role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_staffing'), icon: Users },
+        pm_sup_expenses: { roleKey: 'superviseur', role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_expenses'), icon: FileText },
+        pm_rh_talents: { roleKey: 'rh', role: t('pm_role_rh_name'), screen: t('pm_screen_rh_talents'), icon: Users },
+        pm_rh_dossier: { roleKey: 'rh', role: t('pm_role_rh_name'), screen: t('pm_screen_rh_dossier'), icon: FileText },
+        pm_rh_portal: { roleKey: 'rh', role: t('pm_role_rh_name'), screen: t('pm_screen_rh_portal'), icon: GraduationCap },
+        pm_rh_walkin: { roleKey: 'rh', role: t('pm_role_rh_name'), screen: t('pm_screen_rh_walkin'), icon: DoorOpen },
+        pm_compta_payroll: { roleKey: 'compta', role: t('pm_role_compta_name'), screen: t('pm_screen_compta_payroll'), icon: Wallet },
+        pm_compta_ccp: { roleKey: 'compta', role: t('pm_role_compta_name'), screen: t('pm_screen_compta_ccp'), icon: CreditCard },
+        pm_compta_expenses: { roleKey: 'compta', role: t('pm_role_compta_name'), screen: t('pm_screen_compta_expenses'), icon: Receipt },
+        pm_compta_stock: { roleKey: 'compta', role: t('pm_role_compta_name'), screen: t('pm_screen_compta_stock'), icon: Boxes },
+        dashboard: { roleKey: 'direction', role: t('pm_role_direction_name'), screen: t('pm_screen_dir_dashboard'), icon: TrendingUp },
+        scheduler: { roleKey: 'chef_projet', role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_projects'), icon: Kanban },
+        registrations: { roleKey: 'crea', role: t('pm_role_crea_name'), screen: t('pm_screen_crea_kanban'), icon: Layers },
+        analytics: { roleKey: 'superviseur', role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_missions'), icon: Radio },
+        members: { roleKey: 'rh', role: t('pm_role_rh_name'), screen: t('pm_screen_rh_talents'), icon: Users },
+        finance: { roleKey: 'compta', role: t('pm_role_compta_name'), screen: t('pm_screen_compta_payroll'), icon: Wallet },
+        shop: { roleKey: 'compta', role: t('pm_role_compta_name'), screen: t('pm_screen_compta_stock'), icon: Boxes },
+        history: { roleKey: 'superviseur', role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_attendance'), icon: Clock },
+      };
+
+      const fallbackRoleKey: keyof typeof pmRoleLandings =
+        activePmRole === 'chef_projet' ||
+        activePmRole === 'crea' ||
+        activePmRole === 'superviseur' ||
+        activePmRole === 'rh' ||
+        activePmRole === 'compta'
+          ? activePmRole
+          : 'direction';
+
       const resolved = pmScreenTitles[activeScreen] || {
+        roleKey: fallbackRoleKey,
         role:
-          activePmRole === 'direction'
+          fallbackRoleKey === 'direction'
             ? t('pm_role_direction_name')
-            : activePmRole === 'chef_projet'
+            : fallbackRoleKey === 'chef_projet'
             ? t('pm_role_chef_projet_name')
-            : activePmRole === 'crea'
+            : fallbackRoleKey === 'crea'
             ? t('pm_role_crea_name')
-            : activePmRole === 'superviseur'
+            : fallbackRoleKey === 'superviseur'
             ? t('pm_role_superviseur_name')
-            : activePmRole === 'rh'
+            : fallbackRoleKey === 'rh'
             ? t('pm_role_rh_name')
             : t('pm_role_compta_name'),
         screen:
-          activePmRole === 'direction'
+          fallbackRoleKey === 'direction'
             ? t('pm_screen_dir_dashboard')
-            : activePmRole === 'chef_projet'
+            : fallbackRoleKey === 'chef_projet'
             ? t('pm_screen_cp_projects')
-            : activePmRole === 'crea'
+            : fallbackRoleKey === 'crea'
             ? t('pm_screen_crea_kanban')
-            : activePmRole === 'superviseur'
+            : fallbackRoleKey === 'superviseur'
             ? t('pm_screen_sup_missions')
-            : activePmRole === 'rh'
+            : fallbackRoleKey === 'rh'
             ? t('pm_screen_rh_talents')
             : t('pm_screen_compta_payroll'),
+        icon:
+          fallbackRoleKey === 'direction'
+            ? TrendingUp
+            : fallbackRoleKey === 'chef_projet'
+            ? Kanban
+            : fallbackRoleKey === 'crea'
+            ? Layers
+            : fallbackRoleKey === 'superviseur'
+            ? Radio
+            : fallbackRoleKey === 'rh'
+            ? Users
+            : Wallet,
       };
 
-      return (
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
-          <button
-            type="button"
-            onClick={() => setScreen('pm_dir_dashboard')}
-            className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-          >
-            <Home size={12} />
-            <span>{homeLabel}</span>
-          </button>
-          <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
-          <span className="text-black/70 dark:text-white/75 font-medium">{resolved.role}</span>
-          <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
-          <span className="text-black dark:text-white font-semibold">{resolved.screen}</span>
-        </nav>
-      );
+      const landing = pmRoleLandings[resolved.roleKey];
+      return renderBreadcrumbTrail([
+        homeNode,
+        {
+          id: `pm-role-${resolved.roleKey}`,
+          label: resolved.role,
+          onClick: () => {
+            setActivePmRole(landing.role);
+            setActivePmSubScreen(landing.sub);
+            setScreen(landing.screen);
+          },
+        },
+        { id: `pm-screen-${activeScreen}`, label: resolved.screen, icon: resolved.icon },
+      ]);
     }
 
-    switch (activeScreen) {
-      case 'dashboard':
-      case 'trading_dashboard':
-        return (
-          <div className="flex items-center gap-1.5 text-xs">
-            <span className="font-semibold text-black dark:text-white flex items-center gap-1.5">
-              <Home size={13} className="text-[#d4522f]" />
-              {homeLabel}
-            </span>
-          </div>
-        );
-      case 'trading_sales':
-        return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
-            <button
-              type="button"
-              onClick={() => setScreen('trading_dashboard')}
-              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Home size={12} />
-              <span>{homeLabel}</span>
-            </button>
-            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
-            <span className="text-black dark:text-white font-semibold">
-              {t('nav_trading_sales', language)}
-            </span>
-          </nav>
-        );
-      case 'trading_purchases':
-        return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
-            <button
-              type="button"
-              onClick={() => setScreen('trading_dashboard')}
-              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Home size={12} />
-              <span>{homeLabel}</span>
-            </button>
-            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
-            <span className="text-black dark:text-white font-semibold">
-              {t('nav_trading_purchases', language)}
-            </span>
-          </nav>
-        );
-      case 'trading_inventory':
-        return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
-            <button
-              type="button"
-              onClick={() => setScreen('trading_dashboard')}
-              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Home size={12} />
-              <span>{homeLabel}</span>
-            </button>
-            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
-            <span className="text-black dark:text-white font-semibold">
-              {t('nav_trading_inventory', language)}
-            </span>
-          </nav>
-        );
-      case 'trading_directory':
-        return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
-            <button
-              type="button"
-              onClick={() => setScreen('trading_dashboard')}
-              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Home size={12} />
-              <span>{homeLabel}</span>
-            </button>
-            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
-            <span className="text-black dark:text-white font-semibold">
-              {t('nav_trading_directory', language)}
-            </span>
-          </nav>
-        );
-      case 'trading_catalog':
-        return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
-            <button
-              type="button"
-              onClick={() => setScreen('trading_dashboard')}
-              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Home size={12} />
-              <span>{homeLabel}</span>
-            </button>
-            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
-            <span className="text-black dark:text-white font-semibold">
-              {t('nav_trading_catalog', language)}
-            </span>
-          </nav>
-        );
-      case 'trading_finance':
-        return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
-            <button
-              type="button"
-              onClick={() => setScreen('trading_dashboard')}
-              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Home size={12} />
-              <span>{homeLabel}</span>
-            </button>
-            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
-            <span className="text-black dark:text-white font-semibold">
-              {t('nav_trading_finance', language)}
-            </span>
-          </nav>
-        );
-      case 'analytics':
-        return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
-            <button
-              type="button"
-              onClick={() => setScreen('dashboard')}
-              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Home size={12} />
-              <span>{homeLabel}</span>
-            </button>
-            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
-            <span className="text-black dark:text-white font-semibold">
-              {isFreelance
-                ? t('topbar_solo_timetracker_crumb', language)
-                : isRental
-                ? (language === 'ar' ? 'الإشغال' : language === 'fr' ? 'Occupation' : 'Occupancy')
-                : isEducation
-                ? t('nav_edu_attendance', language)
-                : t('nav_analytics', language)}
-            </span>
-          </nav>
-        );
-      case 'members':
-        if (selectedMember) {
-          return (
-            <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
-              <button
-                type="button"
-                onClick={() => {
-                  selectMember(null);
-                  setScreen('dashboard');
-                }}
-                className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-              >
-                <Home size={12} />
-                <span>{homeLabel}</span>
-              </button>
-              <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
-              <button
-                type="button"
-                onClick={() => selectMember(null)}
-                className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors cursor-pointer"
-              >
-                {isFreelance ? t('topbar_solo_clients_crumb', language) : terminology.members}
-              </button>
-              <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
-              <span className="text-black dark:text-white font-semibold truncate max-w-[130px] sm:max-w-[200px]">
-                {selectedMember.fullName}
-              </span>
-            </nav>
-          );
-        }
-        return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12.5px] tracking-[-0.005em]">
-            <button
-              type="button"
-              onClick={() => setScreen('dashboard')}
-              className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Home size={12} />
-              <span>{homeLabel}</span>
-            </button>
-            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
-            <span className="text-black dark:text-white font-semibold">
-              {isFreelance ? t('topbar_solo_clients_crumb', language) : terminology.members}
-            </span>
-          </nav>
-        );
-      case 'registrations':
-        return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12.5px] tracking-[-0.005em]">
-            <button
-              type="button"
-              onClick={() => setScreen('dashboard')}
-              className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Home size={12} />
-              <span>{homeLabel}</span>
-            </button>
-            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
-            <span className="text-black dark:text-white font-semibold">
-              {isFreelance
-                ? t('topbar_solo_proposals_crumb', language)
-                : isPOS
-                ? (language === 'ar' ? 'الطلبات' : language === 'fr' ? 'Commandes' : 'Orders')
-                : terminology.registration}
-            </span>
-          </nav>
-        );
-      case 'shop':
-        return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12.5px] tracking-[-0.005em]">
-            <button
-              type="button"
-              onClick={() => setScreen('dashboard')}
-              className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Home size={12} />
-              <span>{homeLabel}</span>
-            </button>
-            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
-            <span className="text-black dark:text-white font-semibold">
-              {isFreelance
-                ? t('topbar_solo_invoices_crumb', language)
-                : terminology.shop}
-            </span>
-          </nav>
-        );
-      case 'scheduler':
-        return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12.5px] tracking-[-0.005em]">
-            <button
-              type="button"
-              onClick={() => setScreen('dashboard')}
-              className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Home size={12} />
-              <span>{homeLabel}</span>
-            </button>
-            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
-            <span className="text-black dark:text-white font-semibold">
-              {isFreelance
-                ? t('topbar_solo_deliverables_crumb', language)
-                : terminology.scheduler}
-            </span>
-          </nav>
-        );
-      case 'agenda':
-        return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12.5px] tracking-[-0.005em]">
-            <button
-              type="button"
-              onClick={() => setScreen('dashboard')}
-              className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Home size={12} />
-              <span>{homeLabel}</span>
-            </button>
-            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
-            <span className="text-black dark:text-white font-semibold">
-              {language === 'ar' ? 'المواعيد' : language === 'fr' ? 'Agenda' : 'Agenda'}
-            </span>
-          </nav>
-        );
-      case 'finance':
-        return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12.5px] tracking-[-0.005em]">
-            <button
-              type="button"
-              onClick={() => setScreen('dashboard')}
-              className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Home size={12} />
-              <span>{homeLabel}</span>
-            </button>
-            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
-            <span className="text-black dark:text-white font-semibold">
-              {isFreelance
-                ? t('topbar_solo_finance_crumb', language)
-                : t('nav_finance', language)}
-            </span>
-          </nav>
-        );
-      case 'history':
-        return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12.5px] tracking-[-0.005em]">
-            <button
-              type="button"
-              onClick={() => setScreen('dashboard')}
-              className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Home size={12} />
-              <span>{homeLabel}</span>
-            </button>
-            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
-            <span className="text-black dark:text-white font-semibold">
-              {isFreelance
-                ? t('topbar_solo_history_crumb', language)
-                : t('nav_history', language)}
-            </span>
-          </nav>
-        );
-      case 'staff':
-        return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12.5px] tracking-[-0.005em]">
-            <button
-              type="button"
-              onClick={() => setScreen('dashboard')}
-              className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Home size={12} />
-              <span>{homeLabel}</span>
-            </button>
-            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
-            <span className="text-black dark:text-white font-semibold">
-              {language === 'ar' ? 'الفريق' : language === 'fr' ? 'Équipe' : 'Staff'}
-            </span>
-          </nav>
-        );
-      default: {
-        return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12.5px] tracking-[-0.005em]">
-            <button
-              type="button"
-              onClick={() => setScreen('dashboard')}
-              className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Home size={12} />
-              <span>{homeLabel}</span>
-            </button>
-          </nav>
-        );
-      }
+    // Home / Dashboard root screen
+    if (activeScreen === 'dashboard' || activeScreen === 'trading_dashboard') {
+      return renderBreadcrumbTrail([homeNode]);
     }
+
+    // Dedicated Trading screens
+    const tradingNodes: Record<string, { label: string; icon: BreadcrumbIcon }> = {
+      trading_sales: { label: t('nav_trading_sales', language), icon: FileText },
+      trading_purchases: { label: t('nav_trading_purchases', language), icon: Truck },
+      trading_inventory: { label: t('nav_trading_inventory', language), icon: Boxes },
+      trading_directory: { label: t('nav_trading_directory', language), icon: Building2 },
+      trading_catalog: { label: t('nav_trading_catalog', language), icon: ShoppingBag },
+      trading_finance: { label: t('nav_trading_finance', language), icon: Wallet },
+    };
+    if (tradingNodes[activeScreen]) {
+      return renderBreadcrumbTrail([
+        homeNode,
+        {
+          id: activeScreen,
+          label: tradingNodes[activeScreen].label,
+          icon: tradingNodes[activeScreen].icon,
+        },
+      ]);
+    }
+
+    // Real Estate Mandates screen
+    if (activeScreen === 'realestate_mandates') {
+      return renderBreadcrumbTrail([
+        homeNode,
+        {
+          id: 'realestate_mandates',
+          label:
+            activeRealEstateRole === 'notaire_compta'
+              ? l3('العمولات', 'Honoraires', 'Fees')
+              : l3('الوكالات', 'Mandats', 'Mandates'),
+          icon: FileText,
+        },
+      ]);
+    }
+
+    // Resolve category & role-specific label + icon for shared screen IDs
+    const resolveSharedScreenMeta = (): { label: string; icon: BreadcrumbIcon } | null => {
+      if (cat === 'medical_clinic') {
+        switch (activeScreen) {
+          case 'scheduler': return { label: l3('الانتظار', 'Attente', 'Queue'), icon: Clock };
+          case 'agenda': return { label: l3('المواعيد', 'Agenda', 'Agenda'), icon: Calendar };
+          case 'members': return { label: l3('المرضى', 'Patients', 'Patients'), icon: Users };
+          case 'shop': return { label: l3('الوصفات', 'Ordonnances', 'Prescriptions'), icon: Stethoscope };
+          case 'registrations': return { label: l3('الشهادات', 'Certificats', 'Certificates'), icon: FileText };
+          case 'finance': return { label: t('nav_finance', language), icon: CreditCard };
+          default: return null;
+        }
+      }
+      if (cat === 'auto_garage') {
+        if (activeScreen === 'scheduler') {
+          if (activeGarageRole === 'reception') return { label: l3('الاستقبال', 'Réception', 'Intake'), icon: Wrench };
+          if (activeGarageRole === 'mecanicien') return { label: l3('الأرصفة', 'Ponts', 'Bays'), icon: Wrench };
+          if (activeGarageRole === 'magasinier') return { label: l3('المشتريات', 'Commandes', 'Purchases'), icon: Truck };
+          if (activeGarageRole === 'caisse') return { label: l3('للدفع', 'À Régler', 'To Pay'), icon: CheckCircle2 };
+          return { label: l3('الإصلاحات', 'Réparations', 'Repairs'), icon: Wrench };
+        }
+        if (activeScreen === 'members') {
+          if (activeGarageRole === 'mecanicien') return { label: l3('الفحص', 'Diagnostic', 'Diagnostics'), icon: Car };
+          if (activeGarageRole === 'caisse') return { label: l3('الأساطيل', 'Flottes', 'Fleets'), icon: Building2 };
+          return { label: l3('المركبات', 'Véhicules', 'Vehicles'), icon: Car };
+        }
+        if (activeScreen === 'shop') {
+          if (activeGarageRole === 'reception') return { label: l3('التسليم', 'Sorties', 'Handover'), icon: Key };
+          if (activeGarageRole === 'mecanicien') return { label: l3('الطلبات', 'Demandes', 'Requests'), icon: Boxes };
+          return { label: l3('قطع الغيار', 'Pièces', 'Parts'), icon: Boxes };
+        }
+        if (activeScreen === 'finance') {
+          if (activeGarageRole === 'reception') return { label: l3('العروض', 'Devis', 'Quotes'), icon: FileText };
+          if (activeGarageRole === 'magasinier') return { label: l3('الاستلام', 'Réceptions', 'Deliveries'), icon: FileCheck };
+          return { label: t('nav_finance', language), icon: Wallet };
+        }
+      }
+      if (cat === 'real_estate') {
+        switch (activeScreen) {
+          case 'members': return { label: l3('العقارات', 'Biens', 'Properties'), icon: Building2 };
+          case 'scheduler': return { label: l3('العقود', 'Contrats', 'Leases'), icon: Key };
+          case 'registrations':
+            return {
+              label:
+                activeRealEstateRole === 'gestionnaire_locatif'
+                  ? l3('المعاينة', 'Inspections', 'Inspections')
+                  : l3('الزيارات', 'Visites', 'Visits'),
+              icon: FileCheck,
+            };
+          case 'finance':
+            return activeRealEstateRole === 'notaire_compta'
+              ? { label: l3('الحسابات', 'Comptes', 'Closing'), icon: Scale }
+              : { label: l3('الوصولات', 'Quittances', 'Receipts'), icon: Receipt };
+          default: return null;
+        }
+      }
+      if (cat === 'manufacturing_production') {
+        if (activeScreen === 'scheduler') {
+          if (activeManufacturingRole === 'operateur') return { label: l3('مهامي', 'Mes Tâches', 'My Tasks'), icon: Factory };
+          if (activeManufacturingRole === 'qualite') return { label: l3('المعايرة', 'Mesures', 'Calibration'), icon: Scale };
+          return { label: l3('التصنيع', 'Production', 'Orders'), icon: Factory };
+        }
+        if (activeScreen === 'shop') {
+          return {
+            label:
+              activeManufacturingRole === 'magasinier'
+                ? l3('المخرجات', 'Sorties', 'Issues')
+                : l3('الوصفات', 'Recettes', 'Recipes'),
+            icon: Layers,
+          };
+        }
+        if (activeScreen === 'members') {
+          return {
+            label:
+              activeManufacturingRole === 'magasinier'
+                ? l3('المخزن', 'Magasin', 'Depot')
+                : l3('المواد', 'Matières', 'Materials'),
+            icon: Boxes,
+          };
+        }
+        if (activeScreen === 'finance') {
+          if (activeManufacturingRole === 'magasinier') return { label: l3('التحويلات', 'Mouvements', 'Transfers'), icon: Receipt };
+          if (activeManufacturingRole === 'qualite') return { label: l3('الجودة', 'Contrôle', 'Quality'), icon: ShieldCheck };
+          return { label: l3('الجودة', 'Qualité', 'Quality'), icon: ShieldCheck };
+        }
+      }
+      if (cat === 'legal_accounting') {
+        if (activeLegalRole === 'notaire_titulaire') {
+          switch (activeScreen) {
+            case 'members': return { label: l3('العقود', 'Actes', 'Deeds'), icon: BookOpen };
+            case 'scheduler': return { label: l3('الشهر العقاري', 'Foncier', 'Registry'), icon: Landmark };
+            case 'registrations': return { label: l3('الأرشيف', 'Archives', 'Archives'), icon: ShieldCheck };
+            case 'finance': return { label: l3('الودائع', 'Dépôts', 'Escrow'), icon: Lock };
+          }
+        } else if (activeLegalRole === 'expert_comptable') {
+          switch (activeScreen) {
+            case 'members': return { label: l3('الشركات', 'Mandats', 'Clients'), icon: Briefcase };
+            case 'scheduler': return { label: l3('المواعيد', 'Échéances', 'Tax Dates'), icon: Calendar };
+            case 'registrations': return { label: l3('التدقيق', 'Audit', 'Audit'), icon: FileText };
+            case 'finance': return { label: l3('المحاسبة', 'Comptabilité', 'Ledger'), icon: Scale };
+          }
+        } else if (activeLegalRole === 'secretaire_caisse') {
+          switch (activeScreen) {
+            case 'members': return { label: l3('العملاء', 'Clients', 'Clients'), icon: Users };
+            case 'scheduler': return { label: l3('التبليغ', 'Courrier', 'Service Log'), icon: Calendar };
+            case 'registrations': return { label: l3('الإيداع', 'Dépôts', 'Filing'), icon: FileText };
+            case 'finance': return { label: l3('الصندوق', 'Caisse', 'Cashier'), icon: CreditCard };
+          }
+        } else {
+          switch (activeScreen) {
+            case 'members': return { label: l3('القضايا', 'Dossiers', 'Cases'), icon: Briefcase };
+            case 'scheduler': return { label: l3('الجلسات', 'Audiences', 'Hearings'), icon: Calendar };
+            case 'registrations': return { label: l3('المستندات', 'Documents', 'Vault'), icon: FileText };
+            case 'finance': return { label: l3('الأتعاب', 'Honoraires', 'Fees'), icon: Scale };
+          }
+        }
+      }
+      if (cat === 'logistics_delivery') {
+        if (activeScreen === 'members') {
+          return {
+            label:
+              activeLogisticsRole === 'stop_desk_agent'
+                ? l3('الاستلام', 'Guichet', 'Counter')
+                : l3('الطرود', 'Colis', 'Parcels'),
+            icon: Package,
+          };
+        }
+        if (activeScreen === 'scheduler') {
+          return {
+            label:
+              activeLogisticsRole === 'hub_sorter'
+                ? l3('الشحن', 'Chargement', 'Loading')
+                : l3('المسارات', 'Tournées', 'Runs'),
+            icon: Truck,
+          };
+        }
+        if (activeScreen === 'registrations') {
+          return {
+            label:
+              activeLogisticsRole === 'stop_desk_agent'
+                ? l3('الرفوف', 'Rayons', 'Shelving')
+                : l3('الماسح', 'Scanner', 'Scanner'),
+            icon: Boxes,
+          };
+        }
+        if (activeScreen === 'finance') {
+          return {
+            label:
+              activeLogisticsRole === 'stop_desk_agent'
+                ? l3('الصندوق', 'Caisse', 'Cashier')
+                : l3('التحصيل', 'Encaissements', 'Payouts'),
+            icon: CreditCard,
+          };
+        }
+      }
+      if (cat === 'construction_contractor') {
+        if (activeContractorRole === 'gerant') {
+          switch (activeScreen) {
+            case 'members': return { label: l3('المشاريع', 'Projets', 'Projects'), icon: Building };
+            case 'scheduler': return { label: l3('الآجال', 'Délais', 'Deadlines'), icon: Clock };
+            case 'finance': return { label: l3('الخزينة', 'Trésorerie', 'Treasury'), icon: Landmark };
+          }
+        } else if (activeContractorRole === 'conducteur' || activeContractorRole === 'conducteur_travaux') {
+          switch (activeScreen) {
+            case 'members': return { label: l3('الورشات', 'Chantiers', 'Sites'), icon: HardHat };
+            case 'shop': return { label: l3('الكميات', 'Devis', 'Quantities'), icon: ClipboardList };
+            case 'scheduler': return { label: l3('المختبر', 'Laboratoire', 'Lab'), icon: CheckCircle2 };
+            case 'finance': return { label: l3('المناولون', 'Sous-traitants', 'Subcontractors'), icon: Users };
+          }
+        } else if (activeContractorRole === 'chef_chantier') {
+          switch (activeScreen) {
+            case 'scheduler': return { label: l3('الحضور', 'Pointage', 'Attendance'), icon: Users };
+            case 'members': return { label: l3('اليومية', 'Journal', 'Site Log'), icon: FileText };
+            case 'shop': return { label: l3('الخرسانة', 'Béton', 'Concrete'), icon: Truck };
+            case 'finance': return { label: l3('المعدات', 'Engins', 'Equipment'), icon: Scale };
+          }
+        } else if (activeContractorRole === 'metreur' || activeContractorRole === 'daf_metreur') {
+          switch (activeScreen) {
+            case 'shop': return { label: l3('الأسعار', 'Devis', 'Estimates'), icon: ClipboardList };
+            case 'scheduler': return { label: l3('الكشوف', 'Situations', 'Statements'), icon: FileCheck };
+            case 'finance': return { label: l3('المراجعة', 'Révision', 'Revisions'), icon: Layers };
+          }
+        } else {
+          switch (activeScreen) {
+            case 'finance': return { label: l3('الفواتير', 'Décomptes', 'Billings'), icon: FileText };
+            case 'scheduler': return { label: l3('التعويضات', 'Intempéries', 'Weather Claims'), icon: Cloud };
+            case 'shop': return { label: l3('الموردون', 'Fournisseurs', 'Suppliers'), icon: CreditCard };
+            case 'members': return { label: l3('الصندوق', 'Caisse', 'Petty Cash'), icon: Receipt };
+          }
+        }
+      }
+      if (cat === 'agriculture_farming') {
+        switch (activeScreen) {
+          case 'members': return { label: l3('القطع', 'Parcelles', 'Parcels'), icon: Sprout };
+          case 'scheduler': return { label: l3('المحاصيل', 'Cultures', 'Crops'), icon: Calendar };
+          case 'shop':
+            return {
+              label:
+                activeAgriRole === 'magasinier'
+                  ? l3('الحصاد', 'Récoltes', 'Harvest')
+                  : l3('العمال', 'Pointage', 'Workers'),
+              icon: Scale,
+            };
+          case 'registrations': return { label: l3('المواشي', 'Cheptel', 'Livestock'), icon: Layers };
+          case 'finance': return { label: l3('الميزان', 'Bascule', 'Weighbridge'), icon: Wallet };
+          default: return null;
+        }
+      }
+      if (isPOS) {
+        switch (activeScreen) {
+          case 'shop': return { label: l3('الصندوق', 'Caisse', 'Register'), icon: ShoppingBag };
+          case 'scheduler': return { label: l3('المخزون', 'Stock', 'Inventory'), icon: Boxes };
+          case 'registrations': return { label: l3('الطلبات', 'Commandes', 'Orders'), icon: ClipboardList };
+          case 'history': return { label: t('nav_pos_ledger', language), icon: History };
+          case 'finance': return { label: t('nav_finance', language), icon: Wallet };
+          default: return null;
+        }
+      }
+      if (isEducation) {
+        switch (activeScreen) {
+          case 'scheduler': return { label: terminology.scheduler, icon: Calendar };
+          case 'members': return { label: terminology.members, icon: Users };
+          case 'shop': return { label: terminology.plan, icon: GraduationCap };
+          case 'registrations': return { label: terminology.registration, icon: ClipboardList };
+          case 'analytics': return { label: t('nav_edu_attendance', language), icon: Award };
+          case 'finance': return { label: t('nav_finance', language), icon: Wallet };
+          default: return null;
+        }
+      }
+      if (isRental) {
+        switch (activeScreen) {
+          case 'analytics': return { label: l3('الإشغال', 'Occupation', 'Occupancy'), icon: BarChart2 };
+          case 'scheduler': return { label: terminology.scheduler, icon: Calendar };
+          case 'registrations': return { label: terminology.registration, icon: ClipboardList };
+          case 'shop': return { label: terminology.shop, icon: DoorOpen };
+          case 'members': return { label: terminology.members, icon: Users };
+          case 'finance': return { label: t('nav_finance', language), icon: ShieldCheck };
+          default: return null;
+        }
+      }
+      if (isFreelance) {
+        switch (activeScreen) {
+          case 'analytics': return { label: t('topbar_solo_timetracker_crumb', language), icon: Clock };
+          case 'members': return { label: t('topbar_solo_clients_crumb', language), icon: Users };
+          case 'registrations': return { label: t('topbar_solo_proposals_crumb', language), icon: ClipboardList };
+          case 'shop': return { label: t('topbar_solo_invoices_crumb', language), icon: FileText };
+          case 'scheduler': return { label: t('topbar_solo_deliverables_crumb', language), icon: Kanban };
+          case 'finance': return { label: t('topbar_solo_finance_crumb', language), icon: Wallet };
+          case 'history': return { label: t('topbar_solo_history_crumb', language), icon: History };
+          default: return null;
+        }
+      }
+
+      switch (activeScreen) {
+        case 'analytics': return { label: t('nav_analytics', language), icon: BarChart2 };
+        case 'members': return { label: terminology.members, icon: Users };
+        case 'registrations': return { label: terminology.registration, icon: ClipboardList };
+        case 'shop': return { label: terminology.shop, icon: ShoppingBag };
+        case 'scheduler': return { label: terminology.scheduler, icon: Calendar };
+        case 'agenda': return { label: l3('المواعيد', 'Agenda', 'Agenda'), icon: Calendar };
+        case 'finance': return { label: t('nav_finance', language), icon: Wallet };
+        case 'history': return { label: t('nav_history', language), icon: History };
+        default: return null;
+      }
+    };
+
+    const currentMeta = resolveSharedScreenMeta();
+    if (!currentMeta) {
+      return renderBreadcrumbTrail([homeNode]);
+    }
+
+    if (activeScreen === 'members' && selectedMember) {
+      return renderBreadcrumbTrail([
+        homeNode,
+        {
+          id: 'members',
+          label: currentMeta.label,
+          icon: currentMeta.icon,
+          onClick: () => selectMember(null),
+        },
+        {
+          id: `member-${selectedMember.id}`,
+          label: selectedMember.fullName,
+          icon: User,
+        },
+      ]);
+    }
+
+    return renderBreadcrumbTrail([
+      homeNode,
+      { id: activeScreen, label: currentMeta.label, icon: currentMeta.icon },
+    ]);
   };
 
   return (
     <header
       className="w-full h-full flex items-center justify-between gap-3 shrink-0 select-none"
     >
-      {/* Left: Mobile Toggle & Working Interactive Breadcrumbs & Facility Capsule */}
-      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+      {/* Left: Mobile Toggle & Working Interactive Breadcrumbs */}
+      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
         <button
           type="button"
+          data-no-liquid="true"
           onClick={onToggleMobileMenu}
-          className="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center text-black/80 dark:text-white/85 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"
+          className="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center text-black/80 dark:text-white/85 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer shrink-0"
           aria-label="Toggle mobile navigation menu"
         >
           <MenuIcon size={17} />
         </button>
 
-        <div>
+        <div className="min-w-0 flex items-center">
           {getBreadcrumb()}
         </div>
       </div>

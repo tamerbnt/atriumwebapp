@@ -172,7 +172,7 @@ export const MembershipStaffView: React.FC<any> = () => {
 </AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div>
 <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] text-black dark:text-white">
 {isAr ? "فريق العمل ومؤشرات الحضور" : isEn ? "Workforce & Operational Health" : "Effectif & Santé Opérationnelle"}
@@ -270,13 +270,12 @@ export const MembershipStaffView: React.FC<any> = () => {
 						}
 					]} />
 </div>
-{foundation.activeSubTab === "directory" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
+{foundation.activeSubTab === "directory" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div className="flex flex-wrap items-center justify-between gap-3 w-full">
 <div className="flex items-center gap-2.5 shrink-0">
 <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">
 {isAr ? "قائمة فريق العمل والمدربين" : isEn ? "Staff & Coaches Directory" : "Liste des collaborateurs"}
 </h2>
-<span className="px-2 py-0.5 text-[11px] font-semibold rounded-md bg-white dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] text-black/75 dark:text-white/80 shadow-2xs tabular-nums">{foundation.filteredStaff.length}</span>
 </div>
 <div className="flex items-center gap-2.5 min-w-0 flex-wrap">
 <Seek value={foundation.searchQuery} onChange={foundation.setSearchQuery} placeholder={isAr ? "بحث بالاسم، الهاتف، البادج..." : isEn ? "Search staff, phone, token..." : "Rechercher collaborateur..."} shutSize={40} openWidth={240} className="shrink-0 !rounded-xl" />
@@ -337,13 +336,13 @@ export const MembershipStaffView: React.FC<any> = () => {
 						}
 					]} />
 </div>}
-{foundation.activeSubTab === "attendance" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
+{foundation.activeSubTab === "attendance" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <StaffAttendanceSubView staffList={foundation.facilityStaff} attendanceLogs={foundation.staffAttendanceLogs} onOpenKiosk={() => foundation.setIsPointageScannerOpen(true)} onPunchStaff={foundation.handlePunchPointage} onManualLog={foundation.logStaffAttendanceManual} language={language} />
 </div>}
-{foundation.activeSubTab === "payroll" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
+{foundation.activeSubTab === "payroll" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <StaffPayrollSubView staffList={foundation.facilityStaff} payrollRuns={foundation.staffPayrollRuns} payrollSlips={foundation.staffPayrollSlips} salaryAdvances={foundation.staffSalaryAdvances} onGeneratePayroll={(month, year) => foundation.generateStaffPayrollRun(month, year, "membership_session")} onApprovePayroll={foundation.approveStaffPayrollRun} onMarkSlipPaid={foundation.markStaffPayrollSlipPaid} onCreateAdvance={foundation.createStaffSalaryAdvance} language={language} />
 </div>}
-{foundation.activeSubTab === "history" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
+{foundation.activeSubTab === "history" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <StaffHistorySubView staffList={foundation.facilityStaff} payrollRuns={foundation.staffPayrollRuns} payrollSlips={foundation.staffPayrollSlips} attendanceLogs={foundation.staffAttendanceLogs} language={language} />
 </div>}
 <StaffInspectorDrawer staff={foundation.drawerStaff} isOpen={foundation.isDrawerOpen} onClose={foundation.handleCloseDrawer} onEdit={(member) => {

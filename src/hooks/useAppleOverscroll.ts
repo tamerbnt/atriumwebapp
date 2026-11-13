@@ -3,6 +3,7 @@ import {
   calculateRubberBandOffset,
   stepSpring1D,
   DEFAULT_APPLE_SPRING,
+  APPLE_RESISTANCE_COEFFICIENT,
   SpringConfig,
 } from '../utils/applePhysics';
 
@@ -70,13 +71,47 @@ export function useAppleOverscroll(
       }
     };
 
-    const startSpring = () => {
-      stopSpring();
+    const targetOffsets = { x: 0, y: 0 };
+    let isReleasing = false;
+
+    const ensureLoop = () => {
+      if (animFrameId.current !== null) return;
       lastTimeRef.current = performance.now();
 
       const loop = (now: number) => {
-        const dt = Math.min((now - lastTimeRef.current) / 1000, 0.033);
+        const dt = Math.min(Math.max((now - lastTimeRef.current) / 1000, 0.001), 0.033);
         lastTimeRef.current = now;
+
+        if (!isReleasing) {
+          const chaseAlpha = 1 - Math.exp(-24 * dt);
+          const dx = targetOffsets.x - offsets.current.x;
+          const dy = targetOffsets.y - offsets.current.y;
+          const nextX = offsets.current.x + dx * chaseAlpha;
+          const nextY = offsets.current.y + dy * chaseAlpha;
+          velocities.current.x = (nextX - offsets.current.x) / dt;
+          velocities.current.y = (nextY - offsets.current.y) / dt;
+          offsets.current.x = nextX;
+          offsets.current.y = nextY;
+          applyTransform(offsets.current.x, offsets.current.y);
+
+          if (
+            Math.abs(dx) < 0.05 &&
+            Math.abs(dy) < 0.05 &&
+            Math.abs(targetOffsets.x) < 0.05 &&
+            Math.abs(targetOffsets.y) < 0.05
+          ) {
+            offsets.current.x = 0;
+            offsets.current.y = 0;
+            velocities.current.x = 0;
+            velocities.current.y = 0;
+            applyTransform(0, 0);
+            animFrameId.current = null;
+            return;
+          }
+
+          animFrameId.current = requestAnimationFrame(loop);
+          return;
+        }
 
         let settledX = true;
         let settledY = true;
@@ -104,6 +139,8 @@ export function useAppleOverscroll(
           velocities.current.y = 0;
           rawDeltas.current.x = 0;
           rawDeltas.current.y = 0;
+          targetOffsets.x = 0;
+          targetOffsets.y = 0;
           applyTransform(0, 0);
           animFrameId.current = null;
         } else {
@@ -112,6 +149,13 @@ export function useAppleOverscroll(
       };
 
       animFrameId.current = requestAnimationFrame(loop);
+    };
+
+    const startSpring = () => {
+      isReleasing = true;
+      targetOffsets.x = 0;
+      targetOffsets.y = 0;
+      ensureLoop();
     };
 
     // Wheel event handler (trackpad & mouse wheel)
@@ -129,8 +173,8 @@ export function useAppleOverscroll(
 
       // Handle line or page deltaModes
       if (e.deltaMode === 1) {
-        deltaY *= 20;
-        deltaX *= 20;
+        deltaY *= 18;
+        deltaX *= 18;
       } else if (e.deltaMode === 2) {
         deltaY *= container.clientHeight;
         deltaX *= container.clientWidth;
@@ -144,40 +188,50 @@ export function useAppleOverscroll(
       const allowsY = direction === 'vertical' || direction === 'both';
       const allowsX = direction === 'horizontal' || direction === 'both';
 
-      const isOverscrollingY = allowsY && (isAtTop || isAtBottom || offsets.current.y !== 0);
-      const isOverscrollingX = allowsX && (isAtLeft || isAtRight || offsets.current.x !== 0);
+      const isOverscrollingY = allowsY && (isAtTop || isAtBottom || Math.abs(offsets.current.y) > 0.05);
+      const isOverscrollingX = allowsX && (isAtLeft || isAtRight || Math.abs(offsets.current.x) > 0.05);
 
       if (!isOverscrollingY && !isOverscrollingX) {
         return; // Allow native in-bounds scrolling
       }
 
-      // Interrupt any running spring return
-      stopSpring();
+      isReleasing = false;
 
       if (isOverscrollingY) {
-        // Invert deltaY: scrolling down past bottom pushes content up (-y)
-        rawDeltas.current.y -= deltaY * 0.7;
-        offsets.current.y = calculateRubberBandOffset(
-          rawDeltas.current.y,
-          container.clientHeight,
-          0.55,
-          maxBounce
-        );
-        velocities.current.y = -deltaY * 0.5;
+        const impulseY = Math.max(-52, Math.min(52, -deltaY * 0.45));
+        const nextY = rawDeltas.current.y + impulseY;
+        if ((rawDeltas.current.y > 0 && nextY <= 0) || (rawDeltas.current.y < 0 && nextY >= 0)) {
+          rawDeltas.current.y = 0;
+          targetOffsets.y = 0;
+        } else {
+          rawDeltas.current.y = nextY;
+          targetOffsets.y = calculateRubberBandOffset(
+            rawDeltas.current.y,
+            container.clientHeight,
+            APPLE_RESISTANCE_COEFFICIENT,
+            maxBounce
+          );
+        }
       }
 
       if (isOverscrollingX) {
-        rawDeltas.current.x -= deltaX * 0.7;
-        offsets.current.x = calculateRubberBandOffset(
-          rawDeltas.current.x,
-          container.clientWidth,
-          0.55,
-          maxBounce
-        );
-        velocities.current.x = -deltaX * 0.5;
+        const impulseX = Math.max(-52, Math.min(52, -deltaX * 0.45));
+        const nextX = rawDeltas.current.x + impulseX;
+        if ((rawDeltas.current.x > 0 && nextX <= 0) || (rawDeltas.current.x < 0 && nextX >= 0)) {
+          rawDeltas.current.x = 0;
+          targetOffsets.x = 0;
+        } else {
+          rawDeltas.current.x = nextX;
+          targetOffsets.x = calculateRubberBandOffset(
+            rawDeltas.current.x,
+            container.clientWidth,
+            APPLE_RESISTANCE_COEFFICIENT,
+            maxBounce
+          );
+        }
       }
 
-      applyTransform(offsets.current.x, offsets.current.y);
+      ensureLoop();
 
       // Debounce release: when wheel ticks stop, spring back
       if (wheelTimeoutRef.current !== null) {
@@ -187,7 +241,7 @@ export function useAppleOverscroll(
         rawDeltas.current.x = 0;
         rawDeltas.current.y = 0;
         startSpring();
-      }, 70);
+      }, 95);
     };
 
     // Touch event handlers for mobile & touchscreens
@@ -228,25 +282,32 @@ export function useAppleOverscroll(
 
       if (isOverscrollingY) {
         rawDeltas.current.y = deltaY;
-        offsets.current.y = calculateRubberBandOffset(
+        const nextY = calculateRubberBandOffset(
           rawDeltas.current.y,
           container.clientHeight,
-          0.55,
+          APPLE_RESISTANCE_COEFFICIENT,
           maxBounce
         );
+        targetOffsets.y = nextY;
+        offsets.current.y = nextY;
+        velocities.current.y = 0;
       }
 
       if (isOverscrollingX) {
         rawDeltas.current.x = deltaX;
-        offsets.current.x = calculateRubberBandOffset(
+        const nextX = calculateRubberBandOffset(
           rawDeltas.current.x,
           container.clientWidth,
-          0.55,
+          APPLE_RESISTANCE_COEFFICIENT,
           maxBounce
         );
+        targetOffsets.x = nextX;
+        offsets.current.x = nextX;
+        velocities.current.x = 0;
       }
 
       if (isOverscrollingY || isOverscrollingX) {
+        isReleasing = false;
         applyTransform(offsets.current.x, offsets.current.y);
       }
     };

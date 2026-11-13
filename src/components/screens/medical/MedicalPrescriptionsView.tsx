@@ -276,7 +276,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 <AtriumButton type="button" variant="primary" size="md" icon={<Plus size={15} />} onClick={() => setIsComposerOpen(true)}><span>{isAr ? "وصفة جديدة" : "Nouvelle Ordonnance"}</span></AtriumButton>
 </div>
 </div>
-{activeMainTab === "ngap" ? /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs animate-in fade-in duration-150">
+{activeMainTab === "ngap" ? /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs animate-in fade-in duration-150">
 <div>
 <h3 className="font-bold text-sm text-black dark:text-white flex items-center gap-2">
 <Stethoscope size={16} className="text-[#d4522f]" />
@@ -337,7 +337,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 </table>
 </div>
 </div> : /* @__PURE__ */ <>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
 {isAr ? "مؤشرات الوصفات الطبية والسلامة الدوائية" : "Indicateurs de Prescription & Sécurisation Pharmacologique"}
@@ -370,12 +370,11 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div className="flex flex-wrap items-center justify-between gap-3">
 <div className="flex items-center gap-2">
 <FileText size={16} className="text-black/55 dark:text-white/55" />
 <span className="text-sm font-bold text-black dark:text-white">{isAr ? "أرشيف الوصفات الطبية" : "Registre des Ordonnances Médicales"}</span>
-<span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums ml-1">{sortedPrescriptions.length}</span>
 </div>
 <div className="flex flex-wrap items-center gap-2.5 ml-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={isAr ? "بحث بمريض، دواء أو كود QR..." : "Rechercher patient, médicament ou QR code..."} shutSize={36} openWidth={220} />

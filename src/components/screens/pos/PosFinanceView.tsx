@@ -368,7 +368,7 @@ export const PosFinanceView: React.FC = () => {
       </div>
 
       {/* TOP METRICS POD TRAY */}
-      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
           <div className="flex items-center gap-2">
             <Banknote size={18} className="text-[#d4522f]" />
@@ -509,7 +509,7 @@ export const PosFinanceView: React.FC = () => {
       </div>
 
       {/* TENDER BREAKDOWN POD TRAY (SurfaceBgElevated: #F3EDE7, CornerRadius 24px) */}
-      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
+      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-3">
         <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800/60">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
@@ -590,7 +590,7 @@ export const PosFinanceView: React.FC = () => {
       </div>
 
       {/* BOTTOM COLLECTION POD TRAY */}
-      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
         {/* Controls Bar: Title + Seek Search + Category Filter + Actions */}
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           {/* Left Title / Icon / Count Anchor */}
@@ -601,9 +601,6 @@ export const PosFinanceView: React.FC = () => {
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-black dark:text-white">
                 {language === 'ar' ? 'سجل مصاريف وسحوبات الصندوق' : 'Journal des Sorties de Caisse'}
-              </span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f] font-semibold font-mono">
-                {filteredExpenses.length}
               </span>
             </div>
           </div>

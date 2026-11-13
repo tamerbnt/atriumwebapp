@@ -189,7 +189,7 @@ export const VenueFinanceView: React.FC<any> = () => {
 <AtriumButton type="button" variant="secondary" onClick={handleExportCautionCSV} icon={<Download size={14} />} size="sm"><span className="hidden sm:inline">CSV</span></AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div>
 <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isAr ? "الودائع الضامنة & سيولة الحسابات" : "Trésorerie & Séquestre des Cautions"}

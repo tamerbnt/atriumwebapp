@@ -312,7 +312,7 @@ export const AcademyRollCallKiosk: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F3EDE7] dark:bg-neutral-800/40 p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800">
+<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F3EDE7] dark:bg-[#141312] p-4 rounded-2xl border border-neutral-200 dark:border-[#33302D]">
 <div className="flex items-center gap-2">
 <button type="button" disabled={isSessionLocked} onClick={handleMarkAllPresent} className="h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold flex items-center gap-2 shadow-xs cursor-pointer transition-colors">
 <Check size={16} />

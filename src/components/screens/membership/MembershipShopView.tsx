@@ -240,7 +240,7 @@ export const MembershipShopView: React.FC = () => {
       </div>
 
       {/* Canonical 3-Card Top Metrics Pod Tray */}
-      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
+      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
         <div>
           <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">
             {isAr ? 'مؤشرات مبيعات المتجر وتدفق الصندوق' : 'Indicateurs Pro-Shop & Rotation de Stock'}
@@ -308,7 +308,7 @@ export const MembershipShopView: React.FC = () => {
       </div>
 
       {/* Bottom Workstation Pod Tray */}
-      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
+      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
         {/* Workstation Header Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
@@ -316,9 +316,6 @@ export const MembershipShopView: React.FC = () => {
             <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">
               {isAr ? 'كتالوج المنتجات والمكملات' : 'Catalogue Pro-Shop & Articles'}
             </h2>
-            <span className="px-2 py-0.5 rounded-md bg-white dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] text-[11px] font-semibold text-black/68 dark:text-white/75 tabular-nums shadow-2xs">
-              {filteredProducts.length}
-            </span>
           </div>
 
           {/* Right: Domain Filter Capsules for Product Categories */}

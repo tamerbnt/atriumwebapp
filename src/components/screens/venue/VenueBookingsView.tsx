@@ -286,7 +286,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
 <AtriumButton variant="primary" onClick={handleNewBooking} icon={<Plus size={16} strokeWidth={2.5} />}>{t("venue_btn_new_res")}</AtriumButton>
 </div>
 </div>}
-{!hideHeader && !hideKpis && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+{!hideHeader && !hideKpis && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div>
 <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {language === "ar" ? "سجل الحجوزات & مؤشرات الاستغلال" : language === "fr" ? "Réservations & Indicateurs d'Activité" : "Bookings Pipeline & Utilization Indicators"}
@@ -342,14 +342,13 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
 </div>
 </div>
 </div>}
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div className="flex flex-wrap items-center justify-between gap-3">
 <div className="flex items-center gap-2">
 <Calendar size={16} className="text-black/55 dark:text-white/55" />
 <span className="text-sm font-bold text-black dark:text-white">
 {language === "ar" ? "جدول الحجوزات" : language === "fr" ? "Planning des Réservations" : "Bookings Register"}
 </span>
-<span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums ml-1">{sortedBookings.length}</span>
 </div>
 <div className="flex flex-wrap items-center gap-2.5 ml-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={t("venue_search_bookings_placeholder")} shutSize={36} openWidth={220} />

@@ -10,6 +10,7 @@
 
 let isInitialized = false;
 let globalScrollTimer: ReturnType<typeof setTimeout> | null = null;
+let docScrollingActive = false;
 const activeElementTimers = new WeakMap<HTMLElement, ReturnType<typeof setTimeout>>();
 
 export function initFluidScrollbar(): () => void {
@@ -18,17 +19,28 @@ export function initFluidScrollbar(): () => void {
   }
   isInitialized = true;
 
+  const setDocScrolling = (active: boolean) => {
+    if (docScrollingActive === active) return;
+    docScrollingActive = active;
+    if (active) {
+      document.documentElement.classList.add('is-scrolling');
+      document.documentElement.setAttribute('data-scrolling', 'true');
+    } else {
+      document.documentElement.classList.remove('is-scrolling');
+      document.documentElement.removeAttribute('data-scrolling');
+    }
+  };
+
   const onScrollActivity = (e: Event) => {
     const target = e.target;
-    document.documentElement.classList.add('is-scrolling');
-    document.documentElement.setAttribute('data-scrolling', 'true');
-
     if (target && target instanceof HTMLElement && target !== document.body && target !== document.documentElement) {
-      target.classList.add('is-scrolling');
-      target.setAttribute('data-scrolling', 'true');
-
       const existing = activeElementTimers.get(target);
-      if (existing) clearTimeout(existing);
+      if (existing) {
+        clearTimeout(existing);
+      } else {
+        target.classList.add('is-scrolling');
+        target.setAttribute('data-scrolling', 'true');
+      }
 
       const elTimer = setTimeout(() => {
         target.classList.remove('is-scrolling');
@@ -36,16 +48,18 @@ export function initFluidScrollbar(): () => void {
         activeElementTimers.delete(target);
       }, 850);
       activeElementTimers.set(target, elTimer);
+      return;
     }
 
+    setDocScrolling(true);
     if (globalScrollTimer) clearTimeout(globalScrollTimer);
     globalScrollTimer = setTimeout(() => {
-      document.documentElement.classList.remove('is-scrolling');
-      document.documentElement.removeAttribute('data-scrolling');
+      setDocScrolling(false);
+      globalScrollTimer = null;
     }, 850);
   };
 
-  // Capture all scroll, wheel, and touch moves across the entire document
+  // Capture scroll events across containers (passive; zero forced reflow)
   window.addEventListener('scroll', onScrollActivity, { capture: true, passive: true });
   window.addEventListener('wheel', onScrollActivity, { capture: true, passive: true });
   window.addEventListener('touchmove', onScrollActivity, { capture: true, passive: true });
@@ -54,6 +68,8 @@ export function initFluidScrollbar(): () => void {
     window.removeEventListener('scroll', onScrollActivity, { capture: true });
     window.removeEventListener('wheel', onScrollActivity, { capture: true });
     window.removeEventListener('touchmove', onScrollActivity, { capture: true });
+    if (globalScrollTimer) clearTimeout(globalScrollTimer);
+    setDocScrolling(false);
     isInitialized = false;
   };
 }

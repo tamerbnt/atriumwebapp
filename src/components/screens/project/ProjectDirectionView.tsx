@@ -700,7 +700,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 </div>
 </div>
 </div>}
-{currentScreen === "projects" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+{currentScreen === "projects" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">

@@ -298,7 +298,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 </div>
 </div>
 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-<div className="bg-[#F3EDE7] dark:bg-neutral-900/60 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] flex items-center justify-between">
 <div>
 <div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">{isAr ? "الجلسات المبرمجة" : "Audiences Fixées"}</div>
 <div className="text-2xl font-black text-black dark:text-white mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{totalScheduled}</div>
@@ -306,7 +306,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 </div>
 <div className="w-12 h-12 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700 flex items-center justify-center text-[#d4522f] shadow-2xs"><Gavel size={22} /></div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-900/60 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] flex items-center justify-between">
 <div>
 <div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">{isAr ? "مواعيد استئناف عاجلة" : "Délais CPCA Actifs"}</div>
 <div className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{totalCriticalDeadlines}</div>
@@ -314,7 +314,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 </div>
 <div className="w-12 h-12 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700 flex items-center justify-center text-amber-500 shadow-2xs"><Clock size={22} /></div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-900/60 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] flex items-center justify-between">
 <div>
 <div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">{isAr ? "قضايا نوقشت / قيد المداولة" : "Affaires Plaidées & Délibérés"}</div>
 <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{totalCompleted}</div>
@@ -370,7 +370,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 <div className="flex gap-6">
 <div className="flex-1 min-w-0">
 {hybridView === "docket" ? /* @__PURE__ */ <div className="space-y-6">
-{Object.keys(hearingsByDate).length === 0 ? /* @__PURE__ */ <div className="p-12 text-center bg-[#F3EDE7] dark:bg-neutral-900/40 rounded-[28px] border border-dashed border-[#E6DED6] dark:border-neutral-800">
+{Object.keys(hearingsByDate).length === 0 ? /* @__PURE__ */ <div className="p-12 text-center bg-[#F3EDE7] dark:bg-[#141312] rounded-[28px] border border-dashed border-[#E6DED6] dark:border-[#33302D]">
 <Gavel size={36} className="mx-auto text-black/55 dark:text-white/55 mb-3" />
 <p className="text-sm font-semibold text-black/70 dark:text-white/75">
 {isAr ? "لا توجد جلسات قضائية مطابقة لمعايير البحث" : "Aucune audience inscrite à l'audiencier"}
@@ -378,7 +378,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 <p className="text-xs text-black/55 dark:text-white/55 mt-1">
 {isAr ? "قم ببرمجة جلسة جديدة أو تعديل معايير التصفية" : "Cliquez sur \"Nouvelle Audience\" pour inscrire une date."}
 </p>
-</div> : Object.entries(hearingsByDate).map(([date, dateHearings]: [string, any[]]) => /* @__PURE__ */ <div key={date} className="bg-[#F3EDE7] dark:bg-neutral-900/50 rounded-[28px] p-5 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs space-y-4">
+</div> : Object.entries(hearingsByDate).map(([date, dateHearings]: [string, any[]]) => /* @__PURE__ */ <div key={date} className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[28px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
 <div className="flex items-center gap-2">
 <Calendar size={18} className="text-[#d4522f]" />
@@ -450,7 +450,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 </div>
 </div>} />}
 </div>
-{selectedHearing && /* @__PURE__ */ <aside className="w-[390px] shrink-0 bg-[#F3EDE7] dark:bg-neutral-900/70 rounded-[28px] border border-[#E6DED6] dark:border-neutral-800 p-5 space-y-5 hidden lg:block sticky top-6 self-start shadow-sm">
+{selectedHearing && /* @__PURE__ */ <aside className="w-[390px] shrink-0 bg-[#F3EDE7] dark:bg-[#141312] rounded-[28px] border border-[#E6DED6] dark:border-[#33302D] p-5 space-y-5 hidden lg:block sticky top-6 self-start shadow-sm">
 <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
 <div className="flex items-center gap-2">
 <Gavel size={18} className="text-[#d4522f]" />

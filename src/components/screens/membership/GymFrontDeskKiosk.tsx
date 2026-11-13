@@ -267,7 +267,7 @@ export const GymFrontDeskKiosk: React.FC<any> = () => {
 </div>
 </div>}
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-4 sm:p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
 <div className="bg-white dark:bg-neutral-800/90 border border-[#E6DED6] dark:border-neutral-700/60 rounded-[18px] p-4 shadow-2xs flex flex-col justify-between min-h-[108px]">
 <span className="text-[11.5px] text-black/68 dark:text-white/72 font-medium block">{isRtl ? "دخول اليوم" : "Check-ins du Jour"}</span>

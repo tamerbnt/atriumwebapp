@@ -389,7 +389,7 @@ export const SkeletonSchedulerView: React.FC<SkeletonSchedulerViewProps> = ({
       <SkeletonPageHeader hasViewToggle hasFacility={hasFacility} hasActionBtn={hasActionBtn} actionBtnWidth={actionBtnWidth} />
 
       {/* KPI Pod Tray matching Screenshot_69 (Weekly Session Matrix & Attendance Roster) */}
-      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
         <div className="space-y-1">
           <SkeletonText size="sm" width="240px" />
           <SkeletonText size="xs" width="340px" />
@@ -540,7 +540,7 @@ export const SkeletonDashboardGym: React.FC<SkeletonDashboardGymProps> = ({
           </div>
 
           {/* Onboarding Tips Carousel Pod */}
-          <div className="p-6 rounded-[24px] bg-[#F3EDE7] dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs flex flex-col justify-between min-h-[190px]">
+          <div className="p-6 rounded-[24px] bg-[#F3EDE7] dark:bg-[#141312] border border-[#E6DED6] dark:border-[#33302D] shadow-2xs flex flex-col justify-between min-h-[190px]">
             <div className="flex items-center justify-between">
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
@@ -826,7 +826,7 @@ export const SkeletonKanbanPipeline: React.FC<SkeletonKanbanPipelineProps> = ({
         {Array.from({ length: columnsCount }).map((_, colIdx) => (
           <div
             key={`kanban_col_${colIdx}`}
-            className="p-4 rounded-[24px] bg-[#F3EDE7] dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-800/60 flex flex-col space-y-3.5"
+            className="p-4 rounded-[24px] bg-[#F3EDE7] dark:bg-[#141312] border border-[#E6DED6] dark:border-[#33302D] flex flex-col space-y-3.5"
           >
             {/* Column Header */}
             <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-700/60">
@@ -964,7 +964,7 @@ export const SkeletonCollectionScreen: React.FC<SkeletonCollectionScreenProps> =
 
       {/* 2. Top Metric Pod Tray (#F3EDE7, CornerRadius 24px) with 3 Cards */}
       {kpiCount > 0 && (
-        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+        <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
           <div className="space-y-1">
             <SkeletonText size="sm" width="220px" />
             <SkeletonText size="xs" width="320px" />
@@ -1017,7 +1017,7 @@ export const SkeletonDashboardSalon: React.FC<{
       <SkeletonPageHeader hasFacility hasActionBtn actionBtnWidth={140} />
 
       {/* 6-Chair Workstations Grid */}
-      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <SkeletonText size="sm" width="220px" />
@@ -1069,7 +1069,7 @@ export const SkeletonDashboardSalon: React.FC<{
             </div>
           ))}
         </div>
-        <div className="p-6 rounded-[24px] bg-[#F3EDE7] dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs flex flex-col justify-between min-h-[124px]">
+        <div className="p-6 rounded-[24px] bg-[#F3EDE7] dark:bg-[#141312] border border-[#E6DED6] dark:border-[#33302D] shadow-2xs flex flex-col justify-between min-h-[124px]">
           <div className="space-y-1.5">
             <SkeletonText size="sm" width="140px" />
             <SkeletonText size="xs" width="220px" />
@@ -1184,7 +1184,7 @@ export const SkeletonDashboardPos: React.FC<{
               </div>
             ))}
           </div>
-          <div className="p-6 rounded-[24px] bg-[#F3EDE7] dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs flex flex-col justify-between min-h-[160px]">
+          <div className="p-6 rounded-[24px] bg-[#F3EDE7] dark:bg-[#141312] border border-[#E6DED6] dark:border-[#33302D] shadow-2xs flex flex-col justify-between min-h-[160px]">
             <div className="space-y-1.5">
               <SkeletonText size="sm" width="150px" />
               <SkeletonText size="xs" width="340px" />
@@ -1300,7 +1300,7 @@ export const SkeletonDashboardEducation: React.FC<{
               </div>
             ))}
           </div>
-          <div className="p-6 rounded-[24px] bg-[#F3EDE7] dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs flex flex-col justify-between min-h-[160px]">
+          <div className="p-6 rounded-[24px] bg-[#F3EDE7] dark:bg-[#141312] border border-[#E6DED6] dark:border-[#33302D] shadow-2xs flex flex-col justify-between min-h-[160px]">
             <div className="space-y-1.5">
               <SkeletonText size="sm" width="140px" />
               <SkeletonText size="xs" width="320px" />
@@ -1392,7 +1392,7 @@ export const SkeletonDashboardMedical: React.FC<{
           </div>
         </div>
 
-        <div className="lg:col-span-4 p-6 rounded-[26px] bg-[#F3EDE7] dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-800/60 shadow-xs space-y-4">
+        <div className="lg:col-span-4 p-6 rounded-[26px] bg-[#F3EDE7] dark:bg-[#141312] border border-[#E6DED6] dark:border-[#33302D] shadow-xs space-y-4">
           <SkeletonText size="base" width="140px" />
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -1612,7 +1612,7 @@ export const SkeletonDashboardLegal: React.FC<{
 
       {/* Urgent CPCA Deadlines & Hearing Docket */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-5 p-6 rounded-[26px] bg-[#F3EDE7] dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-800/60 shadow-xs space-y-4">
+        <div className="lg:col-span-5 p-6 rounded-[26px] bg-[#F3EDE7] dark:bg-[#141312] border border-[#E6DED6] dark:border-[#33302D] shadow-xs space-y-4">
           <SkeletonText size="base" width="160px" />
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
