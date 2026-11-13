@@ -233,8 +233,8 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     if (canAccessStaffScreen(category, effectiveRole)) {
       list.push({
         id: 'nav-staff',
-        title: language === 'ar' ? 'فريق العمل' : language === 'en' ? 'Staff' : 'Équipe',
-        subtitle: language === 'ar' ? 'إدارة الموظفين ونقاط الحضور والرواتب' : language === 'en' ? 'Staff & Workforce Management' : 'Annuaire d\'équipe & Pointage',
+        title: language === 'ar' ? 'الفريق' : language === 'en' ? 'Staff' : 'Équipe',
+        subtitle: language === 'ar' ? 'الموظفون والحضور' : language === 'en' ? 'Team & Shifts' : 'Équipe & Pointage',
         category: navCategoryLabel,
         icon: <Users size={15} className="text-[#d4522f]" />,
         onSelect: () => {
@@ -260,8 +260,8 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     list.push({
       id: 'action-theme',
       title: theme === 'dark'
-        ? (language === 'ar' ? 'تفعيل الوضع النهاري' : language === 'fr' ? 'Passer en mode clair' : 'Switch to Light Mode')
-        : (language === 'ar' ? 'تفعيل الوضع الليلي' : language === 'fr' ? 'Passer en mode sombre' : 'Switch to Dark Mode'),
+        ? (language === 'ar' ? 'الوضع النهاري' : language === 'fr' ? 'Mode clair' : 'Light Mode')
+        : (language === 'ar' ? 'الوضع الليلي' : language === 'fr' ? 'Mode sombre' : 'Dark Mode'),
       category: actionCategoryLabel,
       icon: theme === 'dark' ? <Sun size={15} className="text-amber-400" /> : <Moon size={15} className="text-indigo-400" />,
       onSelect: () => {

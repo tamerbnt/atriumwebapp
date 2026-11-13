@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, ChevronDown, Sparkles, Download } from 'lucide-react';
+import { Sparkles, Download } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { useTranslation } from '../../../utils/useTranslation';
 import { Button, LiquidButton } from '@/atrium';
@@ -38,18 +38,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   extraActions,
 }) => {
   const { language, isRtl } = useTranslation();
-  const {
-    currentBranch,
-    branches,
-    businesses,
-    currentBusinessId,
-    switchBusiness,
-    switchBranch,
-    currentBusiness,
-    showToast,
-  } = useAtriumStore();
+  const { showToast } = useAtriumStore();
 
-  const [isBranchDropdownOpen, setIsBranchDropdownOpen] = React.useState(false);
   const [internalPeriod, setInternalPeriod] = React.useState('today');
   const activePeriod = period !== undefined ? period : internalPeriod;
 
@@ -71,18 +61,18 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   const displayTitle =
     title ||
     (language === 'ar'
-      ? 'لوحة القيادة'
+      ? 'الرئيسية'
       : language === 'fr'
-      ? 'Tableau de bord'
+      ? 'Tableau'
       : 'Dashboard');
 
   const displaySubtitle =
     subtitle ||
     (language === 'ar'
-      ? 'النشاط التشغيلي ومؤشرات الأداء اللحظية للمنشأة اليوم'
+      ? 'النشاط اليومي'
       : language === 'fr'
-      ? "Voici l'activité opérationnelle et les indicateurs en direct."
-      : "Here's what's happening in your facility today.");
+      ? 'Activité du jour'
+      : 'Daily activity');
 
   const [exportProgress, setExportProgress] = React.useState<number | undefined>(undefined);
 
@@ -100,16 +90,16 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       type: 'info',
       title:
         language === 'ar'
-          ? 'تصدير التقرير التنفيذي'
+          ? 'تصدير التقرير'
           : language === 'fr'
-          ? 'Export Rapport Exécutif'
-          : 'Executive Report Export',
+          ? 'Export Rapport'
+          : 'Report Export',
       message:
         language === 'ar'
-          ? 'تم إعداد التقرير المالي والتشغيلي بنجاح (PDF / CSV).'
+          ? 'تم إنشاء التقرير'
           : language === 'fr'
-          ? 'Rapport de synthèse (PDF / CSV) exporté avec succès.'
-          : 'Executive summary report successfully generated.',
+          ? 'Rapport généré'
+          : 'Report generated',
     });
   };
 
@@ -125,69 +115,13 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               <rect x="3" y="14" width="7" height="7" rx="1.5" />
             </svg>
           </div>
-          <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white font-['Barlow_Condensed']">
+          <h1 className="text-[34px] sm:text-[44px] font-extrabold uppercase leading-none tracking-[0.01em] text-neutral-900 dark:text-white font-['Barlow_Condensed'] rtl:text-[28px] rtl:sm:text-[34px] rtl:leading-tight">
             {displayTitle}
           </h1>
         </div>
       </div>
 
       <div className="flex items-center gap-2.5 flex-wrap">
-        {/* Branch / Facility Selector Pill */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setIsBranchDropdownOpen(!isBranchDropdownOpen)}
-            className="h-10 px-3.5 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
-          >
-            <Home size={14} className="text-[#d4522f]" />
-            <div className="flex flex-col text-left rtl:text-right leading-tight">
-              <span className="text-[11px] font-bold text-neutral-800 dark:text-neutral-200">
-                {currentBranch?.name || currentBusiness?.name || 'Club Principal'}
-              </span>
-              <span className="text-[9px] text-neutral-500 dark:text-neutral-400">
-                {categoryName || currentBusiness?.displayName || 'Atrium'}
-              </span>
-            </div>
-            <ChevronDown
-              size={13}
-              className={`text-neutral-500 transition-transform ${
-                isBranchDropdownOpen ? 'rotate-180' : ''
-              }`}
-            />
-          </button>
-
-          {isBranchDropdownOpen && (
-            <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-              <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                {language === 'ar' ? 'المواقع والفروع' : language === 'fr' ? 'Établissements & Sites' : 'Sites & Facilities'}
-              </div>
-              {businesses.map((biz) => {
-                const isCurrent = biz.id === currentBusinessId;
-                const matchingBranch = branches.find((b) => b.businessId === biz.id);
-                return (
-                  <button
-                    key={biz.id}
-                    type="button"
-                    onClick={() => {
-                      switchBusiness(biz.id);
-                      if (matchingBranch) switchBranch(matchingBranch.id);
-                      setIsBranchDropdownOpen(false);
-                    }}
-                    className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
-                      isCurrent
-                        ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold'
-                        : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
-                    }`}
-                  >
-                    <span className="truncate">{biz.name}</span>
-                    {isCurrent && <span className="text-[10px] font-bold text-[#d4522f]">Active</span>}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
         {/* Liquid Export Report Action - 40px height matching primary buttons */}
         <LiquidButton
           kind="export"

@@ -157,7 +157,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
             icon={<Plus className="w-4 h-4 text-[#d4522f]" />}
             className="h-10 text-xs font-semibold"
           >
-            <span>{isAr ? 'سلفة على الراتب' : 'Nouvel Acompte'}</span>
+            <span>{isAr ? 'سلفة' : isEn ? 'Advance' : 'Acompte'}</span>
           </AtriumButton>
 
           <AtriumButton
@@ -167,7 +167,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
             icon={<RefreshCw className="w-4 h-4 text-neutral-500" />}
             className="h-10 text-xs font-semibold"
           >
-            <span>{activeSlips.length > 0 ? (isAr ? 'إعادة الحساب' : 'Recalculer') : (isAr ? 'حساب الرواتب' : 'Calculer la Paie')}</span>
+            <span>{activeSlips.length > 0 ? (isAr ? 'إعادة الحساب' : isEn ? 'Recalculate' : 'Recalculer') : (isAr ? 'حساب' : isEn ? 'Calculate' : 'Calculer')}</span>
           </AtriumButton>
 
           {activeRun && activeRun.status !== 'paid' && (
@@ -178,7 +178,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
               icon={<CheckCircle2 className="w-4 h-4" />}
               className="h-10 text-xs font-semibold shadow-xs"
             >
-              <span>{isAr ? 'اعتماد وصرف الرواتب' : 'Clôturer & Valider'}</span>
+              <span>{isAr ? 'اعتماد' : isEn ? 'Approve' : 'Valider'}</span>
             </AtriumButton>
           )}
         </div>
@@ -187,35 +187,35 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
       {/* 4 Financial Aggregate KPI Cards — Pure White Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-neutral-800">
-          <p className="text-[11px] font-semibold text-neutral-500 uppercase">{isAr ? 'صافي الرواتب للدفع' : 'Masse Salariale Nette'}</p>
+          <p className="text-[11px] font-semibold text-neutral-500 uppercase">{isAr ? 'صافي الأجور' : isEn ? 'Net Pay' : 'Net à Payer'}</p>
           <p className="text-xl font-bold font-mono text-[#d4522f] mt-1">
             {totalNet > 0 ? totalNet.toLocaleString() : '0'} <span className="text-xs font-normal text-neutral-400">DZD</span>
           </p>
-          <p className="text-[10px] text-neutral-400 mt-0.5">{activeSlips.length} {isAr ? 'موظف' : 'bulletins émis'}</p>
+          <p className="text-[10px] text-neutral-400 mt-0.5">{activeSlips.length} {isAr ? 'قسيمة' : isEn ? 'slips' : 'bulletins'}</p>
         </div>
 
         <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-neutral-800">
-          <p className="text-[11px] font-semibold text-neutral-500 uppercase">{isAr ? 'اشتراكات الضمان (CNAS)' : 'Cotisations CNAS (9% + 26%)'}</p>
+          <p className="text-[11px] font-semibold text-neutral-500 uppercase">{isAr ? 'الضمان الاجتماعي' : isEn ? 'Social Security' : 'Cotisations'}</p>
           <p className="text-xl font-bold font-mono text-emerald-600 mt-1">
             {totalCnas > 0 ? totalCnas.toLocaleString() : '0'} <span className="text-xs font-normal text-neutral-400">DZD</span>
           </p>
-          <p className="text-[10px] text-neutral-400 mt-0.5">Salarial + Patronal</p>
+          <p className="text-[10px] text-neutral-400 mt-0.5">{isAr ? 'الموظف وصاحب العمل' : isEn ? 'Staff + Employer' : 'Salarial + Patronal'}</p>
         </div>
 
         <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-neutral-800">
-          <p className="text-[11px] font-semibold text-neutral-500 uppercase">{isAr ? 'الضريبة المقتطعة (IRG 2022)' : 'Retenue IRG Barème 2022'}</p>
+          <p className="text-[11px] font-semibold text-neutral-500 uppercase">{isAr ? 'ضريبة الدخل' : isEn ? 'Income Tax' : 'Impôt'}</p>
           <p className="text-xl font-bold font-mono text-neutral-900 dark:text-white mt-1">
             {totalIrg > 0 ? totalIrg.toLocaleString() : '0'} <span className="text-xs font-normal text-neutral-400">DZD</span>
           </p>
-          <p className="text-[10px] text-neutral-400 mt-0.5">Abattement légal 40% inclus</p>
+          <p className="text-[10px] text-neutral-400 mt-0.5">{isAr ? 'مقتطع' : isEn ? 'Withheld' : 'Retenue'}</p>
         </div>
 
         <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-neutral-800">
-          <p className="text-[11px] font-semibold text-neutral-500 uppercase">{isAr ? 'السلفيات المقتطعة' : 'Acomptes Déduits'}</p>
+          <p className="text-[11px] font-semibold text-neutral-500 uppercase">{isAr ? 'السلفيات' : isEn ? 'Advances' : 'Acomptes'}</p>
           <p className="text-xl font-bold font-mono text-amber-600 mt-1">
             {totalAdvances > 0 ? totalAdvances.toLocaleString() : '0'} <span className="text-xs font-normal text-neutral-400">DZD</span>
           </p>
-          <p className="text-[10px] text-neutral-400 mt-0.5">Récupération sur paie</p>
+          <p className="text-[10px] text-neutral-400 mt-0.5">{isAr ? 'مخصوم' : isEn ? 'Deducted' : 'Déduits'}</p>
         </div>
       </div>
 
@@ -224,15 +224,12 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
           <div>
             <h4 className="text-sm font-bold text-neutral-900 dark:text-white">
-              {isAr ? 'جدول حساب الرواتب القانوني الجزائري' : 'Livre de Paie & Calculs Algériens (Loi 90-11)'}
+              {isAr ? 'جدول الرواتب' : isEn ? 'Payroll Sheet' : 'Livre de Paie'}
             </h4>
-            <p className="text-xs text-neutral-500">
-              {isAr ? 'حساب آلي للأجر القاعدي، العلاوات، الضمان الاجتماعي (9%)، وضريبة IRG 2022' : 'Brut Cotisable, CNAS 9%, Barème IRG 2022, Indemnités Panier/Transport et Net'}
-            </p>
           </div>
           {activeSlips.length === 0 && (
             <AtriumButton onClick={handleGenerate} className="h-8 px-3 text-xs">
-              ⚡ Calculer la Paie de ce Mois
+              {isAr ? 'حساب' : isEn ? 'Calculate' : 'Calculer'}
             </AtriumButton>
           )}
         </div>
@@ -241,15 +238,10 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
           <div className="p-12 text-center">
             <Receipt className="w-10 h-10 text-neutral-300 mx-auto mb-3" />
             <h5 className="text-sm font-bold text-neutral-700 dark:text-neutral-300">
-              {isAr ? 'لا يوجد جدول رواتب لهذا الشهر' : 'Aucune paie calculée pour ce mois'}
+              {isAr ? 'لا توجد رواتب' : isEn ? 'No payroll' : 'Aucune paie'}
             </h5>
-            <p className="text-xs text-neutral-400 max-w-sm mx-auto mt-1 mb-4">
-              {isAr
-                ? 'اضغط على زر حساب الرواتب لتوليد قسائم الدفع واحتساب الضرائب والضمان الاجتماعي'
-                : 'Cliquez sur Calculer la Paie pour émettre automatiquement les bulletins selon le barème officiel.'}
-            </p>
-            <AtriumButton onClick={handleGenerate} className="h-9 px-4 text-xs font-bold">
-              ⚡ Lancer le Calcul du Mois
+            <AtriumButton onClick={handleGenerate} className="h-9 px-4 text-xs font-bold mt-3">
+              {isAr ? 'حساب الشهر' : isEn ? 'Run Payroll' : 'Calculer'}
             </AtriumButton>
           </div>
         ) : (
@@ -257,17 +249,17 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-neutral-50 dark:bg-[#202024] text-neutral-600 dark:text-neutral-400 border-b border-neutral-200 dark:border-neutral-800">
-                  <th className="p-3 font-semibold">Collaborateur</th>
-                  <th className="p-3 font-semibold text-right">Salaire Base</th>
-                  <th className="p-3 font-semibold text-right">Primes</th>
-                  <th className="p-3 font-semibold text-right">Brut Cotisable</th>
-                  <th className="p-3 font-semibold text-right text-red-600">CNAS (9%)</th>
-                  <th className="p-3 font-semibold text-right text-red-600">IRG 2022</th>
-                  <th className="p-3 font-semibold text-right text-emerald-600">Panier / Transp</th>
-                  <th className="p-3 font-semibold text-right text-amber-600">Acomptes</th>
-                  <th className="p-3 font-semibold text-right font-bold text-neutral-900 dark:text-white">Net à Payer</th>
-                  <th className="p-3 font-semibold text-center">Règlement</th>
-                  <th className="p-3 font-semibold text-right pr-4">Actions</th>
+                  <th className="p-3 font-semibold">{isAr ? 'الموظف' : isEn ? 'Staff' : 'Collaborateur'}</th>
+                  <th className="p-3 font-semibold text-right">{isAr ? 'الأساسي' : isEn ? 'Base' : 'Base'}</th>
+                  <th className="p-3 font-semibold text-right">{isAr ? 'العلاوات' : isEn ? 'Bonus' : 'Primes'}</th>
+                  <th className="p-3 font-semibold text-right">{isAr ? 'الإجمالي' : isEn ? 'Gross' : 'Brut'}</th>
+                  <th className="p-3 font-semibold text-right text-red-600">{isAr ? 'الضمان' : isEn ? 'Social' : 'Social'}</th>
+                  <th className="p-3 font-semibold text-right text-red-600">{isAr ? 'الضريبة' : isEn ? 'Tax' : 'Impôt'}</th>
+                  <th className="p-3 font-semibold text-right text-emerald-600">{isAr ? 'البدلات' : isEn ? 'Allowances' : 'Indemnités'}</th>
+                  <th className="p-3 font-semibold text-right text-amber-600">{isAr ? 'السلف' : isEn ? 'Advances' : 'Acomptes'}</th>
+                  <th className="p-3 font-semibold text-right font-bold text-neutral-900 dark:text-white">{isAr ? 'الصافي' : isEn ? 'Net' : 'Net'}</th>
+                  <th className="p-3 font-semibold text-center">{isAr ? 'الدفع' : isEn ? 'Method' : 'Mode'}</th>
+                  <th className="p-3 font-semibold text-right pr-4">{isAr ? 'إجراء' : isEn ? 'Actions' : 'Actions'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
@@ -312,7 +304,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
                             type="button"
                             onClick={() => setActiveSlipForPrint(slip)}
                             className="p-1.5 text-xs font-semibold rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-[#d4522f] hover:bg-[#d4522f]/10 transition-colors cursor-pointer"
-                            title="Voir & Imprimer Fiche de Paie"
+                            title={isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer'}
                           >
                             <FileText className="w-4 h-4" />
                           </button>
@@ -322,7 +314,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
                               onClick={() => onMarkSlipPaid(slip.id)}
                               className="px-2 py-1 text-[11px] font-bold rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 cursor-pointer"
                             >
-                              Payer
+                              {isAr ? 'دفع' : isEn ? 'Pay' : 'Payer'}
                             </button>
                           )}
                         </div>
@@ -341,11 +333,8 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         <div className="flex items-center justify-between pb-3 mb-3 border-b border-neutral-200 dark:border-neutral-800">
           <div>
             <h4 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
-              {isAr ? 'سجل السلفيات والتسبيقات المالية (Acomptes)' : 'Registre des Acomptes & Avances sur Salaire'}
+              {isAr ? 'السلفيات' : isEn ? 'Salary Advances' : 'Acomptes'}
             </h4>
-            <p className="text-[11px] text-neutral-500">
-              {isAr ? 'متابعة السلف النقدية الصادرة والخصم التلقائي عند إغلاق الشهر' : 'Suivi des acomptes accordés et déduits automatiquement'}
-            </p>
           </div>
           <button
             type="button"
@@ -353,12 +342,12 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#d4522f] bg-[#d4522f]/10 rounded-xl hover:bg-[#d4522f]/20 transition-colors cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>{isAr ? 'إضافة سلفة' : 'Nouvel Acompte'}</span>
+            <span>{isAr ? 'سلفة' : isEn ? 'New Advance' : 'Acompte'}</span>
           </button>
         </div>
 
         {salaryAdvances.length === 0 ? (
-          <p className="text-xs text-neutral-400 py-3 text-center">{isAr ? 'لا توجد سلفيات مسجلة' : 'Aucun acompte en cours.'}</p>
+          <p className="text-xs text-neutral-400 py-3 text-center">{isAr ? 'لا توجد سلفيات' : isEn ? 'No advances' : 'Aucun acompte'}</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {salaryAdvances.map((adv) => (

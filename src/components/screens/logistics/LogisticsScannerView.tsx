@@ -223,7 +223,7 @@ export const LogisticsScannerView: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
+              <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
                 {isAr ? 'ماسح الأرصفة وفرز الأكياس (Sac-Navette & Scellés)' : 'Scanner Express Quai & Sacs-Navette'}
               </h1>
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 flex items-center gap-1">

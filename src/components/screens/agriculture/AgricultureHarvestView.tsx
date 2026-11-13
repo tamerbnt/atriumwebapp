@@ -529,7 +529,7 @@ export const AgricultureHarvestView: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
+              <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
                 {activeMode === 'tickets'
                   ? (isAr ? 'وصولات الوزن وجني المحاصيل' : 'Pont-Bascule & Bons de Récolte')
                   : (isAr ? 'دفتر حضور وجني التاشرون (Muster Roll)' : 'Pointage Journalier des Tâcherons')}

@@ -502,7 +502,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                 </svg>
               </div>
             )}
-            <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
+            <h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-zinc-900 dark:text-zinc-100">
               {currentScreen === 'dashboard'
                 ? t('nav_dashboard', language)
                 : currentScreen === 'projects'
@@ -517,49 +517,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-
-          {/* Facility Switcher Dropdown Pill */}
-          <div className="relative">
-            <button
-              onClick={() => setIsBranchDropdownOpen((prev) => !prev)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200/80 dark:border-zinc-750 transition-all cursor-pointer"
-            >
-              <Building2 className="w-3.5 h-3.5 text-[#d4522f]" />
-              <span>{currentBranch?.name || 'NCH Cyberpark Tower B'}</span>
-              <ChevronDown className="w-3 h-3 opacity-60" />
-            </button>
-
-            {isBranchDropdownOpen && (
-              <div className="absolute right-0 mt-1 w-56 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 p-1.5 z-50">
-                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
-                  Antennes Agence
-                </div>
-                {branches && branches.length > 0 ? (
-                  branches.map((b) => (
-                    <button
-                      key={b.id}
-                      onClick={() => {
-                        switchBranch(b.id);
-                        setIsBranchDropdownOpen(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center justify-between cursor-pointer ${
-                        currentBranch?.id === b.id
-                          ? 'bg-[#d4522f]/10 text-[#d4522f] font-bold'
-                          : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                      }`}
-                    >
-                      <span>{b.name}</span>
-                      {currentBranch?.id === b.id && <Check className="w-3.5 h-3.5 text-[#d4522f]" />}
-                    </button>
-                  ))
-                ) : (
-                  <div className="px-3 py-2 text-xs text-zinc-500">NCH Tower B (Cyberpark Alger)</div>
-                )}
-              </div>
-            )}
-          </div>
-
-
           {/* Liquid CSV Export */}
           <LiquidExportButton
             size="sm"

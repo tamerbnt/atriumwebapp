@@ -71,13 +71,13 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
           options={[
             {
               value: 'salaires',
-              label: isAr ? 'سجل الرواتب وقسائم الدفع' : 'Historique des Salaires & Bulletins',
+              label: isAr ? 'الرواتب' : isEn ? 'Payroll' : 'Salaires',
               icon: <FileText className="w-4 h-4 mr-1.5" />,
               count: payrollRuns.length,
             },
             {
               value: 'pointages',
-              label: isAr ? 'سجل التدقيق الزمني للحضور' : 'Journal d\'Audit des Pointages',
+              label: isAr ? 'الحضور' : isEn ? 'Logs' : 'Pointages',
               icon: <Clock className="w-4 h-4 mr-1.5" />,
               count: attendanceLogs.length,
             },
@@ -87,8 +87,8 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
 
         <div className="text-xs text-neutral-500 font-medium px-2">
           {historyMode === 'salaires'
-            ? (isAr ? 'أرشيف الرواتب المغلقة وقسائم الدفع' : 'Archives certifiées et fiches de paie conformes')
-            : (isAr ? 'سجل إلكتروني غير قابل للتعديل' : 'Journal horodaté inviolable')}
+            ? (isAr ? 'أرشيف الرواتب' : isEn ? 'Payroll archive' : 'Archives paie')
+            : (isAr ? 'سجل الحضور' : isEn ? 'Attendance logs' : 'Journal pointages')}
         </div>
       </div>
 
@@ -99,7 +99,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
             <div className="p-12 text-center bg-white dark:bg-[#18181B] rounded-2xl border border-neutral-200 dark:border-neutral-800">
               <FileText className="w-8 h-8 text-neutral-300 mx-auto mb-2" />
               <p className="text-xs text-neutral-400">
-                {isAr ? 'لا يوجد أرشيف رواتب سابق بعد.' : 'Aucun historique de paie antérieur enregistré.'}
+                {isAr ? 'لا يوجد أرشيف' : isEn ? 'No history' : 'Aucun historique'}
               </p>
             </div>
           ) : (
@@ -119,26 +119,26 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
                         <h4 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                           <span>{run.title}</span>
                           <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 uppercase font-bold">
-                            {run.status === 'paid' ? 'Clôturée & Payée' : 'Brouillon'}
+                            {run.status === 'paid' ? (isAr ? 'مدفوعة' : isEn ? 'Paid' : 'Payée') : (isAr ? 'مسودة' : isEn ? 'Draft' : 'Brouillon')}
                           </span>
                         </h4>
                         <p className="text-[11px] text-neutral-400 font-mono">
-                          {run.slipsCount} collaborateurs · Clôturé le {run.approvedAt?.slice(0, 10) || run.createdAt.slice(0, 10)}
+                          {run.slipsCount} {isAr ? 'موظف' : isEn ? 'staff' : 'agents'} · {run.approvedAt?.slice(0, 10) || run.createdAt.slice(0, 10)}
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-4 text-xs font-mono">
                       <div>
-                        <span className="text-neutral-400 block text-[10px] font-sans">Masse Nette</span>
+                        <span className="text-neutral-400 block text-[10px] font-sans">{isAr ? 'الصافي' : isEn ? 'Net' : 'Net'}</span>
                         <span className="font-bold text-sm text-[#d4522f]">{run.totalNet.toLocaleString()} DZD</span>
                       </div>
                       <div>
-                        <span className="text-neutral-400 block text-[10px] font-sans">CNAS (9%+26%)</span>
+                        <span className="text-neutral-400 block text-[10px] font-sans">{isAr ? 'الضمان' : isEn ? 'Social' : 'Social'}</span>
                         <span className="font-bold text-emerald-600">{(run.totalCnasSalarial + run.totalCnasPatronal).toLocaleString()} DZD</span>
                       </div>
                       <div>
-                        <span className="text-neutral-400 block text-[10px] font-sans">IRG 2022</span>
+                        <span className="text-neutral-400 block text-[10px] font-sans">{isAr ? 'الضريبة' : isEn ? 'Tax' : 'Impôt'}</span>
                         <span className="font-bold text-neutral-700 dark:text-neutral-300">{run.totalIrg.toLocaleString()} DZD</span>
                       </div>
                     </div>
@@ -162,7 +162,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
                           className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-semibold rounded-lg bg-white dark:bg-[#18181B] border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:text-[#d4522f] hover:border-[#d4522f] transition-all cursor-pointer"
                         >
                           <Printer className="w-3.5 h-3.5" />
-                          <span>Fiche</span>
+                          <span>{isAr ? 'قسيمة' : isEn ? 'Slip' : 'Fiche'}</span>
                         </button>
                       </div>
                     ))}
@@ -180,11 +180,8 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
           <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <div>
               <h4 className="text-sm font-bold text-neutral-900 dark:text-white">
-                {isAr ? 'سجل البصمات وتتبع أوقات الدخول والخروج' : 'Journal Horodaté des Pointages Collaborateurs'}
+                {isAr ? 'سجل الحضور' : isEn ? 'Attendance Log' : 'Journal Pointages'}
               </h4>
-              <p className="text-xs text-neutral-500">
-                {isAr ? 'تسجيل دقيق لكل محاولة دخول بالرمز، بطاقة RFID أو الكشك' : 'Traçabilité immuable avec horodatage, borne de scan et méthode'}
-              </p>
             </div>
 
             <div className="flex items-center gap-2">
@@ -193,7 +190,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
                 onChange={(e) => setSelectedStaffFilter(e.target.value)}
                 className="px-3 py-1.5 text-xs font-medium rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202024] text-neutral-800 dark:text-neutral-200"
               >
-                <option value="all">{isAr ? 'كل الموظفين' : 'Tous les collaborateurs'}</option>
+                <option value="all">{isAr ? 'الكل' : isEn ? 'All' : 'Tous'}</option>
                 {staffList.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.fullName}
@@ -206,7 +203,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
                   type="text"
                   value={searchPunchQuery}
                   onChange={(e) => setSearchPunchQuery(e.target.value)}
-                  placeholder={isAr ? 'بحث بالاسم أو المحطة...' : 'Filtrer...'}
+                  placeholder={isAr ? 'بحث...' : isEn ? 'Search...' : 'Rechercher...'}
                   className="px-3 py-1.5 text-xs rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202024] text-neutral-800 dark:text-neutral-200 w-36 sm:w-48"
                 />
               </div>
@@ -217,12 +214,12 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-neutral-50 dark:bg-[#202024] text-neutral-600 dark:text-neutral-400 border-b border-neutral-200 dark:border-neutral-800">
-                  <th className="p-3 font-semibold">Horodatage</th>
-                  <th className="p-3 font-semibold">Collaborateur</th>
-                  <th className="p-3 font-semibold text-center">Type Pointage</th>
-                  <th className="p-3 font-semibold text-center">Méthode</th>
-                  <th className="p-3 font-semibold">Borne / Terminal</th>
-                  <th className="p-3 font-semibold pr-4">Observations</th>
+                  <th className="p-3 font-semibold">{isAr ? 'الوقت' : isEn ? 'Time' : 'Date'}</th>
+                  <th className="p-3 font-semibold">{isAr ? 'الموظف' : isEn ? 'Staff' : 'Collaborateur'}</th>
+                  <th className="p-3 font-semibold text-center">{isAr ? 'النوع' : isEn ? 'Type' : 'Type'}</th>
+                  <th className="p-3 font-semibold text-center">{isAr ? 'الطريقة' : isEn ? 'Method' : 'Méthode'}</th>
+                  <th className="p-3 font-semibold">{isAr ? 'الجهاز' : isEn ? 'Terminal' : 'Borne'}</th>
+                  <th className="p-3 font-semibold pr-4">{isAr ? 'ملاحظات' : isEn ? 'Notes' : 'Notes'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">

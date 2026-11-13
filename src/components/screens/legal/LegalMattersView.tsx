@@ -297,7 +297,7 @@ export const LegalMattersView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
+            <h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
               {activeLegalRole === 'notaire_titulaire'
                 ? isAr ? 'سجل العقود التوثيقية الرسمية (المرسوم 08-243)' : 'Répertoire Chronologique des Actes Notariés'
                 : activeLegalRole === 'secretaire_caisse'

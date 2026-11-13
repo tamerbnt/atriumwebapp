@@ -91,20 +91,12 @@ const getMemberInitialsColor = (name: string) => {
 
 interface MembersHeaderBarProps {
   title: string;
-  facilityLabel: string;
-  currentBusinessId: string;
-  facilityOptions: Array<{ value: string; label: string; icon: React.ReactNode }>;
-  onFacilityChange: (val: any) => void;
   addLabel: string;
   onAddMember: (originEl?: HTMLElement | null) => void;
 }
 
 const MembersHeaderBar: React.FC<MembersHeaderBarProps> = React.memo(({
   title,
-  facilityLabel,
-  currentBusinessId,
-  facilityOptions,
-  onFacilityChange,
   addLabel,
   onAddMember,
 }) => (
@@ -114,27 +106,13 @@ const MembersHeaderBar: React.FC<MembersHeaderBarProps> = React.memo(({
         <Users size={22} />
       </div>
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+        <h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
           {title}
         </h1>
       </div>
     </div>
 
     <div className="flex items-end gap-3 relative flex-wrap">
-      <div className="w-[215px] max-w-full">
-        <LabelSelect
-          field="Facility"
-          label={facilityLabel}
-          value={currentBusinessId}
-          onChange={onFacilityChange}
-          prefix={<Home size={15} className="text-[#d4522f]" />}
-          options={facilityOptions}
-          width="100%"
-          height={40}
-          corner={12}
-        />
-      </div>
-
       <AtriumButton
         variant="primary"
         size="md"
@@ -843,31 +821,6 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = React
     []
   );
 
-  const facilityOptions = useMemo(
-    () =>
-      businesses.map((biz) => ({
-        value: biz.id,
-        label: biz.name,
-        icon: (
-          <Building2
-            size={14}
-            className={biz.id === currentBusinessId ? 'text-[#d4522f]' : 'text-neutral-400'}
-          />
-        ),
-      })),
-    [businesses, currentBusinessId]
-  );
-
-  const handleFacilityChange = useCallback(
-    (val: any) => {
-      const bizId = String(val?.target?.value ?? val);
-      switchBusiness(bizId);
-      const matchingBranch = branches.find((b) => b.businessId === bizId);
-      if (matchingBranch) switchBranch(matchingBranch.id);
-    },
-    [switchBusiness, switchBranch, branches]
-  );
-
   const sortedMembers = useMemo(() => {
     const list = [...displayMembers];
     list.sort((a, b) => {
@@ -1368,10 +1321,6 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = React
       {/* Row 0: Top Header */}
       <MembersHeaderBar
         title={terminology.members}
-        facilityLabel={t('fast_switch_title', language)}
-        currentBusinessId={currentBusinessId}
-        facilityOptions={facilityOptions}
-        onFacilityChange={handleFacilityChange}
         addLabel={`${t('action_add', language)} ${terminology.memberSingle}`}
         onAddMember={onAddMember}
       />

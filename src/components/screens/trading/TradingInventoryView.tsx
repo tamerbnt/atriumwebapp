@@ -333,7 +333,7 @@ export const TradingInventoryView: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+                <h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
                   {t('trading_inventory_title', 'Dépôts Logistiques & Inventaire')}
                 </h1>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4522f]/15 text-[#d4522f] border border-[#d4522f]/30">
@@ -344,49 +344,6 @@ export const TradingInventoryView: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
-            {/* Facility Pill */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-                className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
-              >
-                <Home size={15} className="text-[#d4522f]" />
-                <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                  {currentBranch?.name || 'Dépôt Central'}
-                </span>
-                <ChevronDown
-                  size={14}
-                  className={`text-neutral-500 transition-transform ${
-                    isFacilityDropdownOpen ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
-
-              {isFacilityDropdownOpen && (
-                <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                    {language === 'ar' ? 'المستودعات والفروع' : 'Dépôts & Points de Vente'}
-                  </div>
-                  {branches.map((b) => (
-                    <button
-                      key={b.id}
-                      onClick={() => {
-                        switchBranch(b.id);
-                        setIsFacilityDropdownOpen(false);
-                      }}
-                      className="w-full px-3 py-2 text-left rtl:text-right text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-between"
-                    >
-                      <span className="font-semibold text-neutral-800 dark:text-neutral-200">{b.name}</span>
-                      {b.id === currentBranch?.id && <span className="text-[#d4522f] text-xs">✓</span>}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-
-
             {/* Actions */}
             <AtriumButton
               variant="outline"

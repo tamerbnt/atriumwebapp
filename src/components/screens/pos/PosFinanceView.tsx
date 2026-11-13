@@ -330,8 +330,8 @@ export const PosFinanceView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
-              <Wallet className="text-[#d4522f]" size={26} />
+            <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white flex items-center gap-2.5">
+              <Wallet className="text-[#d4522f]" size={32} />
               <span>
                 {language === 'ar' ? 'إدارة الصندوق والمالية' : language === 'fr' ? 'Gestion Caisse & Réconciliation Financière' : 'Cash Drawer & Store Finance'}
               </span>

@@ -393,7 +393,7 @@ export const LegalTrustView: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
+                <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
                   {isAr ? 'حساب الحراسة والودائع العقارية (Séquestre Notarial)' : 'Compte Séquestre Notarial & Consignations'}
                 </h1>
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
@@ -853,7 +853,7 @@ export const LegalTrustView: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
+                <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
                   {isAr ? 'دفتر الأستاذ وميزان المراجعة SCF (القانون 07-11)' : 'Grand Livre & Journaux SCF (Loi 07-11)'}
                 </h1>
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
@@ -1233,7 +1233,7 @@ export const LegalTrustView: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
+                <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
                   {isAr ? 'الصندوق وطابع المادة 317 ومحضر الإغلاق' : 'Caisse Journalière & Timbre Art. 317 (Arrêté)'}
                 </h1>
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
@@ -1596,7 +1596,7 @@ export const LegalTrustView: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
+              <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
                 {isAr ? 'حساب الحراسة والودائع والأتعاب (Séquestre CARPA)' : 'Compte Séquestre CARPA & Honoraires Avocat'}
               </h1>
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">

@@ -282,7 +282,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-lg font-bold text-neutral-900 dark:text-white">
+                <h1 className="text-[36px] sm:text-[48px] rtl:text-[30px] rtl:sm:text-[36px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
                   {isRtl ? 'كشك تسجيل حضور الدروس السريع' : 'Kiosk Appel & Émargement Express'}
                 </h1>
                 <span className="text-2xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400 flex items-center gap-1">

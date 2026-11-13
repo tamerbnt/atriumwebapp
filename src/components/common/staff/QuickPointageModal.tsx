@@ -57,8 +57,8 @@ export const QuickPointageModal: React.FC<QuickPointageModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isAr ? 'محطة تسجيل الحضور والانصراف' : isEn ? 'Attendance Pointage Terminal' : 'Borne de Pointage Présence'}
-      subtitle={isAr ? 'مسح رمز RFID أو إدخال كود PIN السريع' : isEn ? 'Scan RFID / QR badge or enter 4-digit PIN' : 'Scanner le badge RFID ou saisir le code PIN'}
+      title={isAr ? 'تسجيل الحضور' : isEn ? 'Clock Kiosk' : 'Borne Pointage'}
+      subtitle={isAr ? 'الرمز أو البطاقة' : isEn ? 'Badge or PIN' : 'Badge ou PIN'}
       maxWidth="md"
     >
       <div className="space-y-4">
@@ -74,7 +74,7 @@ export const QuickPointageModal: React.FC<QuickPointageModalProps> = ({
             }`}
           >
             <Clock size={14} />
-            <span>{isAr ? 'تسجيل دخول (Shift In)' : isEn ? 'Clock In (Shift In)' : 'Pointage Entrée'}</span>
+            <span>{isAr ? 'دخول' : isEn ? 'Clock In' : 'Entrée'}</span>
           </button>
           <button
             type="button"
@@ -86,17 +86,17 @@ export const QuickPointageModal: React.FC<QuickPointageModalProps> = ({
             }`}
           >
             <Clock size={14} />
-            <span>{isAr ? 'تسجيل خروج (Shift Out)' : isEn ? 'Clock Out (Shift Out)' : 'Pointage Sortie'}</span>
+            <span>{isAr ? 'خروج' : isEn ? 'Clock Out' : 'Sortie'}</span>
           </button>
         </div>
 
         {/* Input for RFID Token or PIN */}
         <form onSubmit={handleSubmit} className="space-y-3">
           <LabelInput
-            label={isAr ? 'رمز البادج RFID أو كود PIN' : isEn ? 'RFID Token or PIN Code' : 'Token RFID ou Code PIN'}
+            label={isAr ? 'الرمز' : isEn ? 'Badge / PIN' : 'Badge / PIN'}
             value={inputCode}
             onChange={(e: any) => setInputCode(e?.target?.value ?? e)}
-            placeholder="Ex: RF-84920 ou 1234"
+            placeholder={isAr ? 'الرمز...' : isEn ? 'Code or PIN...' : 'Code ou PIN...'}
             autoFocus
           />
 
@@ -106,9 +106,9 @@ export const QuickPointageModal: React.FC<QuickPointageModalProps> = ({
               type="submit"
               size="md"
               labels={{
-                idle: isAr ? 'تأكيد الحضور' : isEn ? 'Validate Pointage' : 'Valider le Pointage',
-                busy: isAr ? 'جاري المسح...' : isEn ? 'Scanning...' : 'Scan en cours...',
-                done: isAr ? 'تم التسجيل' : isEn ? 'Recorded' : 'Pointé',
+                idle: isAr ? 'تأكيد' : isEn ? 'Confirm' : 'Valider',
+                busy: isAr ? 'مسح...' : isEn ? 'Scanning...' : 'Scan...',
+                done: isAr ? 'تم' : isEn ? 'Done' : 'Fait',
               }}
             />
           </div>
@@ -125,7 +125,7 @@ export const QuickPointageModal: React.FC<QuickPointageModalProps> = ({
         {/* Quick Click Staff Members list */}
         <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800">
           <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider mb-2">
-            {isAr ? 'تسجيل سريع بنقرة واحدة' : isEn ? 'Quick 1-Click Pointage' : 'Pointage Rapide 1-Clic'}
+            {isAr ? 'تسجيل سريع' : isEn ? 'Quick Log' : 'Pointage Rapide'}
           </div>
           <div className="max-h-48 overflow-y-auto space-y-1.5 pe-1">
             {staffList.slice(0, 8).map((member) => (

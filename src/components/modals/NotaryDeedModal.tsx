@@ -32,11 +32,12 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
 }) => {
   const { language, networkMode } = useAtriumStore();
   const isAr = language === 'ar';
+  const isEn = language === 'en';
 
   const [actType, setActType] = useState<NotaryDeed['actType']>('vente_immobiliere');
   const [titleFr, setTitleFr] = useState('Vente Immobilière Appartement F4 Haut Standing');
   const [titleAr, setTitleAr] = useState('عقد بيع عقاري لشقة ذات 4 غرف عالية الطراز');
-  const [transactionValueDzd, setTransactionValueDzd] = useState<number>(12000000); // 1.2 Milliard Centimes
+  const [transactionValueDzd, setTransactionValueDzd] = useState<number>(12000000);
 
   // Parties
   const [vendorName, setVendorName] = useState('Hadj Amine Mansouri');
@@ -103,8 +104,10 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
     onSaveDeed(deed);
     showToast(
       isAr
-        ? `تم تسجيل العقد التوثيقي تحت رقم الفهرس ${repertoireNumber} بنجاح`
-        : `Acte notarié enregistré avec succès sous le n° au Répertoire ${repertoireNumber}`,
+        ? `تم تسجيل العقد (${repertoireNumber})`
+        : isEn
+        ? `Deed saved (${repertoireNumber})`
+        : `Acte enregistré (${repertoireNumber})`,
       'success'
     );
     onClose();
@@ -115,7 +118,7 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       isLoading={networkMode === 'force_skeleton'}
-      title={isAr ? `إعداد وتسجيل عقد رسمي في الفهرس (${repertoireNumber})` : `Rédaction d'Acte Authentique au Répertoire (${repertoireNumber})`}
+      title={isAr ? `عقد جديد (${repertoireNumber})` : isEn ? `New Deed (${repertoireNumber})` : `Nouvel Acte (${repertoireNumber})`}
       maxWidth="xl"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -124,7 +127,7 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
           <div className="flex items-center gap-2">
             <BookOpen size={16} className="text-[#d4522f]" />
             <span className="font-semibold text-neutral-900 dark:text-white">
-              {isAr ? 'الرقم التسلسلي القانوني المحجوز:' : 'Numéro Chronologique Officiel Réservé :'}
+              {isAr ? 'رقم الفهرس' : isEn ? 'Registry No.' : 'N° Répertoire'}
             </span>
           </div>
           <span className="font-mono font-bold text-sm text-[#d4522f] tracking-wider">
@@ -134,21 +137,21 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <LabelSelect
-            label={isAr ? 'طبيعة العقد التوثيقي' : 'Type d\'Acte Authentique'}
+            label={isAr ? 'نوع العقد' : isEn ? 'Deed Type' : 'Type Acte'}
             value={actType}
             onChange={(v) => setActType(v as NotaryDeed['actType'])}
             options={[
-              { value: 'vente_immobiliere', label: 'Vente Immobilière (5 Tranches)' },
-              { value: 'donation', label: 'Donation d\'Immeuble (5 Tranches)' },
-              { value: 'bail_commercial', label: 'Bail Commercial Notarié' },
-              { value: 'fredha', label: 'Acte de Frédha Charaïque' },
-              { value: 'statuts_societe', label: 'Statuts de Société (SARL/SPA)' },
-              { value: 'procuration', label: 'Procuration Notariée Fixe' },
+              { value: 'vente_immobiliere', label: isAr ? 'بيع عقاري' : isEn ? 'Property Sale' : 'Vente Immobilière' },
+              { value: 'donation', label: isAr ? 'هبة عقارية' : isEn ? 'Property Gift' : 'Donation' },
+              { value: 'bail_commercial', label: isAr ? 'إيجار تجاري' : isEn ? 'Commercial Lease' : 'Bail Commercial' },
+              { value: 'fredha', label: isAr ? 'فريضة شرعية' : isEn ? 'Inheritance' : 'Frédha' },
+              { value: 'statuts_societe', label: isAr ? 'قانون أساسي' : isEn ? 'Company Charter' : 'Statuts Société' },
+              { value: 'procuration', label: isAr ? 'وكالة توثيقية' : isEn ? 'Power Attorney' : 'Procuration' },
             ]}
           />
 
           <LabelInput
-            label={isAr ? 'مبلغ المعاملة بالدينار الجزائري' : 'Valeur de la Transaction (DZD)'}
+            label={isAr ? 'قيمة المعاملة' : isEn ? 'Deal Value' : 'Montant (DZD)'}
             type="number"
             value={String(transactionValueDzd)}
             onChange={(e) => setTransactionValueDzd(Number(e.target.value) || 0)}
@@ -157,7 +160,7 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
 
           <div className="flex flex-col justify-end">
             <div className="p-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs">
-              <span className="text-[10px] text-neutral-400 block">{isAr ? 'المقابل بالسنتيم الجزائري' : 'Équivalent en Centimes'}</span>
+              <span className="text-[10px] text-neutral-400 block">{isAr ? 'بالسنتيم' : isEn ? 'In Centimes' : 'En Centimes'}</span>
               <span className="font-semibold text-neutral-900 dark:text-white truncate block">
                 {tariff.colloquialCentimesLabel}
               </span>
@@ -168,13 +171,13 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
         {/* Bilingual Titles */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <LabelInput
-            label="Intitulé de l'Acte (Français)"
+            label={isAr ? 'العنوان (فرنسية)' : isEn ? 'Title (French)' : 'Titre (FR)'}
             value={titleFr}
             onChange={(e) => setTitleFr(e.target.value)}
             required
           />
           <LabelInput
-            label="عنوان العقد الرسمي (بالعربية)"
+            label={isAr ? 'العنوان (عربية)' : isEn ? 'Title (Arabic)' : 'Titre (AR)'}
             value={titleAr}
             onChange={(e) => setTitleAr(e.target.value)}
             required
@@ -185,29 +188,29 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
         {/* Parties */}
         <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/80 space-y-3">
           <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 block">
-            {isAr ? 'بيانات الأطراف والهوية البيومترية (NIN):' : 'Parties Contractantes & Identifiants Nationaux (NIN) :'}
+            {isAr ? 'الأطراف والهوية' : isEn ? 'Contracting Parties' : 'Parties & Identité'}
           </span>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <LabelInput
-              label={isAr ? 'الطرف الأول (البائع / المانح)' : 'Partie 1 (Vendeur / Donateur)'}
+              label={isAr ? 'البائع / المانح' : isEn ? 'Seller / Donor' : 'Vendeur'}
               value={vendorName}
               onChange={(e) => setVendorName(e.target.value)}
               required
             />
             <LabelInput
-              label={isAr ? 'الرقم التعريفي الوطني (18 رقماً)' : 'NIN Vendeur (18 chiffres)'}
+              label={isAr ? 'الهوية الوطنية' : isEn ? 'National ID' : 'ID National'}
               value={vendorNin}
               onChange={(e) => setVendorNin(e.target.value)}
               required
             />
             <LabelInput
-              label={isAr ? 'الطرف الثاني (المشتري / المستفيد)' : 'Partie 2 (Acquéreur / Donataire)'}
+              label={isAr ? 'المشتري / المستفيد' : isEn ? 'Buyer / Recipient' : 'Acquéreur'}
               value={purchaserName}
               onChange={(e) => setPurchaserName(e.target.value)}
               required
             />
             <LabelInput
-              label={isAr ? 'الرقم التعريفي الوطني (18 رقماً)' : 'NIN Acquéreur (18 chiffres)'}
+              label={isAr ? 'الهوية الوطنية' : isEn ? 'National ID' : 'ID National'}
               value={purchaserNin}
               onChange={(e) => setPurchaserNin(e.target.value)}
               required
@@ -219,48 +222,48 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
         {(actType === 'vente_immobiliere' || actType === 'donation') && (
           <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/80 space-y-3">
             <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 block">
-              {isAr ? 'المراجع العقارية والمسح العقاري (المحافظة العقارية):' : 'Références Cadastrales & Conservation Foncière :'}
+              {isAr ? 'المراجع العقارية' : isEn ? 'Land Registry' : 'Cadastre'}
             </span>
             <div className="grid grid-cols-2 sm:grid-cols-6 gap-2">
-              <LabelInput label="Wilaya" value={wilaya} onChange={(e) => setWilaya(e.target.value)} />
-              <LabelInput label="Commune" value={commune} onChange={(e) => setCommune(e.target.value)} />
-              <LabelInput label="Section" value={section} onChange={(e) => setSection(e.target.value)} />
-              <LabelInput label="Îlot" value={ilot} onChange={(e) => setIlot(e.target.value)} />
-              <LabelInput label="N° Lot" value={lotNumber} onChange={(e) => setLotNumber(e.target.value)} />
-              <LabelInput label="Livret Foncier" value={livretFoncierNumber} onChange={(e) => setLivretFoncierNumber(e.target.value)} />
+              <LabelInput label={isAr ? 'الولاية' : isEn ? 'Province' : 'Wilaya'} value={wilaya} onChange={(e) => setWilaya(e.target.value)} />
+              <LabelInput label={isAr ? 'البلدية' : isEn ? 'District' : 'Commune'} value={commune} onChange={(e) => setCommune(e.target.value)} />
+              <LabelInput label={isAr ? 'القسم' : isEn ? 'Section' : 'Section'} value={section} onChange={(e) => setSection(e.target.value)} />
+              <LabelInput label={isAr ? 'الجزيرة' : isEn ? 'Block' : 'Îlot'} value={ilot} onChange={(e) => setIlot(e.target.value)} />
+              <LabelInput label={isAr ? 'الحصة' : isEn ? 'Lot No.' : 'N° Lot'} value={lotNumber} onChange={(e) => setLotNumber(e.target.value)} />
+              <LabelInput label={isAr ? 'الدفتر العقاري' : isEn ? 'Title Book' : 'Livret Foncier'} value={livretFoncierNumber} onChange={(e) => setLivretFoncierNumber(e.target.value)} />
             </div>
           </div>
         )}
 
-        {/* Décret 08-243 Statutory Breakdown */}
+        {/* Fee Breakdown */}
         <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-2xs space-y-3">
           <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-700">
             <div className="flex items-center gap-2">
               <Scale size={16} className="text-[#d4522f]" />
               <span className="text-xs font-bold text-neutral-900 dark:text-white">
-                {isAr ? 'التعريفة القانونية الرسمية (المرسوم التنفيذي 08-243)' : 'Calcul Officiel Décret 08-243 & Débours Fiscaux'}
+                {isAr ? 'التعريفة والرسوم' : isEn ? 'Fees & Taxes' : 'Tarifs & Taxes'}
               </span>
             </div>
             <span className="text-xs font-mono font-bold text-[#d4522f]">
-              Total Provision : {formatMoney(tariff.totalProvisionClientDzd, language)}
+              {isAr ? 'الإجمالي' : isEn ? 'Total' : 'Total'}: {formatMoney(tariff.totalProvisionClientDzd, language)}
             </span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
             <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/40">
-              <span className="text-[10px] text-neutral-400 block">{isAr ? 'أتعاب التوثيق الخام' : 'Honoraires Notaire HT'}</span>
+              <span className="text-[10px] text-neutral-400 block">{isAr ? 'أتعاب الموثق' : isEn ? 'Notary Fee' : 'Honoraires'}</span>
               <span className="font-bold text-neutral-900 dark:text-white font-mono">{formatMoney(tariff.honorairesHtDzd, language)}</span>
             </div>
             <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/40">
-              <span className="text-[10px] text-neutral-400 block">{isAr ? 'الرسم على القيمة المضافة (19%)' : 'TVA Notariale (19%)'}</span>
+              <span className="text-[10px] text-neutral-400 block">{isAr ? 'الضريبة' : isEn ? 'VAT' : 'TVA'}</span>
               <span className="font-bold text-neutral-900 dark:text-white font-mono">{formatMoney(tariff.tvaAmountDzd, language)}</span>
             </div>
             <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/40">
-              <span className="text-[10px] text-neutral-400 block">{isAr ? 'حقوق التسجيل (2.5%)' : 'Droits Enregistrement (2.5%)'}</span>
+              <span className="text-[10px] text-neutral-400 block">{isAr ? 'التسجيل' : isEn ? 'Registration' : 'Enregistrement'}</span>
               <span className="font-bold text-neutral-900 dark:text-white font-mono">{formatMoney(tariff.droitsEnregistrementDzd, language)}</span>
             </div>
             <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/40">
-              <span className="text-[10px] text-neutral-400 block">{isAr ? 'الشهر العقاري (1.0%)' : 'Publicité Foncière (1.0%)'}</span>
+              <span className="text-[10px] text-neutral-400 block">{isAr ? 'الشهر العقاري' : isEn ? 'Filing Fee' : 'Publicité'}</span>
               <span className="font-bold text-neutral-900 dark:text-white font-mono">{formatMoney(tariff.droitsPubliciteDzd, language)}</span>
             </div>
           </div>
@@ -268,10 +271,10 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
 
         <div className="flex justify-end gap-2 pt-2 border-t border-neutral-200 dark:border-neutral-800">
           <AtriumButton variant="secondary" onClick={onClose} type="button">
-            {isAr ? 'إلغاء' : 'Annuler'}
+            {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
           </AtriumButton>
           <AtriumButton variant="primary" type="submit" icon={<FileCheck size={15} />}>
-            {isAr ? 'تسجيل العقد وحجز الرقم في الفهرس' : 'Signer la Minute & Valider au Répertoire'}
+            {isAr ? 'تسجيل العقد' : isEn ? 'Save Deed' : 'Signer Acte'}
           </AtriumButton>
         </div>
       </form>

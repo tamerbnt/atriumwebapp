@@ -577,61 +577,13 @@ export const FreelanceTimeTrackerView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+            <h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
               {t('free_time_title', language)}
             </h1>
           </div>
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
-          {/* Facility Switcher Dropdown */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-              className="h-9 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
-            >
-              <Building2 size={13} className="text-[#d4522f]" />
-              <span className="truncate max-w-[130px]">
-                {currentBusiness?.name || 'Studio Main'}
-              </span>
-              <ChevronDown size={12} className="text-neutral-400" />
-            </button>
-
-            {isFacilityDropdownOpen && (
-              <div className="absolute right-0 top-full mt-1.5 w-60 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xl z-50 p-1.5 space-y-1">
-                <div className="px-2.5 py-1 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
-                  {t('hub_switch_business') || 'Espaces & Studios'}
-                </div>
-                {businesses.map((biz) => {
-                  const isCurrent = biz.id === currentBusinessId;
-                  return (
-                    <button
-                      key={biz.id}
-                      type="button"
-                      onClick={() => {
-                        switchBusiness(biz.id);
-                        const firstBranch = branches.find((b) => b.businessId === biz.id);
-                        if (firstBranch) switchBranch(firstBranch.id);
-                        setIsFacilityDropdownOpen(false);
-                      }}
-                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center justify-between transition-colors ${
-                        isCurrent
-                          ? 'bg-[#d4522f]/10 text-[#d4522f]'
-                          : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Building2 size={13} className={isCurrent ? 'text-[#d4522f]' : 'text-neutral-400'} />
-                        <span className="truncate">{biz.name}</span>
-                      </div>
-                      {isCurrent && <Check size={13} />}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
 
 
 

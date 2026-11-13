@@ -72,10 +72,10 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
           </div>
           <div>
             <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
-              {isAr ? 'تسجيل سلفة على الراتب (تسبيق)' : isEn ? 'Issue Salary Advance' : 'Octroyer un Acompte sur Salaire'}
+              {isAr ? 'سلفة راتب' : isEn ? 'Salary Advance' : 'Acompte Salaire'}
             </h3>
             <p className="text-xs text-neutral-500">
-              {isAr ? 'سيتم خصم المبلغ تلقائياً من راتب الشهر القادم' : isEn ? 'Deducted automatically from next pay slip' : 'Déduction automatique sur le prochain bulletin de paie'}
+              {isAr ? 'تخصم من الراتب' : isEn ? 'Deducted next payroll' : 'Déduit sur paie'}
             </p>
           </div>
         </div>
@@ -83,21 +83,21 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
-              {isAr ? 'الموظف / المدرب المستفيد' : isEn ? 'Beneficiary Staff' : 'Collaborateur bénéficiaire'}
+              {isAr ? 'الموظف' : isEn ? 'Staff' : 'Collaborateur'}
             </label>
             <LabelSelect
               value={selectedStaffId}
               onChange={(val) => setSelectedStaffId(val)}
               options={staffList.map((s) => ({
                 value: s.id,
-                label: `${s.fullName} (${s.role}) - Base: ${s.salary?.toLocaleString()} DZD`,
+                label: `${s.fullName} (${s.role})`,
               }))}
             />
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
-              {isAr ? 'مبلغ السلفة (دج)' : isEn ? 'Advance Amount (DZD)' : 'Montant de l\'Acompte (DZD)'}
+              {isAr ? 'المبلغ' : isEn ? 'Amount' : 'Montant'}
             </label>
             <div className="relative">
               <input
@@ -114,20 +114,20 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
             </div>
             {selectedStaff?.salary && (
               <p className="text-[11px] text-neutral-400 mt-1">
-                {isAr ? `الحد الأقصى الموصى به (80% من الراتب): ${Math.round(selectedStaff.salary * 0.8).toLocaleString()} دج` : `Plafond conseillé (80% du salaire) : ${Math.round(selectedStaff.salary * 0.8).toLocaleString()} DZD`}
+                {isAr ? `الحد: ${Math.round(selectedStaff.salary * 0.8).toLocaleString()} دج` : isEn ? `Max: ${Math.round(selectedStaff.salary * 0.8).toLocaleString()} DZD` : `Max : ${Math.round(selectedStaff.salary * 0.8).toLocaleString()} DZD`}
               </p>
             )}
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
-              {isAr ? 'طريقة الدفع' : isEn ? 'Disbursement Method' : 'Mode de versement'}
+              {isAr ? 'الدفع' : isEn ? 'Method' : 'Paiement'}
             </label>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { id: 'cash', label: isAr ? 'نقداً (سيولة)' : 'Espèces / Cash' },
-                { id: 'ccp', label: 'CCP Poste' },
-                { id: 'bank_transfer', label: isAr ? 'تحويل بنكي' : 'Virement' },
+                { id: 'cash', label: isAr ? 'نقداً' : isEn ? 'Cash' : 'Espèces' },
+                { id: 'ccp', label: isAr ? 'بريدي' : isEn ? 'Postal' : 'Poste' },
+                { id: 'bank_transfer', label: isAr ? 'تحويل' : isEn ? 'Transfer' : 'Virement' },
               ].map((m) => (
                 <button
                   key={m.id}
@@ -147,13 +147,13 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
 
           <div>
             <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
-              {isAr ? 'السبب أو الملاحظة (اختياري)' : isEn ? 'Reason / Notes (Optional)' : 'Motif de l\'avance (facultatif)'}
+              {isAr ? 'ملاحظة' : isEn ? 'Note' : 'Motif'}
             </label>
             <input
               type="text"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder={isAr ? 'مثال: مصاريف طبية طارئة، صيانة سيارة...' : 'Ex: Dépense familiale urgente, avance mi-mois...'}
+              placeholder={isAr ? 'ملاحظة...' : isEn ? 'Reason...' : 'Motif...'}
               className="w-full px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202024] text-neutral-900 dark:text-white text-xs focus:ring-2 focus:ring-[#d4522f] focus:outline-hidden"
             />
           </div>
@@ -167,7 +167,7 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
               {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
             </button>
             <AtriumButton type="submit">
-              {isAr ? 'تأكيد وصرف السلفة' : isEn ? 'Confirm Advance' : 'Confirmer le Versement'}
+              {isAr ? 'تأكيد' : isEn ? 'Confirm' : 'Confirmer'}
             </AtriumButton>
           </div>
         </form>

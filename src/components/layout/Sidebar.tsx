@@ -339,25 +339,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
       },
     ];
   } else if (category === 'pos_inventory') {
-    // Dedicated POS & Inventory Architecture: Register is primary workstation
     if (activePosRole === 'staff') {
       dockNavItems = [
         {
           id: 'shop',
           icon: <ShoppingBag size={19} />,
-          title: t('nav_pos_register', language) || 'Caisse Enregistreuse',
-          label: language === 'ar' ? 'نقطة البيع' : language === 'fr' ? 'Caisse' : 'Register',
+          title: language === 'ar' ? 'الصندوق' : language === 'fr' ? 'Caisse' : 'Register',
+          label: language === 'ar' ? 'الصندوق' : language === 'fr' ? 'Caisse' : 'Register',
         },
         {
           id: 'registrations',
           icon: <ClipboardList size={19} />,
-          title: language === 'ar' ? 'الطلبات والتذاكر المعلقة' : language === 'fr' ? 'Commandes & Tickets' : 'Orders & Parked',
+          title: language === 'ar' ? 'الطلبات' : language === 'fr' ? 'Commandes' : 'Orders',
           label: language === 'ar' ? 'الطلبات' : language === 'fr' ? 'Commandes' : 'Orders',
         },
         {
           id: 'scheduler',
           icon: <Boxes size={19} />,
-          title: language === 'ar' ? 'المخزون والمنتجات' : language === 'fr' ? 'Stock & Inventaire' : 'Inventory & Stock',
+          title: language === 'ar' ? 'المخزون' : language === 'fr' ? 'Stock' : 'Inventory',
           label: language === 'ar' ? 'المخزون' : language === 'fr' ? 'Stock' : 'Inventory',
         },
       ];
@@ -366,25 +365,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'shop',
           icon: <ShoppingBag size={19} />,
-          title: t('nav_pos_register', language) || 'Caisse Enregistreuse',
-          label: language === 'ar' ? 'نقطة البيع' : language === 'fr' ? 'Caisse' : 'Register',
+          title: language === 'ar' ? 'الصندوق' : language === 'fr' ? 'Caisse' : 'Register',
+          label: language === 'ar' ? 'الصندوق' : language === 'fr' ? 'Caisse' : 'Register',
         },
         {
           id: 'scheduler',
           icon: <Boxes size={19} />,
-          title: language === 'ar' ? 'المخزون والمنتجات' : language === 'fr' ? 'Stock & Inventaire' : 'Inventory & Stock',
+          title: language === 'ar' ? 'المخزون' : language === 'fr' ? 'Stock' : 'Inventory',
           label: language === 'ar' ? 'المخزون' : language === 'fr' ? 'Stock' : 'Inventory',
         },
         {
           id: 'registrations',
           icon: <ClipboardList size={19} />,
-          title: language === 'ar' ? 'الطلبات والتذاكر المعلقة' : language === 'fr' ? 'Commandes & Tickets' : 'Orders & Parked',
+          title: language === 'ar' ? 'الطلبات' : language === 'fr' ? 'Commandes' : 'Orders',
           label: language === 'ar' ? 'الطلبات' : language === 'fr' ? 'Commandes' : 'Orders',
         },
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: t('nav_pos_sales_pulse', language),
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
@@ -396,7 +395,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'finance',
           icon: <Wallet size={19} />,
-          title: t('nav_pos_finance', language),
+          title: t('nav_finance', language),
           label: t('nav_finance', language),
         },
         {
@@ -408,25 +407,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ];
     }
   } else if (category === 'appointment_service') {
-    // Dedicated Salon & Spa Architecture: Bookings & Clients are primary
     if (activeAppointmentRole === 'staff') {
       dockNavItems = [
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'كشك محطات العمل والزبائن' : 'Fauteuils & Planning Express',
-          label: language === 'ar' ? 'الصالون' : 'Fauteuils',
+          title: language === 'ar' ? 'المحطات' : language === 'fr' ? 'Fauteuils' : 'Stations',
+          label: language === 'ar' ? 'المحطات' : language === 'fr' ? 'Fauteuils' : 'Stations',
         },
         {
           id: 'scheduler',
           icon: <Calendar size={19} />,
-          title: t('nav_scheduler', language),
+          title: terminology.scheduler,
           label: terminology.scheduler,
         },
         {
           id: 'members',
           icon: <Users size={19} />,
-          title: t('nav_members', language),
+          title: terminology.members,
           label: terminology.members,
         },
       ];
@@ -435,25 +433,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: t('nav_dashboard', language),
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'scheduler',
           icon: <Calendar size={19} />,
-          title: t('nav_scheduler', language),
+          title: terminology.scheduler,
           label: terminology.scheduler,
         },
         {
           id: 'members',
           icon: <Users size={19} />,
-          title: t('nav_members', language),
+          title: terminology.members,
           label: terminology.members,
         },
         {
           id: 'shop',
           icon: <ShoppingBag size={19} />,
-          title: t('nav_shop', language),
+          title: terminology.shop,
           label: terminology.shop,
         },
         {
@@ -483,42 +481,41 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ];
     }
   } else if (category === 'rental_booking') {
-    // Dedicated Rentals, Venues & Space Bookings Architecture
     dockNavItems = [
       {
         id: 'dashboard',
         icon: <Home size={19} />,
-        title: t('nav_venue_dashboard', language),
+        title: t('nav_home', language),
         label: t('nav_home', language),
       },
       {
         id: 'scheduler',
         icon: <Calendar size={19} />,
-        title: t('nav_venue_timeline', language),
+        title: terminology.scheduler,
         label: terminology.scheduler,
       },
       {
         id: 'registrations',
         icon: <ClipboardList size={19} />,
-        title: t('nav_venue_bookings', language),
+        title: terminology.registration,
         label: terminology.registration,
       },
       {
         id: 'shop',
         icon: <DoorOpen size={19} />,
-        title: t('nav_venue_inventory', language),
+        title: terminology.shop,
         label: terminology.shop,
       },
       {
         id: 'members',
         icon: <Users size={19} />,
-        title: t('nav_venue_renters', language),
+        title: terminology.members,
         label: terminology.members,
       },
       {
         id: 'finance',
         icon: <ShieldCheck size={19} />,
-        title: t('nav_venue_finance', language),
+        title: t('nav_finance', language),
         label: t('nav_finance', language),
       },
       {
@@ -529,31 +526,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
       },
     ];
   } else if (category === 'education_cohort') {
-    // Dedicated Education, Academy & Tutoring Architecture
     if (activeEducationRole === 'staff') {
       dockNavItems = [
         {
           id: 'analytics',
           icon: <Award size={19} />,
-          title: language === 'ar' ? 'كشك تسجيل الحضور السريع' : 'Appel & Présences Express',
-          label: language === 'ar' ? 'الحضور' : 'Appel',
+          title: language === 'ar' ? 'الحضور' : language === 'fr' ? 'Appel' : 'Roll Call',
+          label: language === 'ar' ? 'الحضور' : language === 'fr' ? 'Appel' : 'Roll Call',
         },
         {
           id: 'scheduler',
           icon: <Calendar size={19} />,
-          title: t('nav_edu_timetable', language),
+          title: terminology.scheduler,
           label: terminology.scheduler,
         },
         {
           id: 'members',
           icon: <Users size={19} />,
-          title: t('nav_edu_students', language),
+          title: terminology.members,
           label: terminology.members,
         },
         {
           id: 'shop',
           icon: <GraduationCap size={19} />,
-          title: t('nav_edu_cohorts', language),
+          title: terminology.plan,
           label: terminology.plan,
         },
       ];
@@ -562,31 +558,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: t('nav_edu_dashboard', language),
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'scheduler',
           icon: <Calendar size={19} />,
-          title: t('nav_edu_timetable', language),
+          title: terminology.scheduler,
           label: terminology.scheduler,
         },
         {
           id: 'members',
           icon: <Users size={19} />,
-          title: t('nav_edu_students', language),
+          title: terminology.members,
           label: terminology.members,
         },
         {
           id: 'shop',
           icon: <GraduationCap size={19} />,
-          title: t('nav_edu_cohorts', language),
+          title: terminology.plan,
           label: terminology.plan,
         },
         {
           id: 'registrations',
           icon: <ClipboardList size={19} />,
-          title: t('nav_edu_admissions', language),
+          title: terminology.registration,
           label: terminology.registration,
         },
         {
@@ -598,7 +594,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'finance',
           icon: <Wallet size={19} />,
-          title: t('nav_edu_finance', language),
+          title: t('nav_finance', language),
           label: t('nav_finance', language),
         },
         {
@@ -610,48 +606,47 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ];
     }
   } else if (category === 'trading_commercial') {
-    // Dedicated Category 8: B2B Commercial Trading & Wholesale Architecture
     dockNavItems = [
       {
         id: 'trading_dashboard',
         icon: <Home size={19} />,
-        title: t('nav_trading_dashboard', language),
+        title: t('nav_home', language),
         label: t('nav_home', language),
       },
       {
         id: 'trading_sales',
         icon: <FileText size={19} />,
-        title: t('nav_trading_sales', language),
+        title: language === 'ar' ? 'المبيعات' : language === 'fr' ? 'Ventes' : 'Sales',
         label: language === 'ar' ? 'المبيعات' : language === 'fr' ? 'Ventes' : 'Sales',
       },
       {
         id: 'trading_purchases',
         icon: <Truck size={19} />,
-        title: t('nav_trading_purchases', language),
+        title: language === 'ar' ? 'المشتريات' : language === 'fr' ? 'Achats' : 'Purchases',
         label: language === 'ar' ? 'المشتريات' : language === 'fr' ? 'Achats' : 'Purchases',
       },
       {
         id: 'trading_inventory',
         icon: <Boxes size={19} />,
-        title: t('nav_trading_inventory', language),
+        title: language === 'ar' ? 'المخزون' : language === 'fr' ? 'Stocks' : 'Stock',
         label: language === 'ar' ? 'المخزون' : language === 'fr' ? 'Stocks' : 'Stock',
       },
       {
         id: 'trading_directory',
         icon: <Building2 size={19} />,
-        title: t('nav_trading_directory', language),
-        label: language === 'ar' ? 'الشركاء' : language === 'fr' ? 'Répertoire' : 'Directory',
+        title: language === 'ar' ? 'الشركاء' : language === 'fr' ? 'Contacts' : 'Directory',
+        label: language === 'ar' ? 'الشركاء' : language === 'fr' ? 'Contacts' : 'Directory',
       },
       {
         id: 'trading_catalog',
         icon: <ShoppingBag size={19} />,
-        title: t('nav_trading_catalog', language),
-        label: language === 'ar' ? 'المواد' : language === 'fr' ? 'Articles' : 'Catalog',
+        title: language === 'ar' ? 'المنتجات' : language === 'fr' ? 'Articles' : 'Catalog',
+        label: language === 'ar' ? 'المنتجات' : language === 'fr' ? 'Articles' : 'Catalog',
       },
       {
         id: 'trading_finance',
         icon: <Wallet size={19} />,
-        title: t('nav_trading_finance', language),
+        title: t('nav_finance', language),
         label: t('nav_finance', language),
       },
       {
@@ -662,48 +657,47 @@ export const Sidebar: React.FC<SidebarProps> = ({
       },
     ];
   } else if (category === 'medical_clinic') {
-    // Dedicated Category 9: Medical Clinic & Healthcare Architecture
     dockNavItems = [
       {
         id: 'dashboard',
         icon: <Home size={19} />,
-        title: language === 'ar' ? 'لوحة العيادة' : language === 'fr' ? 'Tableau Clinique' : 'Clinic Pulse',
+        title: t('nav_home', language),
         label: t('nav_home', language),
       },
       {
         id: 'scheduler',
         icon: <Clock size={19} />,
-        title: language === 'ar' ? 'قائمة الانتظار والفرز' : language === 'fr' ? 'File d\'Attente & Triage' : 'Queue & Triage',
-        label: language === 'ar' ? 'الانتظار' : language === 'fr' ? 'Triage' : 'Queue',
+        title: language === 'ar' ? 'الانتظار' : language === 'fr' ? 'Attente' : 'Queue',
+        label: language === 'ar' ? 'الانتظار' : language === 'fr' ? 'Attente' : 'Queue',
       },
       {
         id: 'agenda',
         icon: <Calendar size={19} />,
-        title: language === 'ar' ? 'أجندة مواعيد الأطباء' : language === 'fr' ? 'Agenda Médecins' : 'Doctor Agenda',
-        label: language === 'ar' ? 'الأجندة' : language === 'fr' ? 'Agenda' : 'Agenda',
+        title: language === 'ar' ? 'المواعيد' : language === 'fr' ? 'Agenda' : 'Agenda',
+        label: language === 'ar' ? 'المواعيد' : language === 'fr' ? 'Agenda' : 'Agenda',
       },
       {
         id: 'members',
         icon: <Users size={19} />,
-        title: language === 'ar' ? 'ملفات المرضى' : language === 'fr' ? 'Dossiers Patients (EHR)' : 'Patients (EHR)',
+        title: language === 'ar' ? 'المرضى' : language === 'fr' ? 'Patients' : 'Patients',
         label: language === 'ar' ? 'المرضى' : language === 'fr' ? 'Patients' : 'Patients',
       },
       {
         id: 'shop',
         icon: <Stethoscope size={19} />,
-        title: language === 'ar' ? 'الوصفات الطبية والفحوصات' : language === 'fr' ? 'Ordonnances & Actes' : 'Prescriptions & Care',
+        title: language === 'ar' ? 'الوصفات' : language === 'fr' ? 'Ordonnances' : 'Prescriptions',
         label: language === 'ar' ? 'الوصفات' : language === 'fr' ? 'Ordonnances' : 'Prescriptions',
       },
       {
         id: 'registrations',
         icon: <FileText size={19} />,
-        title: language === 'ar' ? 'الشهادات والوثائق الطبية' : language === 'fr' ? 'Certificats Médicaux' : 'Medical Certificates',
+        title: language === 'ar' ? 'الشهادات' : language === 'fr' ? 'Certificats' : 'Certificates',
         label: language === 'ar' ? 'الشهادات' : language === 'fr' ? 'Certificats' : 'Certificates',
       },
       {
         id: 'finance',
         icon: <CreditCard size={19} />,
-        title: language === 'ar' ? 'الفواتير والضمان الاجتماعي' : language === 'fr' ? 'Facturation & Chifa' : 'Billing & Insurance',
+        title: t('nav_finance', language),
         label: t('nav_finance', language),
       },
       {
@@ -714,38 +708,37 @@ export const Sidebar: React.FC<SidebarProps> = ({
       },
     ];
   } else if (category === 'auto_garage') {
-    // Dedicated Category 10: Auto Garage & Fleet Maintenance — Role-Adapted Navigation
     if (activeGarageRole === 'reception') {
       dockNavItems = [
         {
           id: 'scheduler',
           icon: <Wrench size={19} />,
-          title: language === 'ar' ? 'استقبال المركبات وأمر التصليح' : language === 'fr' ? 'Entrées Atelier & OR (360°)' : 'Intake & Damage OR',
-          label: language === 'ar' ? 'الاستقبال' : language === 'fr' ? 'Entrées OR' : 'Intake OR',
+          title: language === 'ar' ? 'الاستقبال' : language === 'fr' ? 'Réception' : 'Intake',
+          label: language === 'ar' ? 'الاستقبال' : language === 'fr' ? 'Réception' : 'Intake',
         },
         {
           id: 'members',
           icon: <Car size={19} />,
-          title: language === 'ar' ? 'الزبائن والمركبات' : language === 'fr' ? 'Véhicules & Fiches Clients' : 'Vehicles & CRM',
+          title: language === 'ar' ? 'المركبات' : language === 'fr' ? 'Véhicules' : 'Vehicles',
           label: language === 'ar' ? 'المركبات' : language === 'fr' ? 'Véhicules' : 'Vehicles',
         },
         {
           id: 'finance',
           icon: <FileText size={19} />,
-          title: language === 'ar' ? 'عروض الأسعار وموافقة واتساب' : language === 'fr' ? 'Devis & Approbations WhatsApp' : 'Quotes & WhatsApp',
-          label: language === 'ar' ? 'التقديرات' : language === 'fr' ? 'Devis' : 'Quotes',
+          title: language === 'ar' ? 'العروض' : language === 'fr' ? 'Devis' : 'Quotes',
+          label: language === 'ar' ? 'العروض' : language === 'fr' ? 'Devis' : 'Quotes',
         },
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'قائمة انتظار الورشة' : language === 'fr' ? 'File d\'Attente Atelier' : 'Workshop Queue',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'shop',
           icon: <Key size={19} />,
-          title: language === 'ar' ? 'تسليم المفاتيح ورخصة الخروج' : language === 'fr' ? 'Véhicules Prêts & Bons de Sortie' : 'Handover & Exit Pass',
-          label: language === 'ar' ? 'التسليم' : language === 'fr' ? 'Sorties' : 'Exits',
+          title: language === 'ar' ? 'التسليم' : language === 'fr' ? 'Sorties' : 'Handover',
+          label: language === 'ar' ? 'التسليم' : language === 'fr' ? 'Sorties' : 'Handover',
         },
       ];
     } else if (activeGarageRole === 'mecanicien') {
@@ -753,26 +746,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'scheduler',
           icon: <Wrench size={19} />,
-          title: language === 'ar' ? 'لوحة الجسور والرافعات' : language === 'fr' ? 'Tableau des Ponts & Baies (Kanban)' : 'Bay Kanban & Lifts',
-          label: language === 'ar' ? 'الجسور' : language === 'fr' ? 'Ponts' : 'Bays',
+          title: language === 'ar' ? 'الأرصفة' : language === 'fr' ? 'Ponts' : 'Bays',
+          label: language === 'ar' ? 'الأرصفة' : language === 'fr' ? 'Ponts' : 'Bays',
         },
         {
           id: 'dashboard',
           icon: <Clock size={19} />,
-          title: language === 'ar' ? 'مهام التصليح اليومية' : language === 'fr' ? 'Mes Réparations du Jour' : 'My Repair Tasks',
+          title: language === 'ar' ? 'مهامي' : language === 'fr' ? 'Mes Tâches' : 'My Tasks',
           label: t('nav_home', language),
         },
         {
           id: 'members',
           icon: <Car size={19} />,
-          title: language === 'ar' ? 'فحص الأعطال OBD والتشخيص' : language === 'fr' ? 'Codes DTC & Valise OBD-II' : 'OBD-II Diagnostic DTC',
-          label: language === 'ar' ? 'التشخيص' : language === 'fr' ? 'OBD DTC' : 'Diagnostics',
+          title: language === 'ar' ? 'الفحص' : language === 'fr' ? 'Diagnostic' : 'Diagnostics',
+          label: language === 'ar' ? 'الفحص' : language === 'fr' ? 'Diagnostic' : 'Diagnostics',
         },
         {
           id: 'shop',
           icon: <Boxes size={19} />,
-          title: language === 'ar' ? 'طلب قطع الغيار من المخزن' : language === 'fr' ? 'Demandes de Pièces Magasin' : 'Parts Requisitions',
-          label: language === 'ar' ? 'طلب قطع' : language === 'fr' ? 'Demandes' : 'Requisitions',
+          title: language === 'ar' ? 'الطلبات' : language === 'fr' ? 'Demandes' : 'Requests',
+          label: language === 'ar' ? 'الطلبات' : language === 'fr' ? 'Demandes' : 'Requests',
         },
       ];
     } else if (activeGarageRole === 'magasinier') {
@@ -780,26 +773,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'shop',
           icon: <Boxes size={19} />,
-          title: language === 'ar' ? 'المخزن والرفوف وقطع الغيار' : language === 'fr' ? 'Stock, Bacs & Références' : 'Parts Depot & Bins',
+          title: language === 'ar' ? 'قطع الغيار' : language === 'fr' ? 'Pièces' : 'Parts',
           label: language === 'ar' ? 'قطع الغيار' : language === 'fr' ? 'Pièces' : 'Parts',
         },
         {
           id: 'dashboard',
           icon: <ClipboardList size={19} />,
-          title: language === 'ar' ? 'طلبات الصرف من الورشة' : language === 'fr' ? 'File des Demandes Atelier' : 'Requisition Queue',
+          title: language === 'ar' ? 'الطلبات' : language === 'fr' ? 'Demandes' : 'Requests',
           label: t('nav_home', language),
         },
         {
           id: 'scheduler',
           icon: <Truck size={19} />,
-          title: language === 'ar' ? 'طلبات التموين والموزعين' : language === 'fr' ? 'Commandes Fournisseurs (Bab Ezzouar)' : 'Supplier Orders (PO)',
-          label: language === 'ar' ? 'الممونين' : language === 'fr' ? 'Commandes' : 'Purchases',
+          title: language === 'ar' ? 'المشتريات' : language === 'fr' ? 'Commandes' : 'Purchases',
+          label: language === 'ar' ? 'المشتريات' : language === 'fr' ? 'Commandes' : 'Purchases',
         },
         {
           id: 'finance',
           icon: <FileCheck size={19} />,
-          title: language === 'ar' ? 'وصولات الاستلام ومطابقة البضاعة' : language === 'fr' ? 'Réception Marchandises & BL' : 'Deliveries & BL Check',
-          label: language === 'ar' ? 'الاستلام' : language === 'fr' ? 'Réceptions' : 'Goods In',
+          title: language === 'ar' ? 'الاستلام' : language === 'fr' ? 'Réceptions' : 'Deliveries',
+          label: language === 'ar' ? 'الاستلام' : language === 'fr' ? 'Réceptions' : 'Deliveries',
         },
       ];
     } else if (activeGarageRole === 'caisse') {
@@ -807,59 +800,58 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'finance',
           icon: <Wallet size={19} />,
-          title: language === 'ar' ? 'الصندوق والفواتير الجبائية' : language === 'fr' ? 'Factures DGI (19%+Timbre) & Caisse' : 'DGI Billing & Cash',
+          title: t('nav_finance', language),
           label: t('nav_finance', language),
         },
         {
           id: 'dashboard',
           icon: <Receipt size={19} />,
-          title: language === 'ar' ? 'نقطة التحصيل والوصولات' : language === 'fr' ? 'Point d\'Encaissement & Bons' : 'Cashier Counter',
+          title: language === 'ar' ? 'الصندوق' : language === 'fr' ? 'Caisse' : 'Cashier',
           label: t('nav_home', language),
         },
         {
           id: 'members',
           icon: <Building2 size={19} />,
-          title: language === 'ar' ? 'حسابات أساطيل الشركات B2B' : language === 'fr' ? 'Comptes Flottes B2B & Relevés' : 'Fleet Accounts & AR',
+          title: language === 'ar' ? 'الأساطيل' : language === 'fr' ? 'Flottes' : 'Fleets',
           label: language === 'ar' ? 'الأساطيل' : language === 'fr' ? 'Flottes' : 'Fleets',
         },
         {
           id: 'scheduler',
           icon: <CheckCircle2 size={19} />,
-          title: language === 'ar' ? 'مركبات منتهية بانتظار الدفع' : language === 'fr' ? 'Véhicules Réparés à Régler' : 'Pending Payment Queue',
-          label: language === 'ar' ? 'الدفع' : language === 'fr' ? 'À Régler' : 'To Settle',
+          title: language === 'ar' ? 'للدفع' : language === 'fr' ? 'À Régler' : 'To Pay',
+          label: language === 'ar' ? 'للدفع' : language === 'fr' ? 'À Régler' : 'To Pay',
         },
       ];
     } else {
-      // Default Gérant / Direction
       dockNavItems = [
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'لوحة أداء الورشة والهوامش' : language === 'fr' ? 'Tableau Atelier & Rentabilité' : 'Workshop Pulse & Margins',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'scheduler',
           icon: <Wrench size={19} />,
-          title: language === 'ar' ? 'أوامر التصليح وسير العمل' : language === 'fr' ? 'Registre des Réparations (OR)' : 'Work Orders (OR)',
-          label: language === 'ar' ? 'التصليح' : language === 'fr' ? 'Ordres (OR)' : 'Orders',
+          title: language === 'ar' ? 'الإصلاحات' : language === 'fr' ? 'Réparations' : 'Repairs',
+          label: language === 'ar' ? 'الإصلاحات' : language === 'fr' ? 'Réparations' : 'Repairs',
         },
         {
           id: 'members',
           icon: <Car size={19} />,
-          title: language === 'ar' ? 'المركبات وأساطيل B2B' : language === 'fr' ? 'Véhicules & Flottes d\'Entreprise' : 'Vehicles & Fleets',
+          title: language === 'ar' ? 'المركبات' : language === 'fr' ? 'Véhicules' : 'Vehicles',
           label: language === 'ar' ? 'المركبات' : language === 'fr' ? 'Véhicules' : 'Vehicles',
         },
         {
           id: 'shop',
           icon: <Boxes size={19} />,
-          title: language === 'ar' ? 'قطع الغيار وتقييم المخزون' : language === 'fr' ? 'Pièces & Valorisation Stock' : 'Parts & Stock Value',
+          title: language === 'ar' ? 'قطع الغيار' : language === 'fr' ? 'Pièces' : 'Parts',
           label: language === 'ar' ? 'قطع الغيار' : language === 'fr' ? 'Pièces' : 'Parts',
         },
         {
           id: 'finance',
           icon: <Wallet size={19} />,
-          title: language === 'ar' ? 'الفواتير والتحصيل والخزينة' : language === 'fr' ? 'Facturation DGI & Trésorerie' : 'Billing & Cash Flow',
+          title: t('nav_finance', language),
           label: t('nav_finance', language),
         },
         {
@@ -871,32 +863,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ];
     }
   } else if (category === 'real_estate') {
-    // Dedicated Category 11: Real Estate & Property Lease Management — Role-Adapted Navigation
     if (activeRealEstateRole === 'negociateur') {
       dockNavItems = [
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'لوحة نشاط المستشار العقاري' : language === 'fr' ? 'Mes Mandats & Activités' : 'Agent Pulse & Mandates',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'realestate_mandates',
           icon: <FileText size={19} />,
-          title: language === 'ar' ? 'سجل الوكالات والوساطة (09-18)' : language === 'fr' ? 'Registre des Mandats (09-18)' : 'Mandates Register (09-18)',
+          title: language === 'ar' ? 'الوكالات' : language === 'fr' ? 'Mandats' : 'Mandates',
           label: language === 'ar' ? 'الوكالات' : language === 'fr' ? 'Mandats' : 'Mandates',
         },
         {
           id: 'members',
           icon: <Building2 size={19} />,
-          title: language === 'ar' ? 'محفظة العقارات والسندات' : language === 'fr' ? 'Biens Immobiliers & Titres' : 'Properties & Titles',
+          title: language === 'ar' ? 'العقارات' : language === 'fr' ? 'Biens' : 'Properties',
           label: language === 'ar' ? 'العقارات' : language === 'fr' ? 'Biens' : 'Properties',
         },
         {
           id: 'registrations',
           icon: <FileCheck size={19} />,
-          title: language === 'ar' ? 'وصولات الزيارة GPS وتوقيع الزبائن' : language === 'fr' ? 'Bons de Visite GPS & Signatures' : 'Visits GPS & Signatures',
-          label: language === 'ar' ? 'الزيارات GPS' : language === 'fr' ? 'Visites GPS' : 'GPS Visits',
+          title: language === 'ar' ? 'الزيارات' : language === 'fr' ? 'Visites' : 'Visits',
+          label: language === 'ar' ? 'الزيارات' : language === 'fr' ? 'Visites' : 'Visits',
         },
       ];
     } else if (activeRealEstateRole === 'gestionnaire_locatif') {
@@ -904,32 +895,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'لوحة تسيير الإيجارات والتحصيل' : language === 'fr' ? 'Tableau Gestion Locative & Impayés' : 'Rentals & Arrears Pulse',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'members',
           icon: <Building2 size={19} />,
-          title: language === 'ar' ? 'العقارات المخصصة للإيجار' : language === 'fr' ? 'Parc Locatif & Fiches Locataires' : 'Rental Units & Tenants',
+          title: language === 'ar' ? 'العقارات' : language === 'fr' ? 'Biens' : 'Properties',
           label: language === 'ar' ? 'العقارات' : language === 'fr' ? 'Biens' : 'Properties',
         },
         {
           id: 'scheduler',
           icon: <Key size={19} />,
-          title: language === 'ar' ? 'عقود الكراء السكنية والتجارية' : language === 'fr' ? 'Baux & Contrats de Location' : 'Lease Contracts',
+          title: language === 'ar' ? 'العقود' : language === 'fr' ? 'Contrats' : 'Leases',
           label: language === 'ar' ? 'العقود' : language === 'fr' ? 'Contrats' : 'Leases',
         },
         {
           id: 'finance',
           icon: <Receipt size={19} />,
-          title: language === 'ar' ? 'وصولات الإيجار والطابع الجبائي 317' : language === 'fr' ? 'Quittances & Timbre Fiscal (Art. 317)' : 'Rent Receipts & Tax Stamp',
+          title: language === 'ar' ? 'الوصولات' : language === 'fr' ? 'Quittances' : 'Receipts',
           label: language === 'ar' ? 'الوصولات' : language === 'fr' ? 'Quittances' : 'Receipts',
         },
         {
           id: 'registrations',
           icon: <FileCheck size={19} />,
-          title: language === 'ar' ? 'محاضر معاينة الأماكن وقراءة العدادات' : language === 'fr' ? 'États des Lieux & Compteurs' : 'Check-In/Out & Meters',
-          label: language === 'ar' ? 'المعاينة' : language === 'fr' ? 'États des Lieux' : 'Inspections',
+          title: language === 'ar' ? 'المعاينة' : language === 'fr' ? 'Inspections' : 'Inspections',
+          label: language === 'ar' ? 'المعاينة' : language === 'fr' ? 'Inspections' : 'Inspections',
         },
       ];
     } else if (activeRealEstateRole === 'notaire_compta') {
@@ -937,65 +928,64 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'خزينة الوكالة والمستحقات الضريبية' : language === 'fr' ? 'Trésorerie Agence & Fiscalité' : 'Treasury & Tax Pulse',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'finance',
           icon: <Scale size={19} />,
-          title: language === 'ar' ? 'حسابات الموثق (08-243) ومستحقات الملاك' : language === 'fr' ? 'Frais Notaire (08-243) & Règlements' : 'Notary Closing (08-243) & Payouts',
-          label: language === 'ar' ? 'الموثق والمالية' : language === 'fr' ? 'Notaire & Compta' : 'Notary & Finance',
+          title: language === 'ar' ? 'الحسابات' : language === 'fr' ? 'Comptes' : 'Closing',
+          label: language === 'ar' ? 'الحسابات' : language === 'fr' ? 'Comptes' : 'Closing',
         },
         {
           id: 'scheduler',
           icon: <Key size={19} />,
-          title: language === 'ar' ? 'متابعة تدفقات الإيجار والأداء الجبائي' : language === 'fr' ? 'Flux Locatifs & Contrôle Timbre' : 'Rent Roll & Stamp Audit',
+          title: language === 'ar' ? 'العقود' : language === 'fr' ? 'Contrats' : 'Leases',
           label: language === 'ar' ? 'العقود' : language === 'fr' ? 'Contrats' : 'Leases',
         },
         {
           id: 'realestate_mandates',
           icon: <FileText size={19} />,
-          title: language === 'ar' ? 'عمولات الوساطة ومطابقة المرسوم 09-18' : language === 'fr' ? 'Honoraires Mandats (Décret 09-18)' : 'Mandate Fees (09-18)',
+          title: language === 'ar' ? 'العمولات' : language === 'fr' ? 'Honoraires' : 'Fees',
           label: language === 'ar' ? 'العمولات' : language === 'fr' ? 'Honoraires' : 'Fees',
         },
       ];
     } else {
-      // Direction / Gérant (Default: Complete Operational Access)
       dockNavItems = [
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'لوحة الوكالة العقارية' : language === 'fr' ? 'Tableau Agence' : 'Agency Pulse',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'realestate_mandates',
           icon: <FileText size={19} />,
-          title: language === 'ar' ? 'سجل الوكالات والوساطة (09-18)' : language === 'fr' ? 'Registre des Mandats (09-18)' : 'Mandates Register (09-18)',
+          title: language === 'ar' ? 'الوكالات' : language === 'fr' ? 'Mandats' : 'Mandates',
           label: language === 'ar' ? 'الوكالات' : language === 'fr' ? 'Mandats' : 'Mandates',
         },
         {
           id: 'members',
           icon: <Building2 size={19} />,
-          title: language === 'ar' ? 'محفظة العقارات والسندات' : language === 'fr' ? 'Biens Immobiliers & Titres' : 'Properties & Titles',
+          title: language === 'ar' ? 'العقارات' : language === 'fr' ? 'Biens' : 'Properties',
           label: language === 'ar' ? 'العقارات' : language === 'fr' ? 'Biens' : 'Properties',
         },
         {
           id: 'scheduler',
           icon: <Key size={19} />,
-          title: language === 'ar' ? 'عقود الكراء' : language === 'fr' ? 'Baux & Contrats de Location' : 'Lease Contracts',
+          title: language === 'ar' ? 'العقود' : language === 'fr' ? 'Contrats' : 'Leases',
           label: language === 'ar' ? 'العقود' : language === 'fr' ? 'Contrats' : 'Leases',
         },
         {
           id: 'registrations',
           icon: <FileCheck size={19} />,
-          title: language === 'ar' ? 'معاينة الأماكن ووصولات الزيارة GPS' : language === 'fr' ? 'États des Lieux & Bons de Visite' : 'Inspections & Visits',
-          label: language === 'ar' ? 'الزيارات والمعاينة' : language === 'fr' ? 'Visites & EDLs' : 'Visits & EDLs',
+          title: language === 'ar' ? 'الزيارات' : language === 'fr' ? 'Visites' : 'Visits',
+          label: language === 'ar' ? 'الزيارات' : language === 'fr' ? 'Visites' : 'Visits',
         },
         {
           id: 'finance',
           icon: <Receipt size={19} />,
-          title: language === 'ar' ? 'الوصولات ومستحقات الملاك' : language === 'fr' ? 'Quittances & Règlements Propriétaires' : 'Rent Receipts & Payouts',
+          title: language === 'ar' ? 'الوصولات' : language === 'fr' ? 'Quittances' : 'Receipts',
           label: language === 'ar' ? 'الوصولات' : language === 'fr' ? 'Quittances' : 'Receipts',
         },
         {
@@ -1007,37 +997,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ];
     }
   } else if (category === 'manufacturing_production') {
-    // Dedicated Category 12: Light Manufacturing & Workshop Production — Role-Adapted Navigation
     if (activeManufacturingRole === 'chef_atelier') {
       dockNavItems = [
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'لوحة قيادة الورشة والأداء' : language === 'fr' ? 'Tableau Atelier & Goulots' : 'Workshop Pulse & Bottlenecks',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'scheduler',
           icon: <Factory size={19} />,
-          title: language === 'ar' ? 'أوامر التصنيع ومتابعة المراحل (OF)' : language === 'fr' ? 'Ordres de Fabrication (OF Kanban)' : 'Work Orders (OF Kanban)',
-          label: language === 'ar' ? 'أوامر التصنيع' : language === 'fr' ? 'Ordres (OF)' : 'Orders',
+          title: language === 'ar' ? 'التصنيع' : language === 'fr' ? 'Production' : 'Orders',
+          label: language === 'ar' ? 'التصنيع' : language === 'fr' ? 'Production' : 'Orders',
         },
         {
           id: 'shop',
           icon: <Layers size={19} />,
-          title: language === 'ar' ? 'قوائم المكونات والوصفات (BOM)' : language === 'fr' ? 'Nomenclatures & Recettes (BOM)' : 'Bill of Materials',
-          label: language === 'ar' ? 'المكونات' : language === 'fr' ? 'Nomenclatures' : 'BOM',
+          title: language === 'ar' ? 'الوصفات' : language === 'fr' ? 'Recettes' : 'Recipes',
+          label: language === 'ar' ? 'الوصفات' : language === 'fr' ? 'Recettes' : 'Recipes',
         },
         {
           id: 'members',
           icon: <Boxes size={19} />,
-          title: language === 'ar' ? 'طلبات صرف المواد الأولية' : language === 'fr' ? 'Bons de Sortie Matières Atelier' : 'Material Requisitions',
-          label: language === 'ar' ? 'صرف المواد' : language === 'fr' ? 'Sorties' : 'Issues',
+          title: language === 'ar' ? 'المواد' : language === 'fr' ? 'Matières' : 'Materials',
+          label: language === 'ar' ? 'المواد' : language === 'fr' ? 'Matières' : 'Materials',
         },
         {
           id: 'finance',
           icon: <ShieldCheck size={19} />,
-          title: language === 'ar' ? 'متابعة الجودة ومحاضر عدم المطابقة' : language === 'fr' ? 'Fiches Qualité & Non-Conformités' : 'QC Sheets & Defects',
+          title: language === 'ar' ? 'الجودة' : language === 'fr' ? 'Qualité' : 'Quality',
           label: language === 'ar' ? 'الجودة' : language === 'fr' ? 'Qualité' : 'Quality',
         },
       ];
@@ -1046,13 +1035,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'شاشة اللمس لمحطة العمل والميقاتية' : language === 'fr' ? 'Terminal Poste de Travail (Touch)' : 'Workstation Touch Kiosk',
-          label: language === 'ar' ? 'المحطة' : language === 'fr' ? 'Mon Poste' : 'Station',
+          title: language === 'ar' ? 'المحطة' : language === 'fr' ? 'Poste' : 'Station',
+          label: language === 'ar' ? 'المحطة' : language === 'fr' ? 'Poste' : 'Station',
         },
         {
           id: 'scheduler',
           icon: <Factory size={19} />,
-          title: language === 'ar' ? 'أوامر العمل والمهام المسندة لي اليوم' : language === 'fr' ? 'Mes Bons de Travail du Jour' : 'My Work Tasks',
+          title: language === 'ar' ? 'مهامي' : language === 'fr' ? 'Mes Tâches' : 'My Tasks',
           label: language === 'ar' ? 'مهامي' : language === 'fr' ? 'Mes Tâches' : 'My Tasks',
         },
       ];
@@ -1061,25 +1050,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'members',
           icon: <Boxes size={19} />,
-          title: language === 'ar' ? 'مخزن المواد الأولية والمواقع' : language === 'fr' ? 'Magasin Matières & Emplacements' : 'Raw Materials Depot',
+          title: language === 'ar' ? 'المخزن' : language === 'fr' ? 'Magasin' : 'Depot',
           label: language === 'ar' ? 'المخزن' : language === 'fr' ? 'Magasin' : 'Depot',
         },
         {
           id: 'shop',
           icon: <Layers size={19} />,
-          title: language === 'ar' ? 'وصولات الخروج الرسمية (مرسوم 05-468)' : language === 'fr' ? 'Bons de Sortie Magasin (Décret 05)' : 'Issue Vouchers (BSM)',
-          label: language === 'ar' ? 'وصولات الخروج' : language === 'fr' ? 'Bons de Sortie' : 'Exit Slips',
+          title: language === 'ar' ? 'المخرجات' : language === 'fr' ? 'Sorties' : 'Issues',
+          label: language === 'ar' ? 'المخرجات' : language === 'fr' ? 'Sorties' : 'Issues',
         },
         {
           id: 'finance',
           icon: <Receipt size={19} />,
-          title: language === 'ar' ? 'وصولات الاستلام والتسليم للزبائن' : language === 'fr' ? 'Réceptions (BR) & Livraisons (BL)' : 'Goods In & Out (BL)',
-          label: language === 'ar' ? 'الاستلام والتسليم' : language === 'fr' ? 'BR & BL' : 'Transfers',
+          title: language === 'ar' ? 'التحويلات' : language === 'fr' ? 'Mouvements' : 'Transfers',
+          label: language === 'ar' ? 'التحويلات' : language === 'fr' ? 'Mouvements' : 'Transfers',
         },
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'حركة المخزون وإعادة الطلب' : language === 'fr' ? 'Tableau Mouvements de Stock' : 'Stock Movements',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
       ];
@@ -1088,54 +1077,53 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'finance',
           icon: <ShieldCheck size={19} />,
-          title: language === 'ar' ? 'سجل مراقبة الجودة وشهادات IANOR' : language === 'fr' ? 'Contrôle Qualité & Certificats IANOR' : 'QC Register & Tests',
-          label: language === 'ar' ? 'مراقبة الجودة' : language === 'fr' ? 'Contrôle' : 'QC Tests',
+          title: language === 'ar' ? 'الجودة' : language === 'fr' ? 'Contrôle' : 'Quality',
+          label: language === 'ar' ? 'الجودة' : language === 'fr' ? 'Contrôle' : 'Quality',
         },
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'الدفعات في الحجر الصحي والتصنيف' : language === 'fr' ? 'Lots en Quarantaine & Rebuts' : 'Quarantine & Scrap',
-          label: language === 'ar' ? 'الحجر الصحي' : language === 'fr' ? 'Quarantaine' : 'Quarantine',
+          title: language === 'ar' ? 'الحجر' : language === 'fr' ? 'Quarantaine' : 'Quarantine',
+          label: language === 'ar' ? 'الحجر' : language === 'fr' ? 'Quarantaine' : 'Quarantine',
         },
         {
           id: 'scheduler',
           icon: <Scale size={19} />,
-          title: language === 'ar' ? 'متابعة معايرة الموازين والأجهزة (ONML)' : language === 'fr' ? 'Étalonnage Instruments (ONML)' : 'Metrology Calibration',
-          label: language === 'ar' ? 'المعايرة' : language === 'fr' ? 'Métrologie' : 'Calibration',
+          title: language === 'ar' ? 'المعايرة' : language === 'fr' ? 'Mesures' : 'Calibration',
+          label: language === 'ar' ? 'المعايرة' : language === 'fr' ? 'Mesures' : 'Calibration',
         },
       ];
     } else {
-      // Direction / Gérant (Default: Full Factory Oversight)
       dockNavItems = [
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'لوحة ورشة التصنيع والهوامش' : language === 'fr' ? 'Tableau Usine & Marges' : 'Plant Pulse & Margins',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'scheduler',
           icon: <Factory size={19} />,
-          title: language === 'ar' ? 'أوامر التصنيع وسير العمل (OF)' : language === 'fr' ? 'Ordres de Fabrication (OF)' : 'Work Orders (OF)',
-          label: language === 'ar' ? 'أوامر التصنيع' : language === 'fr' ? 'Ordres (OF)' : 'Orders',
+          title: language === 'ar' ? 'التصنيع' : language === 'fr' ? 'Production' : 'Orders',
+          label: language === 'ar' ? 'التصنيع' : language === 'fr' ? 'Production' : 'Orders',
         },
         {
           id: 'shop',
           icon: <Layers size={19} />,
-          title: language === 'ar' ? 'قوائم المكونات والتسعير (BOM)' : language === 'fr' ? 'Nomenclatures & Coûts (BOM)' : 'Bill of Materials',
-          label: language === 'ar' ? 'المكونات' : language === 'fr' ? 'Nomenclatures' : 'BOM',
+          title: language === 'ar' ? 'الوصفات' : language === 'fr' ? 'Recettes' : 'Recipes',
+          label: language === 'ar' ? 'الوصفات' : language === 'fr' ? 'Recettes' : 'Recipes',
         },
         {
           id: 'members',
           icon: <Boxes size={19} />,
-          title: language === 'ar' ? 'المواد الأولية وتقييم المخزون' : language === 'fr' ? 'Matières Premières & Stocks' : 'Raw Materials',
+          title: language === 'ar' ? 'المواد' : language === 'fr' ? 'Matières' : 'Materials',
           label: language === 'ar' ? 'المواد' : language === 'fr' ? 'Matières' : 'Materials',
         },
         {
           id: 'finance',
           icon: <ShieldCheck size={19} />,
-          title: language === 'ar' ? 'مراقبة الجودة والتكاليف' : language === 'fr' ? 'Contrôle Qualité & Coûts' : 'QC & Costing',
-          label: language === 'ar' ? 'الجودة' : language === 'fr' ? 'Qualité & Coûts' : 'QC & Costs',
+          title: language === 'ar' ? 'الجودة' : language === 'fr' ? 'Qualité' : 'Quality',
+          label: language === 'ar' ? 'الجودة' : language === 'fr' ? 'Qualité' : 'Quality',
         },
         {
           id: 'settings',
@@ -1146,38 +1134,37 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ];
     }
   } else if (category === 'legal_accounting') {
-    // Dedicated Category 13: Legal Cabinets & Accounting Firms — Strict Role Partition
     if (activeLegalRole === 'notaire_titulaire') {
       dockNavItems = [
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'لوحة تسيير مكتب التوثيق' : language === 'fr' ? 'Tableau Étude Notariale' : 'Notary Study Pulse',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'members',
           icon: <BookOpen size={19} />,
-          title: language === 'ar' ? 'سجل العقود الرسمية (المرسوم 08-243)' : language === 'fr' ? 'Répertoire des Actes (Décret 08-243)' : 'Official Deed Register',
-          label: language === 'ar' ? 'سجل العقود' : language === 'fr' ? 'Répertoire' : 'Deeds',
+          title: language === 'ar' ? 'العقود' : language === 'fr' ? 'Actes' : 'Deeds',
+          label: language === 'ar' ? 'العقود' : language === 'fr' ? 'Actes' : 'Deeds',
         },
         {
           id: 'scheduler',
           icon: <Landmark size={19} />,
-          title: language === 'ar' ? 'متابعة الشهر العقاري والمحافظة العقارية' : language === 'fr' ? 'Conservation Foncière & Cadastre' : 'Cadastre & Registry',
-          label: language === 'ar' ? 'المحافظة العقارية' : language === 'fr' ? 'Conservation' : 'Cadastre',
+          title: language === 'ar' ? 'الشهر العقاري' : language === 'fr' ? 'Foncier' : 'Registry',
+          label: language === 'ar' ? 'الشهر العقاري' : language === 'fr' ? 'Foncier' : 'Registry',
         },
         {
           id: 'registrations',
           icon: <ShieldCheck size={19} />,
-          title: language === 'ar' ? 'حفظ الأصول والمستخرجات الرسمية' : language === 'fr' ? 'Conservation des Minutes' : 'Minute Archives',
-          label: language === 'ar' ? 'الأصول' : language === 'fr' ? 'Minutes' : 'Minutes',
+          title: language === 'ar' ? 'الأرشيف' : language === 'fr' ? 'Archives' : 'Archives',
+          label: language === 'ar' ? 'الأرشيف' : language === 'fr' ? 'Archives' : 'Archives',
         },
         {
           id: 'finance',
           icon: <Lock size={19} />,
-          title: language === 'ar' ? 'حساب الحراسة والودائع العقارية' : language === 'fr' ? 'Compte Séquestre Immobilier' : 'Escrow Vault',
-          label: language === 'ar' ? 'الودائع' : language === 'fr' ? 'Séquestre' : 'Escrow',
+          title: language === 'ar' ? 'الودائع' : language === 'fr' ? 'Dépôts' : 'Escrow',
+          label: language === 'ar' ? 'الودائع' : language === 'fr' ? 'Dépôts' : 'Escrow',
         },
         {
           id: 'settings',
@@ -1191,32 +1178,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'لوحة مكتب الخبير المحاسب ومحافظ الحسابات' : language === 'fr' ? 'Tableau Cabinet d\'Expertise & Audit' : 'Audit Firm Pulse',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'members',
           icon: <Briefcase size={19} />,
-          title: language === 'ar' ? 'ملفات الزبائن والشركات الخاضعة للتدقيق' : language === 'fr' ? 'Dossiers Mandats & Entreprises' : 'Audit Mandates',
-          label: language === 'ar' ? 'الشركات' : language === 'fr' ? 'Mandats' : 'Mandates',
+          title: language === 'ar' ? 'الشركات' : language === 'fr' ? 'Mandats' : 'Clients',
+          label: language === 'ar' ? 'الشركات' : language === 'fr' ? 'Mandats' : 'Clients',
         },
         {
           id: 'scheduler',
           icon: <Calendar size={19} />,
-          title: language === 'ar' ? 'رزنامة التصريحات الجبائية G50 وCNAS' : language === 'fr' ? 'Échéancier Fiscal G50 & CNAS' : 'Fiscal Calendar G50',
-          label: language === 'ar' ? 'الرزنامة الجبائية' : language === 'fr' ? 'Échéancier G50' : 'Fiscal Dates',
+          title: language === 'ar' ? 'المواعيد' : language === 'fr' ? 'Échéances' : 'Tax Dates',
+          label: language === 'ar' ? 'المواعيد' : language === 'fr' ? 'Échéances' : 'Tax Dates',
         },
         {
           id: 'registrations',
           icon: <FileText size={19} />,
-          title: language === 'ar' ? 'أوراق العمل وتقارير محافظ الحسابات' : language === 'fr' ? 'Dossiers de Travail & Rapports CAC' : 'Audit Working Papers',
-          label: language === 'ar' ? 'أوراق العمل' : language === 'fr' ? 'Audit CAC' : 'Audit Papers',
+          title: language === 'ar' ? 'التدقيق' : language === 'fr' ? 'Audit' : 'Audit',
+          label: language === 'ar' ? 'التدقيق' : language === 'fr' ? 'Audit' : 'Audit',
         },
         {
           id: 'finance',
           icon: <Scale size={19} />,
-          title: language === 'ar' ? 'دفتر الأستاذ وميزان المراجعة SCF' : language === 'fr' ? 'Grand Livre & Balance SCF' : 'SCF General Ledger',
-          label: language === 'ar' ? 'المحاسبة SCF' : language === 'fr' ? 'Comptabilité' : 'SCF Ledger',
+          title: language === 'ar' ? 'المحاسبة' : language === 'fr' ? 'Comptabilité' : 'Ledger',
+          label: language === 'ar' ? 'المحاسبة' : language === 'fr' ? 'Comptabilité' : 'Ledger',
         },
         {
           id: 'settings',
@@ -1230,31 +1217,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'أمانة الضبط والاستقبال والبريد' : language === 'fr' ? 'Accueil & Formalités du Jour' : 'Front-Desk Hub',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'members',
           icon: <Users size={19} />,
-          title: language === 'ar' ? 'دليل الموكلين والأطراف والمعرف الوطني NIN' : language === 'fr' ? 'Répertoire Clients & NIN/NIF' : 'Client Directory',
-          label: language === 'ar' ? 'الموكلين' : language === 'fr' ? 'Clients' : 'Clients',
+          title: language === 'ar' ? 'العملاء' : language === 'fr' ? 'Clients' : 'Clients',
+          label: language === 'ar' ? 'العملاء' : language === 'fr' ? 'Clients' : 'Clients',
         },
         {
           id: 'scheduler',
           icon: <Calendar size={19} />,
-          title: language === 'ar' ? 'محاضر التبليغ القضائي والمحضرون القضائيون' : language === 'fr' ? 'Courrier & Huissiers du Jour' : 'Bailiff Log',
-          label: language === 'ar' ? 'المحضرون' : language === 'fr' ? 'Huissiers' : 'Bailiffs',
+          title: language === 'ar' ? 'التبليغ' : language === 'fr' ? 'Courrier' : 'Service Log',
+          label: language === 'ar' ? 'التبليغ' : language === 'fr' ? 'Courrier' : 'Service Log',
         },
         {
           id: 'registrations',
           icon: <FileText size={19} />,
-          title: language === 'ar' ? 'إيداع المستندات ووصولات الاستلام' : language === 'fr' ? 'Dépôt & Classement Pièces' : 'Incoming Docs',
-          label: language === 'ar' ? 'الإيداع' : language === 'fr' ? 'Classement' : 'Filing',
+          title: language === 'ar' ? 'الإيداع' : language === 'fr' ? 'Dépôts' : 'Filing',
+          label: language === 'ar' ? 'الإيداع' : language === 'fr' ? 'Dépôts' : 'Filing',
         },
         {
           id: 'finance',
           icon: <CreditCard size={19} />,
-          title: language === 'ar' ? 'الصندوق وطابع المادة 317 ومحضر الإغلاق' : language === 'fr' ? 'Caisse & Timbre Art. 317 (Arrêté)' : 'Cashier & Stamp 317',
+          title: language === 'ar' ? 'الصندوق' : language === 'fr' ? 'Caisse' : 'Cashier',
           label: language === 'ar' ? 'الصندوق' : language === 'fr' ? 'Caisse' : 'Cashier',
         },
         {
@@ -1265,37 +1252,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else {
-      // Default: avocat_associe
       dockNavItems = [
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'لوحة قضايا المحاماة ورادار المواعيد' : language === 'fr' ? 'Tableau Contentieux & Délais' : 'Litigation Pulse',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'members',
           icon: <Briefcase size={19} />,
-          title: language === 'ar' ? 'ملفات القضايا والموكلين' : language === 'fr' ? 'Affaires & Dossiers Contentieux' : 'Case Matters',
-          label: language === 'ar' ? 'القضايا' : language === 'fr' ? 'Dossiers' : 'Matters',
+          title: language === 'ar' ? 'القضايا' : language === 'fr' ? 'Dossiers' : 'Cases',
+          label: language === 'ar' ? 'القضايا' : language === 'fr' ? 'Dossiers' : 'Cases',
         },
         {
           id: 'scheduler',
           icon: <Calendar size={19} />,
-          title: language === 'ar' ? 'جدول الجلسات ومواعيد الاستئناف CPCA' : language === 'fr' ? 'Audiences & Délais CPCA' : 'Court Hearings',
+          title: language === 'ar' ? 'الجلسات' : language === 'fr' ? 'Audiences' : 'Hearings',
           label: language === 'ar' ? 'الجلسات' : language === 'fr' ? 'Audiences' : 'Hearings',
         },
         {
           id: 'registrations',
           icon: <FileText size={19} />,
-          title: language === 'ar' ? 'خزينة المستندات والعرائض القضائية' : language === 'fr' ? 'Coffre-fort & Requêtes' : 'Legal Vault',
-          label: language === 'ar' ? 'العرائض' : language === 'fr' ? 'Requêtes' : 'Vault',
+          title: language === 'ar' ? 'المستندات' : language === 'fr' ? 'Documents' : 'Vault',
+          label: language === 'ar' ? 'المستندات' : language === 'fr' ? 'Documents' : 'Vault',
         },
         {
           id: 'finance',
           icon: <Scale size={19} />,
-          title: language === 'ar' ? 'حساب الحراسة CARPA وأتعاب المحاماة' : language === 'fr' ? 'Honoraires & Compte CARPA' : 'CARPA & Fees',
-          label: language === 'ar' ? 'الأتعاب' : language === 'fr' ? 'Honoraires' : 'Fees & Trust',
+          title: language === 'ar' ? 'الأتعاب' : language === 'fr' ? 'Honoraires' : 'Fees',
+          label: language === 'ar' ? 'الأتعاب' : language === 'fr' ? 'Honoraires' : 'Fees',
         },
         {
           id: 'settings',
@@ -1306,31 +1292,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ];
     }
   } else if (category === 'logistics_delivery') {
-    // Dedicated Category 14: Logistics, Couriers & Parcel Dispatch — Role-Adaptive Sidebars
     if (activeLogisticsRole === 'dispatcher') {
       dockNavItems = [
         {
           id: 'scheduler',
           icon: <Truck size={19} />,
-          title: language === 'ar' ? 'مسارات التوصيل للسائقين' : language === 'fr' ? 'Tournées & Manifestes Chauffeurs' : 'Driver Runs',
+          title: language === 'ar' ? 'المسارات' : language === 'fr' ? 'Tournées' : 'Runs',
           label: language === 'ar' ? 'المسارات' : language === 'fr' ? 'Tournées' : 'Runs',
         },
         {
           id: 'members',
           icon: <Package size={19} />,
-          title: language === 'ar' ? 'الطرود قيد التوزيع وإدارة الإخفاقات' : language === 'fr' ? 'Colis en Transit & Échecs' : 'Shipments & Holds',
-          label: language === 'ar' ? 'الطرود' : language === 'fr' ? 'Colis' : 'Shipments',
+          title: language === 'ar' ? 'الطرود' : language === 'fr' ? 'Colis' : 'Parcels',
+          label: language === 'ar' ? 'الطرود' : language === 'fr' ? 'Colis' : 'Parcels',
         },
         {
           id: 'registrations',
           icon: <Boxes size={19} />,
-          title: language === 'ar' ? 'ماسح الأرصفة والأكياس' : language === 'fr' ? 'Scanner Quai & Sacs' : 'Dock Scanner',
+          title: language === 'ar' ? 'الماسح' : language === 'fr' ? 'Scanner' : 'Scanner',
           label: language === 'ar' ? 'الماسح' : language === 'fr' ? 'Scanner' : 'Scanner',
         },
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'رادار الرحلات والفرز' : language === 'fr' ? 'Tournées & Alertes Délais' : 'Fleet Radar',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
@@ -1345,25 +1330,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'registrations',
           icon: <Boxes size={19} />,
-          title: language === 'ar' ? 'ماسح الفرز السريع والأكياس' : language === 'fr' ? 'Scanner Express Quai & Sacs' : 'Hub Scanner',
+          title: language === 'ar' ? 'الماسح' : language === 'fr' ? 'Scanner' : 'Scanner',
           label: language === 'ar' ? 'الماسح' : language === 'fr' ? 'Scanner' : 'Scanner',
         },
         {
           id: 'members',
           icon: <Package size={19} />,
-          title: language === 'ar' ? 'سجل الطرود والأكياس' : language === 'fr' ? 'Colis & Sacs-Navette' : 'Parcels & Bags',
+          title: language === 'ar' ? 'الطرود' : language === 'fr' ? 'Colis' : 'Parcels',
           label: language === 'ar' ? 'الطرود' : language === 'fr' ? 'Colis' : 'Parcels',
         },
         {
           id: 'scheduler',
           icon: <Truck size={19} />,
-          title: language === 'ar' ? 'تحميل الشاحنات والختم الأمني' : language === 'fr' ? 'Chargement Camions & Scellés' : 'Truck Loading',
+          title: language === 'ar' ? 'الشحن' : language === 'fr' ? 'Chargement' : 'Loading',
           label: language === 'ar' ? 'الشحن' : language === 'fr' ? 'Chargement' : 'Loading',
         },
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'معدل المسح اليومي' : language === 'fr' ? 'Cadence Quai & Débit' : 'Throughput',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
       ];
@@ -1372,60 +1357,59 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'members',
           icon: <Package size={19} />,
-          title: language === 'ar' ? 'تسليم الطرود بمكتب Stop-Desk (رمز OTP)' : language === 'fr' ? 'Retrait Guichet Stop-Desk (OTP/CNI)' : 'Counter Pickup',
+          title: language === 'ar' ? 'الاستلام' : language === 'fr' ? 'Guichet' : 'Counter',
           label: language === 'ar' ? 'الاستلام' : language === 'fr' ? 'Guichet' : 'Counter',
         },
         {
           id: 'finance',
           icon: <CreditCard size={19} />,
-          title: language === 'ar' ? 'صندوق الدفع نقداً وطابع المادة 317' : language === 'fr' ? 'Caisse Guichet & Timbre 317' : 'Cash Drawer',
+          title: language === 'ar' ? 'الصندوق' : language === 'fr' ? 'Caisse' : 'Cashier',
           label: language === 'ar' ? 'الصندوق' : language === 'fr' ? 'Caisse' : 'Cashier',
         },
         {
           id: 'registrations',
           icon: <Boxes size={19} />,
-          title: language === 'ar' ? 'استلام الطرود على الرفوف' : language === 'fr' ? 'Réception & Rayonnage' : 'Shelving Scan',
-          label: language === 'ar' ? 'الرفوف' : language === 'fr' ? 'Rayonnage' : 'Shelving',
+          title: language === 'ar' ? 'الرفوف' : language === 'fr' ? 'Rayons' : 'Shelving',
+          label: language === 'ar' ? 'الرفوف' : language === 'fr' ? 'Rayons' : 'Shelving',
         },
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'لوحة المكتب والطرود المنتهية' : language === 'fr' ? 'Arrivages & Délais 7 Jours' : 'Desk Pulse',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
       ];
     } else {
-      // Default: gerant
       dockNavItems = [
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'مركز الفرز والتوزيع (58 ولاية)' : language === 'fr' ? 'Hub Logistique & Pulse 58' : 'Hub Pulse 58',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'members',
           icon: <Package size={19} />,
-          title: language === 'ar' ? 'الطرود والشحنات (AWB)' : language === 'fr' ? 'Colis & Expéditions (AWB)' : 'Shipments (AWB)',
+          title: language === 'ar' ? 'الطرود' : language === 'fr' ? 'Colis' : 'Parcels',
           label: language === 'ar' ? 'الطرود' : language === 'fr' ? 'Colis' : 'Parcels',
         },
         {
           id: 'scheduler',
           icon: <Truck size={19} />,
-          title: language === 'ar' ? 'مسارات التوصيل للسائقين' : language === 'fr' ? 'Feuilles de Route Chauffeurs' : 'Driver Manifests',
-          label: language === 'ar' ? 'مسارات التوزيع' : language === 'fr' ? 'Tournées' : 'Runs',
+          title: language === 'ar' ? 'المسارات' : language === 'fr' ? 'Tournées' : 'Runs',
+          label: language === 'ar' ? 'المسارات' : language === 'fr' ? 'Tournées' : 'Runs',
         },
         {
           id: 'registrations',
           icon: <Boxes size={19} />,
-          title: language === 'ar' ? 'ماسح الفرز والاستلام' : language === 'fr' ? 'Scanner & Réceptions Hub' : 'Hub Scanner',
+          title: language === 'ar' ? 'الماسح' : language === 'fr' ? 'Scanner' : 'Scanner',
           label: language === 'ar' ? 'الماسح' : language === 'fr' ? 'Scanner' : 'Scanner',
         },
         {
           id: 'finance',
           icon: <CreditCard size={19} />,
-          title: language === 'ar' ? 'تحصيل COD ومستحقات التجار' : language === 'fr' ? 'Caisse COD & Règlements Marchands' : 'COD Cash & Settlements',
-          label: language === 'ar' ? 'COD والتجار' : language === 'fr' ? 'COD & Marchands' : 'COD & Payouts',
+          title: language === 'ar' ? 'التحصيل' : language === 'fr' ? 'Encaissements' : 'Payouts',
+          label: language === 'ar' ? 'التحصيل' : language === 'fr' ? 'Encaissements' : 'Payouts',
         },
         {
           id: 'settings',
@@ -1436,31 +1420,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ];
     }
   } else if (category === 'construction_contractor') {
-    // Dedicated Category 15: Construction, General Contracting & BTP (Role-Based Isolation)
     if (activeContractorRole === 'gerant') {
       dockNavItems = [
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'لوحة القيادة والمؤشرات' : language === 'fr' ? 'Supervision Direction' : 'Executive Pulse',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'members',
           icon: <Building size={19} />,
-          title: language === 'ar' ? 'محفظة الصفقات والمشاريع' : language === 'fr' ? 'Portefeuille Marchés' : 'Tenders & Sites',
-          label: language === 'ar' ? 'الصفقات' : language === 'fr' ? 'Marchés' : 'Tenders',
+          title: language === 'ar' ? 'المشاريع' : language === 'fr' ? 'Projets' : 'Projects',
+          label: language === 'ar' ? 'المشاريع' : language === 'fr' ? 'Projets' : 'Projects',
         },
         {
           id: 'scheduler',
           icon: <Clock size={19} />,
-          title: language === 'ar' ? 'أوامر الخدمة والآجال القانونية (OS)' : language === 'fr' ? 'Ordres de Service (OS) & Délais' : 'OS & Legal Clocks',
-          label: language === 'ar' ? 'أوامر OS' : language === 'fr' ? 'Ordres OS' : 'OS Clock',
+          title: language === 'ar' ? 'الآجال' : language === 'fr' ? 'Délais' : 'Deadlines',
+          label: language === 'ar' ? 'الآجال' : language === 'fr' ? 'Délais' : 'Deadlines',
         },
         {
           id: 'finance',
           icon: <Landmark size={19} />,
-          title: language === 'ar' ? 'الخزينة والكفالات المصرفية' : language === 'fr' ? 'Trésorerie & Cautions Bancaires' : 'Treasury & Cautions',
+          title: language === 'ar' ? 'الخزينة' : language === 'fr' ? 'Trésorerie' : 'Treasury',
           label: language === 'ar' ? 'الخزينة' : language === 'fr' ? 'Trésorerie' : 'Treasury',
         },
         {
@@ -1475,32 +1458,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'dashboard',
           icon: <TrendingUp size={19} />,
-          title: language === 'ar' ? 'لوحة العمليات والتقدم الميداني' : language === 'fr' ? 'Supervision Opérations Chantiers' : 'Field Operations',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'members',
           icon: <HardHat size={19} />,
-          title: language === 'ar' ? 'متابعة الورشات ومخطط الإنجاز' : language === 'fr' ? 'Suivi Chantiers & Planning' : 'Sites & Planning',
+          title: language === 'ar' ? 'الورشات' : language === 'fr' ? 'Chantiers' : 'Sites',
           label: language === 'ar' ? 'الورشات' : language === 'fr' ? 'Chantiers' : 'Sites',
         },
         {
           id: 'shop',
           icon: <ClipboardList size={19} />,
-          title: language === 'ar' ? 'متابعة الحصص والكشف DQE' : language === 'fr' ? 'Avancement Lots & DQE' : 'DQE Progress',
-          label: language === 'ar' ? 'الكشف DQE' : language === 'fr' ? 'DQE' : 'DQE',
+          title: language === 'ar' ? 'الكميات' : language === 'fr' ? 'Devis' : 'Quantities',
+          label: language === 'ar' ? 'الكميات' : language === 'fr' ? 'Devis' : 'Quantities',
         },
         {
           id: 'scheduler',
           icon: <CheckCircle2 size={19} />,
-          title: language === 'ar' ? 'مراقبة الخرسانة ومطابقة CTC' : language === 'fr' ? 'Laboratoire Béton & Visa CTC' : 'Concrete Lab & CTC',
-          label: language === 'ar' ? 'مراقبة CTC' : language === 'fr' ? 'Laboratoire' : 'Lab & CTC',
+          title: language === 'ar' ? 'المختبر' : language === 'fr' ? 'Laboratoire' : 'Lab',
+          label: language === 'ar' ? 'المختبر' : language === 'fr' ? 'Laboratoire' : 'Lab',
         },
         {
           id: 'finance',
           icon: <Users size={19} />,
-          title: language === 'ar' ? 'محاضر المقاولين من الباطن' : language === 'fr' ? 'Attachements Sous-Traitants' : 'Subcontractors',
-          label: language === 'ar' ? 'المناولة' : language === 'fr' ? 'Sous-traitance' : 'Subcontract',
+          title: language === 'ar' ? 'المناولون' : language === 'fr' ? 'Sous-traitants' : 'Subcontractors',
+          label: language === 'ar' ? 'المناولون' : language === 'fr' ? 'Sous-traitants' : 'Subcontractors',
         },
       ];
     } else if (activeContractorRole === 'chef_chantier') {
@@ -1508,32 +1491,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'مركز قيادة رئيس الورشة' : language === 'fr' ? 'Poste de Commandement Terrain' : 'Site Field Post',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'scheduler',
           icon: <Users size={19} />,
-          title: language === 'ar' ? 'تسجيل الحضور اليومي للعمال' : language === 'fr' ? 'Pointage Journalier des Équipes' : 'Daily Worker Muster',
-          label: language === 'ar' ? 'الحضور' : language === 'fr' ? 'Pointage' : 'Roll-Call',
+          title: language === 'ar' ? 'الحضور' : language === 'fr' ? 'Pointage' : 'Attendance',
+          label: language === 'ar' ? 'الحضور' : language === 'fr' ? 'Pointage' : 'Attendance',
         },
         {
           id: 'members',
           icon: <FileText size={19} />,
-          title: language === 'ar' ? 'دفتر الورشة اليومي وسجل الطقس' : language === 'fr' ? 'Journal de Chantier & Météo' : 'Site Diary & Weather',
-          label: language === 'ar' ? 'دفتر الورشة' : language === 'fr' ? 'Journal' : 'Site Diary',
+          title: language === 'ar' ? 'اليومية' : language === 'fr' ? 'Journal' : 'Site Log',
+          label: language === 'ar' ? 'اليومية' : language === 'fr' ? 'Journal' : 'Site Log',
         },
         {
           id: 'shop',
           icon: <Truck size={19} />,
-          title: language === 'ar' ? 'وصولات صب الخرسانة الجاهزة BPE' : language === 'fr' ? 'Bons de Coulage Béton BPE' : 'Ready-Mix Pour Slips',
-          label: language === 'ar' ? 'الخرسانة' : language === 'fr' ? 'Coulage BPE' : 'Pours',
+          title: language === 'ar' ? 'الخرسانة' : language === 'fr' ? 'Béton' : 'Concrete',
+          label: language === 'ar' ? 'الخرسانة' : language === 'fr' ? 'Béton' : 'Concrete',
         },
         {
           id: 'finance',
           icon: <Scale size={19} />,
-          title: language === 'ar' ? 'ساعات العتاد ومتابعة الوقود' : language === 'fr' ? 'Heures Engins & Suivi Gasoil' : 'Equipment & Fuel',
-          label: language === 'ar' ? 'العتاد والوقود' : language === 'fr' ? 'Engins & Fuel' : 'Machinery',
+          title: language === 'ar' ? 'المعدات' : language === 'fr' ? 'Engins' : 'Equipment',
+          label: language === 'ar' ? 'المعدات' : language === 'fr' ? 'Engins' : 'Equipment',
         },
       ];
     } else if (activeContractorRole === 'metreur' || activeContractorRole === 'daf_metreur') {
@@ -1541,26 +1524,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'dashboard',
           icon: <TrendingUp size={19} />,
-          title: language === 'ar' ? 'مكتب الدراسات وتقدير التكاليف' : language === 'fr' ? 'Cockpit Études & Chiffrage' : 'Estimating Studio',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'shop',
           icon: <ClipboardList size={19} />,
-          title: language === 'ar' ? 'جدول الأسعار الأحادية BPU و DQE' : language === 'fr' ? 'Studio DQE & Bordereau BPU' : 'DQE & BPU Studio',
-          label: language === 'ar' ? 'BPU / DQE' : language === 'fr' ? 'DQE / BPU' : 'BPU / DQE',
+          title: language === 'ar' ? 'الأسعار' : language === 'fr' ? 'Devis' : 'Estimates',
+          label: language === 'ar' ? 'الأسعار' : language === 'fr' ? 'Devis' : 'Estimates',
         },
         {
           id: 'scheduler',
           icon: <FileCheck size={19} />,
-          title: language === 'ar' ? 'الكشوف التناقضية الشهرية' : language === 'fr' ? 'Attachements Contradictoires' : 'Monthly Attachments',
-          label: language === 'ar' ? 'الكشوف' : language === 'fr' ? 'Attachements' : 'Attachments',
+          title: language === 'ar' ? 'الكشوف' : language === 'fr' ? 'Situations' : 'Statements',
+          label: language === 'ar' ? 'الكشوف' : language === 'fr' ? 'Situations' : 'Statements',
         },
         {
           id: 'finance',
           icon: <Layers size={19} />,
-          title: language === 'ar' ? 'مراجعة الأسعار بالمعادلة الرسمية' : language === 'fr' ? 'Révision des Prix Paramétrique' : 'Price Revisions',
-          label: language === 'ar' ? 'المراجعة' : language === 'fr' ? 'Révision Prix' : 'Revisions',
+          title: language === 'ar' ? 'المراجعة' : language === 'fr' ? 'Révision' : 'Revisions',
+          label: language === 'ar' ? 'المراجعة' : language === 'fr' ? 'Révision' : 'Revisions',
         },
         {
           id: 'settings',
@@ -1570,61 +1553,59 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else {
-      // Comptable Chantier & RAF
       dockNavItems = [
         {
           id: 'dashboard',
           icon: <Wallet size={19} />,
-          title: language === 'ar' ? 'لوحة المحاسبة والفوترة BTP' : language === 'fr' ? 'Tableau Facturation & Trésor' : 'Billing & Treasury',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'finance',
           icon: <FileText size={19} />,
-          title: language === 'ar' ? 'الكشوف المؤقتة المرسوم 15-247' : language === 'fr' ? 'Décomptes Provisoires Décret 15-247' : 'Progress Billings',
-          label: language === 'ar' ? 'الكشوف' : language === 'fr' ? 'Décomptes' : 'Billings',
+          title: language === 'ar' ? 'الفواتير' : language === 'fr' ? 'Décomptes' : 'Billings',
+          label: language === 'ar' ? 'الفواتير' : language === 'fr' ? 'Décomptes' : 'Billings',
         },
         {
           id: 'scheduler',
           icon: <Cloud size={19} />,
-          title: language === 'ar' ? 'ملف تعويض سوء الأحوال CACOBATPH' : language === 'fr' ? 'Dossier Intempéries CACOBATPH 48h' : 'CACOBATPH 48h',
-          label: language === 'ar' ? 'CACOBATPH' : language === 'fr' ? 'CACOBATPH' : 'Weather Claim',
+          title: language === 'ar' ? 'التعويضات' : language === 'fr' ? 'Intempéries' : 'Weather Claims',
+          label: language === 'ar' ? 'التعويضات' : language === 'fr' ? 'Intempéries' : 'Weather Claims',
         },
         {
           id: 'shop',
           icon: <CreditCard size={19} />,
-          title: language === 'ar' ? 'فواتير الموردين والشركاء' : language === 'fr' ? 'Achats & Factures Fournisseurs' : 'Supplier Invoices',
-          label: language === 'ar' ? 'الموردين' : language === 'fr' ? 'Fournisseurs' : 'Suppliers',
+          title: language === 'ar' ? 'الموردون' : language === 'fr' ? 'Fournisseurs' : 'Suppliers',
+          label: language === 'ar' ? 'الموردون' : language === 'fr' ? 'Fournisseurs' : 'Suppliers',
         },
         {
           id: 'members',
           icon: <Receipt size={19} />,
-          title: language === 'ar' ? 'صندوق الورشة وطابع المادة 317' : language === 'fr' ? 'Caisse de Chantier & Timbre Art. 317' : 'Site Petty Cash',
+          title: language === 'ar' ? 'الصندوق' : language === 'fr' ? 'Caisse' : 'Petty Cash',
           label: language === 'ar' ? 'الصندوق' : language === 'fr' ? 'Caisse' : 'Petty Cash',
         },
       ];
     }
   } else if (category === 'agriculture_farming') {
-    // Dedicated Category 17: Agriculture & Livestock Farming (Role-Based RBAC Isolation)
     if (activeAgriRole === 'chef_culture') {
       dockNavItems = [
         {
           id: 'members',
           icon: <Sprout size={19} />,
-          title: language === 'ar' ? 'القطع والامتيازات الفلاحية' : language === 'fr' ? 'Parcelles & Concessions' : 'Parcels & Concessions',
-          label: language === 'ar' ? 'القطع الفلاحية' : language === 'fr' ? 'Parcelles' : 'Parcels',
+          title: language === 'ar' ? 'القطع' : language === 'fr' ? 'Parcelles' : 'Parcels',
+          label: language === 'ar' ? 'القطع' : language === 'fr' ? 'Parcelles' : 'Parcels',
         },
         {
           id: 'scheduler',
           icon: <Calendar size={19} />,
-          title: language === 'ar' ? 'سجل العمليات الفلاحية والأمان DAR' : language === 'fr' ? 'Journal Cultural & Sécurité DAR' : 'Crop Cycles & DAR',
-          label: language === 'ar' ? 'العمليات' : language === 'fr' ? 'Opérations' : 'Cycles',
+          title: language === 'ar' ? 'المحاصيل' : language === 'fr' ? 'Cultures' : 'Crops',
+          label: language === 'ar' ? 'المحاصيل' : language === 'fr' ? 'Cultures' : 'Crops',
         },
         {
           id: 'shop',
           icon: <Scale size={19} />,
-          title: language === 'ar' ? 'تسجيل حضور العمال وجني الصناديق' : language === 'fr' ? 'Pointage Harvesters & Caisses' : 'Field Muster & Crates',
-          label: language === 'ar' ? 'حضور العمال' : language === 'fr' ? 'Pointage' : 'Muster',
+          title: language === 'ar' ? 'العمال' : language === 'fr' ? 'Pointage' : 'Workers',
+          label: language === 'ar' ? 'العمال' : language === 'fr' ? 'Pointage' : 'Workers',
         },
       ];
     } else if (activeAgriRole === 'zootechnicien') {
@@ -1632,8 +1613,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'registrations',
           icon: <Layers size={19} />,
-          title: language === 'ar' ? 'قطيع الأبقار الحلوب ودعم أونيل' : language === 'fr' ? 'Cheptel Laitier & Subvention ONIL' : 'Dairy Herd & ONIL',
-          label: language === 'ar' ? 'الأبقار والحليب' : language === 'fr' ? 'Cheptel Laitier' : 'Dairy Herd',
+          title: language === 'ar' ? 'المواشي' : language === 'fr' ? 'Cheptel' : 'Livestock',
+          label: language === 'ar' ? 'المواشي' : language === 'fr' ? 'Cheptel' : 'Livestock',
         },
       ];
     } else if (activeAgriRole === 'magasinier') {
@@ -1641,72 +1622,70 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'finance',
           icon: <Wallet size={19} />,
-          title: language === 'ar' ? 'جسر الوزن وصندوق طابع المادة 317' : language === 'fr' ? 'Pont-Bascule & Caisse Art. 317' : 'Weighbridge & Cash',
-          label: language === 'ar' ? 'جسر الوزن' : language === 'fr' ? 'Pont-Bascule' : 'Weighbridge',
+          title: language === 'ar' ? 'الميزان' : language === 'fr' ? 'Bascule' : 'Weighbridge',
+          label: language === 'ar' ? 'الميزان' : language === 'fr' ? 'Bascule' : 'Weighbridge',
         },
         {
           id: 'shop',
           icon: <Scale size={19} />,
-          title: language === 'ar' ? 'استلام المحاصيل وسجل الشاحنات' : language === 'fr' ? 'Réception Récoltes & Camions' : 'Harvest Reception',
-          label: language === 'ar' ? 'المحاصيل' : language === 'fr' ? 'Récoltes' : 'Harvest',
+          title: language === 'ar' ? 'الحصاد' : language === 'fr' ? 'Récoltes' : 'Harvest',
+          label: language === 'ar' ? 'الحصاد' : language === 'fr' ? 'Récoltes' : 'Harvest',
         },
       ];
     } else {
-      // Default Gérant (Exploitant Agricole): Complete overview
       dockNavItems = [
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'لوحة المستثمرة الفلاحية' : language === 'fr' ? 'Tableau du Domaine' : 'Farm Pulse',
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
           id: 'members',
           icon: <Sprout size={19} />,
-          title: language === 'ar' ? 'القطع والامتيازات الفلاحية' : language === 'fr' ? 'Parcelles & Concessions' : 'Parcels & Concessions',
-          label: language === 'ar' ? 'القطع الفلاحية' : language === 'fr' ? 'Parcelles' : 'Parcels',
+          title: language === 'ar' ? 'القطع' : language === 'fr' ? 'Parcelles' : 'Parcels',
+          label: language === 'ar' ? 'القطع' : language === 'fr' ? 'Parcelles' : 'Parcels',
         },
         {
           id: 'scheduler',
           icon: <Calendar size={19} />,
-          title: language === 'ar' ? 'سجل العمليات الفلاحية والأمان DAR' : language === 'fr' ? 'Journal Cultural & Sécurité DAR' : 'Crop Cycles & DAR',
-          label: language === 'ar' ? 'العمليات' : language === 'fr' ? 'Opérations' : 'Cycles',
+          title: language === 'ar' ? 'المحاصيل' : language === 'fr' ? 'Cultures' : 'Crops',
+          label: language === 'ar' ? 'المحاصيل' : language === 'fr' ? 'Cultures' : 'Crops',
         },
         {
           id: 'shop',
           icon: <Scale size={19} />,
-          title: language === 'ar' ? 'تسجيل حضور العمال وجني الصناديق' : language === 'fr' ? 'Pointage Harvesters & Caisses' : 'Field Muster & Crates',
-          label: language === 'ar' ? 'حضور العمال' : language === 'fr' ? 'Pointage' : 'Muster',
+          title: language === 'ar' ? 'العمال' : language === 'fr' ? 'Pointage' : 'Workers',
+          label: language === 'ar' ? 'العمال' : language === 'fr' ? 'Pointage' : 'Workers',
         },
         {
           id: 'registrations',
           icon: <Layers size={19} />,
-          title: language === 'ar' ? 'قطيع الأبقار الحلوب ودعم أونيل' : language === 'fr' ? 'Cheptel Laitier & Subvention ONIL' : 'Dairy Herd & ONIL',
-          label: language === 'ar' ? 'الأبقار والحليب' : language === 'fr' ? 'Cheptel Laitier' : 'Dairy Herd',
+          title: language === 'ar' ? 'المواشي' : language === 'fr' ? 'Cheptel' : 'Livestock',
+          label: language === 'ar' ? 'المواشي' : language === 'fr' ? 'Cheptel' : 'Livestock',
         },
         {
           id: 'finance',
           icon: <Wallet size={19} />,
-          title: language === 'ar' ? 'جسر الوزن وصندوق طابع المادة 317' : language === 'fr' ? 'Pont-Bascule & Caisse Art. 317' : 'Weighbridge & Cash',
-          label: language === 'ar' ? 'جسر الوزن' : language === 'fr' ? 'Pont-Bascule' : 'Weighbridge',
+          title: language === 'ar' ? 'الميزان' : language === 'fr' ? 'Bascule' : 'Weighbridge',
+          label: language === 'ar' ? 'الميزان' : language === 'fr' ? 'Bascule' : 'Weighbridge',
         },
         {
           id: 'settings',
           icon: <Settings size={19} />,
-          title: language === 'ar' ? 'الإعدادات وقروض بدر الرفيق' : language === 'fr' ? 'Paramètres & Dossiers BADR' : 'Settings & BADR',
+          title: t('nav_settings', language),
           label: t('nav_settings', language),
         },
       ];
     }
   } else {
-    // Membership / Gym & Fitness Architecture
     if (activeMembershipRole === 'staff') {
       dockNavItems = [
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: language === 'ar' ? 'كشك الاستقبال ومسح الدخول' : 'Accueil & Kiosk Scan',
-          label: language === 'ar' ? 'الاستقبال' : 'Accueil',
+          title: language === 'ar' ? 'الاستقبال' : language === 'fr' ? 'Accueil' : 'Front Desk',
+          label: language === 'ar' ? 'الاستقبال' : language === 'fr' ? 'Accueil' : 'Front Desk',
         },
         {
           id: 'members',
@@ -1717,8 +1696,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'registrations',
           icon: <ClipboardList size={19} />,
-          title: language === 'ar' ? 'بيع تذاكر الحصص والتسجيل' : 'Vente Pass & Inscriptions',
-          label: language === 'ar' ? 'التذاكر' : 'Pass & Inscriptions',
+          title: terminology.registration,
+          label: terminology.registration,
         },
       ];
     } else {
@@ -1726,7 +1705,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'dashboard',
           icon: <Home size={19} />,
-          title: t('nav_dashboard', language),
+          title: t('nav_home', language),
           label: t('nav_home', language),
         },
         {
@@ -1792,8 +1771,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       const staffNavItem = {
         id: 'staff' as ActiveScreen,
         icon: <Users size={19} />,
-        title: language === 'ar' ? 'فريق العمل' : 'Staff',
-        label: language === 'ar' ? 'فريق العمل' : 'Staff',
+        title: language === 'ar' ? 'الفريق' : language === 'fr' ? 'Équipe' : 'Staff',
+        label: language === 'ar' ? 'الفريق' : language === 'fr' ? 'Équipe' : 'Staff',
       };
       const settingsIndex = dockNavItems.findIndex((item) => item.id === 'settings');
       if (settingsIndex >= 0) {

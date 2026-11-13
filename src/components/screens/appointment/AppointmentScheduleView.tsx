@@ -402,64 +402,13 @@ export const AppointmentScheduleView: React.FC = () => {
         )}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="p-1.5 rounded-lg bg-[#d4522f]/10 text-[#d4522f]">
-                <Scissors size={18} />
-              </span>
-              <h1 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
+            <div className="flex items-center gap-3.5 mb-1">
+              <div className="w-10 h-10 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center shrink-0">
+                <Scissors size={20} />
+              </div>
+              <h1 className="text-[32px] sm:text-[40px] font-extrabold uppercase leading-none tracking-[0.01em] text-neutral-900 dark:text-white rtl:text-[26px] rtl:sm:text-[32px] rtl:leading-tight">
                 {t('salon_schedule_title', language)}
               </h1>
-
-              {/* Facility Badge / Switcher */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-                  className="px-2.5 py-1 text-xs font-semibold rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Building2 size={12} className="text-[#d4522f]" />
-                  <span>{currentBranch.name}</span>
-                  <ChevronDown size={11} />
-                </button>
-
-                {isFacilityDropdownOpen && (
-                  <div className="absolute left-0 mt-1.5 w-60 py-1.5 bg-white dark:bg-[#18181B] rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 z-50">
-                    <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                      {t('salon_switch_facility', language)}
-                    </div>
-                    {businesses.map((biz) => {
-                      const bizBranches = branches.filter((b) => b.businessId === biz.id);
-                      return (
-                        <div key={biz.id} className="py-1">
-                          <div className="px-3 text-xs font-semibold text-neutral-500">
-                            {biz.displayName}
-                          </div>
-                          {bizBranches.map((br) => {
-                            const isCurrent = br.id === currentBranch.id;
-                            return (
-                              <button
-                                key={br.id}
-                                type="button"
-                                onClick={() => {
-                                  switchBusiness(biz.id);
-                                  switchBranch(br.id);
-                                  setIsFacilityDropdownOpen(false);
-                                }}
-                                className={`w-full px-4 py-1.5 text-xs text-left flex items-center justify-between hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors ${
-                                  isCurrent ? 'text-[#d4522f] font-bold' : 'text-neutral-700 dark:text-neutral-300'
-                                }`}
-                              >
-                                <span>{br.name}</span>
-                                {isCurrent && <Check size={13} />}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
             </div>
           </div>
 

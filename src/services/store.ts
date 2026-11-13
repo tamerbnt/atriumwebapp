@@ -831,7 +831,7 @@ function notify(immediatePersist = false) {
     if (immediatePersist) {
       flushAtriumPersist();
     } else if (persistTimer === null && typeof window !== 'undefined') {
-      persistTimer = window.setTimeout(() => {
+      persistTimer = setTimeout(() => {
         persistTimer = null;
         flushAtriumPersist();
       }, 160);

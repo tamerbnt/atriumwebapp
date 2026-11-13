@@ -135,11 +135,11 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                 type="button"
                 onClick={() => markAllNotificationsAsRead()}
                 className="hover:text-[#d4522f] font-semibold transition-colors cursor-pointer flex items-center gap-1"
-                title={language === 'ar' ? 'تحديد الكل كمقروء' : language === 'fr' ? 'Tout marquer comme lu' : 'Mark all as read'}
+                title={language === 'ar' ? 'قراءة الكل' : language === 'fr' ? 'Tout lire' : 'Read All'}
               >
                 <CheckCheck size={12} className="text-[#d4522f]" />
                 <span className="hidden sm:inline">
-                  {language === 'ar' ? 'قراءة الكل' : language === 'fr' ? 'Tout lire' : 'Mark all read'}
+                  {language === 'ar' ? 'قراءة الكل' : language === 'fr' ? 'Tout lire' : 'Read All'}
                 </span>
               </button>
               <span className="text-neutral-200 dark:text-neutral-700">•</span>
@@ -147,11 +147,11 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                 type="button"
                 onClick={() => clearAllNotifications()}
                 className="hover:text-rose-500 font-medium transition-colors cursor-pointer flex items-center gap-1"
-                title={language === 'ar' ? 'مسح الكل' : language === 'fr' ? 'Effacer tout' : 'Clear all'}
+                title={language === 'ar' ? 'مسح' : language === 'fr' ? 'Effacer' : 'Clear'}
               >
                 <Trash2 size={12} />
                 <span className="hidden sm:inline">
-                  {language === 'ar' ? 'مسح' : language === 'fr' ? 'Effacer' : 'Clear all'}
+                  {language === 'ar' ? 'مسح' : language === 'fr' ? 'Effacer' : 'Clear'}
                 </span>
               </button>
               <span className="text-neutral-200 dark:text-neutral-700">•</span>
@@ -183,10 +183,10 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
               <span>
                 {language === 'ar'
-                  ? 'لا توجد إشعارات جديدة حالياً'
+                  ? 'لا توجد إشعارات'
                   : language === 'fr'
-                  ? 'Toutes les notifications sont lues'
-                  : 'All caught up! No active notifications.'}
+                  ? 'Aucune notification'
+                  : 'No notifications'}
               </span>
             </motion.div>
           ) : (

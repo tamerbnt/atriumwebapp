@@ -386,70 +386,13 @@ export const VenueRentersView: React.FC = () => {
               <Users size={22} />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+              <h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
                 {t('venue_renters_page_title')}
               </h1>
             </div>
           </div>
 
           <div className="flex items-center gap-3 relative flex-wrap">
-            {/* Facility Pill: Atrium 1 ▾ */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-                className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
-              >
-                <Home size={15} className="text-[#d4522f]" />
-                <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                  {currentBranch?.name || 'Atrium 1'}
-                </span>
-                <ChevronDown
-                  size={14}
-                  className={`text-neutral-500 transition-transform ${
-                    isFacilityDropdownOpen ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
-
-              {/* Facility Dropdown Menu */}
-              {isFacilityDropdownOpen && (
-                <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                    {language === 'ar' ? 'الفروع والمرافق' : language === 'fr' ? 'Succursales & Sites' : 'Branches & Venues'}
-                  </div>
-                  {businesses.map((biz) => {
-                    const isCurrent = biz.id === currentBusinessId;
-                    const matchingBranch = branches.find((b) => b.businessId === biz.id);
-                    return (
-                      <button
-                        key={biz.id}
-                        type="button"
-                        onClick={() => {
-                          switchBusiness(biz.id);
-                          if (matchingBranch) switchBranch(matchingBranch.id);
-                          setIsFacilityDropdownOpen(false);
-                        }}
-                        className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
-                          isCurrent
-                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold'
-                            : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <Building2 size={14} className={isCurrent ? 'text-[#d4522f]' : 'text-neutral-400'} />
-                          <span className="truncate">{biz.name}</span>
-                        </div>
-                        {isCurrent && <Check size={14} />}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-
-
             {/* Add Renter Primary Button */}
             <AtriumButton
               type="button"

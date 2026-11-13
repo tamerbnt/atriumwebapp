@@ -349,8 +349,8 @@ export const LegalHearingsView: React.FC = () => {
       {/* 1. Header & Quick Actions */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2">
-            <Scale className="text-[#d4522f]" size={26} />
+          <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white flex items-center gap-2">
+            <Scale className="text-[#d4522f]" size={32} />
             <span>
               {activeLegalRole === 'notaire_titulaire'
                 ? isAr

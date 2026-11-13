@@ -225,7 +225,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-xs text-neutral-400 font-medium">Poste Connecté</span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white mt-0.5">
+            <h1 className="text-[38px] sm:text-[52px] rtl:text-[32px] rtl:sm:text-[38px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-white mt-0.5">
               {stationName}
             </h1>
             <p className="text-xs text-neutral-400">

@@ -14,8 +14,8 @@ interface CollectionEmptyStateProps {
 }
 
 export const CollectionEmptyState: React.FC<CollectionEmptyStateProps> = ({
-  title = 'No records found',
-  description = 'Try adjusting your search query, status filters, or clear active parameters.',
+  title = 'No results',
+  description = 'No matching records.',
   icon,
   primaryActionLabel = 'Add New',
   onPrimaryAction,
@@ -66,7 +66,7 @@ export const CollectionEmptyState: React.FC<CollectionEmptyStateProps> = ({
             icon={<RotateCcw className="w-3.5 h-3.5" />}
             size="md"
           >
-            Reset Filters
+            Reset
           </AtriumButton>
         )}
       </div>

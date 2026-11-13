@@ -316,7 +316,7 @@ export interface SkeletonPageHeaderProps {
 export const SkeletonPageHeader: React.FC<SkeletonPageHeaderProps> = ({
   hasIcon = true,
   hasViewToggle = false,
-  hasFacility = true,
+  hasFacility = false,
   hasActionBtn = true,
   actionBtnWidth = 160,
 }) => {
@@ -339,9 +339,6 @@ export const SkeletonPageHeader: React.FC<SkeletonPageHeaderProps> = ({
       <div className="flex items-center gap-2.5 flex-wrap">
         {hasViewToggle && (
           <SkeletonBox width={190} height={40} rounded="rounded-2xl" />
-        )}
-        {hasFacility && (
-          <SkeletonBox width={140} height={40} rounded="rounded-xl" />
         )}
         {hasActionBtn && (
           <SkeletonBox
@@ -375,7 +372,7 @@ export const SkeletonSchedulerView: React.FC<SkeletonSchedulerViewProps> = ({
   isTimedOut,
   lastSyncedAt,
   onRetry,
-  hasFacility = true,
+  hasFacility = false,
   hasActionBtn = true,
   actionBtnWidth = 175,
 }) => {
@@ -942,7 +939,7 @@ export const SkeletonCollectionScreen: React.FC<SkeletonCollectionScreenProps> =
   viewMode = 'list',
   hasIcon = true,
   hasViewToggle = true,
-  hasFacility = true,
+  hasFacility = false,
   hasActionBtn = true,
   actionBtnWidth = 150,
   isOffline,

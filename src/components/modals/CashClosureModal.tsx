@@ -33,6 +33,7 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
 }) => {
   const { language, networkMode } = useAtriumStore();
   const isAr = language === 'ar';
+  const isEn = language === 'en';
 
   const theoretical = closure.theoreticalCashDzd || 0;
   // Banknotes denomination count
@@ -61,7 +62,7 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
     e.preventDefault();
     if (!isBalanced && Math.abs(discrepancy) > 500 && !notes.trim()) {
       showToast(
-        isAr ? 'يرجى كتابة سبب الفارق المالي في الصندوق' : 'Veuillez justifier l\'écart de caisse supérieur à 500 DA',
+        isAr ? 'يرجى توضيح الفارق' : isEn ? 'Explain difference over 500 DA' : 'Justifiez l\'écart (> 500 DA)',
         'error'
       );
       return;
@@ -78,8 +79,10 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
     onSaveClosure(updated);
     showToast(
       isAr
-        ? `تم اعتماد محضر إغلاق الصندوق اليومي (المجموع: ${formatMoney(countedTotal, language)})`
-        : `Procès-verbal de clôture journalière de caisse validé (${formatMoney(countedTotal, language)})`,
+        ? `تم الإغلاق (${formatMoney(countedTotal, language)})`
+        : isEn
+        ? `Cash closed (${formatMoney(countedTotal, language)})`
+        : `Caisse clôturée (${formatMoney(countedTotal, language)})`,
       isBalanced ? 'success' : 'info'
     );
     onClose();
@@ -90,7 +93,7 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       isLoading={networkMode === 'force_skeleton'}
-      title={isAr ? 'محضر الإغلاق اليومي للصندوق وطابع المادة 317' : 'Arrêté Journalier de Caisse & Rapprochement Timbre Art. 317'}
+      title={isAr ? 'إغلاق الصندوق' : isEn ? 'Cash Close' : 'Clôture Caisse'}
       maxWidth="lg"
     >
       <form onSubmit={handleSave} className="space-y-4">
@@ -98,7 +101,7 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
         <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-neutral-600 dark:text-neutral-400">
-              {isAr ? 'التاريخ والسيولة النظرية المسجلة:' : 'Date d\'Opération & Solde Théorique :'}
+              {isAr ? 'تاريخ العملية' : isEn ? 'Close Date' : 'Date Clôture'}
             </span>
             <span className="text-xs font-mono font-bold text-neutral-900 dark:text-white">
               {closure.closureDate}
@@ -107,19 +110,19 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/40">
-              <span className="text-[10px] text-neutral-400 block">{isAr ? 'الرصيد الافتتاحي' : 'Fond Initial'}</span>
+              <span className="text-[10px] text-neutral-400 block">{isAr ? 'الافتتاح' : isEn ? 'Opening' : 'Fond Initial'}</span>
               <span className="font-bold text-neutral-900 dark:text-white font-mono">{formatMoney(closure.openingFloatDzd || 0, language)}</span>
             </div>
             <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/40">
-              <span className="text-[10px] text-neutral-400 block">{isAr ? 'المقبوضات الإجمالية' : 'Encaissements'}</span>
+              <span className="text-[10px] text-neutral-400 block">{isAr ? 'المقبوضات' : isEn ? 'Cash In' : 'Encaissements'}</span>
               <span className="font-bold text-emerald-600 font-mono">+{formatMoney(closure.totalCashReceivedDzd || 0, language)}</span>
             </div>
             <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/40">
-              <span className="text-[10px] text-neutral-400 block">{isAr ? 'طابع المادة 317 المستحق' : 'Timbre Art. 317'}</span>
+              <span className="text-[10px] text-neutral-400 block">{isAr ? 'رسوم الطابع' : isEn ? 'Stamp Tax' : 'Timbre Fiscal'}</span>
               <span className="font-bold text-amber-600 font-mono">{formatMoney(closure.totalTimbreAccruedDzd || 0, language)}</span>
             </div>
             <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/40">
-              <span className="text-[10px] text-neutral-400 block">{isAr ? 'الرصيد النظري المطلوب' : 'Solde Théorique'}</span>
+              <span className="text-[10px] text-neutral-400 block">{isAr ? 'المتوقع' : isEn ? 'Expected' : 'Théorique'}</span>
               <span className="font-bold text-[#d4522f] font-mono">{formatMoney(closure.theoreticalCashDzd || 0, language)}</span>
             </div>
           </div>
@@ -130,10 +133,12 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
           <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-700">
             <span className="text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-2">
               <Coins size={16} className="text-[#d4522f]" />
-              {isAr ? 'عد الأوراق النقدية الفعلية في الصندوق:' : 'Comptage Physique des Coupures (Dinar Algérien) :'}
+              {isAr ? 'عد الأوراق' : isEn ? 'Cash Count' : 'Comptage Billets'}
             </span>
             <span className={`text-xs font-mono font-bold ${isBalanced ? 'text-emerald-600' : 'text-rose-600'}`}>
-              {isBalanced ? '✓ Solde Conforme' : `Écart: ${discrepancy > 0 ? '+' : ''}${formatMoney(discrepancy, language)}`}
+              {isBalanced
+                ? (isAr ? 'متطابق' : isEn ? 'Balanced' : 'Conforme')
+                : `${isAr ? 'الفارق' : isEn ? 'Diff' : 'Écart'}: ${discrepancy > 0 ? '+' : ''}${formatMoney(discrepancy, language)}`}
             </span>
           </div>
 
@@ -197,7 +202,7 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
 
           <div className="flex items-center justify-between p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/50 text-xs">
             <span className="font-medium text-neutral-600 dark:text-neutral-400">
-              {isAr ? 'إجمالي العد الفعلي:' : 'Total Physique Compté :'}
+              {isAr ? 'العد الفعلي' : isEn ? 'Counted Total' : 'Total Compté'}
             </span>
             <span className="text-base font-bold font-mono text-neutral-900 dark:text-white">
               {formatMoney(countedTotal, language)}
@@ -206,21 +211,21 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
         </div>
 
         <LabelInput
-          label={isAr ? 'ملاحظات المحضر ومبررات الفارق (إن وجد)' : 'Observations & Justification d\'Écart'}
+          label={isAr ? 'ملاحظات الإغلاق' : isEn ? 'Closing Notes' : 'Observations'}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder={isAr ? 'اكتب ملاحظات إغلاق الصندوق اليومي...' : 'Renseigner les observations de clôture...'}
+          placeholder={isAr ? 'أضف ملاحظة...' : isEn ? 'Add note...' : 'Notes...'}
         />
 
         <div className="flex justify-end gap-2 pt-2 border-t border-neutral-200 dark:border-neutral-800">
           <Button tone="soft" onClick={onClose} type="button">
-            {isAr ? 'إلغاء' : 'Annuler'}
+            {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
           </Button>
           <LiquidButton
             kind="confirm"
             type="submit"
             labels={{
-              idle: isAr ? 'تأكيد وإقفال الصندوق' : 'Valider & Clôturer la Caisse',
+              idle: isAr ? 'إغلاق الصندوق' : isEn ? 'Close Cash' : 'Clôturer',
             }}
           />
         </div>

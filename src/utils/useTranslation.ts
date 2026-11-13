@@ -19,11 +19,11 @@ export function useTranslation() {
         const params = typeof arg3 === 'object' && arg3 !== null ? (arg3 as Record<string, any>) : undefined;
         return t(key, arg2, fallback, params);
       }
-      // Case 2: arg2 is params object e.g. t('key', { count: 5 })
+      // Case 2: arg2 is params object e.g. t(key, { count: 5 })
       if (typeof arg2 === 'object' && arg2 !== null) {
         return t(key, language, undefined, arg2 as Record<string, any>);
       }
-      // Case 3: arg2 is fallback string e.g. t('key', 'Default text', { var: 1 })
+      // Case 3: arg2 is fallback string e.g. t(key, 'Default text', { var: 1 })
       const fallback = typeof arg2 === 'string' ? arg2 : undefined;
       const params = typeof arg3 === 'object' && arg3 !== null ? (arg3 as Record<string, any>) : undefined;
       return t(key, language, fallback, params);

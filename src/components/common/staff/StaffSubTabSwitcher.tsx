@@ -24,24 +24,24 @@ export const StaffSubTabSwitcher: React.FC<StaffSubTabSwitcherProps> = ({
   const tabs: { id: StaffSubTabId; label: string; icon: React.ReactNode; badge?: string }[] = [
     {
       id: 'directory',
-      label: isAr ? 'دليل الفريق' : isEn ? 'Team Directory' : 'Annuaire Collaborateurs',
+      label: isAr ? 'الفريق' : isEn ? 'Directory' : 'Équipe',
       icon: <Users className="w-4 h-4" />,
       badge: String(staffCount),
     },
     {
       id: 'attendance',
-      label: isAr ? 'تسجيل الحضور والمواقيت' : isEn ? 'Time & Attendance' : 'Pointage & Présence',
+      label: isAr ? 'الحضور' : isEn ? 'Attendance' : 'Présence',
       icon: <Clock className="w-4 h-4" />,
-      badge: `${presentCount} présent${presentCount > 1 ? 's' : ''}`,
+      badge: String(presentCount),
     },
     {
       id: 'payroll',
-      label: isAr ? 'الرواتب والأجور' : isEn ? 'Salaries & Payroll' : 'Salaires & Paie',
+      label: isAr ? 'الرواتب' : isEn ? 'Payroll' : 'Paie',
       icon: <Receipt className="w-4 h-4" />,
     },
     {
       id: 'history',
-      label: isAr ? 'السجل والتدقيق' : isEn ? 'Audit & History' : 'Historique & Audit',
+      label: isAr ? 'السجل' : isEn ? 'History' : 'Historique',
       icon: <History className="w-4 h-4" />,
     },
   ];

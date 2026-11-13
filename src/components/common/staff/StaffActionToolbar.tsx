@@ -37,10 +37,10 @@ export const StaffActionToolbar: React.FC<StaffActionToolbarProps> = ({
 
   const filterOptions: Array<{ id: 'all' | StaffLifecycleStatus; label: string }> = [
     { id: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous' },
-    { id: 'active', label: isAr ? 'في الخدمة' : isEn ? 'Active' : 'En Poste' },
-    { id: 'on_leave', label: isAr ? 'عطلة' : isEn ? 'On Leave' : 'En Congé' },
-    { id: 'frozen', label: isAr ? 'موقوف' : isEn ? 'Suspended' : 'Suspendu' },
-    { id: 'terminated', label: isAr ? 'منتهي' : isEn ? 'Terminated' : 'Archivé' },
+    { id: 'active', label: isAr ? 'نشط' : isEn ? 'Active' : 'Actifs' },
+    { id: 'on_leave', label: isAr ? 'عطلة' : isEn ? 'Leave' : 'Congé' },
+    { id: 'frozen', label: isAr ? 'موقوف' : isEn ? 'Paused' : 'Suspendu' },
+    { id: 'terminated', label: isAr ? 'منتهي' : isEn ? 'Ended' : 'Archivé' },
   ];
 
   return (
@@ -54,7 +54,7 @@ export const StaffActionToolbar: React.FC<StaffActionToolbarProps> = ({
           className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-[#1C1C1E] text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shadow-xs"
         >
           <QrCode size={15} className="text-[#d4522f]" />
-          <span>{isAr ? 'مسح البادج / PIN' : isEn ? 'Scan Badge / PIN' : 'Pointer Présence'}</span>
+          <span>{isAr ? 'تسجيل الحضور' : isEn ? 'Clock In' : 'Pointage'}</span>
         </button>
 
         {/* Seek expanding search lens */}
@@ -62,7 +62,7 @@ export const StaffActionToolbar: React.FC<StaffActionToolbarProps> = ({
           <Seek
             value={searchQuery}
             onChange={onSearchChange}
-            placeholder={isAr ? 'بحث بالاسم، الهاتف، البادج...' : isEn ? 'Search staff, phone, token...' : 'Rechercher collaborateur...'}
+            placeholder={isAr ? 'بحث...' : isEn ? 'Search...' : 'Rechercher...'}
           />
         </div>
 
@@ -98,7 +98,7 @@ export const StaffActionToolbar: React.FC<StaffActionToolbarProps> = ({
             onClick={onOpenCreate}
             icon={<UserPlus size={16} />}
           >
-            {newStaffButtonLabel || (isAr ? 'إضافة موظف' : isEn ? 'Add Staff Member' : 'Nouveau Collaborateur')}
+            {newStaffButtonLabel || (isAr ? 'إضافة موظف' : isEn ? 'Add Staff' : 'Nouveau')}
           </AtriumButton>
         )}
       </div>

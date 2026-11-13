@@ -295,33 +295,33 @@ export function getCategoryPerformanceMetricLabel(category: BusinessCategory | s
 } {
   switch (category) {
     case 'medical_clinic':
-      return { labelFr: 'Consultations / Semaine', labelEn: 'Consultations / Week', labelAr: 'استشارات / أسبوع', unit: 'consult.' };
+      return { labelFr: 'Consultations', labelEn: 'Consultations', labelAr: 'الاستشارات', unit: 'visits' };
     case 'auto_garage':
-      return { labelFr: 'Ordres de Réparation Clôturés', labelEn: 'Closed Repair Orders', labelAr: 'أوامر تصليح منجزة', unit: 'OR' };
+      return { labelFr: 'Réparations', labelEn: 'Repairs', labelAr: 'التصليحات', unit: 'jobs' };
     case 'construction_contractor':
-      return { labelFr: 'Jalons Chantier & Sécurité', labelEn: 'Site Milestones & Safety', labelAr: 'معالم الورشة والسلامة', unit: '%' };
+      return { labelFr: 'Avancement', labelEn: 'Progress', labelAr: 'الإنجاز', unit: '%' };
     case 'logistics_delivery':
-      return { labelFr: 'Taux de Livraison Réussie', labelEn: 'Delivery Success Rate', labelAr: 'نسبة نجاح التوصيل', unit: '%' };
+      return { labelFr: 'Livraisons', labelEn: 'Deliveries', labelAr: 'التسليم', unit: '%' };
     case 'manufacturing_production':
-      return { labelFr: 'Rendement Postes & OEE', labelEn: 'OEE Station Efficiency', labelAr: 'مردودية المحطة والجودة', unit: '%' };
+      return { labelFr: 'Rendement', labelEn: 'Efficiency', labelAr: 'الكفاءة', unit: '%' };
     case 'trading_commercial':
-      return { labelFr: 'Objectif Ventes & Encaissement', labelEn: 'Sales & Collection Target', labelAr: 'هدف المبيعات والتحصيل', unit: 'DZD' };
+      return { labelFr: 'Ventes', labelEn: 'Sales', labelAr: 'المبيعات', unit: 'DZD' };
     case 'real_estate':
-      return { labelFr: 'Mandats Actifs & Visites', labelEn: 'Active Mandates & Visits', labelAr: 'تفويضات نشطة وزيارات', unit: 'mandats' };
+      return { labelFr: 'Visites', labelEn: 'Visits', labelAr: 'الزيارات', unit: 'visits' };
     case 'project_milestone':
-      return { labelFr: 'Livrables BAT Conformes', labelEn: 'Approved BAT Deliverables', labelAr: 'تسليمات مطابقة', unit: 'BAT' };
+      return { labelFr: 'Livrables', labelEn: 'Deliverables', labelAr: 'التسليمات', unit: 'tasks' };
     case 'appointment_service':
-      return { labelFr: 'Prestations & Soins Terminés', labelEn: 'Completed Stylist Services', labelAr: 'خدمات مصفف مكتملة', unit: 'soins' };
+      return { labelFr: 'Prestations', labelEn: 'Services', labelAr: 'الخدمات', unit: 'jobs' };
     case 'education_cohort':
-      return { labelFr: 'Heures d\'Enseignement & Présence', labelEn: 'Teaching Hours & Attendance', labelAr: 'ساعات التدريس والحضور', unit: 'h' };
+      return { labelFr: 'Cours', labelEn: 'Classes', labelAr: 'الحصص', unit: 'h' };
     case 'agriculture_livestock':
-      return { labelFr: 'Parcelles Traitées / Rendement', labelEn: 'Treated Parcels / Yield', labelAr: 'مردودية القطع المعالجة', unit: 'ha' };
+      return { labelFr: 'Rendement', labelEn: 'Yield', labelAr: 'الإنتاج', unit: 'ha' };
     case 'legal_notary':
-      return { labelFr: 'Actes & Audiences Clôturées', labelEn: 'Closed Deeds & Hearings', labelAr: 'عقود وجلسات منجزة', unit: 'actes' };
+      return { labelFr: 'Dossiers', labelEn: 'Cases', labelAr: 'الملفات', unit: 'files' };
     case 'pos_inventory':
-      return { labelFr: 'Tickets Encaissés / Heure', labelEn: 'Transactions / Hour', labelAr: 'عمليات دفع / ساعة', unit: 'tkt/h' };
+      return { labelFr: 'Ventes', labelEn: 'Sales', labelAr: 'المبيعات', unit: 'tkt/h' };
     case 'membership_session':
     default:
-      return { labelFr: 'Séances Coachées & Assiduité', labelEn: 'Coached Sessions & Presence', labelAr: 'حصص تدريبية وحضور', unit: 'séances' };
+      return { labelFr: 'Séances', labelEn: 'Sessions', labelAr: 'الحصص', unit: 'sessions' };
   }
 }

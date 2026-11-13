@@ -22,7 +22,7 @@ export const SearchBox: React.FC<SearchBoxProps> = ({
   onSearch,
 }) => {
   const { language } = useAtriumStore();
-  const defaultPlaceholder = language === 'ar' ? 'البحث بالاسم، الهاتف، البريد، RFID...' : language === 'fr' ? 'Rechercher par nom, tél, e-mail, RFID...' : 'Search by name, phone, email, RFID...';
+  const defaultPlaceholder = language === 'ar' ? 'بحث...' : language === 'fr' ? 'Rechercher...' : 'Search...';
 
   return (
     <Seek

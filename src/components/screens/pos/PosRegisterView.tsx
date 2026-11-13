@@ -1122,8 +1122,8 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
-                <ShoppingBag className="text-[#d4522f]" size={26} />
+              <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white flex items-center gap-2.5">
+                <ShoppingBag className="text-[#d4522f]" size={32} />
                 <span>{t('shop_hub_title')}</span>
               </h1>
               <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
@@ -1133,50 +1133,6 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap">
-            {/* Branch / Store selector */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-                className="flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 shadow-2xs hover:border-[#d4522f] transition-colors cursor-pointer"
-              >
-                <Building2 size={15} className="text-[#d4522f]" />
-                <div className={isRtl ? 'text-right' : 'text-left'}>
-                  <div className="text-[10px] uppercase font-bold text-neutral-400 leading-none">{t('shop_active_store')}</div>
-                  <div className="text-xs font-bold leading-tight truncate max-w-[150px]">
-                    {currentBranch?.name || t('shop_main_branch')}
-                  </div>
-                </div>
-                <ChevronDown size={14} className="text-neutral-400 ml-1" />
-              </button>
-
-              {isFacilityDropdownOpen && (
-                <div className={`absolute ${isRtl ? 'left-0' : 'right-0'} mt-2 w-64 bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 py-1.5 z-40`}>
-                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                    {t('shop_select_store')}
-                  </div>
-                  {branches.map((b) => (
-                    <button
-                      key={b.id}
-                      type="button"
-                      onClick={() => {
-                        switchBranch(b.id);
-                        setIsFacilityDropdownOpen(false);
-                      }}
-                      className={`w-full px-3 py-2 text-xs flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer ${
-                        isRtl ? 'text-right' : 'text-left'
-                      } ${
-                        b.id === currentBranch.id ? 'font-bold text-[#d4522f] bg-neutral-50 dark:bg-neutral-800/50' : 'text-neutral-700 dark:text-neutral-300'
-                      }`}
-                    >
-                      <span className="truncate">{b.name}</span>
-                      {b.id === currentBranch.id && <Check size={14} />}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
             {/* Sound Toggle */}
             <button
               type="button"

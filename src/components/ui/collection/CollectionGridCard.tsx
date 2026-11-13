@@ -59,7 +59,7 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
   const fanButtons: ActionButtonDef[] = [
     {
       id: 'fan-view',
-      tooltip: 'View Details',
+      tooltip: 'View',
       icon: <Eye className="w-3.5 h-3.5" />,
       iconColor: '#64748B',
       onClick: (e) => {
@@ -79,7 +79,7 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
     },
     {
       id: 'fan-pay',
-      tooltip: 'Pay / Finance',
+      tooltip: 'Pay',
       icon: <DollarSign className="w-3.5 h-3.5" />,
       iconColor: '#d4522f',
       onClick: (e) => {
@@ -89,7 +89,7 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
     },
     {
       id: 'fan-status',
-      tooltip: isActive ? 'Freeze Record' : 'Reactivate Record',
+      tooltip: isActive ? 'Freeze' : 'Activate',
       icon: isActive ? (
         <Snowflake className="w-3.5 h-3.5 text-[#06B6D4]" />
       ) : (
@@ -103,7 +103,7 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
     },
     {
       id: 'fan-pin',
-      tooltip: isPinned ? 'Unpin Record' : 'Pin to Top',
+      tooltip: isPinned ? 'Unpin' : 'Pin',
       icon: (
         <Pin
           className={`w-3.5 h-3.5 ${

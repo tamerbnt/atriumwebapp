@@ -500,7 +500,7 @@ export function UniversalDataCollection<T>({
               <div className="w-56">
                 <input
                   type="text"
-                  placeholder={searchPlaceholder || 'Rechercher...'}
+                  placeholder={searchPlaceholder || (store.language === 'ar' ? 'بحث...' : store.language === 'fr' ? 'Rechercher...' : 'Search...')}
                   value={effectiveSearchQuery}
                   onChange={(e) => {
                     setInternalSearchQuery(e.target.value);
@@ -547,7 +547,7 @@ export function UniversalDataCollection<T>({
                     ? 'bg-[#d4522f]/30 border-[#d4522f] text-white'
                     : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-400'
                 }`}
-                title="Tout sélectionner"
+                title={store.language === 'ar' ? 'تحديد الكل' : store.language === 'fr' ? 'Tout sélectionner' : 'Select All'}
               >
                 {(isAllSelected || isPartiallySelected) && (
                   <Check className="w-3 h-3 stroke-[3]" />
@@ -740,7 +740,7 @@ export function UniversalDataCollection<T>({
               {effectiveSelectedIds.size}
             </span>
             <span className="text-xs font-medium text-neutral-200 whitespace-nowrap">
-              {effectiveSelectedIds.size === 1 ? '1 sélectionné' : `${effectiveSelectedIds.size} sélectionnés`}
+              {store.language === 'ar' ? `${effectiveSelectedIds.size} محدد` : store.language === 'fr' ? `${effectiveSelectedIds.size} sélectionné${effectiveSelectedIds.size > 1 ? 's' : ''}` : `${effectiveSelectedIds.size} selected`}
             </span>
           </div>
 
@@ -764,7 +764,7 @@ export function UniversalDataCollection<T>({
             <LiquidExportButton
               size="sm"
               onExport={handleDefaultSecondaryAction}
-              idleLabel={store.language === 'ar' ? 'تصدير المحدد' : store.language === 'fr' ? 'EXPORTER SÉLECTION' : 'EXPORT SELECTED'}
+              idleLabel={store.language === 'ar' ? 'تصدير' : store.language === 'fr' ? 'EXPORTER' : 'EXPORT'}
               id="bulk-toolbar-export-btn"
             />
           )}
@@ -787,10 +787,10 @@ export function UniversalDataCollection<T>({
             type="button"
             onClick={handleBulkDelete}
             className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
-            title="Supprimer la sélection"
+            title={store.language === 'ar' ? 'حذف' : store.language === 'fr' ? 'Supprimer' : 'Delete'}
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span>Supprimer</span>
+            <span>{store.language === 'ar' ? 'حذف' : store.language === 'fr' ? 'Supprimer' : 'Delete'}</span>
           </button>
 
           {/* Cancel button */}
@@ -802,7 +802,7 @@ export function UniversalDataCollection<T>({
             }}
             className="text-xs text-neutral-400 hover:text-white px-2 py-1 transition-colors cursor-pointer ml-1"
           >
-            Annuler
+            {store.language === 'ar' ? 'إلغاء' : store.language === 'fr' ? 'Annuler' : 'Cancel'}
           </button>
         </div>
       )}

@@ -8,7 +8,7 @@ function extractKeys(sectionName) {
   const start = i18nContent.indexOf(marker);
   if (start === -1) return new Set();
   const nextMarker = i18nContent.indexOf('const TRANSLATIONS_', start + marker.length);
-  const end = nextMarker === -1 ? i18nContent.indexOf('export const t =', start) : nextMarker;
+  const end = nextMarker === -1 ? i18nContent.indexOf('export const DICTIONARY', start) : nextMarker;
   const section = i18nContent.substring(start, end);
   const keys = new Set();
   const regex = /^\s*([a-zA-Z0-9_]+)\s*:/gm;

@@ -256,7 +256,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
     }
   };
 
-  const categoryRoles = getRolesForCategory(currentCategory);
+  const categoryRoles = getRolesForCategory(currentCategory, isAr, isEn);
 
   return (
     <Modal
@@ -265,22 +265,22 @@ export const StaffModal: React.FC<StaffModalProps> = ({
       title={
         staffToEdit
           ? isAr
-            ? 'تعديل بيانات الموظف'
+            ? 'تعديل موظف'
             : isEn
-            ? 'Edit Staff Member'
-            : 'Modifier collaborateur'
+            ? 'Edit Staff'
+            : 'Modifier Membre'
           : isAr
-          ? 'تسجيل موظف جديد'
+          ? 'موظف جديد'
           : isEn
-          ? 'Create New Staff Member'
-          : 'Créer un nouveau collaborateur'
+          ? 'New Staff'
+          : 'Nouveau Membre'
       }
       subtitle={
         isAr
-          ? 'التسجيل الشامل لبيانات الهوية، بطاقة العمل، والعقد'
+          ? 'الهوية، الشارة والعقد'
           : isEn
-          ? 'Comprehensive identity, attendance badge, and contract setup'
-          : 'Fiche d\'identité, badge RFID de pointage et dossier contractuel'
+          ? 'Identity, badge & contract'
+          : 'Identité, badge & contrat'
       }
       maxWidth="lg"
     >
@@ -292,11 +292,11 @@ export const StaffModal: React.FC<StaffModalProps> = ({
           </div>
         )}
 
-        {/* Section 1: Essentiels & Identité */}
+        {/* Section 1: Identity */}
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#d4522f]">
             <User className="w-4 h-4" />
-            <span>{isAr ? 'الهوية والوظيفة الأساسية' : isEn ? 'Identity & Core Role' : 'Identité & Poste'}</span>
+            <span>{isAr ? 'الهوية والدور' : isEn ? 'Identity & Role' : 'Identité & Poste'}</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -313,7 +313,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
 
             <div>
               <LabelSelect
-                field={isAr ? 'الدور / المنصب' : isEn ? 'Role / Position' : 'Rôle / Fonction'}
+                field={isAr ? 'الدور' : isEn ? 'Role' : 'Rôle'}
                 value={role}
                 options={categoryRoles}
                 onChange={(val) => setRole(val as StaffRole)}
@@ -323,7 +323,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
 
             <div>
               <LabelInput
-                field={isAr ? 'البريد الإلكتروني' : isEn ? 'Email Address' : 'Adresse Email'}
+                field={isAr ? 'البريد' : isEn ? 'Email' : 'Email'}
                 type="email"
                 value={email}
                 onChange={(val) => setEmail(val)}
@@ -335,7 +335,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
 
             <div>
               <LabelInput
-                field={isAr ? 'رقم الهاتف' : isEn ? 'Phone Number' : 'Numéro de Téléphone'}
+                field={isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone'}
                 value={phoneNumber}
                 onChange={(val) => setPhoneNumber(val)}
                 required
@@ -374,7 +374,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
 
             <div>
               <LabelInput
-                field={isAr ? 'عنوان الإقامة' : isEn ? 'Address' : 'Adresse / Wilaya'}
+                field={isAr ? 'العنوان' : isEn ? 'Address' : 'Adresse'}
                 value={address}
                 onChange={(val) => setAddress(val)}
                 placeholder="Hydra, Alger"
@@ -382,7 +382,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
             </div>
           </div>
 
-          {/* Badge RFID / NFC / QR Code */}
+          {/* Access Badge */}
           <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/60">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -391,10 +391,10 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">
-                    {isAr ? 'رمز شارة الدخول (RFID / NFC / QR)' : isEn ? 'Access Badge Token (RFID / NFC / QR)' : 'Badge d\'Accès (RFID / NFC / QR)'}
+                    {isAr ? 'شارة الدخول' : isEn ? 'Access Badge' : 'Badge Accès'}
                   </p>
                   <p className="text-[11px] text-neutral-500">
-                    {isAr ? 'يستخدم للتحقق الفوري وتسجيل الحضور والانصراف' : isEn ? 'Used for instant clock-in scanning' : 'Permet le pointage instantané par scanner'}
+                    {isAr ? 'لتسجيل الحضور السريع' : isEn ? 'For quick check-in' : 'Pour pointage rapide'}
                   </p>
                 </div>
               </div>
@@ -430,11 +430,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
             <div className="flex items-center gap-2.5">
               <FileText className="w-4 h-4 text-[#d4522f]" />
               <span className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">
-                {isAr
-                  ? 'الملف التعاقدي والمالي والصحي المتقدم'
-                  : isEn
-                  ? 'Advanced Contractual, Compensation & Medical Dossier'
-                  : 'Paramètres avancés, Rémunération & Dossier Médical'}
+                {isAr ? 'خيارات إضافية' : isEn ? 'More Details' : 'Options Avancées'}
               </span>
             </div>
             {showAdvanced ? (
@@ -450,26 +446,26 @@ export const StaffModal: React.FC<StaffModalProps> = ({
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#d4522f]">
                   <CreditCard className="w-4 h-4" />
-                  <span>{isAr ? 'العقد والراتب' : isEn ? 'Contract & Compensation' : 'Contrat & Rémunération'}</span>
+                  <span>{isAr ? 'العقد والراتب' : isEn ? 'Pay & Contract' : 'Contrat & Paie'}</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <LabelSelect
-                    field={isAr ? 'نوع العقد القانوني' : isEn ? 'Legal Contract Type' : 'Type de Contrat'}
+                    field={isAr ? 'نوع العقد' : isEn ? 'Contract Type' : 'Type Contrat'}
                     value={recruitmentType}
                     options={[
-                      { value: 'cdi', label: 'CDI (Indéterminé)' },
-                      { value: 'cdd', label: 'CDD (Déterminé)' },
-                      { value: 'stage', label: 'Stage / PFE' },
-                      { value: 'vacataire', label: 'Vacataire / Horaire' },
-                      { value: 'prestataire', label: 'Prestataire de service' },
+                      { value: 'cdi', label: isAr ? 'دائم' : isEn ? 'Permanent' : 'Permanent (CDI)' },
+                      { value: 'cdd', label: isAr ? 'محدد المدة' : isEn ? 'Fixed Term' : 'Durée Fixe (CDD)' },
+                      { value: 'stage', label: isAr ? 'تربص' : isEn ? 'Intern' : 'Stagiaire' },
+                      { value: 'vacataire', label: isAr ? 'بالساعة' : isEn ? 'Hourly' : 'Horaire' },
+                      { value: 'prestataire', label: isAr ? 'متعاقد' : isEn ? 'Contractor' : 'Prestataire' },
                     ]}
                     onChange={(val) => setRecruitmentType(val as RecruitmentLegalType)}
                   />
 
                   <div>
                     <LabelInput
-                      field={isAr ? 'الراتب الشهري (د.ج)' : isEn ? 'Monthly Salary (DZD)' : 'Salaire Net (DZD)'}
+                      field={isAr ? 'الراتب الشهري' : isEn ? 'Monthly Pay' : 'Salaire Net'}
                       type="number"
                       value={salary}
                       onChange={(val) => setSalary(val)}
@@ -479,7 +475,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
 
                   <div>
                     <LabelInput
-                      field={isAr ? 'يوم دفع الراتب (1-31)' : isEn ? 'Salary Day (1-31)' : 'Jour de Paie (1-31)'}
+                      field={isAr ? 'يوم الدفع' : isEn ? 'Pay Day' : 'Jour Paie'}
                       type="number"
                       min={1}
                       max={31}
@@ -492,12 +488,12 @@ export const StaffModal: React.FC<StaffModalProps> = ({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <LabelSelect
-                    field={isAr ? 'طريقة دفع الراتب' : isEn ? 'Payment Method' : 'Mode de Versement'}
+                    field={isAr ? 'طريقة الدفع' : isEn ? 'Pay Method' : 'Mode Paiement'}
                     value={paymentMethod}
                     options={[
-                      { value: 'ccp', label: 'Compte CCP (Algérie Poste)' },
-                      { value: 'bank_transfer', label: 'Virement Bancaire (RIB)' },
-                      { value: 'cash', label: 'Espèces (Bordereau de caisse)' },
+                      { value: 'ccp', label: isAr ? 'حساب بريدي' : isEn ? 'Postal Account' : 'Compte Postal' },
+                      { value: 'bank_transfer', label: isAr ? 'تحويل بنكي' : isEn ? 'Bank Transfer' : 'Virement Bancaire' },
+                      { value: 'cash', label: isAr ? 'نقداً' : isEn ? 'Cash' : 'Espèces' },
                     ]}
                     onChange={(val) => setPaymentMethod(val as StaffPaymentMethod)}
                   />
@@ -506,7 +502,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                     <div className="grid grid-cols-3 gap-2">
                       <div className="col-span-2">
                         <LabelInput
-                          field={isAr ? 'رقم حساب CCP' : isEn ? 'CCP Account' : 'Numéro Compte CCP'}
+                          field={isAr ? 'الحساب البريدي' : isEn ? 'Postal Account' : 'Compte Postal'}
                           value={ccpNumber}
                           onChange={(val) => handleCcpNumberChange(val)}
                           placeholder="0012345678"
@@ -527,7 +523,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
 
                   {paymentMethod === 'bank_transfer' && (
                     <LabelInput
-                      field={isAr ? 'رقم الحساب المصرفي (RIB 20 رقماً)' : isEn ? 'Bank RIB (20 digits)' : 'RIB Bancaire (20 chiffres)'}
+                      field={isAr ? 'الحساب البنكي' : isEn ? 'Bank Account' : 'RIB Bancaire'}
                       value={bankRib}
                       onChange={(val) => setBankRib(val)}
                       placeholder="002 00012 34567890 12"
@@ -540,14 +536,14 @@ export const StaffModal: React.FC<StaffModalProps> = ({
               <div className="space-y-3 p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700/60">
                 <div className="flex items-center gap-2 text-xs font-semibold text-neutral-900 dark:text-neutral-100">
                   <KeyRound className="w-4 h-4 text-[#d4522f]" />
-                  <span>{isAr ? 'صلاحيات تسجيل الدخول إلى التطبيق' : isEn ? 'App Login Credentials' : 'Moyens de Connexion à l\'Application'}</span>
+                  <span>{isAr ? 'بيانات الدخول' : isEn ? 'Login Access' : 'Accès Connexion'}</span>
                 </div>
                 <p className="text-[11px] text-neutral-500">
                   {isAr
-                    ? 'حدد الوسائل التي يمكن للموظف استخدامها للدخول إلى منصة أتريوم'
+                    ? 'طرق تسجيل الدخول المتاحة'
                     : isEn
-                    ? 'Select which credentials this staff member can use to sign into Atrium'
-                    : 'Activez les identifiants autorisés pour la connexion de ce collaborateur'}
+                    ? 'Allowed sign-in methods'
+                    : 'Méthodes de connexion actives'}
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
@@ -558,7 +554,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                       onChange={(e) => setCanLoginEmail(e.target.checked)}
                       className="accent-[#d4522f] rounded-sm"
                     />
-                    <span>{isAr ? 'البريد وكلمة السر' : isEn ? 'Email & Password' : 'Email & Mot de passe'}</span>
+                    <span>{isAr ? 'البريد' : isEn ? 'Email' : 'Email'}</span>
                   </label>
 
                   <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 cursor-pointer text-xs">
@@ -568,7 +564,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                       onChange={(e) => setCanLoginPhone(e.target.checked)}
                       className="accent-[#d4522f] rounded-sm"
                     />
-                    <span>{isAr ? 'رقم الهاتف' : isEn ? 'Phone Number' : 'Numéro de Téléphone'}</span>
+                    <span>{isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone'}</span>
                   </label>
 
                   <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 cursor-pointer text-xs">
@@ -578,7 +574,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                       onChange={(e) => setCanLoginPin(e.target.checked)}
                       className="accent-[#d4522f] rounded-sm"
                     />
-                    <span>{isAr ? 'رمز PIN السريع (4 أرقام)' : isEn ? 'Fast-Switch PIN (4 Digits)' : 'Code PIN (4 Chiffres)'}</span>
+                    <span>{isAr ? 'رمز سريع' : isEn ? 'Quick PIN' : 'Code PIN'}</span>
                   </label>
                 </div>
 
@@ -599,7 +595,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                       className="text-xs px-3 py-2 rounded-xl bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5"
                     >
                       <Sparkles className="w-3.5 h-3.5 text-[#d4522f]" />
-                      <span>{isAr ? 'توليد PIN عشوائي' : isEn ? 'Generate PIN' : 'Générer PIN'}</span>
+                      <span>{isAr ? 'توليد' : isEn ? 'Generate' : 'Générer'}</span>
                     </button>
                     {errors.pinCode && <p className="text-[11px] text-red-500">{errors.pinCode}</p>}
                   </div>
@@ -610,26 +606,26 @@ export const StaffModal: React.FC<StaffModalProps> = ({
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#d4522f]">
                   <HeartPulse className="w-4 h-4" />
-                  <span>{isAr ? 'الملف الصحي وحالات الطوارئ' : isEn ? 'Medical Emergency Dossier' : 'Dossier Médical & Urgences'}</span>
+                  <span>{isAr ? 'الطوارئ والصحة' : isEn ? 'Emergency Info' : 'Urgences'}</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <LabelSelect
-                    field={isAr ? 'فصيلة الدم' : isEn ? 'Blood Group' : 'Groupe Sanguin'}
+                    field={isAr ? 'فصيلة الدم' : isEn ? 'Blood Type' : 'Groupe Sanguin'}
                     value={bloodGroup}
                     options={['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']}
                     onChange={(val) => setBloodGroup(val as string)}
                   />
 
                   <LabelInput
-                    field={isAr ? 'اسم جهة اتصال الطوارئ' : isEn ? 'Emergency Contact Name' : 'Contact d\'Urgence (Nom)'}
+                    field={isAr ? 'جهة الطوارئ' : isEn ? 'Emergency Contact' : 'Contact Urgence'}
                     value={emergencyContactName}
                     onChange={(val) => setEmergencyContactName(val)}
-                    placeholder="Père, Conjoint, etc."
+                    placeholder={isAr ? 'اسم القريب' : isEn ? 'Contact name' : 'Nom'}
                   />
 
                   <LabelInput
-                    field={isAr ? 'هاتف الطوارئ' : isEn ? 'Emergency Phone' : 'Téléphone d\'Urgence'}
+                    field={isAr ? 'هاتف الطوارئ' : isEn ? 'Emergency Phone' : 'Tél Urgence'}
                     value={emergencyContactPhone}
                     onChange={(val) => setEmergencyContactPhone(val)}
                     placeholder="0661 00 00 00"
@@ -637,10 +633,10 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                 </div>
 
                 <LabelInput
-                  field={isAr ? 'ملاحظات صحية أو حساسية' : isEn ? 'Medical Notes or Allergies' : 'Notes médicales & Contre-indications'}
+                  field={isAr ? 'ملاحظات صحية' : isEn ? 'Health Notes' : 'Notes Santé'}
                   value={medicalNotes}
                   onChange={(val) => setMedicalNotes(val)}
-                  placeholder="Allergies, traitement médical régulier, etc."
+                  placeholder={isAr ? 'حساسية أو علاج...' : isEn ? 'Allergies, notes...' : 'Allergies, notes...'}
                 />
               </div>
 
@@ -688,15 +684,15 @@ export const StaffModal: React.FC<StaffModalProps> = ({
             labels={{
               idle: staffToEdit
                 ? isAr
-                  ? 'حفظ التعديلات'
+                  ? 'حفظ'
                   : isEn
-                  ? 'Save Changes'
+                  ? 'Save'
                   : 'Enregistrer'
                 : isAr
-                ? 'إنشاء الموظف'
+                ? 'إضافة'
                 : isEn
-                ? 'Create Staff Member'
-                : 'Créer le collaborateur',
+                ? 'Add Staff'
+                : 'Ajouter',
             }}
           />
         </div>
@@ -777,136 +773,137 @@ function getRoleRank(role: string): number {
   return 1;
 }
 
-function getRolesForCategory(category: string): SelectOption[] {
+function getRolesForCategory(category: string, isAr: boolean, isEn: boolean): SelectOption[] {
+  const tr = (ar: string, en: string, fr: string) => (isAr ? ar : isEn ? en : fr);
   switch (category) {
     case 'medical_clinic':
       return [
-        { value: 'MedecinChef', label: 'Médecin Chef / Directeur Médical' },
-        { value: 'Doctor', label: 'Médecin Spécialiste / Généraliste' },
-        { value: 'Manager', label: 'Cadre de Santé / Surveillant Général' },
-        { value: 'Technician', label: 'Infirmier / Technicien de Laboratoire' },
-        { value: 'Staff', label: 'Secrétaire Médical & Accueil' },
+        { value: 'MedecinChef', label: tr('رئيس الأطباء', 'Chief Doctor', 'Médecin Chef') },
+        { value: 'Doctor', label: tr('طبيب', 'Doctor', 'Médecin') },
+        { value: 'Manager', label: tr('مدير صحة', 'Health Manager', 'Cadre Santé') },
+        { value: 'Technician', label: tr('ممرض / مخبري', 'Nurse / Lab', 'Infirmier / Labo') },
+        { value: 'Staff', label: tr('سكرتارية طبية', 'Reception', 'Secrétaire') },
       ];
     case 'auto_garage':
       return [
-        { value: 'Owner', label: 'Gérant d\'Atelier / Propriétaire' },
-        { value: 'ChefAtelier', label: 'Chef d\'Atelier & Maître Mécanicien' },
-        { value: 'Technician', label: 'Technicien Diagnostic OBD & Électricité' },
-        { value: 'Staff', label: 'Carrossier / Peintre / Opérateur' },
-        { value: 'Cashier', label: 'Réceptionnaire & Facturation' },
+        { value: 'Owner', label: tr('مدير الورشة', 'Shop Owner', 'Gérant') },
+        { value: 'ChefAtelier', label: tr('رئيس الورشة', 'Head Mechanic', 'Chef Atelier') },
+        { value: 'Technician', label: tr('فني تشخيص', 'Diagnostic Tech', 'Technicien Diag') },
+        { value: 'Staff', label: tr('هيكل وطلاء', 'Body & Paint', 'Carrossier') },
+        { value: 'Cashier', label: tr('استقبال ودفع', 'Front Desk', 'Réceptionnaire') },
       ];
     case 'construction_contractor':
       return [
-        { value: 'Owner', label: 'Directeur Général / Gérant BTP' },
-        { value: 'ConducteurTravaux', label: 'Conducteur de Travaux Principal' },
-        { value: 'ChefChantier', label: 'Chef de Chantier & Encadrement' },
-        { value: 'Technician', label: 'Métreur / Ingénieur HSE / Topographe' },
-        { value: 'Staff', label: 'Chef d\'Équipe & Ouvrier Qualifié' },
+        { value: 'Owner', label: tr('المدير العام', 'Director', 'Directeur') },
+        { value: 'ConducteurTravaux', label: tr('مهندس أشغال', 'Site Lead', 'Conducteur Travaux') },
+        { value: 'ChefChantier', label: tr('رئيس ورشة', 'Site Chief', 'Chef Chantier') },
+        { value: 'Technician', label: tr('مهندس / مساح', 'Engineer', 'Ingénieur / Métreur') },
+        { value: 'Staff', label: tr('عامل مؤهل', 'Field Worker', 'Ouvrier') },
       ];
     case 'logistics_delivery':
       return [
-        { value: 'Owner', label: 'Directeur Logistique / Gérant' },
-        { value: 'Dispatcher', label: 'Dispatcher & Régulateur de Tournées' },
-        { value: 'Manager', label: 'Responsable Flotte & Maintenance' },
-        { value: 'Technician', label: 'Chauffeur-Livreur Poids Lourd (EC)' },
-        { value: 'Staff', label: 'Opérateur de Quai / Magasinier' },
+        { value: 'Owner', label: tr('مدير النقل', 'Logistics Lead', 'Directeur') },
+        { value: 'Dispatcher', label: tr('منسق رحلات', 'Dispatcher', 'Dispatcheur') },
+        { value: 'Manager', label: tr('مسؤول الأسطول', 'Fleet Manager', 'Resp. Flotte') },
+        { value: 'Technician', label: tr('سائق موزع', 'Driver', 'Chauffeur') },
+        { value: 'Staff', label: tr('أمين مخزن', 'Dock Staff', 'Magasinier') },
       ];
     case 'manufacturing_production':
       return [
-        { value: 'Owner', label: 'Directeur d\'Usine / Gérant' },
-        { value: 'ProductionManager', label: 'Responsable Production & Planning' },
-        { value: 'Technician', label: 'Régleur & Opérateur CNC 5-Axes' },
-        { value: 'Staff', label: 'Contrôleur Qualité & Finition' },
+        { value: 'Owner', label: tr('مدير المصنع', 'Plant Owner', 'Directeur') },
+        { value: 'ProductionManager', label: tr('مدير الإنتاج', 'Prod. Manager', 'Resp. Production') },
+        { value: 'Technician', label: tr('مشغل آلة', 'Machine Op', 'Opérateur') },
+        { value: 'Staff', label: tr('مراقب جودة', 'Quality Check', 'Contrôle Qualité') },
       ];
     case 'agriculture_livestock':
       return [
-        { value: 'Owner', label: 'Exploitant Agricole / Propriétaire' },
-        { value: 'ChefCulture', label: 'Chef de Culture & Agronome' },
-        { value: 'Technician', label: 'Mécanicien Machinisme & Irrigation' },
-        { value: 'Staff', label: 'Ouvrier Agricole & Éleveur' },
+        { value: 'Owner', label: tr('صاحب المزرعة', 'Farm Owner', 'Exploitant') },
+        { value: 'ChefCulture', label: tr('رئيس مزرعة', 'Agronomist', 'Chef Culture') },
+        { value: 'Technician', label: tr('تقني ري', 'Machinery Tech', 'Technicien') },
+        { value: 'Staff', label: tr('عامل فلاحي', 'Farm Worker', 'Ouvrier') },
       ];
     case 'real_estate':
       return [
-        { value: 'Owner', label: 'Directeur d\'Agence Immobilière' },
-        { value: 'Director', label: 'Négociateur Immobilier Senior' },
-        { value: 'Manager', label: 'Gestionnaire Locatif & Mandats' },
-        { value: 'Staff', label: 'Assistant(e) Commercial & Accueil' },
+        { value: 'Owner', label: tr('مدير الوكالة', 'Agency Owner', 'Directeur') },
+        { value: 'Director', label: tr('مستشار عقاري', 'Broker', 'Négociateur') },
+        { value: 'Manager', label: tr('مدير الإيجار', 'Lease Manager', 'Gestionnaire') },
+        { value: 'Staff', label: tr('مساعد تجاري', 'Assistant', 'Assistant') },
       ];
     case 'trading_commercial':
       return [
-        { value: 'Owner', label: 'Directeur Général Négoce / Gérant' },
-        { value: 'DirecteurCommercial', label: 'Directeur Commercial & Ventes B2B' },
-        { value: 'Manager', label: 'Responsable Dépôt & Logistique' },
-        { value: 'Cashier', label: 'Caissier Comptoir & Facturation' },
-        { value: 'Staff', label: 'Commercial Terrain / Préparateur' },
+        { value: 'Owner', label: tr('المدير العام', 'Owner', 'Gérant') },
+        { value: 'DirecteurCommercial', label: tr('مدير المبيعات', 'Sales Lead', 'Dir. Commercial') },
+        { value: 'Manager', label: tr('مسؤول المخزن', 'Depot Lead', 'Resp. Dépôt') },
+        { value: 'Cashier', label: tr('أمين الصندوق', 'Cashier', 'Caissier') },
+        { value: 'Staff', label: tr('مندوب مبيعات', 'Sales Rep', 'Commercial') },
       ];
     case 'education_cohort':
       return [
-        { value: 'Owner', label: 'Directeur de l\'Institut / Fondateur' },
-        { value: 'Technician', label: 'Enseignant / Formateur Titulaire' },
-        { value: 'Manager', label: 'Coordinateur Pédagogique' },
-        { value: 'Staff', label: 'Secrétariat & Scolarité' },
+        { value: 'Owner', label: tr('مدير المعهد', 'Director', 'Directeur') },
+        { value: 'Technician', label: tr('أستاذ / مكون', 'Instructor', 'Formateur') },
+        { value: 'Manager', label: tr('منسق تعليمي', 'Coordinator', 'Coordinateur') },
+        { value: 'Staff', label: tr('أمانة المعهد', 'Admin Desk', 'Secrétariat') },
       ];
     case 'legal_notary':
       return [
-        { value: 'Owner', label: 'Avocat Titulaire / Notaire Associé' },
-        { value: 'Partner', label: 'Avocat Associé / Premier Clerc' },
-        { value: 'Associate', label: 'Avocat Collaborateur / Juriste' },
-        { value: 'Staff', label: 'Secrétaire Juridique & Formalités' },
+        { value: 'Owner', label: tr('محامي / موثق', 'Lead Counsel', 'Titulaire') },
+        { value: 'Partner', label: tr('شريك', 'Partner', 'Associé') },
+        { value: 'Associate', label: tr('متعاون', 'Associate', 'Collaborateur') },
+        { value: 'Staff', label: tr('أمانة قانونية', 'Legal Clerk', 'Secrétaire') },
       ];
     case 'project_milestone':
       return [
-        { value: 'Owner', label: 'Directeur Général de l\'Agence' },
-        { value: 'ProjectManager', label: 'Chef de Projets & Responsable BAT' },
-        { value: 'Creative', label: 'Directeur Artistique / Designer Senior' },
-        { value: 'Staff', label: 'Talent & Opérateur Événementiel' },
+        { value: 'Owner', label: tr('مدير الوكالة', 'Agency Lead', 'Directeur') },
+        { value: 'ProjectManager', label: tr('مدير مشاريع', 'Project Lead', 'Chef Projet') },
+        { value: 'Creative', label: tr('مصمم إبداعي', 'Art Director', 'Dir. Artistique') },
+        { value: 'Staff', label: tr('عضو فريق', 'Team Staff', 'Opérateur') },
       ];
     case 'appointment_service':
       return [
-        { value: 'Owner', label: 'Propriétaire / Salon Manager' },
-        { value: 'Stylist', label: 'Styliste & Coloriste Senior' },
-        { value: 'Technician', label: 'Nail Artist & Esthéticienne Spa' },
-        { value: 'Staff', label: 'Assistant(e) Coiffure & Soins' },
+        { value: 'Owner', label: tr('مدير الصالون', 'Salon Owner', 'Gérant') },
+        { value: 'Stylist', label: tr('مصفف شعر', 'Stylist', 'Styliste') },
+        { value: 'Technician', label: tr('تجميل وعناية', 'Esthetician', 'Esthéticienne') },
+        { value: 'Staff', label: tr('مساعد', 'Assistant', 'Assistant') },
       ];
     case 'pos_inventory':
       return [
-        { value: 'Owner', label: 'Gérant de Commerce / Propriétaire' },
-        { value: 'Manager', label: 'Responsable Magasin / Superviseur' },
-        { value: 'Cashier', label: 'Caissier Encaissant' },
-        { value: 'Staff', label: 'Gestionnaire Stock & Réassort' },
+        { value: 'Owner', label: tr('صاحب المتجر', 'Shop Owner', 'Gérant') },
+        { value: 'Manager', label: tr('مدير المتجر', 'Store Lead', 'Responsable') },
+        { value: 'Cashier', label: tr('أمين الصندوق', 'Cashier', 'Caissier') },
+        { value: 'Staff', label: tr('أمين المخزن', 'Stock Clerk', 'Gestionnaire Stock') },
       ];
     case 'membership_session':
     default:
       return [
-        { value: 'Owner', label: 'Propriétaire / Directeur du Club' },
-        { value: 'Manager', label: 'Responsable d\'Exploitation' },
-        { value: 'Technician', label: 'Coach Sportif / Entraîneur' },
-        { value: 'Cashier', label: 'Réceptionniste Front Desk' },
-        { value: 'Staff', label: 'Opérateur Maintenance' },
+        { value: 'Owner', label: tr('مدير النادي', 'Club Owner', 'Directeur') },
+        { value: 'Manager', label: tr('مدير العمليات', 'Manager', 'Responsable') },
+        { value: 'Technician', label: tr('مدرب رياضي', 'Coach', 'Coach Sportif') },
+        { value: 'Cashier', label: tr('استقبال', 'Front Desk', 'Réceptionniste') },
+        { value: 'Staff', label: tr('صيانة', 'Maintenance', 'Maintenance') },
       ];
   }
 }
 
 function getCategoryPropertiesTitle(category: string, isAr: boolean, isEn: boolean): string {
-  if (isAr) return 'البيانات المهنية والتراخيص القطاعية';
-  if (isEn) return 'Sectoral & Operational Clearances';
-  return 'Habilitations & Spécificités Sectorielles';
+  if (isAr) return 'البيانات المهنية';
+  if (isEn) return 'Role Details';
+  return 'Détails Métier';
 }
 
 function getCategoryRegulatoryLabel(category: string, isAr: boolean, isEn: boolean): string {
   switch (category) {
     case 'medical_clinic':
-      return isAr ? 'رقم التسجيل في مجلس الأطباء' : isEn ? 'Medical Order Number' : 'N° Inscription Ordre des Médecins';
+      return isAr ? 'رقم المجلس' : isEn ? 'Medical ID' : 'N° Ordre';
     case 'construction_contractor':
-      return isAr ? 'رقم بطاقة CACOBATPH' : isEn ? 'CACOBATPH Card Number' : 'N° Carte CACOBATPH';
+      return isAr ? 'رقم الاعتماد' : isEn ? 'Worker Card' : 'N° Carte Pro';
     case 'logistics_delivery':
-      return isAr ? 'صنف رخصة السياقة' : isEn ? 'Driving License Category' : 'Catégorie Permis & Habilitation';
+      return isAr ? 'صنف الرخصة' : isEn ? 'License Class' : 'Catégorie Permis';
     case 'real_estate':
-      return isAr ? 'رقم البطاقة المهنية العقارية' : isEn ? 'Broker License Number' : 'N° Carte Professionnelle CPI';
+      return isAr ? 'البطاقة المهنية' : isEn ? 'Broker ID' : 'Carte Pro';
     case 'legal_notary':
-      return isAr ? 'رقم القيد في نقابة المحامين' : isEn ? 'Bar Association Reg Number' : 'N° Inscription au Barreau';
+      return isAr ? 'رقم النقابة' : isEn ? 'Bar Number' : 'N° Barreau';
     default:
-      return isAr ? 'الترخيص أو الاعتماد المهني' : isEn ? 'Professional Clearance / ID' : 'Habilitation / Agrément Professionnel';
+      return isAr ? 'الترخيص المهني' : isEn ? 'License ID' : 'Agrément Pro';
   }
 }
 
@@ -915,49 +912,49 @@ function getCategoryRegulatoryPlaceholder(category: string): string {
     case 'medical_clinic':
       return 'CNOM-16/48201';
     case 'construction_contractor':
-      return 'CAC-2026-99881';
+      return 'PRO-2026-99881';
     case 'logistics_delivery':
-      return 'Permis Poids Lourd EC';
+      return 'Permis EC';
     case 'real_estate':
       return 'CPI-16-04289';
     case 'legal_notary':
-      return 'BARREAU-ALGER-2012';
+      return 'BAR-2012';
     default:
-      return 'REF-HAB-001';
+      return 'REF-001';
   }
 }
 
 function getCategoryStationLabel(category: string, isAr: boolean, isEn: boolean): string {
   switch (category) {
     case 'medical_clinic':
-      return isAr ? 'التخصص الطبي' : isEn ? 'Medical Specialty' : 'Spécialité Médicale';
+      return isAr ? 'التخصص' : isEn ? 'Specialty' : 'Spécialité';
     case 'auto_garage':
-      return isAr ? 'رقم جسر الرفع أو التخصص' : isEn ? 'Assigned Bay / Specialty' : 'Pont de Levage & Diagnostic';
+      return isAr ? 'المحطة' : isEn ? 'Work Bay' : 'Poste / Pont';
     case 'construction_contractor':
-      return isAr ? 'الورشة المعين بها' : isEn ? 'Assigned Site Code' : 'Chantier d\'Affectation';
+      return isAr ? 'الموقع' : isEn ? 'Site Code' : 'Chantier';
     case 'logistics_delivery':
-      return isAr ? 'رقم لوحة المركبة المعينة' : isEn ? 'Assigned Vehicle Plate' : 'Immatriculation Véhicule Affecté';
+      return isAr ? 'لوحة المركبة' : isEn ? 'Vehicle Plate' : 'Matricule Véhicule';
     case 'manufacturing_production':
-      return isAr ? 'محطة العمل أو الآلة المعينة' : isEn ? 'Assigned Workstation' : 'Poste de Travail / Machine CNC';
+      return isAr ? 'محطة العمل' : isEn ? 'Workstation' : 'Poste Travail';
     case 'agriculture_livestock':
-      return isAr ? 'القطعة الفلاحية المعينة' : isEn ? 'Assigned Parcel' : 'Parcelle d\'Affectation';
+      return isAr ? 'القطعة' : isEn ? 'Parcel' : 'Parcelle';
     default:
-      return isAr ? 'الموقع أو المحطة التشغيلية' : isEn ? 'Workstation / Station' : 'Poste / Station Opérationnelle';
+      return isAr ? 'المحطة' : isEn ? 'Station' : 'Poste';
   }
 }
 
 function getCategoryStationPlaceholder(category: string): string {
   switch (category) {
     case 'medical_clinic':
-      return 'Pédiatrie, Urgences, etc.';
+      return 'Pédiatrie';
     case 'auto_garage':
-      return 'Pont 1, Électronique OBD';
+      return 'Pont 1, Diag';
     case 'construction_contractor':
       return 'CH-2026-CHRG';
     case 'logistics_delivery':
       return '00456-126-16';
     case 'manufacturing_production':
-      return 'CNC-5AX-01';
+      return 'CNC-01';
     case 'agriculture_livestock':
       return 'Parcelle A4';
     default:

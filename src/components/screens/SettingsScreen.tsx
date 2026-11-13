@@ -282,7 +282,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <Settings size={24} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+            <h1 className="text-[36px] sm:text-[48px] rtl:text-[30px] rtl:sm:text-[36px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
               {t('settings_title', language)}
             </h1>
           </div>
@@ -538,26 +538,26 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                  {language === 'ar' ? 'مظهر النظام والسمة اللونية' : language === 'fr' ? 'Apparence et Thème du Système' : 'Interface Theme & Appearance'}
+                  {language === 'ar' ? 'المظهر والسمة' : language === 'fr' ? 'Apparence' : 'Theme'}
                 </h3>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#d4522f]/10 text-[#d4522f]">
                   {theme === 'dark'
-                    ? (language === 'ar' ? 'الوضع الداكن' : language === 'fr' ? 'Mode Sombre' : 'Dark Mode')
-                    : (language === 'ar' ? 'الوضع الفاتح' : language === 'fr' ? 'Mode Clair' : 'Light Mode')}
+                    ? (language === 'ar' ? 'داكن' : language === 'fr' ? 'Sombre' : 'Dark')
+                    : (language === 'ar' ? 'فاتح' : language === 'fr' ? 'Clair' : 'Light')}
                 </span>
               </div>
               <p className="text-xs text-[#52525B] dark:text-neutral-400 mt-0.5">
                 {language === 'ar'
-                  ? 'اختر السمة البصرية المناسبة لبيئة العمل (نهاري رخامي أو ليلي مهدئ للأعين)'
+                  ? 'اختر مظهر العرض المناسب لعملك'
                   : language === 'fr'
-                  ? 'Choisissez le thème visuel adapté à votre environnement de travail'
-                  : 'Select your preferred visual aesthetic for executive desktop workflows'}
+                  ? 'Choisissez le thème visuel adapté à votre espace'
+                  : 'Select your preferred display theme'}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Dynamic Atrium Theme Toggle */}
+        {/* Dynamic Theme Toggle */}
         <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center">
@@ -565,10 +565,12 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             </div>
             <div>
               <div className="text-xs font-bold text-neutral-900 dark:text-white">
-                {language === 'ar' ? 'المفتاح السائل للوضع الليلي' : language === 'fr' ? 'Interrupteur Liquide Mode Sombre' : 'Obsidian Theme Liquid Switch'}
+                {language === 'ar' ? 'الوضع الليلي' : language === 'fr' ? 'Mode Sombre' : 'Dark Mode'}
               </div>
               <div className="text-[10px] text-neutral-400">
-                {theme === 'dark' ? 'Obsidian night theme' : 'Porcelain day theme'}
+                {theme === 'dark'
+                  ? (language === 'ar' ? 'ليلي' : language === 'fr' ? 'Sombre' : 'Night')
+                  : (language === 'ar' ? 'نهاري' : language === 'fr' ? 'Clair' : 'Day')}
               </div>
             </div>
           </div>
@@ -590,8 +592,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               setTheme('light');
               showToast({
                 type: 'info',
-                title: language === 'ar' ? 'الوضع الفاتح' : language === 'fr' ? 'Mode Clair activé' : 'Light Theme Activated',
-                message: language === 'ar' ? 'تم تطبيق المظهر النهاري الرخامي بنجاح.' : 'Executive day porcelain theme enabled.',
+                title: language === 'ar' ? 'الوضع الفاتح' : language === 'fr' ? 'Mode Clair' : 'Light Mode',
+                message: language === 'ar' ? 'تم تفعيل الوضع الفاتح' : language === 'fr' ? 'Mode clair activé.' : 'Light theme enabled.',
               });
             }}
             className={`p-4 rounded-[20px] text-left rtl:text-right transition-all border cursor-pointer relative ${
@@ -611,10 +613,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               )}
             </div>
             <div className="font-bold text-sm text-neutral-900 dark:text-white">
-              {language === 'ar' ? 'الوضع الفاتح (نهاري)' : language === 'fr' ? 'Mode Clair (Jour)' : 'Light Theme (Day)'}
+              {language === 'ar' ? 'فاتح' : language === 'fr' ? 'Mode Clair' : 'Light Theme'}
             </div>
             <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
-              {language === 'ar' ? 'خلفيات ناصعة، تباين عالي وخطوط واضحة للاستخدام المكتبي المشرق' : language === 'fr' ? 'Interface claire, contraste élevé pour un usage diurne' : 'Clean porcelain canvas with high contrast for brightly lit offices'}
+              {language === 'ar' ? 'واجهة ناصعة للاستخدام النهاري' : language === 'fr' ? 'Interface claire et contrastée' : 'Clean bright canvas for daytime use'}
             </p>
           </button>
 
@@ -625,8 +627,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               setTheme('dark');
               showToast({
                 type: 'info',
-                title: language === 'ar' ? 'الوضع الداكن' : language === 'fr' ? 'Mode Sombre activé' : 'Dark Theme Activated',
-                message: language === 'ar' ? 'تم تطبيق المظهر الليلي الهادئ بنجاح.' : 'Executive obsidian night theme enabled.',
+                title: language === 'ar' ? 'الوضع الداكن' : language === 'fr' ? 'Mode Sombre' : 'Dark Mode',
+                message: language === 'ar' ? 'تم تفعيل الوضع الداكن' : language === 'fr' ? 'Mode sombre activé.' : 'Dark theme enabled.',
               });
             }}
             className={`p-4 rounded-[20px] text-left rtl:text-right transition-all border cursor-pointer relative ${
@@ -646,16 +648,16 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               )}
             </div>
             <div className="font-bold text-sm text-neutral-900 dark:text-white">
-              {language === 'ar' ? 'الوضع الداكن (ليلي)' : language === 'fr' ? 'Mode Sombre (Nuit)' : 'Dark Theme (Night)'}
+              {language === 'ar' ? 'داكن' : language === 'fr' ? 'Mode Sombre' : 'Dark Theme'}
             </div>
             <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
-              {language === 'ar' ? 'ألوان حجر الأوبسيديان الداكنة المريحة للأعين أثناء الفترات المسائية' : language === 'fr' ? 'Teintes obsidian profondes pour un confort visuel maximal en soirée' : 'Deep obsidian surfaces designed to reduce eye strain in low-light environments'}
+              {language === 'ar' ? 'ألوان داكنة مريحة للعينين ليلاً' : language === 'fr' ? 'Teintes sombres pour un confort maximal' : 'Dark surfaces for low-light comfort'}
             </p>
           </button>
         </div>
       </div>
 
-      {/* Row 1.2: AppShell Architecture & Kinetic Top Bar Settings */}
+      {/* Row 1.2: Layout & Top Bar Settings */}
       <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -668,24 +670,24 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                  {language === 'ar' ? 'هيكل نظام Atrium AppShell وشريط المهام العلوي' : language === 'fr' ? 'Architecture Atrium AppShell & Barre Supérieure' : 'Atrium AppShell & Kinetic Top Bar Motion'}
+                  {language === 'ar' ? 'سلوك الشريط' : language === 'fr' ? 'Barre Supérieure' : 'Navigation Bar'}
                 </h3>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#d4522f]/10 text-[#d4522f]">
-                  Sigana Engine
+                  {language === 'ar' ? 'تخطيط' : language === 'fr' ? 'Interface' : 'Layout'}
                 </span>
               </div>
               <p className="text-xs text-[#52525B] dark:text-neutral-400 mt-0.5">
                 {language === 'ar'
-                  ? 'التحكم في حركة شريط المهام العلوي (Auto-hide عند التمرير) ومسار التنقل الجانبي بدون إعادة حساب المخطط'
+                  ? 'التحكم في إخفاء الشريط العلوي عند التمرير'
                   : language === 'fr'
-                  ? 'Comportement cinétique de la barre supérieure (auto-hide au défilement) et rail latéral sans reflow'
-                  : 'Kinetic spring-driven scroll auto-hide (48px threshold) with zero layout reflow and 0-frames at rest'}
+                  ? 'Masquage automatique de la barre lors du défilement'
+                  : 'Control top bar scroll auto-hide behavior'}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Kinetic Auto-Hide Switch */}
+        {/* Auto-Hide Switch */}
         <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center">
@@ -693,12 +695,12 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             </div>
             <div>
               <div className="text-xs font-bold text-neutral-900 dark:text-white">
-                {language === 'ar' ? 'الإخفاء التلقائي عند التمرير (Scroll Auto-Hide)' : language === 'fr' ? 'Masquage automatique au défilement' : 'Scroll Auto-Hide (Kinetic 48px)'}
+                {language === 'ar' ? 'إخفاء تلقائي' : language === 'fr' ? 'Masquage Auto' : 'Auto-Hide'}
               </div>
               <div className="text-[10px] text-neutral-400">
                 {isTopBarAutoHide
-                  ? (language === 'ar' ? 'الشريط يختفي بسلاسة عند النزول 48 بكسل ويعود عند الصعود 24 بكسل' : 'Bar slides away on 48px scroll down, returns on 24px scroll up or top edge hover')
-                  : (language === 'ar' ? 'الشريط العلوي ثابت ودائم الظهور' : 'Top bar stays permanently fixed and visible')}
+                  ? (language === 'ar' ? 'يختفي عند التمرير للأسفل' : language === 'fr' ? 'Masqué au défilement' : 'Hides on scroll down')
+                  : (language === 'ar' ? 'ثابت ودائم الظهور' : language === 'fr' ? 'Toujours visible' : 'Always visible')}
               </div>
             </div>
           </div>
@@ -709,10 +711,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               toggleTopBarAutoHide();
               showToast({
                 type: 'info',
-                title: isTopBarAutoHide ? 'Top Bar Fixé' : 'Top Bar Auto-Hide Activé',
+                title: isTopBarAutoHide ? (language === 'ar' ? 'الشريط ثابت' : language === 'fr' ? 'Barre fixée' : 'Bar Pinned') : (language === 'ar' ? 'إخفاء تلقائي' : language === 'fr' ? 'Auto-Hide Activé' : 'Auto-Hide On'),
                 message: isTopBarAutoHide
-                  ? 'La barre supérieure reste désormais fixée.'
-                  : 'La barre supérieure s\'effacera automatiquement lors du défilement.',
+                  ? (language === 'ar' ? 'الشريط العلوي يبقى ظاهراً.' : language === 'fr' ? 'La barre reste visible.' : 'Top bar stays visible.')
+                  : (language === 'ar' ? 'سيختفي الشريط عند التمرير.' : language === 'fr' ? 'La barre s\'efface au défilement.' : 'Top bar hides on scroll.'),
               });
             }}
           />
@@ -723,30 +725,30 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           <div className="p-3 rounded-xl bg-white/70 dark:bg-neutral-800/70 border border-neutral-200/80 dark:border-neutral-700/80">
             <div className="font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5 mb-1">
               <span className="w-2 h-2 rounded-full bg-[#d4522f]" />
-              <span>Rail 60px ➔ 236px</span>
+              <span>{language === 'ar' ? 'شريط جانبي' : language === 'fr' ? 'Menu Latéral' : 'Sidebar Rail'}</span>
             </div>
             <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {language === 'ar' ? 'لوحة تراكب ربيعية دون إزاحة الصفحة أو تغيير العرض' : 'Overlay panel clipped by one spring without pushing content.'}
+              {language === 'ar' ? 'توسيع سلس دون إزاحة المحتوى' : language === 'fr' ? 'Ouverture fluide sans décalage' : 'Smooth overlay without pushing layout.'}
             </p>
           </div>
 
           <div className="p-3 rounded-xl bg-white/70 dark:bg-neutral-800/70 border border-neutral-200/80 dark:border-neutral-700/80">
             <div className="font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5 mb-1">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span>Zero Reflow</span>
+              <span>{language === 'ar' ? 'أداء فوري' : language === 'fr' ? 'Zéro Latence' : 'Fast Render'}</span>
             </div>
             <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {language === 'ar' ? 'كتابة تحويلية مباشرة على بطاقة الرسوميات (0 إطارات عند السكون)' : 'Direct hardware-accelerated transforms, 0 frames at rest.'}
+              {language === 'ar' ? 'استجابة سريعة بدون ثقل' : language === 'fr' ? 'Animations fluides accélérées' : 'Hardware-accelerated smooth motion.'}
             </p>
           </div>
 
           <div className="p-3 rounded-xl bg-white/70 dark:bg-neutral-800/70 border border-neutral-200/80 dark:border-neutral-700/80">
             <div className="font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5 mb-1">
               <span className="w-2 h-2 rounded-full bg-amber-500" />
-              <span>Sigana Condensed</span>
+              <span>{language === 'ar' ? 'خط واضح' : language === 'fr' ? 'Typographie' : 'Typography'}</span>
             </div>
             <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {language === 'ar' ? 'الخط الأصلي للهوية البصرية لعلامة Atrium بنسبة ذهبية' : 'Official display typography with 0.14em tracking.'}
+              {language === 'ar' ? 'عناوين عالية الوضوح' : language === 'fr' ? 'Titres haute lisibilité' : 'High-contrast display headers.'}
             </p>
           </div>
         </div>
@@ -771,24 +773,20 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               </span>
             </div>
             <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
-              {language === 'ar'
-                ? `رتبة خطة أتريوم ${subscription.plan.name} #${subscription.plan.tierRank}`
-                : language === 'fr'
-                ? `Niveau Atrium ${subscription.plan.name} Rang #${subscription.plan.tierRank}`
-                : `Atrium ${subscription.plan.name} Tier Rank #${subscription.plan.tierRank}`}
+              {subscription.plan.name}
             </h2>
             <p className="text-xs text-[#52525B] dark:text-neutral-400">
               {subscription.isLifetime
                 ? (language === 'ar'
-                  ? `تم التفعيل عبر قسيمة ${subscription.activatedByVoucher || 'ATR-LIFE-VOUCHER'}. تم ترخيص التحديثات الدائمة والمزامنة.`
+                  ? `تم التفعيل (${subscription.activatedByVoucher || 'LIFETIME'}).`
                   : language === 'fr'
-                  ? `Activé par bon ${subscription.activatedByVoucher || 'ATR-LIFE-VOUCHER'}. Mises à jour perpétuelles autorisées.`
-                  : `Activated via voucher code ${subscription.activatedByVoucher || 'ATR-LIFE-VOUCHER'}. Perpetual updates and sync authorized.`)
+                  ? `Activé (${subscription.activatedByVoucher || 'LIFETIME'}).`
+                  : `Activated (${subscription.activatedByVoucher || 'LIFETIME'}).`)
                 : (language === 'ar'
-                  ? 'فترة تقييم مجانية. أدخل رمز قسيمة الدفع المسبق الدائمة أو قم بالترقية على سطح المكتب لإدارة الفروع المتعددة.'
+                  ? 'خطة تقييم مجانية.'
                   : language === 'fr'
-                  ? 'Période d\'évaluation gratuite. Saisissez votre bon prépayé à vie ou passez sur Desktop.'
-                  : 'Free evaluation tier. Enter your lifetime prepaid cash voucher code or upgrade on Desktop to unlock multi-branch management.')}
+                  ? 'Version d\'évaluation gratuite.'
+                  : 'Free evaluation tier.')}
             </p>
           </div>
 
@@ -832,7 +830,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             onClick={() => openDesktopUpgradeModal('general')}
             className="shrink-0 self-start sm:self-auto"
           >
-            {language === 'ar' ? 'الترقية على سطح المكتب' : language === 'fr' ? 'Passer sur Desktop' : 'Upgrade on Desktop'}
+            {language === 'ar' ? 'الترقية' : language === 'fr' ? 'Version Desktop' : 'Get Desktop'}
           </AtriumButton>
         </div>
 
@@ -840,7 +838,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
           <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
             <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400 block text-[11px]">
-              {language === 'ar' ? 'المنشآت المسموح بها' : language === 'fr' ? 'Établissements autorisés' : 'Businesses Allowed'}
+              {language === 'ar' ? 'المنشآت' : language === 'fr' ? 'Établissements' : 'Businesses'}
             </span>
             <span className="text-xl font-black text-neutral-900 dark:text-white tabular-nums mt-1 block">
               {businesses.length} / {subscription.plan.maxBusinesses}
@@ -848,7 +846,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
           <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
             <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400 block text-[11px]">
-              {language === 'ar' ? 'الفروع المسموح بها' : language === 'fr' ? 'Succursales autorisées' : 'Branches Allowed'}
+              {language === 'ar' ? 'الفروع' : language === 'fr' ? 'Succursales' : 'Branches'}
             </span>
             <span className="text-xl font-black text-neutral-900 dark:text-white tabular-nums mt-1 block">
               {branches.length} / {subscription.plan.maxBranches}
@@ -856,7 +854,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
           <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
             <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400 block text-[11px]">
-              {language === 'ar' ? 'أجهزة البيع المسموح بها' : language === 'fr' ? 'Terminaux POS autorisés' : 'POS Devices Allowed'}
+              {language === 'ar' ? 'نقاط البيع' : language === 'fr' ? 'Caisses' : 'Terminals'}
             </span>
             <span className="text-xl font-black text-neutral-900 dark:text-white tabular-nums mt-1 block">
               {devices.length} / {subscription.plan.maxDevices}
@@ -864,18 +862,18 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
           <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
             <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400 block text-[11px]">
-              {language === 'ar' ? 'تقارير الفروع المشتركة' : language === 'fr' ? 'Rapports multi-sites' : 'Cross-Branch Reports'}
+              {language === 'ar' ? 'التقارير' : language === 'fr' ? 'Rapports' : 'Reports'}
             </span>
             <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 mt-2 block">
               {subscription.plan.crossBranchReports
                 ? (language === 'ar' ? 'مفعل' : language === 'fr' ? 'Activé' : 'Enabled')
-                : (language === 'ar' ? 'خطة المحترفين فقط' : language === 'fr' ? 'Offre Pro uniquement' : 'Pro Tier Only')}
+                : (language === 'ar' ? 'برو فقط' : language === 'fr' ? 'Offre Pro' : 'Pro Only')}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Row 1.5: Supabase Cloud & PostgreSQL Database Integration */}
+      {/* Row 1.5: Cloud Sync */}
       <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -909,12 +907,12 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                   }`}
                 >
                   {supabaseStatus === 'connected'
-                    ? (language === 'ar' ? 'متصل بالسحابة' : language === 'fr' ? 'Connecté au cloud' : 'Cloud Connected')
+                    ? (language === 'ar' ? 'متصل' : language === 'fr' ? 'Connecté' : 'Connected')
                     : supabaseStatus === 'connecting'
-                    ? (language === 'ar' ? 'جارٍ المزامنة' : language === 'fr' ? 'Synchronisation' : 'Syncing')
+                    ? (language === 'ar' ? 'مزامنة' : language === 'fr' ? 'Sync...' : 'Syncing')
                     : supabaseStatus === 'offline'
-                    ? (language === 'ar' ? 'الوضع المحلي البديل' : language === 'fr' ? 'Mode hors-ligne' : 'Offline Fallback')
-                    : (language === 'ar' ? 'محرك محلي / هجين' : language === 'fr' ? 'Moteur hybride / local' : 'Hybrid / Local Engine')}
+                    ? (language === 'ar' ? 'محلي' : language === 'fr' ? 'Hors-ligne' : 'Offline')
+                    : (language === 'ar' ? 'هجين' : language === 'fr' ? 'Local' : 'Local')}
                 </span>
               </div>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
@@ -924,7 +922,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
-
             <button
               type="button"
               onClick={() => syncWithSupabase()}
@@ -934,8 +931,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               <RotateCw size={13} className={isSyncing ? 'animate-spin text-[#d4522f]' : ''} />
               <span>
                 {isSyncing
-                  ? (language === 'ar' ? 'جارٍ مزامنة الجداول...' : language === 'fr' ? 'Synchronisation des tables...' : 'Syncing Tables...')
-                  : (language === 'ar' ? 'مزامنة قاعدة البيانات الآن' : language === 'fr' ? 'Synchroniser maintenant' : 'Sync Database Now')}
+                  ? (language === 'ar' ? 'جاري المزامنة...' : language === 'fr' ? 'Synchronisation...' : 'Syncing...')
+                  : (language === 'ar' ? 'مزامنة الآن' : language === 'fr' ? 'Synchroniser' : 'Sync Now')}
               </span>
             </button>
           </div>
@@ -945,39 +942,39 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
           <div className="p-3.5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
             <span className="text-[11px] font-semibold text-neutral-400 block">
-              {language === 'ar' ? 'هيكلية المخطط' : language === 'fr' ? 'Architecture du schéma' : 'Schema Architecture'}
+              {language === 'ar' ? 'قاعدة البيانات' : language === 'fr' ? 'Structure' : 'Database'}
             </span>
             <span className="text-sm font-bold text-neutral-800 dark:text-neutral-200 mt-1 block">
-              {language === 'ar' ? '17 جدولا + 14 إجراء مخزن RPC' : language === 'fr' ? '17 tables + 14 fonctions RPC' : '17 Tables + 14 Stored RPCs'}
+              {language === 'ar' ? 'مفعل وآمن' : language === 'fr' ? 'Actif & Sécurisé' : 'Active & Isolated'}
             </span>
             <span className="text-[10px] text-neutral-400 block mt-0.5">
-              {language === 'ar' ? 'عزل أمني صارم RLS متعدد المستأجرين' : language === 'fr' ? 'Isolation RLS multi-tenant stricte' : 'Strict multi-tenant RLS isolation'}
+              {language === 'ar' ? 'عزل بيانات تام' : language === 'fr' ? 'Isolation complète' : 'Tenant isolation'}
             </span>
           </div>
 
           <div className="p-3.5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
             <span className="text-[11px] font-semibold text-neutral-400 block">
-              {language === 'ar' ? 'بث حي WebSockets' : language === 'fr' ? 'WebSockets temps réel' : 'Realtime WebSockets'}
+              {language === 'ar' ? 'التحديث المباشر' : language === 'fr' ? 'Temps Réel' : 'Live Updates'}
             </span>
             <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-1 block">
-              {language === 'ar' ? 'مستمع بث نشط' : language === 'fr' ? 'Écouteur de diffusion actif' : 'Active Broadcast Listener'}
+              {language === 'ar' ? 'متصل' : language === 'fr' ? 'Actif' : 'Active'}
             </span>
             <span className="text-[10px] text-neutral-400 block mt-0.5">
-              {language === 'ar' ? 'تحديثات حية للحضور والمبيعات' : language === 'fr' ? 'Mises à jour directes entrées et ventes' : 'Live updates on check-ins & sales'}
+              {language === 'ar' ? 'مزامنة فورية' : language === 'fr' ? 'Entrées & ventes' : 'Check-ins & sales'}
             </span>
           </div>
 
           <div className="p-3.5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
             <span className="text-[11px] font-semibold text-neutral-400 block">
-              {language === 'ar' ? 'آخر مزامنة سحابية' : language === 'fr' ? 'Dernière synchronisation cloud' : 'Last Cloud Sync'}
+              {language === 'ar' ? 'آخر مزامنة' : language === 'fr' ? 'Dernière Sync' : 'Last Sync'}
             </span>
             <span className="text-sm font-bold text-neutral-800 dark:text-neutral-200 mt-1 block">
-              {lastSyncedAt ? new Date(lastSyncedAt).toLocaleTimeString() : (language === 'ar' ? 'جاهز عند الطلب' : language === 'fr' ? 'Prêt à la demande' : 'Ready on command')}
+              {lastSyncedAt ? new Date(lastSyncedAt).toLocaleTimeString() : (language === 'ar' ? 'جاهز' : language === 'fr' ? 'Prêt' : 'Ready')}
             </span>
             <span className="text-[10px] text-neutral-400 block mt-0.5">
               {isSupabaseConfigured
-                ? (language === 'ar' ? 'مزامنة سحابية مزدوجة نشطة' : language === 'fr' ? 'Synchronisation cloud active' : 'Dual-mode live cloud active')
-                : (language === 'ar' ? 'وضع الحفظ المحلي البديل' : language === 'fr' ? 'Repli sur stockage local' : 'Offline local storage fallback')}
+                ? (language === 'ar' ? 'سحابة نشطة' : language === 'fr' ? 'Cloud actif' : 'Cloud active')
+                : (language === 'ar' ? 'تخزين محلي' : language === 'fr' ? 'Stockage local' : 'Local storage')}
             </span>
           </div>
         </div>
@@ -990,7 +987,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         )}
       </div>
 
-      {/* Row 1.8: Data Portability & Disaster Recovery Center */}
+      {/* Row 1.8: Backup & Restore */}
       <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -1000,10 +997,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                  {language === 'ar' ? 'مركز النسخ الاحتياطي واستعادة البيانات' : language === 'fr' ? 'Centre de sauvegarde & reprise d\'activité' : 'Data Backup & Disaster Recovery Center'}
+                  {language === 'ar' ? 'النسخ الاحتياطي' : language === 'fr' ? 'Sauvegarde' : 'Data Backup'}
                 </h3>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
-                  {language === 'ar' ? 'لقطة محلية جاهزة' : language === 'fr' ? 'Instantané local prêt' : 'Local Snapshot Ready'}
+                  {language === 'ar' ? 'جاهز' : language === 'fr' ? 'Prêt' : 'Ready'}
                 </span>
               </div>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
@@ -1232,17 +1229,17 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <div>
               <span className="font-bold text-neutral-800 dark:text-neutral-200">
                 {language === 'ar'
-                  ? 'ربط العتاد وأجهزة نقاط البيع والمزامنة بدون إنترنت SQLite تتطلب تطبيق Atrium المكتبي'
+                  ? 'ربط العتاد والمزامنة المحلية عبر تطبيق سطح المكتب'
                   : language === 'fr'
-                  ? 'L\'intégration matérielle et la synchronisation SQLite hors-ligne nécessitent Atrium Desktop'
-                  : 'Hardware integration & offline-first SQLite synchronization require Atrium Desktop'}
+                  ? 'Le matériel et la synchronisation locale nécessitent Atrium Desktop'
+                  : 'Hardware & offline sync require Atrium Desktop'}
               </span>
               <p className="text-neutral-500 dark:text-neutral-400 text-[11px] mt-0.5">
                 {language === 'ar'
-                  ? 'طابعات الإيصالات الحرارية (ESC/POS)، أدراج النقد، قارئات الباركود والبوابات البيومترية / RFID تتصل أصلياً عبر تطبيق الحاسوب.'
+                  ? 'طابعات الإيصالات، أدراج النقد، وقارئات الباركود.'
                   : language === 'fr'
-                  ? 'Imprimantes thermiques (ESC/POS), tiroirs-caisses, lecteurs code-barres et tourniquets biométriques/RFID se connectent nativement via l\'application Desktop.'
-                  : 'Thermal receipt printers (ESC/POS), cash drawers, barcode guns, and biometric fingerprint/RFID turnstiles connect natively via the desktop app.'}
+                  ? 'Imprimantes thermiques, tiroirs-caisses et lecteurs.'
+                  : 'Receipt printers, cash drawers, and barcode scanners.'}
               </p>
             </div>
           </div>
@@ -1251,7 +1248,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             onClick={() => openDesktopUpgradeModal('general')}
             className="px-3 py-1.5 rounded-full border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 text-[11px] font-bold hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
           >
-            {language === 'ar' ? 'معرفة المزيد' : language === 'fr' ? 'En savoir plus' : 'Learn More'}
+            {language === 'ar' ? 'المزيد' : language === 'fr' ? 'En savoir plus' : 'Learn More'}
           </button>
         </div>
 
@@ -1267,7 +1264,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                     {dev.label}
                   </div>
                   <div className="text-xs font-mono text-neutral-400">
-                    ID: {dev.hardwareId} · {language === 'ar' ? 'تاريخ التسجيل' : language === 'fr' ? 'Enregistré' : 'Registered'}: {new Date(dev.registeredAt).toLocaleDateString()}
+                    ID: {dev.hardwareId} · {new Date(dev.registeredAt).toLocaleDateString()}
                   </div>
                 </div>
               </div>
@@ -1275,14 +1272,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               <div className="flex items-center gap-3">
                 <span className="text-xs text-emerald-600 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  {language === 'ar' ? 'نقطة بيع نشطة' : language === 'fr' ? 'Terminal actif' : 'Active Terminal'}
+                  {language === 'ar' ? 'نشط' : language === 'fr' ? 'Actif' : 'Active'}
                 </span>
                 {devices.length > 1 && (
                   <button
                     type="button"
                     onClick={() => revokeDevice(dev.id)}
                     className="text-xs text-rose-500 hover:text-rose-700 cursor-pointer p-1.5 rounded-full hover:bg-rose-50 transition-colors"
-                    title={language === 'ar' ? 'إلغاء الترخيص' : language === 'fr' ? 'Révoquer l\'autorisation' : 'Revoke authorization'}
+                    title={language === 'ar' ? 'حذف' : language === 'fr' ? 'Révoquer' : 'Revoke'}
                   >
                     <Trash2 size={14} />
                   </button>
@@ -1297,13 +1294,13 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       <Modal
         isOpen={isAddBranchOpen}
         onClose={() => setIsAddBranchOpen(false)}
-        title={language === 'ar' ? 'إضافة فرع تجاري جديد' : language === 'fr' ? 'Ajouter une succursale' : 'Add Business Branch'}
+        title={language === 'ar' ? 'إضافة فرع' : language === 'fr' ? 'Ajouter Succursale' : 'Add Branch'}
         subtitle={
           language === 'ar'
-            ? `توسيع شبكة فروع ${currentBusiness.name}`
+            ? currentBusiness.name
             : language === 'fr'
-            ? `Étendre le réseau d'implantations de ${currentBusiness.name}`
-            : `Expand ${currentBusiness.name} location network`
+            ? currentBusiness.name
+            : currentBusiness.name
         }
       >
         <form onSubmit={handleCreateBranch} className="space-y-4">
@@ -1315,11 +1312,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
           <LabelInput
             field="BranchName"
-            label={language === 'ar' ? 'اسم الفرع *' : language === 'fr' ? 'Nom de la succursale *' : 'Branch Name *'}
+            label={language === 'ar' ? 'اسم الفرع *' : language === 'fr' ? 'Nom *' : 'Branch Name *'}
             required
             value={branchName}
             onChange={setBranchName}
-            placeholder="e.g. Apex West Sidi Yahia"
+            placeholder="Sidi Yahia"
             width="100%"
             height={40}
             corner={12}
@@ -1328,11 +1325,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
               field="BranchCode"
-              label={language === 'ar' ? 'رمز الفرع *' : language === 'fr' ? 'Code succursale *' : 'Branch Code *'}
+              label={language === 'ar' ? 'الرمز *' : language === 'fr' ? 'Code *' : 'Code *'}
               required
               value={branchCode}
               onChange={setBranchCode}
-              placeholder="e.g. APX-WEST"
+              placeholder="APX-WEST"
               width="100%"
               height={40}
               corner={12}
@@ -1352,10 +1349,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
           <LabelInput
             field="BranchAddress"
-            label={language === 'ar' ? 'العنوان الفعلي' : language === 'fr' ? 'Adresse physique' : 'Physical Address'}
+            label={language === 'ar' ? 'العنوان' : language === 'fr' ? 'Adresse' : 'Address'}
             value={branchAddress}
             onChange={setBranchAddress}
-            placeholder="Boulevard, City, Wilaya"
+            placeholder="Alger"
             width="100%"
             height={40}
             corner={12}
@@ -1373,7 +1370,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               type="submit"
               size="md"
             >
-              {language === 'ar' ? 'إنشاء الفرع' : language === 'fr' ? 'Créer la succursale' : 'Create Branch'}
+              {language === 'ar' ? 'إنشاء' : language === 'fr' ? 'Créer' : 'Create'}
             </AtriumButton>
           </div>
         </form>
@@ -1383,8 +1380,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       <Modal
         isOpen={isAddDeviceOpen}
         onClose={() => setIsAddDeviceOpen(false)}
-        title={language === 'ar' ? 'مصادقة جهاز نقطة البيع' : language === 'fr' ? 'Autoriser un terminal POS' : 'Authorize POS Hardware Terminal'}
-        subtitle={language === 'ar' ? 'تسجيل معرّف الجهاز للكشك أو سطح المكتب' : language === 'fr' ? 'Enregistrer l\'identifiant matériel pour le kiosque' : 'Register machine hardware ID for desktop or web kiosk'}
+        title={language === 'ar' ? 'إضافة جهاز' : language === 'fr' ? 'Ajouter Terminal' : 'Add Terminal'}
+        subtitle={language === 'ar' ? 'تسجيل جهاز جديد' : language === 'fr' ? 'Nouveau poste' : 'Register device'}
       >
         <form onSubmit={handleRegisterDevice} className="space-y-4">
           {deviceError && (
@@ -1395,11 +1392,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
           <LabelInput
             field="DeviceLabel"
-            label={language === 'ar' ? 'اسم المحطة أو الجهاز *' : language === 'fr' ? 'Nom convivial du terminal *' : 'Terminal Friendly Label *'}
+            label={language === 'ar' ? 'اسم الجهاز *' : language === 'fr' ? 'Nom *' : 'Device Name *'}
             required
             value={deviceLabel}
             onChange={setDeviceLabel}
-            placeholder="e.g. Reception Desk 2 (POS)"
+            placeholder="Caisse 2"
             width="100%"
             height={40}
             corner={12}
@@ -1407,11 +1404,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
           <LabelInput
             field="HardwareId"
-            label={language === 'ar' ? 'معرّف العتاد *' : language === 'fr' ? 'Identifiant matériel *' : 'Hardware ID *'}
+            label={language === 'ar' ? 'معرّف الجهاز *' : language === 'fr' ? 'ID Matériel *' : 'Device ID *'}
             required
             value={deviceHwId}
             onChange={setDeviceHwId}
-            placeholder="e.g. HW-POS-ALGIERS-03"
+            placeholder="POS-03"
             width="100%"
             height={40}
             corner={12}
@@ -1433,7 +1430,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               }}
               className="h-10 px-5 text-xs font-semibold text-white cursor-pointer shadow-xs"
             >
-              {language === 'ar' ? 'مصادقة نقطة البيع' : language === 'fr' ? 'Autoriser le terminal' : 'Authorize Terminal'}
+              {language === 'ar' ? 'حفظ' : language === 'fr' ? 'Autoriser' : 'Authorize'}
             </button>
           </div>
         </form>

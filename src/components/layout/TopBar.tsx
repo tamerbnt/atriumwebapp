@@ -221,7 +221,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   const getBreadcrumb = () => {
     const cat = currentBusiness?.category;
     const homeLabel = isProjectMilestone
-      ? 'NCH Activator'
+      ? t('nav_home', language)
       : isFreelance
       ? t('nav_solo_home', language)
       : isRental
@@ -233,21 +233,21 @@ export const TopBar: React.FC<TopBarProps> = ({
       : isTrading
       ? t('nav_trading_dashboard', language)
       : cat === 'medical_clinic'
-      ? (language === 'ar' ? 'المركز الطبي' : language === 'fr' ? 'Cabinet Médical' : 'Medical Clinic')
+      ? (language === 'ar' ? 'العيادة' : language === 'fr' ? 'Clinique' : 'Clinic')
       : cat === 'auto_garage'
-      ? (language === 'ar' ? 'ورشة السيارات' : language === 'fr' ? 'Garage Automobile' : 'Auto Garage')
+      ? (language === 'ar' ? 'الورشة' : language === 'fr' ? 'Garage' : 'Garage')
       : cat === 'real_estate'
-      ? (language === 'ar' ? 'الوكالة العقارية' : language === 'fr' ? 'Gestion Immobilière' : 'Real Estate')
+      ? (language === 'ar' ? 'العقارات' : language === 'fr' ? 'Immobilier' : 'Real Estate')
       : cat === 'manufacturing_production'
-      ? (language === 'ar' ? 'المصنع والإنتاج' : language === 'fr' ? 'Manufacture & BOM' : 'Manufacturing')
+      ? (language === 'ar' ? 'المصنع' : language === 'fr' ? 'Usine' : 'Factory')
       : cat === 'legal_accounting'
-      ? (language === 'ar' ? 'مكتب المحاماة' : language === 'fr' ? 'Cabinet Juridique' : 'Legal Cabinet')
+      ? (language === 'ar' ? 'المكتب' : language === 'fr' ? 'Cabinet' : 'Practice')
       : cat === 'logistics_delivery'
-      ? (language === 'ar' ? 'اللوجستيك والتوصيل' : language === 'fr' ? 'Messagerie Express' : 'Logistics Dispatch')
+      ? (language === 'ar' ? 'التوصيل' : language === 'fr' ? 'Livraison' : 'Logistics')
       : cat === 'construction_contractor'
-      ? (language === 'ar' ? 'إدارة المشاريع BTP' : language === 'fr' ? 'Chantiers BTP' : 'Contractor BTP')
+      ? (language === 'ar' ? 'المشاريع' : language === 'fr' ? 'Chantiers' : 'Projects')
       : cat === 'agriculture_farming'
-      ? (language === 'ar' ? 'المستثمرة الفلاحية' : language === 'fr' ? 'Exploitation Agricole' : 'Agriculture & Farm')
+      ? (language === 'ar' ? 'المزرعة' : language === 'fr' ? 'Domaine' : 'Farm')
       : t('nav_home', language);
 
     // Dedicated settings breadcrumb
@@ -485,10 +485,10 @@ export const TopBar: React.FC<TopBarProps> = ({
               {isFreelance
                 ? t('topbar_solo_timetracker_crumb', language)
                 : isRental
-                ? 'Occupancy Analytics'
+                ? (language === 'ar' ? 'الإشغال' : language === 'fr' ? 'Occupation' : 'Occupancy')
                 : isEducation
-                ? 'Attendance & Grades'
-                : 'Analytics'}
+                ? t('nav_edu_attendance', language)
+                : t('nav_analytics', language)}
             </span>
           </nav>
         );
@@ -513,7 +513,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 onClick={() => selectMember(null)}
                 className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors cursor-pointer"
               >
-                {isFreelance ? t('topbar_solo_clients_crumb', language) : isRental ? 'Renters' : isEducation ? 'Students' : isPOS ? 'Customers' : terminology.members}
+                {isFreelance ? t('topbar_solo_clients_crumb', language) : terminology.members}
               </button>
               <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
               <span className="text-neutral-900 dark:text-white font-semibold truncate max-w-[130px] sm:max-w-[200px]">
@@ -534,15 +534,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isFreelance
-                ? t('topbar_solo_clients_crumb', language)
-                : isRental
-                ? 'Renters & Client Directory'
-                : isEducation
-                ? 'Students & Guardians CRM'
-                : isPOS
-                ? 'Customer Directory'
-                : terminology.members}
+              {isFreelance ? t('topbar_solo_clients_crumb', language) : terminology.members}
             </span>
           </nav>
         );
@@ -561,13 +553,9 @@ export const TopBar: React.FC<TopBarProps> = ({
             <span className="text-neutral-900 dark:text-white font-semibold">
               {isFreelance
                 ? t('topbar_solo_proposals_crumb', language)
-                : isRental
-                ? 'Reservations & Event Inquiries'
-                : isEducation
-                ? 'Admissions & Inquiries Funnel'
                 : isPOS
-                ? 'Sales & Receipts'
-                : `${terminology.registration} & Intake`}
+                ? (language === 'ar' ? 'الطلبات' : language === 'fr' ? 'Commandes' : 'Orders')
+                : terminology.registration}
             </span>
           </nav>
         );
@@ -586,13 +574,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             <span className="text-neutral-900 dark:text-white font-semibold">
               {isFreelance
                 ? t('topbar_solo_invoices_crumb', language)
-                : isRental
-                ? 'Spaces & Asset Inventory'
-                : isEducation
-                ? 'Cohorts & Programs Hub'
-                : isPOS
-                ? 'POS Register & Inventory'
-                : `${terminology.shop} & Products`}
+                : terminology.shop}
             </span>
           </nav>
         );
@@ -611,12 +593,6 @@ export const TopBar: React.FC<TopBarProps> = ({
             <span className="text-neutral-900 dark:text-white font-semibold">
               {isFreelance
                 ? t('topbar_solo_deliverables_crumb', language)
-                : isRental
-                ? 'Occupancy Matrix & Timeline'
-                : isEducation
-                ? 'Conflict-Free Timetable & Rooms'
-                : isPOS
-                ? 'Store Shifts & Staff Roster'
                 : terminology.scheduler}
             </span>
           </nav>
@@ -634,7 +610,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {language === 'ar' ? 'أجندة مواعيد الأطباء' : language === 'fr' ? 'Agenda Médecins & Rendez-vous' : 'Doctor Agenda & Appointments'}
+              {language === 'ar' ? 'المواعيد' : language === 'fr' ? 'Agenda' : 'Agenda'}
             </span>
           </nav>
         );
@@ -653,11 +629,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             <span className="text-neutral-900 dark:text-white font-semibold">
               {isFreelance
                 ? t('topbar_solo_finance_crumb', language)
-                : isRental
-                ? 'Caution Escrow & Rental Revenue'
-                : isEducation
-                ? 'Tuition Billing & Aging AR'
-                : 'Finance & Staff'}
+                : t('nav_finance', language)}
             </span>
           </nav>
         );
@@ -676,13 +648,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             <span className="text-neutral-900 dark:text-white font-semibold">
               {isFreelance
                 ? t('topbar_solo_history_crumb', language)
-                : isEducation
-                ? 'Roll Call & Attendance Log'
-                : isRental
-                ? 'Booking Logs & Audit Trail'
-                : isPOS
-                ? 'Register Journal & Sales'
-                : 'Operations History'}
+                : t('nav_history', language)}
             </span>
           </nav>
         );
@@ -699,7 +665,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {language === 'ar' ? 'فريق العمل' : language === 'en' ? 'Staff' : 'Équipe'}
+              {language === 'ar' ? 'الفريق' : language === 'fr' ? 'Équipe' : 'Staff'}
             </span>
           </nav>
         );
@@ -810,7 +776,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           <Seek
             value={topBarSearch}
             onChange={setTopBarSearch}
-            placeholder="Search (Ctrl+K)..."
+            placeholder={language === 'ar' ? 'بحث...' : language === 'fr' ? 'Rechercher...' : 'Search...'}
             openWidth={230}
             shutSize={34}
             onSearch={() => {
@@ -826,7 +792,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           tone="soft"
           onClick={toggleTopBarCollapsed}
           className="hidden sm:inline-flex !w-8 !h-8 !rounded-full text-neutral-500 dark:text-neutral-400"
-          title={t('topbar_focus_hide', "Mode Plein Écran / Masquer l'en-tête (Cmd+\\)")}
+          title={language === 'ar' ? 'طي الشريط' : language === 'fr' ? 'Réduire' : 'Collapse'}
           aria-label="Collapse header"
         />
 
@@ -841,15 +807,15 @@ export const TopBar: React.FC<TopBarProps> = ({
           title={
             isSupabaseConfigured
               ? language === 'ar'
-                ? 'مزامنة مع سحابة سوبابيس'
+                ? 'مزامنة'
                 : language === 'fr'
-                ? 'Synchroniser avec Supabase Cloud'
-                : 'Sync with Supabase Cloud'
+                ? 'Synchroniser'
+                : 'Sync'
               : language === 'ar'
-              ? 'تحديث الحالة'
+              ? 'تحديث'
               : language === 'fr'
-              ? "Actualiser l'état"
-              : 'Refresh State'
+              ? 'Actualiser'
+              : 'Refresh'
           }
           aria-label="Refresh and sync"
         />
@@ -861,7 +827,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             badge={unreadNotificationCount > 0 ? (unreadNotificationCount > 9 ? '9+' : unreadNotificationCount) : null}
             tone={notificationsOpen ? 'accent' : 'soft'}
             onClick={toggleNotifications}
-            title={language === 'ar' ? 'مركز الإشعارات والتنبيهات' : language === 'fr' ? 'Centre de notifications' : 'Notifications & Alerts'}
+            title={language === 'ar' ? 'الإشعارات' : language === 'fr' ? 'Notifications' : 'Notifications'}
             aria-label="Open notifications menu"
             className="!w-8 !h-8 !rounded-full"
           />
@@ -896,56 +862,58 @@ export const TopBar: React.FC<TopBarProps> = ({
             items={[
               {
                 id: 'lock',
-                label: language === 'ar' ? 'قفل الجهاز / تبديل الموظف' : language === 'fr' ? "Verrouiller / Changer d'agent" : 'Lock Terminal / Switch Staff',
-                description: language === 'ar' ? 'التبديل الفوري برمز PIN السريع' : 'Fast PIN operator switch',
+                label: language === 'ar' ? 'تبديل المستخدم' : language === 'fr' ? 'Changer Agent' : 'Switch Staff',
+                description: language === 'ar' ? 'دخول سريع بالرمز' : language === 'fr' ? 'Accès rapide PIN' : 'Quick PIN switch',
                 icon: <Lock size={15} />,
                 onSelect: () => openFastSwitch(),
               },
               {
                 id: 'wizard',
-                label: language === 'ar' ? 'معالج إعداد النشاط التجاري' : 'Business Onboarding Wizard',
-                description: 'Launch initial setup guide',
+                label: language === 'ar' ? 'إعداد النشاط' : language === 'fr' ? 'Assistant Début' : 'Setup Wizard',
+                description: language === 'ar' ? 'تخصيص النشاط' : language === 'fr' ? 'Configuration' : 'Setup guide',
                 icon: <Sparkles size={15} />,
                 onSelect: () => openOnboarding(),
               },
               {
                 id: 'voucher',
-                label: language === 'ar' ? 'تفعيل قسيمة الترخيص الدائم' : 'Redeem Lifetime Voucher',
-                description: 'Prepaid lifetime license activation',
+                label: language === 'ar' ? 'تفعيل قسيمة' : language === 'fr' ? 'Code Licence' : 'Redeem Key',
+                description: language === 'ar' ? 'ترخيص دائم' : language === 'fr' ? 'Licence à vie' : 'Lifetime key',
                 icon: <Rocket size={15} />,
                 onSelect: () => onOpenVoucherModal?.(),
               },
               {
                 id: 'autohide',
                 label: isTopBarAutoHide
-                  ? (language === 'ar' ? 'تعطيل الإخفاء التلقائي للشريط' : language === 'fr' ? 'Désactiver masquage auto' : 'Disable Top Bar Auto-hide')
-                  : (language === 'ar' ? 'تفعيل الإخفاء التلقائي عند التمرير' : language === 'fr' ? 'Activer masquage auto' : 'Enable Top Bar Auto-hide'),
-                description: isTopBarAutoHide ? 'Top bar is floating / auto-hiding' : 'Top bar stays permanently visible',
+                  ? (language === 'ar' ? 'إظهار الشريط' : language === 'fr' ? 'Fixer barre' : 'Pin Bar')
+                  : (language === 'ar' ? 'إخفاء تلقائي' : language === 'fr' ? 'Masquage auto' : 'Auto-hide'),
+                description: isTopBarAutoHide
+                  ? (language === 'ar' ? 'شريط عائم' : language === 'fr' ? 'Barre flottante' : 'Floating bar')
+                  : (language === 'ar' ? 'شريط ثابت' : language === 'fr' ? 'Toujours visible' : 'Always visible'),
                 icon: <ChevronUp size={15} />,
                 onSelect: () => toggleTopBarAutoHide(),
               },
               {
                 id: 'fullscreen',
                 label: isFullscreen
-                  ? (language === 'ar' ? 'إنهاء وضع ملء الشاشة' : language === 'fr' ? 'Quitter le mode plein écran' : 'Exit Fullscreen')
-                  : (language === 'ar' ? 'وضع ملء الشاشة' : language === 'fr' ? 'Mode plein écran' : 'Full Screen Mode'),
+                  ? (language === 'ar' ? 'تصغير' : language === 'fr' ? 'Réduire' : 'Exit Full')
+                  : (language === 'ar' ? 'ملء الشاشة' : language === 'fr' ? 'Plein écran' : 'Fullscreen'),
                 description: isFullscreen
-                  ? (language === 'ar' ? 'الرجوع إلى العرض العادي' : 'Return to standard window')
-                  : (language === 'ar' ? 'توسيع واجهة النظام على كامل الشاشة' : 'Expand workspace to full display'),
+                  ? (language === 'ar' ? 'نافذة عادية' : language === 'fr' ? 'Fenêtre normale' : 'Standard view')
+                  : (language === 'ar' ? 'توسيع العرض' : language === 'fr' ? 'Affichage complet' : 'Full display'),
                 icon: isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />,
                 onSelect: () => toggleFullscreen(),
               },
               {
                 id: 'settings',
                 label: t('settings_title', language),
-                description: language === 'ar' ? 'إعدادات النظام والسمات والمظهر' : language === 'fr' ? 'Préférences, thème & apparence' : 'Preferences, theme & appearance',
+                description: language === 'ar' ? 'التفضيلات والمظهر' : language === 'fr' ? 'Préférences' : 'Preferences',
                 icon: <Settings size={15} />,
                 onSelect: () => setScreen('settings'),
               },
               { type: 'separator' },
               {
                 id: 'logout',
-                label: language === 'ar' ? 'تسجيل الخروج' : language === 'fr' ? 'Se déconnecter' : 'Sign Out',
+                label: language === 'ar' ? 'خروج' : language === 'fr' ? 'Déconnexion' : 'Sign Out',
                 description: currentUser.email,
                 icon: <LogOut size={15} />,
                 danger: true,

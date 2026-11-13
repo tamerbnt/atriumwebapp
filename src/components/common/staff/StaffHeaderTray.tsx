@@ -47,7 +47,7 @@ export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = ({
       <div className="bg-[#1F1D1B] text-white p-5 rounded-2xl flex flex-col justify-between shadow-sm relative overflow-hidden">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[12px] font-bold tracking-wider uppercase text-neutral-400 font-['Barlow_Condensed']">
-            {categoryTitle || (isAr ? 'فريق العمل' : isEn ? 'Workforce Hub' : 'Effectif Total')}
+            {categoryTitle || (isAr ? 'الفريق' : isEn ? 'Team' : 'Effectif')}
           </span>
           <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-[#d4522f]">
             <Users size={16} />
@@ -57,13 +57,13 @@ export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = ({
           <div className="text-3xl font-bold tracking-tight text-white mb-1">
             {totalStaffCount}
             <span className="text-xs font-normal text-neutral-400 ms-2">
-              {isAr ? 'عضو' : isEn ? 'members' : 'collaborateurs'}
+              {isAr ? 'موظف' : isEn ? 'staff' : 'agents'}
             </span>
           </div>
           <div className="flex items-center gap-2 text-xs text-neutral-300">
             <span className="inline-flex items-center gap-1 text-emerald-400">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              {activeCount} {isAr ? 'نشط' : isEn ? 'active' : 'en poste'}
+              {activeCount} {isAr ? 'نشط' : isEn ? 'active' : 'actifs'}
             </span>
             <span>·</span>
             <span className="text-amber-300">
@@ -73,7 +73,7 @@ export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = ({
               <>
                 <span>·</span>
                 <span className="text-rose-400">
-                  {frozenCount} {isAr ? 'موقوف' : isEn ? 'frozen' : 'gelé'}
+                  {frozenCount} {isAr ? 'موقوف' : isEn ? 'paused' : 'gelé'}
                 </span>
               </>
             )}
@@ -85,7 +85,7 @@ export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = ({
       <div className="bg-[#F3EDE7] dark:bg-[#1C1C1E] p-5 rounded-2xl border border-neutral-200/70 dark:border-neutral-800 flex flex-col justify-between">
         <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-1">
           <span className="text-xs font-medium uppercase tracking-wider">
-            {isAr ? 'في الخدمة المباشرة' : isEn ? 'Active Duty' : 'En Poste'}
+            {isAr ? 'النشطون' : isEn ? 'Active' : 'En Poste'}
           </span>
           <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <ShieldCheck size={15} />
@@ -99,11 +99,7 @@ export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = ({
             </span>
           </div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {isAr
-              ? `${Math.round((activeCount / (totalStaffCount || 1)) * 100)}% من إجمالي الفريق`
-              : isEn
-              ? `${Math.round((activeCount / (totalStaffCount || 1)) * 100)}% operational readiness`
-              : `${Math.round((activeCount / (totalStaffCount || 1)) * 100)}% de disponibilité opérationnelle`}
+            {Math.round((activeCount / (totalStaffCount || 1)) * 100)}% {isAr ? 'متاح' : isEn ? 'ready' : 'dispo'}
           </p>
         </div>
       </div>
@@ -112,7 +108,7 @@ export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = ({
       <div className="bg-[#F3EDE7] dark:bg-[#1C1C1E] p-5 rounded-2xl border border-neutral-200/70 dark:border-neutral-800 flex flex-col justify-between">
         <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-1">
           <span className="text-xs font-medium uppercase tracking-wider">
-            {isAr ? 'حضور اليوم' : isEn ? "Today's Attendance" : 'Pointage du Jour'}
+            {isAr ? 'الحضور' : isEn ? 'Attendance' : 'Présence'}
           </span>
           <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
             <Clock size={15} />
@@ -122,7 +118,7 @@ export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = ({
           <div className="text-2xl font-bold text-neutral-900 dark:text-white flex items-baseline gap-2">
             <span>{presentPercentage}%</span>
             <span className="text-xs font-normal text-neutral-500">
-              ({todayPresentCount} {isAr ? 'حاضر' : isEn ? 'clocked in' : 'pointés'})
+              ({todayPresentCount} {isAr ? 'حاضر' : isEn ? 'present' : 'présents'})
             </span>
           </div>
           <div className="w-full bg-neutral-200 dark:bg-neutral-800 h-1.5 rounded-full mt-2 overflow-hidden">
@@ -140,15 +136,15 @@ export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = ({
           <span className="text-xs font-medium uppercase tracking-wider">
             {isOwnerViewer
               ? isAr
-                ? 'كتلة الأجور الشهرية'
+                ? 'الرواتب'
                 : isEn
-                ? 'Monthly Payroll'
-                : 'Masse Salariale'
+                ? 'Payroll'
+                : 'Paie'
               : isAr
-              ? 'مؤشر الأداء'
+              ? 'الأداء'
               : isEn
-              ? 'Performance Index'
-              : 'Indicateur Performance'}
+              ? 'Score'
+              : 'Performance'}
           </span>
           <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
             {isOwnerViewer ? <DollarSign size={15} /> : <TrendingUp size={15} />}
@@ -161,7 +157,7 @@ export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = ({
                 {formatMoney(totalMonthlyPayroll)}
               </div>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                {isAr ? 'الدفع القادم: 28 من الشهر' : isEn ? 'Next payout: 28th' : 'Prochain virement le 28'}
+                {isAr ? 'الدفع: 28' : isEn ? 'Payout: 28th' : 'Virement le 28'}
               </p>
             </>
           ) : (
@@ -169,7 +165,7 @@ export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = ({
               <div className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
                 <Lock size={16} className="text-neutral-400" />
                 <span className="text-base text-neutral-500 font-normal">
-                  {isAr ? 'محمي للإدارة' : isEn ? 'Confidential (Admin)' : 'Confidentiel Direction'}
+                  {isAr ? 'مقيد' : isEn ? 'Restricted' : 'Confidentiel'}
                 </span>
               </div>
               <p className="text-xs text-neutral-400 mt-1">

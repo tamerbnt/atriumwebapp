@@ -598,6 +598,12 @@
     letter-spacing: 0.01em;
   }
 
+  .screen-title,
+  .screen-header-title,
+  [data-screen-title="true"] {
+    text-transform: uppercase;
+  }
+
   [dir="rtl"] h1,
   [dir="rtl"] .screen-title,
   [dir="rtl"] .screen-header-title,

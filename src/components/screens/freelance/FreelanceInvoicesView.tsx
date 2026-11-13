@@ -440,7 +440,7 @@ export const FreelanceInvoicesView: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2.5">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+              <h1 className="text-[36px] sm:text-[48px] rtl:text-[30px] rtl:sm:text-[36px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
                 {t('free_inv_title', language)}
               </h1>
               <span className="text-xs px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-semibold">
@@ -451,58 +451,6 @@ export const FreelanceInvoicesView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
-          {/* Branch Switcher */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-              className="h-[42px] px-4 rounded-[14px] bg-[#F3EDE7] dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shadow-2xs"
-            >
-              <Home size={15} className="text-[#d4522f]" />
-              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                {currentBranch?.name || 'Studio Main'}
-              </span>
-              <ChevronDown
-                size={14}
-                className={`text-neutral-500 transition-transform ${isFacilityDropdownOpen ? 'rotate-180' : ''}`}
-              />
-            </button>
-
-            {isFacilityDropdownOpen && (
-              <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                  {language === 'ar' ? 'الفروع والمراكز' : language === 'fr' ? 'Établissements & Espaces' : 'Facilities & Branches'}
-                </div>
-                {businesses.map((biz) => {
-                  const isCurrent = biz.id === currentBusinessId;
-                  const matchingBranch = branches.find((b) => b.businessId === biz.id);
-                  return (
-                    <button
-                      key={biz.id}
-                      type="button"
-                      onClick={() => {
-                        switchBusiness(biz.id);
-                        if (matchingBranch) switchBranch(matchingBranch.id);
-                        setIsFacilityDropdownOpen(false);
-                      }}
-                      className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
-                        isCurrent
-                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold'
-                          : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Building2 size={14} className={isCurrent ? 'text-[#d4522f]' : 'text-neutral-400'} />
-                        <span className="truncate">{biz.name}</span>
-                      </div>
-                      {isCurrent && <Check size={14} />}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
           {/* Quick Actions Terracotta Button + Floating Popup */}
           <div className="relative">
             <button

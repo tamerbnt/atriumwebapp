@@ -282,7 +282,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
             <Scan size={24} />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+            <h1 className="text-[36px] sm:text-[48px] rtl:text-[30px] rtl:sm:text-[36px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white flex items-center gap-2">
               <span>{isRtl ? 'كشك الاستقبال ومسح الدخول السريع' : 'Kiosk Accueil & Pointage Salle'}</span>
               <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400">
                 {isRtl ? 'مباشر' : 'Live Kiosk'}

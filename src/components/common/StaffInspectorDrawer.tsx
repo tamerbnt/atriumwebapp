@@ -287,12 +287,12 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
           {/* Contact & Personal Coordinates */}
           <div className="space-y-3">
             <h3 className="font-semibold text-neutral-500 uppercase tracking-wider text-[10px]">
-              {isAr ? 'معلومات الاتصال والهوية' : isEn ? 'Contact & Coordinates' : 'Coordonnées & Identité'}
+              {isAr ? 'الاتصال' : isEn ? 'Contact' : 'Contact'}
             </h3>
             <div className="space-y-2 rounded-2xl bg-neutral-50 dark:bg-neutral-800/30 p-3.5 border border-neutral-200 dark:border-neutral-800">
               <div className="flex items-center justify-between">
                 <span className="text-neutral-500 flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5" /> Email
+                  <Mail className="w-3.5 h-3.5" /> {isAr ? 'البريد' : isEn ? 'Email' : 'Email'}
                 </span>
                 <span className="font-medium text-neutral-900 dark:text-neutral-100 font-mono text-[11px]">
                   {staff.email}
@@ -300,7 +300,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-neutral-500 flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5" /> {isAr ? 'الهاتف' : 'Téléphone'}
+                  <Phone className="w-3.5 h-3.5" /> {isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone'}
                 </span>
                 <span className="font-medium text-neutral-900 dark:text-neutral-100 font-mono text-[11px]">
                   {staff.phoneNumber}
@@ -308,16 +308,16 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-neutral-500 flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5" /> {isAr ? 'العنوان' : 'Adresse'}
+                  <MapPin className="w-3.5 h-3.5" /> {isAr ? 'العنوان' : isEn ? 'Address' : 'Adresse'}
                 </span>
                 <span className="font-medium text-neutral-900 dark:text-neutral-100">
-                  {staff.address || 'Non spécifié'}
+                  {staff.address || '-'}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-neutral-500">{isAr ? 'العمر / الجنس' : 'Âge / Genre'}</span>
+                <span className="text-neutral-500">{isAr ? 'العمر' : isEn ? 'Age' : 'Âge'}</span>
                 <span className="font-medium text-neutral-900 dark:text-neutral-100">
-                  {staff.age ? `${staff.age} ans` : '-'} · {staff.gender === 'female' ? 'Femme' : 'Homme'}
+                  {staff.age ? `${staff.age}` : '-'} · {staff.gender === 'female' ? (isAr ? 'أنثى' : isEn ? 'Female' : 'Femme') : (isAr ? 'ذكر' : isEn ? 'Male' : 'Homme')}
                 </span>
               </div>
             </div>
@@ -327,11 +327,11 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-neutral-500 uppercase tracking-wider text-[10px]">
-                {isAr ? 'العقد والبيانات المالية' : isEn ? 'Contract & Payroll' : 'Contrat & Rémunération'}
+                {isAr ? 'العقد والراتب' : isEn ? 'Payroll' : 'Contrat'}
               </h3>
               {!isOwnerViewer && (
                 <span className="text-[10px] text-amber-500 flex items-center gap-1">
-                  <Lock className="w-3 h-3" /> {isAr ? 'سري' : 'Confidentiel'}
+                  <Lock className="w-3 h-3" /> {isAr ? 'مقيد' : isEn ? 'Private' : 'Privé'}
                 </span>
               )}
             </div>
@@ -339,31 +339,31 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
             {isOwnerViewer ? (
               <div className="space-y-2 rounded-2xl bg-neutral-50 dark:bg-neutral-800/30 p-3.5 border border-neutral-200 dark:border-neutral-800">
                 <div className="flex items-center justify-between">
-                  <span className="text-neutral-500">{isAr ? 'نوع العقد' : 'Type de contrat'}</span>
+                  <span className="text-neutral-500">{isAr ? 'العقد' : isEn ? 'Contract' : 'Contrat'}</span>
                   <span className="font-semibold uppercase text-[#d4522f]">
                     {staff.recruitmentType || 'CDI'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-neutral-500">{isAr ? 'الراتب الصافي' : 'Salaire Net Mensuel'}</span>
+                  <span className="text-neutral-500">{isAr ? 'الراتب' : isEn ? 'Salary' : 'Salaire'}</span>
                   <span className="font-bold text-neutral-900 dark:text-neutral-100">
                     {(staff.salary || 0).toLocaleString()} DZD
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-neutral-500">{isAr ? 'يوم الدفع' : 'Jour d\'échéance'}</span>
+                  <span className="text-neutral-500">{isAr ? 'يوم الدفع' : isEn ? 'Payday' : 'Échéance'}</span>
                   <span className="font-medium text-neutral-900 dark:text-neutral-100">
-                    Le {staff.paymentDay || 28} du mois
+                    {staff.paymentDay || 28}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-neutral-500">{isAr ? 'طريقة الدفع' : 'Mode de paiement'}</span>
+                  <span className="text-neutral-500">{isAr ? 'الدفع' : isEn ? 'Method' : 'Paiement'}</span>
                   <span className="font-medium text-neutral-900 dark:text-neutral-100">
                     {staff.paymentMethod === 'ccp'
-                      ? `CCP: ${staff.ccpNumber || '—'} Clé ${staff.ccpKey || '—'}`
+                      ? `${staff.ccpNumber || '—'}`
                       : staff.paymentMethod === 'bank_transfer'
-                      ? `RIB: ${staff.bankRib || '—'}`
-                      : 'Espèces'}
+                      ? `${staff.bankRib || '—'}`
+                      : (isAr ? 'نقداً' : isEn ? 'Cash' : 'Espèces')}
                   </span>
                 </div>
               </div>
@@ -371,14 +371,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
               <div className="p-4 rounded-2xl bg-neutral-100/60 dark:bg-neutral-800/20 border border-dashed border-neutral-300 dark:border-neutral-700 text-center">
                 <Lock className="w-5 h-5 text-neutral-400 mx-auto mb-1.5" />
                 <p className="text-[11px] font-semibold text-neutral-700 dark:text-neutral-300">
-                  {isAr ? 'البيانات المالية محجوبة' : isEn ? 'Payroll Data Redacted' : 'Rémunération masquée'}
-                </p>
-                <p className="text-[10px] text-neutral-500">
-                  {isAr
-                    ? 'الرواتب وحسابات CCP مقتصرة حصرياً على صاحب المؤسسة'
-                    : isEn
-                    ? 'Salary and CCP credentials are only accessible by the Facility Owner'
-                    : 'Les salaires et comptes CCP sont réservés au propriétaire de l\'établissement'}
+                  {isAr ? 'بيانات مقيدة' : isEn ? 'Restricted' : 'Masqué'}
                 </p>
               </div>
             )}
@@ -388,18 +381,18 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
           {(staff.bloodGroup || staff.emergencyContactName) && (
             <div className="space-y-3">
               <h3 className="font-semibold text-neutral-500 uppercase tracking-wider text-[10px]">
-                {isAr ? 'ملف الطوارئ الصحي' : isEn ? 'Emergency Medical' : 'Dossier Médical & Urgence'}
+                {isAr ? 'الطوارئ' : isEn ? 'Emergency' : 'Urgence'}
               </h3>
               <div className="space-y-2 rounded-2xl bg-neutral-50 dark:bg-neutral-800/30 p-3.5 border border-neutral-200 dark:border-neutral-800">
                 {staff.bloodGroup && (
                   <div className="flex items-center justify-between">
-                    <span className="text-neutral-500">{isAr ? 'فصيلة الدم' : 'Groupe sanguin'}</span>
+                    <span className="text-neutral-500">{isAr ? 'الدم' : isEn ? 'Blood' : 'Groupe'}</span>
                     <span className="font-bold text-red-500">{staff.bloodGroup}</span>
                   </div>
                 )}
                 {staff.emergencyContactName && (
                   <div className="flex items-center justify-between">
-                    <span className="text-neutral-500">{isAr ? 'جهة الاتصال' : 'Contact d\'urgence'}</span>
+                    <span className="text-neutral-500">{isAr ? 'الطوارئ' : isEn ? 'Contact' : 'Urgence'}</span>
                     <span className="font-medium text-neutral-900 dark:text-neutral-100">
                       {staff.emergencyContactName} ({staff.emergencyContactPhone || '—'})
                     </span>
@@ -434,7 +427,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
                 className="py-2 px-2 rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-semibold text-[11px] flex items-center justify-center gap-1 transition-colors disabled:opacity-40"
               >
                 <Plane className="w-3.5 h-3.5" />
-                <span>{isAr ? 'عطلة' : isEn ? 'Vacation' : 'Congé'}</span>
+                <span>{isAr ? 'عطلة' : isEn ? 'Leave' : 'Congé'}</span>
               </button>
 
               <button
@@ -452,7 +445,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
               className="w-full py-2 px-3 rounded-xl border border-red-200 dark:border-red-900/40 hover:bg-red-500/10 text-red-500 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              <span>{isAr ? 'حذف الموظف نهائياً' : isEn ? 'Delete Staff Member' : 'Supprimer définitivement'}</span>
+              <span>{isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer'}</span>
             </button>
           </div>
         )}

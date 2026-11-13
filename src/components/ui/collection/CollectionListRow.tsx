@@ -74,7 +74,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
       ? [
           {
             id: 'view',
-            tooltip: 'View Details',
+            tooltip: 'View',
             icon: <Eye className="w-3.5 h-3.5" />,
             iconColor: '#64748B',
             onClick: (e: React.MouseEvent) => {
@@ -102,7 +102,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
       ? [
           {
             id: 'status',
-            tooltip: isActive ? 'Freeze Record' : 'Reactivate Record',
+            tooltip: isActive ? 'Freeze' : 'Activate',
             icon: isActive ? (
               <Snowflake className="w-3.5 h-3.5 text-[#06B6D4]" />
             ) : (
@@ -120,7 +120,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
       ? [
           {
             id: 'pin',
-            tooltip: isPinned ? 'Unpin Record' : 'Pin to Top',
+            tooltip: isPinned ? 'Unpin' : 'Pin',
             icon: (
               <Pin
                 className={`w-3.5 h-3.5 ${
@@ -160,7 +160,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
       ? [
           {
             id: 'kebab-view',
-            label: 'View Details',
+            label: 'View',
             icon: <Eye className="w-4 h-4 text-neutral-500" />,
             onClick: () => onViewDetails(),
           },
@@ -181,7 +181,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
       ? [
           {
             id: 'kebab-pin',
-            label: isPinned ? 'Unpin' : 'Pin to Top',
+            label: isPinned ? 'Unpin' : 'Pin',
             icon: (
               <Pin
                 className={`w-4 h-4 ${
@@ -197,7 +197,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
       ? [
           {
             id: 'kebab-status',
-            label: isActive ? 'Freeze / Suspend' : 'Reactivate / Renew',
+            label: isActive ? 'Freeze' : 'Activate',
             icon: isActive ? (
               <Snowflake className="w-4 h-4 text-[#06B6D4]" />
             ) : (
@@ -211,7 +211,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
       ? [
           {
             id: 'kebab-delete',
-            label: 'Delete Record',
+            label: 'Delete',
             icon: <Trash2 className="w-4 h-4 text-red-500" />,
             isSpecialDelete: true,
             isSeparatorBefore: true,
