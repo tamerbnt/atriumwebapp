@@ -284,7 +284,7 @@ export const PosHistoryView: React.FC = () => {
             <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
               <History className="text-[#d4522f]" size={32} />
               <span>
-                {language === 'ar' ? 'سجل التدقيق وحركات المخزون' : language === 'fr' ? 'Journal d’Audit & Mouvements de Stock' : 'Audit Trail & Stock History'}
+                {language === 'ar' ? 'السجل' : language === 'fr' ? 'Historique' : 'History'}
               </span>
             </h1>
             <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">

@@ -179,14 +179,14 @@ export const MembershipFinanceView: React.FC = () => {
   return (
     <div className="w-full space-y-6 animate-in fade-in duration-200">
       {/* Screen Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E6DED6]/80 dark:border-neutral-800/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div className="flex items-center gap-3.5 sm:gap-4">
           <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#F3EDE7] dark:bg-white/[0.07] border border-[#E6DED6] dark:border-neutral-700/70 shadow-2xs flex items-center justify-center text-black dark:text-white">
             <DollarSign size={22} />
           </div>
           <div>
             <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-[0.98] rtl:leading-tight tracking-[0.012em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-              {isAr ? 'المالية والخزينة' : isEn ? 'Finance & Treasury' : 'Finances & Trésorerie'}
+              {isAr ? 'المالية' : isEn ? 'Finance' : 'Finances'}
             </h1>
           </div>
         </div>

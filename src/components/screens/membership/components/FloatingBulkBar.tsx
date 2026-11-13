@@ -1,4 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Mail, RotateCcw, Download, Archive, Trash2, X } from 'lucide-react';
 import { Sp, TUNES, subscribeFrame, wake } from '../motion/adherentsMotion';
 import { computeBulkBarMetrics } from '../motion/adherentsMath';
@@ -50,6 +51,7 @@ export const FloatingBulkBar: React.FC<FloatingBulkBarProps> = ({
 
     const m = computeBulkBarMetrics(sp.x, sp.t);
     el.style.visibility = m.visible ? 'visible' : 'hidden';
+    el.style.pointerEvents = m.visible && sp.t > 0 ? 'auto' : 'none';
     el.style.opacity = String(Math.round(m.opacity * 100) / 100);
     el.style.transform = `translate3d(-50%, ${Math.round(m.translateY * 2) / 2}px, 0) scale(${
       Math.round(m.scale * 1000) / 1000
@@ -79,15 +81,16 @@ export const FloatingBulkBar: React.FC<FloatingBulkBarProps> = ({
     };
   }, []);
 
-  return (
+  const barNode = (
     <div
       ref={barRef}
       role="toolbar"
       aria-label="Actions groupées"
       aria-hidden={selectedCount === 0}
-      className={`bar fixed left-1/2 bottom-[26px] flex items-center gap-1.5 h-[58px] pl-[22px] pr-[10px] rounded-[29px] bg-[#1F1D1B] text-[#F4EDE6] z-[40] shadow-[0_12px_32px_rgba(27,25,23,0.3)] select-none border border-white/[0.1] ${className}`}
+      className={`bar fixed left-1/2 top-[14px] flex items-center gap-1.5 h-[56px] max-w-[calc(100vw-24px)] overflow-x-auto pl-[22px] pr-[10px] rounded-[28px] bg-[#1F1D1B] text-[#F4EDE6] z-[45] shadow-[0_12px_32px_rgba(27,25,23,0.3)] select-none border border-white/[0.1] ${className}`}
       style={{
         visibility: selectedCount > 0 ? 'visible' : 'hidden',
+        pointerEvents: selectedCount > 0 ? 'auto' : 'none',
         opacity: selectedCount > 0 ? 1 : 0,
       }}
     >
@@ -160,10 +163,12 @@ export const FloatingBulkBar: React.FC<FloatingBulkBarProps> = ({
         tabIndex={selectedCount > 0 ? 0 : -1}
         onClick={onClear}
         aria-label="Effacer la sélection"
-        className="w-[38px] h-[38px] p-0 border-0 rounded-[19px] bg-[#F4EDE6]/12 hover:bg-[#F4EDE6]/25 text-[#F4EDE6] grid place-items-center ml-1 transition-colors cursor-pointer"
+        className="w-[38px] h-[38px] p-0 border-0 rounded-[19px] bg-[#F4EDE6]/12 hover:bg-[#F4EDE6]/25 text-[#F4EDE6] grid place-items-center ml-1 transition-colors cursor-pointer shrink-0"
       >
         <X className="w-4 h-4" />
       </button>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(barNode, document.body) : barNode;
 };

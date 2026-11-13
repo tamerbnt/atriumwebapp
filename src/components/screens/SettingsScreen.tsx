@@ -273,7 +273,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
       {/* Row 0: Screen Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div className="flex items-center gap-3.5">
           <div
             style={{ backgroundColor: 'var(--color-accent-dim)', color: 'var(--color-accent)' }}

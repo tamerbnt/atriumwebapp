@@ -507,7 +507,7 @@ export const PosOrdersView: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
-                  {language === 'ar' ? 'سجل الطلبات والمبيعات' : language === 'fr' ? 'Commandes & Tickets de Caisse' : 'Sales Ledger & Orders'}
+                  {language === 'ar' ? 'الطلبات' : language === 'fr' ? 'Commandes' : 'Orders'}
                 </h1>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4522f]/15 text-[#d4522f] border border-[#d4522f]/30">
                   {branchSales.length} {language === 'ar' ? 'عملية مسجلة' : 'ventes'}

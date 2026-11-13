@@ -53,6 +53,7 @@ export const AppointmentServicesView: React.FC = () => {
     retryCloudSync,
     lastSyncedAt,
     isSyncTimeout,
+    language,
   } = useAtriumStore();
 
   const [activeCategory, setActiveCategory] = useState<string>('All');
@@ -427,7 +428,7 @@ export const AppointmentServicesView: React.FC = () => {
           <div className="flex items-center gap-3">
             <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               <Scissors className="text-[#d4522f]" size={32} />
-              <span>Catalogue des Soins & Prestations</span>
+              <span>{language === 'ar' ? 'الخدمات' : language === 'fr' ? 'Soins' : 'Services'}</span>
             </h1>
             <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-800 rtl:normal-case">
               {servicesCatalog.length} Prestations

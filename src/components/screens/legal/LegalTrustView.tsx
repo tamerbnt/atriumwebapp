@@ -288,13 +288,13 @@ export const LegalTrustView: React.FC<any> = () => {
 		const totalEscrowBalance = escrowAccounts.reduce((acc, a) => acc + a.currentBalanceDzd, 0);
 		const lockedEscrowsCount = escrowAccounts.filter((a) => a.isLocked).length;
 		return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Lock size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
 <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
-{isAr ? "حساب الحراسة والودائع العقارية (Séquestre Notarial)" : "Compte Séquestre Notarial & Consignations"}
+{isAr ? "الودائع" : language === "en" ? "Escrow" : "Séquestre"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">Double-Verrou Obligatoire</span>
 </div>
@@ -560,13 +560,13 @@ export const LegalTrustView: React.FC<any> = () => {
 		const isLedgerBalanced = Math.abs(totalDebitAll - totalCreditAll) === 0;
 		const filteredEntries = scfJournalFilter === "ALL" ? scfEntries : scfEntries.filter((e) => e.journalCode === scfJournalFilter);
 		return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Scale size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
 <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
-{isAr ? "دفتر الأستاذ وميزان المراجعة SCF (القانون 07-11)" : "Grand Livre & Journaux SCF (Loi 07-11)"}
+{isAr ? "المحاسبة" : language === "en" ? "Ledger" : "Comptabilité"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Partie Double Équilibrée</span>
 </div>
@@ -818,13 +818,13 @@ export const LegalTrustView: React.FC<any> = () => {
 </div>;
 	}
 	if (activeLegalRole === "secretaire_caisse") return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><CreditCard size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
 <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
-{isAr ? "الصندوق وطابع المادة 317 ومحضر الإغلاق" : "Caisse Journalière & Timbre Art. 317 (Arrêté)"}
+{isAr ? "الصندوق" : language === "en" ? "Closing" : "Caisse"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">Espèces & Droit de Timbre</span>
 </div>
@@ -1042,13 +1042,13 @@ export const LegalTrustView: React.FC<any> = () => {
 				}} />
 </div>;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><CreditCard size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
 <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
-{isAr ? "حساب الحراسة والودائع والأتعاب (Séquestre CARPA)" : "Compte Séquestre CARPA & Honoraires Avocat"}
+{isAr ? "الأتعاب" : language === "en" ? "Fees" : "Honoraires"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">Ordre des Avocats</span>
 </div>

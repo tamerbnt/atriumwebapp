@@ -282,7 +282,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 <Scale className="text-[#d4522f]" size={32} />
 <span>
-{activeLegalRole === "notaire_titulaire" ? isAr ? "جدول مواعيد المحافظة العقارية والشهر" : "Conservation Foncière & Cadastre" : activeLegalRole === "expert_comptable" ? isAr ? "رزنامة التصريحات الجبائية والمحاسبية" : "Échéancier Fiscal G50 & CNAS" : activeLegalRole === "secretaire_caisse" ? isAr ? "سجل التبليغات القضائية والمحضرين" : "Huissiers de Justice & Formalités" : isAr ? "رول الجلسات ومواعيد الاستئناف CPCA" : "Rôle des Audiences & Délais CPCA"}
+{activeLegalRole === "notaire_titulaire" ? (isAr ? "الشهر العقاري" : language === "en" ? "Registry" : "Foncier") : activeLegalRole === "expert_comptable" ? (isAr ? "المواعيد" : language === "en" ? "Tax Dates" : "Échéances") : activeLegalRole === "secretaire_caisse" ? (isAr ? "التبليغ" : language === "en" ? "Service Log" : "Courrier") : (isAr ? "الجلسات" : language === "en" ? "Hearings" : "Audiences")}
 </span>
 </h1>
 </div>

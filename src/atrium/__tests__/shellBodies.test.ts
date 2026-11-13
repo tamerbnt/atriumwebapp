@@ -2,7 +2,7 @@
 (globalThis as any).cancelAnimationFrame = () => {};
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { SidebarBody, PushBody, SidebarHoverBody } from '../components/Shell/shellBodies';
+import { SidebarBody, PushBody, SidebarHoverBody, SidebarActiveBody } from '../components/Shell/shellBodies';
 import { __resetMotionEnvForTests } from '../motion/env';
 
 beforeEach(() => __resetMotionEnvForTests());
@@ -150,4 +150,63 @@ describe('shellBodies', () => {
       hover.dispose();
     });
   });
+
+  describe('SidebarActiveBody', () => {
+    it('stretches leading edge ahead of trailing edge when moving down and up, crossfading item colors', () => {
+      const list = mockNode();
+      const blob = mockNode({ style: { ...mockNode().style, willChange: '' } });
+      const opts = [0, 1, 2, 3].map((i) =>
+        mockNode({
+          offsetParent: list,
+          offsetTop: 4 + i * 47,
+          offsetHeight: 40,
+        }),
+      );
+
+      const active = new SidebarActiveBody(list, blob, opts);
+      active.measure();
+      active.setIndex(0, false);
+
+      expect(active.index).toBe(0);
+      expect(blob.style.opacity).toBe('1');
+      expect(blob.style.transform).toBe('translate3d(0,4px,0)');
+      expect(blob.style.height).toBe('40px');
+      expect(opts[0].style.color).toBe('#ffffff');
+      expect(opts[3].style.color).toBe('');
+
+      // Move down from index 0 (top=4) to index 3 (top=145, bottom=185)
+      active.setIndex(3, true);
+      expect(active.B.k).toBe(420); // leading bottom edge stiffer
+      expect(active.T.k).toBe(200); // trailing top edge looser
+
+      for (let i = 0; i < 4; i++) active.step(1 / 60);
+      active.render();
+      // During downward flight, blob height stretches beyond resting 40px
+      expect(parseFloat(blob.style.height)).toBeGreaterThan(45);
+
+      // Settle cleanly at index 3
+      for (let i = 0; i < 120; i++) active.step(1 / 60);
+      expect(active.settled()).toBe(true);
+      active.snap();
+      active.render();
+      active.onSleep();
+
+      expect(blob.style.transform).toBe('translate3d(0,145px,0)');
+      expect(blob.style.height).toBe('40px');
+      expect(opts[3].style.color).toBe('#ffffff');
+      expect(opts[0].style.color).toBe('');
+
+      // Move back up from index 3 to index 0
+      active.setIndex(0, true);
+      expect(active.T.k).toBe(420); // leading top edge stiffer
+      expect(active.B.k).toBe(200); // trailing bottom edge looser
+
+      for (let i = 0; i < 4; i++) active.step(1 / 60);
+      active.render();
+      expect(parseFloat(blob.style.height)).toBeGreaterThan(45);
+
+      active.dispose();
+    });
+  });
 });
+

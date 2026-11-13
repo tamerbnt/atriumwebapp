@@ -387,7 +387,7 @@ export const ContractorSitesView: React.FC = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Top Header Strip with Action Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
             <HardHat size={22} />
@@ -395,7 +395,7 @@ export const ContractorSitesView: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                {isAr ? 'المشاريع والورشات (Chantiers)' : 'Projets & Chantiers en Cours'}
+                {isAr ? 'الورشات' : language === 'en' ? 'Sites' : 'Chantiers'}
               </h1>
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
                 {projects.length} {isAr ? 'ورشة' : 'sites'}

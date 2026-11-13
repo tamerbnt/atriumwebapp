@@ -62,7 +62,7 @@ export const RowFan: React.FC<RowFanProps> = React.memo(({
           data-a={action.id}
           style={{ '--i': action.i } as React.CSSProperties}
           className={`act cursor-pointer border-0 bg-[var(--atr-bg,#F3EDE7)] text-[var(--atr-ink,#000000)] dark:bg-[#2B2927] dark:text-white ${
-            action.isDanger ? 'd' : ''
+            action.isDanger ? 'act-danger' : ''
           } ${className}`}
           aria-label={action.label}
           title={action.label}

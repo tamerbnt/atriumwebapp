@@ -165,7 +165,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
 <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 <CreditCard className="text-[#d4522f]" size={32} />
 <span>
-{isAr ? "الصندوق والفوترة الجبائية (Facturation DGI)" : "Facturation DGI, Caisse & Règlements Flottes"}
+{isAr ? "الفوترة" : language === "en" ? "Billing" : "Caisse"}
 </span>
 </h1>
 </div>

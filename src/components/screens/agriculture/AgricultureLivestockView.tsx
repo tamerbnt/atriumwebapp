@@ -448,13 +448,13 @@ export const AgricultureLivestockView: React.FC<any> = () => {
 			}
 		]} viewMode={viewMode} isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Layers size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
 <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-{isAr ? "إدارة الثروة الحيوانية والإنتاج اللبني" : "Cheptel Bovin Laitier & Traite"}
+{isAr ? "المواشي" : language === "en" ? "Livestock" : "Cheptel"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
 {livestock.length}

@@ -42,7 +42,6 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
   const { t, isRtl } = useTranslation();
   const [hasOverflow, setHasOverflow] = useState(false);
   const [direction, setDirection] = useState<'down' | 'up'>('down');
-  const [isBulkToolbarVisible, setIsBulkToolbarVisible] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const rafIdRef = useRef<number | null>(null);
 
@@ -99,13 +98,7 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
       }
       return prevDirection;
     });
-
-    // Detect if bulk toolbar is present in the DOM
-    const hasBulk = hasActiveBulkBar !== undefined
-      ? hasActiveBulkBar
-      : Boolean(document.querySelector('[data-atrium-bulk-toolbar="true"]'));
-    setIsBulkToolbarVisible(prev => (prev !== hasBulk ? hasBulk : prev));
-  }, [getContainer, overflowThreshold, bottomThreshold, hasActiveBulkBar]);
+  }, [getContainer, overflowThreshold, bottomThreshold]);
 
   // Scroll listener throttled via requestAnimationFrame + ResizeObserver
   useEffect(() => {
@@ -199,10 +192,9 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
       ? t('scroll_jump_bottom', 'Défiler vers le bas')
       : t('scroll_jump_top', 'Défiler vers le haut');
 
-  // Coordinated vertical placement: elevate above bulk toolbar if present
   const hasFixed = className.includes('fixed');
   const positionClass = hasFixed ? 'fixed' : 'absolute';
-  const bottomPlacement = isBulkToolbarVisible ? 'bottom-24' : 'bottom-6';
+  const bottomPlacement = hasActiveBulkBar ? 'bottom-24' : 'bottom-6';
 
   return (
     <div

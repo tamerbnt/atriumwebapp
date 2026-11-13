@@ -342,15 +342,10 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 	});
 	if (showSkeleton && (pmPayrollBatches.length === 0 && pmCcpSlips.length === 0 || networkMode === "force_skeleton")) return /* @__PURE__ */ <SkeletonFinanceAudit isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1">
 <div>
-<div className="flex items-center gap-2">
-<span className="text-xs font-semibold uppercase tracking-wider text-[#d4522f]">Comptabilité & Trésorerie</span>
-<span className="text-black/55 dark:text-white/55">·</span>
-<span className="text-xs text-black/55 dark:text-white/55">Décaissements & Mandats CCP SFP 01</span>
-</div>
 <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
-{activeTab === "payroll" ? "Lots de Paie Validés DG" : activeTab === "ccp" ? "Bordereaux CCP SFP 01 (Algérie Poste)" : activeTab === "expenses" ? "Remboursements Achats & Frais" : "Suivi Stock & Matériel"}
+{activeTab === "payroll" ? (language === "ar" ? "الأجور" : language === "en" ? "Payroll" : "Paie") : activeTab === "ccp" ? (language === "ar" ? "صكوك CCP" : language === "en" ? "CCP Slips" : "Bordereaux CCP") : activeTab === "expenses" ? (language === "ar" ? "الفواتير" : language === "en" ? "Receipts" : "Frais") : (language === "ar" ? "المعدات" : language === "en" ? "Equipment" : "Matériel")}
 </h1>
 </div>
 <div className="flex items-center gap-2.5">

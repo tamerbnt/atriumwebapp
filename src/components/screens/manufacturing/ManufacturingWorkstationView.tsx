@@ -163,16 +163,9 @@ export const ManufacturingWorkstationView: React.FC<any> = () => {
 <div className="flex items-center gap-4">
 <div className="w-14 h-14 rounded-2xl bg-[#d4522f] text-white flex items-center justify-center font-black text-xl shadow-inner shrink-0"><Wrench size={28} /></div>
 <div>
-<div className="flex items-center gap-2">
-<span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#FB923C]/20 text-[#FB923C] uppercase tracking-wider font-mono">{isAr ? "محطة تشغيل تابلت" : "Borne Kiosk Atelier"}</span>
-<span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-<span className="text-xs text-white/75 font-medium">Poste Connecté</span>
-</div>
-<h1 className="text-[38px] sm:text-[52px] rtl:text-[32px] rtl:sm:text-[38px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-white mt-0.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{stationName}</h1>
-<p className="text-xs text-white/75">
-{isAr ? "المشغل المسجل: " : "Opérateur connecté : "}
-<span className="text-white font-semibold">{currentUser?.fullName || "M. Karim Bouzid"}</span>
-</p>
+<h1 className="text-[38px] sm:text-[52px] rtl:text-[32px] rtl:sm:text-[38px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
+{isAr ? "المحطة 03" : language === "en" ? "Station 03" : "Poste 03"}
+</h1>
 </div>
 </div>
 <div className="flex items-center gap-3">

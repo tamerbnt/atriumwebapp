@@ -804,6 +804,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           kick="spin"
           tone="soft"
           onClick={() => syncWithSupabase()}
+          className="!w-8 !h-8 !rounded-full"
           title={
             isSupabaseConfigured
               ? language === 'ar'

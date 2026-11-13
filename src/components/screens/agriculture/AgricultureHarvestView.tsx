@@ -449,7 +449,7 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 			}
 		]} viewMode="list" isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
 {activeMode === "tickets" ? /* @__PURE__ */ <Scale size={22} /> : /* @__PURE__ */ <Users size={22} />}
@@ -457,7 +457,7 @@ export const AgricultureHarvestView: React.FC<any> = () => {
 <div>
 <div className="flex items-center gap-2">
 <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-{activeMode === "tickets" ? isAr ? "وصولات الوزن وجني المحاصيل" : "Pont-Bascule & Bons de Récolte" : isAr ? "دفتر حضور وجني التاشرون (Muster Roll)" : "Pointage Journalier des Tâcherons"}
+{activeMode === "tickets" ? (isAr ? "الحصاد" : language === "en" ? "Harvest" : "Récoltes") : (isAr ? "العمال" : language === "en" ? "Attendance" : "Pointage")}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
 {activeMode === "tickets" ? `${filteredTickets.length} tickets` : `${pointages.length} ouvriers`}

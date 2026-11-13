@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   LayoutGrid,
   List,
@@ -734,8 +735,9 @@ export function UniversalDataCollection<T>({
       )}
 
       {/* ================= FLOATING BULK SELECTION ACTION TOOLBAR ================= */}
-      {effectiveSelectedIds.size > 0 && (
-        <div data-atrium-bulk-toolbar="true" className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-[#1F1D1B]/95 backdrop-blur-md text-white rounded-2xl px-5 py-3 shadow-2xl border border-white/[0.1] flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-200">
+      {effectiveSelectedIds.size > 0 && (() => {
+        const bulkToolbar = (
+        <div data-atrium-bulk-toolbar="true" className="fixed top-4 left-1/2 -translate-x-1/2 z-[45] max-w-[calc(100vw-24px)] overflow-x-auto bg-[#1F1D1B]/95 backdrop-blur-md text-white rounded-2xl px-5 py-3 shadow-2xl border border-white/[0.1] flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-200">
           <div className="flex items-center gap-2 pr-3 border-r border-white/15">
             <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white text-xs font-bold flex items-center justify-center font-mono tabular-nums">
               {effectiveSelectedIds.size}
@@ -806,7 +808,9 @@ export function UniversalDataCollection<T>({
             {store.language === 'ar' ? 'إلغاء' : store.language === 'fr' ? 'Annuler' : 'Cancel'}
           </button>
         </div>
-      )}
+        );
+        return typeof document !== 'undefined' ? createPortal(bulkToolbar, document.body) : bulkToolbar;
+      })()}
     </div>
   );
 }

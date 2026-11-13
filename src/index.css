@@ -183,7 +183,7 @@
   background: var(--atr-hl, rgba(212, 82, 47, 0.12));
   color: var(--atr-acc, #d4522f);
 }
-.act.d:hover {
+.act.act-danger:hover {
   background: var(--atr-acc, #d4522f) !important;
   color: #ffffff !important;
 }

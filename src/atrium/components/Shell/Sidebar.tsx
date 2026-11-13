@@ -4,7 +4,7 @@ import { useContext, useEffect, useRef } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { cx, useControllable, useIsoLayoutEffect } from '../../hooks';
 import { initMotionEnv } from '../../motion/env';
-import { SidebarBody, SidebarHoverBody } from './shellBodies';
+import { SidebarBody, SidebarHoverBody, SidebarActiveBody } from './shellBodies';
 import { ShellContext } from './AppShell';
 import s from './Sidebar.module.css';
 
@@ -67,10 +67,17 @@ export function Sidebar({
   const listRef = useRef<HTMLUListElement>(null);
   const edge = useRef<HTMLButtonElement>(null);
   const magneticHlRef = useRef<HTMLSpanElement>(null);
+  const activeBlobRef = useRef<HTMLSpanElement>(null);
+  const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const body = useRef<SidebarBody | null>(null);
   const hoverBody = useRef<SidebarHoverBody | null>(null);
+  const activeBody = useRef<SidebarActiveBody | null>(null);
   const openRef = useRef(open);
   openRef.current = open;
+  const activeIdx = items.findIndex((it) => it.id === activeId);
+  const activeIdxRef = useRef(activeIdx);
+  activeIdxRef.current = activeIdx;
+  const itemsSig = items.map((it) => it.id).join('|');
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useIsoLayoutEffect(() => {
@@ -95,6 +102,52 @@ export function Sidebar({
       hoverBody.current = null;
     };
   }, []);
+
+  useIsoLayoutEffect(() => {
+    const list = listRef.current;
+    const blob = activeBlobRef.current;
+    if (!list || !blob) return;
+
+    const opts = itemRefs.current.slice(0, items.length).filter(Boolean) as HTMLButtonElement[];
+    const ab = new SidebarActiveBody(list, blob, opts);
+    activeBody.current = ab;
+
+    const sync = () => {
+      ab.measure();
+      if (ab.settled()) {
+        ab.setIndex(activeIdxRef.current, false);
+      }
+    };
+
+    ab.measure();
+    ab.setIndex(activeIdxRef.current, false);
+    list.setAttribute('data-live', 'true');
+
+    let ro: ResizeObserver | undefined;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(sync);
+      ro.observe(list);
+    }
+
+    let alive = true;
+    if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        if (alive) sync();
+      });
+    }
+
+    return () => {
+      alive = false;
+      ro?.disconnect();
+      ab.dispose();
+      activeBody.current = null;
+      list.removeAttribute('data-live');
+    };
+  }, [itemsSig]);
+
+  useEffect(() => {
+    activeBody.current?.setIndex(activeIdx, true);
+  }, [activeIdx]);
 
   useIsoLayoutEffect(() => {
     body.current?.setOpen(open);
@@ -191,9 +244,13 @@ export function Sidebar({
           onPointerLeave={onListPointerLeave}
         >
           <span ref={magneticHlRef} className={s.magneticHl} aria-hidden="true" />
+          <span ref={activeBlobRef} className={s.activeBlob} aria-hidden="true" />
           {items.map((it, i) => (
             <li key={it.id}>
               <button
+                ref={(el) => {
+                  itemRefs.current[i] = el;
+                }}
                 type="button"
                 className={s.item}
                 aria-current={it.id === activeId ? 'page' : undefined}

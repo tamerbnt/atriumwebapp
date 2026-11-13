@@ -386,15 +386,10 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 			}
 		]} viewMode="list" isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1">
 <div>
-<div className="flex items-center gap-2">
-<span className="text-xs font-semibold uppercase tracking-wider text-[#d4522f]">Chef de Projet</span>
-<span className="text-black/55 dark:text-white/55">·</span>
-<span className="text-xs text-black/55 dark:text-white/55">Coordination & Suivi Print</span>
-</div>
 <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
-{activeTab === "portfolio" ? "Pilotage Projets & Alertes" : activeTab === "catalog" ? "Catalogue Supports POSM" : activeTab === "orders" ? "Commandes Imprimeur & BAT" : activeTab === "bat" ? "Revue BAT Bon à Tirer" : "Dépenses & Achats Terrain"}
+{activeTab === "portfolio" ? (language === "ar" ? "المشاريع" : language === "en" ? "Projects" : "Projets") : activeTab === "catalog" ? (language === "ar" ? "الكتالوج" : language === "en" ? "Catalog" : "Catalogue") : activeTab === "orders" ? (language === "ar" ? "الطلبات" : language === "en" ? "Orders" : "Commandes") : activeTab === "bat" ? (language === "ar" ? "المراجعات" : language === "en" ? "Proofs" : "Revue BAT") : (language === "ar" ? "المشتريات" : language === "en" ? "Purchases" : "Achats")}
 </h1>
 </div>
 <div className="flex items-center gap-2.5">

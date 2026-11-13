@@ -102,24 +102,29 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   };
 
   const dropdownNode = (
-    <div
+    <motion.div
       ref={containerRef}
       role="dialog"
       aria-label="Notifications"
-      className="fixed z-[99999] w-[360px] max-w-[calc(100vw-32px)] flex flex-col gap-2 pointer-events-auto select-none outline-none font-sans"
+      initial={{ opacity: 0, y: -8, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -6, scale: 0.97 }}
+      transition={{ type: 'spring', stiffness: 460, damping: 32 }}
+      className="tst fixed z-[99999] w-[390px] max-w-[calc(100vw-32px)] rounded-[24px] bg-white dark:bg-[#1C1C20] border border-black/8 dark:border-white/12 shadow-[0_14px_34px_rgba(0,0,0,0.14)] dark:shadow-[0_18px_40px_rgba(0,0,0,0.52)] overflow-hidden flex flex-col pointer-events-auto select-none outline-none font-sans"
       style={{
         position: 'fixed',
-        top: '76px', // Comfortably below the 64px bottom edge of TopBar
+        top: '76px',
         right: isRtl ? 'auto' : '24px',
         left: isRtl ? '24px' : 'auto',
         zIndex: 99999,
+        transformOrigin: isRtl ? 'top left' : 'top right',
         '--tst-r': '20px',
       } as React.CSSProperties}
     >
-      {/* Floating Control Card (Dedicated Small Card for Title & Controls) */}
-      <div className="flex items-center justify-between px-3.5 py-2 rounded-[16px] bg-white/95 dark:bg-[#1C1C20]/95 backdrop-blur-md border border-black/8 dark:border-white/12 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.04)] text-[11px] text-black/70 dark:text-white/75 select-none">
-        <div className="flex items-center gap-1.5 font-bold text-black dark:text-white text-xs">
-          <Bell size={13} className="text-[#d4522f]" />
+      {/* Unified Panel Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#1C1C20] text-[11px] text-black/70 dark:text-white/75">
+        <div className="flex items-center gap-2 font-bold text-black dark:text-white text-[13px]">
+          <Bell size={14} className="text-[#d4522f] shrink-0" />
           <span>{language === 'ar' ? 'الإشعارات' : language === 'fr' ? 'Notifications' : 'Notifications'}</span>
           {unreadNotificationCount > 0 && (
             <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold tabular-nums bg-[#d4522f] text-white leading-none">
@@ -133,35 +138,38 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
             <>
               <button
                 type="button"
+                data-no-liquid=""
                 onClick={() => markAllNotificationsAsRead()}
                 className="hover:text-[#d4522f] font-semibold transition-colors cursor-pointer flex items-center gap-1"
-                title={language === 'ar' ? 'قراءة الكل' : language === 'fr' ? 'Tout lire' : 'Read All'}
+                title={language === 'ar' ? 'قراءة الكل' : language === 'fr' ? 'Tout lire' : 'Mark all read'}
               >
                 <CheckCheck size={12} className="text-[#d4522f]" />
                 <span className="hidden sm:inline">
-                  {language === 'ar' ? 'قراءة الكل' : language === 'fr' ? 'Tout lire' : 'Read All'}
+                  {language === 'ar' ? 'قراءة الكل' : language === 'fr' ? 'Tout lire' : 'Mark all read'}
                 </span>
               </button>
-              <span className="text-black/45 dark:text-white/45">•</span>
+              <span className="text-black/30 dark:text-white/30">•</span>
               <button
                 type="button"
+                data-no-liquid=""
                 onClick={() => clearAllNotifications()}
                 className="hover:text-rose-500 font-medium transition-colors cursor-pointer flex items-center gap-1"
-                title={language === 'ar' ? 'مسح' : language === 'fr' ? 'Effacer' : 'Clear'}
+                title={language === 'ar' ? 'مسح الكل' : language === 'fr' ? 'Tout effacer' : 'Clear all'}
               >
                 <Trash2 size={12} />
                 <span className="hidden sm:inline">
-                  {language === 'ar' ? 'مسح' : language === 'fr' ? 'Effacer' : 'Clear'}
+                  {language === 'ar' ? 'مسح' : language === 'fr' ? 'Effacer' : 'Clear all'}
                 </span>
               </button>
-              <span className="text-black/45 dark:text-white/45">•</span>
+              <span className="text-black/30 dark:text-white/30">•</span>
             </>
           )}
 
           <button
             type="button"
+            data-no-liquid=""
             onClick={onClose}
-            className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-black/60 hover:text-black dark:text-white/65 dark:hover:text-white transition-colors cursor-pointer"
+            className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-black/55 hover:text-black dark:text-white/60 dark:hover:text-white transition-colors cursor-pointer"
             aria-label="Close notifications"
           >
             <X size={13} strokeWidth={2.2} />
@@ -169,18 +177,21 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
         </div>
       </div>
 
-      {/* Floating Notification Rows (Each Row Floats Alone with Zero Enclosing Box) */}
-      <div className="flex flex-col gap-2 max-h-[calc(100vh-100px)] overflow-y-auto no-scrollbar py-0.5">
+      {/* Enclosed Notification Rows List */}
+      <div className="flex flex-col gap-2.5 p-3 max-h-[380px] overflow-y-auto no-scrollbar">
         <AnimatePresence mode="popLayout">
           {notifications.length === 0 ? (
             <motion.div
-              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              initial={{ opacity: 0, y: -6, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              exit={{ opacity: 0, scale: 0.97 }}
               transition={{ duration: 0.15 }}
-              className="flex items-center gap-2.5 px-4 py-3 rounded-[20px] bg-white/95 dark:bg-[#1C1C20]/95 backdrop-blur-md border border-black/8 dark:border-white/12 shadow-[0_8px_24px_-4px_rgba(0,0,0,0.1),0_2px_6px_-1px_rgba(0,0,0,0.05)] text-xs font-semibold text-black/85 dark:text-white"
+              className="tst-toast-item h-[60px] text-xs font-semibold text-black/80 dark:text-white/85"
+              data-kind="success"
             >
-              <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
+              <span className="tst-icon shrink-0">
+                <CheckCircle2 size={18} strokeWidth={2.2} />
+              </span>
               <span>
                 {language === 'ar'
                   ? 'لا توجد إشعارات'
@@ -198,11 +209,11 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                 <motion.div
                   key={notif.id}
                   layout
-                  initial={{ opacity: 0, y: -14, scale: 0.94 }}
+                  initial={{ opacity: 0, y: -8, scale: 0.96 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: 28, scale: 0.92, transition: { duration: 0.15 } }}
+                  exit={{ opacity: 0, x: 24, scale: 0.94, transition: { duration: 0.15 } }}
                   transition={{ type: 'spring', stiffness: 480, damping: 30 }}
-                  className="group relative flex items-center gap-3 px-3.5 h-[64px] rounded-[20px] bg-white dark:bg-[#1C1C20] border border-black/8 dark:border-white/12 shadow-[0_10px_25px_-3px_rgba(0,0,0,0.1),0_4px_6px_-2px_rgba(0,0,0,0.05)] cursor-pointer transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_14px_30px_-3px_rgba(0,0,0,0.14)] select-none shrink-0"
+                  className="tst-toast-item group h-[64px] cursor-pointer hover:-translate-y-0.5 select-none shrink-0"
                   data-kind={notif.type}
                   onClick={() => {
                     if (isUnread) markNotificationAsRead(notif.id);
@@ -214,19 +225,19 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                   </span>
 
                   {/* Text Content */}
-                  <div className="tst-text flex-1 min-w-0 pr-1">
-                    <div className="flex items-center justify-between gap-1.5 mb-0.5">
-                      <b className="flex items-center gap-1.5 truncate text-[13px] font-semibold text-black dark:text-white">
-                        <span className="truncate">{notif.title}</span>
+                  <div className="tst-text flex-1 min-w-0 pr-0.5">
+                    <div className="flex items-center justify-between gap-2 mb-0.5 min-w-0">
+                      <b className="flex items-center gap-1.5 min-w-0 text-[13px] font-semibold text-black dark:text-white">
+                        <em className="not-italic truncate">{notif.title}</em>
                         {isUnread && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
+                          <i className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" aria-hidden="true" />
                         )}
                       </b>
-                      <span className="text-[10px] text-black/55 dark:text-white/60 shrink-0 font-normal tabular-nums">
+                      <time className="text-[11px] text-black/50 dark:text-white/55 shrink-0 font-normal tabular-nums whitespace-nowrap">
                         {formatRelativeTime(notif.createdAt, language)}
-                      </span>
+                      </time>
                     </div>
-                    <span className="text-[12px] text-black/70 dark:text-white/75 truncate block">
+                    <span className="block truncate">
                       {notif.message}
                     </span>
                   </div>
@@ -235,6 +246,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                   {(notif.action || notif.targetScreen) && (
                     <button
                       type="button"
+                      data-no-liquid=""
                       className="tst-act shrink-0"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -255,6 +267,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                   {/* Dismiss Button */}
                   <button
                     type="button"
+                    data-no-liquid=""
                     className="tst-x shrink-0"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -271,7 +284,28 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
           )}
         </AnimatePresence>
       </div>
-    </div>
+
+      {/* Unified Panel Footer */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-t border-black/[0.06] dark:border-white/[0.08] bg-neutral-50/70 dark:bg-white/[0.02] text-[11px] text-black/50 dark:text-white/55">
+        <div className="flex items-center gap-1.5 font-medium">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+          <span>
+            {language === 'ar'
+              ? 'مركز أتريوم المباشر'
+              : language === 'fr'
+              ? 'Centre Atrium Live'
+              : 'Atrium Live Center'}
+          </span>
+        </div>
+        <span className="text-black/45 dark:text-white/45">
+          {language === 'ar'
+            ? 'البث التشغيلي المباشر'
+            : language === 'fr'
+            ? 'Flux opérationnel en direct'
+            : 'Realtime Operational Stream'}
+        </span>
+      </div>
+    </motion.div>
   );
 
   if (typeof document !== 'undefined') {

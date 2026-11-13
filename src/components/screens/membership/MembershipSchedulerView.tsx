@@ -430,7 +430,7 @@ export const MembershipSchedulerView: React.FC = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-200 relative">
       {/* Row 0: Top Header matching Desktop App */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E6DED6]/80 dark:border-neutral-800/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div className="flex items-center gap-3.5 sm:gap-4">
           <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#F3EDE7] dark:bg-white/[0.07] border border-[#E6DED6] dark:border-neutral-700/70 shadow-2xs flex items-center justify-center text-black dark:text-white">
             <Calendar size={22} />

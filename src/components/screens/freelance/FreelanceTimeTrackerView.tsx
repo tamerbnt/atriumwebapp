@@ -420,7 +420,7 @@ export const FreelanceTimeTrackerView: React.FC<any> = () => {
 			}
 		]} viewMode="list" isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
+<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
 <div>
 <div className="flex items-center gap-2">
 <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("free_time_title", language)}</h1>

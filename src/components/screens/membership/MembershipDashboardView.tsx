@@ -143,7 +143,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
 
       {/* Row 0: Standardized Dashboard Header */}
       <DashboardHeader
-        title={language === 'ar' ? 'لوحة القيادة' : language === 'fr' ? 'Tableau de bord' : 'Dashboard'}
+        title={language === 'ar' ? 'الرئيسية' : language === 'fr' ? 'Tableau' : 'Dashboard'}
         subtitle={
           language === 'ar'
             ? 'النشاط التشغيلي ومؤشرات الأداء اللحظية للمنشأة اليوم'
@@ -151,7 +151,6 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
             ? "Suivi de l'occupation, des encaissements et fidélisation des adhérents."
             : "Here's what's happening in your facility today."
         }
-        categoryName={language === 'ar' ? 'قاعة رياضية' : language === 'fr' ? 'Club de Sport' : 'Fitness Facility'}
       />
 
       {/* Two-Column Pod Canvas */}

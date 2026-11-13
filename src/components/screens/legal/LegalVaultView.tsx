@@ -185,7 +185,7 @@ export const LegalVaultView: React.FC<any> = () => {
 	};
 	const roleMetadata = React.useMemo(() => {
 		if (targetScope === "notaire") return {
-			title: isAr ? "أرشيف الأصول والمستخرجات الرسمية (Minutes & Grosses)" : "Conservation des Minutes & Grosses Notariées",
+			title: isAr ? "الأرشيف" : language === "en" ? "Archives" : "Archives",
 			badge: "Actes Authentiques",
 			subtitle: isAr ? "حفظ الأصول غير القابلة للتصرف، تسليم النسخ التنفيذية، والتحقق من النشر العقاري" : "Conservation probatoire perpétuelle des minutes d'actes et délivrance de grosses exécutoires",
 			catPills: [
@@ -212,7 +212,7 @@ export const LegalVaultView: React.FC<any> = () => {
 			]
 		};
 		if (targetScope === "comptable") return {
-			title: isAr ? "أوراق العمل وتقارير محافظ الحسابات (Dossiers CAC)" : "Dossiers de Travail & Rapports Commissaire aux Comptes",
+			title: isAr ? "التدقيق" : language === "en" ? "Audit" : "Audit",
 			badge: "Certification CAC",
 			subtitle: isAr ? "أوراق العمل الرقابية، محاضر جرد الأصول، تقارير المصادقة على الحسابات" : "Papiers de travail d'audit légal, diligences fiscales G50 et rapports généraux du CAC",
 			catPills: [
@@ -239,7 +239,7 @@ export const LegalVaultView: React.FC<any> = () => {
 			]
 		};
 		if (targetScope === "secretaire") return {
-			title: isAr ? "إيداع المستندات ووصولات الاستلام (Dépôt & Classement)" : "Registre des Dépôts de Pièces & NIN/NIF",
+			title: isAr ? "الإيداع" : language === "en" ? "Filing" : "Dépôts",
 			badge: "Accueil & Dépôt",
 			subtitle: isAr ? "أرشفة وثائق الهوية، السجلات التجارية، تسليم وصولات الإيداع للموكلين" : "Numérisation des cartes NIN, extraits de registre de commerce et récépissés de dépôt",
 			catPills: [
@@ -266,7 +266,7 @@ export const LegalVaultView: React.FC<any> = () => {
 			]
 		};
 		return {
-			title: isAr ? "الخزينة الرقمية والمستندات القضائية السرية" : "Coffre-fort Numérique & Pièces Judiciaires Scellées",
+			title: isAr ? "المستندات" : language === "en" ? "Vault" : "Documents",
 			badge: "AES-256 Chiffré",
 			subtitle: isAr ? "أرشفة أصول العقود، مذكرات الدفاع، محاضر التبليغ وبصمات الإثبات الجنائي" : "Pièces de procédure contradictoires, bordereaux de communication et secret professionnel",
 			catPills: [
@@ -381,7 +381,7 @@ export const LegalVaultView: React.FC<any> = () => {
 			}
 		]} viewMode={viewMode} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
 {targetScope === "notaire" ? /* @__PURE__ */ <Scroll size={22} /> : /* @__PURE__ */ <Lock size={22} />}

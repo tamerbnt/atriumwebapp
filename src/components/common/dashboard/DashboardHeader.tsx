@@ -95,21 +95,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     });
   };
 
-  const contextParts = [categoryName, currentBranchName].filter(Boolean);
-
   return (
-    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-[#E6DED6]/80 dark:border-neutral-800/80">
+    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-1">
       <div className="min-w-0">
-        {contextParts.length > 0 && (
-          <div className="flex items-center gap-2 text-[11.5px] font-medium tracking-[0.02em] text-black/56 dark:text-white/60 mb-1.5">
-            {contextParts.map((part, idx) => (
-              <React.Fragment key={idx}>
-                {idx > 0 && <span aria-hidden="true" className="opacity-50">·</span>}
-                <span className="truncate">{part}</span>
-              </React.Fragment>
-            ))}
-          </div>
-        )}
         <div className="flex items-center gap-3.5 sm:gap-4">
           <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#F3EDE7] dark:bg-white/[0.07] border border-[#E6DED6] dark:border-neutral-700/70 shadow-2xs flex items-center justify-center text-black dark:text-white shrink-0">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1">

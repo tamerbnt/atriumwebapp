@@ -227,7 +227,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
 <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 <Wrench className="text-[#d4522f]" size={32} />
 <span>
-{isAr ? "سير العمل وأوامر التصليح (OR)" : activeGarageRole === "mecanicien" ? "Tableau d'Atelier & Lifts (Mécanique)" : "Ordres de Réparation & Gestion des Ponts"}
+{isAr ? "الإصلاحات" : language === "en" ? (activeGarageRole === "mecanicien" ? "Bays" : "Repairs") : (activeGarageRole === "mecanicien" ? "Ponts" : "Réparations")}
 </span>
 </h1>
 </div>

@@ -389,13 +389,8 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 </div>;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
 <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={retryCloudSync} />
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1">
 <div>
-{currentScreen !== "dashboard" && /* @__PURE__ */ <div className="flex items-center gap-2 mb-1">
-<span className="text-xs font-semibold uppercase tracking-wider text-[#d4522f]">{t("pm_role_direction_badge")}</span>
-<span className="text-black/55 dark:text-white/55">·</span>
-<span className="text-xs text-black/55 dark:text-white/55">Direction Générale & Arbitrage</span>
-</div>}
 <div className="flex items-center gap-3.5">
 {currentScreen === "dashboard" && /* @__PURE__ */ <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 flex items-center justify-center text-black dark:text-white">
 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -406,7 +401,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 </svg>
 </div>}
 <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-{currentScreen === "dashboard" ? t("nav_dashboard", language) : currentScreen === "projects" ? "Portefeuille Projets" : currentScreen === "new_project" ? t("pm_btn_new_project") : currentScreen === "approvals" ? "Approbations & Décaissements" : t("nav_pm_dir_reports")}
+{currentScreen === "dashboard" ? (language === "ar" ? "الرئيسية" : language === "en" ? "Home" : "Tableau") : currentScreen === "projects" ? (language === "ar" ? "المشاريع" : language === "en" ? "Projects" : "Projets") : currentScreen === "new_project" ? (language === "ar" ? "مشروع جديد" : language === "en" ? "New Brief" : "Nouveau Brief") : currentScreen === "approvals" ? (language === "ar" ? "الموافقات" : language === "en" ? "Approvals" : "Validations") : (language === "ar" ? "التقارير" : language === "en" ? "Reports" : "Rapports")}
 </h1>
 </div>
 </div>

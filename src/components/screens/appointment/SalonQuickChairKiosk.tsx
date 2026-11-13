@@ -154,13 +154,13 @@ export const SalonQuickChairKiosk: React.FC<any> = () => {
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-5 shadow-xs">
 <div className="flex items-center gap-3.5">
 <div className="w-12 h-12 rounded-2xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center text-xl shrink-0"><Scissors size={24} /></div>
-<div>
+<div className="flex items-center gap-2">
 <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase rtl:normal-case leading-none rtl:leading-tight tracking-[0.01em] rtl:tracking-normal text-black dark:text-white flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 <span>
-{isRtl ? "كشك محطات العمل والصالون السريع" : "Kiosk Fauteuils & Suivi Postes Salon"}
+{isRtl ? "المحطات" : language === "en" ? "Stations" : "Fauteuils"}
 </span>
-<span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400">{isRtl ? "نشط" : "Live Floor"}</span>
 </h1>
+<span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400">{isRtl ? "نشط" : "Live"}</span>
 </div>
 </div>
 <button type="button" onClick={() => setIsAddClientModalOpen(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer">

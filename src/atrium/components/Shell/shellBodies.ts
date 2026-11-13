@@ -284,3 +284,183 @@ export class SidebarHoverBody implements Body {
   }
 }
 
+const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
+
+/**
+ * Sidebar active pill: dual-spring vertical liquid blob matching SegBody.
+ *
+ * One terracotta capsule whose top (T) and bottom (B) edges are two separate analytical springs.
+ * The leading edge moves with stiffness k = 420 while the trailing edge follows with k = 200
+ * (damping ζ = 1/φ ≈ 0.618), stretching like a drop of liquid as it glides between nav items,
+ * with zero React re-renders and zero per-frame layout reads.
+ */
+export class SidebarActiveBody implements Body {
+  T = new Spring(0, 200);
+  B = new Spring(40, 420);
+  geo: Array<[number, number]> = [];
+  index = -1;
+  private lastTransform = '';
+  private lastHeight = '';
+  private lastOpacity = '';
+  private lastColors: string[] = [];
+
+  constructor(
+    readonly list: HTMLElement,
+    readonly blob: HTMLElement,
+    private opts: HTMLElement[],
+  ) {}
+
+  setOptions(opts: HTMLElement[]): void {
+    this.opts = opts;
+    this.lastColors = [];
+  }
+
+  /** Read row geometry once on mount, resize, or item list changes — never per frame. */
+  measure(): void {
+    this.geo = this.opts.map((o) => {
+      const top =
+        o.offsetParent === this.list
+          ? o.offsetTop
+          : (o.parentElement ? o.parentElement.offsetTop : 0) + o.offsetTop;
+      const height = o.offsetHeight || 40;
+      return [top, top + height];
+    });
+  }
+
+  private aim(): void {
+    const g = this.geo[this.index];
+    if (!g) return;
+    this.T.t = g[0];
+    this.B.t = g[1];
+  }
+
+  /** Slide the liquid capsule to option j. With animate=false it snaps immediately. */
+  setIndex(j: number, animate: boolean): void {
+    if (j < 0 || j >= this.geo.length) {
+      this.index = -1;
+      this.clearColors();
+      this.setOpacity('0');
+      unschedule(this);
+      return;
+    }
+
+    const hadValidIndex = this.index >= 0 && this.index < this.geo.length;
+    if (animate && hadValidIndex && j === this.index) return;
+
+    const down = j > this.index;
+    const shouldAnimate = animate && hadValidIndex && !motion.reduced && !motion.instant;
+
+    if (shouldAnimate) {
+      this.B.k = down ? 420 : 200;
+      this.T.k = down ? 200 : 420;
+    }
+
+    this.index = j;
+    this.setOpacity('1');
+
+    if (shouldAnimate) {
+      this.aim();
+      wake(this);
+    } else {
+      this.snap();
+      this.render();
+    }
+  }
+
+  private setOpacity(op: string): void {
+    if (op !== this.lastOpacity) {
+      this.blob.style.opacity = op;
+      this.lastOpacity = op;
+    }
+  }
+
+  private clearColors(): void {
+    for (let k = 0; k < this.opts.length; k++) {
+      if (this.lastColors[k] !== '') {
+        this.opts[k].style.color = '';
+        this.lastColors[k] = '';
+      }
+    }
+  }
+
+  step(dt: number): void {
+    this.aim();
+    this.T.step(dt);
+    this.B.step(dt);
+  }
+
+  render(): void {
+    if (this.index < 0 || !this.geo.length) {
+      this.setOpacity('0');
+      return;
+    }
+    this.setOpacity('1');
+
+    const top = Math.min(this.T.x, this.B.x);
+    const bottom = Math.max(this.T.x, this.B.x);
+    const height = Math.max(24, bottom - top);
+
+    const transform = `translate3d(0,${f3(top)}px,0)`;
+    if (transform !== this.lastTransform) {
+      this.blob.style.transform = transform;
+      this.lastTransform = transform;
+    }
+    const hStr = `${f3(height)}px`;
+    if (hStr !== this.lastHeight) {
+      this.blob.style.height = hStr;
+      this.lastHeight = hStr;
+    }
+
+    for (let k = 0; k < this.opts.length; k++) {
+      const g = this.geo[k];
+      if (!g) continue;
+      const span = g[1] - g[0];
+      const ov = span > 0 ? clamp((Math.min(bottom, g[1]) - Math.max(top, g[0])) / span, 0, 1) : 0;
+      const pct = Math.round(ov * 50) * 2;
+      const col =
+        pct <= 0
+          ? ''
+          : pct >= 100
+          ? '#ffffff'
+          : `color-mix(in srgb, #ffffff ${pct}%, var(--atr-side-mut))`;
+      if (col !== this.lastColors[k]) {
+        this.opts[k].style.color = col;
+        this.lastColors[k] = col;
+      }
+    }
+  }
+
+  settled(): boolean {
+    if (this.index < 0) return true;
+    this.aim();
+    return this.T.calm(0.05, 0.25) && this.B.calm(0.05, 0.25);
+  }
+
+  snap(): void {
+    this.aim();
+    this.T.snap();
+    this.B.snap();
+  }
+
+  onWake(): void {
+    this.blob.style.willChange = 'transform, height';
+  }
+
+  onSleep(): void {
+    this.blob.style.willChange = '';
+    this.clearColors();
+    if (this.index >= 0 && this.opts[this.index]) {
+      this.opts[this.index].style.color = '#ffffff';
+      this.lastColors[this.index] = '#ffffff';
+    }
+  }
+
+  isVisible(): boolean {
+    return this.list.isConnected;
+  }
+
+  dispose(): void {
+    this.clearColors();
+    unschedule(this);
+  }
+}

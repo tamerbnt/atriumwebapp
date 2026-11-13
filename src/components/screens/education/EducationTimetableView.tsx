@@ -195,7 +195,7 @@ export const EducationTimetableView: React.FC<any> = () => {
 	if (showSkeleton && (eduSessions.length === 0 || networkMode === "force_skeleton")) return /* @__PURE__ */ <SkeletonCalendarTimeline isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
 <div className="space-y-6">
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
+<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
 <div className="flex items-center gap-3.5">
 <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><CalendarIcon size={22} /></div>
 <div>

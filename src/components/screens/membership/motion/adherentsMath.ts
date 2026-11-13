@@ -210,7 +210,7 @@ export function computeBulkBarMetrics(barX: number, barTarget: number): BulkBarM
     bp,
     visible: !(barX < 1 && barTarget === 0),
     opacity: clamp(bp * 1.6, 0, 1),
-    translateY: (1 - bp) * 46,
+    translateY: (bp - 1) * 46,
     scale: 0.9 + 0.1 * bp,
   };
 }

@@ -93,9 +93,25 @@
   will-change: transform, height, opacity;
 }
 
+/* Dual-spring active terracotta liquid blob */
+.activeBlob {
+  position: absolute;
+  left: 10px;
+  width: calc(40px + var(--open) * 176px);
+  top: 0;
+  height: 40px;
+  border-radius: 20px;
+  background: var(--atr-acc);
+  box-shadow: 0 4px 14px rgba(212, 82, 47, 0.38);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+  contain: layout paint;
+}
+
 .item {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   display: flex;
   align-items: center;
   box-sizing: border-box;
@@ -117,6 +133,9 @@
   overflow: hidden;
   transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease;
 }
+.list[data-live='true'] .item {
+  transition: none;
+}
 .item:hover { color: var(--atr-side-ink); }
 .item:hover:not([aria-current='page']) .ico svg {
   stroke: var(--atr-acc);
@@ -127,18 +146,26 @@
 }
 .item:focus-visible { outline: 2px solid var(--atr-acc); outline-offset: 2px; }
 
-/* active pill: solid terracotta capsule directly on the item button */
-.item[aria-current='page'] {
+/* active pill fallback before JS measurement or in reduced/instant mode */
+.list:not([data-live]) .item[aria-current='page'] {
   background: var(--atr-acc);
   box-shadow: 0 4px 14px rgba(212, 82, 47, 0.38);
   color: #ffffff;
   font-weight: 600;
 }
-.item[aria-current='page'] .ico svg {
+.list[data-live='true'] .item[aria-current='page'] {
+  background: transparent;
+  box-shadow: none;
+  font-weight: 600;
+}
+.list:not([data-live]) .item[aria-current='page'] .ico svg {
   stroke: #ffffff;
 }
-.item[aria-current='page'] .lab {
+.list:not([data-live]) .item[aria-current='page'] .lab {
   color: #ffffff;
+  font-weight: 600;
+}
+.list[data-live='true'] .item[aria-current='page'] .lab {
   font-weight: 600;
 }
 
@@ -207,7 +234,8 @@
 /* tier "off" and reduced motion: the same CSS, the engine just jumps --open to 0 or 1 */
 @media (forced-colors: active) {
   .panel { border: 1px solid CanvasText; }
-  .item[aria-current='page'] { background: Highlight; }
+  .activeBlob { display: none; }
+  .item[aria-current='page'] { background: Highlight !important; color: HighlightText !important; forced-color-adjust: none; }
 }
 
 /* RTL layout optical adjustments */
@@ -231,7 +259,8 @@
 [dir="rtl"] .item {
   text-align: right;
 }
-[dir="rtl"] .magneticHl {
+[dir="rtl"] .magneticHl,
+[dir="rtl"] .activeBlob {
   left: auto;
   right: 10px;
 }
