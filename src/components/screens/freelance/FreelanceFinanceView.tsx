@@ -277,7 +277,7 @@ export const FreelanceFinanceView: React.FC<any> = () => {
 <div className="w-12 h-12 rounded-2xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center shrink-0"><Wallet size={24} /></div>
 <div>
 <div className="flex items-center gap-2.5">
-<h1 className="text-[36px] sm:text-[48px] rtl:text-[30px] rtl:sm:text-[36px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("free_fin_title", language)}</h1>
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("free_fin_title", language)}</h1>
 <span className="text-xs px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 font-semibold">
 €
 {currencyTotals.totalEurEquiv.toLocaleString()}
@@ -326,7 +326,7 @@ export const FreelanceFinanceView: React.FC<any> = () => {
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "اليورو المحصّل (حساب SEPA)" : language === "fr" ? "EUR Encaissé (Virement SEPA)" : "EUR Collected"}
@@ -343,7 +343,7 @@ export const FreelanceFinanceView: React.FC<any> = () => {
 </p>
 </div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "الدولار والدينار الجزائري" : language === "fr" ? "USD & DZD Encaissés" : "USD & Local Cash"}
@@ -413,7 +413,7 @@ $
 </span>
 </div>
 </div>
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 space-y-3">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3">
 <div className="flex items-center justify-between text-xs text-black/70 dark:text-white/75">
 <span className="font-medium">
 {language === "ar" ? "معدل الضريبة التقديري والاشتراكات الاجتماعية" : language === "fr" ? "Curseur de taux d'imposition estimé" : "Tax Rate & Social Contributions Slider"}
@@ -484,11 +484,11 @@ $
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-[#E6DED6] dark:border-neutral-800/60">
 <div className="flex items-center gap-2.5 flex-wrap">
-<div className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-black/70 dark:text-white/75"><Receipt size={16} /></div>
+<div className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-center text-black/70 dark:text-white/75"><Receipt size={16} /></div>
 <div>
 <div className="flex items-center gap-2">
 <h3 className="text-sm font-bold text-black dark:text-white">{t("free_fin_operational_overhead", language)}</h3>
-<span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 text-black/70 dark:text-white/75">
+<span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 text-black/70 dark:text-white/75">
 {sortedExpenses.length}
 {" · ~€"}
 {totalExpensesEurEquiv.toLocaleString()}
@@ -558,7 +558,7 @@ $
 							}
 						}} showViewToggle emptyTitle={t("free_fin_empty_expenses", language)} emptyDescription={t("free_fin_empty_expenses_desc", language)} renderCard={(exp) => {
 							const isPinned = pinnedExpenseIds.has(exp.id);
-							return /* @__PURE__ */ <div key={exp.id} className="p-5 rounded-[22px] border border-[#E9EEF0] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 shadow-2xs relative space-y-3">
+							return /* @__PURE__ */ <div key={exp.id} className="p-5 rounded-[22px] border border-[#E6DED6] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 shadow-2xs relative space-y-3">
 {isPinned && /* @__PURE__ */ <div className="absolute top-3 left-3 text-[#d4522f]"><Pin size={12} className="fill-[#d4522f]" /></div>}
 <div className="flex items-center justify-between pl-4">
 <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75">{exp.category}</span>

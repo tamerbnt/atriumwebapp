@@ -163,11 +163,11 @@ h
 <div className="grid grid-cols-2 gap-4 pt-4 border-t border-neutral-300 text-center text-[10px]">
 <div className="p-2 border border-neutral-200 rounded-lg h-24 flex flex-col justify-between">
 <span className="font-bold text-black/75 uppercase">Pour l'Entreprise de BTPH</span>
-<p className="text-[9px] text-black/55">Nom, Signature & Cachet de l'Employeur</p>
+<p className="text-[10px] text-black/55">Nom, Signature & Cachet de l'Employeur</p>
 </div>
 <div className="p-2 border border-neutral-200 rounded-lg h-24 flex flex-col justify-between">
 <span className="font-bold text-black/75 uppercase">Visa de l'Inspection du Travail / BET</span>
-<p className="text-[9px] text-black/55">Confirmation de l'arrêt effectif des travaux</p>
+<p className="text-[10px] text-black/55">Confirmation de l'arrêt effectif des travaux</p>
 </div>
 </div>
 </div>

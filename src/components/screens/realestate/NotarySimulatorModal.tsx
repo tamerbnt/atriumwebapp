@@ -21,8 +21,8 @@ export const NotarySimulatorModal: React.FC<NotarySimulatorModalProps> = ({ isOp
 	if (!isOpen) return null;
 	const sim = calculateNotaryClosingCosts(priceDzd, propertyType as any, deboursDzd);
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-<div className="relative w-full max-w-2xl bg-white dark:bg-[#18181B] rounded-[28px] shadow-2xl border border-[#E9EEF0] dark:border-[#27272A] p-6 md:p-8 my-8 text-black dark:text-[#FAFAFA]">
-<div className="flex items-center justify-between pb-4 border-b border-[#E2E8EC] dark:border-[#27272A] mb-5">
+<div className="relative w-full max-w-2xl bg-white dark:bg-[#18181B] rounded-[28px] shadow-2xl border border-[#E6DED6] dark:border-[#27272A] p-6 md:p-8 my-8 text-black dark:text-[#FAFAFA]">
+<div className="flex items-center justify-between pb-4 border-b border-[#E6DED6] dark:border-[#27272A] mb-5">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Landmark className="w-5 h-5" /></div>
 <div>
@@ -65,7 +65,7 @@ Taux Moyen: ~
 <div className="flex justify-between items-center py-2 border-b border-[#E6DED6] dark:border-[#232328]">
 <div>
 <div className="font-semibold text-black dark:text-white">Droits d'Enregistrement (DGI / Trésor Public)</div>
-<div className="text-[11px] text-black/70 dark:text-[#A1A1AA]">
+<div className="text-[11px] text-black/70 dark:text-white/75">
 {propertyType === "Commercial" || propertyType === "Land" ? "Taux légal 5.0%" : "Taux légal 2.5%"}
 {" reversé à l'inspection des impôts"}
 </div>
@@ -78,7 +78,7 @@ Taux Moyen: ~
 <div className="flex justify-between items-center py-2 border-b border-[#E6DED6] dark:border-[#232328]">
 <div>
 <div className="font-semibold text-black dark:text-white">Taxe de Publicité Foncière (TPF)</div>
-<div className="text-[11px] text-black/70 dark:text-[#A1A1AA]">Taux uniforme 1.0% pour inscription à la Conservation Foncière (Livret foncier)</div>
+<div className="text-[11px] text-black/70 dark:text-white/75">Taux uniforme 1.0% pour inscription à la Conservation Foncière (Livret foncier)</div>
 </div>
 <span className="font-mono font-bold text-sm">
 {sim.taxePubliciteFonciereDzd.toLocaleString()}
@@ -88,14 +88,14 @@ Taux Moyen: ~
 <div className="flex justify-between items-center py-2 border-b border-[#E6DED6] dark:border-[#232328]">
 <div>
 <div className="font-semibold text-black dark:text-white">Émoluments Officiels du Notaire (Décret 08-243)</div>
-<div className="text-[11px] text-black/70 dark:text-[#A1A1AA]">Barème dégressif par tranches (3% ≤500k, 2% ≤1M, 1% au-delà) + TVA 19%</div>
+<div className="text-[11px] text-black/70 dark:text-white/75">Barème dégressif par tranches (3% ≤500k, 2% ≤1M, 1% au-delà) + TVA 19%</div>
 </div>
 <div className="text-right">
 <span className="font-mono font-bold text-sm">
 {(sim.notaryEmolumentsHtDzd + sim.notaryTvaDzd).toLocaleString()}
 {" DZD"}
 </span>
-<div className="text-[10px] text-black/70 dark:text-[#A1A1AA]">
+<div className="text-[10px] text-black/70 dark:text-white/75">
 {"HT: "}
 {sim.notaryEmolumentsHtDzd.toLocaleString()}
 {" · TVA: "}
@@ -106,34 +106,34 @@ Taux Moyen: ~
 <div className="flex justify-between items-center py-2 border-b border-[#E6DED6] dark:border-[#232328]">
 <div>
 <div className="font-semibold text-black dark:text-white">Timbres Fiscaux & Débours Administratifs</div>
-<div className="text-[11px] text-black/70 dark:text-[#A1A1AA]">Certificats d'urbanisme, extraits cadastraux, timbres de dimension</div>
+<div className="text-[11px] text-black/70 dark:text-white/75">Certificats d'urbanisme, extraits cadastraux, timbres de dimension</div>
 </div>
-<span className="font-mono font-semibold">
+<span className="font-mono tabular-nums font-semibold">
 {sim.deboursAndStampsDzd.toLocaleString()}
 {" DZD"}
 </span>
 </div>
 <div className="flex justify-between items-center pt-2 text-[#d4522f]">
 <span className="font-bold text-sm">Total des Frais de Notaire & Taxes</span>
-<span className="font-mono font-bold text-lg">
+<span className="font-mono tabular-nums font-bold text-lg">
 {sim.totalClosingCostsDzd.toLocaleString()}
 {" DZD"}
 </span>
 </div>
 <div className="p-3 rounded-xl bg-white dark:bg-[#18181B] border border-[#d4522f]/30 flex justify-between items-center mt-2">
 <div>
-<span className="text-[11px] uppercase font-bold text-black/70 dark:text-[#A1A1AA]">Budget Global d'Acquisition (Prix + Frais)</span>
-<div className="text-xs text-black/70 dark:text-[#A1A1AA]">Montant total à mobiliser par l'acquéreur</div>
+<span className="text-[11px] uppercase font-bold text-black/70 dark:text-white/75">Budget Global d'Acquisition (Prix + Frais)</span>
+<div className="text-xs text-black/70 dark:text-white/75">Montant total à mobiliser par l'acquéreur</div>
 </div>
-<span className="font-mono font-bold text-xl text-black dark:text-white">
+<span className="font-mono tabular-nums font-bold text-xl text-black dark:text-white">
 {sim.totalAcquisitionBudgetDzd.toLocaleString()}
 {" DZD"}
 </span>
 </div>
 </div>
 </div>
-<div className="flex items-center justify-between pt-5 border-t border-[#E2E8EC] dark:border-[#27272A] mt-5">
-<span className="text-[11px] text-black/70 dark:text-[#A1A1AA]">
+<div className="flex items-center justify-between pt-5 border-t border-[#E6DED6] dark:border-[#27272A] mt-5">
+<span className="text-[11px] text-black/70 dark:text-white/75">
 * Calcul indicatif soumis à la vérification finale de l'étude notariale instrumentante.
 </span>
 <div className="flex items-center gap-2.5">

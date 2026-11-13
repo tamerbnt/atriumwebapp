@@ -284,9 +284,9 @@ ON CONFLICT (id) DO NOTHING;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E6DED6] dark:border-neutral-800 shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-5 border-b border-[#E9EEF0] dark:border-neutral-800 flex items-center justify-between shrink-0">
+        <div className="px-6 py-5 border-b border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800 flex items-center justify-center text-purple-600 dark:text-purple-400">
               <Cloud size={20} />
@@ -530,7 +530,7 @@ ON CONFLICT (id) DO NOTHING;
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-[#E9EEF0] dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-800/30">
+        <div className="px-6 py-4 border-t border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-800/30">
           <span className="text-xs text-black/55 dark:text-white/75">
             All app reservations are saved both locally in browser storage & synced to Supabase
           </span>

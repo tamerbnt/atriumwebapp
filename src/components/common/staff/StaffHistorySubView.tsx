@@ -64,7 +64,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
   return (
     <div className="space-y-4">
       {/* Sub-Toggle Switcher: Exact 40px Standard Atrium Component */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 bg-white dark:bg-[#1C1B1A] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
         <LiveSegmentedControl
           size="md"
           value={historyMode}
@@ -99,9 +99,9 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
       {historyMode === 'salaires' && (
         <div className="space-y-4">
           {payrollRuns.length === 0 ? (
-            <div className="p-12 text-center bg-white dark:bg-[#18181B] rounded-2xl border border-neutral-200 dark:border-neutral-800">
-              <FileText className="w-8 h-8 text-black/30 dark:text-white/35 mx-auto mb-2" />
-              <p className="text-xs text-black/60 dark:text-white/65">
+            <div className="p-12 text-center bg-white dark:bg-[#1C1B1A] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734]">
+              <FileText className="w-8 h-8 text-black/50 dark:text-white/55 mx-auto mb-2" />
+              <p className="text-xs text-black/62 dark:text-white/65">
                 {isAr ? 'لا يوجد أرشيف' : isEn ? 'No history' : 'Aucun historique'}
               </p>
             </div>
@@ -111,21 +111,21 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
               return (
                 <div
                   key={run.id}
-                  className="bg-white dark:bg-[#18181B] rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5 shadow-xs space-y-4"
+                  className="bg-white dark:bg-[#1C1B1A] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] p-5 shadow-2xs space-y-4"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E6DED6] dark:border-[#3A3734]">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center font-bold">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
                         <CheckCircle2 className="w-5 h-5" />
                       </div>
                       <div>
                         <h4 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
                           <span>{run.title}</span>
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 uppercase font-bold">
+                          <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 uppercase font-bold">
                             {run.status === 'paid' ? (isAr ? 'مدفوعة' : isEn ? 'Paid' : 'Payée') : (isAr ? 'مسودة' : isEn ? 'Draft' : 'Brouillon')}
                           </span>
                         </h4>
-                        <p className="text-[11px] text-black/60 dark:text-white/65 font-mono tabular-nums">
+                        <p className="text-[11px] text-black/62 dark:text-white/65 font-mono tabular-nums">
                           {run.slipsCount} {isAr ? 'موظف' : isEn ? 'staff' : 'agents'} · {run.approvedAt?.slice(0, 10) || run.createdAt.slice(0, 10)}
                         </p>
                       </div>
@@ -133,15 +133,15 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
 
                     <div className="flex items-center gap-4 text-xs font-mono tabular-nums">
                       <div>
-                        <span className="text-black/60 dark:text-white/65 block text-[10px] font-sans">{isAr ? 'الصافي' : isEn ? 'Net' : 'Net'}</span>
+                        <span className="text-black/62 dark:text-white/65 block text-[11px] font-sans">{isAr ? 'الصافي' : isEn ? 'Net' : 'Net'}</span>
                         <span className="font-bold text-sm text-[#d4522f]">{run.totalNet.toLocaleString()} DZD</span>
                       </div>
                       <div>
-                        <span className="text-black/60 dark:text-white/65 block text-[10px] font-sans">{isAr ? 'الضمان' : isEn ? 'Social' : 'Social'}</span>
-                        <span className="font-bold text-emerald-600">{(run.totalCnasSalarial + run.totalCnasPatronal).toLocaleString()} DZD</span>
+                        <span className="text-black/62 dark:text-white/65 block text-[11px] font-sans">{isAr ? 'الضمان' : isEn ? 'Social' : 'Social'}</span>
+                        <span className="font-bold text-emerald-600 dark:text-emerald-400">{(run.totalCnasSalarial + run.totalCnasPatronal).toLocaleString()} DZD</span>
                       </div>
                       <div>
-                        <span className="text-black/60 dark:text-white/65 block text-[10px] font-sans">{isAr ? 'الضريبة' : isEn ? 'Tax' : 'Impôt'}</span>
+                        <span className="text-black/62 dark:text-white/65 block text-[11px] font-sans">{isAr ? 'الضريبة' : isEn ? 'Tax' : 'Impôt'}</span>
                         <span className="font-bold text-black dark:text-white">{run.totalIrg.toLocaleString()} DZD</span>
                       </div>
                     </div>
@@ -152,17 +152,17 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
                     {runSlips.map((slip) => (
                       <div
                         key={slip.id}
-                        className="p-3 rounded-xl bg-neutral-50 dark:bg-[#202024] border border-neutral-200/80 dark:border-neutral-800/80 flex items-center justify-between"
+                        className="p-3 rounded-xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-between"
                       >
                         <div>
                           <div className="font-bold text-xs text-black dark:text-white">{slip.staffFullName}</div>
-                          <div className="text-[10px] font-mono text-black/60 dark:text-white/65 tabular-nums">{slip.matricule} · {slip.role}</div>
+                          <div className="text-[11px] font-mono text-black/62 dark:text-white/65 tabular-nums">{slip.matricule} · {slip.role}</div>
                           <div className="text-xs font-mono font-bold text-[#d4522f] mt-1 tabular-nums">{slip.netAPayer.toLocaleString()} DZD</div>
                         </div>
                         <button
                           type="button"
                           onClick={() => setActiveSlipForPrint(slip)}
-                          className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-semibold rounded-lg bg-white dark:bg-[#18181B] border border-neutral-300 dark:border-neutral-700 text-black/80 dark:text-white/85 hover:text-[#d4522f] hover:border-[#d4522f] transition-all cursor-pointer"
+                          className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-semibold rounded-lg bg-white dark:bg-[#1C1B1A] border border-[#D4C8BC] dark:border-[#3A3734] text-black/80 dark:text-white/85 hover:text-[#d4522f] hover:border-[#d4522f] transition-all cursor-pointer"
                         >
                           <Printer className="w-3.5 h-3.5" />
                           <span>{isAr ? 'قسيمة' : isEn ? 'Slip' : 'Fiche'}</span>
@@ -179,10 +179,10 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
 
       {/* Mode 2: Minute-by-Minute Punch Audit Log */}
       {historyMode === 'pointages' && (
-        <div className="bg-white dark:bg-[#18181B] rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden shadow-xs">
-          <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="bg-white dark:bg-[#1C1B1A] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] overflow-hidden shadow-2xs">
+          <div className="p-4 border-b border-[#E6DED6] dark:border-[#3A3734] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <div>
-              <h4 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              <h4 className="text-[15.5px] font-semibold tracking-[-0.015em] rtl:tracking-normal text-black dark:text-white">
                 {isAr ? 'سجل الحضور' : isEn ? 'Attendance Log' : 'Journal Pointages'}
               </h4>
             </div>
@@ -192,7 +192,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
                 value={selectedStaffFilter}
                 onChange={(e) => setSelectedStaffFilter(e.target.value)}
                 title={isAr ? 'تصفية حسب الموظف' : isEn ? 'Filter by staff member' : 'Filtrer par collaborateur'}
-                className="px-3 py-1.5 text-xs font-medium rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202024] text-black dark:text-white"
+                className="px-3 py-1.5 text-xs font-medium rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422] text-black dark:text-white"
               >
                 <option value="all" title={isAr ? 'جميع الموظفين' : isEn ? 'All staff members' : 'Tous les collaborateurs'}>
                   {isAr ? 'الكل' : isEn ? 'All' : 'Tous'}
@@ -210,7 +210,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
                   value={searchPunchQuery}
                   onChange={(e) => setSearchPunchQuery(e.target.value)}
                   placeholder={isAr ? 'بحث...' : isEn ? 'Search...' : 'Rechercher...'}
-                  className="px-3 py-1.5 text-xs rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202024] text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/55 w-36 sm:w-48"
+                  className="px-3 py-1.5 text-xs rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422] text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/55 w-36 sm:w-48"
                 />
               </div>
             </div>
@@ -219,7 +219,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse tabular-nums">
               <thead>
-                <tr className="bg-neutral-50 dark:bg-[#202024] text-black/70 dark:text-white/75 border-b border-neutral-200 dark:border-neutral-800">
+                <tr className="bg-[#FBF8F5] dark:bg-[#262422] text-black/72 dark:text-white/75 border-b border-[#E6DED6] dark:border-[#3A3734]">
                   <th className="p-3 font-semibold">{isAr ? 'الوقت' : isEn ? 'Time' : 'Date'}</th>
                   <th className="p-3 font-semibold">{isAr ? 'الموظف' : isEn ? 'Staff' : 'Collaborateur'}</th>
                   <th className="p-3 font-semibold text-center">{isAr ? 'النوع' : isEn ? 'Type' : 'Type'}</th>
@@ -228,26 +228,26 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
                   <th className="p-3 font-semibold pr-4">{isAr ? 'ملاحظات' : isEn ? 'Notes' : 'Notes'}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+              <tbody className="divide-y divide-[#E6DED6]/60 dark:divide-[#3A3734]">
                 {filteredPunchLogs.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-black/60 dark:text-white/65 text-xs">
+                    <td colSpan={6} className="p-8 text-center text-black/62 dark:text-white/65 text-xs">
                       {isAr ? 'لا توجد سجلات حضور مطابقة' : 'Aucun pointage correspondant aux critères.'}
                     </td>
                   </tr>
                 ) : (
                   filteredPunchLogs.map((log) => (
-                    <tr key={log.id} className="hover:bg-neutral-50/60 dark:hover:bg-neutral-800/40 transition-colors">
+                    <tr key={log.id} className="hover:bg-[#F3EDE7]/40 dark:hover:bg-[#262422]/60 transition-colors">
                       <td className="p-3 font-mono text-[11px] text-black/75 dark:text-white/80">
                         {log.timestamp ? new Date(log.timestamp).toLocaleString('fr-FR') : log.date}
                       </td>
                       <td className="p-3">
                         <div className="font-bold text-black dark:text-white">{log.staffName}</div>
-                        <div className="text-[10px] text-black/60 dark:text-white/65">{log.staffRole}</div>
+                        <div className="text-[11px] text-black/62 dark:text-white/65">{log.staffRole}</div>
                       </td>
                       <td className="p-3 text-center">
                         <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold uppercase ${
                             log.type === 'in'
                               ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                               : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
@@ -257,7 +257,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
                         </span>
                       </td>
                       <td className="p-3 text-center">
-                        <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-black/80 dark:text-white/85 font-bold uppercase">
+                        <span className="font-mono text-[11px] px-2 py-0.5 rounded-md bg-[#F3EDE7] dark:bg-[#262422] text-black/80 dark:text-white/85 font-bold uppercase">
                           {log.method}
                         </span>
                       </td>

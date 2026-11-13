@@ -94,16 +94,16 @@ export const PillBarHistogram: React.FC<PillBarHistogramProps> = ({
     <div className={`w-full flex flex-col justify-end pt-2 ${className}`}>
       {/* Optional Card Title & Cadence Filter */}
       {(title || showFilter) && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5">
           {title && (
-            <span className="text-xs font-bold text-black dark:text-white">
+            <span className="text-[12.5px] font-semibold tracking-[-0.01em] text-black/82 dark:text-white/85">
               {title}
             </span>
           )}
 
           {showFilter && (
             <div
-              className="inline-flex items-center gap-0.5 p-0.5 rounded-lg bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700/60 self-start sm:self-auto shadow-2xs"
+              className="inline-flex items-center gap-0.5 p-0.5 rounded-lg bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 self-start sm:self-auto shadow-2xs"
               role="group"
             >
               {filterOptions.map((opt) => {
@@ -113,10 +113,10 @@ export const PillBarHistogram: React.FC<PillBarHistogramProps> = ({
                     key={opt.id}
                     type="button"
                     onClick={() => handlePeriodChange(opt.id)}
-                    className={`px-2 py-0.5 rounded-md text-[10px] font-semibold transition-all duration-150 cursor-pointer select-none ${
+                    className={`px-2 py-0.5 rounded-md text-[10.5px] font-semibold transition-all duration-150 cursor-pointer select-none ${
                       isSelected
                         ? 'bg-white dark:bg-neutral-700 text-[#d4522f] dark:text-[#E09070] shadow-xs'
-                        : 'text-black/65 dark:text-white/70 hover:text-black dark:hover:text-white'
+                        : 'text-black/62 dark:text-white/68 hover:text-black dark:hover:text-white'
                     }`}
                   >
                     {opt.label}
@@ -131,7 +131,7 @@ export const PillBarHistogram: React.FC<PillBarHistogramProps> = ({
       <div className="w-full flex items-end gap-3 relative">
         {showYAxis && (
           <div
-            className="flex flex-col justify-between text-[9px] font-mono tabular-nums text-black/60 dark:text-white/60 select-none pb-5 text-right w-4"
+            className="flex flex-col justify-between text-[10px] font-mono tabular-nums text-black/60 dark:text-white/60 select-none pb-5 text-right w-5"
             style={{ height: `${height}px` }}
           >
             {yTicks.map((tick) => (
@@ -197,10 +197,10 @@ export const PillBarHistogram: React.FC<PillBarHistogramProps> = ({
                     </div>
                     <div className="text-xs font-bold font-mono tabular-nums text-white flex items-center gap-1">
                       <span>{hoveredBar.value.toLocaleString()}</span>
-                      {unit && <span className="text-[9px] text-white/70 font-sans font-normal">{unit}</span>}
+                      {unit && <span className="text-[10px] text-white/75 font-sans font-normal">{unit}</span>}
                     </div>
                   </div>
-                  <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded-md bg-white/10 text-white/90">
+                  <span className="text-[10px] font-mono tabular-nums font-semibold px-1.5 py-0.5 rounded-md bg-white/10 text-white/90">
                     {Math.round((hoveredBar.value / totalValue) * 100)}%
                   </span>
                 </div>

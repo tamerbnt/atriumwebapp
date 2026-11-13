@@ -99,7 +99,7 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = React.memo(({
               {
                 id: 'open',
                 label: 'Ouvrir la fiche',
-                icon: <User className="w-3.5 h-3.5 text-[var(--atr-acc,#C9441F)]" />,
+                icon: <User className="w-3.5 h-3.5 text-[var(--atr-acc,#d4522f)]" />,
                 onClick: onOpenDetails,
               },
             ]
@@ -109,7 +109,7 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = React.memo(({
               {
                 id: 'renew',
                 label: 'Renouveler',
-                icon: <RotateCcw className="w-3.5 h-3.5 text-[var(--atr-ok,#0B7A45)]" />,
+                icon: <RotateCcw className="w-3.5 h-3.5 text-[var(--atr-ok,#096b40)]" />,
                 onClick: onRenew,
               },
             ]
@@ -139,7 +139,7 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = React.memo(({
               {
                 id: 'pay',
                 label: 'Solde',
-                icon: <CreditCard className="w-3.5 h-3.5 text-[var(--atr-ok,#0B7A45)]" />,
+                icon: <CreditCard className="w-3.5 h-3.5 text-[var(--atr-ok,#096b40)]" />,
                 onClick: onPay,
               },
             ]
@@ -149,7 +149,7 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = React.memo(({
               {
                 id: 'archive',
                 label: 'Archiver',
-                icon: <Archive className="w-3.5 h-3.5 text-[var(--atr-mut,#6B635C)]" />,
+                icon: <Archive className="w-3.5 h-3.5 text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/70" />,
                 onClick: onArchive,
               },
             ]
@@ -163,7 +163,7 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = React.memo(({
       {/* 1. Morphing Island Slab (.det) - z-index: 0, driven by rAF refs */}
       <div
         ref={detRef}
-        className="det absolute bg-[var(--atr-hl,#FBE7DF)] dark:bg-[#2C1D18] border border-[#F3C9BA] dark:border-[#52291F] rounded-[20px] box-border z-0 pointer-events-none"
+        className="det absolute bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] border border-[#d4522f]/25 dark:border-[#52291F] rounded-[20px] box-border z-0 pointer-events-none"
         style={
           detRef
             ? DET_CONTROLLED_BASE_STYLE
@@ -204,30 +204,30 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = React.memo(({
           <>
             {/* Col 1: Contact */}
             <div className="flex flex-col min-w-0 justify-center">
-              <h4 className="m-0 mb-1.5 font-mono text-[11px] font-bold tracking-widest uppercase text-[var(--atr-mut,#6B635C)]">
+              <h4 className="m-0 mb-1.5 font-sans text-[11px] font-semibold tracking-[0.06em] uppercase text-[var(--atr-ink-4,rgba(0,0,0,0.56))] dark:text-white/60">
                 Contact
               </h4>
-              <p className="m-0 mb-1 font-mono text-[13px] text-[var(--atr-ink,#1B1917)] font-semibold truncate">
+              <p className="m-0 mb-1 font-mono text-[13px] tabular-nums text-[var(--atr-ink,#000000)] dark:text-white font-semibold truncate">
                 {contactInfo?.phone || 'Non renseigné'}
               </p>
-              <p className="m-0 text-[12.5px] text-[var(--atr-mut,#6B635C)] truncate">
+              <p className="m-0 text-[12.5px] text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75 truncate">
                 {contactInfo?.email || 'Sans email'}
               </p>
             </div>
 
             {/* Col 2: Forfait */}
             <div className="flex flex-col min-w-0 justify-center">
-              <h4 className="m-0 mb-1.5 font-mono text-[11px] font-bold tracking-widest uppercase text-[var(--atr-mut,#6B635C)]">
+              <h4 className="m-0 mb-1.5 font-sans text-[11px] font-semibold tracking-[0.06em] uppercase text-[var(--atr-ink-4,rgba(0,0,0,0.56))] dark:text-white/60">
                 Forfait
               </h4>
-              <p className="m-0 mb-1 text-[13px] font-bold text-[var(--atr-ink,#1B1917)] truncate">
+              <p className="m-0 mb-1 text-[13px] font-bold text-[var(--atr-ink,#000000)] dark:text-white truncate">
                 {planInfo?.planName || 'Standard'}
               </p>
-              <p className="m-0 mb-0.5 text-[12px] text-[var(--atr-mut,#6B635C)] truncate">
+              <p className="m-0 mb-0.5 text-[12px] tabular-nums text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75 truncate">
                 Échéance {planInfo?.expiry || '—'} · {planInfo?.daysLeft || ''}
               </p>
               {planInfo?.remainingSessions !== undefined && (
-                <p className="m-0 text-[12px] font-semibold text-[var(--atr-ok,#0B7A45)]">
+                <p className="m-0 text-[12px] font-semibold tabular-nums text-[var(--atr-ok,#096b40)] dark:text-[#5BE3A3]">
                   {planInfo.remainingSessions} séances restantes
                 </p>
               )}
@@ -235,10 +235,10 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = React.memo(({
 
             {/* Col 3: Notes */}
             <div className="flex flex-col min-w-0 justify-center">
-              <h4 className="m-0 mb-1.5 font-mono text-[11px] font-bold tracking-widest uppercase text-[var(--atr-mut,#6B635C)]">
+              <h4 className="m-0 mb-1.5 font-sans text-[11px] font-semibold tracking-[0.06em] uppercase text-[var(--atr-ink-4,rgba(0,0,0,0.56))] dark:text-white/60">
                 Notes
               </h4>
-              <p className="m-0 text-[12.5px] leading-snug text-[var(--atr-mut,#6B635C)] line-clamp-3">
+              <p className="m-0 text-[12.5px] leading-snug text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75 line-clamp-3">
                 {notes || 'Aucune note.'}
               </p>
             </div>
@@ -255,7 +255,7 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = React.memo(({
                     e.stopPropagation();
                     btn.onClick();
                   }}
-                  className="h-[30px] px-3 rounded-[9px] border border-[var(--atr-line,#E6DED6)] bg-white dark:bg-[#262422] hover:bg-[#1B1917] hover:text-white dark:hover:bg-[var(--atr-acc,#E8643F)] dark:hover:text-black text-[var(--atr-ink,#1B1917)] font-medium text-[11.5px] flex items-center gap-1.5 transition-colors duration-140 cursor-pointer whitespace-nowrap"
+                  className="h-[30px] px-3 rounded-[9px] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-white dark:bg-[#262422] hover:bg-[#1F1D1B] hover:text-white dark:hover:bg-[var(--atr-acc,#e8643f)] dark:hover:text-white text-[var(--atr-ink,#000000)] dark:text-white font-medium text-[11.5px] flex items-center gap-1.5 transition-colors duration-140 cursor-pointer whitespace-nowrap"
                 >
                   {btn.icon}
                   <span className="truncate">{btn.label}</span>

@@ -124,13 +124,13 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 			}
 		]} hasIcon hasFacility hasActionBtn actionBtnWidth={140} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 p-6 rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800/60 shadow-2xs space-y-6">
-<div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 p-6 rounded-[28px] border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-6">
+<div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
 <div className="flex items-center gap-3.5">
 <div className="w-11 h-11 rounded-2xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-sm"><FileText className="w-6 h-6" /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{isAr ? "سجل الوكالات والوساطة العقارية" : "Registre des Mandats d'Agence"}</h1>
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{isAr ? "سجل الوكالات والوساطة العقارية" : "Registre des Mandats d'Agence"}</h1>
 <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">Décret 09-18 Conforme</span>
 </div>
 </div>
@@ -141,17 +141,17 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 </div>
 </div>
 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-<div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+<div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div className="text-xs text-black/55 dark:text-white/75 uppercase font-semibold">{isAr ? "وكالات سارية" : "Mandats Actifs"}</div>
 <div className="text-2xl font-bold text-black dark:text-white mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{activeCount}</div>
 <div className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1">{isAr ? "قيد الاستغلال" : "En cours d'exploitation"}</div>
 </div>
-<div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+<div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div className="text-xs text-black/55 dark:text-white/75 uppercase font-semibold">{isAr ? "تنتهي خلال 15 يوماً" : "Expirant sous 15j"}</div>
 <div className="text-2xl font-bold text-amber-600 dark:text-amber-500 mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{expiringCount}</div>
 <div className="text-[11px] text-amber-600 dark:text-amber-400 mt-1">{isAr ? "يتطلب ملحق تمديد" : "Avenant de prorogation requis"}</div>
 </div>
-<div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+<div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div className="text-xs text-black/55 dark:text-white/75 uppercase font-semibold">{isAr ? "وكالات حصرية" : "Mandats Exclusifs"}</div>
 <div className="text-2xl font-bold text-[#d4522f] mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{exclusiveCount}</div>
 <div className="text-[11px] text-black/55 dark:text-white/75 mt-1">{isAr ? "حق الوساطة الحصري" : "Portefeuille sous exclusivité"}</div>
@@ -319,7 +319,7 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 </div>
 <div className="space-y-2">
 <span className="text-xs font-semibold uppercase text-[#d4522f]">Bien Sous Contrat</span>
-<div className="p-3.5 rounded-xl border border-[#E9EEF0] dark:border-neutral-700/60 text-xs space-y-1">
+<div className="p-3.5 rounded-xl border border-[#E6DED6] dark:border-neutral-700/60 text-xs space-y-1">
 <div className="font-bold text-black dark:text-white">{selectedMandate.propertyTitle}</div>
 <div className="text-black/55 dark:text-white/75">{selectedMandate.propertyAddress}</div>
 <div className="pt-2 flex justify-between font-mono font-bold text-sm text-black dark:text-white">
@@ -334,7 +334,7 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 </div>
 <div className="space-y-2">
 <span className="text-xs font-semibold uppercase text-[#d4522f]">Identité du Mandant</span>
-<div className="p-3.5 rounded-xl border border-[#E9EEF0] dark:border-neutral-700/60 text-xs space-y-1.5">
+<div className="p-3.5 rounded-xl border border-[#E6DED6] dark:border-neutral-700/60 text-xs space-y-1.5">
 <div className="font-semibold text-black dark:text-white">{selectedMandate.ownerFullName}</div>
 <div className="text-black/55 dark:text-white/55 font-mono">{selectedMandate.ownerPhone}</div>
 <div className="text-[11px] text-black/55 dark:text-white/55">

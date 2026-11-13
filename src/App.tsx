@@ -1227,7 +1227,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setTopBarCollapsed(false)}
-                className="fixed top-2.5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 px-3 py-1 rounded-full bg-white dark:bg-[#18181B] border border-[#E2E8EC] dark:border-neutral-700 text-black/85 dark:text-white text-xs font-medium shadow-sm hover:shadow-md hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-all duration-200 cursor-pointer group select-none backdrop-blur-md"
+                className="fixed top-2.5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 px-3 py-1 rounded-full bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-700 text-black/85 dark:text-white text-xs font-medium shadow-sm hover:shadow-md hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-all duration-200 cursor-pointer group select-none backdrop-blur-md"
                 title={t('topbar_focus_restore', "Afficher l'en-tête")}
                 aria-label={t('topbar_focus_restore', "Afficher l'en-tête")}
               >
@@ -1236,7 +1236,7 @@ export default function App() {
               </button>
             )}
 
-            <div className="relative w-full min-h-full flex flex-col p-6 sm:p-8 pb-16 sm:pb-20">
+            <div className="relative w-full min-h-full flex flex-col px-5 py-5 sm:px-8 sm:py-7 lg:px-10 lg:py-8 pb-16 sm:pb-20">
               <React.Suspense
                 fallback={
                   <ScreenSuspenseFallback

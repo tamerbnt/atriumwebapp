@@ -224,7 +224,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
 <div className="flex-1 flex flex-col min-w-0 overflow-y-auto p-4 sm:p-6 space-y-5">
 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
 <div>
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 <Wrench className="text-[#d4522f]" size={32} />
 <span>
 {isAr ? "سير العمل وأوامر التصليح (OR)" : activeGarageRole === "mecanicien" ? "Tableau d'Atelier & Lifts (Mécanique)" : "Ordres de Réparation & Gestion des Ponts"}
@@ -252,19 +252,19 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
 </div>
 <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
 <span className="text-[11px] font-semibold text-black/55 dark:text-white/55 block">{isAr ? "جسور الرفع المشغولة" : "Ponts Occupés"}</span>
-<span className="text-xl font-black text-[#d4522f] font-mono mt-0.5 block">
+<span className="text-xl font-black text-[#d4522f] font-mono tabular-nums mt-0.5 block">
 {occupiedBaysCount}
 {" / "}
 {bays.length}
 </span>
 </div>
-<div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+<div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs">
 <span className="text-[11px] font-semibold text-black/55 dark:text-white/55 block">{isAr ? "جاهزة للتسليم" : "Prêts pour Livraison"}</span>
-<span className="text-xl font-black text-emerald-600 font-mono mt-0.5 block">{readyCount}</span>
+<span className="text-xl font-black text-emerald-600 font-mono tabular-nums mt-0.5 block">{readyCount}</span>
 </div>
-{!isMechanicRole && /* @__PURE__ */ <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+{!isMechanicRole && /* @__PURE__ */ <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs">
 <span className="text-[11px] font-semibold text-black/55 dark:text-white/55 block">{isAr ? "قيمة الأوامر الحالية" : "Volume d'Affaires OR"}</span>
-<span className="text-xl font-black text-black dark:text-white font-mono mt-0.5 block">{formatMoney(totalBilled, language)}</span>
+<span className="text-xl font-black text-black dark:text-white font-mono tabular-nums mt-0.5 block">{formatMoney(totalBilled, language)}</span>
 </div>}
 </div>
 <div className="p-4 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs space-y-3">
@@ -483,7 +483,7 @@ Carburant
 </span>
 {(selectedOrder.damageMarkers || []).length === 0 ? /* @__PURE__ */ <p className="text-[11px] text-black/55 dark:text-white/55 italic">Véhicule admis sans dommages carrosserie notés.</p> : /* @__PURE__ */ <ul className="space-y-1">
 {selectedOrder.damageMarkers?.map((dm: any, i: any) => /* @__PURE__ */ <li key={dm.id} className="text-[11px] text-black/70 dark:text-white/75 flex items-center gap-1.5">
-<span className="w-4 h-4 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-[9px] font-bold">{i + 1}</span>
+<span className="w-4 h-4 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-[10px] font-bold">{i + 1}</span>
 <span className="capitalize font-semibold">{dm.damageType}</span>
 <span className="text-black/55 dark:text-white/55">
 (

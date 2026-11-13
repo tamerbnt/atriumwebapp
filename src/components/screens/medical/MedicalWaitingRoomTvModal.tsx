@@ -290,7 +290,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
                   <div className="flex items-center gap-4 text-right">
                     <ArrowRight size={32} className="text-[#d4522f] animate-pulse" />
                     <div>
-                      <span className="text-xs text-white/40 uppercase tracking-wider block">Médecin Praticien</span>
+                      <span className="text-xs text-white/60 uppercase tracking-wider block">Médecin Praticien</span>
                       <div className="text-xl font-bold text-white">
                         {currentCall.doctorName || 'Dr. Amine Benali'}
                       </div>
@@ -303,9 +303,9 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
               </div>
             ) : (
               <div className="rounded-[32px] p-12 bg-[#18181B] border border-white/10 min-h-[380px] flex flex-col items-center justify-center text-center">
-                <Clock size={48} className="text-white/20 mb-4 animate-spin" />
+                <Clock size={48} className="text-white/50 mb-4 animate-spin" />
                 <h3 className="text-xl font-semibold text-white/70">Salle d'attente calme</h3>
-                <p className="text-sm text-white/40 mt-1 max-w-md">
+                <p className="text-sm text-white/60 mt-1 max-w-md">
                   Aucun patient en cours d'examen. Les prochains numéros seront appelés dès disponibilité des cabinets.
                 </p>
               </div>
@@ -314,7 +314,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
 
           {/* Cabinets Status Strip */}
           <div className="mt-6">
-            <span className="text-xs uppercase tracking-widest text-white/40 font-semibold block mb-3">
+            <span className="text-xs uppercase tracking-widest text-white/60 font-semibold block mb-3">
               État d'Occupation des Cabinets Médicaux
             </span>
             <div className="grid grid-cols-4 gap-3">
@@ -334,7 +334,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
                       />
                     </div>
                     <div className="text-xs font-bold text-white truncate">{doc.fullName}</div>
-                    <span className="text-[10px] text-white/40 truncate">{doc.specialty}</span>
+                    <span className="text-[10px] text-white/60 truncate">{doc.specialty}</span>
                   </div>
                 );
               })}
@@ -352,7 +352,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">Prochains sur la Liste</h3>
-                  <span className="text-xs text-white/40">Ordre d'Appel Estimé</span>
+                  <span className="text-xs text-white/60">Ordre d'Appel Estimé</span>
                 </div>
               </div>
               <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-white/10 text-white">
@@ -390,7 +390,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
                     <span className="text-xs font-semibold text-[#14B8A6] block">
                       {patient.doctorSpecialty || 'Médecine Générale'}
                     </span>
-                    <span className="text-[11px] text-white/40 font-mono">
+                    <span className="text-[11px] text-white/60 font-mono">
                       {patient.cabinetRoom || 'En attente tri'}
                     </span>
                   </div>
@@ -398,7 +398,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
               ))}
 
               {waitingQueue.length === 0 && (
-                <div className="py-12 text-center text-white/30 text-xs">
+                <div className="py-12 text-center text-white/55 text-xs">
                   Aucun patient en file d'attente immédiate.
                 </div>
               )}
@@ -428,7 +428,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
         <div className="truncate text-white/80 text-[11px] font-mono px-4">
           Permanence médicale assurée 7j/7 · Laboratoire d'analyses et Imagerie ouverts jusqu'à 18h00 · Télétransmission Chifa instantanée · Conventionné CNAS & CASNOS
         </div>
-        <div className="text-white/40 text-[11px] font-mono shrink-0">
+        <div className="text-white/60 text-[11px] font-mono shrink-0">
           Urgences Médicales: 023 45 67 00
         </div>
       </div>

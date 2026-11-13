@@ -506,7 +506,7 @@ export const PosOrdersView: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
+                <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
                   {language === 'ar' ? 'سجل الطلبات والمبيعات' : language === 'fr' ? 'Commandes & Tickets de Caisse' : 'Sales Ledger & Orders'}
                 </h1>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4522f]/15 text-[#d4522f] border border-[#d4522f]/30">
@@ -544,7 +544,7 @@ export const PosOrdersView: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             
             {/* Card 1: Volume Brut des Ventes */}
-            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-black/55 dark:text-white/75">
                   {language === 'ar' ? 'إجمالي المبيعات الإجمالي' : 'Volume Brut des Ventes'}
@@ -565,7 +565,7 @@ export const PosOrdersView: React.FC = () => {
             </div>
 
             {/* Card 2: Tickets en Attente & Retours */}
-            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-black/55 dark:text-white/75">
                   {language === 'ar' ? 'التذاكر المعلقة والمرتجعات' : 'Tickets en Attente & Avoirs'}
@@ -885,14 +885,14 @@ export const PosOrdersView: React.FC = () => {
                 {receiptConfig.subHeader && (
                   <div className="text-[10px] text-black/75">{receiptConfig.subHeader}</div>
                 )}
-                <div className="text-[9px] text-black/55">
+                <div className="text-[10px] text-black/55">
                   {receiptConfig.address || currentBranch.address || '8 Rue Didouche Mourad, Alger'}
                 </div>
                 {receiptConfig.phone && (
-                  <div className="text-[9px] text-black/55">Tel: {receiptConfig.phone}</div>
+                  <div className="text-[10px] text-black/55">Tel: {receiptConfig.phone}</div>
                 )}
                 {receiptConfig.taxId && (
-                  <div className="text-[9px] font-bold text-black/75">NIF/RC: {receiptConfig.taxId}</div>
+                  <div className="text-[10px] font-bold text-black/75">NIF/RC: {receiptConfig.taxId}</div>
                 )}
               </div>
 
@@ -938,7 +938,7 @@ export const PosOrdersView: React.FC = () => {
               {/* Footer */}
               <div className="pt-2 text-center space-y-1">
                 {receiptConfig.showBarcode && (
-                  <div className="w-36 h-6 mx-auto bg-neutral-900 text-white text-[7px] flex items-center justify-center tracking-widest">
+                  <div className="w-36 h-6 mx-auto bg-neutral-900 text-white text-[10px] flex items-center justify-center tracking-widest">
                     |||| || ||||| || |||
                   </div>
                 )}

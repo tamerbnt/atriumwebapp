@@ -107,7 +107,7 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
       icon: (
         <Pin
           className={`w-3.5 h-3.5 ${
-            isPinned ? 'fill-[#F59E0B] text-[#F59E0B]' : 'text-black/55 dark:text-white/60'
+            isPinned ? 'fill-[#F59E0B] text-[#F59E0B]' : 'text-black/62 dark:text-white/65'
           }`}
         />
       ),
@@ -146,14 +146,14 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
           transform: isHovered ? 'scale(1.01)' : 'scale(1)',
           transition: 'transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease',
         }}
-        className={`relative w-[260px] p-6 rounded-[20px] flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
+        className={`relative w-[260px] p-6 rounded-[22px] flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
           isSelected
             ? 'bg-gradient-to-br from-[#d4522f] to-[#a8583c] text-white shadow-lg border border-transparent'
             : isHovered
-            ? 'bg-white dark:bg-[#18181B] border border-[#d4522f] shadow-md'
+            ? 'bg-white dark:bg-[#1C1B1A] border border-[#d4522f] shadow-md'
             : isPinned
-            ? 'bg-white dark:bg-[#18181B] border-2 border-amber-400 shadow-sm'
-            : 'bg-white dark:bg-[#18181B] border border-neutral-200/80 dark:border-neutral-800 shadow-sm'
+            ? 'bg-white dark:bg-[#1C1B1A] border border-amber-400/80 shadow-sm'
+            : 'bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs'
         }`}
       >
         {/* ================= CORNER-FAN ACTION BUTTONS ANCHOR ================= */}
@@ -185,10 +185,10 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
                     : 'cubic-bezier(0.4, 0, 1, 1)',
                   transitionDelay: `${delay}ms`,
                 }}
-                className={`absolute -top-4 -right-4 w-9 h-9 rounded-[6px] bg-white dark:bg-[#1E1E22] border border-neutral-200 dark:border-neutral-700 shadow-md flex items-center justify-center transition-transform hover:scale-115 active:scale-95 cursor-pointer z-50 ${
+                className={`absolute -top-4 -right-4 w-9 h-9 rounded-[8px] bg-white dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] shadow-md flex items-center justify-center transition-transform hover:scale-115 active:scale-95 cursor-pointer z-50 ${
                   btn.isSpecialDelete
                     ? 'hover:bg-red-50 dark:hover:bg-red-950/40 hover:border-red-300'
-                    : 'hover:bg-neutral-50 dark:hover:bg-neutral-700/60'
+                    : 'hover:bg-[#F3EDE7] dark:hover:bg-[#3A3734]'
                 }`}
               >
                 {btn.icon}

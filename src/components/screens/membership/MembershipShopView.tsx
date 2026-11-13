@@ -218,142 +218,136 @@ export const MembershipShopView: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in duration-200">
       <OfflineRetryBanner
         isOffline={isOffline}
         isTimedOut={isTimedOut}
         lastSyncedAt={lastSyncedAt}
         onRetry={retryCloudSync}
       />
-      <div className="space-y-6 animate-in fade-in duration-200">
-        {/* Top Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
-              <Zap size={22} />
-            </div>
-            <div>
-              <h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                {isAr ? 'متجر المكملات والتغذية الرياضية' : 'Pro-Shop & Nutrition Sportive'}
-              </h1>
-            </div>
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E6DED6]/80 dark:border-neutral-800/80">
+        <div className="flex items-center gap-3.5 sm:gap-4">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#F3EDE7] dark:bg-white/[0.07] border border-[#E6DED6] dark:border-neutral-700/70 shadow-2xs flex items-center justify-center text-black dark:text-white">
+            <Zap size={22} />
           </div>
-
-          <div className="flex items-center gap-3 relative flex-wrap">
+          <div>
+            <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-[0.98] rtl:leading-tight tracking-[0.012em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              {isAr ? 'متجر المكملات والتغذية الرياضية' : 'Pro-Shop & Nutrition Sportive'}
+            </h1>
           </div>
         </div>
+      </div>
 
-        {/* Canonical 3-Card Top Metrics Pod Tray */}
-        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
-          <div>
-            <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-              {isAr ? 'مؤشرات مبيعات المتجر وتدفق الصندوق' : 'Indicateurs Pro-Shop & Rotation de Stock'}
-            </h2>
-          </div>
+      {/* Canonical 3-Card Top Metrics Pod Tray */}
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
+        <div>
+          <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">
+            {isAr ? 'مؤشرات مبيعات المتجر وتدفق الصندوق' : 'Indicateurs Pro-Shop & Rotation de Stock'}
+          </h2>
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-              <div>
-                <span className="text-xs font-semibold text-black/70 dark:text-white/75">
-                  {isAr ? 'مبيعات المتجر اليوم' : 'Chiffre d’Affaires Pro-Shop'}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="p-4.5 sm:p-5 rounded-[18px] bg-white dark:bg-neutral-800/90 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between min-h-[132px]">
+            <div>
+              <span className="text-[12px] font-medium text-black/68 dark:text-white/72">
+                {isAr ? 'مبيعات المتجر اليوم' : 'Chiffre d’Affaires Pro-Shop'}
+              </span>
+              <div className="mt-1.5">
+                <span className="text-[10.5px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50/90 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md tabular-nums">
+                  ↗ {products.length} {isAr ? 'أصناف معروضة' : 'articles catalogue'}
                 </span>
-                <div className="mt-1">
-                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                    ↗ {products.length} {isAr ? 'أصناف معروضة' : 'articles catalogue'}
-                  </span>
-                </div>
-              </div>
-              <div className="text-2xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                {formatMoney(cartTotal > 0 ? cartTotal : 34800)}
               </div>
             </div>
+            <div className="text-[26px] lg:text-[28px] leading-[0.95] font-bold tracking-[-0.01em] text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              {formatMoney(cartTotal > 0 ? cartTotal : 34800)}
+            </div>
+          </div>
 
-            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-              <div>
-                <span className="text-xs font-semibold text-black/70 dark:text-white/75">
-                  {isAr ? 'تنبيهات انخفاض المخزون' : 'Alertes Réapprovisionnement'}
+          <div className="p-4.5 sm:p-5 rounded-[18px] bg-white dark:bg-neutral-800/90 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between min-h-[132px]">
+            <div>
+              <span className="text-[12px] font-medium text-black/68 dark:text-white/72">
+                {isAr ? 'تنبيهات انخفاض المخزون' : 'Alertes Réapprovisionnement'}
+              </span>
+              <div className="mt-1.5">
+                <span
+                  className={`text-[10.5px] font-semibold px-2 py-0.5 rounded-md tabular-nums ${
+                    lowStockCount > 0
+                      ? 'text-amber-700 dark:text-amber-400 bg-amber-50/90 dark:bg-amber-950/40'
+                      : 'text-emerald-700 dark:text-emerald-400 bg-emerald-50/90 dark:bg-emerald-950/40'
+                  }`}
+                >
+                  {lowStockCount > 0 ? `${lowStockCount} sous le seuil d'alerte` : 'Stock Optimal 100%'}
                 </span>
-                <div className="mt-1">
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      lowStockCount > 0
-                        ? 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40'
-                        : 'text-emerald-700 bg-emerald-50'
+              </div>
+            </div>
+            <div className="text-[30px] lg:text-[32px] leading-[0.95] font-bold tracking-[-0.01em] text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              {lowStockCount}{' '}
+              <span className="text-xs font-sans text-black/62 dark:text-white/65 font-normal">
+                {isAr ? 'منتجات' : 'références'}
+              </span>
+            </div>
+          </div>
+
+          <div className="p-4.5 sm:p-5 rounded-[18px] bg-[#1F1D1B] border border-white/[0.08] text-white flex flex-col justify-between min-h-[132px] shadow-sm">
+            <div>
+              <span className="text-[12px] font-medium text-white/75">
+                {isAr ? 'قيمة مخزون الصالة الإجمالية' : 'Valorisation Globale Stock'}
+              </span>
+              <div className="text-[10.5px] text-[#FB923C] font-semibold mt-1.5">
+                <span className="bg-[#3D2817] border border-[#FB923C]/25 px-2 py-0.5 rounded-md inline-block">
+                  {isAr ? 'أصول الصندوق الجاهزة للبيع' : 'Stock Marchandises'}
+                </span>
+              </div>
+            </div>
+            <div className="text-[26px] lg:text-[28px] leading-[0.95] font-bold text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              {formatMoney(totalCatalogInventoryValue)}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Workstation Pod Tray */}
+      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
+        {/* Workstation Header Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <ShoppingBag size={16} className="text-black/62 dark:text-white/65" />
+            <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">
+              {isAr ? 'كتالوج المنتجات والمكملات' : 'Catalogue Pro-Shop & Articles'}
+            </h2>
+            <span className="px-2 py-0.5 rounded-md bg-white dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] text-[11px] font-semibold text-black/68 dark:text-white/75 tabular-nums shadow-2xs">
+              {filteredProducts.length}
+            </span>
+          </div>
+
+          {/* Right: Domain Filter Capsules for Product Categories */}
+          <div className="flex flex-wrap items-center gap-2.5 ml-auto">
+            <div className="flex items-center p-0.5 rounded-xl bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] gap-0.5 text-xs font-semibold shadow-2xs overflow-x-auto max-w-full">
+              {categories.map((cat) => {
+                const isActive = selectedCategory === cat;
+                const compact = cat === 'All'
+                  ? { label: isAr ? 'الكل' : 'Tous', tooltip: isAr ? 'جميع الفئات' : 'Toutes les catégories' }
+                  : compactFilterLabel(cat);
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    title={compact.tooltip || cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`px-3 py-1.5 rounded-lg cursor-pointer transition-all whitespace-nowrap ${
+                      isActive
+                        ? 'bg-[#d4522f]/12 text-[#d4522f] dark:bg-[#d4522f]/20 dark:text-[#FB923C] font-bold'
+                        : 'text-black/68 dark:text-white/72 hover:text-black dark:hover:text-white'
                     }`}
                   >
-                    {lowStockCount > 0 ? `${lowStockCount} sous le seuil d'alerte` : 'Stock Optimal 100%'}
-                  </span>
-                </div>
-              </div>
-              <div className="text-2xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                {lowStockCount}{' '}
-                <span className="text-xs text-black/55 dark:text-white/55 font-normal">
-                  {isAr ? 'منتجات' : 'références'}
-                </span>
-              </div>
-            </div>
-
-            <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-              <div>
-                <span className="text-xs font-medium text-white/80">
-                  {isAr ? 'قيمة مخزون الصالة الإجمالية' : 'Valorisation Globale Stock'}
-                </span>
-                <div className="text-[11px] text-[#FB923C] font-semibold mt-0.5">
-                  <span className="bg-[#3D2817] px-2 py-0.5 rounded-full inline-block">
-                    {isAr ? 'أصول الصندوق الجاهزة للبيع' : 'Stock Marchandises'}
-                  </span>
-                </div>
-              </div>
-              <div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                {formatMoney(totalCatalogInventoryValue)}
-              </div>
+                    {compact.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
-
-        {/* Bottom Workstation Pod Tray */}
-        <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
-          {/* Workstation Header Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <ShoppingBag size={16} className="text-black/55 dark:text-white/55" />
-              <span className="text-sm font-bold text-black dark:text-white">
-                {isAr ? 'كتالوج المنتجات والمكملات' : 'Catalogue Pro-Shop & Articles'}
-              </span>
-              <span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums ml-1">
-                {filteredProducts.length}
-              </span>
-            </div>
-
-            {/* Right: Domain Filter Capsules for Product Categories */}
-            <div className="flex flex-wrap items-center gap-2.5 ml-auto">
-              <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs overflow-x-auto max-w-full">
-                {categories.map((cat) => {
-                  const isActive = selectedCategory === cat;
-                  const compact = cat === 'All'
-                    ? { label: isAr ? 'الكل' : 'Tous', tooltip: isAr ? 'جميع الفئات' : 'Toutes les catégories' }
-                    : compactFilterLabel(cat);
-                  return (
-                    <button
-                      key={cat}
-                      type="button"
-                      title={compact.tooltip || cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      style={{
-                        backgroundColor: isActive ? '#FCEEE8' : 'transparent',
-                        color: isActive ? 'var(--color-accent)' : '#71717A',
-                      }}
-                      className={`px-3 py-1 rounded-full cursor-pointer transition-all whitespace-nowrap ${
-                        isActive ? 'font-bold' : 'hover:text-black dark:hover:text-white'
-                      }`}
-                    >
-                      {compact.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
 
           {/* Main Collection Area + 390px Inspector / Cart Drawer */}
           <div className="flex flex-col lg:flex-row gap-6 items-start">
@@ -399,7 +393,7 @@ export const MembershipShopView: React.FC = () => {
                       <span className="font-bold text-xs text-black dark:text-white block">
                         {p.name}
                       </span>
-                      <span className="text-[10px] text-black/55 dark:text-white/55">
+                      <span className="text-[11px] text-black/62 dark:text-white/65">
                         {p.category || 'Fitness & Nutrition'}
                       </span>
                     </div>
@@ -411,7 +405,7 @@ export const MembershipShopView: React.FC = () => {
                   width: '130px',
                   sortable: true,
                   renderCell: (p) => (
-                    <span className="font-mono text-xs font-bold text-black dark:text-white">
+                    <span className="font-mono text-xs font-bold text-black dark:text-white tabular-nums">
                       {formatMoney(p.price.amount)}
                     </span>
                   ),
@@ -425,12 +419,12 @@ export const MembershipShopView: React.FC = () => {
                     const isLow = p.stockQuantity <= (p.reorderLevel || 5);
                     return (
                       <span
-                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                        className={`px-2 py-0.5 rounded-md text-[11px] font-semibold tabular-nums ${
                           p.stockQuantity <= 0
-                            ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
+                            ? 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300'
                             : isLow
-                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                            : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                            : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                         }`}
                       >
                         {p.stockQuantity} unités
@@ -459,16 +453,16 @@ export const MembershipShopView: React.FC = () => {
                 return (
                   <div className="p-4 flex flex-col justify-between h-full space-y-3">
                     <div className="flex items-start justify-between gap-2">
-                      <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded">
+                      <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded-md">
                         {p.sku}
                       </span>
                       <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        className={`text-[11px] font-semibold px-2 py-0.5 rounded-md tabular-nums ${
                           p.stockQuantity <= 0
-                            ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
+                            ? 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300'
                             : isLow
-                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                            : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                            : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                         }`}
                       >
                         {p.stockQuantity} en stock
@@ -479,13 +473,13 @@ export const MembershipShopView: React.FC = () => {
                       <h4 className="font-bold text-xs text-black dark:text-white line-clamp-2">
                         {p.name}
                       </h4>
-                      <p className="text-[10px] text-black/55 dark:text-white/55 mt-0.5">
+                      <p className="text-[11px] text-black/62 dark:text-white/65 mt-0.5">
                         {p.category || 'Pro-Shop'}
                       </p>
                     </div>
 
-                    <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
-                      <span className="font-mono font-bold text-sm text-[#d4522f]">
+                    <div className="pt-2.5 border-t border-[#E6DED6]/60 dark:border-[#3A3734] flex items-center justify-between">
+                      <span className="font-mono font-bold text-sm text-[#d4522f] tabular-nums">
                         {formatMoney(p.price.amount)}
                       </span>
                       <AtriumButton
@@ -504,16 +498,16 @@ export const MembershipShopView: React.FC = () => {
           </div>
 
           {/* 390px Side Inspector / Cart Drawer */}
-          <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
+          <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-[#1C1B1A] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
             {/* Top Toggle Switch between Cart and Inspector */}
-            <div className="p-3 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
-              <div className="inline-flex rounded-xl bg-neutral-200/60 dark:bg-neutral-800 p-0.5">
+            <div className="p-3 border-b border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-between bg-[#FBF8F5] dark:bg-[#151413]">
+              <div className="inline-flex rounded-xl bg-[#F3EDE7] dark:bg-[#262422] p-0.5 border border-[#E6DED6]/60 dark:border-[#3A3734]">
                 <button
                   onClick={() => setSidePanelMode('cart')}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     sidePanelMode === 'cart'
-                      ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs'
-                      : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
+                      ? 'bg-white dark:bg-[#1C1B1A] text-[#d4522f] shadow-xs'
+                      : 'text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white'
                   }`}
                 >
                   Panier ({cart.length})
@@ -521,10 +515,10 @@ export const MembershipShopView: React.FC = () => {
                 <button
                   onClick={() => setSidePanelMode('inspector')}
                   disabled={!selectedProduct}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all disabled:opacity-40 ${
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer disabled:opacity-40 ${
                     sidePanelMode === 'inspector'
-                      ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-xs'
-                      : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
+                      ? 'bg-white dark:bg-[#1C1B1A] text-[#d4522f] shadow-xs'
+                      : 'text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white'
                   }`}
                 >
                   Fiche Article
@@ -534,7 +528,7 @@ export const MembershipShopView: React.FC = () => {
               {selectedProduct && sidePanelMode === 'inspector' && (
                 <button
                   onClick={() => setSidePanelMode('cart')}
-                  className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-black/55 dark:text-white/55"
+                  className="w-7 h-7 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-[#262422] flex items-center justify-center text-black/62 dark:text-white/65 cursor-pointer"
                 >
                   <X size={15} />
                 </button>
@@ -544,23 +538,23 @@ export const MembershipShopView: React.FC = () => {
             {sidePanelMode === 'inspector' && selectedProduct ? (
               /* Product Inspector */
               <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 pt-2 gap-2">
+                <div className="flex border-b border-[#E6DED6] dark:border-[#3A3734] bg-white dark:bg-[#1C1B1A] px-3 pt-2 gap-2">
                   <button
                     onClick={() => setInspectorTab('fiche')}
-                    className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
+                    className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 cursor-pointer ${
                       inspectorTab === 'fiche'
                         ? 'border-[#d4522f] text-[#d4522f]'
-                        : 'border-transparent text-black/55 dark:text-white/55'
+                        : 'border-transparent text-black/62 dark:text-white/65'
                     }`}
                   >
                     Détails Article
                   </button>
                   <button
                     onClick={() => setInspectorTab('stock')}
-                    className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
+                    className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 cursor-pointer ${
                       inspectorTab === 'stock'
                         ? 'border-[#d4522f] text-[#d4522f]'
-                        : 'border-transparent text-black/55 dark:text-white/55'
+                        : 'border-transparent text-black/62 dark:text-white/65'
                     }`}
                   >
                     Niveau Stock
@@ -568,31 +562,31 @@ export const MembershipShopView: React.FC = () => {
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
-                  <div className="p-4 bg-[#1F1D1B] rounded-xl text-white space-y-2 shadow-sm">
-                    <span className="text-[10px] text-white/75 font-mono">SKU: {selectedProduct.sku}</span>
+                  <div className="p-4 bg-[#1F1D1B] border border-white/[0.08] rounded-xl text-white space-y-2 shadow-sm">
+                    <span className="text-[11px] text-white/75 font-mono">SKU: {selectedProduct.sku}</span>
                     <h3 className="text-base font-bold text-white">{selectedProduct.name}</h3>
-                    <div className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                    <div className="text-2xl font-bold text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                       {formatMoney(selectedProduct.price.amount)}
                     </div>
                   </div>
 
-                  <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+                  <div className="p-3.5 bg-[#FBF8F5] dark:bg-[#262422] rounded-xl border border-[#E6DED6] dark:border-[#3A3734] space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-black/55 dark:text-white/55">Catégorie:</span>
+                      <span className="text-black/62 dark:text-white/65">Catégorie:</span>
                       <span className="font-semibold text-black dark:text-white">{selectedProduct.category || 'Nutrition'}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-black/55 dark:text-white/55">Stock en rayon:</span>
-                      <span className="font-mono font-bold text-black dark:text-white">{selectedProduct.stockQuantity} pcs</span>
+                      <span className="text-black/62 dark:text-white/65">Stock en rayon:</span>
+                      <span className="font-mono font-bold text-black dark:text-white tabular-nums">{selectedProduct.stockQuantity} pcs</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-black/55 dark:text-white/55">Seuil de réappro:</span>
-                      <span className="font-mono text-black/70 dark:text-white/75">{selectedProduct.reorderLevel || 5} pcs</span>
+                      <span className="text-black/62 dark:text-white/65">Seuil de réappro:</span>
+                      <span className="font-mono text-black/72 dark:text-white/75 tabular-nums">{selectedProduct.reorderLevel || 5} pcs</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 space-y-2">
+                <div className="p-4 border-t border-[#E6DED6] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#151413] space-y-2">
                   <AtriumButton
                     variant="primary"
                     className="w-full justify-center"
@@ -607,12 +601,12 @@ export const MembershipShopView: React.FC = () => {
               /* POS Cart Panel */
               <div className="flex-1 flex flex-col justify-between overflow-hidden">
                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                  <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800">
+                  <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6]/60 dark:border-[#3A3734]">
                     <span className="text-xs font-bold text-black dark:text-white">Articles ({cart.length})</span>
                     {cart.length > 0 && (
                       <button
                         onClick={() => setCart([])}
-                        className="text-[11px] text-red-500 hover:underline"
+                        className="text-[11px] font-medium text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
                       >
                         Vider
                       </button>
@@ -620,23 +614,23 @@ export const MembershipShopView: React.FC = () => {
                   </div>
 
                   {cart.length === 0 ? (
-                    <div className="h-44 flex flex-col items-center justify-center text-center text-black/55 dark:text-white/55 text-xs">
-                      <ShoppingBag size={32} className="text-black/55 dark:text-white/55 mb-2" />
+                    <div className="h-44 flex flex-col items-center justify-center text-center text-black/62 dark:text-white/65 text-xs">
+                      <ShoppingBag size={32} className="text-black/45 dark:text-white/45 mb-2" />
                       <p>Le panier est vide.</p>
-                      <span className="text-[10px] text-black/55 dark:text-white/55 mt-1">Cliquez sur "+ Panier" pour ajouter des articles</span>
+                      <span className="text-[11px] text-black/62 dark:text-white/65 mt-1">Cliquez sur "+ Panier" pour ajouter des articles</span>
                     </div>
                   ) : (
                     <div className="space-y-2">
                       {cart.map((item) => (
                         <div
                           key={item.product.id}
-                          className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-2"
+                          className="p-2.5 rounded-xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-between gap-2"
                         >
                           <div className="min-w-0 flex-1">
                             <span className="font-bold text-xs text-black dark:text-white truncate block">
                               {item.product.name}
                             </span>
-                            <span className="font-mono text-[11px] text-[#d4522f]">
+                            <span className="font-mono text-[11px] text-[#d4522f] tabular-nums">
                               {formatMoney(item.product.price.amount)}
                             </span>
                           </div>
@@ -644,22 +638,22 @@ export const MembershipShopView: React.FC = () => {
                           <div className="flex items-center gap-1.5 shrink-0">
                             <button
                               onClick={() => handleUpdateQty(item.product.id, -1)}
-                              className="w-6 h-6 rounded bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 flex items-center justify-center text-xs"
+                              className="w-6 h-6 rounded-md bg-white dark:bg-[#1C1B1A] border border-[#D4C8BC] dark:border-[#3A3734] flex items-center justify-center text-xs cursor-pointer"
                             >
                               <Minus size={10} />
                             </button>
-                            <span className="font-mono text-xs font-bold w-4 text-center">
+                            <span className="font-mono text-xs font-bold w-4 text-center tabular-nums">
                               {item.quantity}
                             </span>
                             <button
                               onClick={() => handleUpdateQty(item.product.id, 1)}
-                              className="w-6 h-6 rounded bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 flex items-center justify-center text-xs"
+                              className="w-6 h-6 rounded-md bg-white dark:bg-[#1C1B1A] border border-[#D4C8BC] dark:border-[#3A3734] flex items-center justify-center text-xs cursor-pointer"
                             >
                               <Plus size={10} />
                             </button>
                             <button
                               onClick={() => handleRemoveItem(item.product.id)}
-                              className="w-6 h-6 rounded text-black/55 dark:text-white/55 hover:text-red-500 flex items-center justify-center ml-1"
+                              className="w-6 h-6 rounded-md text-black/62 dark:text-white/65 hover:text-rose-600 flex items-center justify-center ml-1 cursor-pointer"
                             >
                               <Trash2 size={12} />
                             </button>
@@ -671,10 +665,10 @@ export const MembershipShopView: React.FC = () => {
                 </div>
 
                 {/* Checkout Section */}
-                <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 space-y-3">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-black/55 dark:text-white/55">Total à Payer:</span>
-                    <span className="font-mono font-bold text-base text-black dark:text-white">
+                <div className="p-4 border-t border-[#E6DED6] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#151413] space-y-3">
+                  <div className="flex justify-between text-xs items-baseline">
+                    <span className="text-black/62 dark:text-white/65">Total à Payer:</span>
+                    <span className="font-mono font-bold text-base text-black dark:text-white tabular-nums">
                       {formatMoney(cartTotal)}
                     </span>
                   </div>
@@ -682,10 +676,10 @@ export const MembershipShopView: React.FC = () => {
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       onClick={() => setPaymentMethod('Cash')}
-                      className={`p-2 rounded-lg text-xs font-semibold border flex items-center justify-center gap-1.5 ${
+                      className={`p-2 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
                         paymentMethod === 'Cash'
                           ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
-                          : 'border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75'
+                          : 'border-[#E6DED6] dark:border-[#3A3734] text-black/72 dark:text-white/75'
                       }`}
                     >
                       <Banknote size={13} />
@@ -693,10 +687,10 @@ export const MembershipShopView: React.FC = () => {
                     </button>
                     <button
                       onClick={() => setPaymentMethod('Card')}
-                      className={`p-2 rounded-lg text-xs font-semibold border flex items-center justify-center gap-1.5 ${
+                      className={`p-2 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
                         paymentMethod === 'Card'
                           ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
-                          : 'border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75'
+                          : 'border-[#E6DED6] dark:border-[#3A3734] text-black/72 dark:text-white/75'
                       }`}
                     >
                       <CreditCard size={13} />
@@ -720,6 +714,5 @@ export const MembershipShopView: React.FC = () => {
         </div>
       </div>
     </div>
-  </div>
   );
 };

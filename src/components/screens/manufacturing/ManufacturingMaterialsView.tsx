@@ -340,12 +340,12 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 			}
 		]} hasIcon hasFacility hasActionBtn actionBtnWidth={140} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Warehouse size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {isAr ? "مستودع المواد الأولية وسندات الصرف" : "Dépôt Matières & Mouvements Décret 05-468"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
@@ -374,14 +374,14 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 				}]} aria-label="Manufacturing Materials Subtab" />
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <span className="text-xs font-semibold text-black/70 dark:text-white/75">{isAr ? "إجمالي قيمة المخزون PMP" : "Valeur Totale du Dépôt"}</span>
 <div>
 <div className="text-2xl font-bold tracking-tight text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(totalValuation)}</div>
 <p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">{isAr ? "طريقة المتوسط المرجح PMP" : "Calculé au Coût Moyen Unitaire Pondéré"}</p>
 </div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <span className="text-xs font-semibold text-black/70 dark:text-white/75">{isAr ? "المواد تحت العتبة الحرجة" : "Alertes Réapprovisionnement"}</span>
 <div>
 <div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{lowStockCount}</div>
@@ -404,7 +404,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 </div>
 </div>
 {activeSubTab === "inventory" ? /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
-<div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+<div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex items-center gap-2">
 <span className="text-sm font-bold text-black dark:text-white">{isAr ? "دليل المواد الأولية" : "Catalogue Matières Premières"}</span>
 <span className="text-xs text-black/55 dark:text-white/55 font-semibold font-mono">
@@ -562,7 +562,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 </div>}
 </div>
 </div> : /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
-<div className="flex items-center justify-between p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+<div className="flex items-center justify-between p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div>
 <h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isAr ? "سجل السندات الرسمية (المرسوم التنفيذي 05-468)" : "Registre Officiel des Bons de Mouvement (Décret 05-468)"}
@@ -571,7 +571,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
 <AtriumButton variant="primary" size="sm" icon={<Plus size={14} />} onClick={() => setIsVoucherModalOpen(true)}>{isAr ? "إصدار سند جديد" : "Nouveau Bon"}</AtriumButton>
 </div>
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-{vouchers.map((v) => /* @__PURE__ */ <div key={v.id} className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-3">
+{vouchers.map((v) => /* @__PURE__ */ <div key={v.id} className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-3">
 <div className="flex items-center justify-between">
 <span className="font-mono text-xs font-bold text-[#d4522f]">{v.voucherNumber}</span>
 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${v.voucherType === "BonDeSortie" ? "bg-amber-100 text-amber-800" : v.voucherType === "BonDeReception" ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800"}`}>

@@ -57,7 +57,7 @@ export const Modal: React.FC<ModalProps> = ({
 
       {/* Dialog Surface */}
       <div
-        className={`relative w-full ${widthClasses} z-10 max-h-[90vh] flex flex-col overflow-hidden rounded-[28px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xl animate-in fade-in zoom-in-95 duration-200`}
+        className={`relative w-full ${widthClasses} z-10 max-h-[90vh] flex flex-col overflow-hidden rounded-[28px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xl animate-in fade-in zoom-in-95 duration-200`}
         role="dialog"
         aria-modal="true"
       >

@@ -217,12 +217,12 @@ export const MedicalBillingView: React.FC<any> = () => {
 			}
 		]} hasIcon hasFacility hasActionBtn={false} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><CreditCard size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {isAr ? "المالية الطبية والضمان الاجتماعي (Chifa / CNAS)" : "Facturation Polyclinique & Tiers Payant Chifa"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">CNAS / CASNOS</span>
@@ -244,7 +244,7 @@ export const MedicalBillingView: React.FC<any> = () => {
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "إجمالي الأتعاب المقررة" : "Volume d'Honoraires Total"}</span>
 <div>
 <div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalFee, "DZD")}</div>
@@ -255,7 +255,7 @@ export const MedicalBillingView: React.FC<any> = () => {
 </p>
 </div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "حصة التأمين الصحي (Chifa)" : "Prise en Charge CNAS/CASNOS"}</span>
 <div>
 <div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalInsurance, "DZD")}</div>
@@ -499,19 +499,19 @@ Période: Mai 2026 · Bordereau N° BOR-2026-05-ALGER · Centre de Paiement CNAS
 {" télétransmis"}
 </span>
 </div>
-<div className="p-4 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+<div className="p-4 rounded-xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700">
 <span className="text-[10px] text-black/55 dark:text-white/55 font-bold uppercase">Total Honoraires NGAP</span>
-<div className="text-xl font-bold font-mono text-black dark:text-white mt-1">{formatMoney(totalClaimsCount * 2800, "DZD")}</div>
+<div className="text-xl font-bold font-mono tabular-nums text-black dark:text-white mt-1">{formatMoney(totalClaimsCount * 2800, "DZD")}</div>
 <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">Tarifs conventionnels</span>
 </div>
-<div className="p-4 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+<div className="p-4 rounded-xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700">
 <span className="text-[10px] text-black/55 dark:text-white/55 font-bold uppercase">Créance Due par la CNAS</span>
-<div className="text-xl font-bold font-mono text-blue-600 dark:text-blue-400 mt-1">{formatMoney(totalCnasShare, "DZD")}</div>
+<div className="text-xl font-bold font-mono tabular-nums text-blue-600 dark:text-blue-400 mt-1">{formatMoney(totalCnasShare, "DZD")}</div>
 <span className="text-[10px] text-blue-500 font-medium">À virer au compte polyclinique</span>
 </div>
-<div className="p-4 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+<div className="p-4 rounded-xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700">
 <span className="text-[10px] text-black/55 dark:text-white/55 font-bold uppercase">Ticket Modérateur Encaissé</span>
-<div className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">{formatMoney(totalTicketModerateur, "DZD")}</div>
+<div className="text-xl font-bold font-mono tabular-nums text-emerald-600 dark:text-emerald-400 mt-1">{formatMoney(totalTicketModerateur, "DZD")}</div>
 <span className="text-[10px] text-black/55 dark:text-white/55">Payé par les assurés</span>
 </div>
 </div>
@@ -631,7 +631,7 @@ Net Médecin (
 <div className="grid grid-cols-2 gap-3">
 <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800">
 <span className="text-[10px] text-black/55 dark:text-white/55 font-bold uppercase">Espèces Attendues (Système)</span>
-<div className="text-xl font-bold font-mono text-black dark:text-white mt-1">{formatMoney(expectedCashTotal, "DZD")}</div>
+<div className="text-xl font-bold font-mono tabular-nums text-black dark:text-white mt-1">{formatMoney(expectedCashTotal, "DZD")}</div>
 <span className="text-[10px] text-black/55 dark:text-white/55">Base tickets modérateurs encaissés</span>
 </div>
 <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800">

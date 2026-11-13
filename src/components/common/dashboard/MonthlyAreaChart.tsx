@@ -256,13 +256,13 @@ export const MonthlyAreaChart: React.FC<MonthlyAreaChartProps> = ({
                 </div>
                 <div className="text-xs font-bold font-mono tabular-nums text-white flex items-center gap-1.5">
                   <span>{activePoint.val.toLocaleString()}</span>
-                  <span className="text-[9px] text-[#E09070] font-sans font-semibold">{currency}</span>
+                  <span className="text-[10px] text-[#E09070] font-sans font-semibold">{currency}</span>
                 </div>
               </div>
 
               {deltaPct !== null && (
                 <span
-                  className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md font-mono ${
+                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md font-mono tabular-nums ${
                     deltaPct >= 0
                       ? 'bg-emerald-950/80 text-emerald-400'
                       : 'bg-rose-950/80 text-rose-400'
@@ -277,7 +277,7 @@ export const MonthlyAreaChart: React.FC<MonthlyAreaChartProps> = ({
       </div>
 
       {/* Days 1 to 30 */}
-      <div className="flex justify-between text-[9px] font-mono tabular-nums font-medium text-black/60 dark:text-white/60 pt-2 px-1">
+      <div className="flex justify-between text-[10px] font-mono tabular-nums font-medium text-black/60 dark:text-white/60 pt-2 px-1">
         {dayIndices.map((d) => (
           <span key={d}>{d}</span>
         ))}

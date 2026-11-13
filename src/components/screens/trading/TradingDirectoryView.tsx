@@ -267,7 +267,7 @@ export const TradingDirectoryView: React.FC<any> = () => {
 <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><Users size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("trading_directory_title", "Répertoire des Partenaires B2B")}</h1>
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("trading_directory_title", "Répertoire des Partenaires B2B")}</h1>
 <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4522f]/15 text-[#d4522f] border border-[#d4522f]/30">
 {b2bClients.length}
 {" "}
@@ -291,7 +291,7 @@ export const TradingDirectoryView: React.FC<any> = () => {
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
 <span className="text-xs font-semibold text-black/55 dark:text-white/75">{language === "ar" ? "العملاء التجاريون المعتمدون" : "Clients B2B Référencés"}</span>
 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#d4522f]/10 text-[#d4522f]">
@@ -310,7 +310,7 @@ export const TradingDirectoryView: React.FC<any> = () => {
 </div>
 </div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
 <span className="text-xs font-semibold text-black/55 dark:text-white/75">{language === "ar" ? "الموردون والمستحقات" : "Fournisseurs & Dettes Achats"}</span>
 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75">
@@ -501,7 +501,7 @@ export const TradingDirectoryView: React.FC<any> = () => {
 </div>
 </div>} emptyTitle={language === "ar" ? "لم يتم العثور على موردين" : "Aucun fournisseur trouvé"} emptyDescription={language === "ar" ? "أضف أول مورد بالضغط على زر مورد جديد أعلاه." : "Ajoutez votre premier fournisseur en cliquant sur Nouveau Fournisseur."} />}
 </div>
-{selectedEntity && /* @__PURE__ */ <div className="p-5 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-5 animate-in fade-in duration-150">
+{selectedEntity && /* @__PURE__ */ <div className="p-5 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-5 animate-in fade-in duration-150">
 <div className="flex items-start justify-between">
 <div>
 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#d4522f]/15 text-[#d4522f] font-bold uppercase">{mode === "clients" ? "Fiche Client B2B" : "Fiche Fournisseur"}</span>

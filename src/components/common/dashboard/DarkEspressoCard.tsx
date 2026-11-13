@@ -49,7 +49,7 @@ export const DarkEspressoCard: React.FC<DarkEspressoCardProps> = ({
 
   return (
     <div
-      className={`bg-[#1F1D1B] rounded-[18px] p-4 border border-neutral-800 text-white relative overflow-hidden h-[124px] flex flex-col justify-between shadow-sm group select-none ${className}`}
+      className={`bg-[#1F1D1B] rounded-[18px] p-4 sm:p-5 border border-white/[0.08] text-white relative overflow-hidden min-h-[132px] flex flex-col justify-between shadow-sm group select-none ${className}`}
     >
       {showSparkline && (
         <div className="absolute -right-3 -bottom-4 opacity-25 group-hover:opacity-40 transition-opacity pointer-events-none">
@@ -66,20 +66,20 @@ export const DarkEspressoCard: React.FC<DarkEspressoCardProps> = ({
       )}
 
       <div>
-        <span className="text-[11px] font-semibold text-white/80 block truncate">
+        <span className="text-[12px] font-medium tracking-[-0.005em] text-white/75 block truncate">
           {displayTitle}
         </span>
         {displayBadge && (
-          <div className="text-[10px] font-semibold mt-0.5">
-            <span className={`${currentBadgeColor} px-2 py-0.5 rounded-full inline-block`}>
+          <div className="text-[10.5px] font-semibold mt-1.5">
+            <span className={`${currentBadgeColor} px-2 py-0.5 rounded-md inline-block`}>
               {displayBadge}
             </span>
           </div>
         )}
       </div>
 
-      <div className="flex items-baseline gap-1.5 z-10">
-        <span className="text-[28px] leading-none font-bold tracking-tight text-[#FB923C] tabular-nums font-['Barlow_Condensed'] rtl:font-sans rtl:text-2xl">
+      <div className="flex items-baseline gap-1.5 z-10 pt-2">
+        <span className="text-[30px] lg:text-[34px] leading-[0.95] font-bold tracking-[-0.01em] text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:text-2xl">
           {value}
         </span>
         {unit && (
@@ -88,7 +88,7 @@ export const DarkEspressoCard: React.FC<DarkEspressoCardProps> = ({
           </span>
         )}
         {displaySubtitle && (
-          <span className="text-[10px] text-white/70 ms-auto">
+          <span className="text-[11px] text-white/65 ms-auto tabular-nums">
             {displaySubtitle}
           </span>
         )}

@@ -54,11 +54,6 @@ import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons'
 
 const MEMBER_COLLATOR = new Intl.Collator(void 0, { sensitivity: "base" });
 
-const ANIM_PULSE_DOT_STYLE = {
-	willChange: "opacity",
-	contain: "strict"
-};
-
 const EXPORT_BTN_STYLE = {
 	height: "40px",
 	maxHeight: "40px",
@@ -99,11 +94,11 @@ const getMemberInitialsColor = (name: any) => {
 	return "#8B5CF6";
 };
 
-const MembersHeaderBar = React.memo(({ title, addLabel, onAddMember }: any) => /* @__PURE__ */ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-<div className="flex items-center gap-3.5">
-<div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-white"><Users size={22} /></div>
+const MembersHeaderBar = React.memo(({ title, addLabel, onAddMember }: any) => /* @__PURE__ */ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E6DED6]/80 dark:border-neutral-800/80">
+<div className="flex items-center gap-3.5 sm:gap-4">
+<div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#F3EDE7] dark:bg-white/[0.07] border border-[#E6DED6] dark:border-neutral-700/70 shadow-2xs flex items-center justify-center text-black dark:text-white"><Users size={22} /></div>
 <div>
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase rtl:normal-case leading-none rtl:leading-tight tracking-[0.01em] rtl:tracking-normal text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{title}</h1>
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase rtl:normal-case leading-[0.98] rtl:leading-tight tracking-[0.012em] rtl:tracking-normal text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{title}</h1>
 </div>
 </div>
 <div className="flex items-end gap-3 relative flex-wrap">
@@ -113,50 +108,50 @@ const MembersHeaderBar = React.memo(({ title, addLabel, onAddMember }: any) => /
 
 MembersHeaderBar.displayName = "MembersHeaderBar";
 
-const MembersKpiBanner = React.memo(({ membersLabel, membersLower, language, activeMembersCount, expiringCount, displayCount, activeCountRef, expiringChipCountRef, expiringBigCountRef, inflowChipCountRef, inflowBigCountRef }: any) => /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+const MembersKpiBanner = React.memo(({ membersLabel, membersLower, language, activeMembersCount, expiringCount, displayCount, activeCountRef, expiringChipCountRef, expiringBigCountRef, inflowChipCountRef, inflowBigCountRef }: any) => /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
 <div>
-<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+<h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] text-black dark:text-white">
 {membersLabel}
 {" & "}
 {language === "ar" ? "مؤشرات التجديد" : language === "fr" ? "Rétention & Renouvellements" : "Retention Health"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-4.5 sm:p-5 rounded-[18px] bg-white dark:bg-neutral-800/90 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between min-h-[132px]">
 <div>
-<span className="text-xs font-semibold text-black/70 dark:text-white/75">
+<span className="text-[12px] font-medium text-black/68 dark:text-white/72">
 {language === "ar" ? `قاعدة ${membersLabel} النشطة` : language === "fr" ? `Base active ${membersLower}` : `Active ${membersLabel} Base`}
 </span>
-<div className="mt-1">
-<span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+<div className="mt-1.5">
+<span className="text-[10.5px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50/90 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
 {"↗ 100% "}
 {language === "ar" ? "نشط" : language === "fr" ? "Actifs" : "Active"}
 </span>
 </div>
 </div>
-<div ref={activeCountRef} className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{activeMembersCount}</div>
+<div ref={activeCountRef} className="text-[30px] lg:text-[32px] leading-[0.95] font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{activeMembersCount}</div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-4.5 sm:p-5 rounded-[18px] bg-white dark:bg-neutral-800/90 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between min-h-[132px]">
 <div>
-<span className="text-xs font-semibold text-black/70 dark:text-white/75">
+<span className="text-[12px] font-medium text-black/68 dark:text-white/72">
 {language === "ar" ? "تنبيهات انتهاء الاشتراك" : language === "fr" ? "Alertes de renouvellement" : "Renewal & Retention Alert"}
 </span>
-<div className="mt-1">
-<span className="text-[10px] font-bold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded-full">
+<div className="mt-1.5">
+<span className="text-[10.5px] font-semibold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded-md">
 <span ref={expiringChipCountRef}>{expiringCount}</span>
 {" "}
 {language === "ar" ? "تنتهي قريباً (<14j)" : language === "fr" ? "expirent sous 14j" : "expiring (<14d)"}
 </span>
 </div>
 </div>
-<div ref={expiringBigCountRef} className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{expiringCount}</div>
+<div ref={expiringBigCountRef} className="text-[30px] lg:text-[32px] leading-[0.95] font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{expiringCount}</div>
 </div>
-<div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-<div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-white/80">
+<div className="p-4.5 sm:p-5 rounded-[18px] bg-[#1F1D1B] border border-white/[0.08] text-white flex flex-col justify-between min-h-[132px] shadow-sm">
+<div className="flex items-center justify-between gap-2">
+<span className="text-[12px] font-medium text-white/75">
 {language === "ar" ? "الوافدون الجدد شهرياً" : language === "fr" ? "Adhésions du mois" : "Monthly Inflow"}
 </span>
-<span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+<span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/25">
 <span ref={inflowChipCountRef}>
 +
 {displayCount}
@@ -166,15 +161,12 @@ const MembersKpiBanner = React.memo(({ membersLabel, membersLower, language, act
 </span>
 </div>
 <div>
-<div ref={inflowBigCountRef} className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+<div ref={inflowBigCountRef} className="text-[30px] lg:text-[32px] leading-[0.95] font-bold text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 +
 {displayCount}
 </div>
-<p className="text-[11px] text-white/60 mt-0.5 flex items-center gap-1.5">
-<span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse shrink-0" style={ANIM_PULSE_DOT_STYLE} />
-<span>
+<p className="text-[11.5px] text-white/65 mt-1.5">
 {language === "ar" ? "باقات وحسابات جديدة هذا الشهر" : language === "fr" ? "Nouveaux forfaits et profils ce mois-ci" : "New packages & client profiles this month"}
-</span>
 </p>
 </div>
 </div>
@@ -188,15 +180,15 @@ const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, lang
 	return createPortal(/* @__PURE__ */ <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 bg-black/45 dark:bg-black/70 animate-in fade-in duration-150" onClick={(e) => {
 			if (e.target === e.currentTarget) onClose();
 		}} role="dialog" aria-modal="true" aria-label={language === "ar" ? "مرشحات متقدمة" : language === "fr" ? "Filtres avancés" : "Advanced Filters"}>
-<div ref={filterPopoverRef} className="w-full max-w-lg max-h-[85vh] bg-white dark:bg-[#18181B] rounded-[26px] border border-black/8 dark:border-white/10 shadow-[0_18px_48px_rgba(0,0,0,0.22)] p-5 sm:p-6 space-y-4 animate-in zoom-in-95 duration-150 text-black dark:text-white overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
-<div className="flex items-center justify-between pb-3.5 border-b border-neutral-100 dark:border-neutral-800 shrink-0">
+<div ref={filterPopoverRef} className="w-full max-w-lg max-h-[85vh] bg-white dark:bg-[#1C1B1A] rounded-[26px] border border-[#E6DED6] dark:border-[#3A3734] shadow-[0_18px_48px_rgba(0,0,0,0.22)] p-5 sm:p-6 space-y-4 animate-in zoom-in-95 duration-150 text-black dark:text-white overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+<div className="flex items-center justify-between pb-3.5 border-b border-[#E6DED6] dark:border-[#3A3734] shrink-0">
 <div className="flex items-center gap-2.5">
-<div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-[#d4522f]/20 flex items-center justify-center text-[#d4522f] shadow-2xs"><SlidersHorizontal size={16} /></div>
+<div className="w-9 h-9 rounded-full bg-[#d4522f]/12 dark:bg-[#d4522f]/20 flex items-center justify-center text-[#d4522f] shadow-2xs"><SlidersHorizontal size={16} /></div>
 <div>
-<span className="text-sm font-bold text-black dark:text-white tracking-tight block">
+<span className="text-sm font-semibold text-black dark:text-white tracking-tight block">
 {language === "ar" ? "مرشحات متقدمة" : language === "fr" ? "Filtres avancés" : "Advanced Filters"}
 </span>
-<span className="text-xs text-black/55 dark:text-white/55">
+<span className="text-xs text-black/62 dark:text-white/68 tabular-nums">
 {displayCount}
 {" "}
 {membersLower}
@@ -210,23 +202,23 @@ const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, lang
 {language === "ar" ? "إعادة ضبط" : language === "fr" ? "Réinitialiser" : "Reset"}
 </span>
 </button>}
-<button type="button" onClick={onClose} className="w-8 h-8 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white flex items-center justify-center cursor-pointer transition-colors" aria-label="Close filters"><X size={16} /></button>
+<button type="button" onClick={onClose} className="w-8 h-8 rounded-full hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 text-black/62 dark:text-white/68 hover:text-black dark:hover:text-white flex items-center justify-center cursor-pointer transition-colors" aria-label="Close filters"><X size={16} /></button>
 </div>
 </div>
 <div className="space-y-4 overflow-y-auto pr-1 max-h-[58vh] -mr-1">
 <div className="space-y-1.5">
 <div className="flex items-center justify-between">
-<label className="text-[11px] font-bold uppercase tracking-wider text-black/70 dark:text-white/75">{language === "ar" ? "الجنس" : language === "fr" ? "Sexe / Genre" : "Gender"}</label>
-{genderFilter !== "All" && /* @__PURE__ */ <button type="button" onClick={() => onChangeGender("All")} className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer">{language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All"}</button>}
+<label className="text-[11.5px] font-semibold uppercase tracking-[0.06em] rtl:normal-case rtl:tracking-normal text-black/72 dark:text-white/75">{language === "ar" ? "الجنس" : language === "fr" ? "Sexe / Genre" : "Gender"}</label>
+{genderFilter !== "All" && /* @__PURE__ */ <button type="button" onClick={() => onChangeGender("All")} className="text-[11px] text-[#d4522f] font-semibold hover:underline cursor-pointer">{language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All"}</button>}
 </div>
 <LiveSegmentedControl size="sm" fullWidth className="min-w-0 [&>button]:min-w-0 [&>button]:px-2" options={genderFilterOptions} value={genderFilter} onValueChange={(val) => onChangeGender(val)} aria-label={language === "ar" ? "الجنس" : "Sexe"} />
 </div>
 <div className="space-y-1.5">
 <div className="flex items-center justify-between">
-<label className="text-[11px] font-bold uppercase tracking-wider text-black/70 dark:text-white/75">
+<label className="text-[11.5px] font-semibold uppercase tracking-[0.06em] rtl:normal-case rtl:tracking-normal text-black/72 dark:text-white/75">
 {language === "ar" ? "الفئات العمرية" : language === "fr" ? "Tranches d'âge" : "Age Groups"}
 </label>
-{ageGroupFilter !== "All" && /* @__PURE__ */ <button type="button" onClick={() => onChangeAgeGroup("All")} className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer">{language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All"}</button>}
+{ageGroupFilter !== "All" && /* @__PURE__ */ <button type="button" onClick={() => onChangeAgeGroup("All")} className="text-[11px] text-[#d4522f] font-semibold hover:underline cursor-pointer">{language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All"}</button>}
 </div>
 <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
 {[
@@ -263,43 +255,43 @@ const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, lang
 								].map((ag) => {
 									const isSelected = ageGroupFilter === ag.val;
 									const count = ageGroupCounts[ag.val] ?? 0;
-									return /* @__PURE__ */ <button key={ag.val} type="button" onClick={() => onChangeAgeGroup(ag.val)} title={ag.tooltip} className={`h-9 px-2.5 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${isSelected ? "bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs" : "bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-700/40"}`}>
+									return /* @__PURE__ */ <button key={ag.val} type="button" onClick={() => onChangeAgeGroup(ag.val)} title={ag.tooltip} className={`h-9 px-2.5 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${isSelected ? "bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-semibold shadow-2xs" : "bg-[#FBF8F5] dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/40"}`}>
 <span className="truncate">{ag.label}</span>
-<span className="text-[10px] font-mono opacity-70 tabular-nums ml-1">{count}</span>
+<span className="text-[11px] font-mono opacity-75 tabular-nums ml-1">{count}</span>
 </button>;
 								})}
 </div>
 </div>
 <div className="space-y-1.5">
 <div className="flex items-center justify-between">
-<label className="text-[11px] font-bold uppercase tracking-wider text-black/70 dark:text-white/75">{t("member_filter_plan_label", language)}</label>
-{planFilter !== "All" && /* @__PURE__ */ <button type="button" onClick={() => onChangePlan("All")} title={language === "ar" ? "عرض كل الباقات" : language === "fr" ? "Afficher toutes les formules" : "Show all plans"} className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer">{language === "ar" ? "الكل" : language === "fr" ? "Toutes" : "All"}</button>}
+<label className="text-[11.5px] font-semibold uppercase tracking-[0.06em] rtl:normal-case rtl:tracking-normal text-black/72 dark:text-white/75">{t("member_filter_plan_label", language)}</label>
+{planFilter !== "All" && /* @__PURE__ */ <button type="button" onClick={() => onChangePlan("All")} title={language === "ar" ? "عرض كل الباقات" : language === "fr" ? "Afficher toutes les formules" : "Show all plans"} className="text-[11px] text-[#d4522f] font-semibold hover:underline cursor-pointer">{language === "ar" ? "الكل" : language === "fr" ? "Toutes" : "All"}</button>}
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-40 overflow-y-auto pr-1">
-<button type="button" onClick={() => onChangePlan("All")} title={language === "ar" ? "جميع الباقات" : language === "fr" ? "Toutes les formules" : "All plans"} className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${planFilter === "All" ? "bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs" : "bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-700/50"}`}>
+<button type="button" onClick={() => onChangePlan("All")} title={language === "ar" ? "جميع الباقات" : language === "fr" ? "Toutes les formules" : "All plans"} className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${planFilter === "All" ? "bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-semibold shadow-2xs" : "bg-[#FBF8F5] dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/50"}`}>
 <span className="truncate">{t("member_filter_all_plans", language)}</span>
-<span className="text-[10px] font-mono opacity-70 tabular-nums ml-1">{totalMembersCount}</span>
+<span className="text-[11px] font-mono opacity-75 tabular-nums ml-1">{totalMembersCount}</span>
 </button>
 {dynamicAvailablePlans.map((p: any) => {
 									const isSelected = planFilter === p.id || planFilter === p.name;
 									const count = planCounts.get(p.id) ?? 0;
 									const compactPlan = compactFilterLabel(p.name);
-									return /* @__PURE__ */ <button key={p.id} type="button" onClick={() => onChangePlan(p.id)} title={p.name} className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${isSelected ? "bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-bold shadow-2xs" : "bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-700/50"}`}>
+									return /* @__PURE__ */ <button key={p.id} type="button" onClick={() => onChangePlan(p.id)} title={p.name} className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${isSelected ? "bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-semibold shadow-2xs" : "bg-[#FBF8F5] dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/50"}`}>
 <div className="min-w-0 text-left rtl:text-right">
 <div className="truncate font-semibold">{compactPlan.label}</div>
-{p.price > 0 && /* @__PURE__ */ <div className="text-[10px] text-black/55 dark:text-white/55 font-mono">{formatMoney(p.price)}</div>}
+{p.price > 0 && /* @__PURE__ */ <div className="text-[11px] text-black/62 dark:text-white/65 font-mono tabular-nums">{formatMoney(p.price)}</div>}
 </div>
-<span className="text-[10px] font-mono opacity-70 tabular-nums ml-2 shrink-0">{count}</span>
+<span className="text-[11px] font-mono opacity-75 tabular-nums ml-2 shrink-0">{count}</span>
 </button>;
 								})}
 </div>
 </div>
 <div className="space-y-1.5">
 <div className="flex items-center justify-between">
-<label className="text-[11px] font-bold uppercase tracking-wider text-black/70 dark:text-white/75">
+<label className="text-[11.5px] font-semibold uppercase tracking-[0.06em] rtl:normal-case rtl:tracking-normal text-black/72 dark:text-white/75">
 {language === "ar" ? "حالة الحساب والوصول" : language === "fr" ? "Statut du compte" : "Account Status"}
 </label>
-{statusFilter !== "All" && /* @__PURE__ */ <button type="button" onClick={() => onChangeStatus("All")} className="text-[10px] text-[#d4522f] font-semibold hover:underline cursor-pointer">
+{statusFilter !== "All" && /* @__PURE__ */ <button type="button" onClick={() => onChangeStatus("All")} className="text-[11px] text-[#d4522f] font-semibold hover:underline cursor-pointer">
 {language === "ar" ? "إعادة ضبط" : language === "fr" ? "Réinitialiser" : "Reset"}
 </button>}
 </div>
@@ -308,7 +300,7 @@ const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, lang
 </div>
 </div>
 </div>
-<div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center gap-2 shrink-0">
+<div className="pt-3 border-t border-[#E6DED6] dark:border-[#3A3734] flex items-center gap-2 shrink-0">
 {hasActiveAdvancedFilters && <BrandedAtriumButton tone="soft" size={40} onClick={onResetFilters} className="font-semibold text-xs">
 <span>
 {language === "ar" ? "إعادة ضبط" : language === "fr" ? "Réinitialiser" : "Reset"}
@@ -993,11 +985,11 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200 relative">
 <MembersHeaderBar title={terminology.members} addLabel={`${t("action_add", language)} ${terminology.memberSingle}`} onAddMember={onAddMember} />
 <MembersKpiBanner membersLabel={terminology.members} membersLower={terminology.members.toLowerCase()} language={language} activeMembersCount={activeMembersCount} expiringCount={expiringCount} displayCount={displayMembers.length} activeCountRef={activeCountRef} expiringChipCountRef={expiringChipCountRef} expiringBigCountRef={expiringBigCountRef} inflowChipCountRef={inflowChipCountRef} inflowBigCountRef={inflowBigCountRef} />
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-4 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
 <div className="flex flex-wrap items-center justify-between gap-3 w-full">
 <div className="flex items-center gap-2.5 shrink-0">
-<h2 className="text-base font-bold text-black dark:text-white tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">{language === "ar" ? "قائمة المشتركين" : "Liste des adhérents"}</h2>
-<span ref={listBadgeCountRef} className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/70 text-black/75 dark:text-white/80 shadow-2xs tabular-nums">{displayMembers.length}</span>
+<h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">{language === "ar" ? "قائمة المشتركين" : "Liste des adhérents"}</h2>
+<span ref={listBadgeCountRef} className="px-2 py-0.5 text-[11px] font-semibold rounded-md bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/70 text-black/72 dark:text-white/80 shadow-2xs tabular-nums">{displayMembers.length}</span>
 </div>
 <div aria-live="polite" className="sr-only">
 {displayMembers.length === 0 ? "Aucun adhérent ne correspond" : `${displayMembers.length} adhérent${displayMembers.length > 1 ? "s" : ""} trouvé${displayMembers.length > 1 ? "s" : ""}`}
@@ -1008,11 +1000,11 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 <LiveSegmentedControl size="md" options={quickStatusOptions} value={statusFilter === "Expired" || statusFilter === "Archived" ? "All" : statusFilter} onValueChange={(val) => setStatusFilter(val)} aria-label={language === "ar" ? "تصفية المشتركين" : "Filtre des adhérents"} />
 </div>
 <div className="relative shrink-0">
-<button ref={filterButtonRef} type="button" onClick={toggleFilterPopover} className={`h-10 px-3.5 rounded-xl border flex items-center gap-2 text-xs font-semibold cursor-pointer transition-all shadow-2xs select-none ${hasActiveAdvancedFilters || isFilterPopoverOpen ? "bg-[#FCEEE8] dark:bg-[#d4522f]/15 text-[#d4522f] border-[#d4522f]/40 ring-1 ring-[#d4522f]/20" : "bg-white dark:bg-neutral-800 border-[#E6DED6] dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-neutral-50 dark:hover:bg-neutral-700/50"}`} title={language === "ar" ? "مرشحات متقدمة" : language === "fr" ? "Filtres avancés" : "Advanced Filters"} aria-expanded={isFilterPopoverOpen}>
+<button ref={filterButtonRef} type="button" onClick={toggleFilterPopover} className={`h-10 px-3.5 rounded-xl border flex items-center gap-2 text-xs font-semibold cursor-pointer transition-all shadow-2xs select-none ${hasActiveAdvancedFilters || isFilterPopoverOpen ? "bg-[#d4522f]/12 dark:bg-[#d4522f]/15 text-[#d4522f] border-[#d4522f]/40 ring-1 ring-[#d4522f]/20" : "bg-white dark:bg-neutral-800 border-[#E6DED6] dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-[#FBF8F5] dark:hover:bg-neutral-700/50"}`} title={language === "ar" ? "مرشحات متقدمة" : language === "fr" ? "Filtres avancés" : "Advanced Filters"} aria-expanded={isFilterPopoverOpen}>
 <SlidersHorizontal size={15} className={hasActiveAdvancedFilters ? "text-[#d4522f]" : "text-black/70 dark:text-white/75"} />
 <span>{language === "ar" ? "مرشحات" : language === "fr" ? "Filtres" : "Filters"}</span>
-{activeFiltersCount > 0 && /* @__PURE__ */ <span className="w-5 h-5 rounded-md text-[10px] font-bold flex items-center justify-center bg-[#d4522f] text-white tabular-nums">{activeFiltersCount}</span>}
-<ChevronDown size={13} className={`transition-transform duration-200 text-black/55 dark:text-white/55 ${isFilterPopoverOpen ? "rotate-180" : ""}`} />
+{activeFiltersCount > 0 && /* @__PURE__ */ <span className="w-5 h-5 rounded-md text-[11px] font-bold flex items-center justify-center bg-[#d4522f] text-white tabular-nums">{activeFiltersCount}</span>}
+<ChevronDown size={13} className={`transition-transform duration-200 text-black/62 dark:text-white/65 ${isFilterPopoverOpen ? "rotate-180" : ""}`} />
 </button>
 </div>
 </div>
@@ -1031,16 +1023,16 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 </div>
 <MembersFilterModal isOpen={isFilterPopoverOpen} onClose={closeFilterPopover} filterPopoverRef={filterPopoverRef} language={language} displayCount={displayMembers.length} totalMembersCount={members.length} membersLower={terminology.members.toLowerCase()} membersUpper={terminology.members} hasActiveAdvancedFilters={hasActiveAdvancedFilters} onResetFilters={handleResetFilters} genderFilter={genderFilter} onChangeGender={setGenderFilter} ageGroupFilter={ageGroupFilter} onChangeAgeGroup={setAgeGroupFilter} ageGroupCounts={ageGroupCounts} planFilter={planFilter} onChangePlan={setPlanFilter} dynamicAvailablePlans={dynamicAvailablePlans} planCounts={planCounts} statusFilter={statusFilter} onChangeStatus={setStatusFilter} extendedStatusOptions={extendedStatusOptions} genderFilterOptions={genderFilterOptions} />
 {hasActiveAdvancedFilters && /* @__PURE__ */ <div className="flex items-center gap-2 flex-wrap pt-0.5 text-xs">
-<span className="text-black/55 dark:text-white/55 font-medium text-[11px]">
+<span className="text-black/62 dark:text-white/65 font-medium text-[11px]">
 {language === "ar" ? "المرشحات النشطة:" : language === "fr" ? "Filtres actifs:" : "Active filters:"}
 </span>
-{genderFilter !== "All" && /* @__PURE__ */ <span title={`${language === "ar" ? "الجنس" : language === "fr" ? "Sexe" : "Gender"}: ${genderFilter === "Male" ? language === "ar" ? "ذكور" : language === "fr" ? "Hommes" : "Male" : genderFilter === "Female" ? language === "ar" ? "إناث" : language === "fr" ? "Femmes" : "Female" : language === "ar" ? "آخر" : language === "fr" ? "Autre" : "Other"}`} className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
+{genderFilter !== "All" && /* @__PURE__ */ <span title={`${language === "ar" ? "الجنس" : language === "fr" ? "Sexe" : "Gender"}: ${genderFilter === "Male" ? language === "ar" ? "ذكور" : language === "fr" ? "Hommes" : "Male" : genderFilter === "Female" ? language === "ar" ? "إناث" : language === "fr" ? "Femmes" : "Female" : language === "ar" ? "آخر" : language === "fr" ? "Autre" : "Other"}`} className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
 <span>
 {genderFilter === "Male" ? language === "ar" ? "ذكور" : language === "fr" ? "Hommes" : "Male" : genderFilter === "Female" ? language === "ar" ? "إناث" : language === "fr" ? "Femmes" : "Female" : language === "ar" ? "آخر" : language === "fr" ? "Autre" : "Other"}
 </span>
 <button type="button" onClick={() => setGenderFilter("All")} className="hover:text-black dark:hover:text-white transition-colors cursor-pointer" title="Supprimer filtre" aria-label="Remove gender filter"><X size={12} /></button>
 </span>}
-{ageGroupFilter !== "All" && /* @__PURE__ */ <span title={`${language === "ar" ? "العمر" : language === "fr" ? "Tranche d'âge" : "Age"}: ${ageGroupFilter === "under18" ? "< 18 ans" : ageGroupFilter === "18-25" ? "18 - 25 ans" : ageGroupFilter === "26-40" ? "26 - 40 ans" : ageGroupFilter === "41-60" ? "41 - 60 ans" : ageGroupFilter === "over60" ? "> 60 ans" : "Tous"}`} className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
+{ageGroupFilter !== "All" && /* @__PURE__ */ <span title={`${language === "ar" ? "العمر" : language === "fr" ? "Tranche d'âge" : "Age"}: ${ageGroupFilter === "under18" ? "< 18 ans" : ageGroupFilter === "18-25" ? "18 - 25 ans" : ageGroupFilter === "26-40" ? "26 - 40 ans" : ageGroupFilter === "41-60" ? "41 - 60 ans" : ageGroupFilter === "over60" ? "> 60 ans" : "Tous"}`} className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
 <span>
 {ageGroupFilter === "under18" ? "<18" : ageGroupFilter === "over60" ? ">60" : ageGroupFilter === "All" ? (language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All") : ageGroupFilter}
 </span>
@@ -1048,31 +1040,31 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 </span>}
 {planFilter !== "All" && (() => {
 	const fullPlanName = dynamicAvailablePlans.find((p) => p.id === planFilter)?.name || plans.find((p) => p.id === planFilter)?.name || planFilter;
-	return /* @__PURE__ */ <span title={`${t("member_filter_plan_label", language)}: ${fullPlanName}`} className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
+	return /* @__PURE__ */ <span title={`${t("member_filter_plan_label", language)}: ${fullPlanName}`} className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
 <span>
 {compactFilterLabel(fullPlanName).label}
 </span>
 <button type="button" onClick={() => setPlanFilter("All")} className="hover:text-black dark:hover:text-white transition-colors cursor-pointer" title="Supprimer filtre" aria-label="Remove filter"><X size={12} /></button>
 </span>;
 })()}
-{(statusFilter === "Expired" || statusFilter === "Archived") && /* @__PURE__ */ <span title={`${language === "ar" ? "الحالة" : language === "fr" ? "Statut" : "Status"}: ${localizeStatus(statusFilter, language)}`} className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
+{(statusFilter === "Expired" || statusFilter === "Archived") && /* @__PURE__ */ <span title={`${language === "ar" ? "الحالة" : language === "fr" ? "Statut" : "Status"}: ${localizeStatus(statusFilter, language)}`} className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold">
 <span>
 {localizeStatus(statusFilter, language)}
 </span>
 <button type="button" onClick={() => setStatusFilter("All")} className="hover:text-black dark:hover:text-white transition-colors cursor-pointer" title="Supprimer filtre" aria-label="Remove filter"><X size={12} /></button>
 </span>}
-<button type="button" onClick={handleResetFilters} title={language === "ar" ? "إعادة تعيين كافة المرشحات" : language === "fr" ? "Réinitialiser tous les filtres" : "Reset all filters"} className="text-[11px] font-semibold text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white underline cursor-pointer ml-1">
+<button type="button" onClick={handleResetFilters} title={language === "ar" ? "إعادة تعيين كافة المرشحات" : language === "fr" ? "Réinitialiser tous les filtres" : "Reset all filters"} className="text-[11px] font-semibold text-black/72 dark:text-white/75 hover:text-black dark:hover:text-white underline cursor-pointer ml-1">
 {language === "ar" ? "إعادة" : language === "fr" ? "Effacer" : "Reset"}
 </button>
 </div>}
 <div className="w-full">
 <div className="w-full overflow-x-auto">
 <div className="w-full flex flex-col min-w-[940px]">
-<div className="th th-adherents bg-white dark:bg-[#1C1B1A] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[var(--atr-ink,#1B1917)] dark:text-[#EAE3DC] box-border select-none" data-v={viewMode === "grid" ? "g" : "l"} aria-hidden={viewMode === "grid"}>
+<div className="th th-adherents bg-white dark:bg-[#1C1B1A] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[var(--atr-ink,#000000)] dark:text-white box-border select-none" data-v={viewMode === "grid" ? "g" : "l"} aria-hidden={viewMode === "grid"}>
 <button type="button" role="checkbox" tabIndex={viewMode === "grid" ? -1 : 0} aria-checked={selectedMemberIds.size === 0 ? "false" : selectedMemberIds.size === sortedMembers.length && sortedMembers.length > 0 ? "true" : "mixed"} aria-label="Tout sélectionner" onClick={() => {
 											if (selectedMemberIds.size === sortedMembers.length) setSelectedMemberIds(/* @__PURE__ */ new Set());
 											else setSelectedMemberIds(new Set(sortedMembers.map((m) => m.id)));
-										}} className={`cb w-[22px] h-[22px] rounded-[7px] border-[1.5px] grid place-items-center p-0 cursor-pointer ${selectedMemberIds.size === sortedMembers.length && sortedMembers.length > 0 ? "bg-[var(--atr-acc,#C9441F)] border-[var(--atr-acc,#C9441F)] text-white" : "bg-white dark:bg-[#262422] border-[#B3A89E] dark:border-[#5A5550] text-transparent hover:border-[var(--atr-acc,#C9441F)]"}`}>
+										}} className={`cb w-[22px] h-[22px] rounded-[7px] border-[1.5px] grid place-items-center p-0 cursor-pointer ${selectedMemberIds.size === sortedMembers.length && sortedMembers.length > 0 ? "bg-[var(--atr-acc,#d4522f)] border-[var(--atr-acc,#d4522f)] text-white" : "bg-white dark:bg-[#262422] border-[#D4C8BC] dark:border-[#5A5550] text-transparent hover:border-[var(--atr-acc,#d4522f)]"}`}>
 <Check className={`w-3.5 h-3.5 stroke-[3] transition-opacity duration-120 ${selectedMemberIds.size > 0 ? "opacity-100 text-white" : "opacity-0"}`} />
 </button>
 {[
@@ -1105,9 +1097,9 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 													setMemberSortBy(col.key);
 													setMemberSortDir("asc");
 												}
-											}} className="text-left rtl:text-right font-medium text-[13px] flex items-center gap-2 cursor-pointer hover:text-[var(--atr-acc,#C9441F)] bg-transparent border-0 p-0 text-inherit whitespace-nowrap truncate min-w-0">
+											}} className="text-left rtl:text-right font-semibold text-[11.5px] uppercase tracking-[0.05em] rtl:normal-case rtl:tracking-normal text-black/68 dark:text-white/75 flex items-center gap-1.5 cursor-pointer hover:text-[var(--atr-acc,#d4522f)] bg-transparent border-0 p-0 whitespace-nowrap truncate min-w-0">
 <span className="truncate">{col.label}</span>
-<i className={`not-italic text-[10px] px-1.5 py-0.5 rounded-[6px] ${isOn ? "bg-[var(--atr-hl,#FBE7DF)] text-[var(--atr-acc,#C9441F)]" : "bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#2B2927] text-[var(--atr-mut,#6B635C)]"}`}>{isOn ? dir === "asc" ? "↑" : "↓" : "↕"}</i>
+<i className={`not-italic text-[11px] px-1.5 py-0.5 rounded-[5px] ${isOn ? "bg-[var(--atr-hl,rgba(212,82,47,0.12))] text-[var(--atr-acc,#d4522f)]" : "bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#2B2927] text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/70"}`}>{isOn ? dir === "asc" ? "↑" : "↓" : "↕"}</i>
 </button>;
 									})}
 </div>
@@ -1120,7 +1112,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 											return /* @__PURE__ */ <MemberRow key={member.id} member={memberRowData} isSelected={selectedMemberIds.has(member.id)} isOpen={isDetailOpen && selectedMember?.id === member.id} isExpanded={expandedMemberIds.has(member.id)} isPinned={pinnedMemberIds.has(member.id)} registerRowRefs={registerRowRefs} onSelect={handleSelectRow} onToggleExpand={toggleExpandMember} onOpenDetails={handleOpenRowDetails} onEdit={handleEditRow} onMessage={handleMessageRow} onDelete={handleDeleteRow} onRenew={handleRenewRow} onArchive={handleArchiveRow} onToggleStatus={handleToggleStatusRow} onTogglePin={handleTogglePinRow} onPay={handlePayRow} />;
 										})}
 </div>
-{sortedMembers.length === 0 && /* @__PURE__ */ <p className="empty text-center text-black/70 dark:text-[#A89F95] py-10">Aucun adhérent ne correspond. Modifiez la recherche ou les filtres.</p>}
+{sortedMembers.length === 0 && /* @__PURE__ */ <p className="empty text-center text-black/68 dark:text-white/70 py-10">Aucun adhérent ne correspond. Modifiez la recherche ou les filtres.</p>}
 </div>
 </div>
 </div>

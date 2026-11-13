@@ -187,7 +187,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 				const isDone = h.isCompleted;
 				return /* @__PURE__ */ <div className="flex flex-col gap-0.5">
 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full inline-block text-center ${isDone ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" : "bg-amber-500/15 text-amber-700 dark:text-amber-400"}`}>{isDone ? isAr ? "تمت" : "Plaidée" : isAr ? "مبرمجة" : "Fixée"}</span>
-{h.postponementCode && /* @__PURE__ */ <span className="text-[9px] font-mono font-bold text-black/55 dark:text-white/55 text-center">
+{h.postponementCode && /* @__PURE__ */ <span className="text-[10px] font-mono font-bold text-black/55 dark:text-white/55 text-center">
 {"Code: "}
 {h.postponementCode}
 </span>}
@@ -279,7 +279,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 	return /* @__PURE__ */ <div className="space-y-6">
 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
 <div>
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 <Scale className="text-[#d4522f]" size={32} />
 <span>
 {activeLegalRole === "notaire_titulaire" ? isAr ? "جدول مواعيد المحافظة العقارية والشهر" : "Conservation Foncière & Cadastre" : activeLegalRole === "expert_comptable" ? isAr ? "رزنامة التصريحات الجبائية والمحاسبية" : "Échéancier Fiscal G50 & CNAS" : activeLegalRole === "secretaire_caisse" ? isAr ? "سجل التبليغات القضائية والمحضرين" : "Huissiers de Justice & Formalités" : isAr ? "رول الجلسات ومواعيد الاستئناف CPCA" : "Rôle des Audiences & Délais CPCA"}
@@ -304,7 +304,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 <div className="text-2xl font-black text-black dark:text-white mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{totalScheduled}</div>
 <div className="text-[11px] text-[#d4522f] mt-1 font-medium">{isAr ? "مدرجة برول المحكمة" : "Inscrites à l'audiencier"}</div>
 </div>
-<div className="w-12 h-12 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 flex items-center justify-center text-[#d4522f] shadow-2xs"><Gavel size={22} /></div>
+<div className="w-12 h-12 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700 flex items-center justify-center text-[#d4522f] shadow-2xs"><Gavel size={22} /></div>
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-900/60 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between">
 <div>
@@ -312,7 +312,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 <div className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{totalCriticalDeadlines}</div>
 <div className="text-[11px] text-amber-600 dark:text-amber-400 mt-1 font-medium">{isAr ? "خطر السقوط (Loi 08-09)" : "Péremption surveillée (Art. 336)"}</div>
 </div>
-<div className="w-12 h-12 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 flex items-center justify-center text-amber-500 shadow-2xs"><Clock size={22} /></div>
+<div className="w-12 h-12 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700 flex items-center justify-center text-amber-500 shadow-2xs"><Clock size={22} /></div>
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-900/60 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between">
 <div>
@@ -320,7 +320,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{totalCompleted}</div>
 <div className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-medium">{isAr ? "في انتظار النطق بالحكم" : "En délibéré / Rendu de jugement"}</div>
 </div>
-<div className="w-12 h-12 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 flex items-center justify-center text-emerald-500 shadow-2xs"><CheckCircle2 size={22} /></div>
+<div className="w-12 h-12 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700 flex items-center justify-center text-emerald-500 shadow-2xs"><CheckCircle2 size={22} /></div>
 </div>
 </div>
 <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
@@ -370,7 +370,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 <div className="flex gap-6">
 <div className="flex-1 min-w-0">
 {hybridView === "docket" ? /* @__PURE__ */ <div className="space-y-6">
-{Object.keys(hearingsByDate).length === 0 ? /* @__PURE__ */ <div className="p-12 text-center bg-[#F3EDE7] dark:bg-neutral-900/40 rounded-[28px] border border-dashed border-[#E2E8EC] dark:border-neutral-800">
+{Object.keys(hearingsByDate).length === 0 ? /* @__PURE__ */ <div className="p-12 text-center bg-[#F3EDE7] dark:bg-neutral-900/40 rounded-[28px] border border-dashed border-[#E6DED6] dark:border-neutral-800">
 <Gavel size={36} className="mx-auto text-black/55 dark:text-white/55 mb-3" />
 <p className="text-sm font-semibold text-black/70 dark:text-white/75">
 {isAr ? "لا توجد جلسات قضائية مطابقة لمعايير البحث" : "Aucune audience inscrite à l'audiencier"}
@@ -392,7 +392,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 <span className="text-[11px] text-black/55 dark:text-white/55 font-mono">{dateHearings[0]?.courtName}</span>
 </div>
 <div className="grid grid-cols-1 gap-3">
-{dateHearings.map((h: any) => /* @__PURE__ */ <div key={h.id} onClick={() => setSelectedHearing(h)} className={`p-4 rounded-2xl bg-white dark:bg-neutral-800 border transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${selectedHearing?.id === h.id ? "border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm" : "border-[#E9EEF0] dark:border-neutral-700 hover:border-[#d4522f]/50"}`}>
+{dateHearings.map((h: any) => /* @__PURE__ */ <div key={h.id} onClick={() => setSelectedHearing(h)} className={`p-4 rounded-2xl bg-white dark:bg-neutral-800 border transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${selectedHearing?.id === h.id ? "border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm" : "border-[#E6DED6] dark:border-neutral-700 hover:border-[#d4522f]/50"}`}>
 <div className="flex items-start gap-3 min-w-0">
 <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-600">
 <span className="text-xs font-mono font-black">{h.hearingTime || "09:00"}</span>
@@ -438,7 +438,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 						}} sortBy={sortBy} sortDirection={sortDir} onSortChange={(key, dir) => {
 							setSortBy(key);
 							setSortDir(dir);
-						}} onItemClick={(h) => setSelectedHearing(h)} customActions={getCustomActions} renderCard={(h, isSelected) => /* @__PURE__ */ <div className={`p-4 rounded-2xl bg-white dark:bg-neutral-800 border transition-all ${isSelected ? "border-[#d4522f] ring-2 ring-[#d4522f]/20" : "border-[#E9EEF0] dark:border-neutral-700"}`}>
+						}} onItemClick={(h) => setSelectedHearing(h)} customActions={getCustomActions} renderCard={(h, isSelected) => /* @__PURE__ */ <div className={`p-4 rounded-2xl bg-white dark:bg-neutral-800 border transition-all ${isSelected ? "border-[#d4522f] ring-2 ring-[#d4522f]/20" : "border-[#E6DED6] dark:border-neutral-700"}`}>
 <div className="flex items-center justify-between mb-2">
 <span className="text-xs font-bold text-[#d4522f] font-mono">{h.matterNumber}</span>
 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${h.isCompleted ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" : "bg-amber-500/15 text-amber-700 dark:text-amber-400"}`}>{h.isCompleted ? isAr ? "تمت" : "Plaidée" : isAr ? "مبرمجة" : "Fixée"}</span>

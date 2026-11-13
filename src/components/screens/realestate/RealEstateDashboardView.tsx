@@ -145,7 +145,7 @@ export const RealEstateDashboardView: React.FC<any> = () => {
 		];
 	}, []);
 	if (showSkeleton && (properties.length === 0 || networkMode === "force_skeleton")) return /* @__PURE__ */ <SkeletonDashboardRealEstate isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={retryCloudSync} />;
-	return /* @__PURE__ */ <div className="flex-1 bg-white dark:bg-[#0C0C0E] min-h-screen p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
+	return /* @__PURE__ */ <div className="space-y-6 sm:space-y-7 animate-in fade-in duration-200">
 <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} isSyncing={isSyncing} lastSyncedAt={lastSyncedAt} onRetry={retryCloudSync} />
 <DashboardHeader title={t("nav_dashboard", language)} subtitle={language === "ar" ? "مؤشرات المحفظة العقارية، تدفق الزيارات وعقود الإيجار والوساطة والتحصيل" : language === "fr" ? "Portefeuille immobilier en direct, mandats exclusifs et encaissement des loyers." : "Live property portfolio, lease agreements, and real estate brokerage analytics."} currentBranchName={currentBranch?.name || "Agence Immobilière Atrium"} branches={branches} onSwitchBranch={switchBranch} onResetDemoData={() => {}} exportFileName="realestate_dashboard_report" />
 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -156,12 +156,12 @@ export const RealEstateDashboardView: React.FC<any> = () => {
 {totalProps}
 {" "}
 {language === "ar" ? "عقارات مؤجرة" : "Biens Loués"}
-</span>} rightControls={<div className="flex items-center bg-[#F0F2F5] dark:bg-neutral-800 p-0.5 rounded-lg text-xs font-semibold">
-<button type="button" onClick={() => setTimeFilter("today")} title={language === "ar" ? "عرض مؤشرات اليوم" : language === "fr" ? "Activité d'aujourd'hui" : "Today's activity"} className={`px-3 py-1 rounded-md transition-all ${timeFilter === "today" ? "bg-white dark:bg-neutral-900 text-black dark:text-white shadow-sm" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "اليوم" : language === "fr" ? "Aujourd'hui" : "Today"}</button>
-<button type="button" onClick={() => setTimeFilter("yesterday")} title={language === "ar" ? "عرض مؤشرات الأمس" : language === "fr" ? "Activité d'hier" : "Yesterday's activity"} className={`px-3 py-1 rounded-md transition-all ${timeFilter === "yesterday" ? "bg-white dark:bg-neutral-900 text-black dark:text-white shadow-sm" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "أمس" : language === "fr" ? "Hier" : "Yesterday"}</button>
+</span>} rightControls={<div className="flex items-center bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 p-0.5 rounded-xl text-xs font-semibold shadow-2xs">
+<button type="button" onClick={() => setTimeFilter("today")} title={language === "ar" ? "عرض مؤشرات اليوم" : language === "fr" ? "Activité d'aujourd'hui" : "Today's activity"} className={`px-3 py-1 rounded-md transition-all ${timeFilter === "today" ? "bg-[#d4522f] text-white shadow-xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "اليوم" : language === "fr" ? "Aujourd'hui" : "Today"}</button>
+<button type="button" onClick={() => setTimeFilter("yesterday")} title={language === "ar" ? "عرض مؤشرات الأمس" : language === "fr" ? "Activité d'hier" : "Yesterday's activity"} className={`px-3 py-1 rounded-md transition-all ${timeFilter === "yesterday" ? "bg-[#d4522f] text-white shadow-xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "أمس" : language === "fr" ? "Hier" : "Yesterday"}</button>
 </div>} className="flex-1 flex flex-col justify-between">
 <div className="space-y-4">
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex items-center justify-between">
 <div className="flex-1">
 <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">{language === "ar" ? "عقارات مؤجرة حالياً" : "Biens Sous Bail"}</span>
@@ -179,7 +179,7 @@ export const RealEstateDashboardView: React.FC<any> = () => {
 {language === "ar" ? "معدل الإشغال" : "Taux d’occupation"}
 </span>
 </div>
-<div className="w-px h-12 bg-neutral-200 dark:bg-neutral-700 mx-4" />
+<div className="w-px h-12 bg-[#E6DED6] dark:bg-neutral-700 mx-4" />
 <div className="flex-1">
 <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">{language === "ar" ? "عقارات شاغرة متاحة" : "Biens Disponibles"}</span>
 <div className="flex items-baseline gap-2">
@@ -189,19 +189,19 @@ export const RealEstateDashboardView: React.FC<any> = () => {
 <span className="inline-block mt-2 px-2 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium rounded-full">{language === "ar" ? "جاهزة للمعاينات" : "Visites ouvertes"}</span>
 </div>
 </div>
-<div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700/60">
+<div className="mt-4 pt-3 border-t border-[#E6DED6] dark:border-neutral-700/60">
 <span className="text-[11px] text-black/55 dark:text-white/55 block mb-2">
 {language === "ar" ? "كثافة طلبات المعاينة على مدار 24 ساعة" : "Courbe horaire des visites planifiées (24h)"}
 </span>
 <HourlyCurveChart data={hourlyData} color="#d4522f" />
 </div>
 </div>
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex justify-between items-center mb-1.5">
 <span className="text-xs font-medium text-black/70 dark:text-white/75">{language === "ar" ? "مجموع الإيجارات الشهرية" : "Loyers Mensuels Recouvrés"}</span>
 <span className="text-base font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(monthlyRentCollected)}</span>
 </div>
-<div className="w-full bg-neutral-100 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
+<div className="w-full bg-[#E6DED6]/70 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
 <div className="bg-[#d4522f] h-full rounded-full transition-all duration-500" style={{ width: `${targetPct}%` }} />
 </div>
 <div className="flex justify-between text-[11px] text-black/55 dark:text-white/55">
@@ -231,7 +231,7 @@ export const RealEstateDashboardView: React.FC<any> = () => {
 <DashboardMetricCard label={language === "ar" ? "عقود الإيجار السارية" : "Baux Actifs"} value={(leases || []).filter((l) => l.status === "Active").length || 24} badgeText={language === "ar" ? "سارية" : "En cours"} badgeVariant="neutral" tooltip={language === "ar" ? "عقود مؤجرة وموثقة" : "Baux avec locataire en place"} />
 <DarkEspressoCard label={language === "ar" ? "تنبيه انتهاء العقود" : "Échéances Baux (60j)"} value={3} sublabel={language === "ar" ? "عقود بحاجة للتجديد" : "À renouveler sous 60 jours"} badgeText={language === "ar" ? "تجديد" : "Renouvellement"} badgeVariant="warning" />
 </div>
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex justify-between items-center mb-3">
 <span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "حجم الصفقات وتوقيع العقود أسبوعياً" : "Signatures de baux et ventes (4 semaines)"}
@@ -251,8 +251,8 @@ export const RealEstateDashboardView: React.FC<any> = () => {
 {" 2026"}
 </span>} className="flex-1 flex flex-col justify-between">
 <div className="space-y-4">
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
-<div className="grid grid-cols-3 gap-2 pb-3 border-b border-neutral-200 dark:border-neutral-700/60">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
+<div className="grid grid-cols-3 gap-2 pb-3 border-b border-[#E6DED6] dark:border-neutral-700/60">
 <div>
 <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === "ar" ? "عمولة الوكالة" : "Honoraires Nets"}</span>
 <span className="text-lg font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(32e4)}</span>
@@ -276,7 +276,7 @@ export const RealEstateDashboardView: React.FC<any> = () => {
 <MonthlyAreaChart data={monthlyCommissions} color="#8B5CF6" />
 </div>
 </div>
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex justify-between items-center mb-3">
 <span className="text-xs font-semibold text-black/70 dark:text-white/75">{language === "ar" ? "مؤشرات الأداء العقاري" : "Ratios de Performance"}</span>
 <Info size={13} className="text-black/55 dark:text-white/55" />
@@ -319,14 +319,14 @@ export const RealEstateDashboardView: React.FC<any> = () => {
 <DashboardPod title={language === "ar" ? "المؤشرات والتنبيهات" : language === "fr" ? "Analyses & Alertes" : "Insights & Alerts"} icon={<ShieldCheck size={18} className="text-[#d4522f]" />} className="flex-1 flex flex-col justify-between">
 <div className="space-y-4">
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex justify-between items-center mb-2">
 <span className="text-xs font-semibold text-black/70 dark:text-white/75">{language === "ar" ? "توزيع أنواع العقارات" : "Typologie des Biens"}</span>
 <Info size={13} className="text-black/55 dark:text-white/55" />
 </div>
 <DonutChart segments={propertyTypes} centerLabel={`${totalProps} Biens`} />
 </div>
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex justify-between items-center mb-2">
 <span className="text-xs font-semibold text-black/70 dark:text-white/75">{language === "ar" ? "أداء وكلاء العقارات" : "Ventes & Baux par Agent"}</span>
 <Info size={13} className="text-black/55 dark:text-white/55" />

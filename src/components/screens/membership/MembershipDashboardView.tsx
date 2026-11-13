@@ -154,10 +154,10 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
         categoryName={language === 'ar' ? 'قاعة رياضية' : language === 'fr' ? 'Club de Sport' : 'Fitness Facility'}
       />
 
-      {/* Two-Column Pod Canvas matching Screenshots 90, 91, 92 */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+      {/* Two-Column Pod Canvas */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-stretch">
         {/* ================= LEFT COLUMN (~42% - lg:col-span-5) ================= */}
-        <div className="lg:col-span-5 space-y-5 flex flex-col justify-between">
+        <div className="lg:col-span-5 space-y-5 sm:space-y-6 flex flex-col justify-between">
           {/* POD 1: REAL-TIME CAPACITY & FLOW (Screenshot 90 Top-Left) */}
           <DashboardPod
             title={language === 'ar' ? 'الموجودون بالقاعة' : language === 'fr' ? 'People Inside' : 'People Inside'}
@@ -170,7 +170,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
             }
             icon={<DoorOpen size={17} />}
             headerRight={
-              <div className="h-8 p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center text-xs font-semibold shadow-2xs">
+              <div className="h-8 p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex items-center text-xs font-semibold shadow-2xs">
                 <button
                   type="button"
                   onClick={() => setTimeFilter('today')}
@@ -178,7 +178,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                   className={`h-7 px-3 rounded-full transition-all cursor-pointer ${
                     timeFilter === 'today'
                       ? 'bg-[#d4522f] text-white shadow-xs font-bold'
-                      : 'text-black/70 dark:text-white/75'
+                      : 'text-black/72 dark:text-white/75'
                   }`}
                 >
                   {language === 'ar' ? 'اليوم' : language === 'fr' ? "Aujourd'hui" : 'Today'}
@@ -190,7 +190,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                   className={`h-7 px-3 rounded-full transition-all cursor-pointer ${
                     timeFilter === 'yesterday'
                       ? 'bg-[#d4522f] text-white shadow-xs font-bold'
-                      : 'text-black/70 dark:text-white/75'
+                      : 'text-black/72 dark:text-white/75'
                   }`}
                 >
                   {language === 'ar' ? 'الأمس' : language === 'fr' ? 'Hier' : 'Yesterday'}
@@ -199,43 +199,43 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
             }
           >
             {/* Split Inset Metric Card */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-4">
+            <div className="bg-white dark:bg-neutral-800/90 rounded-[18px] p-4.5 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-4">
               <div className="grid grid-cols-2 gap-4 divide-x rtl:divide-x-reverse divide-[#E6DED6] dark:divide-neutral-700">
                 {/* Left Metric: People Inside */}
-                <div className="pr-3 rtl:pr-0 rtl:pl-3 space-y-1">
+                <div className="pr-3 rtl:pr-0 rtl:pl-3 space-y-1.5">
                   <div className="flex items-center gap-1.5">
-                    <div className="w-[18px] h-[18px] rounded-full bg-[#FCEEE8] dark:bg-neutral-700 flex items-center justify-center text-[#d4522f]">
+                    <div className="w-5 h-5 rounded-md bg-[#FCEEE8] dark:bg-[#d4522f]/15 flex items-center justify-center text-[#d4522f]">
                       <ArrowDown size={11} />
                     </div>
-                    <span className="text-[11px] font-medium text-black/70 dark:text-white/75">
+                    <span className="text-[12px] font-medium text-black/68 dark:text-white/72">
                       {language === 'ar' ? 'الموجودون حالياً' : language === 'fr' ? 'People Inside' : 'People Inside'}
                     </span>
                   </div>
-                  <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-2xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  <div className="flex items-baseline gap-1.5 pt-0.5">
+                    <span className="text-[28px] leading-[0.95] font-bold tracking-[-0.01em] text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                       {peopleInsideCount}
                     </span>
-                    <span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums">
+                    <span className="text-xs text-black/62 dark:text-white/65 font-medium tabular-nums">
                       / {totalCapacity}
                     </span>
                   </div>
                 </div>
 
                 {/* Right Metric: Pending Regs */}
-                <div className="pl-4 rtl:pl-0 rtl:pr-4 space-y-1">
+                <div className="pl-4 rtl:pl-0 rtl:pr-4 space-y-1.5">
                   <div className="flex items-center gap-1.5">
-                    <div className="w-[18px] h-[18px] rounded-full bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center text-amber-600">
+                    <div className="w-5 h-5 rounded-md bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center text-amber-600">
                       <FileText size={11} />
                     </div>
-                    <span className="text-[11px] font-medium text-black/70 dark:text-white/75">
+                    <span className="text-[12px] font-medium text-black/68 dark:text-white/72">
                       {language === 'ar' ? 'الملفات المعلقة' : language === 'fr' ? 'Pending Regs' : 'Pending Regs'}
                     </span>
                   </div>
-                  <div className="flex items-baseline gap-2 mt-1">
-                    <span className="text-2xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  <div className="flex items-baseline gap-2 pt-0.5">
+                    <span className="text-[28px] leading-[0.95] font-bold tracking-[-0.01em] text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                       {pendingMembers.length}
                     </span>
-                    <span className="text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full">
+                    <span className="text-[10.5px] font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-md">
                       {language === 'ar' ? 'قيد الانتظار' : 'En attente'}
                     </span>
                   </div>
@@ -252,29 +252,29 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
             </div>
 
             {/* Daily Revenue Progress Strip */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-2">
+            <div className="bg-white dark:bg-neutral-800/90 rounded-[18px] p-4.5 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-2.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-[#FCEEE8] dark:bg-neutral-700 flex items-center justify-center text-[#d4522f]">
+                  <div className="w-6 h-6 rounded-lg bg-[#FCEEE8] dark:bg-[#d4522f]/15 flex items-center justify-center text-[#d4522f]">
                     <DollarSign size={13} />
                   </div>
-                  <span className="text-xs font-bold text-black/70 dark:text-white/75">
+                  <span className="text-[12.5px] font-semibold text-black/75 dark:text-white/80">
                     {language === 'ar' ? 'مداخيل اليوم' : language === 'fr' ? 'Revenue Today' : 'Revenue Today'}
                   </span>
                 </div>
-                <span className="text-sm font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                <span className="text-base font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                   {formatMoney(todayRevenue)}
                 </span>
               </div>
 
               {/* Progress bar */}
-              <div className="w-full h-2 rounded-full bg-neutral-100 dark:bg-neutral-700 overflow-hidden">
+              <div className="w-full h-2 rounded-full bg-[#E6DED6]/70 dark:bg-neutral-700 overflow-hidden">
                 <div
                   style={{ width: `${Math.max(5, targetRevenueProgress)}%` }}
                   className="h-full bg-[#d4522f] rounded-full transition-all duration-500"
                 />
               </div>
-              <div className="flex justify-between text-[10px] text-black/55 dark:text-white/55 font-medium">
+              <div className="flex justify-between text-[11px] text-black/62 dark:text-white/65 font-medium tabular-nums">
                 <span>{targetRevenueProgress}% {language === 'ar' ? 'من الهدف اليومي' : "d'objectif journalier"}</span>
                 <span>{formatMoney(targetDailyRevenue)}</span>
               </div>
@@ -293,7 +293,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
             }
             icon={<TrendingUp size={17} />}
             headerRight={
-              <div className="flex items-center gap-2 bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 rounded-xl px-2.5 py-1 text-xs font-bold text-black/70 dark:text-white/75 shadow-2xs">
+              <div className="flex items-center gap-2 bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700 rounded-xl px-2.5 py-1 text-xs font-bold text-black/70 dark:text-white/75 shadow-2xs">
                 <button
                   type="button"
                   onClick={() => setCurrentMonthIndex((prev) => (prev > 0 ? prev - 1 : 11))}
@@ -315,43 +315,43 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
             }
           >
             {/* Top Inset P&L Card with 3 Metrics and 30-Day Curve */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-4">
+            <div className="bg-white dark:bg-neutral-800/90 rounded-[18px] p-4.5 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-4">
               <div className="grid grid-cols-3 gap-3">
                 {/* Net Profit Today */}
-                <div className="space-y-0.5">
-                  <span className="text-[10px] font-semibold text-black/70 dark:text-white/75 block truncate">
+                <div className="space-y-1">
+                  <span className="text-[11px] font-medium text-black/68 dark:text-white/72 block truncate">
                     {language === 'ar' ? 'صافي الربح اليوم' : language === 'fr' ? 'Net Profit Today' : 'Net Profit Today'}
                   </span>
-                  <span className="text-base lg:text-lg font-black text-black dark:text-white tabular-nums block font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  <span className="text-[20px] lg:text-[22px] leading-tight font-bold text-black dark:text-white tabular-nums block font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                     {formatMoney(Math.round(todayRevenue * 0.72))}
                   </span>
-                  <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded-full inline-block">
+                  <span className="text-[10.5px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50/90 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded-md inline-block tabular-nums">
                     +8.4% {language === 'ar' ? 'مقارنة بالأمس' : 'vs hier'}
                   </span>
                 </div>
 
                 {/* Revenue */}
-                <div className="space-y-0.5">
-                  <span className="text-[10px] font-semibold text-black/70 dark:text-white/75 block truncate">
+                <div className="space-y-1">
+                  <span className="text-[11px] font-medium text-black/68 dark:text-white/72 block truncate">
                     {language === 'ar' ? 'المداخيل' : language === 'fr' ? 'Revenue' : 'Revenue'}
                   </span>
-                  <span className="text-base lg:text-lg font-black text-black dark:text-white tabular-nums block font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  <span className="text-[20px] lg:text-[22px] leading-tight font-bold text-black dark:text-white tabular-nums block font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                     {formatMoney(todayRevenue)}
                   </span>
-                  <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded-full inline-block">
+                  <span className="text-[10.5px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50/90 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded-md inline-block tabular-nums">
                     +10.2% vs hier
                   </span>
                 </div>
 
                 {/* Expenses */}
-                <div className="space-y-0.5">
-                  <span className="text-[10px] font-semibold text-black/70 dark:text-white/75 block truncate">
+                <div className="space-y-1">
+                  <span className="text-[11px] font-medium text-black/68 dark:text-white/72 block truncate">
                     {language === 'ar' ? 'المصاريف' : language === 'fr' ? 'Expenses' : 'Expenses'}
                   </span>
-                  <span className="text-base lg:text-lg font-black text-black dark:text-white tabular-nums block font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  <span className="text-[20px] lg:text-[22px] leading-tight font-bold text-black dark:text-white tabular-nums block font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                     {formatMoney(Math.round(todayRevenue * 0.28))}
                   </span>
-                  <span className="text-[9px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded-full inline-block">
+                  <span className="text-[10.5px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-50/90 dark:bg-amber-950/40 px-1.5 py-0.5 rounded-md inline-block tabular-nums">
                     -1.5% vs hier
                   </span>
                 </div>
@@ -366,69 +366,69 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
             </div>
 
             {/* 4 Critical Domain KPIs (2x2 Grid) */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-3">
-              <div className="flex items-center justify-between text-xs font-bold text-black/70 dark:text-white/75">
+            <div className="bg-white dark:bg-neutral-800/90 rounded-[18px] p-4.5 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-3.5">
+              <div className="flex items-center justify-between text-[12.5px] font-semibold tracking-[-0.01em] text-black/80 dark:text-white/85">
                 <span>{language === 'ar' ? 'مؤشرات الأداء الرئيسية' : language === 'fr' ? 'Indicateurs de Performance Clés' : 'Key Performance Indicators'}</span>
-                <Info size={13} className="text-black/55 dark:text-white/55" />
+                <Info size={13} className="text-black/62 dark:text-white/65" />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 {/* KPI 1: Churn Rate */}
-                <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-20">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10.5px] font-semibold text-black/70 dark:text-white/75 truncate">
+                <div className="p-3.5 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between min-h-[84px]">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="text-[11.5px] font-medium text-black/68 dark:text-white/72 truncate">
                       {language === 'ar' ? 'معدل الانسحاب' : language === 'fr' ? 'Taux de Churn' : 'Churn Rate'}
                     </span>
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-red-50 text-red-600 dark:bg-red-950/40">
+                    <span className="text-[10.5px] font-semibold px-1.5 py-0.5 rounded-md bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400">
                       MO
                     </span>
                   </div>
-                  <span className="text-lg font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  <span className="text-[22px] leading-none font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                     2.1%
                   </span>
                 </div>
 
                 {/* KPI 2: Peak Occupancy */}
-                <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-20">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10.5px] font-semibold text-black/70 dark:text-white/75 truncate">
+                <div className="p-3.5 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between min-h-[84px]">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="text-[11.5px] font-medium text-black/68 dark:text-white/72 truncate">
                       {language === 'ar' ? 'ذروة الإشغال' : language === 'fr' ? "Taux d'Occupation Pic" : 'Peak Occupancy'}
                     </span>
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40">
+                    <span className="text-[10.5px] font-semibold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
                       Optimal
                     </span>
                   </div>
-                  <span className="text-lg font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  <span className="text-[22px] leading-none font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                     85%
                   </span>
                 </div>
 
                 {/* KPI 3: Coaching Conversion */}
-                <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-20">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10.5px] font-semibold text-black/70 dark:text-white/75 truncate">
+                <div className="p-3.5 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between min-h-[84px]">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="text-[11.5px] font-medium text-black/68 dark:text-white/72 truncate">
                       {language === 'ar' ? 'تحويل التدريب الخاص' : language === 'fr' ? 'Conversion Coaching' : 'Coaching Conversion'}
                     </span>
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/40">
+                    <span className="text-[10.5px] font-semibold px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400">
                       Ce Mois
                     </span>
                   </div>
-                  <span className="text-lg font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  <span className="text-[22px] leading-none font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                     18.5%
                   </span>
                 </div>
 
                 {/* KPI 4: Trial Conversion */}
-                <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-20">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10.5px] font-semibold text-black/70 dark:text-white/75 truncate">
+                <div className="p-3.5 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between min-h-[84px]">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="text-[11.5px] font-medium text-black/68 dark:text-white/72 truncate">
                       {language === 'ar' ? 'تحويل الحصص التجريبية' : language === 'fr' ? 'Conversion Essais' : 'Trial Conversion'}
                     </span>
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40">
+                    <span className="text-[10.5px] font-semibold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 tabular-nums">
                       ↗ 84%
                     </span>
                   </div>
-                  <span className="text-lg font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  <span className="text-[22px] leading-none font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                     100%
                   </span>
                 </div>
@@ -438,7 +438,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
         </div>
 
         {/* ================= RIGHT COLUMN (~58% - lg:col-span-7) ================= */}
-        <div className="lg:col-span-7 space-y-5 flex flex-col justify-between">
+        <div className="lg:col-span-7 space-y-5 sm:space-y-6 flex flex-col justify-between">
           {/* POD 2: BASE GROWTH & ASSETS (Screenshot 90 Top-Right) */}
           <DashboardPod
             title={language === 'ar' ? 'تطور المشتركين' : language === 'fr' ? 'Croissance Membres' : 'Member Growth'}
@@ -451,12 +451,12 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
             }
             icon={<Users size={17} />}
             headerRight={
-              <div className="flex items-center gap-2 bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 rounded-xl px-2.5 py-1 text-xs font-bold text-black/70 dark:text-white/75 shadow-2xs">
-                <ChevronLeft size={13} className="rtl:rotate-180 text-black/55 dark:text-white/55 cursor-pointer" />
+              <div className="flex items-center gap-2 bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700 rounded-xl px-2.5 py-1 text-xs font-bold text-black/72 dark:text-white/75 shadow-2xs">
+                <ChevronLeft size={13} className="rtl:rotate-180 text-black/62 dark:text-white/65 cursor-pointer" />
                 <span className="text-[11px]">
                   {language === 'ar' ? 'هذا الشهر' : language === 'fr' ? 'This Month' : 'This Month'}
                 </span>
-                <ChevronRight size={13} className="rtl:rotate-180 text-black/55 dark:text-white/55 cursor-pointer" />
+                <ChevronRight size={13} className="rtl:rotate-180 text-black/62 dark:text-white/65 cursor-pointer" />
               </div>
             }
           >
@@ -489,8 +489,8 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
             </div>
 
             {/* Total Active Members Trend (4 Rounded Pill Bars with Y-Axis) */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-              <span className="text-[11px] font-bold text-black/70 dark:text-white/75 block mb-1">
+            <div className="bg-white dark:bg-neutral-800/90 rounded-[18px] p-4.5 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
+              <span className="text-[12.5px] font-semibold tracking-[-0.01em] text-black/82 dark:text-white/85 block mb-1.5">
                 {language === 'ar' ? 'اتجاه نمو المشتركين النشطين (أسابيع)' : language === 'fr' ? 'Total active members trend' : 'Total active members trend'}
               </span>
               <PillBarHistogram
@@ -501,7 +501,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
             </div>
           </DashboardPod>
 
-          {/* POD 4: DOMAIN GUARDIAN & INTELLIGENCE (Screenshot 91 Bottom-Right) */}
+          {/* POD 4: DOMAIN GUARDIAN & INTELLIGENCE */}
           <DashboardPod
             title={language === 'ar' ? 'المؤشرات والتنبيهات' : language === 'fr' ? 'Analyses & Rétention' : 'Insights & Retention'}
             subtitle={
@@ -514,9 +514,9 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
             icon={<AlertCircle size={17} />}
           >
             {/* Top Split: Donut + Bar Histogram */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               {/* Left: Member Sources Donut */}
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between min-h-[160px]">
+              <div className="bg-white dark:bg-neutral-800/90 rounded-[18px] p-4.5 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between min-h-[168px]">
                 <DonutChart
                   title={language === 'ar' ? 'مصادر المشتركين' : language === 'fr' ? 'Member Sources' : 'Member Sources'}
                   segments={acquisitionSegments}
@@ -525,8 +525,8 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
               </div>
 
               {/* Right: Visit Frequency */}
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between min-h-[160px]">
-                <span className="text-[11px] font-bold text-black/70 dark:text-white/75 block">
+              <div className="bg-white dark:bg-neutral-800/90 rounded-[18px] p-4.5 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between min-h-[168px]">
+                <span className="text-[12.5px] font-semibold tracking-[-0.01em] text-black/82 dark:text-white/85 block">
                   {language === 'ar' ? 'تكرار الزيارات (7 أيام)' : language === 'fr' ? 'Visit Frequency (7d)' : 'Visit Frequency (7d)'}
                 </span>
                 <PillBarHistogram

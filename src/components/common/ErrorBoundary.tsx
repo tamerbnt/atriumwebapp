@@ -49,7 +49,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-white mb-2">
+              <h1 className="text-2xl font-bold tracking-tight rtl:tracking-normal text-white mb-2">
                 Atrium Recovery Console
               </h1>
               <p className="text-sm text-white/75">

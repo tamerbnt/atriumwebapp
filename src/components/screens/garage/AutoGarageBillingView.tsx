@@ -162,7 +162,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
 <div className="flex-1 flex flex-col min-w-0 overflow-y-auto p-4 sm:p-6 space-y-5">
 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
 <div>
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 <CreditCard className="text-[#d4522f]" size={32} />
 <span>
 {isAr ? "الصندوق والفوترة الجبائية (Facturation DGI)" : "Facturation DGI, Caisse & Règlements Flottes"}
@@ -179,21 +179,21 @@ export const AutoGarageBillingView: React.FC<any> = () => {
 <button type="button" onClick={() => setActiveScreenTab("invoices")} title={isAr ? `سجل الفواتير الصادرة (${invoices.length})` : language === "fr" ? `Factures Émises (${invoices.length})` : `Issued invoices (${invoices.length})`} className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeScreenTab === "invoices" ? "bg-[#d4522f] text-white shadow-xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{isAr ? "فواتير" : language === "fr" ? "Factures" : "Invoices"}</button>
 </div>
 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-<div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+<div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs">
 <span className="text-[11px] font-semibold text-black/55 dark:text-white/55 block">{isAr ? "المداخيل المحصلة" : "Chiffre Encaissé (Comptant)"}</span>
-<span className="text-xl font-black text-emerald-600 font-mono mt-0.5 block">{formatMoney(settledAmount, language)}</span>
+<span className="text-xl font-black text-emerald-600 font-mono tabular-nums mt-0.5 block">{formatMoney(settledAmount, language)}</span>
 </div>
-<div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+<div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs">
 <span className="text-[11px] font-semibold text-black/55 dark:text-white/55 block">{isAr ? "مستحقات قيد التحصيل" : "En Attente Règlement"}</span>
-<span className="text-xl font-black text-amber-600 font-mono mt-0.5 block">{formatMoney(pendingCollectionAmount, language)}</span>
+<span className="text-xl font-black text-amber-600 font-mono tabular-nums mt-0.5 block">{formatMoney(pendingCollectionAmount, language)}</span>
 </div>
-<div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+<div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs">
 <span className="text-[11px] font-semibold text-black/55 dark:text-white/55 block">{isAr ? "ديون أساطيل B2B المؤجلة" : "Créances Flottes (Encours)"}</span>
-<span className="text-xl font-black text-[#d4522f] font-mono mt-0.5 block">{formatMoney(corporateFleetArTotal, language)}</span>
+<span className="text-xl font-black text-[#d4522f] font-mono tabular-nums mt-0.5 block">{formatMoney(corporateFleetArTotal, language)}</span>
 </div>
-<div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+<div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs">
 <span className="text-[11px] font-semibold text-black/55 dark:text-white/55 block">{isAr ? "طابع جبائي مجمع (DGI)" : "Droits de Timbre Fiscal"}</span>
-<span className="text-xl font-black text-black dark:text-white font-mono mt-0.5 block">
+<span className="text-xl font-black text-black dark:text-white font-mono tabular-nums mt-0.5 block">
 {formatMoney(invoices.reduce((acc, i) => acc + (i.timbreFiscal || 0), 0), language)}
 </span>
 </div>

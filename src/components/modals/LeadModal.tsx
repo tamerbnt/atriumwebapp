@@ -147,7 +147,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
               borderColor: 'var(--color-border)',
               borderRadius: 'var(--radius-input)',
             }}
-            className="w-full p-2.5 text-sm border focus:outline-none focus:border-[#d4522f] text-black dark:text-white placeholder:text-black/45 dark:placeholder:text-white/45 resize-none"
+            className="w-full p-2.5 text-sm border focus:outline-none focus:border-[#d4522f] text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 resize-none"
           />
         </div>
 

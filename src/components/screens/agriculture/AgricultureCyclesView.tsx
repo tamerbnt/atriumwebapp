@@ -67,7 +67,7 @@ export const AgricultureCyclesView: React.FC<any> = () => {
 		switch (phase) {
 			case "planned": return {
 				label: isAr ? "مخطط (Budget)" : "Planifié",
-				bg: "bg-zinc-100 text-black/70 dark:bg-zinc-800 dark:text-white/75"
+				bg: "bg-[#F3EDE7] text-black/70 dark:bg-neutral-800 dark:text-white/75"
 			};
 			case "sowing": return {
 				label: isAr ? "بذر / شتل" : "Semis en cours",
@@ -323,7 +323,7 @@ export const AgricultureCyclesView: React.FC<any> = () => {
 				const conf = getPhaseConfig(c.currentPhase);
 				return /* @__PURE__ */ <div className="flex flex-col gap-1 items-start">
 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${conf.bg}`}>{conf.label}</span>
-{c.activeDarLockoutUntil && /* @__PURE__ */ <span className="text-[9.5px] text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+{c.activeDarLockoutUntil && /* @__PURE__ */ <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
 <AlertTriangle size={11} />
 {"DAR jusqu'au "}
 {c.activeDarLockoutUntil}
@@ -455,12 +455,12 @@ j restants)
 			}
 		]} viewMode={viewMode} isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Sprout size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isAr ? "دورات المحاصيل والسجل الصحي النباتي" : "Cycles de Culture & Carnet Phyto"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
@@ -500,7 +500,7 @@ j restants)
 </div>
 </div>}
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+<div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/55">{isAr ? "المساحة الإجمالية للدورات" : "Superficie Assolement Actif"}</span>
 <div className="text-2xl font-bold text-black dark:text-white mt-1 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {totalAllocatedHa.toFixed(1)}
@@ -513,7 +513,7 @@ j restants)
 {isAr ? "دورات موسمية" : "cycles en exploitation"}
 </p>
 </div>
-<div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+<div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/55">{isAr ? "جاهز للحصاد والجني" : "Cultures Prêtes pour Récolte"}</span>
 <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {readyHarvestCount}
@@ -522,7 +522,7 @@ j restants)
 </div>
 <p className="text-[10.5px] text-black/55 dark:text-white/55 mt-0.5">{isAr ? "تم استيفاء شروط النضج والأمان" : "Conformes pour pesée pont-bascule"}</p>
 </div>
-<div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+<div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/55">{isAr ? "معالجات المقيدة بالسجل" : "Traitements Phyto Enregistrés"}</span>
 <div className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{totalTreatmentsLogged}</div>
 <p className="text-[10.5px] text-black/55 dark:text-white/55 mt-0.5">

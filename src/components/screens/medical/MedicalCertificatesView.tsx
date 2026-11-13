@@ -125,12 +125,12 @@ export const MedicalCertificatesView: React.FC<any> = () => {
 			}
 		]} hasIcon hasFacility hasActionBtn actionBtnWidth={140} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><FileBadge size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {language === "ar" ? "الشهادات والوثائق الطبية" : "Certificats & Documents Médicaux Officiels"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#0D9488]/15 text-[#0D9488]">Conforme CNAS</span>
@@ -151,17 +151,17 @@ export const MedicalCertificatesView: React.FC<any> = () => {
 </div>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-<div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+<div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/55">Arrêts de Travail CNAS</span>
 <div className="text-2xl font-bold text-black dark:text-white mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{certificates.filter((c) => c.certificateType === "ArretDeTravail").length}</div>
 <span className="text-[10px] text-emerald-600 font-medium">Validité juridique garantie</span>
 </div>
-<div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+<div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/55">Aptitudes Physiques</span>
 <div className="text-2xl font-bold text-black dark:text-white mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{certificates.filter((c) => c.certificateType === "AptitudePhysique").length}</div>
 <span className="text-[10px] text-black/55 dark:text-white/55">Sport & licences club</span>
 </div>
-<div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+<div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/55">Certificats ITT Médicolégal</span>
 <div className="text-2xl font-bold text-black dark:text-white mt-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
 {certificates.filter((c) => c.certificateType === "CertificatDescriptifITT").length}
@@ -426,7 +426,7 @@ Certificat délivré en mains propres à l'intéressé(e) pour faire valoir ce q
 <div className="mt-8 pt-4 border-t border-neutral-200 flex justify-between items-end">
 <div className="flex items-center gap-3">
 <QrCode size={40} className="text-black" />
-<div className="text-[9px] font-mono text-black/55">
+<div className="text-[10px] font-mono text-black/55">
 <p className="font-bold text-black/75">AUTHENTICITÉ VÉRIFIÉE</p>
 <p>{activePrintCert.qrHash}</p>
 </div>
@@ -434,8 +434,8 @@ Certificat délivré en mains propres à l'intéressé(e) pour faire valoir ce q
 <div className="text-center w-36">
 <span className="text-[10px] text-black/55 block mb-1">Cachet & Signature</span>
 <div className="w-32 h-16 border-2 border-dashed border-blue-600 rounded-lg p-1.5 flex flex-col justify-center items-center text-center rotate-[-3deg] text-blue-700 bg-blue-50/50">
-<span className="text-[8px] font-black uppercase">{activePrintCert.doctorName}</span>
-<span className="text-[7px] font-bold">{activePrintCert.doctorSpecialty}</span>
+<span className="text-[10px] font-black uppercase">{activePrintCert.doctorName}</span>
+<span className="text-[10px] font-bold">{activePrintCert.doctorSpecialty}</span>
 </div>
 </div>
 </div>

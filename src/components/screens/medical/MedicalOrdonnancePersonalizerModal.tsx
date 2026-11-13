@@ -282,10 +282,10 @@ Aperçu Réel Ordonnance (
 <div>
 <h3 className="text-base font-extrabold uppercase tracking-wide font-['Barlow_Condensed',sans-serif] rtl:font-sans" style={{ color: currentAccentHex }}>{formData.doctorName}</h3>
 <p className="text-[11px] font-semibold text-black">{formData.specialtyTitle}</p>
-<p className="text-[9px] text-black/55">{formData.academicCredentials}</p>
-<p className="text-[9px] font-mono font-medium text-black/75 mt-0.5">{formData.licenseNumber}</p>
+<p className="text-[10px] text-black/55">{formData.academicCredentials}</p>
+<p className="text-[10px] font-mono font-medium text-black/75 mt-0.5">{formData.licenseNumber}</p>
 </div>
-<div className="text-right text-[9px] text-black/55 font-mono">
+<div className="text-right text-[10px] text-black/55 font-mono">
 <p className="font-bold text-black">POLYCLINIQUE EL-CHIFA</p>
 <p>{formData.clinicAddress}</p>
 <p>{formData.cabinetPhone}</p>
@@ -321,18 +321,18 @@ Aperçu Réel Ordonnance (
 <div className="mt-4 pt-3 border-t border-neutral-200 flex justify-between items-end">
 <div className="flex items-center gap-2">
 <div className="w-10 h-10 border border-neutral-300 rounded p-0.5 flex items-center justify-center bg-white"><QrCode size={34} className="text-black" /></div>
-<div className="text-[8px] font-mono text-black/55">
+<div className="text-[10px] font-mono text-black/55">
 <span className="block font-bold text-black/75">VÉRIFICATION CNAS</span>
 <span>SHA: CF-9921-DZ</span>
 </div>
 </div>
 {formData.isStampEnabled && /* @__PURE__ */ <div className="w-32 h-16 border-2 border-dashed border-blue-600 rounded-lg p-1.5 flex flex-col justify-center items-center text-center rotate-[-3deg] text-blue-700 bg-blue-50/40 select-none">
-<span className="text-[8px] font-black uppercase tracking-wider">{formData.doctorName}</span>
-<span className="text-[7px] font-bold">{formData.specialtyTitle}</span>
-<span className="text-[6.5px] font-mono mt-0.5">{formData.licenseNumber}</span>
+<span className="text-[10px] font-black uppercase tracking-wider">{formData.doctorName}</span>
+<span className="text-[10px] font-bold">{formData.specialtyTitle}</span>
+<span className="text-[10px] font-mono mt-0.5">{formData.licenseNumber}</span>
 </div>}
 </div>
-{formData.printMode === "full_digital" && /* @__PURE__ */ <div className="mt-3 pt-2 border-t text-[8px] text-black/55 text-center font-mono space-y-0.5">
+{formData.printMode === "full_digital" && /* @__PURE__ */ <div className="mt-3 pt-2 border-t text-[10px] text-black/55 text-center font-mono space-y-0.5">
 <p>{formData.footerConsultationHours}</p>
 <p className="font-semibold text-black/55">{formData.footerLegalNotice}</p>
 </div>}

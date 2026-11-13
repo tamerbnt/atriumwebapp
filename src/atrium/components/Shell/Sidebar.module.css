@@ -30,7 +30,7 @@
 .brand {
   display: flex;
   align-items: center;
-  height: 64px;
+  height: 66px;
   margin: 0 10px;
   flex: none;
 }
@@ -56,7 +56,7 @@
 .list {
   position: relative;
   list-style: none;
-  margin: 14px 0 0;
+  margin: 12px 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -68,7 +68,7 @@
 }
 
 .list > li {
-  padding: 3px 0;
+  padding: 3.5px 0;
   margin: 0;
   list-style: none;
   display: flex;
@@ -107,8 +107,9 @@
   background: transparent;
   color: var(--atr-side-mut);
   font: inherit;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 500;
+  letter-spacing: -0.008em;
   text-align: left;
   cursor: pointer;
   border-radius: 20px;
@@ -180,7 +181,7 @@
   color: var(--atr-onacc);
   opacity: clamp(0, (var(--open) - 0.5) * 2.4, 1);
 }
-.footer { flex: none; padding: 0 0 10px; opacity: clamp(0, (var(--open) - 0.4) * 2.4, 1); font-size: 10px; letter-spacing: 0.14em; text-align: center; color: var(--atr-side-mut); }
+.footer { flex: none; padding: 0 0 10px; opacity: clamp(0, (var(--open) - 0.4) * 2.4, 1); font-size: 11px; letter-spacing: 0.14em; text-align: center; color: var(--atr-side-mut); }
 
 /* the little handle on the panel's leading edge: rides on a transform, so it costs no layout */
 .edge {

@@ -21,7 +21,7 @@ export const StatTile: React.FC<StatTileProps> = ({
 }) => {
   return (
     <div
-      className={`p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[130px] transition-all duration-200 hover:border-[#D5DFE3] dark:hover:border-neutral-600 ${className}`}
+      className={`p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[130px] transition-all duration-200 hover:border-[#D5DFE3] dark:hover:border-neutral-600 ${className}`}
     >
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold tracking-wide text-black/70 dark:text-white/75">

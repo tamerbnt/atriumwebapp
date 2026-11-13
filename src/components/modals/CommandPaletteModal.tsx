@@ -474,7 +474,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
               busyTimerRef.current = setTimeout(() => setIsBusy(false), 240);
             }}
             placeholder={t('cmd_palette_placeholder', language)}
-            className="w-full bg-transparent text-sm text-black dark:text-white placeholder:text-black/45 dark:placeholder:text-white/45 focus:outline-none"
+            className="w-full bg-transparent text-sm text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 focus:outline-none"
           />
           {query.length > 0 && (
             <button
@@ -566,19 +566,19 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         <div className="p-3 bg-neutral-50 dark:bg-neutral-950/60 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md font-mono text-[9px] text-black dark:text-white shadow-2xs">
+              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md font-mono text-[10px] text-black dark:text-white shadow-2xs">
                 ↑↓
               </kbd>
               {language === 'ar' ? 'تنقل' : language === 'fr' ? 'Naviguer' : 'Navigate'}
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md font-mono text-[9px] text-black dark:text-white shadow-2xs">
+              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md font-mono text-[10px] text-black dark:text-white shadow-2xs">
                 ↵
               </kbd>
               {language === 'ar' ? 'اختيار' : language === 'fr' ? 'Sélectionner' : 'Select'}
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md font-mono text-[9px] text-black dark:text-white shadow-2xs">
+              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md font-mono text-[10px] text-black dark:text-white shadow-2xs">
                 ESC
               </kbd>
               {language === 'ar' ? 'إغلاق' : language === 'fr' ? 'Fermer' : 'Close'}

@@ -123,8 +123,8 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 		onClose();
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-<div className="bg-white dark:bg-[#18181B] rounded-[28px] max-w-2xl w-full p-6 md:p-8 shadow-2xl border border-[#E9EEF0] dark:border-[#27272A] space-y-5 my-8 text-black dark:text-[#FAFAFA]">
-<div className="flex items-center justify-between border-b border-[#E2E8EC] dark:border-[#27272A] pb-4">
+<div className="bg-white dark:bg-[#18181B] rounded-[28px] max-w-2xl w-full p-6 md:p-8 shadow-2xl border border-[#E6DED6] dark:border-[#27272A] space-y-5 my-8 text-black dark:text-[#FAFAFA]">
+<div className="flex items-center justify-between border-b border-[#E6DED6] dark:border-[#27272A] pb-4">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Building2 className="w-5 h-5" /></div>
 <div>
@@ -135,7 +135,7 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 </div>
 <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"><X className="w-5 h-5" /></button>
 </div>
-<div className="flex items-center gap-2 border-b border-[#E2E8EC] dark:border-[#27272A] pb-1">
+<div className="flex items-center gap-2 border-b border-[#E6DED6] dark:border-[#27272A] pb-1">
 <button type="button" onClick={() => setActiveTab("general")} className={`px-4 py-2 text-xs font-semibold rounded-xl transition-colors ${activeTab === "general" ? "bg-[#d4522f] text-white shadow-xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>1. Descriptif & Mandant</button>
 <button type="button" onClick={() => setActiveTab("cadastre")} className={`px-4 py-2 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors ${activeTab === "cadastre" ? "bg-[#d4522f] text-white shadow-xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>
 <ShieldCheck className="w-3.5 h-3.5" />
@@ -204,7 +204,7 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 </> : /* @__PURE__ */ <>
 <div className="p-3.5 rounded-2xl bg-[#FDF4F0] dark:bg-[#1C1816] border border-[#d4522f]/30 flex items-center justify-between">
 <div>
-<div className="text-xs text-black/70 dark:text-[#A1A1AA]">Niveau de Sécurité Juridique</div>
+<div className="text-xs text-black/70 dark:text-white/75">Niveau de Sécurité Juridique</div>
 <div className="text-sm font-bold text-black dark:text-white flex items-center gap-1.5">
 <span>{titleStrength.labelFr}</span>
 <span className="text-xs font-mono text-[#d4522f]">
@@ -245,11 +245,11 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 								]} />
 <div className="flex items-center gap-4 pt-5">
 <label className="flex items-center gap-2 cursor-pointer text-xs font-medium">
-<input type="checkbox" checked={hasLivretFoncier} onChange={(e) => setHasLivretFoncier(e.target.checked)} className="w-4 h-4 rounded border-[#E2E8EC] text-[#d4522f] focus:ring-[#d4522f]" />
+<input type="checkbox" checked={hasLivretFoncier} onChange={(e) => setHasLivretFoncier(e.target.checked)} className="w-4 h-4 rounded border-[#E6DED6] text-[#d4522f] focus:ring-[#d4522f]" />
 <span>Livret Foncier Délivré</span>
 </label>
 <label className="flex items-center gap-2 cursor-pointer text-xs font-medium">
-<input type="checkbox" checked={hasNegativeCertificate} onChange={(e) => setHasNegativeCertificate(e.target.checked)} className="w-4 h-4 rounded border-[#E2E8EC] text-[#d4522f] focus:ring-[#d4522f]" />
+<input type="checkbox" checked={hasNegativeCertificate} onChange={(e) => setHasNegativeCertificate(e.target.checked)} className="w-4 h-4 rounded border-[#E6DED6] text-[#d4522f] focus:ring-[#d4522f]" />
 <span>Certificat Négatif Valide</span>
 </label>
 </div>
@@ -270,16 +270,16 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 </div>}
 <div className="flex items-center gap-4 pt-2">
 <label className="flex items-center gap-2 cursor-pointer text-xs font-medium">
-<input type="checkbox" checked={hasCertificatConformite} onChange={(e) => setHasCertificatConformite(e.target.checked)} className="w-4 h-4 rounded border-[#E2E8EC] text-[#d4522f] focus:ring-[#d4522f]" />
+<input type="checkbox" checked={hasCertificatConformite} onChange={(e) => setHasCertificatConformite(e.target.checked)} className="w-4 h-4 rounded border-[#E6DED6] text-[#d4522f] focus:ring-[#d4522f]" />
 <span>Certificat de Conformité (Loi 08-15)</span>
 </label>
 <label className="flex items-center gap-2 cursor-pointer text-xs font-medium">
-<input type="checkbox" checked={isEligibleBankMortgage} onChange={(e) => setIsEligibleBankMortgage(e.target.checked)} className="w-4 h-4 rounded border-[#E2E8EC] text-[#d4522f] focus:ring-[#d4522f]" />
+<input type="checkbox" checked={isEligibleBankMortgage} onChange={(e) => setIsEligibleBankMortgage(e.target.checked)} className="w-4 h-4 rounded border-[#E6DED6] text-[#d4522f] focus:ring-[#d4522f]" />
 <span>Dossier Éligible Crédit Bancaire</span>
 </label>
 </div>
 </>}
-<div className="flex items-center justify-between pt-4 border-t border-[#E2E8EC] dark:border-[#27272A]">
+<div className="flex items-center justify-between pt-4 border-t border-[#E6DED6] dark:border-[#27272A]">
 {activeTab === "general" ? /* @__PURE__ */ <button type="button" onClick={() => setActiveTab("cadastre")} className="text-xs text-[#d4522f] font-semibold hover:underline">Passer au Passeport Foncier →</button> : /* @__PURE__ */ <button type="button" onClick={() => setActiveTab("general")} className="text-xs text-black/70 dark:text-white/75 font-semibold hover:underline">← Retour au Descriptif</button>}
 <div className="flex items-center gap-2.5">
 <AtriumButton variant="secondary" onClick={onClose} type="button">Annuler</AtriumButton>

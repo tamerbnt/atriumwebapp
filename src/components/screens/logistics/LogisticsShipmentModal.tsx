@@ -276,7 +276,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
                 </label>
                 {recipientPhone.trim() && (
                   <span
-                    className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
                       phoneValidation.operator === 'Mobilis'
                         ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                         : phoneValidation.operator === 'Djezzy'

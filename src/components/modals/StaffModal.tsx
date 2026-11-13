@@ -405,7 +405,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                   value={cardId}
                   onChange={(e) => setCardId(e.target.value.toUpperCase())}
                   placeholder="RFID-000000"
-                  className="font-mono text-xs px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-black dark:text-white placeholder:text-black/45 dark:placeholder:text-white/45 w-full sm:w-36 focus:outline-hidden focus:border-[#d4522f]"
+                  className="font-mono text-xs px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 w-full sm:w-36 focus:outline-hidden focus:border-[#d4522f]"
                 />
                 <button
                   type="button"

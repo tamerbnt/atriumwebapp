@@ -330,7 +330,7 @@ export const PosFinanceView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
+            <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
               <Wallet className="text-[#d4522f]" size={32} />
               <span>
                 {language === 'ar' ? 'إدارة الصندوق والمالية' : language === 'fr' ? 'Gestion Caisse & Réconciliation Financière' : 'Cash Drawer & Store Finance'}
@@ -369,7 +369,7 @@ export const PosFinanceView: React.FC = () => {
 
       {/* TOP METRICS POD TRAY */}
       <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-[#E9EEF0] dark:border-neutral-800">
+        <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
           <div className="flex items-center gap-2">
             <Banknote size={18} className="text-[#d4522f]" />
             <h2 className="text-xs font-black uppercase tracking-wider text-black dark:text-white">
@@ -393,7 +393,7 @@ export const PosFinanceView: React.FC = () => {
         {/* 3-Card Canonical Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Card 1: Ventes Brutes */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+          <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <div className="flex items-center justify-between text-black/55 dark:text-white/75">
                 <span className="text-xs font-semibold text-black/70 dark:text-white/75">
@@ -410,7 +410,7 @@ export const PosFinanceView: React.FC = () => {
           </div>
 
           {/* Card 2: Sorties de Caisse */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+          <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <div className="flex items-center justify-between text-black/55 dark:text-white/75">
                 <span className="text-xs font-semibold text-black/70 dark:text-white/75">
@@ -478,14 +478,14 @@ export const PosFinanceView: React.FC = () => {
                 placeholder="DA réel"
                 value={actualCashInput}
                 onChange={(e) => setActualCashInput(e.target.value)}
-                className="w-full h-6 px-2 text-[11px] font-mono font-bold rounded-md bg-neutral-900 border border-neutral-700 text-white placeholder:text-black/45 focus:outline-hidden focus:border-[#FB923C]"
+                className="w-full h-6 px-2 text-[11px] font-mono font-bold rounded-md bg-neutral-900 border border-neutral-700 text-white placeholder:text-white/55 focus:outline-hidden focus:border-[#FB923C]"
               />
             </div>
           </div>
         </div>
 
         {/* Linear Drawer Equation Bar */}
-        <div className="bg-white dark:bg-neutral-900 rounded-[16px] p-3 border border-[#E9EEF0] dark:border-neutral-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="bg-white dark:bg-neutral-900 rounded-[16px] p-3 border border-[#E6DED6] dark:border-neutral-800 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 font-mono">
             <span className="text-black/55 dark:text-white/55 uppercase font-bold text-[10px]">Fond</span>
             <span className="font-bold text-black dark:text-white">{formatMoney(openingFloat)}</span>
@@ -527,7 +527,7 @@ export const PosFinanceView: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-2">
+          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Banknote size={17} className="text-emerald-500" />
@@ -547,7 +547,7 @@ export const PosFinanceView: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-2">
+          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <CreditCard size={17} className="text-blue-500" />
@@ -567,7 +567,7 @@ export const PosFinanceView: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-2">
+          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Coins size={17} className="text-[#d4522f]" />
@@ -821,7 +821,7 @@ export const PosFinanceView: React.FC = () => {
                 <div className="text-sm font-black uppercase">RAPPORT Z - CLÔTURE DE CAISSE</div>
                 <div className="text-[10px] text-black/75">{currentBranch.name}</div>
                 <div className="text-[10px] text-black/55">{new Date().toLocaleString()}</div>
-                <div className="text-[9px] text-black/55">CAISSIER : {currentUser?.fullName || 'Amine Bentouati'}</div>
+                <div className="text-[10px] text-black/55">CAISSIER : {currentUser?.fullName || 'Amine Bentouati'}</div>
               </div>
 
               <div className="space-y-1 py-1 border-b border-dashed border-neutral-400 text-[11px]">

@@ -910,7 +910,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 <div>
 <div className="flex items-center gap-3">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 <ShoppingBag className="text-[#d4522f]" size={32} />
 <span>{t("shop_hub_title")}</span>
 </h1>
@@ -924,7 +924,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </div>
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#E9EEF0] dark:border-neutral-800">
+<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
 <div>
 <h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {language === "ar" ? "جلسة البيع & مؤشرات الصندوق" : language === "fr" ? "Session de Caisse & Indicateurs Directs" : "Register Session & Live Sales"}
@@ -937,12 +937,12 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <button type="button" onClick={() => setActiveTab("register")} className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === "register" ? "bg-[#d4522f] text-white shadow-2xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>
 <Coins size={14} />
 <span>{t("nav_pos_register")}</span>
-{cart.length > 0 && /* @__PURE__ */ <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-black ${activeTab === "register" ? "bg-white text-[#d4522f]" : "bg-[#d4522f] text-white"}`}>{cart.reduce((a, b) => a + b.quantity, 0)}</span>}
+{cart.length > 0 && /* @__PURE__ */ <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${activeTab === "register" ? "bg-white text-[#d4522f]" : "bg-[#d4522f] text-white"}`}>{cart.reduce((a, b) => a + b.quantity, 0)}</span>}
 </button>
 <button type="button" onClick={() => setActiveTab("parked")} className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === "parked" ? "bg-[#d4522f] text-white shadow-2xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>
 <PauseCircle size={14} />
 <span>{t("shop_held_orders")}</span>
-{parkedOrders.length > 0 && /* @__PURE__ */ <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-black ${activeTab === "parked" ? "bg-white text-[#d4522f]" : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"}`}>{parkedOrders.length}</span>}
+{parkedOrders.length > 0 && /* @__PURE__ */ <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${activeTab === "parked" ? "bg-white text-[#d4522f]" : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"}`}>{parkedOrders.length}</span>}
 </button>
 <button type="button" onClick={() => setActiveTab("receipt_settings")} className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === "receipt_settings" ? "bg-[#d4522f] text-white shadow-2xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>
 <Settings2 size={14} />
@@ -951,7 +951,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </div>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
 <span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "حجم مبيعات اليوم" : language === "fr" ? "Volume Ventes Caisse" : "Today Register Turnover"}
@@ -966,7 +966,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </div>
 <div className="text-2xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(sessionMetrics.turnover)}</div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
 <span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "تذاكر قيد الانتظار" : language === "fr" ? "Paniers Suspendus" : "Parked Carts Queue"}
@@ -1164,7 +1164,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </div>}
 <div className="flex justify-between items-baseline pt-2 border-t border-neutral-200 dark:border-neutral-700 text-black dark:text-white font-black">
 <span className="text-sm">{t("pos_total_due_label")}</span>
-<span className="text-2xl font-mono text-[#d4522f]">{formatMoney(cartTotal)}</span>
+<span className="text-2xl font-mono tabular-nums text-[#d4522f]">{formatMoney(cartTotal)}</span>
 </div>
 </div>
 {cart.length > 0 && /* @__PURE__ */ <div className="space-y-1.5 pt-1">
@@ -1181,7 +1181,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 															setSinglePaymentMethod("Cash");
 															setAmountTenderedInput(amt.toString());
 															handleOpenCheckout();
-														}} className={`p-1.5 rounded-xl text-[10px] font-bold font-mono text-center border cursor-pointer hover:border-[#d4522f] transition-colors ${isExact ? "bg-neutral-900 dark:bg-white text-white dark:text-white/55 border-transparent" : "bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75"}`}>
+														}} className={`p-1.5 rounded-xl text-[10px] font-bold font-mono tabular-nums text-center border cursor-pointer hover:border-[#d4522f] transition-colors ${isExact ? "bg-neutral-900 dark:bg-white text-white dark:text-black border-transparent" : "bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75"}`}>
 {isExact ? t("shop_quick_cash_exact") : `${amt.toLocaleString()} ${language === "ar" ? "د.ج" : "DA"}`}
 </button>;
 												})}
@@ -1243,21 +1243,21 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </div>}
 {activeTab === "inventory" && /* @__PURE__ */ <div className="space-y-5">
 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-<div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
+<div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs space-y-1">
 <div className="text-[10px] font-bold uppercase tracking-wider text-black/55 dark:text-white/55">{t("shop_kpi_skus")}</div>
-<div className="text-xl font-black text-black dark:text-white">{inventoryStats.totalSKUs}</div>
-<div className="text-[10px] text-black/55 dark:text-white/55">{t("shop_kpi_skus_sub", { count: inventoryStats.totalUnits })}</div>
+<div className="text-xl font-black text-black dark:text-white tabular-nums">{inventoryStats.totalSKUs}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 tabular-nums">{t("shop_kpi_skus_sub", { count: inventoryStats.totalUnits })}</div>
 </div>
-<div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
+<div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs space-y-1">
 <div className="text-[10px] font-bold uppercase tracking-wider text-black/55 dark:text-white/55">{t("shop_kpi_retail_val")}</div>
-<div className="text-xl font-black font-mono text-[#d4522f]">{formatMoney(inventoryStats.retailValuation)}</div>
-<div className="text-[10px] text-black/55 dark:text-white/55">
+<div className="text-xl font-black font-mono tabular-nums text-[#d4522f]">{formatMoney(inventoryStats.retailValuation)}</div>
+<div className="text-[10px] text-black/55 dark:text-white/55 tabular-nums">
 {t("shop_kpi_retail_val_sub", { cost: formatMoney(inventoryStats.costValuation) })}
 </div>
 </div>
-<div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
+<div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs space-y-1">
 <div className="text-[10px] font-bold uppercase tracking-wider text-black/55 dark:text-white/55">{t("shop_kpi_margin")}</div>
-<div className="text-xl font-black font-mono text-emerald-600 dark:text-emerald-400">{formatMoney(inventoryStats.potentialProfit)}</div>
+<div className="text-xl font-black font-mono tabular-nums text-emerald-600 dark:text-emerald-400">{formatMoney(inventoryStats.potentialProfit)}</div>
 <div className="text-[10px] text-black/55 dark:text-white/55">{t("shop_kpi_margin_sub")}</div>
 </div>
 <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
@@ -1326,11 +1326,11 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <p className="text-[11px] text-black/55 dark:text-white/55 line-clamp-2 mb-3">{p.description || t("shop_standard_article")}</p>
 <div className="grid grid-cols-2 gap-2 p-2.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl text-xs mb-3">
 <div>
-<span className="text-black/55 dark:text-white/55 block text-[9px] uppercase font-medium">{t("shop_col_cost")}</span>
+<span className="text-black/55 dark:text-white/55 block text-[10px] uppercase font-medium">{t("shop_col_cost")}</span>
 <span className="font-mono text-black/70 dark:text-white/75 tabular-nums">{formatMoney(costAmt)}</span>
 </div>
 <div>
-<span className="text-black/55 dark:text-white/55 block text-[9px] uppercase font-medium">{t("shop_col_retail")}</span>
+<span className="text-black/55 dark:text-white/55 block text-[10px] uppercase font-medium">{t("shop_col_retail")}</span>
 <span className="font-mono font-bold text-black dark:text-white tabular-nums">{formatMoney(p.price.amount)}</span>
 </div>
 <div className="col-span-2 pt-1 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
@@ -1452,12 +1452,12 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <div className="text-center space-y-1 pb-3 border-b border-dashed border-neutral-400">
 <div className="text-base font-black tracking-wider uppercase">{receiptConfig.headerTitle}</div>
 {receiptConfig.subHeader && /* @__PURE__ */ <div className="text-[10px] text-black/75">{receiptConfig.subHeader}</div>}
-{receiptConfig.address && /* @__PURE__ */ <div className="text-[9px] text-black/55">{receiptConfig.address}</div>}
-{receiptConfig.phone && /* @__PURE__ */ <div className="text-[9px] text-black/55">
+{receiptConfig.address && /* @__PURE__ */ <div className="text-[10px] text-black/55">{receiptConfig.address}</div>}
+{receiptConfig.phone && /* @__PURE__ */ <div className="text-[10px] text-black/55">
 {"Tel: "}
 {receiptConfig.phone}
 </div>}
-{receiptConfig.taxId && /* @__PURE__ */ <div className="text-[9px] font-bold text-black/75 pt-0.5">{receiptConfig.taxId}</div>}
+{receiptConfig.taxId && /* @__PURE__ */ <div className="text-[10px] font-bold text-black/75 pt-0.5">{receiptConfig.taxId}</div>}
 </div>
 <div className="py-2.5 text-[10px] border-b border-dashed border-neutral-400 space-y-0.5">
 <div className="flex justify-between">
@@ -1510,7 +1510,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </div>
 </div>
 <div className="pt-3 text-center space-y-2">
-{receiptConfig.showBarcode && /* @__PURE__ */ <div className="w-40 h-8 mx-auto bg-neutral-900 text-white text-[8px] flex items-center justify-center tracking-widest font-mono">||||| | |||| || ||| ||||</div>}
+{receiptConfig.showBarcode && /* @__PURE__ */ <div className="w-40 h-8 mx-auto bg-neutral-900 text-white text-[10px] flex items-center justify-center tracking-widest font-mono">||||| | |||| || ||| ||||</div>}
 <div className="text-[10px] font-bold text-black">{receiptConfig.footerMessage || t("shop_receipt_default_footer")}</div>
 </div>
 </div>
@@ -1559,7 +1559,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 {t("pos_change_due_label")}
 {" :"}
 </span>
-<span className="text-lg font-black font-mono text-emerald-600 dark:text-emerald-400">{formatMoney(changeDue)}</span>
+<span className="text-lg font-black font-mono tabular-nums text-emerald-600 dark:text-emerald-400">{formatMoney(changeDue)}</span>
 </div>
 </div>}
 </div>}
@@ -1644,12 +1644,12 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 <div className="text-center space-y-0.5 pb-2 border-b border-dashed border-neutral-400">
 <div className="text-sm font-black uppercase tracking-wider">{receiptConfig.headerTitle}</div>
 {receiptConfig.subHeader && /* @__PURE__ */ <div className="text-[10px] text-black/75">{receiptConfig.subHeader}</div>}
-{receiptConfig.address && /* @__PURE__ */ <div className="text-[9px] text-black/55">{receiptConfig.address}</div>}
-{receiptConfig.phone && /* @__PURE__ */ <div className="text-[9px] text-black/55">
+{receiptConfig.address && /* @__PURE__ */ <div className="text-[10px] text-black/55">{receiptConfig.address}</div>}
+{receiptConfig.phone && /* @__PURE__ */ <div className="text-[10px] text-black/55">
 {"Tel: "}
 {receiptConfig.phone}
 </div>}
-{receiptConfig.taxId && /* @__PURE__ */ <div className="text-[9px] font-bold text-black/75">{receiptConfig.taxId}</div>}
+{receiptConfig.taxId && /* @__PURE__ */ <div className="text-[10px] font-bold text-black/75">{receiptConfig.taxId}</div>}
 </div>
 <div className="py-2 text-[10px] border-b border-dashed border-neutral-400 space-y-0.5">
 <div className="flex justify-between">
@@ -1749,7 +1749,7 @@ export const PosRegisterView: React.FC<any> = ({ initialTab = "register" }) => {
 </>}
 </div>
 <div className="pt-2 text-center space-y-1.5">
-{receiptConfig.showBarcode && /* @__PURE__ */ <div className="w-36 h-6 mx-auto bg-neutral-900 text-white text-[7px] flex items-center justify-center tracking-widest">|||| || ||||| || |||</div>}
+{receiptConfig.showBarcode && /* @__PURE__ */ <div className="w-36 h-6 mx-auto bg-neutral-900 text-white text-[10px] flex items-center justify-center tracking-widest">|||| || ||||| || |||</div>}
 <div className="text-[10px] font-bold">{receiptConfig.footerMessage || t("shop_receipt_default_footer")}</div>
 </div>
 </div>

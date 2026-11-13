@@ -107,7 +107,7 @@ export const MembershipStaffView: React.FC<any> = () => {
 <div className="w-9 h-9 rounded-full bg-[#d4522f]/15 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0">{member.fullName.slice(0, 2).toUpperCase()}</div>
 <div className="min-w-0">
 <div className="font-semibold text-black dark:text-white text-xs truncate">{member.fullName}</div>
-<div className="text-[11px] text-black/55 dark:text-white/55 truncate flex items-center gap-1.5">
+<div className="text-[11px] text-black/62 dark:text-white/65 truncate flex items-center gap-1.5">
 <span>{member.role}</span>
 {member.chairOrStudio && /* @__PURE__ */ <>
 <span>·</span>
@@ -124,7 +124,7 @@ export const MembershipStaffView: React.FC<any> = () => {
 			cell: (member: any) => {
 				const isPresent = member.isClockedInToday || member.attendanceLogs?.some((l: any) => (l.timestamp || "").slice(0, 10) === (/* @__PURE__ */ new Date()).toISOString().slice(0, 10) && l.type === "in");
 				return /* @__PURE__ */ <div className="flex items-center gap-2">
-<span className={`w-2 h-2 rounded-full ${member.status === "active" ? isPresent ? "bg-emerald-500 ring-4 ring-emerald-100 dark:ring-emerald-950" : "bg-emerald-500" : member.status === "on_leave" ? "bg-amber-500" : member.status === "frozen" ? "bg-rose-500" : "bg-neutral-400"}`} />
+<span className={`w-2 h-2 rounded-full ${member.status === "active" ? isPresent ? "bg-emerald-500 ring-4 ring-emerald-100 dark:ring-emerald-950" : "bg-emerald-500" : member.status === "on_leave" ? "bg-amber-500" : member.status === "frozen" ? "bg-rose-500" : "bg-[#8A8178]"}`} />
 <span className="text-xs font-medium text-black dark:text-white">
 {member.status === "active" ? isPresent ? isAr ? "متواجد بالصالة" : isEn ? "In Gym (Shift On)" : "Présent en Salle" : isAr ? "نشط" : isEn ? "Active" : "En Poste" : member.status === "on_leave" ? isAr ? "عطلة" : isEn ? "On Leave" : "En Congé" : member.status === "frozen" ? isAr ? "موقوف" : isEn ? "Suspended" : "Suspendu" : isAr ? "منتهي" : isEn ? "Terminated" : "Fin de Contrat"}
 </span>
@@ -153,15 +153,15 @@ export const MembershipStaffView: React.FC<any> = () => {
 			id: "salary",
 			header: isAr ? "الراتب القاعدي" : isEn ? "Base Salary" : "Salaire de Base",
 			accessorKey: "salary",
-			cell: (member: any) => /* @__PURE__ */ <span className="text-xs font-bold font-mono text-[#d4522f]">{member.salary ? `${member.salary.toLocaleString()} DZD` : "—"}</span>
+			cell: (member: any) => /* @__PURE__ */ <span className="text-xs font-bold font-mono tabular-nums text-[#d4522f]">{member.salary ? `${member.salary.toLocaleString()} DZD` : "—"}</span>
 		}
 	];
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200 relative">
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-<div className="flex items-center gap-3.5">
-<div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-white"><Users size={22} /></div>
+<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E6DED6]/80 dark:border-neutral-800/80">
+<div className="flex items-center gap-3.5 sm:gap-4">
+<div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#F3EDE7] dark:bg-white/[0.07] border border-[#E6DED6] dark:border-neutral-700/70 shadow-2xs flex items-center justify-center text-black dark:text-white"><Users size={22} /></div>
 <div>
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">{isAr ? "فريق العمل والمدربون" : isEn ? "Staff & Workforce" : "Staff & Équipe"}</h1>
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-[0.98] rtl:leading-tight tracking-[0.012em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">{isAr ? "فريق العمل والمدربون" : isEn ? "Staff & Workforce" : "Staff & Équipe"}</h1>
 </div>
 </div>
 <div className="flex items-center gap-3 relative">
@@ -172,20 +172,20 @@ export const MembershipStaffView: React.FC<any> = () => {
 </AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
 <div>
-<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+<h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] text-black dark:text-white">
 {isAr ? "فريق العمل ومؤشرات الحضور" : isEn ? "Workforce & Operational Health" : "Effectif & Santé Opérationnelle"}
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-4.5 sm:p-5 rounded-[18px] bg-white dark:bg-neutral-800/90 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between min-h-[132px]">
 <div>
-<span className="text-xs font-semibold text-black/70 dark:text-white/75">
+<span className="text-[12px] font-medium text-black/68 dark:text-white/72">
 {isAr ? "قاعدة الفريق النشطة" : isEn ? "Active Staff Base" : "Base active collaborateurs"}
 </span>
-<div className="mt-1">
-<span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+<div className="mt-1.5">
+<span className="text-[10.5px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50/90 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md tabular-nums">
 {"↗ "}
 {foundation.facilityStaff.length > 0 ? Math.round(foundation.activeCount / foundation.facilityStaff.length * 100) : 0}
 {"% "}
@@ -193,15 +193,15 @@ export const MembershipStaffView: React.FC<any> = () => {
 </span>
 </div>
 </div>
-<div className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{foundation.activeCount}</div>
+<div className="text-[30px] lg:text-[32px] leading-[0.95] font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{foundation.activeCount}</div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-4.5 sm:p-5 rounded-[18px] bg-white dark:bg-neutral-800/90 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between min-h-[132px]">
 <div>
-<span className="text-xs font-semibold text-black/70 dark:text-white/75">
+<span className="text-[12px] font-medium text-black/68 dark:text-white/72">
 {isAr ? "حضور وتأخيرات اليوم" : isEn ? "Today's Pointage & Lates" : "Pointage & Retards du Jour"}
 </span>
-<div className="mt-1">
-<span className="text-[10px] font-bold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded-full">
+<div className="mt-1.5">
+<span className="text-[10.5px] font-semibold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded-md tabular-nums">
 {foundation.todayPresentCount}
 {" "}
 {isAr ? "حاضرون" : "présents"}
@@ -211,17 +211,17 @@ export const MembershipStaffView: React.FC<any> = () => {
 </span>
 </div>
 </div>
-<div className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+<div className="text-[30px] lg:text-[32px] leading-[0.95] font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {foundation.presentPercentage}
 %
 </div>
 </div>
-<div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-<div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-white/80">
+<div className="p-4.5 sm:p-5 rounded-[18px] bg-[#1F1D1B] border border-white/[0.08] text-white flex flex-col justify-between min-h-[132px] shadow-sm">
+<div className="flex items-center justify-between gap-2">
+<span className="text-[12px] font-medium text-white/75">
 {isAr ? "الكتلة الأجرية الشهرية" : isEn ? "Monthly Payroll Budget" : "Masse Salariale Mensuelle"}
 </span>
-<span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+<span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/25">
 +
 {foundation.facilityStaff.length}
 {" "}
@@ -229,15 +229,12 @@ export const MembershipStaffView: React.FC<any> = () => {
 </span>
 </div>
 <div>
-<div className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+<div className="text-[28px] lg:text-[30px] leading-[0.95] font-bold text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {foundation.totalMonthlyPayroll.toLocaleString()}
 {" DZD"}
 </div>
-<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
-<span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
-<span>
+<p className="text-[11.5px] text-white/68 mt-1.5">
 {isAr ? "قوانين العمل الجزائرية، IRG 2022 و CNAS" : "Calcul statutory CNAS 9%/26% & Barème IRG 2022"}
-</span>
 </p>
 </div>
 </div>
@@ -273,20 +270,20 @@ export const MembershipStaffView: React.FC<any> = () => {
 						}
 					]} />
 </div>
-{foundation.activeSubTab === "directory" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+{foundation.activeSubTab === "directory" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
 <div className="flex flex-wrap items-center justify-between gap-3 w-full">
 <div className="flex items-center gap-2.5 shrink-0">
-<h2 className="text-base font-bold text-black dark:text-white tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+<h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">
 {isAr ? "قائمة فريق العمل والمدربين" : isEn ? "Staff & Coaches Directory" : "Liste des collaborateurs"}
 </h2>
-<span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700/70 text-black/70 dark:text-white/75 shadow-2xs tabular-nums">{foundation.filteredStaff.length}</span>
+<span className="px-2 py-0.5 text-[11px] font-semibold rounded-md bg-white dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] text-black/75 dark:text-white/80 shadow-2xs tabular-nums">{foundation.filteredStaff.length}</span>
 </div>
 <div className="flex items-center gap-2.5 min-w-0 flex-wrap">
 <Seek value={foundation.searchQuery} onChange={foundation.setSearchQuery} placeholder={isAr ? "بحث بالاسم، الهاتف، البادج..." : isEn ? "Search staff, phone, token..." : "Rechercher collaborateur..."} shutSize={40} openWidth={240} className="shrink-0 !rounded-xl" />
 <div className="shrink-0">
 <LiveSegmentedControl size="md" value={foundation.statusFilter} onValueChange={(val) => foundation.setStatusFilter(val as any)} options={quickStatusOptions} aria-label="Staff Status Filter" />
 </div>
-<button type="button" onClick={() => foundation.setIsPointageScannerOpen(true)} className="h-10 px-3.5 rounded-xl border flex items-center gap-2 text-xs font-semibold cursor-pointer transition-all shadow-2xs bg-white dark:bg-neutral-800 border-[#E9EEF0] dark:border-neutral-700/60 text-black/70 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700/50" title={isAr ? "كشك البصمة / البادج السريع" : "Ouvrir Kiosk Pointage RFID / PIN"}>
+<button type="button" onClick={() => foundation.setIsPointageScannerOpen(true)} className="h-10 px-3.5 rounded-xl border flex items-center gap-2 text-xs font-semibold cursor-pointer transition-all shadow-2xs bg-white dark:bg-[#262422] border-[#E6DED6] dark:border-[#3A3734] text-black/75 dark:text-white hover:bg-[#F3EDE7]/60 dark:hover:bg-[#3A3734]" title={isAr ? "كشك البصمة / البادج السريع" : "Ouvrir Kiosk Pointage RFID / PIN"}>
 <QrCode size={15} className="text-[#d4522f]" />
 <span>{isAr ? "كشك الحضور" : "Pointer Kiosk"}</span>
 </button>
@@ -340,13 +337,13 @@ export const MembershipStaffView: React.FC<any> = () => {
 						}
 					]} />
 </div>}
-{foundation.activeSubTab === "attendance" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+{foundation.activeSubTab === "attendance" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
 <StaffAttendanceSubView staffList={foundation.facilityStaff} attendanceLogs={foundation.staffAttendanceLogs} onOpenKiosk={() => foundation.setIsPointageScannerOpen(true)} onPunchStaff={foundation.handlePunchPointage} onManualLog={foundation.logStaffAttendanceManual} language={language} />
 </div>}
-{foundation.activeSubTab === "payroll" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+{foundation.activeSubTab === "payroll" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
 <StaffPayrollSubView staffList={foundation.facilityStaff} payrollRuns={foundation.staffPayrollRuns} payrollSlips={foundation.staffPayrollSlips} salaryAdvances={foundation.staffSalaryAdvances} onGeneratePayroll={(month, year) => foundation.generateStaffPayrollRun(month, year, "membership_session")} onApprovePayroll={foundation.approveStaffPayrollRun} onMarkSlipPaid={foundation.markStaffPayrollSlipPaid} onCreateAdvance={foundation.createStaffSalaryAdvance} language={language} />
 </div>}
-{foundation.activeSubTab === "history" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+{foundation.activeSubTab === "history" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
 <StaffHistorySubView staffList={foundation.facilityStaff} payrollRuns={foundation.staffPayrollRuns} payrollSlips={foundation.staffPayrollSlips} attendanceLogs={foundation.staffAttendanceLogs} language={language} />
 </div>}
 <StaffInspectorDrawer staff={foundation.drawerStaff} isOpen={foundation.isDrawerOpen} onClose={foundation.handleCloseDrawer} onEdit={(member) => {

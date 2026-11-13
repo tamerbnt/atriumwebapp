@@ -51,15 +51,15 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 	const [statusFilter, setStatusFilter] = React.useState("All");
 	const [searchQuery, setSearchQuery] = React.useState("");
 	const [planFilter, setPlanFilter] = React.useState("All");
-	const [viewMode, setViewMode] = React.useState("list");
+	const [viewMode, setViewMode] = React.useState<"list" | "grid">("list");
 	const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = React.useState(false);
 	const [selectedLead, setSelectedLead] = React.useState<any>(null);
 	const [conversionLead, setConversionLead] = React.useState<any>(null);
 	const [selectedPlanId, setSelectedPlanId] = React.useState("");
-	const [selectedLeadIds, setSelectedLeadIds] = React.useState(/* @__PURE__ */ new Set());
-	const [pinnedLeadIds, setPinnedLeadIds] = React.useState(/* @__PURE__ */ new Set());
+	const [selectedLeadIds, setSelectedLeadIds] = React.useState<Set<string>>(() => new Set());
+	const [pinnedLeadIds, setPinnedLeadIds] = React.useState<Set<string>>(() => new Set());
 	const [leadSortBy, setLeadSortBy] = React.useState("date");
-	const [leadSortDir, setLeadSortDir] = React.useState("desc");
+	const [leadSortDir, setLeadSortDir] = React.useState<"asc" | "desc">("desc");
 	const filteredLeads = React.useMemo(() => {
 		return leads.filter((lead) => {
 			if (statusFilter !== "All" && lead.status !== statusFilter) return false;
@@ -118,7 +118,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 	const declinedCount = React.useMemo(() => leads.filter((l) => l.status === "Declined").length, [leads]);
 	const handleTogglePinLead = (lead: any) => {
 		setPinnedLeadIds((prev) => {
-			const next = new Set(prev);
+			const next = new Set<string>(prev);
 			if (next.has(lead.id)) next.delete(lead.id);
 			else next.add(lead.id);
 			return next;
@@ -142,7 +142,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 			const lead = leads.find((l) => l.id === id);
 			if (lead && lead.status === "Pending") convertLeadToMember(lead.id, lead.preferredPlanId || (plan ? plan.id : "standard_pkg"), lead.preferredPlanName || (plan ? plan.name : "Standard Package"), plan ? plan.durationDays : 365);
 		});
-		setSelectedLeadIds(/* @__PURE__ */ new Set());
+		setSelectedLeadIds(new Set<string>());
 		showToast?.({
 			type: "success",
 			title: language === "ar" ? "تم اعتماد الطلبات" : language === "fr" ? "Dossiers validés" : "Leads Converted",
@@ -153,7 +153,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 		const targetIds = Array.from(selectedLeadIds);
 		if (deleteLead) targetIds.forEach((id) => deleteLead(id));
 		else targetIds.forEach((id) => updateLeadStatus(id, "Declined"));
-		setSelectedLeadIds(/* @__PURE__ */ new Set());
+		setSelectedLeadIds(new Set<string>());
 		showToast?.({
 			type: "warning",
 			title: language === "ar" ? "حذف من السجل" : language === "fr" ? "Suppression effectuée" : "Leads Removed",
@@ -210,7 +210,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 <span>{lead.fullName}</span>
 {isPinned && /* @__PURE__ */ <Pin size={11} className="text-[#d4522f] shrink-0" />}
 </div>
-<div className="text-xs text-black/55 dark:text-white/75 truncate">
+<div className="text-xs text-black/62 dark:text-white/75 truncate">
 {lead.phoneNumber}
 {" · "}
 {lead.email}
@@ -225,8 +225,8 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 			width: "1.8*",
 			sortable: true,
 			renderCell: (lead: any) => /* @__PURE__ */ <div>
-<span className="text-xs font-semibold text-black/70 dark:text-white/75">{lead.source}</span>
-{lead.notes && /* @__PURE__ */ <span className="block text-[11px] text-black/55 dark:text-white/55 truncate max-w-xs mt-0.5">{lead.notes}</span>}
+<span className="text-xs font-semibold text-black/75 dark:text-white/80">{lead.source}</span>
+{lead.notes && /* @__PURE__ */ <span className="block text-[11px] text-black/62 dark:text-white/65 truncate max-w-xs mt-0.5">{lead.notes}</span>}
 </div>
 		},
 		{
@@ -235,8 +235,8 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 			width: "1.8*",
 			sortable: true,
 			renderCell: (lead: any) => /* @__PURE__ */ <div>
-<span className="inline-block px-2.5 py-0.5 rounded-full bg-[#FDF4F0] dark:bg-neutral-800 text-[#d4522f] text-xs font-bold border border-[#F5E2D8] dark:border-neutral-700">{lead.preferredPlanName || plans[0]?.name || "Standard Package"}</span>
-{lead.preferredStartDate && /* @__PURE__ */ <span className="block text-[11px] text-black/55 dark:text-white/55 mt-0.5">
+<span className="inline-block px-2 py-0.5 rounded-md bg-[#d4522f]/10 text-[#d4522f] text-[11.5px] font-semibold border border-[#d4522f]/20">{lead.preferredPlanName || plans[0]?.name || "Standard Package"}</span>
+{lead.preferredStartDate && /* @__PURE__ */ <span className="block text-[11px] text-black/62 dark:text-white/65 mt-0.5 tabular-nums">
 {language === "ar" ? "بدء: " : language === "fr" ? "Début : " : "Start: "}
 {lead.preferredStartDate}
 </span>}
@@ -247,7 +247,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 			header: language === "ar" ? "تاريخ التقديم" : language === "fr" ? "Date de soumission" : "Submission Date",
 			width: "1.4*",
 			sortable: true,
-			renderCell: (lead: any) => /* @__PURE__ */ <span className="text-xs text-black/55 dark:text-white/75 tabular-nums">{new Date(lead.createdAt).toLocaleDateString()}</span>
+			renderCell: (lead: any) => /* @__PURE__ */ <span className="text-xs text-black/62 dark:text-white/75 tabular-nums">{new Date(lead.createdAt).toLocaleDateString()}</span>
 		},
 		{
 			key: "status",
@@ -257,7 +257,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 			renderCell: (lead: any) => {
 				const isApp = lead.status === "Approved";
 				const isDec = lead.status === "Declined";
-				return /* @__PURE__ */ <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${isApp ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200" : isDec ? "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200" : "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200"}`}>
+				return /* @__PURE__ */ <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11.5px] font-semibold ${isApp ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/50" : isDec ? "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200/80 dark:border-rose-800/50" : "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/50"}`}>
 <span className={`w-1.5 h-1.5 rounded-full ${isApp ? "bg-emerald-500" : isDec ? "bg-rose-500" : "bg-amber-500"}`} />
 {localizeStatus(lead.status, language)}
 </span>;
@@ -269,12 +269,12 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 			width: "1.6*",
 			renderCell: (lead: any) => /* @__PURE__ */ <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
 {lead.status === "Pending" ? /* @__PURE__ */ <>
-<button type="button" onClick={() => handleStartConversion(lead)} style={{ backgroundColor: "var(--color-accent)" }} className="h-7 px-2.5 text-xs font-bold text-white rounded-full flex items-center gap-1 hover:opacity-90 transition-opacity cursor-pointer shadow-xs" title={language === "ar" ? "اعتماد" : language === "fr" ? "Valider" : "Convert"}>
+<button type="button" onClick={() => handleStartConversion(lead)} style={{ backgroundColor: "var(--color-accent)" }} className="h-7 px-2.5 text-xs font-semibold text-white rounded-lg flex items-center gap-1 hover:opacity-90 transition-opacity cursor-pointer shadow-xs" title={language === "ar" ? "اعتماد" : language === "fr" ? "Valider" : "Convert"}>
 <UserCheck size={13} />
 <span>{language === "ar" ? "اعتماد" : language === "fr" ? "Valider" : "Convert"}</span>
 </button>
-<button type="button" onClick={() => updateLeadStatus(lead.id, "Declined")} className="h-7 w-7 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors cursor-pointer" title={language === "ar" ? "رفض الطلب" : language === "fr" ? "Refuser le dossier" : "Decline Lead"}><X size={14} /></button>
-</> : /* @__PURE__ */ <button type="button" onClick={() => setSelectedLead(lead)} className="h-7 px-2.5 rounded-full border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-1 cursor-pointer transition-colors">
+<button type="button" onClick={() => updateLeadStatus(lead.id, "Declined")} className="h-7 w-7 rounded-lg flex items-center justify-center text-black/62 dark:text-white/65 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors cursor-pointer" title={language === "ar" ? "رفض الطلب" : language === "fr" ? "Refuser le dossier" : "Decline Lead"}><X size={14} /></button>
+</> : /* @__PURE__ */ <button type="button" onClick={() => setSelectedLead(lead)} className="h-7 px-2.5 rounded-lg border border-[#E6DED6] dark:border-[#3A3734] text-xs font-semibold text-black/72 dark:text-white/80 hover:bg-[#F3EDE7] dark:hover:bg-[#262422] flex items-center gap-1 cursor-pointer transition-colors">
 <Eye size={12} />
 <span>{language === "ar" ? "معاينة" : language === "fr" ? "Fiche" : "View"}</span>
 </button>}
@@ -314,27 +314,27 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 			}
 		]} viewMode={viewMode} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200 relative">
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-<div className="flex items-center gap-3.5">
-<div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-white"><ClipboardList size={22} /></div>
+<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E6DED6]/80 dark:border-neutral-800/80">
+<div className="flex items-center gap-3.5 sm:gap-4">
+<div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#F3EDE7] dark:bg-white/[0.07] border border-[#E6DED6] dark:border-neutral-700/70 shadow-2xs flex items-center justify-center text-black dark:text-white"><ClipboardList size={22} /></div>
 <div>
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">{terminology.registration}</h1>
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-[0.98] rtl:leading-tight tracking-[0.012em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">{terminology.registration}</h1>
 </div>
 </div>
 <div className="flex items-center gap-3 relative flex-wrap sm:flex-nowrap">
 <AtriumButton type="button" variant="primary" onClick={onAddLead} icon={<Plus size={15} strokeWidth={2.5} />}><span>{t("reg_add_lead", language)}</span></AtriumButton>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
 <div>
-<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("reg_pipeline_health_title", language)}</h2>
+<h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">{t("reg_pipeline_health_title", language)}</h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-4.5 sm:p-5 rounded-[18px] bg-white dark:bg-neutral-800/90 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between min-h-[132px]">
 <div>
-<span className="text-xs font-semibold text-black/70 dark:text-white/75">{t("reg_active_intake_label", language)}</span>
-<div className="mt-1">
-<span className="text-[10px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/40 px-2 py-0.5 rounded-full">
+<span className="text-[12px] font-medium text-black/68 dark:text-white/72">{t("reg_active_intake_label", language)}</span>
+<div className="mt-1.5">
+<span className="text-[10.5px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-50/90 dark:bg-amber-950/40 px-2 py-0.5 rounded-md tabular-nums">
 {"↗ "}
 {pendingCount}
 {" "}
@@ -342,46 +342,43 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 </span>
 </div>
 </div>
-<div className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{pendingCount}</div>
+<div className="text-[30px] lg:text-[32px] leading-[0.95] font-bold tracking-[-0.01em] text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{pendingCount}</div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-4.5 sm:p-5 rounded-[18px] bg-white dark:bg-neutral-800/90 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between min-h-[132px]">
 <div>
-<span className="text-xs font-semibold text-black/70 dark:text-white/75">{t("reg_converted_members_label", language)}</span>
-<div className="mt-1">
-<span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+<span className="text-[12px] font-medium text-black/68 dark:text-white/72">{t("reg_converted_members_label", language)}</span>
+<div className="mt-1.5">
+<span className="text-[10.5px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50/90 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
 {language === "ar" ? "تحويل مؤكد" : language === "fr" ? "Conversion réussie" : "Converted"}
 </span>
 </div>
 </div>
-<div className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{approvedCount}</div>
+<div className="text-[30px] lg:text-[32px] leading-[0.95] font-bold tracking-[-0.01em] text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{approvedCount}</div>
 </div>
-<div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-<div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-white/80">{t("reg_intake_sla_label", language)}</span>
-<span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">{"< 15 min"}</span>
+<div className="p-4.5 sm:p-5 rounded-[18px] bg-[#1F1D1B] border border-white/[0.08] text-white flex flex-col justify-between min-h-[132px] shadow-sm">
+<div className="flex items-center justify-between gap-2">
+<span className="text-[12px] font-medium text-white/75">{t("reg_intake_sla_label", language)}</span>
+<span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/25 tabular-nums">{"< 15 min"}</span>
 </div>
 <div>
-<div className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{"< 15 min"}</div>
-<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
-<span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
-<span>
+<div className="text-[28px] lg:text-[30px] leading-[0.95] font-bold text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{"< 15 min"}</div>
+<p className="text-[11.5px] text-white/68 mt-1.5">
 {language === "ar" ? "بوابة التسجيل الذاتي وموقع الجوال" : language === "fr" ? "Borne libre-service & web mobile" : "Self-service Kiosk & Mobile Web"}
-</span>
 </p>
 </div>
 </div>
 </div>
 </div>
-<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
+<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs">
 <div className="flex flex-wrap items-center justify-between gap-3">
-<div className="flex items-center gap-2">
-<ClipboardList size={16} className="text-black/55 dark:text-white/55" />
-<span className="text-sm font-bold text-black dark:text-white">
+<div className="flex items-center gap-2.5">
+<ClipboardList size={16} className="text-black/62 dark:text-white/65" />
+<h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">
 {terminology.registration}
 {" "}
 {t("reg_requests_title", language)}
-</span>
-<span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums ml-1">{filteredLeads.length}</span>
+</h2>
+<span className="px-2 py-0.5 rounded-md bg-white dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] text-[11px] font-semibold text-black/68 dark:text-white/75 tabular-nums shadow-2xs">{filteredLeads.length}</span>
 </div>
 <div className="flex flex-wrap items-center gap-2.5 ml-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={language === "ar" ? "بحث باسم المتقدم، الهاتف، البريد..." : language === "fr" ? "Rechercher nom, tél, e-mail..." : "Search applicant name, phone, email..."} shutSize={36} openWidth={240} />
@@ -425,7 +422,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 {language === "ar" ? "تصدير البيانات" : language === "fr" ? "Exporter les données" : "Export Data"}
 </span>
 </AtriumButton>
-<button type="button" onClick={toggleFullscreen} className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer transition-colors shadow-2xs" title="Toggle Fullscreen"><Maximize2 size={13} /></button>
+<button type="button" onClick={toggleFullscreen} className="w-9 h-9 rounded-xl bg-white dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-center text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white cursor-pointer transition-colors shadow-2xs" title="Toggle Fullscreen"><Maximize2 size={13} /></button>
 </div>
 </div>
 <UniversalDataCollection items={sortedLeads} keyExtractor={(lead) => lead.id} viewMode={viewMode} onViewModeChange={setViewMode} columns={leadColumns} isLoading={isSyncing || networkMode === "force_skeleton"} isOffline={networkMode === "offline"} isTimedOut={isSyncTimeout} lastSyncedAt={lastSyncedAt} onRetrySync={retryCloudSync} selectedIds={selectedLeadIds} onSelectionChange={setSelectedLeadIds} bulkSecondaryAction={{
@@ -441,26 +438,26 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 						}
 					}} showViewToggle emptyTitle={language === "ar" ? "لا توجد طلبات تسجيل" : language === "fr" ? "Aucune demande d'inscription" : "No Registration Requests"} emptyDescription={language === "ar" ? "لا توجد طلبات تطابق الفلتر الحالي، يمكنك إضافة طلب تسجيل جديد" : language === "fr" ? "Aucun prospect ne correspond aux critères actuels. Vous pouvez saisir une nouvelle demande." : "No intake leads match current filters. You can record a new intake lead."} renderCard={(lead) => {
 						const isPinned = pinnedLeadIds.has(lead.id);
-						return /* @__PURE__ */ <div key={lead.id} onClick={() => setSelectedLead(lead)} className={`p-5 rounded-[22px] border transition-all cursor-pointer relative shadow-2xs ${selectedLead?.id === lead.id ? "border-[#d4522f] bg-[#FCEEE8]/40 dark:bg-neutral-800/80 ring-1 ring-[#d4522f]/30" : "border-[#E9EEF0] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 hover:border-[#D5DFE3] dark:hover:border-neutral-600"}`}>
+						return /* @__PURE__ */ <div key={lead.id} onClick={() => setSelectedLead(lead)} className={`p-5 rounded-[18px] border transition-all cursor-pointer relative shadow-2xs ${selectedLead?.id === lead.id ? "border-[#d4522f] bg-[#d4522f]/[0.06] dark:bg-[#262422] ring-1 ring-[#d4522f]/30" : "border-[#E6DED6] dark:border-[#3A3734] bg-white dark:bg-[#1C1B1A] hover:border-[#D4C8BC] dark:hover:border-[#4A4642]"}`}>
 {isPinned && /* @__PURE__ */ <div className="absolute top-3 left-3 text-[#d4522f]" title="Pinned lead"><Pin size={12} className="fill-[#d4522f]" /></div>}
 <div className="flex items-center justify-between mb-3 pl-4">
-<span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${lead.status === "Approved" ? "bg-emerald-50 text-emerald-700" : lead.status === "Declined" ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-700"}`}>{localizeStatus(lead.status, language)}</span>
-<span className="text-[11px] text-black/55 dark:text-white/55 tabular-nums">{new Date(lead.createdAt).toLocaleDateString()}</span>
+<span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold ${lead.status === "Approved" ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300" : lead.status === "Declined" ? "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300" : "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300"}`}>{localizeStatus(lead.status, language)}</span>
+<span className="text-[11px] text-black/62 dark:text-white/65 tabular-nums">{new Date(lead.createdAt).toLocaleDateString()}</span>
 </div>
 <div className="flex items-center gap-3 mb-3">
 <Avatar name={lead.fullName} size={42} />
 <div className="min-w-0 flex-1">
 <h3 className="text-sm font-bold text-black dark:text-white truncate">{lead.fullName}</h3>
-<p className="text-xs text-black/55 dark:text-white/55 truncate">{lead.phoneNumber}</p>
+<p className="text-xs text-black/62 dark:text-white/65 truncate">{lead.phoneNumber}</p>
 </div>
 </div>
-<div className="text-xs space-y-1 mb-4 text-black/70 dark:text-white/75 pt-2 border-t border-neutral-100 dark:border-neutral-700/60">
+<div className="text-xs space-y-1 mb-4 text-black/72 dark:text-white/75 pt-2.5 border-t border-[#E6DED6]/60 dark:border-[#3A3734]">
 <div className="flex justify-between">
-<span className="text-black/55 dark:text-white/55">{language === "ar" ? "الباقة:" : language === "fr" ? "Formule :" : "Plan:"}</span>
-<span className="font-bold text-[#d4522f] truncate max-w-[140px]">{lead.preferredPlanName || plans[0]?.name || "Standard Package"}</span>
+<span className="text-black/62 dark:text-white/65">{language === "ar" ? "الباقة:" : language === "fr" ? "Formule :" : "Plan:"}</span>
+<span className="font-semibold text-[#d4522f] truncate max-w-[140px]">{lead.preferredPlanName || plans[0]?.name || "Standard Package"}</span>
 </div>
 <div className="flex justify-between">
-<span className="text-black/55 dark:text-white/55">{language === "ar" ? "المصدر:" : language === "fr" ? "Source :" : "Source:"}</span>
+<span className="text-black/62 dark:text-white/65">{language === "ar" ? "المصدر:" : language === "fr" ? "Source :" : "Source:"}</span>
 <span className="truncate max-w-[140px]">{lead.source}</span>
 </div>
 </div>
@@ -470,7 +467,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 {language === "ar" ? "اعتماد وتحويل" : language === "fr" ? "Valider" : "Convert"}
 </span>
 </AtriumButton>
-<button type="button" onClick={() => updateLeadStatus(lead.id, "Declined")} className="h-7 w-7 rounded-lg border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-black/55 dark:text-white/55 hover:text-rose-600 flex items-center justify-center transition-colors cursor-pointer"><X size={14} /></button>
+<button type="button" onClick={() => updateLeadStatus(lead.id, "Declined")} className="h-7 w-7 rounded-lg border border-[#E6DED6] dark:border-[#3A3734] text-xs font-semibold text-black/62 dark:text-white/65 hover:text-rose-600 flex items-center justify-center transition-colors cursor-pointer"><X size={14} /></button>
 </div> : /* @__PURE__ */ <AtriumButton type="button" variant="secondary" size="xs" onClick={(e) => {
 										e.stopPropagation();
 										setSelectedLead(lead);
@@ -482,32 +479,32 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 </div>;
 					}} />
 </div>
-{selectedLead && /* @__PURE__ */ <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[420px] bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
-<div className="px-6 py-5 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
+{selectedLead && /* @__PURE__ */ <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[420px] bg-white dark:bg-[#1C1B1A] border-l border-[#E6DED6] dark:border-[#3A3734] shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
+<div className="px-6 py-5 border-b border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-between">
 <div className="flex items-center gap-2">
 <ClipboardList size={17} className="text-[#d4522f]" />
-<span className="text-sm font-bold text-black dark:text-white">
+<span className="text-sm font-semibold text-black dark:text-white">
 {language === "ar" ? "معاينة ملف المرشح" : language === "fr" ? "Fiche du prospect" : "Prospect Dossier Inspector"}
 </span>
 </div>
-<button type="button" onClick={() => setSelectedLead(null)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"><X size={18} /></button>
+<button type="button" onClick={() => setSelectedLead(null)} className="p-1.5 rounded-lg text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white hover:bg-[#F3EDE7] dark:hover:bg-[#262422] cursor-pointer"><X size={18} /></button>
 </div>
 <div className="flex-1 overflow-y-auto p-6 space-y-6 text-xs">
-<div className="p-5 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700/80 flex items-center gap-4">
+<div className="p-5 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex items-center gap-4">
 <Avatar name={selectedLead.fullName} size={50} />
 <div>
 <h3 className="text-base font-bold text-black dark:text-white">{selectedLead.fullName}</h3>
-<span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold mt-1 ${selectedLead.status === "Approved" ? "bg-emerald-50 text-emerald-700" : selectedLead.status === "Declined" ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-700"}`}>{localizeStatus(selectedLead.status, language)}</span>
+<span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold mt-1 ${selectedLead.status === "Approved" ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300" : selectedLead.status === "Declined" ? "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300" : "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300"}`}>{localizeStatus(selectedLead.status, language)}</span>
 </div>
 </div>
 <div className="space-y-3">
-<span className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
+<span className="text-[11.5px] font-semibold text-black/68 dark:text-white/72 uppercase tracking-[0.06em] rtl:normal-case rtl:tracking-normal">
 {language === "ar" ? "معلومات الاتصال والتفاصيل" : language === "fr" ? "Contact & Détails" : "Contact & Details"}
 </span>
-<div className="p-4 rounded-2xl bg-white dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-2.5">
+<div className="p-4 rounded-2xl bg-white dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-2.5">
 <div className="flex items-center gap-2.5">
 <Phone size={14} className="text-[#d4522f]" />
-<span className="text-black dark:text-white font-semibold">{selectedLead.phoneNumber}</span>
+<span className="text-black dark:text-white font-semibold tabular-nums">{selectedLead.phoneNumber}</span>
 </div>
 <div className="flex items-center gap-2.5">
 <Mail size={14} className="text-[#d4522f]" />
@@ -518,13 +515,13 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 <span className="text-black dark:text-white">
 {language === "ar" ? "تاريخ البدء المطلوب:" : language === "fr" ? "Début souhaité :" : "Requested start:"}
 {" "}
-<strong className="text-black dark:text-white">
+<strong className="text-black dark:text-white tabular-nums">
 {selectedLead.preferredStartDate || (language === "ar" ? "فوري" : language === "fr" ? "Immédiat" : "Immediate")}
 </strong>
 </span>
 </div>
-{selectedLead.notes && /* @__PURE__ */ <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700 text-black/55 dark:text-white/55">
-<span className="font-semibold text-black/70 dark:text-white/75">
+{selectedLead.notes && /* @__PURE__ */ <div className="pt-2 border-t border-[#E6DED6]/60 dark:border-[#3A3734] text-black/62 dark:text-white/65">
+<span className="font-semibold text-black/75 dark:text-white/80">
 {language === "ar" ? "الملاحظات:" : language === "fr" ? "Remarques :" : "Notes:"}
 </span>
 {" "}
@@ -532,14 +529,14 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 </div>}
 </div>
 </div>
-<div className="p-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#E8DFD8] dark:border-neutral-700 flex justify-between items-center">
+<div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex justify-between items-center">
 <div>
-<span className="text-xs font-bold text-[#d4522f]">
+<span className="text-[11.5px] font-semibold text-[#d4522f]">
 {language === "ar" ? "الباقة المفضلة" : language === "fr" ? "Formule préférée" : "Preferred Plan"}
 </span>
-<div className="text-sm font-black text-black dark:text-white mt-0.5">{selectedLead.preferredPlanName || plans[0]?.name || "Standard Package"}</div>
+<div className="text-sm font-bold text-black dark:text-white mt-0.5">{selectedLead.preferredPlanName || plans[0]?.name || "Standard Package"}</div>
 </div>
-<span className="text-base font-black text-[#d4522f] tabular-nums">
+<span className="text-base font-bold text-[#d4522f] tabular-nums">
 {"1 500 "}
 {language === "ar" ? "د.ج" : "DA"}
 </span>
@@ -569,7 +566,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 </div>}
 <Modal isOpen={conversionLead !== null} onClose={() => setConversionLead(null)} title={language === "ar" ? "اعتماد العضوية وتسجيل المشترك" : language === "fr" ? "Valider l'adhésion et créer l'adhérent" : "Convert Lead to Active Member"} subtitle={language === "ar" ? `ترقية ${conversionLead?.fullName} إلى مشترك رسمي في ${currentBranch?.name || "الفرع"}` : language === "fr" ? `Finaliser l'inscription de ${conversionLead?.fullName} au sein de ${currentBranch?.name || "Atrium 1"}` : `Promote ${conversionLead?.fullName} to official member status in ${currentBranch?.name || "Atrium 1"}`}>
 {conversionLead && /* @__PURE__ */ <div className="space-y-4">
-<div className="p-3.5 rounded-2xl bg-neutral-100 dark:bg-neutral-800/60 text-xs space-y-1">
+<div className="p-3.5 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] text-xs space-y-1">
 <div>
 <strong className="text-black dark:text-white">
 {language === "ar" ? "المتقدم:" : language === "fr" ? "Candidat :" : "Applicant:"}

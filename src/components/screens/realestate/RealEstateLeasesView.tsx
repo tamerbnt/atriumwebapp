@@ -246,12 +246,12 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 			}
 		]} hasIcon hasFacility hasActionBtn actionBtnWidth={140} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Key size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{isAr ? "عقود الكراء والاتفاقيات" : "Baux & Contrats de Location"}</h1>
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{isAr ? "عقود الكراء والاتفاقيات" : "Baux & Contrats de Location"}</h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
 {leases.length}
 {" "}
@@ -272,7 +272,7 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "عقود الإيجار السارية" : "Baux Actifs en Cours"}</span>
 <div>
 <div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{activeLeases}</div>
@@ -282,7 +282,7 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 </p>
 </div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "مجموع الودائع الضامنة (Cautions)" : "Dépôts de Garantie Séquestrés"}</span>
 <div>
 <div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalDeposits)}</div>
@@ -421,7 +421,7 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 {"Bail "}
 {selectedLease.id}
 </span>
-<span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${selectedLease.status === "Active" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : "bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75"}`}>{selectedLease.status}</span>
+<span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${selectedLease.status === "Active" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : "bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75"}`}>{selectedLease.status}</span>
 </div>
 <p className="text-xs font-semibold text-black/70 dark:text-white/75 line-clamp-1">{selectedLease.propertyTitle}</p>
 </div>

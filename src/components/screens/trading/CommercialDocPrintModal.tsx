@@ -257,7 +257,7 @@ Retenue Garantie (
 {doc.includeStampSignature && /* @__PURE__ */ <div className="w-24 h-12 border-2 border-dashed border-[#d4522f]/60 rounded-lg flex items-center justify-center text-[10px] text-[#d4522f] font-bold uppercase rotate-[-3deg] ml-auto">Cachet & Signé</div>}
 </div>
 </div>
-{doc.notesBottom ? /* @__PURE__ */ <p className="text-[10px] text-black/55 text-center mt-6 italic">{doc.notesBottom}</p> : /* @__PURE__ */ <p className="text-[9.5px] text-black/55 text-center mt-6 italic">
+{doc.notesBottom ? /* @__PURE__ */ <p className="text-[10px] text-black/55 text-center mt-6 italic">{doc.notesBottom}</p> : /* @__PURE__ */ <p className="text-[10px] text-black/55 text-center mt-6 italic">
 En cas de contestation, seul le Tribunal de Commerce compétent du ressort du siège de notre société est habilité.
 </p>}
 </div>

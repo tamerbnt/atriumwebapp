@@ -91,8 +91,8 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 		onClose();
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-<div className="relative w-full max-w-3xl bg-white dark:bg-[#18181B] rounded-[28px] shadow-2xl border border-[#E9EEF0] dark:border-[#27272A] p-6 md:p-8 my-8 text-black dark:text-[#FAFAFA]">
-<div className="flex items-center justify-between pb-4 border-b border-[#E2E8EC] dark:border-[#27272A] mb-6">
+<div className="relative w-full max-w-3xl bg-white dark:bg-[#18181B] rounded-[28px] shadow-2xl border border-[#E6DED6] dark:border-[#27272A] p-6 md:p-8 my-8 text-black dark:text-[#FAFAFA]">
+<div className="flex items-center justify-between pb-4 border-b border-[#E6DED6] dark:border-[#27272A] mb-6">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><FileText className="w-5 h-5" /></div>
 <div>
@@ -187,17 +187,17 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 <div className="flex items-center gap-3">
 <div className="w-9 h-9 rounded-xl bg-[#d4522f] text-white flex items-center justify-center font-bold"><Calculator className="w-5 h-5" /></div>
 <div>
-<div className="text-xs text-black/70 dark:text-[#A1A1AA]">
+<div className="text-xs text-black/70 dark:text-white/75">
 {commissionMode === "DecreeTranches" ? "Honoraires Légaux Dégressifs (Décret 09-18 Art. 34)" : `Honoraires Forfaitaires (${commissionRatePercent}%)`}
 </div>
 <div className="text-sm font-semibold text-black dark:text-white">
 {"Base HT: "}
-<span className="font-mono text-[#d4522f] font-bold">
+<span className="font-mono tabular-nums text-[#d4522f] font-bold">
 {commissionCalc.baseHt.toLocaleString()}
 {" DZD"}
 </span>
 {" · TVA (19%): "}
-<span className="font-mono">
+<span className="font-mono tabular-nums">
 {commissionCalc.tva.toLocaleString()}
 {" DZD"}
 </span>
@@ -205,8 +205,8 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 </div>
 </div>
 <div className="text-right">
-<span className="text-xs uppercase text-black/70 dark:text-[#A1A1AA] font-semibold">Total TTC</span>
-<div className="text-lg font-bold font-mono text-[#d4522f]">
+<span className="text-xs uppercase text-black/70 dark:text-white/75 font-semibold">Total TTC</span>
+<div className="text-lg font-bold font-mono tabular-nums text-[#d4522f]">
 {commissionCalc.totalTtc.toLocaleString()}
 {" DZD"}
 </div>
@@ -230,13 +230,13 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 								]} />
 <div className="flex items-center gap-3 pt-5">
 <label className="flex items-center gap-2 cursor-pointer text-sm font-medium">
-<input type="checkbox" checked={isExclusive} onChange={(e) => setIsExclusive(e.target.checked)} className="w-4 h-4 rounded border-[#E2E8EC] text-[#d4522f] focus:ring-[#d4522f]" />
+<input type="checkbox" checked={isExclusive} onChange={(e) => setIsExclusive(e.target.checked)} className="w-4 h-4 rounded border-[#E6DED6] text-[#d4522f] focus:ring-[#d4522f]" />
 <span>Mandat d'Exclusivité Accordé</span>
 </label>
 </div>
 </div>
 <LabelInput label="Conditions Particulières / Observations (Optionnel)" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Ex: Clés remises à l'agence, visites le samedi après-midi uniquement..." />
-<div className="flex items-center justify-end gap-3 pt-4 border-t border-[#E2E8EC] dark:border-[#27272A]">
+<div className="flex items-center justify-end gap-3 pt-4 border-t border-[#E6DED6] dark:border-[#27272A]">
 <AtriumButton variant="secondary" onClick={onClose} type="button">Annuler</AtriumButton>
 <AtriumButton variant="primary" icon={<CheckCircle size={14} />} type="submit">Enregistrer au Registre Officiel</AtriumButton>
 </div>

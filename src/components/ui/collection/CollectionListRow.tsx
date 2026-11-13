@@ -124,7 +124,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
             icon: (
               <Pin
                 className={`w-3.5 h-3.5 ${
-                  isPinned ? 'fill-[#F59E0B] text-[#F59E0B]' : 'text-black/55 dark:text-white/60'
+                  isPinned ? 'fill-[#F59E0B] text-[#F59E0B]' : 'text-black/62 dark:text-white/65'
                 }`}
               />
             ),
@@ -234,23 +234,14 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
       {/* ================= MAIN ROW CARD ================= */}
       <div
         onClick={onRowClick}
-        style={{
-          borderLeftWidth: isSelected || isHovered ? '3px' : isPinned ? '2px' : '1px',
-          borderLeftColor:
-            isSelected || isHovered
-              ? '#d4522f'
-              : isPinned
-              ? '#F59E0B'
-              : undefined,
-        }}
-        className={`relative z-10 w-full min-h-[50px] px-4 py-2 rounded-[10px] flex items-center transition-all duration-150 cursor-pointer ${
+        className={`relative z-10 w-full min-h-[54px] px-4 py-2.5 rounded-[14px] flex items-center transition-all duration-150 cursor-pointer ${
           isSelected
-            ? 'bg-[#d4522f]/10 border-t border-r border-b border-[#d4522f]/30 dark:bg-[#d4522f]/15'
+            ? 'bg-[#FCEEE8]/70 border border-[#d4522f]/45 dark:bg-[#d4522f]/15 dark:border-[#d4522f]/50'
             : isHovered
-            ? 'bg-neutral-50/90 dark:bg-neutral-800/80 border-t border-r border-b border-neutral-200 dark:border-neutral-700 shadow-sm'
+            ? 'bg-[#FBF8F5] dark:bg-neutral-800/80 border border-[#D4C8BC] dark:border-neutral-700 shadow-xs'
             : isPinned
-            ? 'bg-white dark:bg-[#18181B] border-t border-r border-b border-amber-400/50 dark:border-amber-500/40'
-            : 'bg-white dark:bg-[#18181B] border border-neutral-200/80 dark:border-neutral-800'
+            ? 'bg-white dark:bg-[#18181B] border border-amber-400/60 dark:border-amber-500/40'
+            : 'bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800'
         }`}
       >
         {/* Dynamic Column Children */}
@@ -265,7 +256,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
               e.stopPropagation();
               setIsKebabOpen((prev) => !prev);
             }}
-            className="w-8 h-8 rounded-[6px] flex items-center justify-center text-black/55 hover:text-black dark:text-white/60 dark:hover:text-white hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-[8px] flex items-center justify-center text-black/56 hover:text-black dark:text-white/60 dark:hover:text-white hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/60 transition-colors cursor-pointer"
             title="Options"
           >
             <MoreVertical className="w-4 h-4" />
@@ -319,7 +310,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
                     : 'cubic-bezier(0.4, 0, 1, 1)',
                   transitionDelay: `${isHovered ? enterDelay : exitDelay}ms`,
                 }}
-                className={`w-10 h-10 rounded-[6px] bg-white dark:bg-[#1E1E22] border border-neutral-200/90 dark:border-neutral-700/80 shadow-md flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer ${
+                className={`w-10 h-10 rounded-[6px] bg-white dark:bg-[#1E1E22] border border-[#E6DED6] dark:border-neutral-700/80 shadow-md flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer ${
                   action.isSpecialDelete
                     ? 'hover:bg-red-50 dark:hover:bg-red-950/40 hover:border-red-300'
                     : 'hover:bg-[#FDF4F0] dark:hover:bg-neutral-700/60 hover:border-[#d4522f]/50'

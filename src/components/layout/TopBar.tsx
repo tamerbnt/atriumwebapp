@@ -262,7 +262,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             <Home size={12} />
             <span>{homeLabel}</span>
           </button>
-          <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+          <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
           <span className="text-black dark:text-white font-semibold">
             {t('nav_settings', language)}
           </span>
@@ -348,9 +348,9 @@ export const TopBar: React.FC<TopBarProps> = ({
             <Home size={12} />
             <span>{homeLabel}</span>
           </button>
-          <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+          <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
           <span className="text-black/70 dark:text-white/75 font-medium">{resolved.role}</span>
-          <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+          <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
           <span className="text-black dark:text-white font-semibold">{resolved.screen}</span>
         </nav>
       );
@@ -378,7 +378,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
             <span className="text-black dark:text-white font-semibold">
               {t('nav_trading_sales', language)}
             </span>
@@ -395,7 +395,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
             <span className="text-black dark:text-white font-semibold">
               {t('nav_trading_purchases', language)}
             </span>
@@ -412,7 +412,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
             <span className="text-black dark:text-white font-semibold">
               {t('nav_trading_inventory', language)}
             </span>
@@ -429,7 +429,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
             <span className="text-black dark:text-white font-semibold">
               {t('nav_trading_directory', language)}
             </span>
@@ -446,7 +446,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
             <span className="text-black dark:text-white font-semibold">
               {t('nav_trading_catalog', language)}
             </span>
@@ -463,7 +463,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
             <span className="text-black dark:text-white font-semibold">
               {t('nav_trading_finance', language)}
             </span>
@@ -480,7 +480,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
             <span className="text-black dark:text-white font-semibold">
               {isFreelance
                 ? t('topbar_solo_timetracker_crumb', language)
@@ -502,20 +502,20 @@ export const TopBar: React.FC<TopBarProps> = ({
                   selectMember(null);
                   setScreen('dashboard');
                 }}
-                className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+                className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <Home size={12} />
                 <span>{homeLabel}</span>
               </button>
-              <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+              <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
               <button
                 type="button"
                 onClick={() => selectMember(null)}
-                className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors cursor-pointer"
+                className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors cursor-pointer"
               >
                 {isFreelance ? t('topbar_solo_clients_crumb', language) : terminology.members}
               </button>
-              <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+              <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
               <span className="text-black dark:text-white font-semibold truncate max-w-[130px] sm:max-w-[200px]">
                 {selectedMember.fullName}
               </span>
@@ -523,16 +523,16 @@ export const TopBar: React.FC<TopBarProps> = ({
           );
         }
         return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12.5px] tracking-[-0.005em]">
             <button
               type="button"
               onClick={() => setScreen('dashboard')}
-              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
             <span className="text-black dark:text-white font-semibold">
               {isFreelance ? t('topbar_solo_clients_crumb', language) : terminology.members}
             </span>
@@ -540,16 +540,16 @@ export const TopBar: React.FC<TopBarProps> = ({
         );
       case 'registrations':
         return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12.5px] tracking-[-0.005em]">
             <button
               type="button"
               onClick={() => setScreen('dashboard')}
-              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
             <span className="text-black dark:text-white font-semibold">
               {isFreelance
                 ? t('topbar_solo_proposals_crumb', language)
@@ -561,16 +561,16 @@ export const TopBar: React.FC<TopBarProps> = ({
         );
       case 'shop':
         return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12.5px] tracking-[-0.005em]">
             <button
               type="button"
               onClick={() => setScreen('dashboard')}
-              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
             <span className="text-black dark:text-white font-semibold">
               {isFreelance
                 ? t('topbar_solo_invoices_crumb', language)
@@ -580,16 +580,16 @@ export const TopBar: React.FC<TopBarProps> = ({
         );
       case 'scheduler':
         return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12.5px] tracking-[-0.005em]">
             <button
               type="button"
               onClick={() => setScreen('dashboard')}
-              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
             <span className="text-black dark:text-white font-semibold">
               {isFreelance
                 ? t('topbar_solo_deliverables_crumb', language)
@@ -599,16 +599,16 @@ export const TopBar: React.FC<TopBarProps> = ({
         );
       case 'agenda':
         return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12.5px] tracking-[-0.005em]">
             <button
               type="button"
               onClick={() => setScreen('dashboard')}
-              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
             <span className="text-black dark:text-white font-semibold">
               {language === 'ar' ? 'المواعيد' : language === 'fr' ? 'Agenda' : 'Agenda'}
             </span>
@@ -616,16 +616,16 @@ export const TopBar: React.FC<TopBarProps> = ({
         );
       case 'finance':
         return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12.5px] tracking-[-0.005em]">
             <button
               type="button"
               onClick={() => setScreen('dashboard')}
-              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
             <span className="text-black dark:text-white font-semibold">
               {isFreelance
                 ? t('topbar_solo_finance_crumb', language)
@@ -635,16 +635,16 @@ export const TopBar: React.FC<TopBarProps> = ({
         );
       case 'history':
         return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12.5px] tracking-[-0.005em]">
             <button
               type="button"
               onClick={() => setScreen('dashboard')}
-              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
             <span className="text-black dark:text-white font-semibold">
               {isFreelance
                 ? t('topbar_solo_history_crumb', language)
@@ -654,16 +654,16 @@ export const TopBar: React.FC<TopBarProps> = ({
         );
       case 'staff':
         return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12.5px] tracking-[-0.005em]">
             <button
               type="button"
               onClick={() => setScreen('dashboard')}
-              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <ChevronRight size={13} className="text-black/50 dark:text-white/50" />
             <span className="text-black dark:text-white font-semibold">
               {language === 'ar' ? 'الفريق' : language === 'fr' ? 'Équipe' : 'Staff'}
             </span>
@@ -671,11 +671,11 @@ export const TopBar: React.FC<TopBarProps> = ({
         );
       default: {
         return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12.5px] tracking-[-0.005em]">
             <button
               type="button"
               onClick={() => setScreen('dashboard')}
-              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/62 dark:text-white/68 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
@@ -695,7 +695,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         <button
           type="button"
           onClick={onToggleMobileMenu}
-          className="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center text-black/80 dark:text-white/85 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+          className="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center text-black/80 dark:text-white/85 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"
           aria-label="Toggle mobile navigation menu"
         >
           <MenuIcon size={17} />
@@ -710,7 +710,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
       {/* Center: Live Floating Stopwatch Pill */}
       {!isProjectMilestone && (activeTimer.isRunning || currentBusiness.category === 'freelance_solo') && (
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800/90 border border-neutral-200/80 dark:border-neutral-700/80 text-xs shadow-2xs">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#F3EDE7]/90 dark:bg-neutral-800/90 border border-[#E6DED6] dark:border-neutral-700/70 text-xs shadow-2xs">
           {activeTimer.isRunning ? (
             <>
               <span className={`w-2 h-2 rounded-full ${activeTimer.isPaused ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`} />
@@ -926,8 +926,8 @@ export const TopBar: React.FC<TopBarProps> = ({
                 tone="soft"
                 className={`!rounded-full !pl-1.5 !pr-2.5 !py-1 !h-[34px] !max-h-[34px] border cursor-pointer select-none ${
                   open
-                    ? '!border-neutral-400 dark:!border-neutral-500 shadow-xs'
-                    : 'border-neutral-200/80 dark:border-neutral-700/70'
+                    ? '!border-[#D4C8BC] dark:!border-neutral-500 shadow-xs'
+                    : 'border-[#E6DED6] dark:border-neutral-700/70'
                 }`}
                 aria-label={`Operator: ${currentUser.fullName} (${currentUser.role})`}
               >

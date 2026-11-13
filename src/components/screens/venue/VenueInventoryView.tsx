@@ -360,7 +360,7 @@ export const VenueInventoryView: React.FC<any> = () => {
 <div className="flex items-center gap-3.5">
 <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-white"><DoorOpen size={22} /></div>
 <div>
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("venue_inv_title")}</h1>
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("venue_inv_title")}</h1>
 </div>
 </div>
 <div className="flex items-center gap-3 relative flex-wrap">
@@ -374,7 +374,7 @@ export const VenueInventoryView: React.FC<any> = () => {
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
 <span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "إجمالي القاعات والمساحات" : language === "fr" ? "Parc Total des Espaces" : "Total Venue Spaces"}
@@ -390,7 +390,7 @@ export const VenueInventoryView: React.FC<any> = () => {
 </div>
 <div className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{totalSpaces}</div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
 <span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "طاقة الاستقبال الإجمالية" : language === "fr" ? "Capacité d'Accueil Totale" : "Total Guest Capacity"}

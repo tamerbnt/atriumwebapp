@@ -206,7 +206,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 			header: "Catégorie",
 			width: "1.5*",
 			minWidth: "140px",
-			renderCell: (exp: any) => /* @__PURE__ */ <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-black/70 dark:text-white/75">{exp.category}</span>
+			renderCell: (exp: any) => /* @__PURE__ */ <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75">{exp.category}</span>
 		},
 		{
 			key: "amount",
@@ -268,7 +268,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 				const b = ({
 					in_warehouse: {
 						label: "En Stock Agence",
-						bg: "bg-zinc-100 dark:bg-zinc-800 text-black/70 dark:text-white/75",
+						bg: "bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75",
 						text: ""
 					},
 					deployed_on_mission: {
@@ -288,7 +288,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 					}
 				} as Record<string, any>)[eq.currentStatus] || {
 					label: eq.currentStatus,
-					bg: "bg-zinc-100 text-black/70 dark:text-white/75"
+					bg: "bg-[#F3EDE7] text-black/70 dark:text-white/75"
 				};
 				return /* @__PURE__ */ <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${b.bg}`}>{b.label}</span>;
 			}
@@ -342,25 +342,25 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 	});
 	if (showSkeleton && (pmPayrollBatches.length === 0 && pmCcpSlips.length === 0 || networkMode === "force_skeleton")) return /* @__PURE__ */ <SkeletonFinanceAudit isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
 <div>
 <div className="flex items-center gap-2">
 <span className="text-xs font-semibold uppercase tracking-wider text-[#d4522f]">Comptabilité & Trésorerie</span>
 <span className="text-black/55 dark:text-white/55">·</span>
 <span className="text-xs text-black/55 dark:text-white/55">Décaissements & Mandats CCP SFP 01</span>
 </div>
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {activeTab === "payroll" ? "Lots de Paie Validés DG" : activeTab === "ccp" ? "Bordereaux CCP SFP 01 (Algérie Poste)" : activeTab === "expenses" ? "Remboursements Achats & Frais" : "Suivi Stock & Matériel"}
 </h1>
 </div>
 <div className="flex items-center gap-2.5">
-{activeTab === "ccp" && /* @__PURE__ */ <button onClick={handleExportCcpCsv} className="px-3 py-1.5 text-xs font-semibold text-black/70 dark:text-white/75 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer">
+{activeTab === "ccp" && /* @__PURE__ */ <button onClick={handleExportCcpCsv} className="px-3 py-1.5 text-xs font-semibold text-black/70 dark:text-white/75 bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700 hover:bg-[#FBF8F5] rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer">
 <Download className="w-3.5 h-3.5" />
 <span>Export CSV</span>
 </button>}
 </div>
 </div>
-<div className="flex border-b border-zinc-200 dark:border-zinc-800 gap-1 overflow-x-auto">
+<div className="flex border-b border-[#E6DED6] dark:border-neutral-800 gap-1 overflow-x-auto">
 {[
 					{
 						id: "payroll",
@@ -392,7 +392,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 					return /* @__PURE__ */ <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${isActive ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>
 <Icon className="w-4 h-4" />
 <span>{tab.label}</span>
-{tab.count !== void 0 && tab.count > 0 && /* @__PURE__ */ <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-zinc-100 dark:bg-zinc-800 text-black/70 dark:text-white/75">{tab.count}</span>}
+{tab.count !== void 0 && tab.count > 0 && /* @__PURE__ */ <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75">{tab.count}</span>}
 </button>;
 				})}
 </div>
@@ -401,7 +401,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">Trésorerie Agence & Décaissements Postaux</h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">Bordereaux CCP Émis</span>
 <div>
 <div className="text-2xl font-bold tracking-tight text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{pmCcpSlips.length}</div>
@@ -411,7 +411,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 </p>
 </div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">Remboursements DG Validés</span>
 <div>
 <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{pmExpenses.filter((e) => e.status === "approved_by_direction").length}</div>
@@ -438,7 +438,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 </div>
 </div>
 {activeTab === "payroll" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
-<div className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 <div>
 <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">Génération des Mandats Postaux (Slide 10)</span>
 <h2 className="text-lg font-bold text-black dark:text-white mt-0.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans">Déblocage Trésorerie Postale</h2>
@@ -449,7 +449,7 @@ Générer Tous les Bordereaux CCP ➔
 </button>}
 </div>
 <div className="space-y-3">
-{pmPayrollBatches.map((batch) => /* @__PURE__ */ <div key={batch.id} className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+{pmPayrollBatches.map((batch) => /* @__PURE__ */ <div key={batch.id} className="p-5 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
 <div className="space-y-1">
 <div className="flex items-center gap-2">
 <span className="font-mono font-bold text-xs text-black dark:text-white">{batch.batchNumber}</span>
@@ -481,7 +481,7 @@ Générer CCP
 </div>
 </div>}
 {activeTab === "ccp" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
-<div className="p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex items-center justify-between">
+<div className="p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex items-center justify-between">
 <Seek value={ccpSearch} onChange={setCcpSearch} placeholder="Rechercher par animateur, compte CCP ou wilaya..." openWidth={360} shutSize={38} />
 <span className="text-xs text-black/55 dark:text-white/55 font-semibold">
 {filteredSlips.length}
@@ -526,7 +526,7 @@ Marquer Imprimés
 </div>
 <p className="text-[11px] text-black/55 dark:text-white/55 truncate">{slip.transactionReference}</p>
 </div>
-<div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+<div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-between">
 <span className="font-mono font-bold text-sm text-[#DC2626] tabular-nums">{formatMoney(slip.amountDzd, "DZD")}</span>
 <button type="button" onClick={() => setSelectedSlip(slip)} className="px-2.5 py-1 text-xs font-semibold text-white bg-[#DC2626] hover:bg-red-700 rounded-lg flex items-center gap-1 cursor-pointer">
 <Printer className="w-3 h-3" />
@@ -536,7 +536,7 @@ Mandat
 </div>} />
 </div>}
 {activeTab === "expenses" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
-<div className="p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex items-center justify-between">
+<div className="p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex items-center justify-between">
 <Seek value={expenseSearch} onChange={setExpenseSearch} placeholder="Rechercher par titre de frais ou déclarant..." openWidth={360} shutSize={38} />
 {selectedExpenseIds.size > 0 && /* @__PURE__ */ <div className="flex items-center gap-2">
 <button type="button" onClick={() => {
@@ -564,14 +564,14 @@ Supprimer
 {exp.declaredByUserName}
 </p>
 </div>
-<div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+<div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-between">
 <span className="font-mono font-bold text-sm text-[#DC2626] tabular-nums">{formatMoney(exp.amountDzd, "DZD")}</span>
 <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${exp.status === "approved_by_direction" ? "bg-emerald-100 text-emerald-700" : exp.status === "rejected" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}>{exp.status.replace(/_/g, " ")}</span>
 </div>
 </div>} />
 </div>}
 {activeTab === "stock" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
-<div className="p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-wrap items-center justify-between gap-4">
+<div className="p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-wrap items-center justify-between gap-4">
 <div className="flex flex-wrap items-center gap-3 text-xs flex-1 max-w-xl">
 <Seek value={stockSearch} onChange={setStockSearch} placeholder="Rechercher équipement par code actif ou nom..." openWidth={360} shutSize={38} />
 <FilterSelect label="Catégorie" value={stockCategoryFilter} onChange={(val) => setStockCategoryFilter(typeof val === "string" ? val : val.target?.value || val)} options={[
@@ -619,9 +619,9 @@ Supprimer
 {eq.conditionReport}
 </p>
 </div>
-<div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+<div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-between">
 <span className="font-mono font-bold text-sm text-black dark:text-white tabular-nums">{formatMoney(eq.acquisitionCostDzd, "DZD")}</span>
-<span className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-black/70 dark:text-white/75 capitalize">{eq.currentStatus.replace(/_/g, " ")}</span>
+<span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 capitalize">{eq.currentStatus.replace(/_/g, " ")}</span>
 </div>
 </div>} />
 </div>}
@@ -630,17 +630,17 @@ Supprimer
 					setSelectedSlip(null);
 				}} />}
 {selectedReceiptUrl && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-<div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+<div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#E6DED6] dark:border-neutral-800 space-y-4">
 <div className="flex items-center justify-between">
 <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
 <Receipt className="w-4 h-4 text-[#d4522f]" />
 Justificatif Fiscal d'Achat
 </h3>
-<button type="button" onClick={() => setSelectedReceiptUrl(null)} className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"><X className="w-4 h-4" /></button>
+<button type="button" onClick={() => setSelectedReceiptUrl(null)} className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"><X className="w-4 h-4" /></button>
 </div>
 <img src={selectedReceiptUrl} alt="Scan Justificatif" className="w-full h-72 object-cover rounded-xl" />
 <div className="flex justify-end">
-<button type="button" onClick={() => setSelectedReceiptUrl(null)} className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-zinc-100 dark:bg-zinc-800 rounded-xl cursor-pointer">Fermer</button>
+<button type="button" onClick={() => setSelectedReceiptUrl(null)} className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 rounded-xl cursor-pointer">Fermer</button>
 </div>
 </div>
 </div>}

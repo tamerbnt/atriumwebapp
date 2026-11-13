@@ -210,7 +210,7 @@ export const AcademyRollCallKiosk: React.FC<any> = () => {
 <div className="w-12 h-12 rounded-2xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center shrink-0"><GraduationCap size={24} /></div>
 <div>
 <div className="flex items-center gap-2 flex-wrap">
-<h1 className="text-[36px] sm:text-[48px] rtl:text-[30px] rtl:sm:text-[36px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">{isRtl ? "كشك تسجيل حضور الدروس السريع" : "Kiosk Appel & Émargement Express"}</h1>
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">{isRtl ? "كشك تسجيل حضور الدروس السريع" : "Kiosk Appel & Émargement Express"}</h1>
 <span className="text-2xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400 flex items-center gap-1">
 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
 {isRtl ? "وضع الأستاذ / المنسق" : "Espace Instructeur"}

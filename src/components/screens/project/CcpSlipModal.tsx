@@ -29,9 +29,9 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-3xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 rounded-2xl max-w-3xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50 dark:bg-zinc-800/50">
+        <div className="px-6 py-4 border-b border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between bg-[#FBF8F5] dark:bg-neutral-800/50">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold text-xs">
               SFP01
@@ -61,10 +61,10 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
         </div>
 
         {/* Official Postal Slip Document Canvas */}
-        <div className="p-6 overflow-y-auto bg-zinc-100/60 dark:bg-zinc-950/40 flex justify-center">
-          <div className="w-full max-w-2xl bg-amber-50/70 dark:bg-zinc-900 border-2 border-dashed border-amber-300 dark:border-zinc-700 rounded-xl p-6 shadow-sm text-black font-sans print:shadow-none print:border-solid print:border-black">
+        <div className="p-6 overflow-y-auto bg-[#F3EDE7]/70 dark:bg-neutral-950/40 flex justify-center">
+          <div className="w-full max-w-2xl bg-amber-50/70 dark:bg-neutral-900 border-2 border-dashed border-amber-300 dark:border-neutral-700 rounded-xl p-6 shadow-sm text-black font-sans print:shadow-none print:border-solid print:border-black">
             {/* Header Stamp */}
-            <div className="flex justify-between items-start border-b-2 border-zinc-800 dark:border-zinc-300 pb-3 mb-4">
+            <div className="flex justify-between items-start border-b-2 border-neutral-800 dark:border-neutral-300 pb-3 mb-4">
               <div>
                 <p className="font-bold text-xs uppercase tracking-wider text-black/75">
                   {t('pm_ccp_republic')}
@@ -77,7 +77,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
                 </p>
               </div>
               <div className="text-right">
-                <span className="inline-block border-2 border-zinc-800 dark:border-zinc-200 px-3 py-1 font-mono font-bold text-xs rounded">
+                <span className="inline-block border-2 border-neutral-800 dark:border-neutral-200 px-3 py-1 font-mono font-bold text-xs rounded">
                   SFP 01
                 </span>
                 <p className="text-[10px] text-black/55 mt-1">{t('pm_ccp_edition')}</p>
@@ -86,7 +86,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
 
             {/* Financial Amount & CCP Grid */}
             <div className="grid grid-cols-3 gap-3 mb-4">
-              <div className="col-span-2 p-3 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-300 dark:border-zinc-700">
+              <div className="col-span-2 p-3 bg-white dark:bg-neutral-800 rounded-lg border border-[#D5CBBF] dark:border-neutral-700">
                 <span className="text-[10px] uppercase font-semibold text-black/55 block">
                   {t('pm_ccp_beneficiary_name')}
                 </span>
@@ -97,7 +97,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
                   {t('pm_compta_wilaya_label')} {slip.wilayaName}
                 </span>
               </div>
-              <div className="p-3 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-300 dark:border-zinc-700 text-right">
+              <div className="p-3 bg-white dark:bg-neutral-800 rounded-lg border border-[#D5CBBF] dark:border-neutral-700 text-right">
                 <span className="text-[10px] uppercase font-semibold text-black/55 block">
                   {t('pm_ccp_amount_digits')}
                 </span>
@@ -108,7 +108,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             </div>
 
             {/* CCP Account Box */}
-            <div className="p-3 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-300 dark:border-zinc-700 mb-4 flex items-center justify-between">
+            <div className="p-3 bg-white dark:bg-neutral-800 rounded-lg border border-[#D5CBBF] dark:border-neutral-700 mb-4 flex items-center justify-between">
               <div>
                 <span className="text-[10px] uppercase font-semibold text-black/55 block">
                   {t('pm_ccp_account_number')}
@@ -128,7 +128,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             </div>
 
             {/* Legal Amount in Words: French */}
-            <div className="mb-3 p-3 bg-white/80 dark:bg-zinc-800/80 rounded-lg border border-zinc-200 dark:border-zinc-700">
+            <div className="mb-3 p-3 bg-white/80 dark:bg-neutral-800/80 rounded-lg border border-[#E6DED6] dark:border-neutral-700">
               <span className="text-[10px] uppercase font-semibold text-black/55 block mb-0.5">
                 {t('pm_ccp_words_fr')}
               </span>
@@ -138,7 +138,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             </div>
 
             {/* Legal Amount in Words: Arabic */}
-            <div className="mb-4 p-3 bg-white/80 dark:bg-zinc-800/80 rounded-lg border border-zinc-200 dark:border-zinc-700 text-right" dir="rtl">
+            <div className="mb-4 p-3 bg-white/80 dark:bg-neutral-800/80 rounded-lg border border-[#E6DED6] dark:border-neutral-700 text-right" dir="rtl">
               <span className="text-[10px] uppercase font-semibold text-black/55 block mb-0.5">
                 {t('pm_ccp_words_ar')}
               </span>
@@ -148,11 +148,11 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             </div>
 
             {/* Transaction Reference & Signatures */}
-            <div className="grid grid-cols-2 gap-4 pt-3 border-t border-zinc-300 dark:border-zinc-700 text-xs">
+            <div className="grid grid-cols-2 gap-4 pt-3 border-t border-[#D5CBBF] dark:border-neutral-700 text-xs">
               <div>
                 <span className="text-[10px] uppercase text-black/55 block">{t('pm_ccp_purpose')}</span>
                 <p className="font-medium text-black">{slip.transactionReference}</p>
-                <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                <div className="mt-4 pt-4 border-t border-[#E6DED6] dark:border-neutral-700">
                   <span className="text-[10px] text-black/55 block">{t('pm_ccp_signature_order')}</span>
                   <div className="h-12 flex items-center gap-1.5 text-black/55 text-xs italic">
                     <ShieldCheck className="w-4 h-4 text-emerald-600" />
@@ -162,7 +162,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
               </div>
               <div className="text-right">
                 <span className="text-[10px] uppercase text-black/55 block">{t('pm_ccp_postal_reserved')}</span>
-                <div className="h-24 border border-zinc-300 dark:border-zinc-700 rounded bg-white/50 dark:bg-zinc-900/50 flex items-center justify-center text-[10px] text-black/55 mt-1">
+                <div className="h-24 border border-[#D5CBBF] dark:border-neutral-700 rounded bg-white/50 dark:bg-neutral-900/50 flex items-center justify-center text-[10px] text-black/55 mt-1">
                   {t('pm_ccp_post_stamp_box')}
                 </div>
               </div>
@@ -171,7 +171,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs text-black/55 dark:text-white/55 bg-zinc-50 dark:bg-zinc-800/50">
+        <div className="px-6 py-3 border-t border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between text-xs text-black/55 dark:text-white/55 bg-[#FBF8F5] dark:bg-neutral-800/50">
           <div className="flex items-center gap-2">
             <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
             <span>{t('pm_ccp_compliance_footer')}</span>

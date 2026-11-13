@@ -146,7 +146,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
                 key={v.code}
                 type="button"
                 onClick={() => handleApplyPreset(v.code)}
-                className="w-full text-left rtl:text-right p-3 rounded-2xl border border-[#E9EEF0] dark:border-neutral-800 hover:border-[#D5DFE3] bg-white dark:bg-neutral-800/50 flex items-center justify-between group cursor-pointer transition-colors shadow-2xs"
+                className="w-full text-left rtl:text-right p-3 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 hover:border-[#D5DFE3] bg-white dark:bg-neutral-800/50 flex items-center justify-between group cursor-pointer transition-colors shadow-2xs"
               >
                 <div>
                   <div className="text-xs font-bold text-black dark:text-white">

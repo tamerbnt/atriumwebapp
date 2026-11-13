@@ -76,7 +76,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       <div
         role="alertdialog"
         aria-modal="true"
-        className="relative w-full max-w-md z-10 overflow-hidden rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xl animate-in fade-in zoom-in-95 duration-150 p-6"
+        className="relative w-full max-w-md z-10 overflow-hidden rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xl animate-in fade-in zoom-in-95 duration-150 p-6"
       >
         <div className="flex items-start gap-4">
           <div className={`w-12 h-12 rounded-2xl shrink-0 flex items-center justify-center ${variantStyles.iconBg}`}>

@@ -228,7 +228,7 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
                     : 'bg-white dark:bg-neutral-800 text-black dark:text-white border-neutral-200 dark:border-neutral-700 hover:border-[#d4522f]'
                 }`}
               >
-                {p.name} <span className="opacity-70 text-[9.5px]">({p.darDays}j DAR)</span>
+                {p.name} <span className="opacity-70 text-[10px]">({p.darDays}j DAR)</span>
               </button>
             ))}
           </div>

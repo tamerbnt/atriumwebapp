@@ -435,7 +435,7 @@ export const EducationStudentsView: React.FC<any> = () => {
 <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><Users size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("edu_students_title")}</h1>
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("edu_students_title")}</h1>
 </div>
 </div>
 </div>
@@ -481,7 +481,7 @@ export const EducationStudentsView: React.FC<any> = () => {
 </h3>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "نسبة النشاط" : language === "fr" ? "Ratio d'activité" : "Active Ratio"}
@@ -499,7 +499,7 @@ export const EducationStudentsView: React.FC<any> = () => {
 <p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">{language === "ar" ? "طلبة مسجلون ونشطون" : "Étudiants régulièrement inscrits"}</p>
 </div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "معدل الحضور العام" : language === "fr" ? "Taux d'assiduité" : "Attendance Rate"}
@@ -794,7 +794,7 @@ Installment #
 </span>
 <div className="flex items-center gap-2">
 <span className="font-semibold tabular-nums">{formatMoney(inst.amount)}</span>
-<span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${inst.isPaid ? "bg-emerald-50 text-emerald-700" : "bg-neutral-100 text-black/55 dark:text-white/55"}`}>{inst.isPaid ? t("edu_tuition_paid") : t("edu_tuition_unpaid")}</span>
+<span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${inst.isPaid ? "bg-emerald-50 text-emerald-700" : "bg-neutral-100 text-black/55 dark:text-white/55"}`}>{inst.isPaid ? t("edu_tuition_paid") : t("edu_tuition_unpaid")}</span>
 </div>
 </div>)}
 </div>
@@ -852,7 +852,7 @@ Installment #
 {studentCerts.map((c) => /* @__PURE__ */ <div key={c.id} className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-1.5">
 <div className="flex items-center justify-between">
 <span className="font-bold text-black dark:text-white">{c.courseTitle}</span>
-<span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-emerald-50 text-emerald-700">Verified</span>
+<span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700">Verified</span>
 </div>
 <div className="text-[11px] text-black/55 dark:text-white/55">
 {"Issued: "}

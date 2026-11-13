@@ -200,7 +200,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
             <span className="font-semibold text-[14.5px] text-black dark:text-white truncate">
               {memberName}
             </span>
-            <span className="text-[11.5px] font-mono text-black/55 dark:text-white/75 truncate">
+            <span className="text-[11.5px] font-mono text-black/62 dark:text-white/75 truncate tabular-nums">
               ID: {member.id.slice(0, 8)} · {memberPhone || 'Sans tél'}
             </span>
           </div>
@@ -230,16 +230,16 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
 
           {/* Col 5: Due Date */}
           <div className="flex flex-col text-[12.5px] leading-tight">
-            <span className="font-mono font-semibold text-black dark:text-white">
+            <span className="font-mono font-semibold text-black dark:text-white tabular-nums">
               {memberExp || 'Non spécifié'}
             </span>
             <small
-              className={`text-[11px] ${
+              className={`text-[11px] tabular-nums ${
                 daysRemaining < 0
                   ? 'text-rose-600 dark:text-rose-400'
                   : daysRemaining <= 7
                   ? 'text-amber-600 dark:text-amber-400'
-                  : 'text-black/55 dark:text-white/75'
+                  : 'text-black/62 dark:text-white/75'
               }`}
             >
               {remainingText}
@@ -354,17 +354,17 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
       >
         {/* Col 1: Contact */}
         <div>
-          <h4 className="m-0 mb-2 font-semibold text-[12.5px] font-['Barlow_Condensed'] tracking-wider uppercase text-black/55 dark:text-white/75">
+          <h4 className="m-0 mb-2 font-semibold text-[11px] tracking-[0.06em] uppercase text-black/62 dark:text-white/75">
             Contact
           </h4>
-          <p className="m-0 mb-1 font-mono text-[13px] text-black dark:text-white">
+          <p className="m-0 mb-1 font-mono text-[13px] text-black dark:text-white tabular-nums">
             {memberPhone || 'Non renseigné'}
           </p>
           <p className="m-0 text-[13px] text-black/70 dark:text-white/75 truncate">
             {member.email || 'Sans email'}
           </p>
           {(member as any).address && (
-            <p className="m-0 mt-1 text-[11.5px] text-black/55 dark:text-white/55 truncate">
+            <p className="m-0 mt-1 text-[11.5px] text-black/62 dark:text-white/65 truncate">
               {(member as any).address}
             </p>
           )}
@@ -372,7 +372,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
 
         {/* Col 2: Forfait & Séances */}
         <div>
-          <h4 className="m-0 mb-2 font-semibold text-[12.5px] font-['Barlow_Condensed'] tracking-wider uppercase text-black/55 dark:text-white/75">
+          <h4 className="m-0 mb-2 font-semibold text-[11px] tracking-[0.06em] uppercase text-black/62 dark:text-white/75">
             Forfait & Séances
           </h4>
           <p className="m-0 mb-1 text-[13px] font-medium text-black dark:text-white">
@@ -381,14 +381,14 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
           <p className="m-0 text-[12px] text-black/70 dark:text-white/75">
             {remainingText}
           </p>
-          <p className="m-0 mt-1 font-mono text-[12px] text-black/55 dark:text-white/75">
+          <p className="m-0 mt-1 font-mono text-[12px] text-black/62 dark:text-white/75 tabular-nums">
             {member.remainingSessions ?? 24} séances disponibles
           </p>
         </div>
 
         {/* Col 3: Notes du personnel */}
         <div>
-          <h4 className="m-0 mb-2 font-semibold text-[12.5px] font-['Barlow_Condensed'] tracking-wider uppercase text-black/55 dark:text-white/75">
+          <h4 className="m-0 mb-2 font-semibold text-[11px] tracking-[0.06em] uppercase text-black/62 dark:text-white/75">
             Notes du personnel
           </h4>
           <p className="m-0 text-[13px] text-black/70 dark:text-white/75 line-clamp-3 italic">

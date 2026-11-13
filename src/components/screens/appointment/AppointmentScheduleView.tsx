@@ -158,7 +158,7 @@ export const AppointmentScheduleView: React.FC<any> = () => {
 			renderCell: (apt: any) => /* @__PURE__ */ <div className="flex items-center gap-2">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/10 text-[#d4522f] font-bold text-xs flex flex-col items-center justify-center shrink-0">
 <span className="text-[11px] font-bold leading-tight font-mono">{apt.startTime}</span>
-<span className="text-[9px] text-black/55 dark:text-white/55 font-medium font-mono">
+<span className="text-[10px] text-black/55 dark:text-white/55 font-medium font-mono">
 {apt.durationMinutes}
 m
 </span>
@@ -352,7 +352,7 @@ Ref #
 <div>
 <div className="flex items-center gap-3.5 mb-1">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center shrink-0"><Scissors size={20} /></div>
-<h1 className="text-[32px] sm:text-[40px] font-extrabold uppercase leading-none tracking-[0.01em] text-black dark:text-white rtl:text-[26px] rtl:sm:text-[32px] rtl:leading-tight rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("salon_schedule_title", language)}</h1>
+<h1 className="text-[34px] sm:text-[42px] font-extrabold uppercase leading-none tracking-[0.01em] text-black dark:text-white rtl:text-[28px] rtl:sm:text-[34px] rtl:leading-tight rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("salon_schedule_title", language)}</h1>
 </div>
 </div>
 <div className="flex items-center gap-2.5">
@@ -363,7 +363,7 @@ Ref #
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs">
 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
 <span className="text-xs font-semibold text-black/55 dark:text-white/75">{t("salon_kpi_total_bookings", language)}</span>
 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#d4522f]/10 text-[#d4522f]">
@@ -382,7 +382,7 @@ Ref #
 </div>
 </div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
 <span className="text-xs font-semibold text-black/55 dark:text-white/75">{t("salon_kpi_in_chair", language)}</span>
 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center gap-1">
@@ -486,7 +486,7 @@ Ref #
 </div>
 </div>
 <div className="w-full">
-<UniversalDataCollection items={sortedDayAppointments} keyExtractor={(apt: any) => apt.id} viewMode={viewMode} defaultViewMode="calendar" showCalendarToggle onViewModeChange={(m: any) => setViewMode(m)} renderCalendarView={() => /* @__PURE__ */ <div className="bg-white dark:bg-neutral-800 rounded-[20px] border border-[#E9EEF0] dark:border-neutral-700/80 shadow-2xs overflow-hidden">
+<UniversalDataCollection items={sortedDayAppointments} keyExtractor={(apt: any) => apt.id} viewMode={viewMode} defaultViewMode="calendar" showCalendarToggle onViewModeChange={(m: any) => setViewMode(m)} renderCalendarView={() => /* @__PURE__ */ <div className="bg-white dark:bg-neutral-800 rounded-[20px] border border-[#E6DED6] dark:border-neutral-700/80 shadow-2xs overflow-hidden">
 <div className="overflow-x-auto">
 <div className="min-w-[760px]">
 <div className="grid grid-cols-[100px_repeat(auto-fit,minmax(200px,1fr))] border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-900/80">
@@ -527,7 +527,7 @@ Ref #
 {apt ? /* @__PURE__ */ <div onClick={() => handleOpenEditModal(apt)} className={`h-full w-full p-2.5 rounded-2xl cursor-pointer transition-all border shadow-xs hover:shadow-md ${apt.status === "InChair" ? "bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700/60 ring-2 ring-amber-400/20" : apt.status === "Completed" ? "bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800" : apt.status === "Cancelled" ? "bg-neutral-100/70 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-800 opacity-60" : "bg-indigo-50/80 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800"}`}>
 <div className="flex items-center justify-between gap-1 mb-1">
 <span className="text-xs font-bold text-black dark:text-white truncate">{apt.clientName}</span>
-<span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider ${apt.status === "InChair" ? "bg-amber-500 text-white animate-pulse" : apt.status === "Completed" ? "bg-emerald-600 text-white" : apt.status === "Cancelled" ? "bg-neutral-400 text-white" : "bg-indigo-600 text-white"}`}>{localizeStatus(apt.status, language)}</span>
+<span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider ${apt.status === "InChair" ? "bg-amber-500 text-white animate-pulse" : apt.status === "Completed" ? "bg-emerald-600 text-white" : apt.status === "Cancelled" ? "bg-neutral-400 text-white" : "bg-indigo-600 text-white"}`}>{localizeStatus(apt.status, language)}</span>
 </div>
 <p className="text-[11px] font-medium text-black/70 dark:text-white/75 truncate mb-1">{getLocalizedServiceName(apt.serviceId, apt.serviceName, language)}</p>
 <div className="flex items-center justify-between text-[10px] text-black/55 dark:text-white/55 font-medium">

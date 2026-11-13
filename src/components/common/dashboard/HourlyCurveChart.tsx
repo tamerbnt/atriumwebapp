@@ -252,13 +252,13 @@ export const HourlyCurveChart: React.FC<HourlyCurveChartProps> = ({
                 </div>
                 <div className="text-xs font-bold font-mono tabular-nums text-white flex items-center gap-1.5">
                   <span>{activePoint.val.toLocaleString()}</span>
-                  <span className="text-[9px] text-white/70 font-sans font-normal">{unitLabel}</span>
+                  <span className="text-[10px] text-white/75 font-sans font-normal">{unitLabel}</span>
                 </div>
               </div>
 
               {deltaPct !== null && (
                 <span
-                  className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md font-mono ${
+                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md font-mono tabular-nums ${
                     deltaPct >= 0
                       ? 'bg-emerald-950/80 text-emerald-400'
                       : 'bg-rose-950/80 text-rose-400'

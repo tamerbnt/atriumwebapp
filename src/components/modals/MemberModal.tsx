@@ -976,7 +976,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
         role="dialog"
         aria-modal="true"
         aria-labelledby="member-modal-title"
-        className={`member-modal-dialog dialog relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-[28px] bg-white dark:bg-[#1A1A1A] p-6 border border-[#E9EEF0] dark:border-neutral-800 text-left select-text ${
+        className={`member-modal-dialog dialog relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-[28px] bg-white dark:bg-[#1A1A1A] p-6 border border-[#E6DED6] dark:border-neutral-800 text-left select-text ${
           useKineticSpring
             ? 'shadow-[0_18px_48px_rgba(0,0,0,0.28)]'
             : 'shadow-[0_24px_64px_rgba(0,0,0,0.35)]'
@@ -992,7 +992,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 pb-4 border-b border-neutral-100 dark:border-neutral-800">
+        <div className="flex items-start justify-between gap-4 pb-4 border-b border-[#E6DED6] dark:border-[#3A3734]">
           <div>
             <h3
               id="member-modal-title"
@@ -1014,7 +1014,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
             type="button"
             onClick={requestClose}
             aria-label="Fermer la boîte de dialogue"
-            className="w-8 h-8 rounded-full grid place-items-center text-black/60 dark:text-white/65 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full grid place-items-center text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white hover:bg-[#F3EDE7] dark:hover:bg-[#262422] transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -1074,10 +1074,10 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                       setFullName(e.target.value);
                       if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: undefined }));
                     }}
-                    className={`w-full h-10 px-3 rounded-xl border text-sm font-medium transition-colors bg-white dark:bg-[#262422] text-black dark:text-white placeholder:text-black/45 dark:placeholder:text-white/45 focus:outline-none ${
+                    className={`w-full h-10 px-3 rounded-xl border text-sm font-medium transition-colors bg-white dark:bg-[#262422] text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 focus:outline-none ${
                       errors.fullName
                         ? 'border-[#B8321C] focus:border-[#B8321C] ring-1 ring-[#B8321C]'
-                        : 'border-[#E4DCD5] dark:border-[#3A3734] focus:border-[#C9441F]'
+                        : 'border-[#E6DED6] dark:border-[#3A3734] focus:border-[#C9441F]'
                     }`}
                     placeholder="ex: Amira Belkacem"
                   />
@@ -1140,10 +1140,10 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                       setEmail(e.target.value);
                       if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
                     }}
-                    className={`w-full h-10 px-3 rounded-xl border text-sm font-medium transition-colors bg-white dark:bg-[#262422] text-black dark:text-white placeholder:text-black/45 dark:placeholder:text-white/45 focus:outline-none ${
+                    className={`w-full h-10 px-3 rounded-xl border text-sm font-medium transition-colors bg-white dark:bg-[#262422] text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 focus:outline-none ${
                       errors.email
                         ? 'border-[#B8321C] focus:border-[#B8321C] ring-1 ring-[#B8321C]'
-                        : 'border-[#E4DCD5] dark:border-[#3A3734] focus:border-[#C9441F]'
+                        : 'border-[#E6DED6] dark:border-[#3A3734] focus:border-[#C9441F]'
                     }`}
                     placeholder="contact@domaine.com"
                   />
@@ -1230,8 +1230,8 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
             </div>
 
             {/* Section 2: Membership Plan */}
-            <div className="space-y-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-              <h4 className="text-xs font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-black/60 dark:text-white/60">
+            <div className="space-y-3 pt-3 border-t border-[#E6DED6] dark:border-[#3A3734]">
+              <h4 className="text-xs font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-black/62 dark:text-white/65">
                 {t('member_section_membership', language)}
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1280,8 +1280,8 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
             </div>
 
             {/* Section 3: Emergency & Notes */}
-            <div className="space-y-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-              <h4 className="text-xs font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-black/60 dark:text-white/60">
+            <div className="space-y-3 pt-3 border-t border-[#E6DED6] dark:border-[#3A3734]">
+              <h4 className="text-xs font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-black/62 dark:text-white/65">
                 {t('member_section_emergency', language)}
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1341,13 +1341,13 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                     setNotes(e.target.value);
                   }}
                   placeholder="Notes médicales, objectifs ou restrictions..."
-                  className="w-full p-2.5 text-sm border rounded-xl border-[#E4DCD5] dark:border-[#3A3734] bg-white dark:bg-[#262422] text-black dark:text-white placeholder:text-black/45 dark:placeholder:text-white/45 focus:outline-none focus:border-[#C9441F] resize-none"
+                  className="w-full p-2.5 text-sm border rounded-xl border-[#E6DED6] dark:border-[#3A3734] bg-white dark:bg-[#262422] text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 focus:outline-none focus:border-[#C9441F] resize-none"
                 />
               </div>
             </div>
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E6DED6] dark:border-[#3A3734]">
             <Button
               type="button"
               tone="soft"

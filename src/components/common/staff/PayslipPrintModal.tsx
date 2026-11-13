@@ -200,7 +200,7 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
               </p>
             </div>
             <div className="text-right max-w-sm">
-              <p className="text-[9px] uppercase font-bold tracking-widest text-white/70">Arrêté en toutes lettres :</p>
+              <p className="text-[10px] uppercase font-bold tracking-widest text-white/70">Arrêté en toutes lettres :</p>
               <p className="text-xs italic font-serif leading-snug mt-0.5 text-white/90">
                 "{amountInWords}"
               </p>
@@ -211,11 +211,11 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
           <div className="grid grid-cols-2 gap-8 pt-4 border-t border-neutral-300 text-[10px]">
             <div className="h-20 flex flex-col justify-between">
               <span className="font-bold text-black/75">Cachet & Signature de l'Employeur :</span>
-              <span className="italic text-black/55 text-[9px]">[Document validé électroniquement par la Direction]</span>
+              <span className="italic text-black/55 text-[10px]">[Document validé électroniquement par la Direction]</span>
             </div>
             <div className="h-20 flex flex-col justify-between text-right">
               <span className="font-bold text-black/75">Signature du Salarié :</span>
-              <span className="italic text-black/55 text-[9px]">Pour acquit et acceptation</span>
+              <span className="italic text-black/55 text-[10px]">Pour acquit et acceptation</span>
             </div>
           </div>
         </div>

@@ -281,7 +281,7 @@ export const PosHistoryView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
+            <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
               <History className="text-[#d4522f]" size={32} />
               <span>
                 {language === 'ar' ? 'سجل التدقيق وحركات المخزون' : language === 'fr' ? 'Journal d’Audit & Mouvements de Stock' : 'Audit Trail & Stock History'}
@@ -309,7 +309,7 @@ export const PosHistoryView: React.FC = () => {
 
       {/* TOP METRICS POD TRAY */}
       <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-[#E9EEF0] dark:border-neutral-800">
+        <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
           <div className="flex items-center gap-2">
             <Activity size={18} className="text-[#d4522f]" />
             <h2 className="text-xs font-black uppercase tracking-wider text-black dark:text-white">
@@ -324,7 +324,7 @@ export const PosHistoryView: React.FC = () => {
         {/* 3-Card Canonical Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Card 1: Entrées */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+          <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <div className="flex items-center justify-between text-black/55 dark:text-white/75">
                 <span className="text-xs font-semibold text-black/70 dark:text-white/75">
@@ -341,7 +341,7 @@ export const PosHistoryView: React.FC = () => {
           </div>
 
           {/* Card 2: Sorties */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+          <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <div className="flex items-center justify-between text-black/55 dark:text-white/75">
                 <span className="text-xs font-semibold text-black/70 dark:text-white/75">

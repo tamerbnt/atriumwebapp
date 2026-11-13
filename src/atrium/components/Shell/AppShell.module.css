@@ -1,6 +1,6 @@
 .root {
-  --gap: var(--atr-shell-gap, 12px);
-  --bar-h: var(--atr-bar-h, 52px);
+  --gap: var(--atr-shell-gap, 14px);
+  --bar-h: var(--atr-bar-h, 54px);
   --r: var(--atr-r-card, 24px);
   position: relative;
   box-sizing: border-box;
@@ -46,11 +46,12 @@
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 12px 0 18px;
+  gap: 12px;
+  padding: 0 16px 0 20px;
   background: var(--atr-card);
   border: 1px solid var(--atr-line);
   border-radius: var(--r);
+  box-shadow: 0 1px 2px rgba(20, 16, 12, 0.03);
   will-change: transform;
 }
 .root[data-bar='hidden'][data-settled] .bar { visibility: hidden; will-change: auto; }
@@ -67,6 +68,7 @@
   background: var(--atr-card);
   border: 1px solid var(--atr-line);
   border-radius: var(--r);
+  box-shadow: 0 1px 3px rgba(20, 16, 12, 0.03);
   will-change: transform;
 }
 .root[data-bar='hidden'] .main { margin-top: 0; }

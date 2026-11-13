@@ -195,16 +195,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
       </div>
 
       {/* Main 480px Centered Auth Card */}
-      <div className="relative w-full max-w-[480px] rounded-[28px] bg-[#1E1B19]/95 border border-[#3E3832]/80 shadow-2xl p-7 sm:p-9 text-white backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-[480px] rounded-[28px] bg-[#1E1B19]/95 border border-white/[0.08] shadow-2xl p-7 sm:p-10 text-white backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200">
         {/* Atrium Brand Emblem */}
-        <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-[#2A2420] border border-[#483B33] flex items-center justify-center p-2.5 mb-3.5 shadow-md">
+        <div className="flex flex-col items-center text-center mb-7">
+          <div className="w-14 h-14 rounded-2xl bg-[#2A2420] border border-[#483B33] flex items-center justify-center p-2.5 mb-4 shadow-md">
             <FiveCubesLogo size={28} cubeColor="#d4522f" />
           </div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-black tracking-tight text-white">ATRIUM</h1>
+            <h1 className="text-[28px] font-black tracking-[0.14em] rtl:tracking-normal text-white font-['Sigana_Condensed','Barlow_Condensed',sans-serif] rtl:font-sans">ATRIUM</h1>
           </div>
-          <p className="text-xs text-white/70 mt-1">
+          <p className="text-[13px] text-white/72 mt-1.5 leading-relaxed max-w-xs">
             {t('login_subtitle', language)}
           </p>
         </div>

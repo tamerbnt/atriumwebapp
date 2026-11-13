@@ -548,7 +548,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
             placeholder={t('apt_ph_notes', language)}
-            className="w-full p-2.5 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-black dark:text-white placeholder:text-black/45 dark:placeholder:text-white/45 focus:outline-none focus:border-[#d4522f]"
+            className="w-full p-2.5 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 focus:outline-none focus:border-[#d4522f]"
           />
         </div>
 

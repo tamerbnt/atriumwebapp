@@ -25,20 +25,24 @@ export const DashboardPod: React.FC<DashboardPodProps> = ({
 
   return (
     <div
-      className={`bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4 flex flex-col justify-between ${className}`}
+      className={`bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 sm:p-6 border border-[#E6DED6] dark:border-neutral-800/70 shadow-2xs space-y-5 flex flex-col justify-between ${className}`}
     >
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
-          {icon && <div className="text-[#d4522f]">{icon}</div>}
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div className="flex items-start gap-3">
+          {icon && (
+            <div className="w-8 h-8 rounded-xl bg-[#FBF8F5] dark:bg-white/[0.06] border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-center text-[#d4522f] shrink-0 mt-0.5">
+              {icon}
+            </div>
+          )}
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-[14px] font-bold tracking-tight text-black dark:text-white">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] leading-snug text-black dark:text-white">
                 {title}
               </h3>
               {badge}
             </div>
             {subtitle && (
-              <p className="text-[11.5px] text-black/65 dark:text-white/70 leading-snug mt-0.5">
+              <p className="text-[12.5px] text-black/65 dark:text-white/68 leading-snug mt-0.5">
                 {subtitle}
               </p>
             )}
@@ -48,7 +52,7 @@ export const DashboardPod: React.FC<DashboardPodProps> = ({
         {rightSlot && <div className="flex items-center gap-2">{rightSlot}</div>}
       </div>
 
-      <div className="space-y-4 flex-1 flex flex-col justify-between">
+      <div className="space-y-4 sm:space-y-4.5 flex-1 flex flex-col justify-between">
         {children}
       </div>
     </div>

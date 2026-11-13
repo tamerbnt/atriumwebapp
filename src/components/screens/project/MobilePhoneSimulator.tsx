@@ -26,7 +26,7 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
   return (
     <div className="space-y-4">
       {/* Viewport Control Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl border border-zinc-200 dark:border-zinc-700/80">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-[#F3EDE7] dark:bg-neutral-800/80 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/80">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold text-xs">
             📱
@@ -47,7 +47,7 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
         </div>
 
         {/* Mode Toggle Switcher */}
-        <div className="flex items-center gap-1 p-1 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm self-start sm:self-auto">
+        <div className="flex items-center gap-1 p-1 bg-white dark:bg-neutral-900 rounded-xl border border-[#E6DED6] dark:border-neutral-800 shadow-sm self-start sm:self-auto">
           <button
             type="button"
             onClick={() => setMode('mobile')}
@@ -78,17 +78,17 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
 
       {/* Frame Container */}
       {mode === 'mobile' ? (
-        <div className="flex justify-center py-4 px-2 bg-gradient-to-b from-zinc-100/50 to-zinc-200/50 dark:from-zinc-950/40 dark:to-zinc-900/40 rounded-3xl border border-dashed border-zinc-300 dark:border-zinc-800">
+        <div className="flex justify-center py-4 px-2 bg-gradient-to-b from-[#F3EDE7]/60 to-[#EAE1D8]/60 dark:from-neutral-950/40 dark:to-neutral-900/40 rounded-3xl border border-dashed border-[#D5CBBF] dark:border-neutral-800">
           {/* Realistic Smartphone Shell (390px wide) */}
-          <div className="w-[390px] max-w-full bg-white dark:bg-zinc-900 rounded-[48px] shadow-2xl border-[10px] border-zinc-800 dark:border-zinc-700 overflow-hidden relative flex flex-col min-h-[760px]">
+          <div className="w-[390px] max-w-full bg-white dark:bg-neutral-900 rounded-[48px] shadow-2xl border-[10px] border-neutral-800 dark:border-neutral-700 overflow-hidden relative flex flex-col min-h-[760px]">
             {/* Status Bar */}
-            <div className="bg-zinc-900 text-white px-6 pt-3 pb-2 flex items-center justify-between text-[11px] font-semibold select-none z-10 shrink-0">
+            <div className="bg-neutral-900 text-white px-6 pt-3 pb-2 flex items-center justify-between text-[11px] font-semibold select-none z-10 shrink-0">
               <span>{currentTime}</span>
               {/* Dynamic Island / Camera Pill */}
               <div className="w-24 h-4 bg-black rounded-full mx-auto" />
               <div className="flex items-center gap-1.5">
                 <Signal className="w-3 h-3" />
-                <span className="text-[9px] font-bold">5G</span>
+                <span className="text-[10px] font-bold">5G</span>
                 <Wifi className="w-3 h-3" />
                 <Battery className="w-3.5 h-3.5" />
               </div>
@@ -100,13 +100,13 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
             </div>
 
             {/* Home Indicator Bar */}
-            <div className="py-2.5 bg-white dark:bg-zinc-900 flex justify-center shrink-0">
-              <div className="w-32 h-1 bg-zinc-400 dark:bg-zinc-600 rounded-full" />
+            <div className="py-2.5 bg-white dark:bg-neutral-900 flex justify-center shrink-0">
+              <div className="w-32 h-1 bg-neutral-400 dark:bg-neutral-600 rounded-full" />
             </div>
           </div>
         </div>
       ) : (
-        <div className="w-full bg-white dark:bg-zinc-900/60 p-4 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+        <div className="w-full bg-white dark:bg-neutral-900/60 p-4 sm:p-6 rounded-2xl border border-[#E6DED6] dark:border-neutral-800">
           {children}
         </div>
       )}

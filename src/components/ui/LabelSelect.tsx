@@ -428,7 +428,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
         {isOpen && (
           <div
             ref={popoverRef}
-            className={`absolute left-0 right-0 z-50 rounded-xl bg-white dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 ${
+            className={`absolute left-0 right-0 z-50 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 ${
               openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
             }`}
             style={{
@@ -436,7 +436,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
             }}
           >
             {(searchable || normalizedOptions.length >= 6) && (
-              <div className="p-2 border-b border-neutral-100 dark:border-zinc-800 bg-neutral-50/50 dark:bg-zinc-900/50">
+              <div className="p-2 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50">
                 <div className="relative flex items-center">
                   <Search
                     size={13}
@@ -451,7 +451,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
                       setHighlightedIndex(0);
                     }}
                     placeholder={defaultSearchPlaceholder}
-                    className="w-full h-7 pl-7 pr-7 rtl:pr-7 rtl:pl-7 text-xs bg-white dark:bg-zinc-800 border border-neutral-200 dark:border-zinc-700 rounded-lg text-black dark:text-white focus:outline-none focus:border-[#d4522f]"
+                    className="w-full h-7 pl-7 pr-7 rtl:pr-7 rtl:pl-7 text-xs bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-black dark:text-white focus:outline-none focus:border-[#d4522f]"
                   />
                   {searchQuery && (
                     <button
@@ -496,7 +496,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
                           : isSelected
                           ? 'bg-[#d4522f]/10 text-[#d4522f] font-semibold'
                           : isHighlighted
-                          ? 'bg-neutral-100 dark:bg-zinc-800 text-black dark:text-white'
+                          ? 'bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white'
                           : 'text-black/85 dark:text-white/85'
                       }`}
                     >

@@ -71,7 +71,7 @@ export const StaffActionToolbar: React.FC<StaffActionToolbarProps> = ({
         <button
           type="button"
           onClick={onOpenPointage}
-          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-[#1C1C1E] text-black dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shadow-xs"
+          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl border border-[#E6DED6] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422] text-black dark:text-white hover:bg-[#F3EDE7] dark:hover:bg-[#3A3734]/60 transition-colors shadow-2xs"
         >
           <QrCode size={15} className="text-[#d4522f]" />
           <span>{isAr ? 'تسجيل الحضور' : isEn ? 'Clock In' : 'Pointage'}</span>

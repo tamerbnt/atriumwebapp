@@ -151,19 +151,19 @@ Colis E-commerce & Messagerie (
 <div className="grid grid-cols-3 gap-3 pt-3 items-end">
 <div className="border p-2.5 rounded-lg border-neutral-300 h-28 flex flex-col justify-between">
 <span className="font-bold text-[10px] text-black/75 uppercase">Visa & Cachet Hub Émetteur</span>
-<div className="text-[9px] text-black/55 italic">Signature autorisée Baraki</div>
+<div className="text-[10px] text-black/55 italic">Signature autorisée Baraki</div>
 </div>
 <div className="border p-2.5 rounded-lg border-neutral-300 h-28 flex flex-col justify-between">
 <span className="font-bold text-[10px] text-black/75 uppercase">Signature Chauffeur Transporteur</span>
-<div className="text-[9px] text-black/55 italic">Reconnaissance de prise en charge</div>
+<div className="text-[10px] text-black/55 italic">Reconnaissance de prise en charge</div>
 </div>
 <div className="border p-2 rounded-lg border-neutral-300 h-28 flex flex-col items-center justify-center text-center bg-neutral-50">
-<div className="w-14 h-14 bg-black/10 rounded flex items-center justify-center font-mono text-[9px] text-black/75 p-1">[QR SECURE DECRET 05-468]</div>
-<span className="font-mono text-[8px] text-black/55 mt-1 truncate max-w-full">{offlineHash}</span>
-<span className="text-[8px] font-bold text-emerald-700">Contrôle Routier Validé</span>
+<div className="w-14 h-14 bg-black/10 rounded flex items-center justify-center font-mono text-[10px] text-black/75 p-1">[QR SECURE DECRET 05-468]</div>
+<span className="font-mono text-[10px] text-black/55 mt-1 truncate max-w-full">{offlineHash}</span>
+<span className="text-[10px] font-bold text-emerald-700">Contrôle Routier Validé</span>
 </div>
 </div>
-<div className="text-[9px] text-black/55 text-center pt-2">
+<div className="text-[10px] text-black/55 text-center pt-2">
 Document officiel à présenter à toute réquisition des services de Gendarmerie Nationale, Sûreté Nationale et Contrôle des Transports.
 </div>
 </div>

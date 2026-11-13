@@ -258,7 +258,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
         </div>
         {/* Settings Card 2 */}
-        <div className="p-6 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 space-y-4">
+        <div className="p-6 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 space-y-4">
           <SkeletonText size="sm" width="180px" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <SkeletonBox height={54} rounded="rounded-xl" />
@@ -282,7 +282,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <Settings size={24} />
           </div>
           <div>
-            <h1 className="text-[36px] sm:text-[48px] rtl:text-[30px] rtl:sm:text-[36px] font-extrabold uppercase rtl:normal-case leading-none rtl:leading-tight tracking-[0.01em] rtl:tracking-normal text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+            <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase rtl:normal-case leading-none rtl:leading-tight tracking-[0.01em] rtl:tracking-normal text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {t('settings_title', language)}
             </h1>
           </div>
@@ -399,7 +399,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             className={`p-4 rounded-[20px] text-left transition-all border cursor-pointer relative ${
               isLanguageAuto
                 ? 'bg-white dark:bg-neutral-800 border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm'
-                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E9EEF0] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
+                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
             }`}
           >
             <div className="flex items-center justify-between mb-2">
@@ -432,7 +432,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             className={`p-4 rounded-[20px] text-left transition-all border cursor-pointer relative ${
               !isLanguageAuto && language === 'en'
                 ? 'bg-white dark:bg-neutral-800 border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm'
-                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E9EEF0] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
+                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
             }`}
           >
             <div className="flex items-center justify-between mb-2">
@@ -465,7 +465,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             className={`p-4 rounded-[20px] text-left transition-all border cursor-pointer relative ${
               !isLanguageAuto && language === 'fr'
                 ? 'bg-white dark:bg-neutral-800 border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm'
-                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E9EEF0] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
+                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
             }`}
           >
             <div className="flex items-center justify-between mb-2">
@@ -498,7 +498,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             className={`p-4 rounded-[20px] text-left rtl:text-right transition-all border cursor-pointer relative ${
               !isLanguageAuto && language === 'ar'
                 ? 'bg-white dark:bg-neutral-800 border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm'
-                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E9EEF0] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
+                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
             }`}
           >
             <div className="flex items-center justify-between mb-2">
@@ -558,7 +558,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         </div>
 
         {/* Dynamic Theme Toggle */}
-        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center">
               {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
@@ -599,7 +599,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             className={`p-4 rounded-[20px] text-left rtl:text-right transition-all border cursor-pointer relative ${
               theme === 'light'
                 ? 'bg-white dark:bg-neutral-800 border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm'
-                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E9EEF0] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
+                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
             }`}
           >
             <div className="flex items-center justify-between mb-3">
@@ -634,7 +634,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             className={`p-4 rounded-[20px] text-left rtl:text-right transition-all border cursor-pointer relative ${
               theme === 'dark'
                 ? 'bg-white dark:bg-neutral-800 border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm'
-                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E9EEF0] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
+                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
             }`}
           >
             <div className="flex items-center justify-between mb-3">
@@ -688,7 +688,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         </div>
 
         {/* Auto-Hide Switch */}
-        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center">
               <ChevronUp size={16} />
@@ -836,7 +836,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
         {/* Quota gauges */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-          <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+          <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
             <span className="text-xs font-semibold text-black/60 dark:text-white/60 block text-[11px]">
               {language === 'ar' ? 'المنشآت' : language === 'fr' ? 'Établissements' : 'Businesses'}
             </span>
@@ -844,7 +844,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               {businesses.length} / {subscription.plan.maxBusinesses}
             </span>
           </div>
-          <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+          <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
             <span className="text-xs font-semibold text-black/60 dark:text-white/60 block text-[11px]">
               {language === 'ar' ? 'الفروع' : language === 'fr' ? 'Succursales' : 'Branches'}
             </span>
@@ -852,7 +852,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               {branches.length} / {subscription.plan.maxBranches}
             </span>
           </div>
-          <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+          <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
             <span className="text-xs font-semibold text-black/60 dark:text-white/60 block text-[11px]">
               {language === 'ar' ? 'نقاط البيع' : language === 'fr' ? 'Caisses' : 'Terminals'}
             </span>
@@ -860,7 +860,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               {devices.length} / {subscription.plan.maxDevices}
             </span>
           </div>
-          <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+          <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
             <span className="text-xs font-semibold text-black/60 dark:text-white/60 block text-[11px]">
               {language === 'ar' ? 'التقارير' : language === 'fr' ? 'Rapports' : 'Reports'}
             </span>
@@ -940,7 +940,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
         {/* Cloud Diagnostics */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-          <div className="p-3.5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
+          <div className="p-3.5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60">
             <span className="text-[11px] font-semibold text-black/55 dark:text-white/55 block">
               {language === 'ar' ? 'قاعدة البيانات' : language === 'fr' ? 'Structure' : 'Database'}
             </span>
@@ -952,7 +952,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             </span>
           </div>
 
-          <div className="p-3.5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
+          <div className="p-3.5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60">
             <span className="text-[11px] font-semibold text-black/55 dark:text-white/55 block">
               {language === 'ar' ? 'التحديث المباشر' : language === 'fr' ? 'Temps Réel' : 'Live Updates'}
             </span>
@@ -964,7 +964,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             </span>
           </div>
 
-          <div className="p-3.5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
+          <div className="p-3.5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60">
             <span className="text-[11px] font-semibold text-black/55 dark:text-white/55 block">
               {language === 'ar' ? 'آخر مزامنة' : language === 'fr' ? 'Dernière Sync' : 'Last Sync'}
             </span>
@@ -1046,7 +1046,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
         {/* Live Storage Breakdown */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-1">
-          <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
+          <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60">
             <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block tracking-wider rtl:normal-case rtl:tracking-normal">
               {language === 'ar' ? 'المنشآت' : language === 'fr' ? 'Entités' : 'Tenants'}
             </span>
@@ -1058,7 +1058,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             </span>
           </div>
 
-          <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
+          <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60">
             <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block tracking-wider rtl:normal-case rtl:tracking-normal">
               {language === 'ar' ? 'عملاء CRM' : language === 'fr' ? 'Clients CRM' : 'CRM Clients'}
             </span>
@@ -1070,7 +1070,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             </span>
           </div>
 
-          <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
+          <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60">
             <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block tracking-wider rtl:normal-case rtl:tracking-normal">
               {language === 'ar' ? 'المخزون والمنتجات' : language === 'fr' ? 'Inventaire' : 'Inventory'}
             </span>
@@ -1082,7 +1082,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             </span>
           </div>
 
-          <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
+          <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60">
             <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block tracking-wider rtl:normal-case rtl:tracking-normal">
               {language === 'ar' ? 'المعاملات' : language === 'fr' ? 'Transactions' : 'Transactions'}
             </span>
@@ -1094,7 +1094,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             </span>
           </div>
 
-          <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 col-span-2 sm:col-span-1">
+          <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 col-span-2 sm:col-span-1">
             <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block tracking-wider rtl:normal-case rtl:tracking-normal">
               {language === 'ar' ? 'محرك التخزين' : language === 'fr' ? 'Moteur stockage' : 'Storage Engine'}
             </span>
@@ -1169,7 +1169,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
         <div className="space-y-2">
           {branches.map((b) => (
-            <div key={b.id} className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-between shadow-2xs hover:border-[#D5DFE3] transition-all">
+            <div key={b.id} className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-between shadow-2xs hover:border-[#D5DFE3] transition-all">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-black dark:text-white">
@@ -1254,7 +1254,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
         <div className="space-y-2">
           {devices.map((dev) => (
-            <div key={dev.id} className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-between shadow-2xs hover:border-[#D5DFE3] transition-all">
+            <div key={dev.id} className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-between shadow-2xs hover:border-[#D5DFE3] transition-all">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-[#F3EDE7] dark:bg-neutral-700/80 border border-[#E6DED6] dark:border-neutral-600 flex items-center justify-center text-black/75 dark:text-white/80">
                   <Monitor size={17} />

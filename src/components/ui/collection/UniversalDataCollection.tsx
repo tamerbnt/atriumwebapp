@@ -454,22 +454,22 @@ export function UniversalDataCollection<T>({
 
       {/* ================= TOP VIEW SWITCHER / HEADER CONTROLS ================= */}
       {(Boolean(title) || Boolean(headerActions) || (Boolean(filterOptions) && filterOptions!.length > 0 && Boolean(onFilterChange)) || Boolean(searchFilter) || showViewToggle) && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5">
           {title ? (
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{title}</h2>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/75 dark:text-white/80 font-mono tabular-nums">
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">{title}</h2>
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] text-black/72 dark:text-white/78 font-mono tabular-nums">
                   {actualItems.length}
                 </span>
                 {effectiveIsLoading && (
-                  <span className="text-[11px] text-[#d4522f] dark:text-[#E09070] font-medium animate-pulse">
+                  <span className="text-[11px] text-[#d4522f] dark:text-[#FB923C] font-medium">
                     Syncing...
                   </span>
                 )}
               </div>
               {subtitle && (
-                <p className="text-[11px] text-black/65 dark:text-white/70 mt-0.5">{subtitle}</p>
+                <p className="text-[12.5px] text-black/62 dark:text-white/68 mt-0.5">{subtitle}</p>
               )}
             </div>
           ) : (
@@ -489,14 +489,14 @@ export function UniversalDataCollection<T>({
                 />
               )}
               {effectiveIsLoading && (
-                <span className="text-[11px] text-[#d4522f] dark:text-[#E09070] font-medium animate-pulse ml-2">
+                <span className="text-[11px] text-[#d4522f] dark:text-[#FB923C] font-medium ms-2">
                   Syncing...
                 </span>
               )}
             </div>
           )}
 
-          <div className="flex items-center gap-2.5 ml-auto">
+          <div className="flex items-center gap-2.5 ms-auto">
             {searchFilter && (
               <div className="w-56">
                 <input
@@ -507,7 +507,7 @@ export function UniversalDataCollection<T>({
                     setInternalSearchQuery(e.target.value);
                     onSearchChange?.(e.target.value);
                   }}
-                  className="w-full h-8 px-3 rounded-xl text-xs bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/55 focus:outline-none focus:ring-1 focus:ring-[#d4522f]"
+                  className="w-full h-9 px-3.5 rounded-xl text-[12.5px] bg-white dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/55 focus:outline-none focus:ring-1 focus:ring-[#d4522f]"
                 />
               </div>
             )}
@@ -534,8 +534,8 @@ export function UniversalDataCollection<T>({
       {/* ================= LIST VIEW ================= */}
       {viewMode === 'list' && (
         <div className="w-full flex flex-col">
-          {/* Column Headers Bar (Wrapped in White Container Floating on Grey Pod) */}
-          <div className="w-full bg-white dark:bg-[#18181B] border border-neutral-200/90 dark:border-neutral-800 rounded-[12px] px-4 py-2.5 mb-2.5 flex items-center shadow-xs">
+          {/* Column Headers Bar (Wrapped in White Container Floating on Warm Pod) */}
+          <div className="w-full bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 rounded-[14px] px-4 py-3 mb-2.5 flex items-center shadow-2xs">
             {/* Column 0: Multi-select master checkbox */}
             <div className="w-[38px] shrink-0 flex items-center pr-1">
               <button
@@ -546,7 +546,7 @@ export function UniversalDataCollection<T>({
                     ? 'bg-[#d4522f] border-[#d4522f] text-white'
                     : isPartiallySelected
                     ? 'bg-[#d4522f]/30 border-[#d4522f] text-white'
-                    : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-400'
+                    : 'border-[#D4C8BC] dark:border-neutral-600 hover:border-[#b9aba0]'
                 }`}
                 title={store.language === 'ar' ? 'تحديد الكل' : store.language === 'fr' ? 'Tout sélectionner' : 'Select All'}
               >
@@ -579,7 +579,7 @@ export function UniversalDataCollection<T>({
                       <button
                         type="button"
                         onClick={() => handleSort(colKey, col.accessorKey)}
-                        className="group flex items-center gap-1.5 text-[11px] uppercase tracking-wider rtl:normal-case rtl:tracking-normal font-semibold text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white transition-colors cursor-pointer select-none"
+                        className="group flex items-center gap-1.5 text-[11px] uppercase tracking-[0.06em] rtl:normal-case rtl:tracking-normal font-semibold text-black/68 dark:text-white/72 hover:text-black dark:hover:text-white transition-colors cursor-pointer select-none"
                       >
                         <span className="truncate">{col.header}</span>
                         {/* Sort arrow badge pill */}
@@ -587,7 +587,7 @@ export function UniversalDataCollection<T>({
                           className={`inline-flex items-center px-1.5 py-0.5 rounded-[5px] transition-colors ${
                             isCurrentSort
                               ? 'bg-[#d4522f]/15 text-[#d4522f]'
-                              : 'bg-neutral-100 dark:bg-neutral-800 text-black/55 dark:text-white/60 group-hover:text-black dark:group-hover:text-white'
+                              : 'bg-[#F3EDE7] dark:bg-neutral-800 text-black/56 dark:text-white/60 group-hover:text-black dark:group-hover:text-white'
                           }`}
                         >
                           {isCurrentSort ? (
@@ -602,7 +602,7 @@ export function UniversalDataCollection<T>({
                         </span>
                       </button>
                     ) : (
-                      <span className="text-[11px] uppercase tracking-wider rtl:normal-case rtl:tracking-normal font-semibold text-black/70 dark:text-white/75 truncate">
+                      <span className="text-[11px] uppercase tracking-[0.06em] rtl:normal-case rtl:tracking-normal font-semibold text-black/68 dark:text-white/72 truncate">
                         {col.header}
                       </span>
                     )}
@@ -655,7 +655,7 @@ export function UniversalDataCollection<T>({
                       className={`w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer ${
                         isSelected
                           ? 'bg-[#d4522f] border-[#d4522f] text-white'
-                          : 'border-neutral-300 dark:border-neutral-600 hover:border-[#d4522f]'
+                          : 'border-[#D4C8BC] dark:border-neutral-600 hover:border-[#d4522f]'
                       }`}
                     >
                       {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
@@ -735,9 +735,9 @@ export function UniversalDataCollection<T>({
 
       {/* ================= FLOATING BULK SELECTION ACTION TOOLBAR ================= */}
       {effectiveSelectedIds.size > 0 && (
-        <div data-atrium-bulk-toolbar="true" className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-neutral-900/95 dark:bg-neutral-850/95 backdrop-blur-md text-white rounded-2xl px-5 py-3 shadow-2xl border border-neutral-700/60 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-200">
-          <div className="flex items-center gap-2 pr-3 border-r border-neutral-700/80">
-            <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white text-xs font-bold flex items-center justify-center font-mono">
+        <div data-atrium-bulk-toolbar="true" className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-[#1F1D1B]/95 backdrop-blur-md text-white rounded-2xl px-5 py-3 shadow-2xl border border-white/[0.1] flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-200">
+          <div className="flex items-center gap-2 pr-3 border-r border-white/15">
+            <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white text-xs font-bold flex items-center justify-center font-mono tabular-nums">
               {effectiveSelectedIds.size}
             </span>
             <span className="text-xs font-medium text-white/90 whitespace-nowrap">
@@ -754,8 +754,8 @@ export function UniversalDataCollection<T>({
                 bulkSecondaryAction.variant === 'warning'
                   ? 'bg-amber-500 hover:bg-amber-600 text-black border-amber-400 font-bold'
                   : bulkSecondaryAction.variant === 'primary'
-                  ? 'bg-[#d4522f] hover:bg-[#B3684A] text-white border-[#d4522f]'
-                  : 'bg-neutral-800 hover:bg-neutral-700 text-white border-neutral-700'
+                  ? 'bg-[#d4522f] hover:bg-[#b03b1b] text-white border-[#d4522f]'
+                  : 'bg-white/10 hover:bg-white/15 text-white border-white/15'
               }`}
             >
               {bulkSecondaryAction.icon}
@@ -776,7 +776,7 @@ export function UniversalDataCollection<T>({
               key={act.id}
               type="button"
               onClick={() => act.onClick(effectiveSelectedIds)}
-              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-neutral-800 hover:bg-neutral-700 text-white flex items-center gap-1.5 transition-colors cursor-pointer border border-neutral-700 shadow-2xs"
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-white flex items-center gap-1.5 transition-colors cursor-pointer border border-white/15 shadow-2xs"
             >
               {act.icon}
               <span>{act.label}</span>

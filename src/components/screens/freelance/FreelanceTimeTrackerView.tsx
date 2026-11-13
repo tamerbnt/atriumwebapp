@@ -423,7 +423,7 @@ export const FreelanceTimeTrackerView: React.FC<any> = () => {
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("free_time_title", language)}</h1>
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("free_time_title", language)}</h1>
 </div>
 </div>
 <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
@@ -514,7 +514,7 @@ export const FreelanceTimeTrackerView: React.FC<any> = () => {
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">{t("free_time_total_hours_logged", language)}</span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75">
@@ -531,7 +531,7 @@ h
 <p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">{language === "ar" ? "إجمالي الساعات المسجلة" : "Cumul des heures travaillées"}</p>
 </div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">{t("free_time_billable_ratio", language)}</span>
 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
@@ -623,7 +623,7 @@ h)
 							}
 						}} showViewToggle emptyTitle={t("free_time_empty_logs", language)} emptyDescription={t("free_time_empty_logs_desc", language)} renderCard={(entry) => {
 							const isPinned = pinnedLogIds.has(entry.id);
-							return /* @__PURE__ */ <div key={entry.id} className="p-5 rounded-[22px] border border-[#E9EEF0] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 shadow-2xs relative space-y-3">
+							return /* @__PURE__ */ <div key={entry.id} className="p-5 rounded-[22px] border border-[#E6DED6] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 shadow-2xs relative space-y-3">
 {isPinned && /* @__PURE__ */ <div className="absolute top-3 left-3 text-[#d4522f]"><Pin size={12} className="fill-[#d4522f]" /></div>}
 <div className="flex items-center justify-between pl-4">
 <span className="font-mono text-base font-black text-[#d4522f] tabular-nums">{formatDuration(entry.durationSeconds)}</span>

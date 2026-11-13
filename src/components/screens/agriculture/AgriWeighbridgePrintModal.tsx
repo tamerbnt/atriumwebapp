@@ -92,7 +92,7 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
           {/* Client / Destination Grid */}
           <div className="grid grid-cols-2 gap-4 p-3 rounded-xl bg-neutral-50 border border-neutral-200">
             <div>
-              <span className="text-[9px] font-bold text-black/75 uppercase block rtl:normal-case">
+              <span className="text-[10px] font-bold text-black/75 uppercase block rtl:normal-case">
                 Acheteur / Mandataire de Gros
               </span>
               <p className="font-bold text-black text-xs mt-0.5">
@@ -103,7 +103,7 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
               </p>
             </div>
             <div className="border-l border-neutral-200 pl-3">
-              <span className="text-[9px] font-bold text-black/75 uppercase block rtl:normal-case">
+              <span className="text-[10px] font-bold text-black/75 uppercase block rtl:normal-case">
                 Véhicule & Chauffeur
               </span>
               <p className="font-bold text-black font-mono text-xs mt-0.5">
@@ -203,13 +203,13 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
               <p className="font-bold text-[10px] uppercase text-black rtl:normal-case">
                 Le Magasinier Peseur (Pont-Bascule)
               </p>
-              <p className="text-[9px] text-black/55">(Visa & Signature)</p>
+              <p className="text-[10px] text-black/55">(Visa & Signature)</p>
             </div>
             <div className="space-y-8 border-l border-neutral-200">
               <p className="font-bold text-[10px] uppercase text-black rtl:normal-case">
                 Le Chauffeur / Acheteur
               </p>
-              <p className="text-[9px] text-black/55">(Lu et approuvé - Bon pour Accord)</p>
+              <p className="text-[10px] text-black/55">(Lu et approuvé - Bon pour Accord)</p>
             </div>
           </div>
         </div>

@@ -110,9 +110,9 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
       case 'absent_unjustified':
         return <span className="inline-flex items-center gap-1 text-[11px] font-bold text-red-700 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded-md border border-red-200/60 dark:border-red-800/40">🔴 {isAr ? 'غياب غير مبرر' : 'Injustifié'}</span>;
       case 'vacation':
-        return <span className="inline-flex items-center gap-1 text-[11px] font-bold text-black/75 dark:text-white/80 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-md">🏖️ {isAr ? 'عطلة' : 'Congé'}</span>;
+        return <span className="inline-flex items-center gap-1 text-[11px] font-bold text-black/75 dark:text-white/80 bg-[#F3EDE7] dark:bg-[#262422] px-2 py-0.5 rounded-md">🏖️ {isAr ? 'عطلة' : 'Congé'}</span>;
       default:
-        return <span className="text-black/45 dark:text-white/45 text-[11px]">-</span>;
+        return <span className="text-black/62 dark:text-white/65 text-[11px]">-</span>;
     }
   };
 
@@ -129,13 +129,13 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
   return (
     <div className="space-y-4">
       {/* Top Action Bar: Exact 40px Standard Controls */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 bg-white dark:bg-[#1C1B1A] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 bg-[#F3EDE7] dark:bg-neutral-700/50 p-1 rounded-xl border border-neutral-200/80 dark:border-neutral-700 h-10">
+          <div className="flex items-center gap-1 bg-[#F3EDE7] dark:bg-[#262422] p-1 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] h-10">
             <button
               type="button"
               onClick={() => setCurrentWeekOffset((prev) => prev - 1)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white dark:hover:bg-neutral-800 text-black/75 dark:text-white/80 transition-colors cursor-pointer"
+              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white dark:hover:bg-[#1C1B1A] text-black/75 dark:text-white/80 transition-colors cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -145,7 +145,7 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
             <button
               type="button"
               onClick={() => setCurrentWeekOffset((prev) => prev + 1)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white dark:hover:bg-neutral-800 text-black/75 dark:text-white/80 transition-colors cursor-pointer"
+              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white dark:hover:bg-[#1C1B1A] text-black/75 dark:text-white/80 transition-colors cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -186,32 +186,32 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
 
       {/* 4 Mini KPI Strip — Pure White Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+        <div className="p-4 rounded-[18px] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
           <p className="text-[11px] font-semibold text-black/70 dark:text-white/75">{isAr ? 'الحضور' : isEn ? 'Present' : 'Présents'}</p>
-          <p className="text-[28px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-emerald-600 mt-1.5 tabular-nums">{presentCount} <span className="text-xs font-sans font-normal text-black/60 dark:text-white/65">/ {staffList.length}</span></p>
+          <p className="text-[28px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-emerald-600 dark:text-emerald-400 mt-1.5 tabular-nums">{presentCount} <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65">/ {staffList.length}</span></p>
         </div>
-        <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+        <div className="p-4 rounded-[18px] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
           <p className="text-[11px] font-semibold text-black/70 dark:text-white/75">{isAr ? 'التأخير' : isEn ? 'Late' : 'Retards'}</p>
-          <p className="text-[28px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-amber-600 mt-1.5 tabular-nums">{lateCount}</p>
+          <p className="text-[28px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-amber-600 dark:text-amber-400 mt-1.5 tabular-nums">{lateCount}</p>
         </div>
-        <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+        <div className="p-4 rounded-[18px] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
           <p className="text-[11px] font-semibold text-black/70 dark:text-white/75">{isAr ? 'العطل' : isEn ? 'On Leave' : 'En Congé'}</p>
           <p className="text-[28px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white mt-1.5 tabular-nums">1</p>
         </div>
-        <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+        <div className="p-4 rounded-[18px] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
           <p className="text-[11px] font-semibold text-black/70 dark:text-white/75">{isAr ? 'الالتزام' : isEn ? 'Rate' : 'Assiduité'}</p>
           <p className="text-[28px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-[#d4522f] mt-1.5 tabular-nums">{Math.round((presentCount / Math.max(1, staffList.length)) * 100)}%</p>
         </div>
       </div>
 
       {/* Weekly Timesheet Matrix Grid */}
-      <div className="bg-white dark:bg-[#18181B] rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden shadow-xs">
-        <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
+      <div className="bg-white dark:bg-[#1C1B1A] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] overflow-hidden shadow-2xs">
+        <div className="p-4 border-b border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-between">
           <div>
-            <h4 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+            <h4 className="text-[15.5px] font-semibold tracking-[-0.015em] rtl:tracking-normal text-black dark:text-white">
               {isAr ? 'جدول الحضور' : isEn ? 'Timesheet' : 'Grille Présence'}
             </h4>
-            <p className="text-xs text-black/70 dark:text-white/75">
+            <p className="text-xs text-black/68 dark:text-white/72">
               {isAr ? 'اضغط لتغيير الحالة' : isEn ? 'Click cell to update' : 'Cliquer pour modifier'}
             </p>
           </div>
@@ -220,7 +220,7 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse tabular-nums">
             <thead>
-              <tr className="bg-neutral-50 dark:bg-[#202024] text-black/70 dark:text-white/75 border-b border-neutral-200 dark:border-neutral-800">
+              <tr className="bg-[#FBF8F5] dark:bg-[#262422] text-black/72 dark:text-white/75 border-b border-[#E6DED6] dark:border-[#3A3734]">
                 <th className="p-3 font-semibold w-56">{isAr ? 'الموظف' : isEn ? 'Staff' : 'Collaborateur'}</th>
                 {weekDays.map((d) => (
                   <th key={d.dateStr} className="p-3 font-semibold text-center min-w-[110px]">
@@ -230,11 +230,11 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
                 <th className="p-3 font-semibold text-right pr-4 w-28">{isAr ? 'الساعات' : isEn ? 'Hours' : 'Total'}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+            <tbody className="divide-y divide-[#E6DED6]/60 dark:divide-[#3A3734]">
               {staffList.map((member) => {
                 let totalHours = 0;
                 return (
-                  <tr key={member.id} className="hover:bg-neutral-50/60 dark:hover:bg-neutral-800/40 transition-colors">
+                  <tr key={member.id} className="hover:bg-[#F3EDE7]/40 dark:hover:bg-[#262422]/60 transition-colors">
                     <td className="p-3">
                       <div className="font-bold text-black dark:text-white">{member.fullName}</div>
                       <div className="text-[11px] text-black/65 dark:text-white/70">{member.role}</div>
@@ -249,7 +249,7 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
                         <td
                           key={d.dateStr}
                           onClick={() => cycleDayStatus(member.id, d.dateStr)}
-                          className="p-2 text-center cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                          className="p-2 text-center cursor-pointer hover:bg-[#F3EDE7]/70 dark:hover:bg-[#262422] transition-colors"
                         >
                           {renderStatusBadge(status)}
                         </td>
@@ -268,9 +268,9 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
 
       {/* Manual Pointage Modal */}
       {isManualModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-          <div className="bg-white dark:bg-[#18181B] rounded-2xl max-w-md w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4">
-            <h4 className="text-lg font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1F1D1B]/45 backdrop-blur-xs">
+          <div className="bg-white dark:bg-[#1C1B1A] rounded-[24px] max-w-md w-full p-6 shadow-2xl border border-[#E6DED6] dark:border-[#3A3734] space-y-4">
+            <h4 className="text-[16px] font-semibold tracking-[-0.015em] rtl:tracking-normal text-black dark:text-white">
               {isAr ? 'تسجيل يدوي' : isEn ? 'Manual Log' : 'Pointage Manuel'}
             </h4>
             <form onSubmit={handleManualSubmit} className="space-y-4">
@@ -281,7 +281,7 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
                 <select
                   value={manualStaffId}
                   onChange={(e) => setManualStaffId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202024] text-xs text-black dark:text-white"
+                  className="w-full px-3 py-2 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422] text-xs text-black dark:text-white"
                 >
                   {staffList.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -299,7 +299,7 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
                   <select
                     value={manualType}
                     onChange={(e) => setManualType(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202024] text-xs text-black dark:text-white"
+                    className="w-full px-3 py-2 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422] text-xs text-black dark:text-white"
                   >
                     <option value="in">{isAr ? 'دخول' : isEn ? 'Clock In' : 'Arrivée'}</option>
                     <option value="out">{isAr ? 'خروج' : isEn ? 'Clock Out' : 'Sortie'}</option>
@@ -313,7 +313,7 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
                     type="time"
                     value={manualTime}
                     onChange={(e) => setManualTime(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202024] text-xs font-mono text-black dark:text-white"
+                    className="w-full px-3 py-2 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422] text-xs font-mono text-black dark:text-white"
                   />
                 </div>
               </div>
@@ -327,7 +327,7 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
                   value={manualNotes}
                   onChange={(e) => setManualNotes(e.target.value)}
                   placeholder={isAr ? 'ملاحظة...' : isEn ? 'Optional note...' : 'Motif...'}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202024] text-xs text-black dark:text-white"
+                  className="w-full px-3 py-2 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422] text-xs text-black dark:text-white"
                 />
               </div>
 

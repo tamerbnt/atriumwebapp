@@ -105,7 +105,7 @@ export const VenueTimelineView: React.FC<any> = () => {
 <div className="flex items-center gap-3.5">
 <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-white"><CalendarIcon size={22} /></div>
 <div>
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("venue_timeline_matrix_title")}</h1>
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("venue_timeline_matrix_title")}</h1>
 </div>
 </div>
 <div className="flex items-center gap-3 relative flex-wrap">
@@ -126,7 +126,7 @@ export const VenueTimelineView: React.FC<any> = () => {
 </p>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
 <span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "القاعات والمساحات المتاحة" : language === "fr" ? "Salles & Espaces Gérés" : "Managed Venue Spaces"}
@@ -141,7 +141,7 @@ export const VenueTimelineView: React.FC<any> = () => {
 </div>
 <div className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{rentableUnits.length}</div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div>
 <span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "حجوزات التاريخ المحدد" : language === "fr" ? "Sessions Programmées" : "Booked Sessions on Date"}
@@ -215,9 +215,9 @@ export const VenueTimelineView: React.FC<any> = () => {
 </div>
 <button type="button" onClick={toggleFullscreen} className="h-9 w-9 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-center transition-colors cursor-pointer shadow-2xs" title="Fullscreen"><Maximize2 size={14} /></button>
 </div>
-<div className="bg-white dark:bg-neutral-800 rounded-[20px] border border-[#E9EEF0] dark:border-neutral-700/80 shadow-2xs overflow-hidden">
-<div className="flex border-b border-[#E9EEF0] dark:border-neutral-700/80 bg-neutral-50/80 dark:bg-neutral-800/80 sticky top-0 z-10 text-[11px] font-mono text-black/55 dark:text-white/55">
-<div className="w-56 sm:w-64 p-3 font-semibold text-black/70 dark:text-white/75 border-r border-[#E9EEF0] dark:border-neutral-700/80 shrink-0">{t("venue_space_asset_header", language, { count: filteredUnits.length })}</div>
+<div className="bg-white dark:bg-neutral-800 rounded-[20px] border border-[#E6DED6] dark:border-neutral-700/80 shadow-2xs overflow-hidden">
+<div className="flex border-b border-[#E6DED6] dark:border-neutral-700/80 bg-neutral-50/80 dark:bg-neutral-800/80 sticky top-0 z-10 text-[11px] font-mono text-black/55 dark:text-white/55">
+<div className="w-56 sm:w-64 p-3 font-semibold text-black/70 dark:text-white/75 border-r border-[#E6DED6] dark:border-neutral-700/80 shrink-0">{t("venue_space_asset_header", language, { count: filteredUnits.length })}</div>
 <div className="flex-1 grid grid-cols-16 divide-x divide-neutral-200/50 dark:divide-neutral-700/50">
 {HOURS.map((hour) => /* @__PURE__ */ <div key={hour} className="py-2.5 text-center truncate">
 {hour}
@@ -225,11 +225,11 @@ export const VenueTimelineView: React.FC<any> = () => {
 </div>)}
 </div>
 </div>
-<div className="divide-y divide-[#E9EEF0] dark:divide-neutral-700/60">
+<div className="divide-y divide-[#E6DED6] dark:divide-neutral-700/60">
 {filteredUnits.length === 0 ? /* @__PURE__ */ <div className="p-8 text-center text-sm text-black/55 dark:text-white/55">{t("venue_no_spaces_filter")}</div> : filteredUnits.map((unit) => {
 										const unitBookings = rentalBookings.filter((b) => b.unitId === unit.id && b.startDateTime.startsWith(selectedDate));
 										return /* @__PURE__ */ <div key={unit.id} className="flex min-h-[76px] relative group hover:bg-[#F3EDE7]/60 dark:hover:bg-neutral-700/20 transition-colors">
-<div className="w-56 sm:w-64 p-3 border-r border-[#E9EEF0] dark:border-neutral-700/80 shrink-0 flex flex-col justify-center">
+<div className="w-56 sm:w-64 p-3 border-r border-[#E6DED6] dark:border-neutral-700/80 shrink-0 flex flex-col justify-center">
 <div className="flex items-center gap-2">
 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: unit.colorHex || "#8B5CF6" }} />
 <span className="font-bold text-xs text-black dark:text-white truncate">{unit.name}</span>

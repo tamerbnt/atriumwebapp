@@ -146,7 +146,7 @@ export const TradingDashboardView: React.FC<any> = () => {
 		];
 	}, []);
 	if (showSkeleton) return /* @__PURE__ */ <div className="p-6"><SkeletonDashboardTrading /></div>;
-	return /* @__PURE__ */ <div className="flex-1 bg-white dark:bg-[#0C0C0E] min-h-screen p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
+	return /* @__PURE__ */ <div className="space-y-6 sm:space-y-7 animate-in fade-in duration-200">
 <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} isSyncing={isSyncing} lastSyncedAt={lastSyncedAt} onRetry={retryCloudSync} />
 <DashboardHeader title={t("nav_dashboard", language)} subtitle={language === "ar" ? "مؤشرات حركة التجارة بالجملة، خطوط الإمداد، المخازن وحسابات الزبائن B2B" : language === "fr" ? "Flux des expéditions en direct, rotation des stocks et créances commerciales." : "Live B2B dispatches, stock turnover, and trade receivables."} currentBranchName={currentBranch?.name || "Comptoir Commercial Alger"} branches={branches} onSwitchBranch={switchBranch} onResetDemoData={resetTradingMockData} exportFileName="trading_dashboard_report" />
 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -155,12 +155,12 @@ export const TradingDashboardView: React.FC<any> = () => {
 {pendingShipments}
 {" "}
 {language === "ar" ? "شحنات قيد التحضير" : "En Préparation"}
-</span>} rightControls={<div className="flex items-center bg-[#F0F2F5] dark:bg-neutral-800 p-0.5 rounded-lg text-xs font-semibold">
-<button type="button" onClick={() => setTimeFilter("today")} title={language === "ar" ? "عرض مؤشرات اليوم" : language === "fr" ? "Activité d'aujourd'hui" : "Today's activity"} className={`px-3 py-1 rounded-md transition-all ${timeFilter === "today" ? "bg-white dark:bg-neutral-900 text-black dark:text-white shadow-sm" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "اليوم" : language === "fr" ? "Aujourd'hui" : "Today"}</button>
-<button type="button" onClick={() => setTimeFilter("yesterday")} title={language === "ar" ? "عرض مؤشرات الأمس" : language === "fr" ? "Activité d'hier" : "Yesterday's activity"} className={`px-3 py-1 rounded-md transition-all ${timeFilter === "yesterday" ? "bg-white dark:bg-neutral-900 text-black dark:text-white shadow-sm" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "أمس" : language === "fr" ? "Hier" : "Yesterday"}</button>
+</span>} rightControls={<div className="flex items-center bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 p-0.5 rounded-xl text-xs font-semibold shadow-2xs">
+<button type="button" onClick={() => setTimeFilter("today")} title={language === "ar" ? "عرض مؤشرات اليوم" : language === "fr" ? "Activité d'aujourd'hui" : "Today's activity"} className={`px-3 py-1 rounded-md transition-all ${timeFilter === "today" ? "bg-[#d4522f] text-white shadow-xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "اليوم" : language === "fr" ? "Aujourd'hui" : "Today"}</button>
+<button type="button" onClick={() => setTimeFilter("yesterday")} title={language === "ar" ? "عرض مؤشرات الأمس" : language === "fr" ? "Activité d'hier" : "Yesterday's activity"} className={`px-3 py-1 rounded-md transition-all ${timeFilter === "yesterday" ? "bg-[#d4522f] text-white shadow-xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "أمس" : language === "fr" ? "Hier" : "Yesterday"}</button>
 </div>} className="flex-1 flex flex-col justify-between">
 <div className="space-y-4">
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex items-center justify-between">
 <div className="flex-1">
 <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">{language === "ar" ? "شحنات جاهزة للتسليم" : "Bons de Livraison Prêts"}</span>
@@ -173,7 +173,7 @@ export const TradingDashboardView: React.FC<any> = () => {
 {language === "ar" ? "النقل نشط" : "Camions chargés"}
 </span>
 </div>
-<div className="w-px h-12 bg-neutral-200 dark:bg-neutral-700 mx-4" />
+<div className="w-px h-12 bg-[#E6DED6] dark:bg-neutral-700 mx-4" />
 <div className="flex-1">
 <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">{language === "ar" ? "طلبيات قيد التجهيز" : "Picking en Entrepôt"}</span>
 <div className="flex items-baseline gap-2">
@@ -187,19 +187,19 @@ export const TradingDashboardView: React.FC<any> = () => {
 </span>
 </div>
 </div>
-<div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700/60">
+<div className="mt-4 pt-3 border-t border-[#E6DED6] dark:border-neutral-700/60">
 <span className="text-[11px] text-black/55 dark:text-white/55 block mb-2">
 {language === "ar" ? "كثافة حركة الشحن على مدار 24 ساعة" : "Courbe horaire des sorties palettes (24h)"}
 </span>
 <HourlyCurveChart data={hourlyData} color="#d4522f" />
 </div>
 </div>
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex justify-between items-center mb-1.5">
 <span className="text-xs font-medium text-black/70 dark:text-white/75">{language === "ar" ? "إجمالي المبيعات اليوم" : "CA Facturé Aujourd’hui"}</span>
 <span className="text-base font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(todayGross)}</span>
 </div>
-<div className="w-full bg-neutral-100 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
+<div className="w-full bg-[#E6DED6]/70 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
 <div className="bg-[#d4522f] h-full rounded-full transition-all duration-500" style={{ width: `${targetPct}%` }} />
 </div>
 <div className="flex justify-between text-[11px] text-black/55 dark:text-white/55">
@@ -229,7 +229,7 @@ export const TradingDashboardView: React.FC<any> = () => {
 <DashboardMetricCard label={language === "ar" ? "الحسابات التجارية" : "Comptes Grossistes"} value={42} badgeText={language === "ar" ? "حسابات B2B" : "Distributeurs"} badgeVariant="neutral" tooltip={language === "ar" ? "زبائن الجملة والتوزيع" : "Clients enregistrés"} />
 <DarkEspressoCard label={language === "ar" ? "مستحقات آجلة معلقة" : "Encours Crédit Client"} value={formatMoney(45e5)} sublabel={language === "ar" ? "فواتير مستحقة الدفع" : "Créances à 30/60 jours"} badgeText={language === "ar" ? "مراقب" : "Sous contrôle"} badgeVariant="neutral" />
 </div>
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex justify-between items-center mb-3">
 <span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "حجم المبيعات الأسبوعية (دج)" : "Volume hebdomadaire des ventes"}
@@ -249,8 +249,8 @@ export const TradingDashboardView: React.FC<any> = () => {
 {" 2026"}
 </span>} className="flex-1 flex flex-col justify-between">
 <div className="space-y-4">
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
-<div className="grid grid-cols-3 gap-2 pb-3 border-b border-neutral-200 dark:border-neutral-700/60">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
+<div className="grid grid-cols-3 gap-2 pb-3 border-b border-[#E6DED6] dark:border-neutral-700/60">
 <div>
 <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === "ar" ? "هامش الربح" : "Marge Nette"}</span>
 <span className="text-lg font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(Math.round(todayGross * .22))}</span>
@@ -274,7 +274,7 @@ export const TradingDashboardView: React.FC<any> = () => {
 <MonthlyAreaChart data={monthlyBilling} color="#8B5CF6" />
 </div>
 </div>
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex justify-between items-center mb-3">
 <span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "مؤشرات الأداء التجاري B2B" : "Ratios de Performance Négoce"}
@@ -319,14 +319,14 @@ export const TradingDashboardView: React.FC<any> = () => {
 <DashboardPod title={language === "ar" ? "المؤشرات والتنبيهات" : language === "fr" ? "Analyses & Alertes" : "Insights & Alerts"} icon={<Receipt size={18} className="text-[#d4522f]" />} className="flex-1 flex flex-col justify-between">
 <div className="space-y-4">
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex justify-between items-center mb-2">
 <span className="text-xs font-semibold text-black/70 dark:text-white/75">{language === "ar" ? "توزيع المبيعات حسب الصنف" : "Mix Familles Produits"}</span>
 <Info size={13} className="text-black/55 dark:text-white/55" />
 </div>
 <DonutChart segments={productFamilies} centerLabel={`${totalProducts} SKUs`} />
 </div>
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex justify-between items-center mb-2">
 <span className="text-xs font-semibold text-black/70 dark:text-white/75">{language === "ar" ? "كبار المشترين (حجم الطلبات)" : "Top Acheteurs B2B"}</span>
 <Info size={13} className="text-black/55 dark:text-white/55" />

@@ -200,7 +200,7 @@ export const ManufacturingWorkstationView: React.FC<any> = () => {
 									setSelectedOrderId(e.target.value);
 									setElapsedSeconds(0);
 									setIsRunning(false);
-								}} className="w-full p-3.5 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 text-sm font-bold text-black dark:text-white shadow-2xs outline-none focus:ring-2 focus:ring-[#d4522f]">
+								}} className="w-full p-3.5 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700 text-sm font-bold text-black dark:text-white shadow-2xs outline-none focus:ring-2 focus:ring-[#d4522f]">
 {orders.map((o) => /* @__PURE__ */ <option key={o.id} value={o.id}>
 {o.orderNumber}
 {" - "}
@@ -212,7 +212,7 @@ export const ManufacturingWorkstationView: React.FC<any> = () => {
 )
 </option>)}
 </select>
-{currentOrder && /* @__PURE__ */ <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-3">
+{currentOrder && /* @__PURE__ */ <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-3">
 <div className="flex items-center justify-between">
 <span className="text-xs font-bold text-black/55 dark:text-white/55 font-mono">
 {"Lot: "}
@@ -300,15 +300,15 @@ export const ManufacturingWorkstationView: React.FC<any> = () => {
 </div>
 </div>
 <div className="grid grid-cols-3 gap-3">
-<div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs text-center">
+<div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs text-center">
 <span className="text-[11px] text-black/55 dark:text-white/55 font-semibold block">{isAr ? "الوقت المستهدف" : "Cadence Prévue"}</span>
 <span className="font-mono font-bold text-base text-black dark:text-white">12 min / u</span>
 </div>
-<div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs text-center">
+<div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs text-center">
 <span className="text-[11px] text-black/55 dark:text-white/55 font-semibold block">{isAr ? "معدل التوافر" : "Disponibilité"}</span>
 <span className="font-mono font-bold text-base text-emerald-600 dark:text-emerald-400">96.4%</span>
 </div>
-<div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs text-center">
+<div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs text-center">
 <span className="text-[11px] text-black/55 dark:text-white/55 font-semibold block">{isAr ? "الخردة المسجلة" : "Rebuts Cumulés"}</span>
 <span className="font-mono font-bold text-base text-amber-600 dark:text-amber-400">
 {currentOrder?.scrapQuantity || 0}

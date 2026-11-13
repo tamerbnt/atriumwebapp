@@ -122,7 +122,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
           <Bell size={13} className="text-[#d4522f]" />
           <span>{language === 'ar' ? 'الإشعارات' : language === 'fr' ? 'Notifications' : 'Notifications'}</span>
           {unreadNotificationCount > 0 && (
-            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#d4522f] text-white leading-none">
+            <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold tabular-nums bg-[#d4522f] text-white leading-none">
               {unreadNotificationCount}
             </span>
           )}
@@ -142,7 +142,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                   {language === 'ar' ? 'قراءة الكل' : language === 'fr' ? 'Tout lire' : 'Read All'}
                 </span>
               </button>
-              <span className="text-black/25 dark:text-white/25">•</span>
+              <span className="text-black/45 dark:text-white/45">•</span>
               <button
                 type="button"
                 onClick={() => clearAllNotifications()}
@@ -154,7 +154,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                   {language === 'ar' ? 'مسح' : language === 'fr' ? 'Effacer' : 'Clear'}
                 </span>
               </button>
-              <span className="text-black/25 dark:text-white/25">•</span>
+              <span className="text-black/45 dark:text-white/45">•</span>
             </>
           )}
 

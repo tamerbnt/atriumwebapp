@@ -49,19 +49,19 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
 
   return (
     <div
-      className={`bg-[#1F1D1B] rounded-[20px] p-5 border border-neutral-800 text-white relative overflow-hidden flex flex-col justify-between shadow-md ${className}`}
+      className={`bg-[#1F1D1B] rounded-[20px] p-5 sm:p-6 border border-white/[0.08] text-white relative overflow-hidden flex flex-col justify-between shadow-md ${className}`}
     >
       {/* Top row: Title + Subtitle and Toggle */}
       <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-white/10 text-[#FB923C] flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-white/[0.08] border border-white/[0.08] text-[#FB923C] flex items-center justify-center shrink-0">
             <Shield size={16} />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-white tracking-tight">
+            <h4 className="text-[15px] font-semibold text-white tracking-[-0.015em] leading-snug">
               {title}
             </h4>
-            <p className="text-[11px] text-white/70 mt-0.5">
+            <p className="text-[12px] text-white/70 mt-0.5 leading-snug">
               {subtitle}
             </p>
           </div>
@@ -120,10 +120,10 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
 
           {/* Center Score */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-[28px] leading-none font-bold tracking-tight text-white tabular-nums font-['Barlow_Condensed'] rtl:font-sans rtl:text-2xl">
+            <span className="text-[30px] leading-none font-bold tracking-[-0.01em] text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:text-2xl">
               {metricValue || `${score}%`}
             </span>
-            <span className="text-[10px] uppercase tracking-wider text-white/70 font-semibold mt-0.5">
+            <span className="text-[10.5px] uppercase tracking-[0.06em] text-white/68 font-semibold mt-1">
               {metricLabel || scoreLabel}
             </span>
           </div>
@@ -131,14 +131,11 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
       </div>
 
       {/* Bottom status indicator */}
-      <div className="flex items-center justify-between text-[11px] pt-1 border-t border-white/10 text-white/70">
-        <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-          <span className="text-white/90 font-medium">
-            {statusText || 'Active'}
-          </span>
-        </div>
-        <span className="text-[10px] text-white/60 font-mono tabular-nums">
+      <div className="flex items-center justify-between text-[11.5px] pt-2.5 border-t border-white/10 text-white/72">
+        <span className="text-emerald-400 font-medium">
+          {statusText || 'Active'}
+        </span>
+        <span className="text-[11px] text-white/60 font-mono tabular-nums">
           {trendText || 'Live'}
         </span>
       </div>

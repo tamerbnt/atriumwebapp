@@ -183,7 +183,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 					}
 				} as Record<string, any>)[m.status] || {
 					label: m.status,
-					bg: "bg-zinc-100 text-black/70 dark:text-white/75"
+					bg: "bg-[#F3EDE7] text-black/70 dark:text-white/75"
 				};
 				return /* @__PURE__ */ <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${b.bg}`}>{b.label}</span>;
 			}
@@ -207,7 +207,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 			width: "2.5*",
 			minWidth: "220px",
 			renderCell: (att: any) => /* @__PURE__ */ <div className="flex items-center gap-2.5">
-<div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-xs text-[#d4522f] shrink-0">{att.talentName.substring(0, 2).toUpperCase()}</div>
+<div className="w-8 h-8 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 flex items-center justify-center font-bold text-xs text-[#d4522f] shrink-0">{att.talentName.substring(0, 2).toUpperCase()}</div>
 <div>
 <div className="font-semibold text-xs text-black dark:text-white">{att.talentName}</div>
 <div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
@@ -237,9 +237,9 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 {" (Verrouillé)"}
 </span>;
 				return /* @__PURE__ */ <div className="flex items-center gap-1">
-<button type="button" onClick={() => updatePmAttendanceStatus(att.id, "present")} className={`px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer ${att.status === "present" ? "bg-emerald-600 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-black/70 dark:text-white/75 hover:bg-emerald-50"}`}>Présent</button>
-<button type="button" onClick={() => updatePmAttendanceStatus(att.id, "late", 15)} className={`px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer ${att.status === "late" ? "bg-amber-500 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-black/70 dark:text-white/75 hover:bg-amber-50"}`}>Retard</button>
-<button type="button" onClick={() => updatePmAttendanceStatus(att.id, "absent")} className={`px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer ${att.status === "absent" ? "bg-red-600 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-black/70 dark:text-white/75 hover:bg-red-50"}`}>Absent</button>
+<button type="button" onClick={() => updatePmAttendanceStatus(att.id, "present")} className={`px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer ${att.status === "present" ? "bg-emerald-600 text-white" : "bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-emerald-50"}`}>Présent</button>
+<button type="button" onClick={() => updatePmAttendanceStatus(att.id, "late", 15)} className={`px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer ${att.status === "late" ? "bg-amber-500 text-white" : "bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-amber-50"}`}>Retard</button>
+<button type="button" onClick={() => updatePmAttendanceStatus(att.id, "absent")} className={`px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer ${att.status === "absent" ? "bg-red-600 text-white" : "bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-red-50"}`}>Absent</button>
 </div>;
 			}
 		}
@@ -328,25 +328,25 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 			}
 		]} viewMode="list" isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
 <div>
 <div className="flex items-center gap-2">
 <span className="text-xs font-semibold uppercase tracking-wider text-[#d4522f]">Superviseur Terrain</span>
 <span className="text-black/55 dark:text-white/55">·</span>
 <span className="text-xs text-black/55 dark:text-white/55">Missions Live & Pointage Mobile</span>
 </div>
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {activeTab === "missions" ? "Déploiements & Activations Terrain" : activeTab === "attendance" ? "Pointage Présence & Clôture Paie" : activeTab === "staffing" ? "Sélection & Affectation Équipes" : "Frais & Dépenses Logistiques"}
 </h1>
 </div>
 <div className="flex items-center gap-2.5">
-<button onClick={() => setShowPhoneSimulator((prev) => !prev)} className={`px-3 py-1.5 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer ${showPhoneSimulator ? "bg-[#d4522f] text-white" : "bg-white dark:bg-zinc-800 text-black/70 dark:text-white/75 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50"}`}>
+<button onClick={() => setShowPhoneSimulator((prev) => !prev)} className={`px-3 py-1.5 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer ${showPhoneSimulator ? "bg-[#d4522f] text-white" : "bg-white dark:bg-neutral-800 text-black/70 dark:text-white/75 border border-[#E6DED6] dark:border-neutral-700 hover:bg-[#FBF8F5]"}`}>
 <Smartphone className="w-3.5 h-3.5" />
 <span>Simulateur Mobile</span>
 </button>
 </div>
 </div>
-<div className="flex border-b border-zinc-200 dark:border-zinc-800 gap-1 overflow-x-auto">
+<div className="flex border-b border-[#E6DED6] dark:border-neutral-800 gap-1 overflow-x-auto">
 {[
 					{
 						id: "missions",
@@ -377,7 +377,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 					return /* @__PURE__ */ <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${isActive ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>
 <Icon className="w-4 h-4" />
 <span>{tab.label}</span>
-{tab.count !== void 0 && tab.count > 0 && /* @__PURE__ */ <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-zinc-100 dark:bg-zinc-800 text-black/70 dark:text-white/75">{tab.count}</span>}
+{tab.count !== void 0 && tab.count > 0 && /* @__PURE__ */ <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75">{tab.count}</span>}
 </button>;
 				})}
 </div>
@@ -386,7 +386,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 <h2 className="text-[13.5px] font-semibold text-black dark:text-white">Supervision Opérationnelle & Déploiement Terrains</h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">Missions Déployées</span>
 <div>
 <div className="text-2xl font-bold tracking-tight text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{pmMissions.length}</div>
@@ -397,7 +397,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 </p>
 </div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">Talents Actifs Mobilisés</span>
 <div>
 <div className="text-2xl font-bold tracking-tight text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{pmTalents.filter((t) => t.status === "active").length}</div>
@@ -424,7 +424,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 </div>
 </div>
 {activeTab === "missions" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs">
 <div className="flex flex-wrap items-center gap-3 text-xs flex-1 max-w-xl">
 <Seek value={missionSearch} onChange={setMissionSearch} placeholder="Rechercher par code, lieu ou wilaya..." openWidth={360} shutSize={38} />
 <FilterSelect label="Wilaya" value={wilayaFilter} onChange={(val) => setWilayaFilter(typeof val === "string" ? val : val.target?.value || val)} options={[
@@ -455,7 +455,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 								}
 							]} />
 </div>
-<button onClick={handleExportMissionsCsv} className="px-3 py-1.5 text-xs font-semibold text-black/70 dark:text-white/75 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer">
+<button onClick={handleExportMissionsCsv} className="px-3 py-1.5 text-xs font-semibold text-black/70 dark:text-white/75 bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700 hover:bg-[#FBF8F5] rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer">
 <Download className="w-3.5 h-3.5" />
 <span>Export CSV</span>
 </button>
@@ -477,7 +477,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 </div>
 </div>
 </div>
-<div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center text-xs">
+<div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex justify-between items-center text-xs">
 <span className="font-mono text-black/55 dark:text-white/55">{mission.startDate}</span>
 <button type="button" onClick={() => {
 									setSelectedMissionId(mission.id);
@@ -487,11 +487,11 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 </div>} />
 </div>}
 {activeTab === "attendance" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
-<div className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
 <div>
 <div className="flex items-center gap-2">
 <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider">Feuille de Présence & Pointage (Slide 9 & 10)</span>
-{isMissionLocked && /* @__PURE__ */ <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-black/70 dark:text-white/75 flex items-center gap-1">
+{isMissionLocked && /* @__PURE__ */ <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 flex items-center gap-1">
 <Lock className="w-3 h-3" />
 {" Verrouillé"}
 </span>}
@@ -513,7 +513,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 </div>
 </div>
 <div className="flex items-center gap-3">
-<div className="flex items-center gap-3 text-xs font-bold font-mono px-4 py-2 bg-zinc-50 dark:bg-zinc-800 rounded-xl">
+<div className="flex items-center gap-3 text-xs font-bold font-mono px-4 py-2 bg-[#FBF8F5] dark:bg-neutral-800 rounded-xl">
 <span className="text-emerald-600">
 {presentCount}
 {" Présents"}
@@ -537,7 +537,7 @@ Clôturer & Transmettre Paie DG
 </div>
 <UniversalDataCollection items={missionAttendances} keyExtractor={(a) => a.id} defaultViewMode="list" columns={attendanceColumns} selectedIds={selectedAttendanceIds} onSelectionChange={setSelectedAttendanceIds} renderCard={(att) => /* @__PURE__ */ <div className="flex flex-col justify-between h-full space-y-3">
 <div className="flex items-center gap-3">
-<div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-sm text-[#d4522f] shrink-0">{att.talentName.substring(0, 2).toUpperCase()}</div>
+<div className="w-10 h-10 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 flex items-center justify-center font-bold text-sm text-[#d4522f] shrink-0">{att.talentName.substring(0, 2).toUpperCase()}</div>
 <div>
 <h4 className="text-sm font-bold text-black dark:text-white line-clamp-1">{att.talentName}</h4>
 <p className="text-xs text-black/55 dark:text-white/55 font-mono">
@@ -546,7 +546,7 @@ Clôturer & Transmettre Paie DG
 </p>
 </div>
 </div>
-<div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+<div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-between">
 <span className="font-mono font-bold text-sm text-black dark:text-white tabular-nums">{formatMoney(att.grossPayableDzd, "DZD")}</span>
 <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${att.status === "present" ? "bg-emerald-100 text-emerald-700" : att.status === "late" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}`}>{att.status}</span>
 </div>
@@ -561,7 +561,7 @@ Clôturer & Transmettre Paie DG
 </span>
 </div>
 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-{pmTalents.slice(0, 9).map((talent) => /* @__PURE__ */ <div key={talent.id} className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-neutral-800 flex items-center gap-3 shadow-2xs">
+{pmTalents.slice(0, 9).map((talent) => /* @__PURE__ */ <div key={talent.id} className="p-4 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-800 flex items-center gap-3 shadow-2xs">
 <img src={talent.portraitPhotoUrl} alt={talent.fullName} className="w-12 h-12 rounded-full object-cover border border-[#d4522f]" />
 <div className="min-w-0">
 <div className="font-bold text-xs text-black dark:text-white truncate">{talent.fullName}</div>
@@ -579,7 +579,7 @@ Clôturer & Transmettre Paie DG
 </div>
 </div>}
 {activeTab === "expense" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
-<div className="p-6 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs max-w-xl mx-auto space-y-4">
+<div className="p-6 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs max-w-xl mx-auto space-y-4">
 <div>
 <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">Dépense d'Urgence Terrain (Slide 11)</span>
 <h3 className="text-lg font-bold text-black dark:text-white mt-0.5">Frais de Régie & Consommables</h3>
@@ -611,10 +611,10 @@ Clôturer & Transmettre Paie DG
 </div>}
 {showPhoneSimulator && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
 <div className="relative">
-<button type="button" onClick={() => setShowPhoneSimulator(false)} className="absolute -top-10 right-0 text-white font-bold text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-full cursor-pointer flex items-center gap-1">Fermer le Simulateur</button>
+<button type="button" onClick={() => setShowPhoneSimulator(false)} className="absolute -top-10 right-0 text-white font-bold text-xs bg-neutral-800 hover:bg-neutral-700 px-3 py-1.5 rounded-full cursor-pointer flex items-center gap-1">Fermer le Simulateur</button>
 <MobilePhoneSimulator title="Superviseur Terrain" subtitle="PWA Pointage & Émargement">
 <div className="p-4 space-y-4">
-<div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700">
+<div className="p-3 bg-[#FBF8F5] dark:bg-neutral-800 rounded-xl border border-[#E6DED6] dark:border-neutral-700">
 <div className="text-xs font-bold text-[#d4522f]">{selectedMission?.code || "MIS-104"}</div>
 <div className="text-sm font-bold text-black dark:text-white">{selectedMission?.title || "Activation Terrain"}</div>
 <div className="text-[11px] text-black/55 dark:text-white/55">
@@ -630,7 +630,7 @@ Clôturer & Transmettre Paie DG
 {missionAttendances.length}
 {" animateurs)"}
 </div>
-{missionAttendances.map((att) => /* @__PURE__ */ <div key={att.id} className="p-3 bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 flex items-center justify-between text-xs shadow-xs">
+{missionAttendances.map((att) => /* @__PURE__ */ <div key={att.id} className="p-3 bg-white dark:bg-neutral-800 rounded-xl border border-[#E6DED6] dark:border-neutral-700 flex items-center justify-between text-xs shadow-xs">
 <div>
 <div className="font-semibold text-black dark:text-white">{att.talentName}</div>
 <div className="text-[10px] text-black/55 dark:text-white/55 font-mono">

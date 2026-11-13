@@ -221,15 +221,15 @@ TVA (
 <div className="grid grid-cols-3 gap-4 pt-4 border-t border-neutral-300 text-center font-sans">
 <div className="p-2 border border-neutral-200 rounded-lg h-28 flex flex-col justify-between">
 <span className="text-[10px] font-bold text-black/75 uppercase">L'Entrepreneur</span>
-<p className="text-[9px] text-black/55">Signature & Cachet Humide</p>
+<p className="text-[10px] text-black/55">Signature & Cachet Humide</p>
 </div>
 <div className="p-2 border border-neutral-200 rounded-lg h-28 flex flex-col justify-between">
 <span className="text-[10px] font-bold text-black/75 uppercase">Le Maître d'Œuvre (BET)</span>
-<p className="text-[9px] text-black/55">Visa pour vérification et métrés</p>
+<p className="text-[10px] text-black/55">Visa pour vérification et métrés</p>
 </div>
 <div className="p-2 border border-neutral-200 rounded-lg h-28 flex flex-col justify-between">
 <span className="text-[10px] font-bold text-black/75 uppercase">Le Maître de l'Ouvrage</span>
-<p className="text-[9px] text-black/55">Bon pour mandatement Trésor</p>
+<p className="text-[10px] text-black/55">Bon pour mandatement Trésor</p>
 </div>
 </div>
 </div>

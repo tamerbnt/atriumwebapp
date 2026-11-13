@@ -252,12 +252,12 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 			}
 		]} hasIcon hasFacility hasActionBtn actionBtnWidth={140} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Pill size={20} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {isAr ? "الوصفات الطبية الإلكترونية (Ordonnances)" : "Ordonnances Médicales Sécurisées"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Chifa Validated</span>
@@ -344,14 +344,14 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "إجمالي الوصفات الصادرة" : "Ordonnances Signées"}</span>
 <div>
 <div className="text-2xl font-bold tracking-tight text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{prescriptions.length}</div>
 <p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">Archivage légal ordonnancier</p>
 </div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "الأدوية الموصوفة" : "Lignes Médicamenteuses"}</span>
 <div>
 <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{totalDrugsPrescribed}</div>
@@ -379,7 +379,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 </div>
 <div className="flex flex-wrap items-center gap-2.5 ml-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={isAr ? "بحث بمريض، دواء أو كود QR..." : "Rechercher patient, médicament ou QR code..."} shutSize={36} openWidth={220} />
-<div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
+<div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
 {[
 								{
 									id: "all",
@@ -533,7 +533,7 @@ j
 </div> : /* @__PURE__ */ <div className="border-b-2 pb-2 mb-3" style={{ borderColor: currentDoctorConfig.accentColor }}>
 <div className="font-bold text-sm" style={{ color: currentDoctorConfig.accentColor }}>{currentDoctorConfig.doctorName}</div>
 <div className="text-[10px] text-black/75 font-medium">{currentDoctorConfig.specialtyTitle}</div>
-<div className="text-[9px] text-black/55">
+<div className="text-[10px] text-black/55">
 {currentDoctorConfig.qualifications}
 {" · N° Ordre: "}
 {currentDoctorConfig.councilOrderNumber}
@@ -570,14 +570,14 @@ j
 <div className="flex justify-between items-end pt-4 border-t border-neutral-100 mt-6">
 <div className="flex items-center gap-2">
 <QrCode size={36} className="text-black/75" />
-<div className="text-[8px] font-mono text-black/55 leading-tight">
+<div className="text-[10px] font-mono text-black/55 leading-tight">
 ORD-CHIFA
 <br />
 {selectedRx.qrCodeHash}
 </div>
 </div>
-<div className="border border-rose-600 rounded-lg p-1.5 text-center text-rose-700 rotate-[-4deg] opacity-85 text-[8px] font-mono leading-tight">
-<div className="font-bold text-[9px]">{currentDoctorConfig.digitalStampUrl}</div>
+<div className="border border-rose-600 rounded-lg p-1.5 text-center text-rose-700 rotate-[-4deg] opacity-85 text-[10px] font-mono leading-tight">
+<div className="font-bold text-[10px]">{currentDoctorConfig.digitalStampUrl}</div>
 <div>{currentDoctorConfig.doctorName}</div>
 <div>{currentDoctorConfig.councilOrderNumber}</div>
 </div>

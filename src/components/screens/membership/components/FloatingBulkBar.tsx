@@ -85,13 +85,13 @@ export const FloatingBulkBar: React.FC<FloatingBulkBarProps> = ({
       role="toolbar"
       aria-label="Actions groupées"
       aria-hidden={selectedCount === 0}
-      className={`bar fixed left-1/2 bottom-[26px] flex items-center gap-1.5 h-[58px] pl-[22px] pr-[10px] rounded-[29px] bg-[#1B1917] text-[#F4EDE6] z-[40] shadow-[0_12px_32px_rgba(27,25,23,0.3)] select-none border border-[#3E3A36] ${className}`}
+      className={`bar fixed left-1/2 bottom-[26px] flex items-center gap-1.5 h-[58px] pl-[22px] pr-[10px] rounded-[29px] bg-[#1F1D1B] text-[#F4EDE6] z-[40] shadow-[0_12px_32px_rgba(27,25,23,0.3)] select-none border border-white/[0.1] ${className}`}
       style={{
         visibility: selectedCount > 0 ? 'visible' : 'hidden',
         opacity: selectedCount > 0 ? 1 : 0,
       }}
     >
-      <b className="font-mono text-[13px] font-bold tracking-wider mr-3 whitespace-nowrap text-white">
+      <b className="font-mono text-[13px] font-bold tracking-wider tabular-nums mr-3 whitespace-nowrap text-white">
         {selectedCount} {selectedCount > 1 ? 'SÉLECTIONNÉS' : 'SÉLECTIONNÉ'}
       </b>
 
@@ -148,7 +148,7 @@ export const FloatingBulkBar: React.FC<FloatingBulkBarProps> = ({
           type="button"
           tabIndex={selectedCount > 0 ? 0 : -1}
           onClick={onDelete}
-          className="h-[38px] px-3.5 border-0 rounded-[19px] bg-[#F4EDE6]/12 hover:bg-[#C9441F] text-[#F4EDE6] flex items-center gap-2 font-medium text-[13px] transition-colors cursor-pointer"
+          className="h-[38px] px-3.5 border-0 rounded-[19px] bg-[#F4EDE6]/12 hover:bg-[#d4522f] text-[#F4EDE6] flex items-center gap-2 font-medium text-[13px] transition-colors cursor-pointer"
         >
           <Trash2 className="w-4 h-4" />
           <span>Supprimer</span>

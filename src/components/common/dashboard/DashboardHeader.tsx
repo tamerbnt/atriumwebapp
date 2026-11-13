@@ -103,25 +103,44 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     });
   };
 
+  const contextParts = [categoryName, currentBranchName].filter(Boolean);
+
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
-      <div>
-        <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-black/[0.04] dark:bg-white/[0.08] border border-neutral-200/60 dark:border-neutral-700 flex items-center justify-center text-black dark:text-white">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-[#E6DED6]/80 dark:border-neutral-800/80">
+      <div className="min-w-0">
+        {contextParts.length > 0 && (
+          <div className="flex items-center gap-2 text-[11.5px] font-medium tracking-[0.02em] text-black/56 dark:text-white/60 mb-1.5">
+            {contextParts.map((part, idx) => (
+              <React.Fragment key={idx}>
+                {idx > 0 && <span aria-hidden="true" className="opacity-50">·</span>}
+                <span className="truncate">{part}</span>
+              </React.Fragment>
+            ))}
+          </div>
+        )}
+        <div className="flex items-start gap-3.5 sm:gap-4">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#F3EDE7] dark:bg-white/[0.07] border border-[#E6DED6] dark:border-neutral-700/70 shadow-2xs flex items-center justify-center text-black dark:text-white shrink-0 mt-0.5">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1">
               <rect x="3" y="3" width="7" height="7" rx="1.5" />
               <rect x="14" y="3" width="7" height="7" rx="1.5" />
               <rect x="14" y="14" width="7" height="7" rx="1.5" />
               <rect x="3" y="14" width="7" height="7" rx="1.5" />
             </svg>
           </div>
-          <h1 className="text-[36px] sm:text-[46px] font-extrabold uppercase leading-none tracking-[0.015em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:text-[28px] rtl:sm:text-[34px] rtl:leading-tight rtl:tracking-normal">
-            {displayTitle}
-          </h1>
+          <div className="min-w-0">
+            <h1 className="text-[34px] sm:text-[42px] font-extrabold uppercase leading-[0.98] tracking-[0.012em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:text-[28px] rtl:sm:text-[34px] rtl:leading-tight rtl:tracking-normal">
+              {displayTitle}
+            </h1>
+            {displaySubtitle && (
+              <p className="text-[13.5px] sm:text-[14px] text-black/68 dark:text-white/70 leading-relaxed mt-1.5 max-w-2xl">
+                {displaySubtitle}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-2.5 flex-wrap">
+      <div className="flex items-center gap-2.5 flex-wrap shrink-0">
         {/* Liquid Export Report Action - 40px height matching primary buttons */}
         <LiquidButton
           kind="export"

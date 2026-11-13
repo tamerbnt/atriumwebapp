@@ -128,12 +128,12 @@ export const LogisticsCodView: React.FC<any> = () => {
 			}
 		]} viewMode="list" isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><CreditCard size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {isAr ? "تحصيل COD ومستحقات التجار وبريد الجزائر" : "Caisse COD & Règlements E-Commerçants"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Paiement à la Livraison</span>
@@ -155,7 +155,7 @@ export const LogisticsCodView: React.FC<any> = () => {
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "إجمالي المقبوض نقداً عند الاستلام" : "Total Brut Encaissé (Livreurs)"}</span>
 <div>
 <div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalCodCollected)}</div>
@@ -166,7 +166,7 @@ export const LogisticsCodView: React.FC<any> = () => {
 </p>
 </div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "رسوم التوصيل المستحقة للشركة" : "Commissions & Frais Livraison"}</span>
 <div>
 <div className="text-2xl font-bold tracking-tight text-[#d4522f] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalShippingFees)}</div>
@@ -310,7 +310,7 @@ Prêt pour virement CCP / BaridiMob
 <td className="py-2.5 px-3 text-right font-bold text-black dark:text-white">{formatMoney(d.actualCashTurnedInDzd)}</td>
 <td className={`py-2.5 px-3 text-right font-bold ${d.discrepancyDzd === 0 ? "text-emerald-600" : d.discrepancyDzd < 0 ? "text-red-600" : "text-blue-600"}`}>{d.discrepancyDzd === 0 ? "0 DZD" : `${d.discrepancyDzd} DZD`}</td>
 <td className="py-2.5 px-3 font-sans">
-<span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${d.status === "Clean" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300" : "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300"}`}>{d.status === "Clean" ? "Décharge Conforme" : "Manquant (Shortage)"}</span>
+<span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${d.status === "Clean" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300" : "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300"}`}>{d.status === "Clean" ? "Décharge Conforme" : "Manquant (Shortage)"}</span>
 </td>
 <td className="py-2.5 px-3 text-right font-sans">
 <AtriumButton variant="ghost" size="xs" onClick={() => {
@@ -362,7 +362,7 @@ Prêt pour virement CCP / BaridiMob
 </td>
 <td className="py-2.5 px-3 text-right font-bold text-emerald-600 dark:text-emerald-400">{formatMoney(r.netPayoutDzd)}</td>
 <td className="py-2.5 px-3 font-sans">
-<span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${r.status === "Executed" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300" : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"}`}>{r.status === "Executed" ? "Exécuté" : "En Attente"}</span>
+<span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${r.status === "Executed" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300" : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"}`}>{r.status === "Executed" ? "Exécuté" : "En Attente"}</span>
 </td>
 <td className="py-2.5 px-3 text-right font-sans">
 {r.status !== "Executed" ? /* @__PURE__ */ <AtriumButton variant="primary" size="xs" onClick={() => {

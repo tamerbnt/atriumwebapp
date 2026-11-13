@@ -155,9 +155,9 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
         ref={slabRef}
         className={`slab ${
           isOpen
-            ? '!bg-[var(--atr-hl,#FBE7DF)] dark:!bg-[#2A1D18] !border-[var(--atr-acc,#C9441F)]'
+            ? '!bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:!bg-[#2A1D18] !border-[var(--atr-acc,#d4522f)]'
             : isSelected
-            ? 'bg-white dark:bg-[#1C1B1A] !border-[var(--atr-acc,#C9441F)] shadow-[0_0_0_1px_var(--atr-acc,#C9441F)]'
+            ? 'bg-white dark:bg-[#1C1B1A] !border-[var(--atr-acc,#d4522f)] shadow-[0_0_0_1px_var(--atr-acc,#d4522f)]'
             : 'bg-white dark:bg-[#1C1B1A] border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]'
         }`}
       />
@@ -200,8 +200,8 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
           }}
           className={`cb c-cb w-[22px] h-[22px] rounded-[7px] border-[1.5px] grid place-items-center p-0 cursor-pointer ${
             isSelected
-              ? 'bg-[var(--atr-acc,#C9441F)] border-[var(--atr-acc,#C9441F)] text-white'
-              : 'bg-white dark:bg-[#262422] border-[#B3A89E] dark:border-[#5A5550] text-transparent hover:border-[var(--atr-acc,#C9441F)]'
+              ? 'bg-[var(--atr-acc,#d4522f)] border-[var(--atr-acc,#d4522f)] text-white'
+              : 'bg-white dark:bg-[#262422] border-[#D4C8BC] dark:border-[#5A5550] text-transparent hover:border-[var(--atr-acc,#d4522f)]'
           }`}
         >
           <Check
@@ -215,7 +215,7 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
         <span className="who c-who flex items-center gap-3 min-w-0 text-left rtl:text-right">
           <span
             className="av w-[38px] h-[38px] rounded-full grid place-items-center text-white font-semibold text-[14px] shrink-0 select-none"
-            style={{ backgroundColor: member.avatarColor || '#C9441F' }}
+            style={{ backgroundColor: member.avatarColor || '#d4522f' }}
             aria-hidden="true"
           >
             {initials}
@@ -229,17 +229,17 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
                   e.stopPropagation();
                   onOpenDetails?.(member.id, e.currentTarget);
                 }}
-                className="nm border-0 bg-transparent p-0 text-left rtl:text-right font-semibold text-[14px] text-[var(--atr-ink,#1B1917)] dark:text-[#F2ECE6] hover:text-[var(--atr-acc,#C9441F)] truncate cursor-pointer"
+                className="nm border-0 bg-transparent p-0 text-left rtl:text-right font-semibold text-[14px] text-[var(--atr-ink,#000000)] dark:text-white hover:text-[var(--atr-acc,#d4522f)] truncate cursor-pointer"
               >
                 {member.name}
               </button>
               {(isPinned || member.isPinned) && (
-                <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-1 rounded-sm shrink-0">
+                <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/12 px-1.5 py-0.2 rounded-md shrink-0">
                   VIP
                 </span>
               )}
             </span>
-            <small className="font-mono text-[11px] text-[var(--atr-mut,#6B635C)] truncate">
+            <small className="font-mono text-[11px] tabular-nums text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68 truncate">
               ID: {member.id}
               {member.phone ? ` · ${member.phone}` : ''}
             </small>
@@ -250,7 +250,7 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
         <span className="c-fm min-w-0">
           <span
             title={member.planName}
-            className="pill inline-flex items-center max-w-full px-2.5 py-[3px] rounded-full text-[12px] font-medium bg-[var(--atr-hl,#FBE7DF)] dark:bg-[#2C1D18] text-[var(--atr-acc,#C9441F)] dark:text-[#FF8D7A] border border-[#F3C9BA] dark:border-[#52291F] truncate"
+            className="pill inline-flex items-center max-w-full px-2.5 py-[3px] rounded-md text-[12px] font-medium bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] border border-[#d4522f]/25 dark:border-[#52291F] truncate"
           >
             {member.planName}
           </span>
@@ -259,7 +259,7 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
         {/* Status Pill (.c-st) */}
         <span className="c-st">
           <span
-            className={`pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[12px] font-medium whitespace-nowrap ${statusStyle.pill}`}
+            className={`pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-md text-[12px] font-medium whitespace-nowrap ${statusStyle.pill}`}
           >
             <i className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
             {member.status}
@@ -268,20 +268,20 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
 
         {/* Expiry Date (.dt.c-dt) */}
         <span className="dt c-dt flex flex-col min-w-0">
-          <b className="font-mono text-[12px] font-bold text-[var(--atr-ink,#1B1917)] dark:text-[#F2ECE6] truncate">
+          <b className="font-mono text-[12px] font-bold tabular-nums text-[var(--atr-ink,#000000)] dark:text-white truncate">
             {member.expiryDate}
           </b>
-          <small className="font-mono text-[11px] text-[var(--atr-mut,#6B635C)] truncate">
+          <small className="font-mono text-[11px] tabular-nums text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68 truncate">
             {member.daysRemainingLabel}
           </small>
         </span>
 
         {/* Balance (.sd.c-sd) */}
         <span
-          className={`sd c-sd font-mono text-[12px] font-bold truncate ${
+          className={`sd c-sd font-mono text-[12px] font-bold tabular-nums truncate ${
             member.balance === 0
-              ? 'z text-[var(--atr-ok,#0B7A45)] dark:text-[#5BE3A3]'
-              : 'text-[var(--atr-ink,#1B1917)] dark:text-[#F2ECE6]'
+              ? 'z text-[var(--atr-ok,#096b40)] dark:text-[#5BE3A3]'
+              : 'text-[var(--atr-ink,#000000)] dark:text-white'
           }`}
         >
           {member.balance === 0
@@ -303,7 +303,7 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
         ref={rbRef}
         type="button"
         data-no-liquid="true"
-        className="rb border-0 bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#2B2927] text-[var(--atr-ink,#1B1917)] dark:text-[#F2ECE6] cursor-pointer"
+        className="rb border-0 bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#2B2927] text-[var(--atr-ink,#000000)] dark:text-white cursor-pointer"
         aria-expanded={isExpanded}
         aria-label={`Aperçu rapide de ${member.name}`}
         onClick={(e) => {

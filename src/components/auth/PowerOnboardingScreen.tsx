@@ -690,7 +690,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             {/* Recommended Ribbon */}
             {plan.isRecommended && (
               <div className="absolute -top-2 inset-x-0 flex justify-center pointer-events-none">
-                <span className="text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-gradient-to-r from-[#C4552A] to-[#E8622C] text-white shadow-md tracking-wider">
+                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-gradient-to-r from-[#C4552A] to-[#E8622C] text-white shadow-md tracking-wider">
                   {badge}
                 </span>
               </div>
@@ -699,7 +699,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             <div>
               {/* Header row */}
               <div className="flex items-center justify-between mb-1">
-                <span className={`text-[9px] font-bold uppercase tracking-wider ${
+                <span className={`text-[10px] font-bold uppercase tracking-wider ${
                   isSelected ? 'text-[#FF8A4C]' : 'text-[#D9BEB0]'
                 }`}>
                   {plan.isRecommended ? (isAr ? 'الأكثر اختياراً' : isFr ? 'Plus Populaire' : 'Most Popular') : badge}
@@ -721,18 +721,18 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 <span className={`font-mono ${isWide ? 'text-base sm:text-lg' : 'text-sm sm:text-base'} font-black text-[#FF8A4C] tracking-tight tabular-nums`}>
                   {price}
                 </span>
-                <span className="text-[9px] text-[#D9BEB0]/70 font-medium">
+                <span className="text-[10px] text-[#D9BEB0]/85 font-medium">
                   {isAr ? '• مدى الحياة' : isFr ? '• à vie' : '• lifetime'}
                 </span>
               </div>
-              <p className="text-[9.5px] text-[#D9BEB0]/80 font-medium mb-1.5 line-clamp-1">
+              <p className="text-[10px] text-[#D9BEB0]/85 font-medium mb-1.5 line-clamp-1">
                 {isAr ? plan.descAr : isFr ? plan.descFr : plan.descEn}
               </p>
 
               {/* Feature Checklist */}
               <div className="space-y-0.5 pt-1 border-t border-white/10">
                 {features.slice(0, isWide ? 4 : 3).map((feat, fIdx) => (
-                  <div key={fIdx} className="flex items-start gap-1 text-[9.5px] text-[#F0DACF]">
+                  <div key={fIdx} className="flex items-start gap-1 text-[10px] text-[#F0DACF]">
                     <CheckCircle2 className={`w-2.5 h-2.5 shrink-0 mt-0.5 ${
                       isSelected ? 'text-[#FF8A4C]' : 'text-emerald-400'
                     }`} />
@@ -927,7 +927,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     {isAr ? 'أنت متصل حالياً:' : isFr ? 'Connecté en tant que :' : 'Signed in as:'}{' '}
                     <strong className="text-white font-semibold">{currentUser?.fullName}</strong>
                   </span>
-                  <span className="text-white/20">·</span>
+                  <span className="text-white/50">·</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -982,7 +982,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 <span className="text-xs font-semibold uppercase tracking-wider text-[#FF7A30]">
                   {isAr ? 'المرحلة 10 من 10' : isFr ? 'Étape 10 sur 10' : 'Step 10 of 10'}
                 </span>
-                <h1 className="text-2xl sm:text-[26px] font-bold tracking-tight text-white leading-snug">
+                <h1 className="text-2xl sm:text-[26px] font-bold tracking-tight rtl:tracking-normal text-white leading-snug">
                   {questionsMeta[9]?.title}
                 </h1>
                 {questionsMeta[9]?.subtext && (
@@ -1098,7 +1098,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       </button>
                     )}
                   </div>
-                  <h1 className="text-2xl sm:text-[26px] font-bold text-white tracking-tight leading-snug">
+                  <h1 className="text-2xl sm:text-[26px] font-bold text-white tracking-tight rtl:tracking-normal leading-snug">
                     {questionsMeta[currentStep]?.title}
                   </h1>
                   {questionsMeta[currentStep]?.subtext && (
@@ -1157,7 +1157,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     <div className="absolute inset-0 flex items-center">
                       <div className="w-full border-t border-white/10" />
                     </div>
-                    <span className="relative px-3 py-0.5 text-[9.5px] uppercase font-bold tracking-wider text-[#F0DACF] bg-[rgba(20,17,15,0.7)] border border-white/10 rounded-full backdrop-blur-md shadow-xs">
+                    <span className="relative px-3 py-0.5 text-[10px] uppercase font-bold tracking-wider text-[#F0DACF] bg-[rgba(20,17,15,0.7)] border border-white/10 rounded-full backdrop-blur-md shadow-xs">
                       {isAr ? 'أو باستخدام بريدك المهني' : isFr ? 'OU AVEC UN E-MAIL PROFESSIONNEL' : 'OR WITH WORK EMAIL'}
                     </span>
                   </div>
@@ -1374,7 +1374,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                               >
                                 <Icon className="w-3.5 h-3.5" />
                               </div>
-                              <span className="text-[9.5px] font-semibold text-[#D9BEB0] px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10">
+                              <span className="text-[10px] font-semibold text-[#D9BEB0] px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10">
                                 {goal.badge}
                               </span>
                             </div>
@@ -1411,7 +1411,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       );
                     })}
                   </div>
-                  <p className="text-center text-[9.5px] text-[#D9BEB0] pt-0.5">
+                  <p className="text-center text-[10px] text-[#D9BEB0] pt-0.5">
                     {isAr
                       ? '💡 انقر على البطاقة للمتابعة الفورية، أو اضغط "عرض المخطط التنفيذي" لمعاينة الآليات والأدوات المدمجة'
                       : isFr
@@ -1562,7 +1562,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                             <Icon className="w-3.5 h-3.5" />
                           </div>
                           <span
-                            className={`text-[9.5px] font-semibold px-2 py-0.5 rounded-full border transition-colors ${
+                            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-colors ${
                               isSelected
                                 ? 'bg-[rgba(232,98,44,0.18)] border-transparent text-[#E8622C]'
                                 : 'bg-white/5 border-white/10 text-[#D9BEB0]'
@@ -1738,7 +1738,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                                 }`}>
                                   {title}
                                 </span>
-                                <span className="text-[9.5px] text-[#D9BEB0] truncate">{badgeText}</span>
+                                <span className="text-[10px] text-[#D9BEB0] truncate">{badgeText}</span>
                               </div>
                               <div
                                 className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
@@ -1829,7 +1829,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         <Sparkles className="w-3.5 h-3.5 text-[#FF8A4C]" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-[9.5px] font-bold uppercase tracking-wider text-[#FF8A4C] truncate">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-[#FF8A4C] truncate">
                           {isAr ? 'النظام المقترح وفق نشاطك' : isFr ? 'Système Métier Calibré' : 'Calibrated Vertical Engine'}
                         </div>
                         <div className="text-xs sm:text-sm font-extrabold text-[#FFF5EE] truncate">
@@ -1941,7 +1941,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
       {/* Full-Bleed Plain Low-Opacity Text Footer with Replay Intro Trigger */}
       <footer className="relative z-10 w-full text-center py-1.5 shrink-0 flex items-center justify-center gap-4">
-        <p className="text-[10px] text-[#BFA395]/60 font-medium tracking-wide pointer-events-none">
+        <p className="text-[10px] text-[#BFA395]/75 font-medium tracking-wide pointer-events-none">
           {isAr
             ? 'أتريوم • منصة إدارة الأعمال • 2026'
             : isFr
@@ -1951,7 +1951,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         <button
           type="button"
           onClick={handleReplayIntro}
-          className="text-[9.5px] text-[#d4522f]/70 hover:text-[#FF8A4C] transition-colors cursor-pointer flex items-center gap-1 font-mono tracking-wider uppercase px-2 py-0.5 rounded border border-[#d4522f]/20 hover:border-[#d4522f]/50 bg-black/30 hover:bg-black/50"
+          className="text-[10px] text-[#E8622C]/85 hover:text-[#FF8A4C] transition-colors cursor-pointer flex items-center gap-1 font-mono tracking-wider uppercase px-2 py-0.5 rounded border border-[#d4522f]/25 hover:border-[#d4522f]/50 bg-black/30 hover:bg-black/50"
         >
           <span>↺ Replay</span>
         </button>

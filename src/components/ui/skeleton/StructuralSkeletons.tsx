@@ -24,7 +24,7 @@ export const SkeletonKpiGrid: React.FC<SkeletonKpiGridProps> = ({
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={`kpi_skel_${i}`}
-          className="p-4 rounded-[20px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs flex flex-col justify-between h-[104px]"
+          className="p-4 rounded-[20px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs flex flex-col justify-between h-[104px]"
         >
           <div className="flex items-center justify-between">
             <SkeletonText size="xs" width="45%" />
@@ -76,7 +76,7 @@ export const SkeletonTable: React.FC<SkeletonTableProps> = ({
 
       {/* Top Filter & Search Bar Skeleton */}
       {showHeaderControls && (
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 rounded-2xl">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 rounded-2xl">
           <div className="flex items-center gap-2 flex-1 max-w-sm">
             <SkeletonBox height={36} className="w-full" rounded="rounded-xl" />
           </div>
@@ -89,7 +89,7 @@ export const SkeletonTable: React.FC<SkeletonTableProps> = ({
       )}
 
       {/* Table Surface */}
-      <div className="w-full bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 rounded-[20px] overflow-hidden shadow-xs">
+      <div className="w-full bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 rounded-[20px] overflow-hidden shadow-xs">
         {/* Table Header Row */}
         <div className="flex items-center px-4 py-3 border-b border-[#E6DED6] dark:border-neutral-800 bg-[#F3EDE7]/80 dark:bg-neutral-900/50 gap-3">
           <SkeletonBox width={18} height={18} rounded="rounded-xs" className="shrink-0 mr-1" />
@@ -169,7 +169,7 @@ export const SkeletonCardGrid: React.FC<SkeletonCardGridProps> = ({ count = 6 })
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={`card_skel_${i}`}
-          className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs flex flex-col justify-between min-h-[170px]"
+          className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs flex flex-col justify-between min-h-[170px]"
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
@@ -249,7 +249,7 @@ export const SkeletonKioskGrid: React.FC<{ count?: number }> = ({ count = 8 }) =
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={`kiosk_skel_${i}`}
-          className="p-4 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 flex flex-col items-center justify-center text-center h-[130px] space-y-2.5"
+          className="p-4 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 flex flex-col items-center justify-center text-center h-[130px] space-y-2.5"
         >
           <SkeletonCircle size={44} />
           <SkeletonText size="sm" width="70%" />
@@ -269,7 +269,7 @@ export const SkeletonChart: React.FC<{ height?: number }> = ({ height = 280 }) =
       role="status"
       aria-label="Loading visual analytics"
       style={{ height }}
-      className="w-full p-5 bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 rounded-[24px] flex flex-col justify-between"
+      className="w-full p-5 bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 rounded-[24px] flex flex-col justify-between"
     >
       <span className="sr-only">Loading chart data...</span>
       <div className="flex items-center justify-between mb-4">
@@ -397,7 +397,7 @@ export const SkeletonSchedulerView: React.FC<SkeletonSchedulerViewProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Card 1: Scheduled Class Roster */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <SkeletonText size="xs" width="130px" />
               <div className="mt-2">
@@ -411,7 +411,7 @@ export const SkeletonSchedulerView: React.FC<SkeletonSchedulerViewProps> = ({
           </div>
 
           {/* Card 2: Athlètes Inscrits au total */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <SkeletonText size="xs" width="140px" />
               <div className="mt-2">
@@ -425,7 +425,7 @@ export const SkeletonSchedulerView: React.FC<SkeletonSchedulerViewProps> = ({
           </div>
 
           {/* Card 3: Affluence maximale en salle */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div className="flex items-center justify-between">
               <SkeletonText size="xs" width="150px" />
               <SkeletonBox width={75} height={18} rounded="rounded-md" />
@@ -525,7 +525,7 @@ export const SkeletonDashboardGym: React.FC<SkeletonDashboardGymProps> = ({
             {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={`gym_kpi_${i}`}
-                className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+                className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
               >
                 <div className="flex items-center justify-between">
                   <SkeletonText size="xs" width="60%" />
@@ -563,7 +563,7 @@ export const SkeletonDashboardGym: React.FC<SkeletonDashboardGymProps> = ({
       </div>
 
       {/* Row 2: Live Activity Feed */}
-      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <SkeletonText size="base" width="160px" />
@@ -651,7 +651,7 @@ export const SkeletonPosRegister: React.FC<SkeletonPosRegisterProps> = ({
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={`pos_prod_${i}`}
-                className="p-3.5 rounded-[20px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[155px]"
+                className="p-3.5 rounded-[20px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[155px]"
               >
                 <div className="flex items-start gap-2.5">
                   <SkeletonBox width={44} height={44} rounded="rounded-xl" className="shrink-0" />
@@ -670,7 +670,7 @@ export const SkeletonPosRegister: React.FC<SkeletonPosRegisterProps> = ({
         </div>
 
         {/* Right Column (35%): Cashier Ticket Receipt */}
-        <div className="lg:col-span-4 p-5 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-md flex flex-col justify-between">
+        <div className="lg:col-span-4 p-5 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-md flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
               <SkeletonText size="sm" width="120px" />
@@ -742,7 +742,7 @@ export const SkeletonCalendarTimeline: React.FC<SkeletonCalendarTimelineProps> =
       <SkeletonPageHeader hasViewToggle hasFacility hasActionBtn />
 
       {/* Date ribbon bar */}
-      <div className="p-3 bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 rounded-2xl flex items-center justify-between gap-3">
+      <div className="p-3 bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 rounded-2xl flex items-center justify-between gap-3">
         <div className="flex items-center gap-1.5">
           <SkeletonCircle size={32} />
           <SkeletonText size="sm" width="130px" />
@@ -756,7 +756,7 @@ export const SkeletonCalendarTimeline: React.FC<SkeletonCalendarTimelineProps> =
       </div>
 
       {/* Resource Column Grid */}
-      <div className="bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 rounded-[24px] p-4 shadow-xs">
+      <div className="bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 rounded-[24px] p-4 shadow-xs">
         {/* Column Headers (Stylists / Rooms) */}
         <div className="grid grid-cols-4 gap-4 pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -839,7 +839,7 @@ export const SkeletonKanbanPipeline: React.FC<SkeletonKanbanPipelineProps> = ({
               {Array.from({ length: 3 }).map((_, cardIdx) => (
                 <div
                   key={`kcard_${colIdx}_${cardIdx}`}
-                  className="p-4 rounded-[20px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs space-y-2.5"
+                  className="p-4 rounded-[20px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xs space-y-2.5"
                 >
                   <div className="flex items-center justify-between">
                     <SkeletonBox width={65} height={16} rounded="rounded-full" />
@@ -973,7 +973,7 @@ export const SkeletonCollectionScreen: React.FC<SkeletonCollectionScreenProps> =
             {Array.from({ length: kpiCount }).map((_, i) => (
               <div
                 key={`coll_kpi_${i}`}
-                className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]"
+                className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]"
               >
                 <div className="flex items-center justify-between">
                   <SkeletonText size="xs" width="120px" />
@@ -1029,7 +1029,7 @@ export const SkeletonDashboardSalon: React.FC<{
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={`chair_skel_${i}`}
-              className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[155px]"
+              className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[155px]"
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2.5">
@@ -1056,7 +1056,7 @@ export const SkeletonDashboardSalon: React.FC<{
           {Array.from({ length: 3 }).map((_, i) => (
             <div
               key={`salon_kpi_${i}`}
-              className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[124px]"
+              className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[124px]"
             >
               <div className="flex items-center justify-between">
                 <SkeletonText size="xs" width="60%" />
@@ -1085,7 +1085,7 @@ export const SkeletonDashboardSalon: React.FC<{
       </div>
 
       {/* Live Activity Feed */}
-      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <SkeletonText size="base" width="180px" />
           <div className="flex gap-2">
@@ -1171,7 +1171,7 @@ export const SkeletonDashboardPos: React.FC<{
             {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={`pos_top_kpi_${i}`}
-                className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+                className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
               >
                 <div className="flex items-center justify-between">
                   <SkeletonText size="xs" width="60%" />
@@ -1205,7 +1205,7 @@ export const SkeletonDashboardPos: React.FC<{
         <div className="lg:col-span-7">
           <SkeletonChart height={280} />
         </div>
-        <div className="lg:col-span-5 p-6 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-3">
+        <div className="lg:col-span-5 p-6 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-3">
           <SkeletonText size="base" width="160px" />
           <div className="space-y-3 pt-2">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -1222,7 +1222,7 @@ export const SkeletonDashboardPos: React.FC<{
       </div>
 
       {/* Bottom Row: Recent Sales Transactions Ledger */}
-      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <SkeletonText size="base" width="180px" />
           <div className="flex gap-2">
@@ -1287,7 +1287,7 @@ export const SkeletonDashboardEducation: React.FC<{
             {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={`edu_kpi_${i}`}
-                className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+                className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
               >
                 <div className="flex items-center justify-between">
                   <SkeletonText size="xs" width="60%" />
@@ -1320,7 +1320,7 @@ export const SkeletonDashboardEducation: React.FC<{
       <SkeletonChart height={280} />
 
       {/* Bottom Feed: Admissions & Roll-Call Logs */}
-      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
         <SkeletonText size="base" width="180px" />
         <div className="divide-y divide-[#E6DED6] dark:divide-neutral-800/80">
           {Array.from({ length: 4 }).map((_, idx) => (
@@ -1360,7 +1360,7 @@ export const SkeletonDashboardMedical: React.FC<{
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={`med_kpi_${i}`}
-            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
           >
             <div className="flex items-center justify-between">
               <SkeletonText size="xs" width="55%" />
@@ -1376,7 +1376,7 @@ export const SkeletonDashboardMedical: React.FC<{
 
       {/* Doctor Agenda Slot Matrix & Queue Triage Radar */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-8 p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+        <div className="lg:col-span-8 p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <SkeletonText size="base" width="160px" />
             <SkeletonBox width={90} height={28} rounded="rounded-lg" />
@@ -1396,7 +1396,7 @@ export const SkeletonDashboardMedical: React.FC<{
           <SkeletonText size="base" width="140px" />
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={`queue_${i}`} className="p-3 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-between">
+              <div key={`queue_${i}`} className="p-3 rounded-xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-between">
                 <div className="space-y-1">
                   <SkeletonText size="sm" width="100px" />
                   <SkeletonText size="xs" width="70px" />
@@ -1430,7 +1430,7 @@ export const SkeletonDashboardGarage: React.FC<{
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={`gar_kpi_${i}`}
-            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
           >
             <div className="flex items-center justify-between">
               <SkeletonText size="xs" width="60%" />
@@ -1445,7 +1445,7 @@ export const SkeletonDashboardGarage: React.FC<{
       </div>
 
       {/* Workshop Bays in Repair Matrix */}
-      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <SkeletonText size="base" width="180px" />
           <SkeletonBox width={90} height={28} rounded="rounded-lg" />
@@ -1486,7 +1486,7 @@ export const SkeletonDashboardRealEstate: React.FC<{
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={`re_kpi_${i}`}
-            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
           >
             <div className="flex items-center justify-between">
               <SkeletonText size="xs" width="60%" />
@@ -1505,7 +1505,7 @@ export const SkeletonDashboardRealEstate: React.FC<{
         <div className="lg:col-span-7">
           <SkeletonChart height={280} />
         </div>
-        <div className="lg:col-span-5 p-6 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+        <div className="lg:col-span-5 p-6 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
           <SkeletonText size="base" width="160px" />
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -1543,7 +1543,7 @@ export const SkeletonDashboardManufacturing: React.FC<{
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={`mfg_kpi_${i}`}
-            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
           >
             <div className="flex items-center justify-between">
               <SkeletonText size="xs" width="60%" />
@@ -1558,7 +1558,7 @@ export const SkeletonDashboardManufacturing: React.FC<{
       </div>
 
       {/* Machine Workstations Touch Grid */}
-      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
         <SkeletonText size="base" width="180px" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -1596,7 +1596,7 @@ export const SkeletonDashboardLegal: React.FC<{
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={`leg_kpi_${i}`}
-            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
           >
             <div className="flex items-center justify-between">
               <SkeletonText size="xs" width="60%" />
@@ -1616,7 +1616,7 @@ export const SkeletonDashboardLegal: React.FC<{
           <SkeletonText size="base" width="160px" />
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={`cpc_${i}`} className="p-3.5 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 space-y-1.5">
+              <div key={`cpc_${i}`} className="p-3.5 rounded-xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 space-y-1.5">
                 <SkeletonText size="sm" width="90%" />
                 <SkeletonText size="xs" width="60%" />
               </div>
@@ -1658,7 +1658,7 @@ export const SkeletonDashboardLogistics: React.FC<{
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={`log_kpi_${i}`}
-            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
           >
             <div className="flex items-center justify-between">
               <SkeletonText size="xs" width="60%" />
@@ -1673,7 +1673,7 @@ export const SkeletonDashboardLogistics: React.FC<{
       </div>
 
       {/* Parcel Transit Radar & Manifest Feed */}
-      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
         <SkeletonText size="base" width="180px" />
         <SkeletonTable
           columns={[
@@ -1709,7 +1709,7 @@ export const SkeletonDashboardContractor: React.FC<{
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={`btp_kpi_${i}`}
-            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
           >
             <div className="flex items-center justify-between">
               <SkeletonText size="xs" width="60%" />
@@ -1724,7 +1724,7 @@ export const SkeletonDashboardContractor: React.FC<{
       </div>
 
       {/* Chantier Physical Progress & Journal de Chantier */}
-      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
         <SkeletonText size="base" width="180px" />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -1762,7 +1762,7 @@ export const SkeletonDashboardAgriculture: React.FC<{
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={`agri_kpi_${i}`}
-            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
           >
             <div className="flex items-center justify-between">
               <SkeletonText size="xs" width="60%" />
@@ -1781,7 +1781,7 @@ export const SkeletonDashboardAgriculture: React.FC<{
         <div className="lg:col-span-7">
           <SkeletonChart height={280} />
         </div>
-        <div className="lg:col-span-5 p-6 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+        <div className="lg:col-span-5 p-6 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
           <SkeletonText size="base" width="160px" />
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -1832,7 +1832,7 @@ export const SkeletonDashboardFreelance: React.FC<{
             {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={`freelance_kpi_${i}`}
-                className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+                className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
               >
                 <div className="flex items-center justify-between">
                   <SkeletonText size="xs" width="60%" />
@@ -1871,7 +1871,7 @@ export const SkeletonDashboardVenue: React.FC<{
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={`venue_kpi_${i}`}
-            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
           >
             <div className="flex items-center justify-between">
               <SkeletonText size="xs" width="60%" />
@@ -1886,7 +1886,7 @@ export const SkeletonDashboardVenue: React.FC<{
       </div>
 
       {/* Space Occupancy Gantt / Timeline Preview */}
-      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
         <SkeletonText size="base" width="180px" />
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -1920,7 +1920,7 @@ export const SkeletonDashboardTrading: React.FC<{
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={`trade_hub_${i}`}
-            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs space-y-3"
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xs space-y-3"
           >
             <div className="flex justify-between items-center">
               <SkeletonCircle size={32} />
@@ -1945,7 +1945,7 @@ export const SkeletonDashboardTrading: React.FC<{
             showHeaderControls={false}
           />
         </div>
-        <div className="lg:col-span-5 p-6 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-3">
+        <div className="lg:col-span-5 p-6 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-3">
           <SkeletonText size="base" width="160px" />
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={`alert_${i}`} className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-1">
@@ -1978,7 +1978,7 @@ export const SkeletonDashboardProject: React.FC<{
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={`proj_kpi_${i}`}
-            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
           >
             <div className="flex items-center justify-between">
               <SkeletonText size="xs" width="60%" />
@@ -1993,7 +1993,7 @@ export const SkeletonDashboardProject: React.FC<{
       </div>
 
       {/* 6-Role Agency Workflow Radar */}
-      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
         <SkeletonText size="base" width="180px" />
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -2031,7 +2031,7 @@ export const SkeletonAnalytics: React.FC<{
         <div className="lg:col-span-8">
           <SkeletonChart height={340} />
         </div>
-        <div className="lg:col-span-4 p-6 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+        <div className="lg:col-span-4 p-6 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
           <SkeletonText size="base" width="160px" />
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (

@@ -331,9 +331,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xl max-w-3xl w-full max-h-[92vh] flex flex-col overflow-hidden">
+      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E6DED6] dark:border-neutral-800 shadow-2xl max-w-3xl w-full max-h-[92vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-5 border-b border-[#E9EEF0] dark:border-neutral-800 flex items-center justify-between shrink-0">
+        <div className="px-6 py-5 border-b border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between shrink-0">
           <div>
             <h2 className="text-xl font-semibold text-black dark:text-white">
               {bookingToEdit ? t('venue_modal_edit_title') : t('venue_modal_new_title')}
@@ -405,7 +405,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           </div>
 
           {/* Section 2: Renter & Event Details */}
-          <div className="space-y-4 pt-4 border-t border-[#E9EEF0] dark:border-neutral-800">
+          <div className="space-y-4 pt-4 border-t border-[#E6DED6] dark:border-neutral-800">
             <h3 className="text-xs font-semibold text-black/55 dark:text-white/55 uppercase tracking-wider">
               {t('venue_modal_sec_renter')}
             </h3>
@@ -531,7 +531,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           </div>
 
           {/* Section 3: Add-on Equipment & Services */}
-          <div className="space-y-4 pt-4 border-t border-[#E9EEF0] dark:border-neutral-800">
+          <div className="space-y-4 pt-4 border-t border-[#E6DED6] dark:border-neutral-800">
             <h3 className="text-xs font-semibold text-black/55 dark:text-white/55 uppercase tracking-wider">
               {t('venue_modal_sec_addons')}
             </h3>
@@ -603,7 +603,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           </div>
 
           {/* Section 4: Caution, Security Deposit & Financials */}
-          <div className="space-y-4 pt-4 border-t border-[#E9EEF0] dark:border-neutral-800">
+          <div className="space-y-4 pt-4 border-t border-[#E6DED6] dark:border-neutral-800">
             <h3 className="text-xs font-semibold text-black/55 dark:text-white/55 uppercase tracking-wider">
               {t('venue_modal_sec_financials')}
             </h3>
@@ -692,7 +692,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         </form>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 border-t border-[#E9EEF0] dark:border-neutral-800 flex items-center justify-between shrink-0 bg-neutral-50/50 dark:bg-neutral-800/30">
+        <div className="px-6 py-4 border-t border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between shrink-0 bg-neutral-50/50 dark:bg-neutral-800/30">
           <AtriumButton
             type="button"
             variant="ghost"

@@ -21,7 +21,7 @@ export const LegalStaffView: React.FC = () => {
       sortable: true,
       cell: (member) => (
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-slate-500/15 text-black/70 dark:text-white/75 font-bold text-xs flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-full bg-black/[0.06] dark:bg-white/[0.1] text-black/75 dark:text-white/80 font-bold text-xs flex items-center justify-center shrink-0">
             {member.fullName.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0">

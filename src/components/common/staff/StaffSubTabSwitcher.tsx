@@ -47,7 +47,7 @@ export const StaffSubTabSwitcher: React.FC<StaffSubTabSwitcherProps> = ({
   ];
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5 p-1 bg-[#F1F3F5] dark:bg-[#18181B] rounded-2xl w-full sm:w-fit border border-[#E2E8EC] dark:border-[#27272A] shadow-xs">
+    <div className="flex flex-wrap items-center gap-1.5 p-1 bg-[#F3EDE7] dark:bg-[#1C1B1A] rounded-2xl w-full sm:w-fit border border-[#E6DED6] dark:border-[#3A3734] shadow-xs">
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         return (
@@ -67,10 +67,10 @@ export const StaffSubTabSwitcher: React.FC<StaffSubTabSwitcherProps> = ({
             <span>{tab.label}</span>
             {tab.badge && (
               <span
-                className={`text-[10px] font-mono px-1.5 py-0.5 rounded-md font-bold tabular-nums ${
+                className={`text-[11px] font-mono px-1.5 py-0.5 rounded-md font-bold tabular-nums ${
                   isActive
                     ? 'bg-[#d4522f]/10 text-[#d4522f]'
-                    : 'bg-neutral-200/70 dark:bg-neutral-800 text-black/70 dark:text-white/75'
+                    : 'bg-[#E6DED6]/70 dark:bg-[#262422] text-black/72 dark:text-white/75'
                 }`}
               >
                 {tab.badge}

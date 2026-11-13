@@ -218,7 +218,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 {v.model}
 </span>
 {isPinned && /* @__PURE__ */ <span className="text-[10px] text-amber-500 font-bold">📌 VIP</span>}
-{v.isFleet && /* @__PURE__ */ <span className="text-[9px] px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold border border-blue-200/50">Flotte B2B</span>}
+{v.isFleet && /* @__PURE__ */ <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold border border-blue-200/50">Flotte B2B</span>}
 {inShop && /* @__PURE__ */ <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1">
 <Wrench size={10} />
 {" "}
@@ -265,13 +265,13 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 {estKm.toLocaleString()}
 {" km"}
 </span>
-<span className="text-[9px] text-black/55 dark:text-white/55 font-normal">(est.)</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 font-normal">(est.)</span>
 </div>
 <div className="flex items-center gap-1.5">
-{needsOilChange ? /* @__PURE__ */ <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 flex items-center gap-0.5">
+{needsOilChange ? /* @__PURE__ */ <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 flex items-center gap-0.5">
 <AlertTriangle size={9} />
 {" Vidange requise"}
-</span> : /* @__PURE__ */ <span className="text-[9px] font-medium text-black/55 dark:text-white/55">
+</span> : /* @__PURE__ */ <span className="text-[10px] font-medium text-black/55 dark:text-white/55">
 {"Dernière: "}
 {v.lastServiceKm ? `${v.lastServiceKm.toLocaleString()} km` : v.lastServiceDate || "—"}
 </span>}
@@ -328,12 +328,12 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 			}
 		]} hasIcon hasFacility hasActionBtn actionBtnWidth={140} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Car size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {language === "ar" ? "سجل المركبات وحظيرة الزبائن" : "Parc Véhicules & Immatriculations"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
@@ -356,7 +356,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <span className="text-xs font-semibold text-black/70 dark:text-white/75">{language === "ar" ? "إجمالي الحظيرة المسجلة" : "Parc Total Enregistré"}</span>
 <div>
 <div className="text-2xl font-bold tracking-tight text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{vehicles.length}</div>
@@ -365,7 +365,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 </p>
 </div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <span className="text-xs font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "مركبات في الورشة حالياً" : "Véhicules en Atelier (Travaux)"}
 </span>
@@ -390,7 +390,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 </div>
 </div>
 <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
-<div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+<div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
 <div className="flex items-center gap-2">
 <span className="text-sm font-bold text-black dark:text-white">{language === "ar" ? "دليل السيارات" : "Registre Automobile"}</span>
 <span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums">
@@ -494,7 +494,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 </div>
 <div className="flex items-center gap-1.5 mb-3">
 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 border border-neutral-200 dark:border-neutral-700">{v.plateNumber}</span>
-{v.isFleet && /* @__PURE__ */ <span className="text-[9px] px-1.5 py-0.2 rounded bg-blue-50 text-blue-700 font-bold border border-blue-200">B2B</span>}
+{v.isFleet && /* @__PURE__ */ <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-50 text-blue-700 font-bold border border-blue-200">B2B</span>}
 </div>
 <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1 text-center">
 <div className="text-black dark:text-white font-semibold text-[11px] truncate">

@@ -68,12 +68,12 @@ export const MedicalAgendaView: React.FC<any> = () => {
 	});
 	if (showSkeleton && (appointments.length === 0 && practitioners.length === 0 || networkMode === "force_skeleton")) return /* @__PURE__ */ <SkeletonSchedulerView columnsCount={3} hasFacility={false} hasActionBtn actionBtnWidth={140} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#0D9488]/15 text-[#0D9488] flex items-center justify-center font-bold shadow-xs"><Calendar size={22} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {language === "ar" ? "أجندة مواعيد الأطباء" : "Agenda Multi-Praticiens & Rendez-vous"}
 </h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#0D9488]/15 text-[#0D9488]">Polyclinique</span>
@@ -136,7 +136,7 @@ m
 <strong className="text-black/70 dark:text-white/75">{doc.roomNumber}</strong>
 </span>
 </div>
-{waitingCount > 0 && /* @__PURE__ */ <span title={`File d'attente active : ${waitingCount} patient(s)`} className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 shrink-0">
+{waitingCount > 0 && /* @__PURE__ */ <span title={`File d'attente active : ${waitingCount} patient(s)`} className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 shrink-0">
 +
 {waitingCount * 15}
 m
@@ -156,7 +156,7 @@ m
 <div>
 <div className="flex items-center justify-between gap-1 mb-1">
 <span className="font-bold text-xs truncate">{matchApt.patientName}</span>
-<span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold uppercase tracking-wider bg-white/50 dark:bg-black/30">{matchApt.status}</span>
+<span className="text-[10px] font-mono px-1.5 py-0.5 rounded font-bold uppercase tracking-wider bg-white/50 dark:bg-black/30">{matchApt.status}</span>
 </div>
 <p className="text-[10px] text-black/70 dark:text-white/75 truncate">{matchApt.reason}</p>
 </div>
@@ -169,15 +169,15 @@ m
 {matchApt.status === "Booked" && /* @__PURE__ */ <button onClick={(e) => {
 															e.stopPropagation();
 															updateAppointmentStatus(matchApt.id, "Arrived");
-														}} className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500 text-white" title="Marquer comme arrivé en salle d'attente">Arrivé</button>}
+														}} className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500 text-white" title="Marquer comme arrivé en salle d'attente">Arrivé</button>}
 {matchApt.status === "Arrived" && /* @__PURE__ */ <button onClick={(e) => {
 															e.stopPropagation();
 															updateAppointmentStatus(matchApt.id, "InRoom");
-														}} className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-600 text-white" title="Faire entrer en consultation">En Salle</button>}
+														}} className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-600 text-white" title="Faire entrer en consultation">En Salle</button>}
 {matchApt.status === "InRoom" && /* @__PURE__ */ <button onClick={(e) => {
 															e.stopPropagation();
 															updateAppointmentStatus(matchApt.id, "Completed");
-														}} className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-600 text-white" title="Terminer consultation">Terminé</button>}
+														}} className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-600 text-white" title="Terminer consultation">Terminé</button>}
 </div>
 </div>
 </div> : /* @__PURE__ */ <div className="h-full w-full rounded-lg border border-dashed border-transparent group-hover:border-[#0D9488]/40 flex items-center justify-center text-[10px] text-black/55 dark:text-white/55 opacity-0 group-hover:opacity-100 transition-opacity">+ Réserver</div>}

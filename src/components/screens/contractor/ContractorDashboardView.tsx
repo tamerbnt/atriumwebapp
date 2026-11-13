@@ -121,7 +121,7 @@ export const ContractorDashboardView: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 bg-white dark:bg-[#0C0C0E] min-h-screen p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
+    <div className="space-y-6 sm:space-y-7 animate-in fade-in duration-200">
       <OfflineRetryBanner
         isOffline={isOffline}
         isTimedOut={isTimedOut}
@@ -160,13 +160,13 @@ export const ContractorDashboardView: React.FC = () => {
               </span>
             }
             rightControls={
-              <div className="flex items-center bg-[#F0F2F5] dark:bg-neutral-800 p-0.5 rounded-lg text-xs font-semibold">
+              <div className="flex items-center bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 p-0.5 rounded-xl text-xs font-semibold shadow-2xs">
                 <button
                   type="button"
                   onClick={() => setTimeFilter('today')}
                   title={language === 'ar' ? 'عرض مؤشرات اليوم' : language === 'fr' ? "Activité d'aujourd'hui" : "Today's activity"}
                   className={`px-3 py-1 rounded-md transition-all ${
-                    timeFilter === 'today' ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-sm' : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
+                    timeFilter === 'today' ? 'bg-[#d4522f] text-white shadow-xs' : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
                   }`}
                 >
                   {language === 'ar' ? 'اليوم' : language === 'fr' ? "Aujourd'hui" : 'Today'}
@@ -176,7 +176,7 @@ export const ContractorDashboardView: React.FC = () => {
                   onClick={() => setTimeFilter('yesterday')}
                   title={language === 'ar' ? 'عرض مؤشرات الأمس' : language === 'fr' ? "Activité d'hier" : "Yesterday's activity"}
                   className={`px-3 py-1 rounded-md transition-all ${
-                    timeFilter === 'yesterday' ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-sm' : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
+                    timeFilter === 'yesterday' ? 'bg-[#d4522f] text-white shadow-xs' : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
                   }`}
                 >
                   {language === 'ar' ? 'أمس' : language === 'fr' ? 'Hier' : 'Yesterday'}
@@ -186,7 +186,7 @@ export const ContractorDashboardView: React.FC = () => {
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">
@@ -202,7 +202,7 @@ export const ContractorDashboardView: React.FC = () => {
                       ● {language === 'ar' ? 'أشغال نشطة' : 'Chantiers ouverts'}
                     </span>
                   </div>
-                  <div className="w-px h-12 bg-neutral-200 dark:bg-neutral-700 mx-4" />
+                  <div className="w-px h-12 bg-[#E6DED6] dark:bg-neutral-700 mx-4" />
                   <div className="flex-1">
                     <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">
                       {language === 'ar' ? 'العمال الميدانيين اليوم' : 'Effectif sur Site'}
@@ -219,7 +219,7 @@ export const ContractorDashboardView: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700/60">
+                <div className="mt-4 pt-3 border-t border-[#E6DED6] dark:border-neutral-700/60">
                   <span className="text-[11px] text-black/55 dark:text-white/55 block mb-2">
                     {language === 'ar' ? 'كثافة نشاط الآليات والعمال على مدار 24 ساعة' : 'Courbe horaire de présence chantier (24h)'}
                   </span>
@@ -227,7 +227,7 @@ export const ContractorDashboardView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
                 <div className="flex justify-between items-center mb-1.5">
                   <span className="text-xs font-medium text-black/70 dark:text-white/75">
                     {language === 'ar' ? 'نسبة حضور اليد العاملة اليوم' : 'Taux de Présence Ouvriers'}
@@ -236,7 +236,7 @@ export const ContractorDashboardView: React.FC = () => {
                     {workersOnSite} / {dailyLaborTarget}
                   </span>
                 </div>
-                <div className="w-full bg-neutral-100 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
+                <div className="w-full bg-[#E6DED6]/70 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
                   <div
                     className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
                     style={{ width: `${targetPct}%` }}
@@ -304,7 +304,7 @@ export const ContractorDashboardView: React.FC = () => {
                 />
               </div>
 
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-xs font-semibold text-black dark:text-white">
                     {language === 'ar' ? 'نسبة التقدم الأسبوعي للأشغال (%)' : 'Avancement physique hebdomadaire des lots'}
@@ -339,8 +339,8 @@ export const ContractorDashboardView: React.FC = () => {
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
-                <div className="grid grid-cols-3 gap-2 pb-3 border-b border-neutral-200 dark:border-neutral-700/60">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
+                <div className="grid grid-cols-3 gap-2 pb-3 border-b border-[#E6DED6] dark:border-neutral-700/60">
                   <div>
                     <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'صافي المقاولة' : 'Marge Nette'}</span>
                     <span className="text-lg font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
@@ -373,7 +373,7 @@ export const ContractorDashboardView: React.FC = () => {
               </div>
 
               {/* 4 KPIs Inset Grid */}
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-xs font-semibold text-black dark:text-white">
                     {language === 'ar' ? 'مؤشرات الأداء الميداني BTP' : 'Indicateurs de Pilotage Chantier'}
@@ -443,7 +443,7 @@ export const ContractorDashboardView: React.FC = () => {
           >
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-semibold text-black dark:text-white">
                       {language === 'ar' ? 'توزيع مصاريف الورشة' : 'Ventilation des Dépenses'}
@@ -453,7 +453,7 @@ export const ContractorDashboardView: React.FC = () => {
                   <DonutChart segments={siteExpenses} centerLabel={`${activeProjects} Chantiers`} />
                 </div>
 
-                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-semibold text-black dark:text-white">
                       {language === 'ar' ? 'نسبة الإنجاز حسب الورشة' : 'Avancement DQE par Chantier'}

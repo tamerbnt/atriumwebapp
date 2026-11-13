@@ -107,9 +107,9 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
   return (
     <div className="space-y-4">
       {/* Top Controls Bar: Exact 40px Standard Controls */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 bg-white dark:bg-[#1C1B1A] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-[#F3EDE7] dark:bg-neutral-700/50 px-3 rounded-xl border border-neutral-200/80 dark:border-neutral-700 h-10">
+          <div className="flex items-center gap-2 bg-[#F3EDE7] dark:bg-[#262422] px-3 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] h-10">
             <Calendar className="w-4 h-4 text-[#d4522f]" />
             <select
               value={selectedMonth}
@@ -186,44 +186,44 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
 
       {/* 4 Financial Aggregate KPI Cards — Pure White Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-neutral-800">
+        <div className="p-4 rounded-[18px] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
           <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'صافي الأجور' : isEn ? 'Net Pay' : 'Net à Payer'}</p>
           <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-[#d4522f] mt-1.5 tabular-nums">
-            {totalNet > 0 ? totalNet.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/60 dark:text-white/65">DZD</span>
+            {totalNet > 0 ? totalNet.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65">DZD</span>
           </p>
-          <p className="text-[10px] text-black/60 dark:text-white/65 mt-1 tabular-nums">{activeSlips.length} {isAr ? 'قسيمة' : isEn ? 'slips' : 'bulletins'}</p>
+          <p className="text-[11px] text-black/62 dark:text-white/65 mt-1 tabular-nums">{activeSlips.length} {isAr ? 'قسيمة' : isEn ? 'slips' : 'bulletins'}</p>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-neutral-800">
+        <div className="p-4 rounded-[18px] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
           <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'الضمان الاجتماعي' : isEn ? 'Social Security' : 'Cotisations'}</p>
-          <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-emerald-600 mt-1.5 tabular-nums">
-            {totalCnas > 0 ? totalCnas.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/60 dark:text-white/65">DZD</span>
+          <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-emerald-600 dark:text-emerald-400 mt-1.5 tabular-nums">
+            {totalCnas > 0 ? totalCnas.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65">DZD</span>
           </p>
-          <p className="text-[10px] text-black/60 dark:text-white/65 mt-1">{isAr ? 'الموظف وصاحب العمل' : isEn ? 'Staff + Employer' : 'Salarial + Patronal'}</p>
+          <p className="text-[11px] text-black/62 dark:text-white/65 mt-1">{isAr ? 'الموظف وصاحب العمل' : isEn ? 'Staff + Employer' : 'Salarial + Patronal'}</p>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-neutral-800">
+        <div className="p-4 rounded-[18px] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
           <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'ضريبة الدخل' : isEn ? 'Income Tax' : 'Impôt'}</p>
           <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white mt-1.5 tabular-nums">
-            {totalIrg > 0 ? totalIrg.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/60 dark:text-white/65">DZD</span>
+            {totalIrg > 0 ? totalIrg.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65">DZD</span>
           </p>
-          <p className="text-[10px] text-black/60 dark:text-white/65 mt-1">{isAr ? 'مقتطع' : isEn ? 'Withheld' : 'Retenue'}</p>
+          <p className="text-[11px] text-black/62 dark:text-white/65 mt-1">{isAr ? 'مقتطع' : isEn ? 'Withheld' : 'Retenue'}</p>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-neutral-800">
+        <div className="p-4 rounded-[18px] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
           <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'السلفيات' : isEn ? 'Advances' : 'Acomptes'}</p>
-          <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-amber-600 mt-1.5 tabular-nums">
-            {totalAdvances > 0 ? totalAdvances.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/60 dark:text-white/65">DZD</span>
+          <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-amber-600 dark:text-amber-400 mt-1.5 tabular-nums">
+            {totalAdvances > 0 ? totalAdvances.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65">DZD</span>
           </p>
-          <p className="text-[10px] text-black/60 dark:text-white/65 mt-1">{isAr ? 'مخصوم' : isEn ? 'Deducted' : 'Déduits'}</p>
+          <p className="text-[11px] text-black/62 dark:text-white/65 mt-1">{isAr ? 'مخصوم' : isEn ? 'Deducted' : 'Déduits'}</p>
         </div>
       </div>
 
       {/* Main Payroll Table */}
-      <div className="bg-white dark:bg-[#18181B] rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden shadow-xs">
-        <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
+      <div className="bg-white dark:bg-[#1C1B1A] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] overflow-hidden shadow-2xs">
+        <div className="p-4 border-b border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-between">
           <div>
-            <h4 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+            <h4 className="text-[15.5px] font-semibold tracking-[-0.015em] rtl:tracking-normal text-black dark:text-white">
               {isAr ? 'جدول الرواتب' : isEn ? 'Payroll Sheet' : 'Livre de Paie'}
             </h4>
           </div>
@@ -236,7 +236,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
 
         {activeSlips.length === 0 ? (
           <div className="p-12 text-center">
-            <Receipt className="w-10 h-10 text-black/30 dark:text-white/35 mx-auto mb-3" />
+            <Receipt className="w-10 h-10 text-black/50 dark:text-white/55 mx-auto mb-3" />
             <h5 className="text-sm font-bold text-black/80 dark:text-white/85">
               {isAr ? 'لا توجد رواتب' : isEn ? 'No payroll' : 'Aucune paie'}
             </h5>
@@ -248,7 +248,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse tabular-nums">
               <thead>
-                <tr className="bg-neutral-50 dark:bg-[#202024] text-black/70 dark:text-white/75 border-b border-neutral-200 dark:border-neutral-800">
+                <tr className="bg-[#FBF8F5] dark:bg-[#262422] text-black/72 dark:text-white/75 border-b border-[#E6DED6] dark:border-[#3A3734]">
                   <th className="p-3 font-semibold">{isAr ? 'الموظف' : isEn ? 'Staff' : 'Collaborateur'}</th>
                   <th className="p-3 font-semibold text-right">{isAr ? 'الأساسي' : isEn ? 'Base' : 'Base'}</th>
                   <th className="p-3 font-semibold text-right">{isAr ? 'العلاوات' : isEn ? 'Bonus' : 'Primes'}</th>
@@ -262,14 +262,14 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
                   <th className="p-3 font-semibold text-right pr-4">{isAr ? 'إجراء' : isEn ? 'Actions' : 'Actions'}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+              <tbody className="divide-y divide-[#E6DED6]/60 dark:divide-[#3A3734]">
                 {activeSlips.map((slip) => {
                   const primesNonImpTotal = slip.primesNonImposables?.reduce((s, p) => s + p.amount, 0) || 0;
                   return (
-                    <tr key={slip.id} className="hover:bg-neutral-50/60 dark:hover:bg-neutral-800/40 transition-colors">
+                    <tr key={slip.id} className="hover:bg-[#F3EDE7]/40 dark:hover:bg-[#262422]/60 transition-colors">
                       <td className="p-3">
                         <div className="font-bold text-black dark:text-white">{slip.staffFullName}</div>
-                        <div className="text-[11px] text-black/60 dark:text-white/65 font-mono">{slip.matricule} · {slip.role}</div>
+                        <div className="text-[11px] text-black/62 dark:text-white/65 font-mono">{slip.matricule} · {slip.role}</div>
                       </td>
                       <td className="p-3 text-right font-mono">{slip.baseSalary.toLocaleString()} DZD</td>
                       <td className="p-3 text-right font-mono">
@@ -294,7 +294,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
                         {slip.netAPayer.toLocaleString()} DZD
                       </td>
                       <td className="p-3 text-center">
-                        <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-black/80 dark:text-white/85">
+                        <span className="text-[11px] uppercase font-bold px-2 py-0.5 rounded-md bg-[#F3EDE7] dark:bg-[#262422] text-black/80 dark:text-white/85">
                           {slip.paymentMethod}
                         </span>
                       </td>
@@ -303,7 +303,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
                           <button
                             type="button"
                             onClick={() => setActiveSlipForPrint(slip)}
-                            className="p-1.5 text-xs font-semibold rounded-lg bg-neutral-100 dark:bg-neutral-800 text-black/80 dark:text-white/85 hover:text-[#d4522f] hover:bg-[#d4522f]/10 transition-colors cursor-pointer"
+                            className="p-1.5 text-xs font-semibold rounded-lg bg-[#F3EDE7] dark:bg-[#262422] text-black/80 dark:text-white/85 hover:text-[#d4522f] hover:bg-[#d4522f]/10 transition-colors cursor-pointer"
                             title={isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer'}
                           >
                             <FileText className="w-4 h-4" />
@@ -329,10 +329,10 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
       </div>
 
       {/* Salary Advances (Acomptes) Register Card */}
-      <div className="bg-white dark:bg-[#18181B] rounded-2xl border border-neutral-200 dark:border-neutral-800 p-4 shadow-xs">
-        <div className="flex items-center justify-between pb-3 mb-3 border-b border-neutral-200 dark:border-neutral-800">
+      <div className="bg-white dark:bg-[#1C1B1A] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] p-4 shadow-2xs">
+        <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#E6DED6] dark:border-[#3A3734]">
           <div>
-            <h4 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
+            <h4 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider rtl:normal-case rtl:tracking-normal">
               {isAr ? 'السلفيات' : isEn ? 'Salary Advances' : 'Acomptes'}
             </h4>
           </div>
@@ -347,25 +347,25 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         </div>
 
         {salaryAdvances.length === 0 ? (
-          <p className="text-xs text-black/60 dark:text-white/65 py-3 text-center">{isAr ? 'لا توجد سلفيات' : isEn ? 'No advances' : 'Aucun acompte'}</p>
+          <p className="text-xs text-black/62 dark:text-white/65 py-3 text-center">{isAr ? 'لا توجد سلفيات' : isEn ? 'No advances' : 'Aucun acompte'}</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {salaryAdvances.map((adv) => (
               <div
                 key={adv.id}
-                className="p-3 rounded-xl bg-neutral-50 dark:bg-[#202024] border border-neutral-200 dark:border-neutral-800 flex items-center justify-between"
+                className="p-3 rounded-xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-between"
               >
                 <div>
                   <div className="font-bold text-xs text-black dark:text-white">{adv.staffName}</div>
-                  <div className="text-[11px] font-mono text-black/60 dark:text-white/65 tabular-nums">{adv.voucherNumber} · {adv.dateIssued}</div>
-                  {adv.reason && <div className="text-[10px] text-black/70 dark:text-white/75 italic mt-0.5">"{adv.reason}"</div>}
+                  <div className="text-[11px] font-mono text-black/62 dark:text-white/65 tabular-nums">{adv.voucherNumber} · {adv.dateIssued}</div>
+                  {adv.reason && <div className="text-[11px] text-black/70 dark:text-white/75 italic mt-0.5">"{adv.reason}"</div>}
                 </div>
                 <div className="text-right">
                   <div className="font-mono font-bold text-xs text-[#d4522f] tabular-nums">{adv.amountDzd.toLocaleString()} DZD</div>
                   <span
-                    className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase ${
+                    className={`text-[11px] font-bold px-1.5 py-0.5 rounded-md uppercase ${
                       adv.status === 'deducted'
-                        ? 'bg-neutral-200 text-black/75 dark:bg-neutral-800 dark:text-white/75'
+                        ? 'bg-[#E6DED6] text-black/75 dark:bg-[#3A3734] dark:text-white/80'
                         : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
                     }`}
                   >

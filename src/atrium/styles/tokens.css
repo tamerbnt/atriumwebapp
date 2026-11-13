@@ -13,8 +13,8 @@
  * type size are all fractions of it, so a 24 px and a 44 px control have the same shape.
  *   <div data-atr-size="lg">…</div>  or  style={{ '--atr-h': '40px' }}
  *
- * Fonts: controls use --atr-font-ui and --atr-font-mono if you define them, otherwise they
- * inherit from the page. (Typography is deliberately not decided here yet.)
+ * Fonts: controls use --atr-font-ui, --atr-font-brand, and --atr-font-mono if defined,
+ * otherwise they inherit from the page.
  */
 
 :root,
@@ -26,8 +26,12 @@
   --atr-line: #E6DED6;
   --pod: #F3EDE7;
   --line: #E6DED6;
-  /* text */
+  /* text: calibrated pure-ink opacity ramp */
   --atr-ink: #000000;
+  --atr-ink-2: rgba(0, 0, 0, 0.86);
+  --atr-ink-3: rgba(0, 0, 0, 0.72);
+  --atr-ink-4: rgba(0, 0, 0, 0.56);
+  --atr-ink-5: rgba(0, 0, 0, 0.38);
   --atr-mut: rgba(0, 0, 0, 0.72);
   /* brand accent: #D4522F */
   --atr-acc: #d4522f;
@@ -62,15 +66,16 @@
   --atr-r-card: 24px; /* big containers: the sidebar, the page card, the top bar */
   --atr-rail: 60px; /* collapsed sidebar width */
   --atr-rail-open: 236px; /* expanded sidebar width */
-  --atr-bar-h: 52px; /* top bar height */
-  --atr-shell-gap: 12px;
+  --atr-bar-h: 54px; /* top bar height */
+  --atr-shell-gap: 14px;
   /* the sidebar is dark in both themes */
   --atr-side: #151413;
   --atr-side-ink: #ffffff;
-  --atr-side-mut: rgba(255, 255, 255, 0.72);
-  --atr-side-hl: rgba(255, 255, 255, 0.07);
+  --atr-side-mut: rgba(255, 255, 255, 0.78);
+  --atr-side-hl: rgba(255, 255, 255, 0.08);
   --atr-font-ui: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --atr-font-brand: 'Sigana Condensed', 'Barlow Condensed', 'Cinzel', sans-serif;
+  --atr-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 [data-atrium-theme='dark'] {
@@ -81,6 +86,10 @@
   --pod: #232323;
   --line: #3a3734;
   --atr-ink: #ffffff;
+  --atr-ink-2: rgba(255, 255, 255, 0.88);
+  --atr-ink-3: rgba(255, 255, 255, 0.75);
+  --atr-ink-4: rgba(255, 255, 255, 0.58);
+  --atr-ink-5: rgba(255, 255, 255, 0.42);
   --atr-mut: rgba(255, 255, 255, 0.75);
   --atr-acc: #e8643f; /* the brighter orange used by the logo on dark */
   --atr-onacc: #000000;

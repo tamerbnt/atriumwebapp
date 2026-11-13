@@ -205,12 +205,12 @@ export const MedicalQueueView: React.FC<any> = () => {
 			}
 		]} hasIcon hasFacility hasActionBtn actionBtnWidth={140} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
 <div className="flex items-center gap-3">
 <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Clock size={20} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{isAr ? "قائمة الانتظار والفرز السريري" : "File d'Attente & Triage Clinique"}</h1>
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{isAr ? "قائمة الانتظار والفرز السريري" : "File d'Attente & Triage Clinique"}</h1>
 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">
 {waitingCount}
 {" "}
@@ -246,14 +246,14 @@ export const MedicalQueueView: React.FC<any> = () => {
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "مرضى في الانتظار" : "Patients en Salle d'Attente"}</span>
 <div>
 <div className="text-2xl font-bold tracking-tight text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{waitingCount}</div>
 <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5 font-medium">Priorité selon ordre d'admission</p>
 </div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "حالياً في الفحص" : "En Examen Médical"}</span>
 <div>
 <div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{inProgressCount}</div>
@@ -372,7 +372,7 @@ export const MedicalQueueView: React.FC<any> = () => {
 </div>
 </div>;
 							}} emptyTitle={isAr ? "لا توجد استشارات مطابقة" : "Aucune consultation trouvée"} emptyDescription={isAr ? "قم بقبول مريض جديد للبدء" : "Admettez un premier patient en salle d'attente"} primaryActionLabel={isAr ? "قبول مريض" : "Admettre un patient"} onAddFirstItem={() => setIsConsultModalOpen(true)} /> : /* @__PURE__ */ <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-{sortedConsultations.map((cons, index) => /* @__PURE__ */ <div key={cons.id} onClick={() => setSelectedConsultation(cons)} className={`bg-white dark:bg-neutral-800 rounded-2xl border p-5 shadow-2xs space-y-3.5 transition-all cursor-pointer ${selectedConsultation?.id === cons.id ? "border-[#d4522f] ring-2 ring-[#d4522f]/30" : cons.status === "InConsultation" ? "border-blue-400 ring-1 ring-blue-400/30" : "border-[#E9EEF0] dark:border-neutral-700/60 hover:border-neutral-300"}`}>
+{sortedConsultations.map((cons, index) => /* @__PURE__ */ <div key={cons.id} onClick={() => setSelectedConsultation(cons)} className={`bg-white dark:bg-neutral-800 rounded-2xl border p-5 shadow-2xs space-y-3.5 transition-all cursor-pointer ${selectedConsultation?.id === cons.id ? "border-[#d4522f] ring-2 ring-[#d4522f]/30" : cons.status === "InConsultation" ? "border-blue-400 ring-1 ring-blue-400/30" : "border-[#E6DED6] dark:border-neutral-700/60 hover:border-neutral-300"}`}>
 <div className="flex items-center justify-between">
 <div className="flex items-center gap-2">
 <span className="w-6 h-6 rounded-full bg-neutral-100 dark:bg-neutral-700 text-xs font-bold flex items-center justify-center text-black/70 dark:text-white/75">

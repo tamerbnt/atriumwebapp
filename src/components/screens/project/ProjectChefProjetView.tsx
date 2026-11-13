@@ -211,7 +211,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 			width: "2.5*",
 			minWidth: "220px",
 			renderCell: (item: any) => /* @__PURE__ */ <div className="flex items-center gap-3">
-<img src={item.imageUrl} alt={item.title} className="w-10 h-10 rounded-xl object-cover shrink-0 border border-zinc-200 dark:border-zinc-800" />
+<img src={item.imageUrl} alt={item.title} className="w-10 h-10 rounded-xl object-cover shrink-0 border border-[#E6DED6] dark:border-neutral-800" />
 <div className="min-w-0">
 <div className="font-semibold text-black dark:text-white text-xs truncate max-w-[200px]">{item.title}</div>
 <div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
@@ -330,7 +330,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 					}
 				} as Record<string, any>)[order.status] || {
 					label: order.status,
-					bg: "bg-zinc-100",
+					bg: "bg-[#F3EDE7]",
 					text: "text-black/70 dark:text-white/75"
 				};
 				return /* @__PURE__ */ <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badge.bg} ${badge.text}`}>{badge.label}</span>;
@@ -386,14 +386,14 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 			}
 		]} viewMode="list" isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={retryCloudSync || retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
 <div>
 <div className="flex items-center gap-2">
 <span className="text-xs font-semibold uppercase tracking-wider text-[#d4522f]">Chef de Projet</span>
 <span className="text-black/55 dark:text-white/55">·</span>
 <span className="text-xs text-black/55 dark:text-white/55">Coordination & Suivi Print</span>
 </div>
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
 {activeTab === "portfolio" ? "Pilotage Projets & Alertes" : activeTab === "catalog" ? "Catalogue Supports POSM" : activeTab === "orders" ? "Commandes Imprimeur & BAT" : activeTab === "bat" ? "Revue BAT Bon à Tirer" : "Dépenses & Achats Terrain"}
 </h1>
 </div>
@@ -411,7 +411,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 </h2>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "المشاريع الخاضعة للمتابعة" : language === "fr" ? "Campagnes Supervisées" : "Supervised Projects"}
@@ -429,7 +429,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 </p>
 </div>
 </div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
 <div className="flex items-center justify-between">
 <span className="text-[11px] font-medium text-black/55 dark:text-white/75">
 {language === "ar" ? "أوامر الطباعة ومراجعة BAT" : language === "fr" ? "Commandes Print & BAT" : "Print Orders & BAT"}
@@ -517,7 +517,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 							]} aria-label="Project Chef de Projet Stages Filter" />
 </div>
 {activeTab === "portfolio" && /* @__PURE__ */ <div className="space-y-6">
-<div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div className="p-5 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 <div>
 <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">Contrôle des Plafonds Dépenses Terrain (Slide 6 & 11)</span>
 <h2 className="text-lg font-bold text-black dark:text-white mt-0.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans">{selectedProject?.title}</h2>
@@ -538,7 +538,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 %)
 </span>
 </div>
-<div className="w-full h-2.5 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+<div className="w-full h-2.5 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 overflow-hidden">
 <div className={`h-full transition-all ${isOverThreshold ? "bg-red-500" : "bg-emerald-500"}`} style={{ width: `${burnRatePercent}%` }} />
 </div>
 </div>
@@ -548,10 +548,10 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 								const spent = pmExpenses.filter((e) => e.projectId === p.id).reduce((acc, e) => acc + e.amountDzd, 0);
 								const limit = p.maxFieldExpensesDzd || 1;
 								const pct = Math.min(Math.round(spent / limit * 100), 100);
-								return /* @__PURE__ */ <div key={p.id} onClick={() => setSelectedProjectId(p.id)} className={`p-5 rounded-2xl border transition-all cursor-pointer shadow-xs ${selectedProject?.id === p.id ? "border-[#d4522f] bg-[#d4522f]/5 dark:bg-[#d4522f]/10 ring-1 ring-[#d4522f]" : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300"}`}>
+								return /* @__PURE__ */ <div key={p.id} onClick={() => setSelectedProjectId(p.id)} className={`p-5 rounded-2xl border transition-all cursor-pointer shadow-xs ${selectedProject?.id === p.id ? "border-[#d4522f] bg-[#d4522f]/5 dark:bg-[#d4522f]/10 ring-1 ring-[#d4522f]" : "border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-[#D5CBBF]"}`}>
 <div className="flex items-start justify-between gap-2 mb-2">
 <span className="text-[11px] font-bold text-[#d4522f] uppercase truncate">{p.clientName}</span>
-<span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-black/70 dark:text-white/75">{p.status}</span>
+<span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75">{p.status}</span>
 </div>
 <h3 className="text-sm font-bold text-black dark:text-white mb-2 truncate">{p.title}</h3>
 <div className="space-y-1 text-xs text-black/55 dark:text-white/55">
@@ -568,7 +568,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 </span>
 </div>
 </div>
-<div className="w-full h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden mt-3">
+<div className="w-full h-1.5 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 overflow-hidden mt-3">
 <div className={`h-full ${pct >= 85 ? "bg-red-500" : "bg-[#d4522f]"}`} style={{ width: `${pct}%` }} />
 </div>
 </div>;
@@ -576,7 +576,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 </div>
 </div>}
 {activeTab === "catalog" && /* @__PURE__ */ <div className="space-y-4">
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs">
 <div className="flex flex-wrap items-center gap-3 text-xs flex-1 max-w-xl">
 <Seek value={catalogSearch} onChange={setCatalogSearch} placeholder="Rechercher totem, rollup, kakemono, stand..." openWidth={360} shutSize={38} />
 <FilterSelect label="Catégorie" value={catalogCategory} onChange={(val) => setCatalogCategory(typeof val === "string" ? val : val.target?.value || val)} options={[
@@ -614,7 +614,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 </div>
 <UniversalDataCollection items={filteredCatalog} keyExtractor={(i) => i.id} defaultViewMode="grid" columns={catalogColumns} renderCard={(item) => /* @__PURE__ */ <div className="flex flex-col justify-between h-full space-y-3">
 <div className="space-y-2">
-<img src={item.imageUrl} alt={item.title} className="w-full h-36 rounded-xl object-cover border border-zinc-100 dark:border-zinc-800" />
+<img src={item.imageUrl} alt={item.title} className="w-full h-36 rounded-xl object-cover border border-[#E6DED6]/60 dark:border-neutral-800" />
 <div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55 font-mono">
 <span>{item.sku}</span>
 <span className="uppercase text-[#d4522f] font-bold">{item.category}</span>
@@ -625,14 +625,14 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 {item.dimensions}
 </p>
 </div>
-<div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+<div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-between">
 <span className="font-mono font-bold text-sm text-black dark:text-white tabular-nums">{formatMoney(item.unitCostDzd, "DZD")}</span>
 <AtriumButton type="button" size="xs" variant="primary" icon={<Plus className="w-3.5 h-3.5" />} onClick={() => handleAddToCart(item)}>Commander</AtriumButton>
 </div>
 </div>} />
 </div>}
 {activeTab === "orders" && /* @__PURE__ */ <div className="space-y-4">
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs">
 <div className="flex flex-wrap items-center gap-3 text-xs flex-1 max-w-xl">
 <Seek value={ordersSearch} onChange={setOrdersSearch} placeholder="Rechercher par n° de bon ou campagne..." openWidth={360} shutSize={38} />
 <FilterSelect label="Statut" value={ordersStatusFilter} onChange={(val) => setOrdersStatusFilter(typeof val === "string" ? val : val.target?.value || val)} options={[
@@ -663,7 +663,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 											}
 										]} />
 </div>
-<button onClick={handleExportOrdersCsv} className="px-3 py-1.5 text-xs font-semibold text-black/70 dark:text-white/75 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer">
+<button onClick={handleExportOrdersCsv} className="px-3 py-1.5 text-xs font-semibold text-black/70 dark:text-white/75 bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700 hover:bg-[#FBF8F5] rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer">
 <Download className="w-3.5 h-3.5" />
 <span>Export CSV</span>
 </button>
@@ -716,14 +716,14 @@ Supprimer
 </div>)}
 </div>
 </div>
-<div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center text-xs">
+<div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex justify-between items-center text-xs">
 <span className="text-black/55 dark:text-white/55">Total :</span>
 <span className="font-mono font-bold text-black dark:text-white tabular-nums">{formatMoney(order.totalCostDzd, "DZD")}</span>
 </div>
 </div>} />
 </div>}
 {activeTab === "bat" && /* @__PURE__ */ <div className="space-y-4">
-<div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex items-center justify-between">
+<div className="p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs flex items-center justify-between">
 <Seek value={batSearch} onChange={setBatSearch} placeholder="Rechercher par livrable ou campagne..." openWidth={360} shutSize={38} />
 {selectedBatIds.size > 0 && /* @__PURE__ */ <div className="flex items-center gap-2">
 <button type="button" onClick={() => {
@@ -737,8 +737,8 @@ Valider Bon à Tirer (
 </div>}
 </div>
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-{pmBatDeliverables.filter((b) => !batSearch.trim() || b.title.toLowerCase().includes(batSearch.toLowerCase()) || b.projectTitle.toLowerCase().includes(batSearch.toLowerCase())).map((bat) => /* @__PURE__ */ <div key={bat.id} className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3">
-<img src={bat.previewUrl} alt={bat.title} className="w-full h-44 rounded-xl object-cover border border-zinc-100 dark:border-zinc-800" />
+{pmBatDeliverables.filter((b) => !batSearch.trim() || b.title.toLowerCase().includes(batSearch.toLowerCase()) || b.projectTitle.toLowerCase().includes(batSearch.toLowerCase())).map((bat) => /* @__PURE__ */ <div key={bat.id} className="p-5 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-3">
+<img src={bat.previewUrl} alt={bat.title} className="w-full h-44 rounded-xl object-cover border border-[#E6DED6]/60 dark:border-neutral-800" />
 <div className="flex items-start justify-between gap-2">
 <span className="text-xs font-bold text-[#d4522f] uppercase truncate">{bat.projectTitle}</span>
 <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${bat.approvalStatus === "approved" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : bat.approvalStatus === "revision_requested" ? "bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300" : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"}`}>
@@ -764,11 +764,11 @@ mm
 {"Note CDP : "}
 {bat.revisionComments}
 </div>}
-<div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-end gap-2">
+<div className="pt-2 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-end gap-2">
 <button type="button" onClick={() => {
 												setActiveBatId(bat.id);
 												setIsCorrectionModalOpen(true);
-											}} className="px-3 py-1.5 text-xs font-semibold text-black/70 dark:text-white/75 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 rounded-xl transition-colors cursor-pointer">Demander Révision</button>
+											}} className="px-3 py-1.5 text-xs font-semibold text-black/70 dark:text-white/75 border border-[#E6DED6] dark:border-neutral-700 hover:bg-[#F3EDE7] rounded-xl transition-colors cursor-pointer">Demander Révision</button>
 <button type="button" onClick={() => handleApproveBat(bat.id)} className="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-colors cursor-pointer">Valider BAT</button>
 </div>
 </div>)}
@@ -776,7 +776,7 @@ mm
 </div>}
 {activeTab === "expenses" && /* @__PURE__ */ <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 <div className="lg:col-span-7 space-y-4">
-<div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex items-center justify-between">
+<div className="p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs flex items-center justify-between">
 <Seek value={expenseSearch} onChange={setExpenseSearch} placeholder="Rechercher par titre de dépense..." openWidth={300} shutSize={38} />
 <span className="text-xs text-black/55 dark:text-white/55 font-semibold">
 {projectExpenses.length}
@@ -784,7 +784,7 @@ mm
 </span>
 </div>
 <div className="space-y-3">
-{projectExpenses.map((exp) => /* @__PURE__ */ <div key={exp.id} className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex items-center justify-between gap-4">
+{projectExpenses.map((exp) => /* @__PURE__ */ <div key={exp.id} className="p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs flex items-center justify-between gap-4">
 <div className="space-y-1">
 <div className="flex items-center gap-2">
 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">{exp.category}</span>
@@ -805,7 +805,7 @@ mm
 </div>)}
 </div>
 </div>
-<div className="lg:col-span-5 p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
+<div className="lg:col-span-5 p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
 <div>
 <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">Déclaration d'Achat Terrain (Slide 11)</span>
 <h3 className="text-base font-bold text-black dark:text-white mt-0.5">Saisie Immédiate & Codage Stock</h3>
@@ -837,21 +837,21 @@ mm
 </div>
 </div>}
 {isCartOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-xs">
-<div className="w-full max-w-md bg-white dark:bg-zinc-900 h-full p-6 flex flex-col justify-between shadow-2xl border-l border-zinc-200 dark:border-zinc-800">
+<div className="w-full max-w-md bg-white dark:bg-neutral-900 h-full p-6 flex flex-col justify-between shadow-2xl border-l border-[#E6DED6] dark:border-neutral-800">
 <div className="space-y-4">
-<div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
+<div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
 <h3 className="text-base font-bold text-black dark:text-white flex items-center gap-2">
 <ShoppingBag className="w-5 h-5 text-[#d4522f]" />
 Bon de Commande Impression
 </h3>
-<button type="button" onClick={() => setIsCartOpen(false)} className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"><X className="w-4 h-4" /></button>
+<button type="button" onClick={() => setIsCartOpen(false)} className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"><X className="w-4 h-4" /></button>
 </div>
 <div className="space-y-1">
 <span className="text-xs text-black/55 dark:text-white/55">Campagne Associée :</span>
 <div className="font-bold text-xs text-black dark:text-white">{selectedProject?.title}</div>
 </div>
 <div className="space-y-2 overflow-y-auto max-h-[50vh] pr-1">
-{cartItems.length === 0 ? /* @__PURE__ */ <div className="py-8 text-center text-xs text-black/55 dark:text-white/55">Le panier est vide. Sélectionnez des supports dans le catalogue.</div> : cartItems.map((ci) => /* @__PURE__ */ <div key={ci.item.id} className="p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl flex items-center justify-between gap-3 text-xs">
+{cartItems.length === 0 ? /* @__PURE__ */ <div className="py-8 text-center text-xs text-black/55 dark:text-white/55">Le panier est vide. Sélectionnez des supports dans le catalogue.</div> : cartItems.map((ci) => /* @__PURE__ */ <div key={ci.item.id} className="p-3 bg-[#FBF8F5] dark:bg-neutral-800/40 rounded-xl flex items-center justify-between gap-3 text-xs">
 <div className="min-w-0">
 <div className="font-semibold text-black dark:text-white truncate">{ci.item.title}</div>
 <div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
@@ -860,15 +860,15 @@ Bon de Commande Impression
 </div>
 </div>
 <div className="flex items-center gap-2 shrink-0">
-<button type="button" onClick={() => handleUpdateQuantity(ci.item.id, -1)} className="w-6 h-6 rounded bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center font-bold cursor-pointer">-</button>
+<button type="button" onClick={() => handleUpdateQuantity(ci.item.id, -1)} className="w-6 h-6 rounded bg-[#EAE1D8] dark:bg-neutral-700 flex items-center justify-center font-bold cursor-pointer">-</button>
 <span className="font-mono font-bold w-6 text-center">{ci.quantity}</span>
-<button type="button" onClick={() => handleUpdateQuantity(ci.item.id, 1)} className="w-6 h-6 rounded bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center font-bold cursor-pointer">+</button>
+<button type="button" onClick={() => handleUpdateQuantity(ci.item.id, 1)} className="w-6 h-6 rounded bg-[#EAE1D8] dark:bg-neutral-700 flex items-center justify-center font-bold cursor-pointer">+</button>
 <button type="button" onClick={() => handleRemoveFromCart(ci.item.id)} className="p-1 text-red-500 hover:text-red-700 ml-1 cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
 </div>
 </div>)}
 </div>
 </div>
-<div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 space-y-3">
+<div className="pt-4 border-t border-[#E6DED6] dark:border-neutral-800 space-y-3">
 <div className="flex justify-between items-center text-sm font-bold">
 <span>Total Estimé HT :</span>
 <span className="font-mono text-base text-[#d4522f] tabular-nums">{formatMoney(cartTotalDzd, "DZD")}</span>
@@ -879,15 +879,15 @@ Bon de Commande Impression
 </div>}
 </div>
 {isCorrectionModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-<div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+<div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#E6DED6] dark:border-neutral-800 space-y-4">
 <div className="flex items-center justify-between">
 <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
 <MessageSquare className="w-4 h-4 text-[#d4522f]" />
 Demande de Correction BAT
 </h3>
-<button type="button" onClick={() => setIsCorrectionModalOpen(false)} className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"><X className="w-4 h-4" /></button>
+<button type="button" onClick={() => setIsCorrectionModalOpen(false)} className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"><X className="w-4 h-4" /></button>
 </div>
-<textarea rows={4} value={correctionNote} onChange={(e) => setCorrectionNote(e.target.value)} placeholder="Indiquez les modifications requises (ex: logo client flou, fond perdu insuffisant, coquille dans le texte légal)..." className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]" />
+<textarea rows={4} value={correctionNote} onChange={(e) => setCorrectionNote(e.target.value)} placeholder="Indiquez les modifications requises (ex: logo client flou, fond perdu insuffisant, coquille dans le texte légal)..." className="w-full px-3 py-2 text-xs rounded-xl border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]" />
 <div className="flex justify-end gap-2">
 <AtriumButton type="button" variant="ghost" size="sm" onClick={() => setIsCorrectionModalOpen(false)}>Annuler</AtriumButton>
 <AtriumButton type="button" variant="primary" size="sm" onClick={handleRequestRevision}>Envoyer au Studio Créa</AtriumButton>
@@ -895,17 +895,17 @@ Demande de Correction BAT
 </div>
 </div>}
 {selectedReceiptUrl && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-<div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+<div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#E6DED6] dark:border-neutral-800 space-y-4">
 <div className="flex items-center justify-between">
 <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
 <Receipt className="w-4 h-4 text-[#d4522f]" />
 Justificatif d'Achat Terrain
 </h3>
-<button type="button" onClick={() => setSelectedReceiptUrl(null)} className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"><X className="w-4 h-4" /></button>
+<button type="button" onClick={() => setSelectedReceiptUrl(null)} className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"><X className="w-4 h-4" /></button>
 </div>
 <img src={selectedReceiptUrl} alt="Justificatif" className="w-full h-72 object-cover rounded-xl" />
 <div className="flex justify-end">
-<button type="button" onClick={() => setSelectedReceiptUrl(null)} className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-zinc-100 dark:bg-zinc-800 rounded-xl cursor-pointer">Fermer</button>
+<button type="button" onClick={() => setSelectedReceiptUrl(null)} className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 rounded-xl cursor-pointer">Fermer</button>
 </div>
 </div>
 </div>}

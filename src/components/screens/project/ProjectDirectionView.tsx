@@ -169,7 +169,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 									else next.add(proj.id);
 									return next;
 								});
-							}} className={`p-1.5 rounded-lg transition-colors cursor-pointer ${isPinned ? "text-[#d4522f] bg-[#d4522f]/10" : "text-black/55 dark:text-white/55 hover:text-black/80 hover:bg-zinc-100 dark:hover:bg-zinc-800"}`} title={isPinned ? "Détacher le projet" : "Épingler en haut"}><Pin className={`w-3.5 h-3.5 ${isPinned ? "fill-current" : ""}`} /></button>
+							}} className={`p-1.5 rounded-lg transition-colors cursor-pointer ${isPinned ? "text-[#d4522f] bg-[#d4522f]/10" : "text-black/55 dark:text-white/55 hover:text-black/80 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800"}`} title={isPinned ? "Détacher le projet" : "Épingler en haut"}><Pin className={`w-3.5 h-3.5 ${isPinned ? "fill-current" : ""}`} /></button>
 <div className="w-9 h-9 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0">{proj.title.substring(0, 2).toUpperCase()}</div>
 <div className="min-w-0">
 <div className="font-semibold text-black dark:text-white text-xs truncate max-w-[200px]">{proj.title}</div>
@@ -246,7 +246,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 				const badge = ({
 					framing: {
 						label: "Cahier des charges",
-						bg: "bg-zinc-100 dark:bg-zinc-800",
+						bg: "bg-[#F3EDE7] dark:bg-neutral-800",
 						text: "text-black/70 dark:text-white/75"
 					},
 					creative_kv: {
@@ -276,12 +276,12 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 					},
 					archived: {
 						label: "Archivé",
-						bg: "bg-zinc-100 dark:bg-zinc-800",
+						bg: "bg-[#F3EDE7] dark:bg-neutral-800",
 						text: "text-black/55 dark:text-white/55"
 					}
 				} as Record<string, any>)[proj.status] || {
 					label: proj.status,
-					bg: "bg-zinc-100",
+					bg: "bg-[#F3EDE7]",
 					text: "text-black/70 dark:text-white/75"
 				};
 				return /* @__PURE__ */ <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badge.bg} ${badge.text}`}>{badge.label}</span>;
@@ -389,7 +389,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 </div>;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
 <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={retryCloudSync} />
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
 <div>
 {currentScreen !== "dashboard" && /* @__PURE__ */ <div className="flex items-center gap-2 mb-1">
 <span className="text-xs font-semibold uppercase tracking-wider text-[#d4522f]">{t("pm_role_direction_badge")}</span>
@@ -405,7 +405,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 <rect x="3" y="14" width="7" height="7" rx="1.5" />
 </svg>
 </div>}
-<h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {currentScreen === "dashboard" ? t("nav_dashboard", language) : currentScreen === "projects" ? "Portefeuille Projets" : currentScreen === "new_project" ? t("pm_btn_new_project") : currentScreen === "approvals" ? "Approbations & Décaissements" : t("nav_pm_dir_reports")}
 </h1>
 </div>
@@ -414,7 +414,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 <LiquidExportButton size="sm" onExport={currentScreen === "projects" ? handleExportProjectsCsv : handleExportAuditCsv} idleLabel={language === "ar" ? "تصدير CSV" : language === "fr" ? "EXPORTER CSV" : "EXPORT CSV"} id="pm-dir-export-btn" />
 </div>
 </div>
-<div className="flex border-b border-zinc-200 dark:border-zinc-800 gap-1 overflow-x-auto">
+<div className="flex border-b border-[#E6DED6] dark:border-neutral-800 gap-1 overflow-x-auto">
 {[
 					{
 						id: "dashboard",
@@ -449,7 +449,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 					return /* @__PURE__ */ <button key={tab.id} onClick={() => setActivePmSubScreen(tab.id)} className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${isActive ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>
 <Icon className="w-4 h-4" />
 <span>{tab.label}</span>
-{tab.count !== void 0 && tab.count > 0 && /* @__PURE__ */ <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${tab.id === "approvals" ? "bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300" : "bg-zinc-100 dark:bg-zinc-800 text-black/70 dark:text-white/75"}`}>{tab.count}</span>}
+{tab.count !== void 0 && tab.count > 0 && /* @__PURE__ */ <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${tab.id === "approvals" ? "bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300" : "bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75"}`}>{tab.count}</span>}
 </button>;
 				})}
 </div>
@@ -745,7 +745,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 								}
 							]} />
 </div>
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs">
 <div className="flex flex-wrap items-center gap-3 text-xs flex-1 max-w-xl">
 <Seek value={projectSearch} onChange={setProjectSearch} placeholder="Rechercher par campagne, client ou responsable..." openWidth={360} shutSize={38} />
 <FilterSelect label="Statut" value={projectStatusFilter} onChange={(val) => setProjectStatusFilter(typeof val === "string" ? val : val.target?.value || val)} options={[
@@ -839,7 +839,7 @@ Supprimer
 <h3 className="text-base font-bold text-black dark:text-white line-clamp-1">{proj.title}</h3>
 <p className="text-xs text-black/55 dark:text-white/55 line-clamp-2">{proj.scopeOfWork}</p>
 </div>
-<div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 space-y-2 text-xs">
+<div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 space-y-2 text-xs">
 <div className="flex justify-between items-center">
 <span className="text-black/55 dark:text-white/55">Plafond Budget:</span>
 <span className="font-mono font-bold text-black dark:text-white tabular-nums">{formatMoney(proj.budgetCapDzd, "DZD")}</span>
@@ -861,7 +861,7 @@ Supprimer
 </div>
 </div>} />
 </div>}
-{currentScreen === "new_project" && /* @__PURE__ */ <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs max-w-4xl mx-auto space-y-6">
+{currentScreen === "new_project" && /* @__PURE__ */ <div className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs max-w-4xl mx-auto space-y-6">
 <div>
 <span className="text-xs font-semibold text-[#d4522f] uppercase tracking-wide">{t("pm_dir_screen_new_badge")}</span>
 <h2 className="text-xl font-bold text-black dark:text-white mt-1">{t("pm_dir_screen_new_title")}</h2>
@@ -890,7 +890,7 @@ Supprimer
 </div>
 <div className="sm:col-span-2">
 <label className="text-xs font-semibold text-black/70 dark:text-white/75 block mb-1">{t("pm_dir_field_scope")}</label>
-<textarea rows={4} required placeholder={t("pm_dir_field_scope_ph")} value={newProjectScope} onChange={(e) => setNewProjectScope(e.target.value)} className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]" />
+<textarea rows={4} required placeholder={t("pm_dir_field_scope_ph")} value={newProjectScope} onChange={(e) => setNewProjectScope(e.target.value)} className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]" />
 </div>
 <div>
 <LabelInput field="StartDate" label={t("pm_dir_field_start_date")} type="date" value={newProjectStartDate} onChange={setNewProjectStartDate} width="100%" height={48} corner={14} />
@@ -913,7 +913,7 @@ Supprimer
 										label: "Rachid Benali (Infographiste Print)"
 									}]} height={48} corner={14} />
 </div>
-<div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-end gap-3">
+<div className="pt-4 border-t border-[#E6DED6] dark:border-neutral-800 flex items-center justify-end gap-3">
 <button type="button" onClick={() => {
 									setNewProjectTitle("");
 									setNewProjectScope("");
@@ -923,17 +923,17 @@ Supprimer
 </form>
 </div>}
 {currentScreen === "approvals" && /* @__PURE__ */ <div className="space-y-4">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs">
 <div>
 <span className="text-xs font-semibold text-[#d4522f] uppercase tracking-wide">{t("pm_dir_approvals_badge")}</span>
 <h2 className="text-xl font-bold text-black dark:text-white mt-0.5">{t("pm_dir_approvals_title")}</h2>
 </div>
 <div className="flex flex-wrap items-center gap-2">
 <Seek value={approvalSearch} onChange={setApprovalSearch} placeholder={t("common_search")} openWidth={260} shutSize={38} />
-<div className="flex items-center gap-1.5 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-xs">
-<button type="button" onClick={() => setApprovalsTab("all")} title={language === "ar" ? `جميع الموافقات المعلقة (${totalPendingApprovals})` : language === "fr" ? `Toutes les approbations (${totalPendingApprovals})` : `All pending approvals (${totalPendingApprovals})`} className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${approvalsTab === "all" ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All"}</button>
-<button type="button" onClick={() => setApprovalsTab("payroll")} title={language === "ar" ? `دفعات الرواتب المعلقة (${pendingPayrollBatches.length})` : language === "fr" ? `Lots de Paie (${pendingPayrollBatches.length})` : `Payroll batches (${pendingPayrollBatches.length})`} className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${approvalsTab === "payroll" ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "الرواتب" : language === "fr" ? "Paie" : "Payroll"}</button>
-<button type="button" onClick={() => setApprovalsTab("expenses")} title={language === "ar" ? `مذكرات المصاريف المعلقة (${pendingExpenses.length})` : language === "fr" ? `Notes de Frais (${pendingExpenses.length})` : `Expense claims (${pendingExpenses.length})`} className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${approvalsTab === "expenses" ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "المصاريف" : language === "fr" ? "Frais" : "Expenses"}</button>
+<div className="flex items-center gap-1.5 p-1 bg-[#F3EDE7] dark:bg-neutral-800 rounded-xl text-xs">
+<button type="button" onClick={() => setApprovalsTab("all")} title={language === "ar" ? `جميع الموافقات المعلقة (${totalPendingApprovals})` : language === "fr" ? `Toutes les approbations (${totalPendingApprovals})` : `All pending approvals (${totalPendingApprovals})`} className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${approvalsTab === "all" ? "bg-white dark:bg-neutral-700 text-black dark:text-white shadow-xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All"}</button>
+<button type="button" onClick={() => setApprovalsTab("payroll")} title={language === "ar" ? `دفعات الرواتب المعلقة (${pendingPayrollBatches.length})` : language === "fr" ? `Lots de Paie (${pendingPayrollBatches.length})` : `Payroll batches (${pendingPayrollBatches.length})`} className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${approvalsTab === "payroll" ? "bg-white dark:bg-neutral-700 text-black dark:text-white shadow-xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "الرواتب" : language === "fr" ? "Paie" : "Payroll"}</button>
+<button type="button" onClick={() => setApprovalsTab("expenses")} title={language === "ar" ? `مذكرات المصاريف المعلقة (${pendingExpenses.length})` : language === "fr" ? `Notes de Frais (${pendingExpenses.length})` : `Expense claims (${pendingExpenses.length})`} className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${approvalsTab === "expenses" ? "bg-white dark:bg-neutral-700 text-black dark:text-white shadow-xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "المصاريف" : language === "fr" ? "Frais" : "Expenses"}</button>
 </div>
 </div>
 </div>
@@ -946,7 +946,7 @@ Valider tous les lots de paie (
 )
 </button>}
 </div>
-{pendingPayrollBatches.length === 0 ? /* @__PURE__ */ <div className="p-8 text-center bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs text-black/55 dark:text-white/55">Aucun lot de paie en attente d'approbation.</div> : pendingPayrollBatches.map((batch) => /* @__PURE__ */ <div key={batch.id} className="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
+{pendingPayrollBatches.length === 0 ? /* @__PURE__ */ <div className="p-8 text-center bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 text-xs text-black/55 dark:text-white/55">Aucun lot de paie en attente d'approbation.</div> : pendingPayrollBatches.map((batch) => /* @__PURE__ */ <div key={batch.id} className="p-5 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
 <div className="space-y-1">
 <div className="flex items-center gap-2">
 <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">Lot de Paie</span>
@@ -983,7 +983,7 @@ Valider toutes les notes de frais (
 )
 </button>}
 </div>
-{pendingExpenses.length === 0 ? /* @__PURE__ */ <div className="p-8 text-center bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs text-black/55 dark:text-white/55">Aucun frais d'activation en attente d'arbitrage.</div> : pendingExpenses.map((expense) => /* @__PURE__ */ <div key={expense.id} className="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
+{pendingExpenses.length === 0 ? /* @__PURE__ */ <div className="p-8 text-center bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 text-xs text-black/55 dark:text-white/55">Aucun frais d'activation en attente d'arbitrage.</div> : pendingExpenses.map((expense) => /* @__PURE__ */ <div key={expense.id} className="p-5 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
 <div className="space-y-1">
 <div className="flex items-center gap-2">
 <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">{expense.category}</span>
@@ -1000,7 +1000,7 @@ Valider toutes les notes de frais (
 </p>
 </div>
 <div className="flex items-center gap-3 shrink-0">
-{expense.receiptPhotoUrl && /* @__PURE__ */ <button type="button" onClick={() => setSelectedReceiptUrl(expense.receiptPhotoUrl || null)} className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-1.5 cursor-pointer">
+{expense.receiptPhotoUrl && /* @__PURE__ */ <button type="button" onClick={() => setSelectedReceiptUrl(expense.receiptPhotoUrl || null)} className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 border border-[#E6DED6] dark:border-neutral-700 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 transition-colors flex items-center gap-1.5 cursor-pointer">
 <Eye className="w-3.5 h-3.5" />
 Justificatif
 </button>}
@@ -1018,7 +1018,7 @@ Valider
 </div>}
 </div>}
 {currentScreen === "reports" && /* @__PURE__ */ <div className="space-y-6">
-<div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
+<div className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>
 <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">Écran 1.4 · Rapports d'Activité & Marges</span>
@@ -1027,22 +1027,22 @@ Valider
 <LiquidExportButton size="md" onExport={handleExportAuditCsv} idleLabel={language === "ar" ? "تحميل التدقيق المالي" : language === "fr" ? "TÉLÉCHARGER AUDIT (CSV)" : "DOWNLOAD AUDIT (CSV)"} id="pm-dir-audit-export-btn" />
 </div>
 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
-<div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40">
+<div className="p-4 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-[#FBF8F5]/80 dark:bg-neutral-800/40">
 <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block mb-1">{t("pm_dir_kpi_cumul_ca")}</span>
 <div className="text-2xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">58,4 M DA</div>
 <span className="text-[11px] text-emerald-600 font-semibold">{t("pm_dir_vs_2025")}</span>
 </div>
-<div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40">
+<div className="p-4 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-[#FBF8F5]/80 dark:bg-neutral-800/40">
 <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block mb-1">{t("pm_dir_kpi_avg_margin")}</span>
 <div className="text-2xl font-bold text-emerald-600 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">31,4 %</div>
 <span className="text-[11px] text-black/55 dark:text-white/55">{t("pm_dir_target_objective")}</span>
 </div>
-<div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40">
+<div className="p-4 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-[#FBF8F5]/80 dark:bg-neutral-800/40">
 <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block mb-1">{t("pm_dir_kpi_closed_missions")}</span>
 <div className="text-2xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">48</div>
 <span className="text-[11px] text-black/55 dark:text-white/55">{t("pm_dir_coverage_wilayas")}</span>
 </div>
-<div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40">
+<div className="p-4 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-[#FBF8F5]/80 dark:bg-neutral-800/40">
 <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block mb-1">{t("pm_dir_kpi_attendance_rate")}</span>
 <div className="text-2xl font-bold text-blue-600 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">98,2 %</div>
 <span className="text-[11px] text-black/55 dark:text-white/55">{t("pm_dir_rating_avg")}</span>
@@ -1050,7 +1050,7 @@ Valider
 </div>
 </div>
 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-<div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
+<div className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
 <h3 className="text-sm font-semibold text-black dark:text-white flex items-center justify-between">
 <span>{t("pm_dir_client_profitability")}</span>
 <span className="text-xs text-black/55 dark:text-white/55 font-normal">{t("pm_dir_turnover_share")}</span>
@@ -1094,11 +1094,11 @@ Valider
 {cli.margin}
 </span>
 </div>
-<div className="w-full h-2 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden"><div className={`h-full ${cli.color}`} style={{ width: `${cli.pct}%` }} /></div>
+<div className="w-full h-2 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 overflow-hidden"><div className={`h-full ${cli.color}`} style={{ width: `${cli.pct}%` }} /></div>
 </div>)}
 </div>
 </div>
-<div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
+<div className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
 <h3 className="text-sm font-semibold text-black dark:text-white flex items-center justify-between">
 <span>Ventilation des Dépenses par Poste</span>
 <span className="text-xs text-black/55 dark:text-white/55 font-normal">Terrain & Logistique</span>
@@ -1134,40 +1134,40 @@ Valider
 <span className="font-semibold text-black dark:text-white">{item.label}</span>
 <span className="font-mono text-black/55 dark:text-white/55">{item.amount}</span>
 </div>
-<div className="w-full h-2 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden"><div className={`h-full ${item.color}`} style={{ width: `${item.pct}%` }} /></div>
+<div className="w-full h-2 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 overflow-hidden"><div className={`h-full ${item.color}`} style={{ width: `${item.pct}%` }} /></div>
 </div>)}
 </div>
 </div>
 </div>
 </div>}
 {selectedReceiptUrl && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-<div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+<div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#E6DED6] dark:border-neutral-800 space-y-4">
 <div className="flex items-center justify-between">
 <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
 <Receipt className="w-4 h-4 text-[#d4522f]" />
 Justificatif Fiscal de Paiement
 </h3>
-<button type="button" onClick={() => setSelectedReceiptUrl(null)} className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-black/55 dark:text-white/55 hover:text-black/80 cursor-pointer"><X className="w-4 h-4" /></button>
+<button type="button" onClick={() => setSelectedReceiptUrl(null)} className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 text-black/55 dark:text-white/55 hover:text-black/80 cursor-pointer"><X className="w-4 h-4" /></button>
 </div>
-<img src={selectedReceiptUrl} alt="Scan Justificatif" className="w-full h-72 object-cover rounded-xl border border-zinc-200 dark:border-zinc-800" />
+<img src={selectedReceiptUrl} alt="Scan Justificatif" className="w-full h-72 object-cover rounded-xl border border-[#E6DED6] dark:border-neutral-800" />
 <div className="flex justify-end">
-<button type="button" onClick={() => setSelectedReceiptUrl(null)} className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 rounded-xl cursor-pointer">Fermer</button>
+<button type="button" onClick={() => setSelectedReceiptUrl(null)} className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 hover:bg-[#EAE1D8] rounded-xl cursor-pointer">Fermer</button>
 </div>
 </div>
 </div>}
 {rejectionModalId && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-<div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+<div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#E6DED6] dark:border-neutral-800 space-y-4">
 <div className="flex items-center justify-between">
 <h3 className="text-sm font-bold text-red-600 flex items-center gap-2">
 <Ban className="w-4 h-4" />
 Motif du Rejet de la Dépense
 </h3>
-<button type="button" onClick={() => setRejectionModalId(null)} className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-black/55 dark:text-white/55 hover:text-black/80 cursor-pointer"><X className="w-4 h-4" /></button>
+<button type="button" onClick={() => setRejectionModalId(null)} className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 text-black/55 dark:text-white/55 hover:text-black/80 cursor-pointer"><X className="w-4 h-4" /></button>
 </div>
 <p className="text-xs text-black/55 dark:text-white/55">
 Veuillez préciser la raison du refus (ex: justificatif illisible, montant hors barème APC, achat non approuvé).
 </p>
-<textarea rows={3} value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} placeholder="Ex: Facture proforma non conforme ou facture fiscale manquante..." className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500" />
+<textarea rows={3} value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} placeholder="Ex: Facture proforma non conforme ou facture fiscale manquante..." className="w-full px-3 py-2 text-xs rounded-xl border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500" />
 <div className="flex justify-end gap-2">
 <button type="button" onClick={() => setRejectionModalId(null)} className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 hover:text-black cursor-pointer">Annuler</button>
 <button type="button" onClick={handleRejectConfirm} className="px-4 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs cursor-pointer">Confirmer le Rejet</button>

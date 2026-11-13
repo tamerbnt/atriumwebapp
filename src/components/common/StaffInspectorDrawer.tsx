@@ -154,18 +154,18 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
 
   const drawerContent = (
     <div className="fixed inset-0 z-[9990] pointer-events-none">
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-xs pointer-events-auto transition-opacity duration-200" onClick={onClose} />
+      <div className="fixed inset-0 bg-[#1F1D1B]/45 backdrop-blur-xs pointer-events-auto transition-opacity duration-200" onClick={onClose} />
 
       <aside
         className={`fixed top-0 bottom-0 ${
-          isAr ? 'left-0' : 'right-0'
-        } z-[9995] pointer-events-auto w-full sm:w-[420px] bg-white dark:bg-[#18181B] border-l border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-${
+          isAr ? 'left-0 border-r' : 'right-0 border-l'
+        } z-[9995] pointer-events-auto w-full sm:w-[420px] bg-white dark:bg-[#1C1B1A] border-[#E6DED6] dark:border-[#3A3734] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-${
           isAr ? 'left' : 'right'
         } duration-200`}
         dir={isAr ? 'rtl' : 'ltr'}
       >
         {/* Drawer Header */}
-        <div className="p-5 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
+        <div className="p-5 border-b border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-[#d4522f]/10 text-[#d4522f] font-bold text-lg flex items-center justify-center">
               {staff.fullName.charAt(0)}
@@ -174,7 +174,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
               <h2 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
                 <span>{staff.fullName}</span>
                 <span
-                  className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getStatusColor(
+                  className={`text-[11px] font-semibold px-2 py-0.5 rounded-md border ${getStatusColor(
                     staff.status
                   )}`}
                 >
@@ -189,7 +189,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
             {canEdit && (
               <button
                 onClick={() => onEdit(staff)}
-                className="p-2 rounded-xl text-black/65 hover:text-black dark:text-white/70 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                className="p-2 rounded-xl text-black/65 hover:text-black dark:text-white/70 dark:hover:text-white hover:bg-[#F3EDE7] dark:hover:bg-[#262422] transition-colors cursor-pointer"
                 title={isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier'}
               >
                 <Edit className="w-4 h-4" />
@@ -197,7 +197,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
             )}
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-black/65 hover:text-black dark:text-white/70 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              className="p-2 rounded-xl text-black/65 hover:text-black dark:text-white/70 dark:hover:text-white hover:bg-[#F3EDE7] dark:hover:bg-[#262422] transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -207,12 +207,12 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
         {/* Drawer Body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-6 text-xs">
           {/* Live Pointage & Badge Strip */}
-          <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700/60 flex items-center justify-between">
+          <div className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
                 <span
                   className={`w-2.5 h-2.5 rounded-full ${
-                    staff.isClockedInToday ? 'bg-emerald-500 animate-pulse' : 'bg-neutral-400'
+                    staff.isClockedInToday ? 'bg-emerald-500' : 'bg-[#8A8178]'
                   }`}
                 />
                 <span className="font-semibold text-black dark:text-white">
@@ -238,8 +238,8 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
               onClick={() => punchStaffAttendance(staff.id)}
               className={`px-3 py-1.5 rounded-xl font-semibold text-xs shadow-xs transition-colors ${
                 staff.isClockedInToday
-                  ? 'bg-neutral-200 dark:bg-neutral-700 text-black dark:text-white hover:bg-neutral-300'
-                  : 'bg-[#d4522f] text-white hover:bg-[#b0674b]'
+                  ? 'bg-[#E6DED6] dark:bg-[#3A3734] text-black dark:text-white hover:bg-[#D4C8BC]'
+                  : 'bg-[#d4522f] text-white hover:bg-[#b03b1b]'
               }`}
             >
               {staff.isClockedInToday
@@ -269,13 +269,13 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
                 {staff.performance?.kpiValue ?? '92%'}
               </span>
             </div>
-            <div className="w-full bg-neutral-200 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mt-2.5">
+            <div className="w-full bg-[#E6DED6] dark:bg-[#3A3734] h-2 rounded-full overflow-hidden mt-2.5">
               <div
                 className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
                 style={{ width: `${staff.performance?.scorePercentage ?? 85}%` }}
               />
             </div>
-            <p className="text-[10px] text-black/65 dark:text-white/70 mt-2">
+            <p className="text-[11px] text-black/65 dark:text-white/70 mt-2">
               {isAr
                 ? 'مؤشر أداء شهري محدث دورياً بناءً على العمليات المنجزة'
                 : isEn
@@ -286,10 +286,10 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
 
           {/* Contact & Personal Coordinates */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-black/65 dark:text-white/70 uppercase tracking-wider text-[10px]">
+            <h3 className="font-semibold text-black/65 dark:text-white/70 uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-[11px]">
               {isAr ? 'الاتصال' : isEn ? 'Contact' : 'Contact'}
             </h3>
-            <div className="space-y-2 rounded-2xl bg-neutral-50 dark:bg-neutral-800/30 p-3.5 border border-neutral-200 dark:border-neutral-800">
+            <div className="space-y-2 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] p-3.5 border border-[#E6DED6] dark:border-[#3A3734]">
               <div className="flex items-center justify-between">
                 <span className="text-black/65 dark:text-white/70 flex items-center gap-1.5">
                   <Mail className="w-3.5 h-3.5" /> {isAr ? 'البريد' : isEn ? 'Email' : 'Email'}
@@ -326,18 +326,18 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
           {/* Confidential Compensation & Legal Dossier (Strict RBAC Guard) */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-black/65 dark:text-white/70 uppercase tracking-wider text-[10px]">
+              <h3 className="font-semibold text-black/65 dark:text-white/70 uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-[11px]">
                 {isAr ? 'العقد والراتب' : isEn ? 'Payroll' : 'Contrat'}
               </h3>
               {!isOwnerViewer && (
-                <span className="text-[10px] text-amber-500 flex items-center gap-1">
+                <span className="text-[11px] text-amber-500 flex items-center gap-1">
                   <Lock className="w-3 h-3" /> {isAr ? 'مقيد' : isEn ? 'Private' : 'Privé'}
                 </span>
               )}
             </div>
 
             {isOwnerViewer ? (
-              <div className="space-y-2 rounded-2xl bg-neutral-50 dark:bg-neutral-800/30 p-3.5 border border-neutral-200 dark:border-neutral-800">
+              <div className="space-y-2 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] p-3.5 border border-[#E6DED6] dark:border-[#3A3734]">
                 <div className="flex items-center justify-between">
                   <span className="text-black/65 dark:text-white/70">{isAr ? 'العقد' : isEn ? 'Contract' : 'Contrat'}</span>
                   <span className="font-semibold uppercase text-[#d4522f]">
@@ -368,8 +368,8 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="p-4 rounded-2xl bg-neutral-100/60 dark:bg-neutral-800/20 border border-dashed border-neutral-300 dark:border-neutral-700 text-center">
-                <Lock className="w-5 h-5 text-black/55 dark:text-white/60 mx-auto mb-1.5" />
+              <div className="p-4 rounded-2xl bg-[#F3EDE7]/70 dark:bg-[#262422]/60 border border-dashed border-[#D4C8BC] dark:border-[#3A3734] text-center">
+                <Lock className="w-5 h-5 text-black/62 dark:text-white/65 mx-auto mb-1.5" />
                 <p className="text-[11px] font-semibold text-black/85 dark:text-white/85">
                   {isAr ? 'بيانات مقيدة' : isEn ? 'Restricted' : 'Masqué'}
                 </p>
@@ -380,10 +380,10 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
           {/* Medical Dossier */}
           {(staff.bloodGroup || staff.emergencyContactName) && (
             <div className="space-y-3">
-              <h3 className="font-semibold text-black/65 dark:text-white/70 uppercase tracking-wider text-[10px]">
+              <h3 className="font-semibold text-black/65 dark:text-white/70 uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-[11px]">
                 {isAr ? 'الطوارئ' : isEn ? 'Emergency' : 'Urgence'}
               </h3>
-              <div className="space-y-2 rounded-2xl bg-neutral-50 dark:bg-neutral-800/30 p-3.5 border border-neutral-200 dark:border-neutral-800">
+              <div className="space-y-2 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] p-3.5 border border-[#E6DED6] dark:border-[#3A3734]">
                 {staff.bloodGroup && (
                   <div className="flex items-center justify-between">
                     <span className="text-black/65 dark:text-white/70">{isAr ? 'الدم' : isEn ? 'Blood' : 'Groupe'}</span>
@@ -399,7 +399,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
                   </div>
                 )}
                 {staff.medicalNotes && (
-                  <p className="text-[11px] text-black/70 dark:text-white/75 italic mt-1 border-t border-neutral-200 dark:border-neutral-700 pt-1.5">
+                  <p className="text-[11px] text-black/70 dark:text-white/75 italic mt-1 border-t border-[#E6DED6] dark:border-[#3A3734] pt-1.5">
                     "{staff.medicalNotes}"
                   </p>
                 )}
@@ -410,7 +410,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
 
         {/* Drawer Action Bar (Management & Owner Only) */}
         {canEdit && (
-          <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 space-y-2">
+          <div className="p-4 border-t border-[#E6DED6] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#151413] space-y-2">
             <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={() => setConfirmAction('freeze')}
