@@ -32,13 +32,13 @@ export const DashboardPod: React.FC<DashboardPodProps> = ({
           {icon && <div className="text-[#d4522f]">{icon}</div>}
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-[13.5px] font-bold text-neutral-900 dark:text-white">
+              <h3 className="text-[14px] font-bold tracking-tight text-black dark:text-white">
                 {title}
               </h3>
               {badge}
             </div>
             {subtitle && (
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              <p className="text-[11.5px] text-black/65 dark:text-white/70 leading-snug mt-0.5">
                 {subtitle}
               </p>
             )}

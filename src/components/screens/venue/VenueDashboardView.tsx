@@ -284,7 +284,7 @@ export const VenueDashboardView: React.FC = () => {
         {/* POD 2: Booking Asset Development (58% width) */}
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'تطور محفظة الحجوزات والمساحات' : language === 'fr' ? 'Développement Portefeuille Réservations' : 'Booking Asset Development'}
+            title={language === 'ar' ? 'الحجوزات والمساحات' : language === 'fr' ? 'Réservations & Espaces' : 'Booking Growth'}
             icon={<Calendar size={18} className="text-[#d4522f]" />}
             rightControls={
               <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
@@ -359,7 +359,7 @@ export const VenueDashboardView: React.FC = () => {
         {/* POD 3: Financial Trajectory (42% width) */}
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'مسار الإيرادات وعائد المتر المربع' : language === 'fr' ? 'Trajectoire Financière & Rentabilité' : 'Financial Trajectory & P&L'}
+            title={language === 'ar' ? 'الإيرادات والأرباح' : language === 'fr' ? 'Revenus & Marges' : 'Revenue & Profit'}
             icon={<TrendingUp size={18} className="text-[#d4522f]" />}
             rightControls={
               <span className="text-xs font-semibold text-gray-500 uppercase">
@@ -469,7 +469,7 @@ export const VenueDashboardView: React.FC = () => {
         {/* POD 4: Intelligence & Overbooking Guardian (58% width) */}
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'ذكاء المساحات وحارس التعارض' : language === 'fr' ? 'Intelligence Espaces & Overbooking Guardian' : 'Space Intelligence & Guardian'}
+            title={language === 'ar' ? 'المؤشرات والتنبيهات' : language === 'fr' ? 'Analyses & Alertes' : 'Insights & Alerts'}
             icon={<ShieldCheck size={18} className="text-[#d4522f]" />}
             className="flex-1 flex flex-col justify-between"
           >
@@ -502,7 +502,7 @@ export const VenueDashboardView: React.FC = () => {
 
               {/* Overbooking Guardian Card */}
               <GuardianCard
-                title={language === 'ar' ? 'حارس منع التعارض والتراكب الزمني' : 'Overbooking & Conflict Sentinel'}
+                title={language === 'ar' ? 'تعارض الحجوزات' : 'Booking Conflicts'}
                 subtitle={
                   language === 'ar'
                     ? 'فحص آلي مستمر لجدول الحجوزات لمنع الحجز المزدوج وضمان فترات التنظيف والتهيئة'

@@ -64,14 +64,17 @@ export const Modal: React.FC<ModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[#E6DED6] dark:border-neutral-800/80">
           <div>
-            <h2 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {title}
             </h2>
+            {subtitle && (
+              <p className="text-xs text-black/70 dark:text-white/75 mt-0.5">{subtitle}</p>
+            )}
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-black/60 hover:text-black dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
             aria-label="Close modal"
           >
             <X size={18} />

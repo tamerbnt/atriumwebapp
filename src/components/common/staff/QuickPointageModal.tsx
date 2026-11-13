@@ -70,7 +70,7 @@ export const QuickPointageModal: React.FC<QuickPointageModalProps> = ({
             className={`py-2 px-3 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
               punchType === 'in'
                 ? 'bg-emerald-600 text-white shadow-xs'
-                : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900'
+                : 'text-black/75 dark:text-white/80 hover:text-black dark:hover:text-white'
             }`}
           >
             <Clock size={14} />
@@ -82,7 +82,7 @@ export const QuickPointageModal: React.FC<QuickPointageModalProps> = ({
             className={`py-2 px-3 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
               punchType === 'out'
                 ? 'bg-amber-600 text-white shadow-xs'
-                : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900'
+                : 'text-black/75 dark:text-white/80 hover:text-black dark:hover:text-white'
             }`}
           >
             <Clock size={14} />
@@ -124,7 +124,7 @@ export const QuickPointageModal: React.FC<QuickPointageModalProps> = ({
 
         {/* Quick Click Staff Members list */}
         <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800">
-          <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider mb-2">
+          <div className="text-[11px] font-semibold text-black/65 dark:text-white/70 uppercase tracking-wider mb-2">
             {isAr ? 'تسجيل سريع' : isEn ? 'Quick Log' : 'Pointage Rapide'}
           </div>
           <div className="max-h-48 overflow-y-auto space-y-1.5 pe-1">
@@ -135,14 +135,14 @@ export const QuickPointageModal: React.FC<QuickPointageModalProps> = ({
                 className="flex items-center justify-between p-2 rounded-xl bg-[#F3EDE7] dark:bg-[#1C1C1E] hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer transition-colors"
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  <div className="w-7 h-7 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-xs font-bold text-neutral-700 dark:text-neutral-200 shrink-0">
+                  <div className="w-7 h-7 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-xs font-bold text-black dark:text-white shrink-0">
                     {member.fullName.slice(0, 2).toUpperCase()}
                   </div>
                   <div className="min-w-0">
-                    <div className="text-xs font-semibold text-neutral-900 dark:text-white truncate">
+                    <div className="text-xs font-semibold text-black dark:text-white truncate">
                       {member.fullName}
                     </div>
-                    <div className="text-[10px] text-neutral-500 truncate">
+                    <div className="text-[10px] text-black/65 dark:text-white/70 truncate tabular-nums">
                       {member.role} · PIN: {member.pinCode || '1234'}
                     </div>
                   </div>

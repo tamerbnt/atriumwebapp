@@ -49,16 +49,16 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             <div>
-              <h1 className="text-xl font-bold tracking-tight text-white mb-2">
+              <h1 className="text-2xl font-bold tracking-tight text-white mb-2">
                 Atrium Recovery Console
               </h1>
-              <p className="text-sm text-neutral-400">
+              <p className="text-sm text-white/75">
                 A rendering issue was intercepted. You can reload the application or reset local cache to clean state.
               </p>
             </div>
 
             {this.state.error?.message && (
-              <div className="p-3 bg-neutral-900/80 rounded-xl text-left border border-neutral-800 text-xs font-mono text-neutral-300 max-h-32 overflow-y-auto">
+              <div className="p-3 bg-neutral-900/80 rounded-xl text-left border border-neutral-800 text-xs font-mono text-white/90 max-h-32 overflow-y-auto">
                 {this.state.error.message}
               </div>
             )}

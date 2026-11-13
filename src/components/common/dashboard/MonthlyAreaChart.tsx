@@ -131,7 +131,7 @@ export const MonthlyAreaChart: React.FC<MonthlyAreaChartProps> = ({
       {(title || showPeriodFilter) && (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2">
           {title && (
-            <span className="text-xs font-bold text-neutral-700 dark:text-neutral-200">
+            <span className="text-xs font-bold text-black dark:text-white">
               {title}
             </span>
           )}
@@ -152,7 +152,7 @@ export const MonthlyAreaChart: React.FC<MonthlyAreaChartProps> = ({
                     className={`px-2 py-0.5 rounded-md text-[10px] font-semibold transition-all duration-150 cursor-pointer select-none ${
                       isSelected
                         ? 'bg-white dark:bg-neutral-700 text-[#d4522f] dark:text-[#E09070] shadow-xs'
-                        : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                        : 'text-black/65 dark:text-white/70 hover:text-black dark:hover:text-white'
                     }`}
                   >
                     {opt.label}
@@ -251,7 +251,7 @@ export const MonthlyAreaChart: React.FC<MonthlyAreaChartProps> = ({
           >
             <div className="bg-neutral-900/95 dark:bg-neutral-800/95 text-white backdrop-blur-md rounded-xl px-2.5 py-1.5 shadow-xl border border-neutral-700/60 flex items-center gap-2.5 whitespace-nowrap text-left rtl:text-right">
               <div>
-                <div className="text-[10px] text-neutral-400 font-medium">
+                <div className="text-[10px] text-white/70 font-medium">
                   {activeDayLabel}
                 </div>
                 <div className="text-xs font-bold font-mono tabular-nums text-white flex items-center gap-1.5">
@@ -277,7 +277,7 @@ export const MonthlyAreaChart: React.FC<MonthlyAreaChartProps> = ({
       </div>
 
       {/* Days 1 to 30 */}
-      <div className="flex justify-between text-[9px] font-mono font-medium text-neutral-400 dark:text-neutral-500 pt-2 px-1">
+      <div className="flex justify-between text-[9px] font-mono tabular-nums font-medium text-black/60 dark:text-white/60 pt-2 px-1">
         {dayIndices.map((d) => (
           <span key={d}>{d}</span>
         ))}

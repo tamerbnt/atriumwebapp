@@ -66,7 +66,7 @@ export const DarkEspressoCard: React.FC<DarkEspressoCardProps> = ({
       )}
 
       <div>
-        <span className="text-[11px] font-medium text-neutral-300 block truncate">
+        <span className="text-[11px] font-semibold text-white/80 block truncate">
           {displayTitle}
         </span>
         {displayBadge && (
@@ -79,16 +79,16 @@ export const DarkEspressoCard: React.FC<DarkEspressoCardProps> = ({
       </div>
 
       <div className="flex items-baseline gap-1.5 z-10">
-        <span className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
+        <span className="text-[28px] leading-none font-bold tracking-tight text-[#FB923C] tabular-nums font-['Barlow_Condensed'] rtl:font-sans rtl:text-2xl">
           {value}
         </span>
         {unit && (
-          <span className="text-xs text-neutral-400 font-normal">
+          <span className="text-xs text-white/70 font-normal">
             {unit}
           </span>
         )}
         {displaySubtitle && (
-          <span className="text-[10px] text-neutral-400 ms-auto">
+          <span className="text-[10px] text-white/70 ms-auto">
             {displaySubtitle}
           </span>
         )}

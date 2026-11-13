@@ -58,10 +58,10 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
             <Shield size={16} />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-white tracking-wide">
+            <h4 className="text-sm font-bold text-white tracking-tight">
               {title}
             </h4>
-            <p className="text-[11px] text-neutral-400 mt-0.5">
+            <p className="text-[11px] text-white/70 mt-0.5">
               {subtitle}
             </p>
           </div>
@@ -83,7 +83,7 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
           >
             <div
               className={`w-1.5 h-1.5 rounded-full ${
-                isEnabled ? 'bg-[#10B981]' : 'bg-neutral-400'
+                isEnabled ? 'bg-[#10B981]' : 'bg-black/40'
               }`}
             />
           </div>
@@ -120,10 +120,10 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
 
           {/* Center Score */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-2xl font-black text-white tabular-nums font-mono">
+            <span className="text-[28px] leading-none font-bold tracking-tight text-white tabular-nums font-['Barlow_Condensed'] rtl:font-sans rtl:text-2xl">
               {metricValue || `${score}%`}
             </span>
-            <span className="text-[9px] uppercase tracking-wider text-neutral-400 font-semibold">
+            <span className="text-[10px] uppercase tracking-wider text-white/70 font-semibold mt-0.5">
               {metricLabel || scoreLabel}
             </span>
           </div>
@@ -131,15 +131,15 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
       </div>
 
       {/* Bottom status indicator */}
-      <div className="flex items-center justify-between text-[11px] pt-1 border-t border-white/10 text-neutral-400">
+      <div className="flex items-center justify-between text-[11px] pt-1 border-t border-white/10 text-white/70">
         <div className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-          <span className="text-white/80 font-medium">
-            {statusText || 'Auto-Monitoring Active'}
+          <span className="text-white/90 font-medium">
+            {statusText || 'Active'}
           </span>
         </div>
-        <span className="text-[10px] text-neutral-500 font-mono">
-          {trendText || 'Algorithm v2.4'}
+        <span className="text-[10px] text-white/60 font-mono tabular-nums">
+          {trendText || 'Live'}
         </span>
       </div>
     </div>

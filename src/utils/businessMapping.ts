@@ -1479,7 +1479,7 @@ export const FULL_16_VERTICAL_CATALOG: CatalogBusinessTrade[] = [
   {
     id: 'trade_comm_agency',
     category: 'project_milestone',
-    name: { fr: 'Agence de Communication Globale', ar: 'وكالة إشهار واتصال متكاملة', en: '360° Creative Agency' },
+    name: { fr: 'Agence de Communication Globale', ar: 'وكالة إشهار واتصال متكاملة', en: 'Creative Agency' },
     badge: { fr: 'Campagnes & BAT', ar: 'حملات إشهار', en: 'Campaigns' },
     keywords: ['agence de comm', 'communication', 'publicite', 'boite de comm', 'وكالة إشهار', 'إعلان'],
   },

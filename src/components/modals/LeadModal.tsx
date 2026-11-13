@@ -128,7 +128,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         <div className="space-y-1">
-          <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+          <label className="text-xs font-bold text-black/80 dark:text-white/80">
             {t('modal_notes', language)}
           </label>
           <textarea
@@ -147,7 +147,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
               borderColor: 'var(--color-border)',
               borderRadius: 'var(--radius-input)',
             }}
-            className="w-full p-2.5 text-sm border focus:outline-none focus:border-[#d4522f] text-neutral-900 dark:text-white resize-none"
+            className="w-full p-2.5 text-sm border focus:outline-none focus:border-[#d4522f] text-black dark:text-white placeholder:text-black/45 dark:placeholder:text-white/45 resize-none"
           />
         </div>
 

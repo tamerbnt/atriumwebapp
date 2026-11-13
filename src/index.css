@@ -6,6 +6,7 @@
   --color-pod-border: #E6DED6;
   --color-main-panel: #FBF8F5;
   --color-page-bg: #F3EDE7;
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-barlow: 'Barlow Condensed', sans-serif;
   --font-display: 'Barlow Condensed', sans-serif;
 }
@@ -391,12 +392,12 @@
     --atr-card: #FBF8F5;
     --atr-soft: #ede6e0;
     --atr-line: #E6DED6;
-    --atr-ink: #0a0a0a;
-    --atr-mut: #6b645e;
+    --atr-ink: #000000;
+    --atr-mut: rgba(0, 0, 0, 0.72);
     --atr-acc: #d4522f;
     --atr-onacc: #ffffff;
     --atr-accq: #e8643f;
-    --atr-acc-text: #b03b1b;
+    --atr-acc-text: #ab391a;
     --atr-hl: rgba(212, 82, 47, .12);
     --atr-ok: #096b40;
     --atr-okbg: rgba(11, 122, 74, .12);
@@ -434,9 +435,9 @@
     --color-card-dark: #18181B;
 
     /* Text */
-    --color-text-primary: #18181B;
-    --color-text-secondary: #64748B;
-    --color-text-tertiary: #94A3B8;
+    --color-text-primary: #000000;
+    --color-text-secondary: rgba(0, 0, 0, 0.72);
+    --color-text-tertiary: rgba(0, 0, 0, 0.54);
 
     /* Borders & Subtle Dividers */
     --color-border: #E6DED6;
@@ -465,14 +466,14 @@
 
     /* Kinetic Component System Tokens */
     --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
-    --fill-on: #17181a;
+    --fill-on: #000000;
     --fill-slab: #ffffff;
-    --ink: #17181a;
-    --ink-2: #3f4147;
-    --ink-3: #6f727a;
-    --ink-4: #9da0a8;
-    --ink-5: #c8cbd1;
-    --ink-rgb: 23, 24, 26;
+    --ink: #000000;
+    --ink-2: rgba(0, 0, 0, 0.86);
+    --ink-3: rgba(0, 0, 0, 0.72);
+    --ink-4: rgba(0, 0, 0, 0.54);
+    --ink-5: rgba(0, 0, 0, 0.36);
+    --ink-rgb: 0, 0, 0;
     --pane: rgba(255, 255, 255, 0.85);
     --pane-edge: rgba(0, 0, 0, 0.08);
     --board: #ffffff;
@@ -497,10 +498,10 @@
     --atr-card: #262422;
     --atr-soft: #2d2b29;
     --atr-line: #3a3734;
-    --atr-ink: #f2ece6;
-    --atr-mut: #a79f97;
+    --atr-ink: #ffffff;
+    --atr-mut: rgba(255, 255, 255, 0.75);
     --atr-acc: #e8643f;
-    --atr-onacc: #0a0a0a;
+    --atr-onacc: #000000;
     --atr-accq: #f28a69;
     --atr-acc-text: #ee7452;
     --atr-hl: rgba(232, 100, 63, .18);
@@ -535,9 +536,9 @@
     --line: #232328;
     --color-card-dark: #09090B;
 
-    --color-text-primary: #FAFAFA;
-    --color-text-secondary: #A1A1AA;
-    --color-text-tertiary: #71717A;
+    --color-text-primary: #FFFFFF;
+    --color-text-secondary: rgba(255, 255, 255, 0.75);
+    --color-text-tertiary: rgba(255, 255, 255, 0.56);
 
     --color-border: #27272A;
     --color-border-subtle: #1F1F23;
@@ -556,12 +557,12 @@
     --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
     --fill-on: #ffffff;
     --fill-slab: #1c1c20;
-    --ink: #f0f0f2;
-    --ink-2: #c5c6cc;
-    --ink-3: #9496a1;
-    --ink-4: #6d6f78;
-    --ink-5: #4e5057;
-    --ink-rgb: 240, 240, 242;
+    --ink: #ffffff;
+    --ink-2: rgba(255, 255, 255, 0.88);
+    --ink-3: rgba(255, 255, 255, 0.75);
+    --ink-4: rgba(255, 255, 255, 0.56);
+    --ink-5: rgba(255, 255, 255, 0.38);
+    --ink-rgb: 255, 255, 255;
     --pane: rgba(28, 28, 32, 0.85);
     --pane-edge: rgba(255, 255, 255, 0.12);
     --board: #18181b;
@@ -577,16 +578,29 @@
     background-color: var(--color-window-bg);
     color: var(--color-text-primary);
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    text-rendering: optimizeLegibility;
     margin: 0;
     padding: 0;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     overflow: hidden;
+  }
+
+  /* Optical legibility compensation on dark surfaces */
+  [data-theme="dark"] body,
+  [data-atrium-theme="dark"] body,
+  .dark body {
+    letter-spacing: 0.008em;
   }
 
   [dir="rtl"] body,
   [dir="rtl"] {
     font-family: 'Cairo', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     letter-spacing: normal;
+    line-height: 1.6;
   }
 
   /* Universal Screen Headers across all 16 categories - Barlow Condensed */
@@ -595,7 +609,15 @@
   .screen-header-title,
   [data-screen-title="true"] {
     font-family: 'Barlow Condensed', var(--font-ui), sans-serif;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.015em;
+    line-height: 1.04;
+    text-wrap: balance;
+  }
+
+  h2,
+  h3 {
+    letter-spacing: -0.015em;
+    text-wrap: balance;
   }
 
   .screen-title,
@@ -604,12 +626,33 @@
     text-transform: uppercase;
   }
 
+  /* Crisp table headers & form labels */
+  th {
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+
+  /* Placeholders inherit calibrated opacity ink instead of grey */
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-text-tertiary);
+    opacity: 1;
+  }
+
   [dir="rtl"] h1,
   [dir="rtl"] .screen-title,
   [dir="rtl"] .screen-header-title,
   [dir="rtl"] [data-screen-title="true"],
   :is([dir="rtl"], [dir="rtl"] *) h1 {
     font-family: 'Cairo', 'Barlow Condensed', sans-serif;
+    letter-spacing: normal;
+    line-height: 1.22;
+    text-transform: none;
+  }
+
+  [dir="rtl"] h2,
+  [dir="rtl"] h3,
+  [dir="rtl"] th {
     letter-spacing: normal;
   }
 }
@@ -1217,7 +1260,7 @@ div[tabindex],
 
 [data-theme="dark"] .lbi-label,
 .dark .lbi-label {
-  color: #A1A1AA;
+  color: rgba(255, 255, 255, 0.72);
 }
 
 [data-theme="dark"] .lbi[data-focus="true"] .lbi-label,
@@ -1607,8 +1650,8 @@ div[tabindex],
   font-family: var(--font-ui);
   color: var(--fill-on, var(--ink));
   --tst-r: 20px;
-  --tst-mute: color-mix(in srgb, var(--fill-on, #17181a) 52%, var(--fill-slab, #ffffff));
-  --tst-wash: color-mix(in srgb, var(--fill-on, #17181a) 6%, var(--fill-slab, #ffffff));
+  --tst-mute: color-mix(in srgb, var(--fill-on, #000000) 68%, var(--fill-slab, #ffffff));
+  --tst-wash: color-mix(in srgb, var(--fill-on, #000000) 6%, var(--fill-slab, #ffffff));
 }
 
 .tst-toast {

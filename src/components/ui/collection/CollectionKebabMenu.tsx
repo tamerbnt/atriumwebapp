@@ -64,7 +64,7 @@ export const CollectionKebabMenu: React.FC<CollectionKebabMenuProps> = ({
       style={{
         boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.18), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
       }}
-      className="absolute right-0 top-full mt-1.5 z-50 min-w-[190px] p-1.5 rounded-[14px] bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-100 text-[13px] font-medium shadow-xl animate-in fade-in zoom-in-95 duration-150"
+      className="absolute right-0 top-full mt-1.5 z-50 min-w-[190px] p-1.5 rounded-[14px] bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-neutral-800 text-black dark:text-white text-[13px] font-medium shadow-xl animate-in fade-in zoom-in-95 duration-150"
     >
       <div className="flex flex-col gap-0.5">
         {items.map((item, idx) => (
@@ -82,7 +82,7 @@ export const CollectionKebabMenu: React.FC<CollectionKebabMenuProps> = ({
               className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-left transition-colors cursor-pointer ${
                 item.isSpecialDelete
                   ? 'text-red-500 hover:bg-[#12EF4444] dark:hover:bg-red-500/10'
-                  : 'hover:bg-neutral-100 dark:hover:bg-neutral-800/70 text-neutral-800 dark:text-neutral-200'
+                  : 'hover:bg-neutral-100 dark:hover:bg-neutral-800/70 text-black/85 dark:text-white/90'
               }`}
             >
               <span

@@ -107,16 +107,16 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
         </div>
 
-        <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-1">
+        <h3 className="text-xl font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans tracking-tight rtl:tracking-normal text-black dark:text-white mb-1">
           {title || defaultTitle}
         </h3>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-6 leading-relaxed">
+        <p className="text-xs text-black/65 dark:text-white/65 mb-6 leading-relaxed">
           {description || defaultDesc}
         </p>
 
@@ -153,7 +153,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
                     ? 'border-rose-500 bg-rose-50 dark:bg-rose-950/30 text-rose-600'
                     : hasDigit
                     ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f] shadow-xs'
-                    : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 text-neutral-400'
+                    : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 text-black/35 dark:text-white/35'
                 }`}
               >
                 {hasDigit ? '•' : ''}
@@ -179,7 +179,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
               key={digit}
               type="button"
               onClick={() => handleDigit(digit)}
-              className="h-12 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-neutral-800 dark:text-neutral-100 text-lg font-bold font-mono transition-all flex items-center justify-center cursor-pointer shadow-2xs"
+              className="h-12 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-black dark:text-white text-lg font-bold font-mono tabular-nums transition-all flex items-center justify-center cursor-pointer shadow-2xs"
             >
               {digit}
             </button>
@@ -187,21 +187,21 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
           <button
             type="button"
             onClick={handleClear}
-            className="h-12 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-neutral-500 dark:text-neutral-400 text-xs font-semibold transition-all flex items-center justify-center cursor-pointer shadow-2xs"
+            className="h-12 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-black/70 dark:text-white/70 text-xs font-semibold transition-all flex items-center justify-center cursor-pointer shadow-2xs"
           >
             {isRtl ? 'مسح' : 'C'}
           </button>
           <button
             type="button"
             onClick={() => handleDigit('0')}
-            className="h-12 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-neutral-800 dark:text-neutral-100 text-lg font-bold font-mono transition-all flex items-center justify-center cursor-pointer shadow-2xs"
+            className="h-12 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-black dark:text-white text-lg font-bold font-mono tabular-nums transition-all flex items-center justify-center cursor-pointer shadow-2xs"
           >
             0
           </button>
           <button
             type="button"
             onClick={handleBackspace}
-            className="h-12 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-neutral-500 dark:text-neutral-400 text-sm font-semibold transition-all flex items-center justify-center cursor-pointer shadow-2xs"
+            className="h-12 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-black/70 dark:text-white/70 text-sm font-semibold transition-all flex items-center justify-center cursor-pointer shadow-2xs"
           >
             <Delete size={18} />
           </button>

@@ -83,10 +83,10 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             <IconComponent size={22} />
           </div>
           <div className="flex-1 min-w-0 pr-6">
-            <h3 className="text-base font-bold tracking-tight text-neutral-900 dark:text-white">
+            <h3 className="text-base font-bold tracking-tight text-black dark:text-white">
               {title}
             </h3>
-            <p className="mt-1.5 text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+            <p className="mt-1.5 text-xs text-black/75 dark:text-white/75 leading-relaxed">
               {description}
             </p>
           </div>
@@ -94,7 +94,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             type="button"
             onClick={onClose}
             disabled={isLoading}
-            className="absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            className="absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center text-black/60 hover:text-black dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
           >
             <X size={16} />
           </button>

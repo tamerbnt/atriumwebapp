@@ -458,8 +458,8 @@ export function UniversalDataCollection<T>({
           {title ? (
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-bold text-neutral-900 dark:text-white">{title}</h2>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-mono">
+                <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{title}</h2>
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/75 dark:text-white/80 font-mono tabular-nums">
                   {actualItems.length}
                 </span>
                 {effectiveIsLoading && (
@@ -469,7 +469,7 @@ export function UniversalDataCollection<T>({
                 )}
               </div>
               {subtitle && (
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">{subtitle}</p>
+                <p className="text-[11px] text-black/65 dark:text-white/70 mt-0.5">{subtitle}</p>
               )}
             </div>
           ) : (
@@ -506,7 +506,7 @@ export function UniversalDataCollection<T>({
                     setInternalSearchQuery(e.target.value);
                     onSearchChange?.(e.target.value);
                   }}
-                  className="w-full h-8 px-3 rounded-xl text-xs bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#d4522f]"
+                  className="w-full h-8 px-3 rounded-xl text-xs bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/55 focus:outline-none focus:ring-1 focus:ring-[#d4522f]"
                 />
               </div>
             )}
@@ -578,7 +578,7 @@ export function UniversalDataCollection<T>({
                       <button
                         type="button"
                         onClick={() => handleSort(colKey, col.accessorKey)}
-                        className="group flex items-center gap-1.5 text-[12px] font-semibold text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition-colors cursor-pointer select-none"
+                        className="group flex items-center gap-1.5 text-[11px] uppercase tracking-wider rtl:normal-case rtl:tracking-normal font-semibold text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white transition-colors cursor-pointer select-none"
                       >
                         <span className="truncate">{col.header}</span>
                         {/* Sort arrow badge pill */}
@@ -586,7 +586,7 @@ export function UniversalDataCollection<T>({
                           className={`inline-flex items-center px-1.5 py-0.5 rounded-[5px] transition-colors ${
                             isCurrentSort
                               ? 'bg-[#d4522f]/15 text-[#d4522f]'
-                              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 group-hover:text-neutral-700 dark:group-hover:text-neutral-200'
+                              : 'bg-neutral-100 dark:bg-neutral-800 text-black/55 dark:text-white/60 group-hover:text-black dark:group-hover:text-white'
                           }`}
                         >
                           {isCurrentSort ? (
@@ -601,7 +601,7 @@ export function UniversalDataCollection<T>({
                         </span>
                       </button>
                     ) : (
-                      <span className="text-[12px] font-semibold text-neutral-600 dark:text-neutral-300 truncate">
+                      <span className="text-[11px] uppercase tracking-wider rtl:normal-case rtl:tracking-normal font-semibold text-black/70 dark:text-white/75 truncate">
                         {col.header}
                       </span>
                     )}
@@ -739,7 +739,7 @@ export function UniversalDataCollection<T>({
             <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white text-xs font-bold flex items-center justify-center font-mono">
               {effectiveSelectedIds.size}
             </span>
-            <span className="text-xs font-medium text-neutral-200 whitespace-nowrap">
+            <span className="text-xs font-medium text-white/90 whitespace-nowrap">
               {store.language === 'ar' ? `${effectiveSelectedIds.size} محدد` : store.language === 'fr' ? `${effectiveSelectedIds.size} sélectionné${effectiveSelectedIds.size > 1 ? 's' : ''}` : `${effectiveSelectedIds.size} selected`}
             </span>
           </div>
@@ -751,10 +751,10 @@ export function UniversalDataCollection<T>({
               onClick={() => bulkSecondaryAction.onClick(effectiveSelectedIds)}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border shadow-2xs ${
                 bulkSecondaryAction.variant === 'warning'
-                  ? 'bg-amber-500 hover:bg-amber-600 text-neutral-950 border-amber-400 font-bold'
+                  ? 'bg-amber-500 hover:bg-amber-600 text-black border-amber-400 font-bold'
                   : bulkSecondaryAction.variant === 'primary'
                   ? 'bg-[#d4522f] hover:bg-[#B3684A] text-white border-[#d4522f]'
-                  : 'bg-neutral-800 hover:bg-neutral-700 text-neutral-100 border-neutral-700'
+                  : 'bg-neutral-800 hover:bg-neutral-700 text-white border-neutral-700'
               }`}
             >
               {bulkSecondaryAction.icon}
@@ -775,7 +775,7 @@ export function UniversalDataCollection<T>({
               key={act.id}
               type="button"
               onClick={() => act.onClick(effectiveSelectedIds)}
-              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-neutral-800 hover:bg-neutral-700 text-neutral-100 flex items-center gap-1.5 transition-colors cursor-pointer border border-neutral-700 shadow-2xs"
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-neutral-800 hover:bg-neutral-700 text-white flex items-center gap-1.5 transition-colors cursor-pointer border border-neutral-700 shadow-2xs"
             >
               {act.icon}
               <span>{act.label}</span>
@@ -800,7 +800,7 @@ export function UniversalDataCollection<T>({
               if (onSelectionChange) onSelectionChange(new Set());
               setInternalSelectedIds(new Set());
             }}
-            className="text-xs text-neutral-400 hover:text-white px-2 py-1 transition-colors cursor-pointer ml-1"
+            className="text-xs text-white/75 hover:text-white px-2 py-1 transition-colors cursor-pointer ml-1"
           >
             {store.language === 'ar' ? 'إلغاء' : store.language === 'fr' ? 'Annuler' : 'Cancel'}
           </button>

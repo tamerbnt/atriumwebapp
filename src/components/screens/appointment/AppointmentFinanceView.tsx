@@ -176,10 +176,10 @@ export const AppointmentFinanceView: React.FC = () => {
             {payout.staffName.charAt(0)}
           </div>
           <div className="min-w-0">
-            <span className="font-semibold text-xs text-neutral-900 dark:text-white block truncate">
+            <span className="font-semibold text-xs text-black dark:text-white block truncate">
               {payout.staffName}
             </span>
-            <span className="text-[10px] text-neutral-400 font-mono block">
+            <span className="text-[10px] text-black/55 dark:text-white/55 font-mono block">
               Du {payout.periodStart} au {payout.periodEnd}
             </span>
           </div>
@@ -194,10 +194,10 @@ export const AppointmentFinanceView: React.FC = () => {
       sortable: true,
       renderCell: (payout) => (
         <div className="text-xs">
-          <span className="font-bold text-neutral-900 dark:text-white tabular-nums block">
+          <span className="font-bold text-black dark:text-white tabular-nums block">
             {payout.totalServicesCount} soins
           </span>
-          <span className="text-[10px] text-neutral-400 font-mono tabular-nums">
+          <span className="text-[10px] text-black/55 dark:text-white/55 font-mono tabular-nums">
             {formatMoney(payout.totalServiceRevenue)}
           </span>
         </div>
@@ -214,7 +214,7 @@ export const AppointmentFinanceView: React.FC = () => {
           <span className="font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums block">
             {formatMoney(payout.commissionAmount)}
           </span>
-          <span className="text-[10px] text-neutral-400 font-mono">
+          <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
             {payout.commissionRate}% commission
           </span>
         </div>
@@ -228,10 +228,10 @@ export const AppointmentFinanceView: React.FC = () => {
       sortable: true,
       renderCell: (payout) => (
         <div className="text-xs">
-          <span className="font-semibold text-neutral-800 dark:text-neutral-200 tabular-nums block">
+          <span className="font-semibold text-black dark:text-white tabular-nums block">
             {formatMoney(payout.retailCommissionAmount)}
           </span>
-          <span className="text-[10px] text-neutral-400 font-mono">
+          <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
             {payout.retailSalesCount} articles
           </span>
         </div>
@@ -248,7 +248,7 @@ export const AppointmentFinanceView: React.FC = () => {
           <span className="font-extrabold text-sm text-[#d4522f] tabular-nums font-mono block">
             {formatMoney(payout.totalPayout)}
           </span>
-          <span className="text-[10px] text-neutral-400">
+          <span className="text-[10px] text-black/55 dark:text-white/55">
             {payout.paymentMethod ? `Via ${payout.paymentMethod}` : 'En attente virement'}
           </span>
         </div>
@@ -310,7 +310,7 @@ export const AppointmentFinanceView: React.FC = () => {
           <button
             type="button"
             onClick={() => setInspectingPayout(payout)}
-            className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors cursor-pointer"
             title="Consulter le bordereau"
           >
             <FileText className="w-3.5 h-3.5" />
@@ -350,11 +350,11 @@ export const AppointmentFinanceView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white flex items-center gap-2.5">
+            <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               <DollarSign className="text-[#d4522f]" size={32} />
               <span>Finances & Commissions Stylistes</span>
             </h1>
-            <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+            <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 rtl:normal-case">
               {currentBranch?.name || 'Luxe Spa Hydra'}
             </span>
           </div>
@@ -378,11 +378,11 @@ export const AppointmentFinanceView: React.FC = () => {
         <div className="flex items-center justify-between pb-2 border-b border-[#E9EEF0] dark:border-neutral-800">
           <div className="flex items-center gap-2">
             <Wallet size={18} className="text-[#d4522f]" />
-            <h2 className="text-xs font-black uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
+            <h2 className="text-xs font-black uppercase tracking-wider text-black dark:text-white rtl:normal-case rtl:tracking-normal">
               Synthèse Financière & Répartition des Bénéfices
             </h2>
           </div>
-          <span className="text-xs text-neutral-400 font-medium">
+          <span className="text-xs text-black/55 dark:text-white/55 font-medium">
             Clôture Période en Cours
           </span>
         </div>
@@ -392,8 +392,8 @@ export const AppointmentFinanceView: React.FC = () => {
           {/* Card 1: Recette Soins & Revente */}
           <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
-              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
-                <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+              <div className="flex items-center justify-between text-black/70 dark:text-white/70">
+                <span className="text-xs font-semibold text-black/70 dark:text-white/70">
                   Recette Brute Soins
                 </span>
                 <span className="text-[10px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-full">
@@ -401,7 +401,7 @@ export const AppointmentFinanceView: React.FC = () => {
                 </span>
               </div>
             </div>
-            <div className="text-2xl font-black font-mono text-neutral-900 dark:text-white tracking-tight tabular-nums">
+            <div className="text-2xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums text-black dark:text-white tracking-tight">
               {formatMoney(totalServicesRevenue)}
             </div>
           </div>
@@ -409,8 +409,8 @@ export const AppointmentFinanceView: React.FC = () => {
           {/* Card 2: Bénéfice Net Institut */}
           <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
-              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
-                <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+              <div className="flex items-center justify-between text-black/70 dark:text-white/70">
+                <span className="text-xs font-semibold text-black/70 dark:text-white/70">
                   Bénéfice Net Institut
                 </span>
                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
@@ -418,7 +418,7 @@ export const AppointmentFinanceView: React.FC = () => {
                 </span>
               </div>
             </div>
-            <div className="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums">
+            <div className="text-2xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums text-emerald-600 dark:text-emerald-400 tracking-tight">
               {formatMoney(netSalonProfit)}
             </div>
           </div>
@@ -441,19 +441,19 @@ export const AppointmentFinanceView: React.FC = () => {
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-neutral-300">
+                <span className="text-xs font-medium text-white/75">
                   Cagnotte Stylistes
                 </span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
                   {stylistPayouts.length} stylistes
                 </span>
               </div>
-              <div className="text-2xl font-black font-mono tracking-tight text-white tabular-nums">
+              <div className="text-2xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums tracking-tight text-white">
                 {formatMoney(totalCommissionsDue)}
               </div>
             </div>
 
-            <div className="pt-1.5 border-t border-neutral-800/80 flex items-center justify-between text-[10px] text-neutral-400">
+            <div className="pt-1.5 border-t border-neutral-800/80 flex items-center justify-between text-[10px] text-white/75">
               <span>Total commissions dues</span>
               <span className="text-[#FB923C] font-semibold">Validation requise</span>
             </div>
@@ -469,10 +469,10 @@ export const AppointmentFinanceView: React.FC = () => {
               <CreditCard size={16} />
             </div>
             <div>
-              <span className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
+              <span className="text-xs font-bold text-black dark:text-white uppercase tracking-wider rtl:normal-case rtl:tracking-normal">
                 Ventilation des Modes de Règlement
               </span>
-              <span className="text-[11px] text-neutral-500 dark:text-neutral-400 block">
+              <span className="text-[11px] text-black/70 dark:text-white/70 block">
                 Encaissements comptoir salon, paiements BaridiMob et terminaux TPE Satim
               </span>
             </div>
@@ -484,18 +484,18 @@ export const AppointmentFinanceView: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Banknote size={17} className="text-emerald-500" />
-                <h3 className="text-xs font-black uppercase text-neutral-700 dark:text-neutral-300">
+                <h3 className="text-xs font-black uppercase text-black dark:text-white rtl:normal-case">
                   Paiements Espèces (DZD)
                 </h3>
               </div>
-              <span className="font-mono text-xs font-bold text-neutral-400">
+              <span className="font-mono text-xs font-bold text-black/55 dark:text-white/55">
                 {paymentBreakdown.total > 0 ? `${Math.round((paymentBreakdown.cash / paymentBreakdown.total) * 100)}%` : '0%'}
               </span>
             </div>
-            <div className="text-xl font-black font-mono text-neutral-900 dark:text-white tabular-nums">
+            <div className="text-xl font-black font-mono text-black dark:text-white tabular-nums">
               {formatMoney(paymentBreakdown.cash)}
             </div>
-            <div className="text-[11px] text-neutral-400">
+            <div className="text-[11px] text-black/55 dark:text-white/55">
               Encaissé au comptoir accueil
             </div>
           </div>
@@ -504,18 +504,18 @@ export const AppointmentFinanceView: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Smartphone size={17} className="text-[#d4522f]" />
-                <h3 className="text-xs font-black uppercase text-neutral-700 dark:text-neutral-300">
+                <h3 className="text-xs font-black uppercase text-black dark:text-white rtl:normal-case">
                   BaridiMob & Virement RIP
                 </h3>
               </div>
-              <span className="font-mono text-xs font-bold text-neutral-400">
+              <span className="font-mono text-xs font-bold text-black/55 dark:text-white/55">
                 {paymentBreakdown.total > 0 ? `${Math.round((paymentBreakdown.baridiMob / paymentBreakdown.total) * 100)}%` : '0%'}
               </span>
             </div>
-            <div className="text-xl font-black font-mono text-neutral-900 dark:text-white tabular-nums">
+            <div className="text-xl font-black font-mono text-black dark:text-white tabular-nums">
               {formatMoney(paymentBreakdown.baridiMob)}
             </div>
-            <div className="text-[11px] text-neutral-400">
+            <div className="text-[11px] text-black/55 dark:text-white/55">
               Paiements instantanés confirmés
             </div>
           </div>
@@ -524,18 +524,18 @@ export const AppointmentFinanceView: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <CreditCard size={17} className="text-blue-500" />
-                <h3 className="text-xs font-black uppercase text-neutral-700 dark:text-neutral-300">
+                <h3 className="text-xs font-black uppercase text-black dark:text-white rtl:normal-case">
                   Cartes CIB & Edahabia
                 </h3>
               </div>
-              <span className="font-mono text-xs font-bold text-neutral-400">
+              <span className="font-mono text-xs font-bold text-black/55 dark:text-white/55">
                 {paymentBreakdown.total > 0 ? `${Math.round((paymentBreakdown.cib / paymentBreakdown.total) * 100)}%` : '0%'}
               </span>
             </div>
-            <div className="text-xl font-black font-mono text-neutral-900 dark:text-white tabular-nums">
+            <div className="text-xl font-black font-mono text-black dark:text-white tabular-nums">
               {formatMoney(paymentBreakdown.cib)}
             </div>
-            <div className="text-[11px] text-neutral-400">
+            <div className="text-[11px] text-black/55 dark:text-white/55">
               TPE SATIM monétique bancaire
             </div>
           </div>
@@ -547,7 +547,7 @@ export const AppointmentFinanceView: React.FC = () => {
         {/* Controls Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
-            <h2 className="text-base font-black text-neutral-900 dark:text-white">
+            <h2 className="text-base font-black text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               Bordereaux de Commissions & Payouts Stylistes
             </h2>
           </div>
@@ -571,7 +571,7 @@ export const AppointmentFinanceView: React.FC = () => {
                   className={`px-3 py-1 rounded-[10px] text-xs font-semibold transition-all cursor-pointer ${
                     selectedStatusFilter === statusKey
                       ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs'
-                      : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                      : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
                   }`}
                 >
                   {statusKey === 'All'
@@ -612,7 +612,7 @@ export const AppointmentFinanceView: React.FC = () => {
                       <div className="w-7 h-7 rounded-full bg-[#d4522f]/15 text-[#d4522f] font-bold text-xs flex items-center justify-center">
                         {payout.staffName.charAt(0)}
                       </div>
-                      <span className="font-bold text-xs text-neutral-900 dark:text-white">
+                      <span className="font-bold text-xs text-black dark:text-white">
                         {payout.staffName}
                       </span>
                     </div>
@@ -629,10 +629,10 @@ export const AppointmentFinanceView: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="space-y-1 text-xs text-neutral-500 mt-2">
+                  <div className="space-y-1 text-xs text-black/70 dark:text-white/75 mt-2">
                     <div className="flex justify-between">
                       <span>Prestations ({payout.totalServicesCount}) :</span>
-                      <span className="font-mono text-neutral-800 dark:text-neutral-200">{formatMoney(payout.totalServiceRevenue)}</span>
+                      <span className="font-mono text-black dark:text-white">{formatMoney(payout.totalServiceRevenue)}</span>
                     </div>
                     <div className="flex justify-between text-emerald-600 font-semibold">
                       <span>Commission ({payout.commissionRate}%) :</span>
@@ -642,7 +642,7 @@ export const AppointmentFinanceView: React.FC = () => {
                 </div>
 
                 <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
-                  <span className="text-xs text-neutral-400">Total Net :</span>
+                  <span className="text-xs text-black/55 dark:text-white/55">Total Net :</span>
                   <span className="font-mono font-black text-sm text-[#d4522f]">
                     {formatMoney(payout.totalPayout)}
                   </span>
@@ -672,17 +672,17 @@ export const AppointmentFinanceView: React.FC = () => {
           <div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div>
-                <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                <h3 className="text-sm font-bold text-black dark:text-white">
                   Bordereau Styliste · {inspectingPayout.staffName}
                 </h3>
-                <span className="text-[11px] text-neutral-400 font-mono">
+                <span className="text-[11px] text-black/55 dark:text-white/55 font-mono">
                   Du {inspectingPayout.periodStart} au {inspectingPayout.periodEnd}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => setInspectingPayout(null)}
-                className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
+                className="text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -691,7 +691,7 @@ export const AppointmentFinanceView: React.FC = () => {
             <div className="space-y-2 text-xs">
               <div className="p-3 bg-neutral-50 dark:bg-neutral-800/60 rounded-xl space-y-1.5 font-mono">
                 <div className="flex justify-between">
-                  <span className="text-neutral-500">Recette Prestations :</span>
+                  <span className="text-black/70 dark:text-white/75">Recette Prestations :</span>
                   <span className="font-bold">{formatMoney(inspectingPayout.totalServiceRevenue)}</span>
                 </div>
                 <div className="flex justify-between text-emerald-600">
@@ -708,8 +708,8 @@ export const AppointmentFinanceView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="text-[11px] text-neutral-400">
-                Statut actuel : <strong className="text-neutral-700 dark:text-neutral-300">{inspectingPayout.status}</strong>
+              <div className="text-[11px] text-black/55 dark:text-white/55">
+                Statut actuel : <strong className="text-black dark:text-white">{inspectingPayout.status}</strong>
               </div>
             </div>
 
@@ -717,7 +717,7 @@ export const AppointmentFinanceView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setInspectingPayout(null)}
-                className="h-9 px-4 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-semibold cursor-pointer"
+                className="h-9 px-4 rounded-full bg-neutral-100 hover:bg-neutral-200 text-black dark:text-white text-xs font-semibold cursor-pointer"
               >
                 Fermer
               </button>

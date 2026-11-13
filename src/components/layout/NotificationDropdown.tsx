@@ -117,8 +117,8 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
       } as React.CSSProperties}
     >
       {/* Floating Control Card (Dedicated Small Card for Title & Controls) */}
-      <div className="flex items-center justify-between px-3.5 py-2 rounded-[16px] bg-white/95 dark:bg-[#1C1C20]/95 backdrop-blur-md border border-black/8 dark:border-white/12 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.04)] text-[11px] text-neutral-500 dark:text-neutral-400 select-none">
-        <div className="flex items-center gap-1.5 font-bold text-neutral-800 dark:text-neutral-200 text-xs">
+      <div className="flex items-center justify-between px-3.5 py-2 rounded-[16px] bg-white/95 dark:bg-[#1C1C20]/95 backdrop-blur-md border border-black/8 dark:border-white/12 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.04)] text-[11px] text-black/70 dark:text-white/75 select-none">
+        <div className="flex items-center gap-1.5 font-bold text-black dark:text-white text-xs">
           <Bell size={13} className="text-[#d4522f]" />
           <span>{language === 'ar' ? 'الإشعارات' : language === 'fr' ? 'Notifications' : 'Notifications'}</span>
           {unreadNotificationCount > 0 && (
@@ -142,7 +142,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                   {language === 'ar' ? 'قراءة الكل' : language === 'fr' ? 'Tout lire' : 'Read All'}
                 </span>
               </button>
-              <span className="text-neutral-200 dark:text-neutral-700">•</span>
+              <span className="text-black/25 dark:text-white/25">•</span>
               <button
                 type="button"
                 onClick={() => clearAllNotifications()}
@@ -154,14 +154,14 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                   {language === 'ar' ? 'مسح' : language === 'fr' ? 'Effacer' : 'Clear'}
                 </span>
               </button>
-              <span className="text-neutral-200 dark:text-neutral-700">•</span>
+              <span className="text-black/25 dark:text-white/25">•</span>
             </>
           )}
 
           <button
             type="button"
             onClick={onClose}
-            className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors cursor-pointer"
+            className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-black/60 hover:text-black dark:text-white/65 dark:hover:text-white transition-colors cursor-pointer"
             aria-label="Close notifications"
           >
             <X size={13} strokeWidth={2.2} />
@@ -178,7 +178,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="flex items-center gap-2.5 px-4 py-3 rounded-[20px] bg-white/95 dark:bg-[#1C1C20]/95 backdrop-blur-md border border-black/8 dark:border-white/12 shadow-[0_8px_24px_-4px_rgba(0,0,0,0.1),0_2px_6px_-1px_rgba(0,0,0,0.05)] text-xs font-semibold text-neutral-700 dark:text-neutral-200"
+              className="flex items-center gap-2.5 px-4 py-3 rounded-[20px] bg-white/95 dark:bg-[#1C1C20]/95 backdrop-blur-md border border-black/8 dark:border-white/12 shadow-[0_8px_24px_-4px_rgba(0,0,0,0.1),0_2px_6px_-1px_rgba(0,0,0,0.05)] text-xs font-semibold text-black/85 dark:text-white"
             >
               <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
               <span>
@@ -216,17 +216,17 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                   {/* Text Content */}
                   <div className="tst-text flex-1 min-w-0 pr-1">
                     <div className="flex items-center justify-between gap-1.5 mb-0.5">
-                      <b className="flex items-center gap-1.5 truncate text-[13px] font-semibold text-neutral-900 dark:text-neutral-100">
+                      <b className="flex items-center gap-1.5 truncate text-[13px] font-semibold text-black dark:text-white">
                         <span className="truncate">{notif.title}</span>
                         {isUnread && (
                           <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
                         )}
                       </b>
-                      <span className="text-[10px] text-neutral-400 shrink-0 font-normal tabular-nums">
+                      <span className="text-[10px] text-black/55 dark:text-white/60 shrink-0 font-normal tabular-nums">
                         {formatRelativeTime(notif.createdAt, language)}
                       </span>
                     </div>
-                    <span className="text-[12px] text-neutral-500 dark:text-neutral-400 truncate block">
+                    <span className="text-[12px] text-black/70 dark:text-white/75 truncate block">
                       {notif.message}
                     </span>
                   </div>

@@ -124,7 +124,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
             icon: (
               <Pin
                 className={`w-3.5 h-3.5 ${
-                  isPinned ? 'fill-[#F59E0B] text-[#F59E0B]' : 'text-neutral-400'
+                  isPinned ? 'fill-[#F59E0B] text-[#F59E0B]' : 'text-black/55 dark:text-white/60'
                 }`}
               />
             ),
@@ -161,7 +161,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
           {
             id: 'kebab-view',
             label: 'View',
-            icon: <Eye className="w-4 h-4 text-neutral-500" />,
+            icon: <Eye className="w-4 h-4 text-black/65 dark:text-white/70" />,
             onClick: () => onViewDetails(),
           },
         ]
@@ -185,7 +185,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
             icon: (
               <Pin
                 className={`w-4 h-4 ${
-                  isPinned ? 'fill-[#F59E0B] text-[#F59E0B]' : 'text-neutral-500'
+                  isPinned ? 'fill-[#F59E0B] text-[#F59E0B]' : 'text-black/65 dark:text-white/70'
                 }`}
               />
             ),
@@ -265,7 +265,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
               e.stopPropagation();
               setIsKebabOpen((prev) => !prev);
             }}
-            className="w-8 h-8 rounded-[6px] flex items-center justify-center text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-100 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-[6px] flex items-center justify-center text-black/55 hover:text-black dark:text-white/60 dark:hover:text-white hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer"
             title="Options"
           >
             <MoreVertical className="w-4 h-4" />

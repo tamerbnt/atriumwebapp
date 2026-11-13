@@ -373,7 +373,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
         </label>
 
         {prefix && (
-          <div className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 z-10 flex items-center pointer-events-none text-neutral-400">
+          <div className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 z-10 flex items-center pointer-events-none text-black/60 dark:text-white/65">
             {prefix}
           </div>
         )}
@@ -396,15 +396,15 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
         >
           <div className="flex items-center gap-2 truncate pr-2 rtl:pr-0 rtl:pl-2">
             {selectedOption?.icon && (
-              <span className="shrink-0 text-neutral-500">
+              <span className="shrink-0 text-black/65 dark:text-white/70">
                 {selectedOption.icon}
               </span>
             )}
             <span
               className={`text-[13px] font-medium truncate ${
                 selectedOption
-                  ? 'text-neutral-900 dark:text-neutral-100'
-                  : 'text-neutral-400'
+                  ? 'text-black dark:text-white'
+                  : 'text-black/55 dark:text-white/55'
               }`}
             >
               {selectedOption
@@ -417,7 +417,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
 
           <ChevronDown
             size={15}
-            className={`shrink-0 text-neutral-400 transition-transform duration-200 ${
+            className={`shrink-0 text-black/60 dark:text-white/65 transition-transform duration-200 ${
               isOpen ? 'rotate-180 text-[#d4522f]' : ''
             }`}
           />
@@ -438,7 +438,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
                 <div className="relative flex items-center">
                   <Search
                     size={13}
-                    className="absolute left-2.5 rtl:left-auto rtl:right-2.5 text-neutral-400 pointer-events-none"
+                    className="absolute left-2.5 rtl:left-auto rtl:right-2.5 text-black/55 dark:text-white/60 pointer-events-none"
                   />
                   <input
                     ref={searchInputRef}
@@ -449,13 +449,13 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
                       setHighlightedIndex(0);
                     }}
                     placeholder={defaultSearchPlaceholder}
-                    className="w-full h-7 pl-7 pr-7 rtl:pr-7 rtl:pl-7 text-xs bg-white dark:bg-zinc-800 border border-neutral-200 dark:border-zinc-700 rounded-lg text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-[#d4522f]"
+                    className="w-full h-7 pl-7 pr-7 rtl:pr-7 rtl:pl-7 text-xs bg-white dark:bg-zinc-800 border border-neutral-200 dark:border-zinc-700 rounded-lg text-black dark:text-white focus:outline-none focus:border-[#d4522f]"
                   />
                   {searchQuery && (
                     <button
                       type="button"
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-2 rtl:right-auto rtl:left-2 text-neutral-400 hover:text-neutral-600 p-0.5 cursor-pointer"
+                      className="absolute right-2 rtl:right-auto rtl:left-2 text-black/55 hover:text-black dark:text-white/60 dark:hover:text-white p-0.5 cursor-pointer"
                     >
                       <X size={12} />
                     </button>
@@ -469,7 +469,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
               role="listbox"
             >
               {filteredOptions.length === 0 ? (
-                <li className="px-3.5 py-3 text-center text-neutral-400 italic">
+                <li className="px-3.5 py-3 text-center text-black/60 dark:text-white/60 italic">
                   {noOptionsText}
                 </li>
               ) : (
@@ -493,8 +493,8 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
                           : isSelected
                           ? 'bg-[#d4522f]/10 text-[#d4522f] font-semibold'
                           : isHighlighted
-                          ? 'bg-neutral-100 dark:bg-zinc-800 text-neutral-900 dark:text-neutral-100'
-                          : 'text-neutral-700 dark:text-neutral-300'
+                          ? 'bg-neutral-100 dark:bg-zinc-800 text-black dark:text-white'
+                          : 'text-black/85 dark:text-white/85'
                       }`}
                     >
                       <div className="flex items-center gap-2 truncate pr-2">
@@ -504,7 +504,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
                         <div className="truncate">
                           <div className="truncate font-medium">{opt.label}</div>
                           {opt.sublabel && (
-                            <div className="text-[10px] text-neutral-400 truncate">
+                            <div className="text-[10px] text-black/60 dark:text-white/65 truncate">
                               {opt.sublabel}
                             </div>
                           )}

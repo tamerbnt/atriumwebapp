@@ -376,7 +376,7 @@ export const PosHistoryView: React.FC = () => {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-medium text-neutral-300">
-                  {language === 'ar' ? 'تدقيق الحركات والتسوية' : 'Audit Traçabilité & Flux Net'}
+                  {language === 'ar' ? 'تدقيق الحركات والتسوية' : 'Journal & Solde Net'}
                 </span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
                   {movementStats.totalMovements} événements

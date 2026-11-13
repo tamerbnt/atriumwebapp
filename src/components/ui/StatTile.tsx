@@ -24,7 +24,7 @@ export const StatTile: React.FC<StatTileProps> = ({
       className={`p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[130px] transition-all duration-200 hover:border-[#D5DFE3] dark:hover:border-neutral-600 ${className}`}
     >
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold tracking-wide text-[#64748B] dark:text-neutral-400">
+        <span className="text-xs font-semibold tracking-wide text-black/70 dark:text-white/75">
           {label}
         </span>
         <div
@@ -39,10 +39,10 @@ export const StatTile: React.FC<StatTileProps> = ({
       </div>
 
       <div>
-        <div className="text-2xl font-black tracking-tight tabular-nums text-neutral-900 dark:text-white">
+        <div className="text-[28px] leading-none font-bold tracking-tight tabular-nums text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
           {value}
         </div>
-        <div className="flex items-center gap-2 mt-1">
+        <div className="flex items-center gap-2 mt-1.5">
           {trend && trendValue && (
             <span
               className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
@@ -55,7 +55,7 @@ export const StatTile: React.FC<StatTileProps> = ({
             </span>
           )}
           {subtitle && (
-            <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 truncate">
+            <span className="text-xs font-medium text-black/65 dark:text-white/70 truncate">
               {subtitle}
             </span>
           )}

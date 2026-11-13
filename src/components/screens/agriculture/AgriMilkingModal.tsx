@@ -89,14 +89,14 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
               <Milk size={20} />
             </div>
             <div>
-              <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {isAr ? 'تسجيل جلسة حلب وتبريد الحليب' : 'Enregistrer une Session de Traite & Tank'}
               </h2>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
+            className="p-1.5 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
           >
             <X size={18} />
           </button>
@@ -161,7 +161,7 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
 
           <div className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-3 border border-neutral-100 dark:border-neutral-800">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+              <span className="text-xs font-bold text-black dark:text-white">
                 {isAr ? 'عزل الحليب المعالج بالمضادات الحيوية' : 'Exclusion Sanitaire (Antibiotiques)'}
               </span>
               <span className="text-[10px] text-amber-600 font-medium">
@@ -176,7 +176,7 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
               onChange={(e) => setRejectedWithholdingLiters(e.target.value)}
               required
             />
-            <p className="text-[10.5px] text-neutral-400">
+            <p className="text-[10.5px] text-black/55 dark:text-white/55">
               {isAr
                 ? 'الحليب المعالج بالمضادات الحيوية يُستبعد تلقائياً من خزان التسليم لحماية دعم ONIL.'
                 : 'Le lait contenant des résidus médicamenteux est strictly exclu du volume éligible à la prime ONIL.'}

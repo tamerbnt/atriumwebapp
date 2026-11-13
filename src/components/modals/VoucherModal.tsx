@@ -71,10 +71,10 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
         {/* Active Entitlement Status */}
         <div className="p-4 rounded-[20px] bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-between shadow-2xs">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">
+            <span className="text-[10px] font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-black/55 dark:text-white/55 block">
               {t('settings_license_entitlement', language)}
             </span>
-            <div className="text-sm font-bold text-neutral-900 dark:text-white mt-0.5">
+            <div className="text-sm font-bold text-black dark:text-white mt-0.5 tabular-nums">
               {subscription.plan.name} {language === 'ar' ? `الرتبة #${subscription.plan.tierRank}` : language === 'fr' ? `Niveau #${subscription.plan.tierRank}` : `Tier Rank #${subscription.plan.tierRank}`}
             </div>
             <span className="text-xs text-[#d4522f] font-semibold">
@@ -101,7 +101,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
               corner={14}
               required
             />
-            <span className="text-[11px] text-neutral-400 block px-1">
+            <span className="text-[11px] text-black/55 dark:text-white/55 block px-1">
               Format: ATR-[STARTER|PRO|ENTERPRISE]-LIFE-XXXX-XXXX
             </span>
           </div>
@@ -137,7 +137,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
 
         {/* Preset Sample Vouchers */}
         <div className="pt-2 border-t border-[#E6DED6] dark:border-neutral-800/80">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 block mb-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-black/55 dark:text-white/55 block mb-2">
             {t('voucher_preset_title', language)}
           </span>
           <div className="space-y-1.5">
@@ -146,17 +146,17 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
                 key={v.code}
                 type="button"
                 onClick={() => handleApplyPreset(v.code)}
-                className="w-full text-left p-3 rounded-2xl border border-[#E9EEF0] dark:border-neutral-800 hover:border-[#D5DFE3] bg-white dark:bg-neutral-800/50 flex items-center justify-between group cursor-pointer transition-colors shadow-2xs"
+                className="w-full text-left rtl:text-right p-3 rounded-2xl border border-[#E9EEF0] dark:border-neutral-800 hover:border-[#D5DFE3] bg-white dark:bg-neutral-800/50 flex items-center justify-between group cursor-pointer transition-colors shadow-2xs"
               >
                 <div>
-                  <div className="text-xs font-bold text-neutral-900 dark:text-white">
+                  <div className="text-xs font-bold text-black dark:text-white">
                     {v.label}
                   </div>
                   <span className="text-[11px] font-mono text-[#d4522f] font-semibold">
                     {v.code}
                   </span>
                 </div>
-                <span className="text-[10px] font-bold text-neutral-400 group-hover:text-[#d4522f] uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-black/55 dark:text-white/55 group-hover:text-[#d4522f] uppercase tracking-wider rtl:normal-case rtl:tracking-normal">
                   {t('voucher_fill_code', language)}
                 </span>
               </button>

@@ -214,7 +214,7 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
         onClick={handleScrollJump}
         aria-label={label}
         title={label}
-        className="group relative flex items-center justify-center h-10 min-w-10 px-2 group-hover:ps-2.5 group-hover:pe-4 group-focus-visible:ps-2.5 group-focus-visible:pe-4 rounded-full bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-100 border border-neutral-200/90 dark:border-neutral-700/90 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.12),0_4px_8px_-2px_rgba(0,0,0,0.06)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] hover:border-[#d4522f]/80 hover:shadow-[0_10px_28px_-4px_rgba(212,82,47,0.25)] hover:scale-[1.04] active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4522f] overflow-hidden"
+        className="group relative flex items-center justify-center h-10 min-w-10 px-2 group-hover:ps-2.5 group-hover:pe-4 group-focus-visible:ps-2.5 group-focus-visible:pe-4 rounded-full bg-white dark:bg-neutral-900 text-black dark:text-white border border-neutral-200/90 dark:border-neutral-700/90 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.12),0_4px_8px_-2px_rgba(0,0,0,0.06)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] hover:border-[#d4522f]/80 hover:shadow-[0_10px_28px_-4px_rgba(212,82,47,0.25)] hover:scale-[1.04] active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4522f] overflow-hidden"
       >
         {/* Animated Direction Arrow Icon */}
         <span
@@ -228,7 +228,7 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
 
         {/* Microcopy Label - icon only at rest, fluidly reveals on hover / focus */}
         {!compact && (
-          <span className="max-w-0 opacity-0 overflow-hidden whitespace-nowrap text-xs font-medium text-neutral-700 dark:text-neutral-200 group-hover:max-w-48 group-hover:opacity-100 group-hover:ms-2 group-focus-visible:max-w-48 group-focus-visible:opacity-100 group-focus-visible:ms-2 group-hover:text-[#d4522f] dark:group-hover:text-[#E09070] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none pointer-events-none">
+          <span className="max-w-0 opacity-0 overflow-hidden whitespace-nowrap text-xs font-medium text-black/85 dark:text-white group-hover:max-w-48 group-hover:opacity-100 group-hover:ms-2 group-focus-visible:max-w-48 group-focus-visible:opacity-100 group-focus-visible:ms-2 group-hover:text-[#d4522f] dark:group-hover:text-[#E09070] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none pointer-events-none">
             {label}
           </span>
         )}

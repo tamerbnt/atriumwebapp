@@ -128,7 +128,7 @@ export const AgricultureDashboardView: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 bg-white min-h-screen p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
+    <div className="flex-1 bg-white dark:bg-[#0C0C0E] min-h-screen p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
       <OfflineRetryBanner
         isOffline={isOffline}
         isTimedOut={isTimedOut}
@@ -159,7 +159,7 @@ export const AgricultureDashboardView: React.FC = () => {
         {/* POD 1: Field Flow & Irrigation Velocity (42% width) */}
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'حركة الحقول وشبكة السقي' : language === 'fr' ? 'Activité Parcelles & Irrigation' : 'Field Flow & Irrigation Velocity'}
+            title={language === 'ar' ? 'حركة الحقول وشبكة السقي' : language === 'fr' ? 'Activité Parcelles & Irrigation' : 'Field & Irrigation'}
             icon={<Sprout size={18} className="text-[#d4522f]" />}
             badge={
               <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
@@ -167,12 +167,12 @@ export const AgricultureDashboardView: React.FC = () => {
               </span>
             }
             rightControls={
-              <div className="flex items-center bg-[#F0F2F5] p-0.5 rounded-lg text-xs font-semibold">
+              <div className="flex items-center bg-[#F0F2F5] dark:bg-neutral-800 p-0.5 rounded-lg text-xs font-semibold">
                 <button
                   type="button"
                   onClick={() => setTimeFilter('today')}
                   className={`px-3 py-1 rounded-md transition-all ${
-                    timeFilter === 'today' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                    timeFilter === 'today' ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-sm' : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
                   }`}
                 >
                   {language === 'ar' ? 'اليوم' : 'Today'}
@@ -181,7 +181,7 @@ export const AgricultureDashboardView: React.FC = () => {
                   type="button"
                   onClick={() => setTimeFilter('yesterday')}
                   className={`px-3 py-1 rounded-md transition-all ${
-                    timeFilter === 'yesterday' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                    timeFilter === 'yesterday' ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-sm' : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
                   }`}
                 >
                   {language === 'ar' ? 'أمس' : 'Yesterday'}
@@ -191,32 +191,32 @@ export const AgricultureDashboardView: React.FC = () => {
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <span className="text-xs font-medium text-gray-500 block mb-1">
+                    <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">
                       {language === 'ar' ? 'استهلاك حصة المياه ANRH' : 'Quota Irrigation ANRH'}
                     </span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold font-mono text-gray-900 tabular-nums">
+                      <span className="text-3xl font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
                         {waterUsagePct}%
                       </span>
-                      <span className="text-xs text-gray-400">/ 100% max</span>
+                      <span className="text-xs text-black/55 dark:text-white/55">/ 100% max</span>
                     </div>
                     <span className="inline-block mt-2 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[11px] font-medium rounded-full">
                       ● {language === 'ar' ? 'تنقيط موضعي ذكي' : 'Goutte-à-goutte économe'}
                     </span>
                   </div>
-                  <div className="w-px h-12 bg-gray-200 mx-4" />
+                  <div className="w-px h-12 bg-neutral-200 dark:bg-neutral-700 mx-4" />
                   <div className="flex-1">
-                    <span className="text-xs font-medium text-gray-500 block mb-1">
+                    <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">
                       {language === 'ar' ? 'مساحة الأراضي المزروعة' : 'Superficie Exploitable'}
                     </span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold font-mono text-gray-900 tabular-nums">
+                      <span className="text-3xl font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
                         {totalHectares}
                       </span>
-                      <span className="text-xs text-gray-400">{language === 'ar' ? 'هكتار' : 'Hectares'}</span>
+                      <span className="text-xs text-black/55 dark:text-white/55">{language === 'ar' ? 'هكتار' : 'Hectares'}</span>
                     </div>
                     <span className="inline-block mt-2 px-2 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium rounded-full">
                       {(parcels || []).length || 8} {language === 'ar' ? 'قطع' : 'parcelles'}
@@ -224,30 +224,30 @@ export const AgricultureDashboardView: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-gray-100">
-                  <span className="text-[11px] text-gray-400 block mb-2">
+                <div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700/60">
+                  <span className="text-[11px] text-black/55 dark:text-white/55 block mb-2">
                     {language === 'ar' ? 'دورة تشغيل المضخات على مدار 24 ساعة' : 'Courbe horaire de pompage & irrigation (24h)'}
                   </span>
                   <HourlyCurveChart data={hourlyData} color="#d4522f" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                 <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-xs font-medium text-gray-500">
+                  <span className="text-xs font-medium text-black/70 dark:text-white/75">
                     {language === 'ar' ? 'محصول اليوم المجمع' : 'Récolte Journalière'}
                   </span>
-                  <span className="text-base font-bold font-mono text-gray-900 tabular-nums">
+                  <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums tabular-nums">
                     {dailyHarvestKg} / {dailyTargetKg} kg
                   </span>
                 </div>
-                <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-1">
+                <div className="w-full bg-neutral-100 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
                   <div
                     className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
                     style={{ width: `${targetPct}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-[11px] text-gray-400">
+                <div className="flex justify-between text-[11px] text-black/55 dark:text-white/55">
                   <span>{targetPct}% {language === 'ar' ? 'من الهدف' : 'de l’objectif'}</span>
                   <span>{dailyTargetKg} kg / {language === 'ar' ? 'يوم' : 'jour'}</span>
                 </div>
@@ -259,22 +259,22 @@ export const AgricultureDashboardView: React.FC = () => {
         {/* POD 2: Crop & Livestock Asset Development (58% width) */}
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'تطور المحاصيل والثروة الحيوانية' : language === 'fr' ? 'Développement Cultures & Cheptel' : 'Crop & Livestock Asset Development'}
+            title={language === 'ar' ? 'المحاصيل والثروة الحيوانية' : language === 'fr' ? 'Cultures & Cheptel' : 'Crops & Livestock'}
             icon={<Tractor size={18} className="text-[#d4522f]" />}
             rightControls={
-              <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
+              <div className="flex items-center gap-1 text-xs font-semibold text-black/70 dark:text-white/75">
                 <button
                   type="button"
                   onClick={() => setCurrentMonthIndex((prev) => (prev > 0 ? prev - 1 : 11))}
-                  className="p-1 hover:bg-gray-200 rounded"
+                  className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"
                 >
                   <ChevronLeft size={14} />
                 </button>
-                <span className="px-1 text-gray-800">{months[currentMonthIndex]} 2026</span>
+                <span className="px-1 text-black dark:text-white">{months[currentMonthIndex]} 2026</span>
                 <button
                   type="button"
                   onClick={() => setCurrentMonthIndex((prev) => (prev < 11 ? prev + 1 : 0))}
-                  className="p-1 hover:bg-gray-200 rounded"
+                  className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"
                 >
                   <ChevronRight size={14} />
                 </button>
@@ -309,12 +309,12 @@ export const AgricultureDashboardView: React.FC = () => {
                 />
               </div>
 
-              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-semibold text-gray-700">
+                  <span className="text-xs font-semibold text-black dark:text-white">
                     {language === 'ar' ? 'المردود الأسبوعي (قنطار)' : 'Rendement hebdomadaire récolté (Quintaux)'}
                   </span>
-                  <span className="text-[11px] text-gray-400">
+                  <span className="text-[11px] text-black/55 dark:text-white/55">
                     {language === 'ar' ? 'مقارنة شهرية' : '4 dernières semaines'}
                   </span>
                 </div>
@@ -334,43 +334,43 @@ export const AgricultureDashboardView: React.FC = () => {
         {/* POD 3: Financial Trajectory (42% width) */}
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'المسار المالي وإيرادات المواسم' : language === 'fr' ? 'Trajectoire Financière & Campagne' : 'Financial Trajectory & P&L'}
+            title={language === 'ar' ? 'الإيرادات والأرباح' : language === 'fr' ? 'Revenus & Marges' : 'Revenue & Profit'}
             icon={<TrendingUp size={18} className="text-[#d4522f]" />}
             rightControls={
-              <span className="text-xs font-semibold text-gray-500 uppercase">
+              <span className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase rtl:normal-case">
                 {months[currentMonthIndex]} 2026
               </span>
             }
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
-                <div className="grid grid-cols-3 gap-2 pb-3 border-b border-gray-100">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+                <div className="grid grid-cols-3 gap-2 pb-3 border-b border-neutral-200 dark:border-neutral-700/60">
                   <div>
-                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'صافي المزرعة' : 'Net Exploitation'}</span>
-                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'صافي المزرعة' : 'Net Exploitation'}</span>
+                    <span className="text-lg font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
                       {formatMoney(1150000)}
                     </span>
                     <span className="text-[10px] text-emerald-600 block">36% Brut</span>
                   </div>
                   <div>
-                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'مبيعات الجملة' : 'CA Ventes'}</span>
-                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'مبيعات الجملة' : 'CA Ventes'}</span>
+                    <span className="text-lg font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
                       {formatMoney(totalWholesalePayoutDzd)}
                     </span>
                     <span className="text-[10px] text-emerald-600 block">+14%</span>
                   </div>
                   <div>
-                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'أسمدة ومحروقات' : 'Engrais & Mazout'}</span>
-                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'أسمدة ومحروقات' : 'Engrais & Mazout'}</span>
+                    <span className="text-lg font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
                       {formatMoney(500000)}
                     </span>
-                    <span className="text-[10px] text-gray-400 block">30% CA</span>
+                    <span className="text-[10px] text-black/55 dark:text-white/55 block">30% CA</span>
                   </div>
                 </div>
 
                 <div className="pt-3">
-                  <span className="text-[11px] text-gray-400 block mb-1">
+                  <span className="text-[11px] text-black/55 dark:text-white/55 block mb-1">
                     {language === 'ar' ? 'منحنى التدفق النقدي على مدار 30 يوماً' : 'Tendance des encaissements sur 30 jours'}
                   </span>
                   <MonthlyAreaChart data={monthlyRevenue} color="#8B5CF6" />
@@ -378,56 +378,56 @@ export const AgricultureDashboardView: React.FC = () => {
               </div>
 
               {/* 4 KPIs Inset Grid */}
-              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-semibold text-gray-700">
+                  <span className="text-xs font-semibold text-black dark:text-white">
                     {language === 'ar' ? 'مؤشرات الكفاءة الزراعية' : 'Indicateurs Agronomiques'}
                   </span>
-                  <Info size={13} className="text-gray-400" />
+                  <Info size={13} className="text-black/55 dark:text-white/55" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
-                    <span className="text-[11px] text-gray-500 block">
+                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
                       {language === 'ar' ? 'المردود للهكتار' : 'Rendement / Hectare'}
                     </span>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-mono text-gray-900">42 Qx/ha</span>
+                      <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">42 Qx/ha</span>
                       <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
                         Élevé
                       </span>
                     </div>
                   </div>
 
-                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
-                    <span className="text-[11px] text-gray-500 block">
+                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
                       {language === 'ar' ? 'كفاءة استهلاك المياه' : 'Efficience Eau (ANRH)'}
                     </span>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-mono text-gray-900">380 m³/T</span>
+                      <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">380 m³/T</span>
                       <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
                         Économe
                       </span>
                     </div>
                   </div>
 
-                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
-                    <span className="text-[11px] text-gray-500 block">
+                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
                       {language === 'ar' ? 'نسبة تلف المحصول' : 'Taux de Perte'}
                     </span>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-mono text-gray-900">1.8%</span>
+                      <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">1.8%</span>
                       <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
                         Minime
                       </span>
                     </div>
                   </div>
 
-                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
-                    <span className="text-[11px] text-gray-500 block">
+                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
                       {language === 'ar' ? 'إنتاجية الحليب / بقرة' : 'Lait / Vache / Jour'}
                     </span>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-mono text-gray-900">24 L/j</span>
+                      <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">24 L/j</span>
                       <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
                         Optimal
                       </span>
@@ -442,28 +442,28 @@ export const AgricultureDashboardView: React.FC = () => {
         {/* POD 4: Agronomic Intelligence & Pest Weather Guardian (58% width) */}
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'ذكاء المحاصيل وحارس المناخ والأمراض' : language === 'fr' ? 'Intelligence Agronomique & Pest Sentinel' : 'Agronomic Intelligence & Guardian'}
+            title={language === 'ar' ? 'المؤشرات والتنبيهات' : language === 'fr' ? 'Analyses & Alertes' : 'Insights & Alerts'}
             icon={<ShieldCheck size={18} className="text-[#d4522f]" />}
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-gray-700">
+                    <span className="text-xs font-semibold text-black dark:text-white">
                       {language === 'ar' ? 'تنوع المحاصيل المزروعة' : 'Assolement des Cultures'}
                     </span>
-                    <Info size={13} className="text-gray-400" />
+                    <Info size={13} className="text-black/55 dark:text-white/55" />
                   </div>
                   <DonutChart segments={cropMix} centerLabel={`${totalHectares} Ha`} />
                 </div>
 
-                <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-gray-700">
+                    <span className="text-xs font-semibold text-black dark:text-white">
                       {language === 'ar' ? 'مردود الحقول (قنطار/هكتار)' : 'Rendement par Parcelle'}
                     </span>
-                    <Info size={13} className="text-gray-400" />
+                    <Info size={13} className="text-black/55 dark:text-white/55" />
                   </div>
                   <PillBarHistogram
                     data={parcelYield}
@@ -475,7 +475,7 @@ export const AgricultureDashboardView: React.FC = () => {
 
               {/* Weather & Pest Sentinel Card */}
               <GuardianCard
-                title={language === 'ar' ? 'حارس الصقيع والآفات الزراعية (Pest Sentinel)' : 'Weather Frost & Phytosanitary Sentinel'}
+                title={language === 'ar' ? 'تنبيهات الصقيع والآفات' : 'Crop & Weather Alerts'}
                 subtitle={
                   language === 'ar'
                     ? 'رصد مستمر لمحطات الطقس والرطوبة النسبية للإنذار المبكر من الصقيع وفطر الفيتوفتورا ومعالجة الأشجار'

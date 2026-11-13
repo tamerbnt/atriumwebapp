@@ -199,26 +199,26 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
         {preview && (
           <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+              <span className="text-xs font-semibold text-black/80 dark:text-white/80">
                 {isAr ? 'الأجل المحسوب' : isEn ? 'Calculated Limit' : 'Calcul Automatique'}
               </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold">
+              <span className="text-[10px] font-mono tabular-nums px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold">
                 {preview.baseDays + preview.distanceExtensionDays} {isAr ? 'يوم' : isEn ? 'days' : 'jours'}
               </span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1">
               <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/40">
-                <span className="text-[10px] text-neutral-400 block">{isAr ? 'المدة الأساسية' : isEn ? 'Base Days' : 'Délai Base'}</span>
-                <span className="font-bold text-neutral-900 dark:text-white font-mono">{preview.baseDays} j</span>
+                <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'المدة الأساسية' : isEn ? 'Base Days' : 'Délai Base'}</span>
+                <span className="font-bold text-black dark:text-white font-mono tabular-nums">{preview.baseDays} j</span>
               </div>
               <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/40">
-                <span className="text-[10px] text-neutral-400 block">{isAr ? 'تمديد المسافة' : isEn ? 'Extra Days' : 'Distance'}</span>
-                <span className="font-bold text-neutral-900 dark:text-white font-mono">+{preview.distanceExtensionDays} j</span>
+                <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'تمديد المسافة' : isEn ? 'Extra Days' : 'Distance'}</span>
+                <span className="font-bold text-black dark:text-white font-mono tabular-nums">+{preview.distanceExtensionDays} j</span>
               </div>
               <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/40 col-span-2">
-                <span className="text-[10px] text-neutral-400 block">{isAr ? 'تاريخ الانتهاء' : isEn ? 'Final Due' : 'Expiration Finale'}</span>
-                <span className="font-bold text-[#d4522f] font-mono text-xs">
+                <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'تاريخ الانتهاء' : isEn ? 'Final Due' : 'Expiration Finale'}</span>
+                <span className="font-bold text-[#d4522f] font-mono tabular-nums text-xs">
                   {new Date(preview.terminalExpiryDate).toLocaleDateString('fr-DZ', {
                     weekday: 'short',
                     year: 'numeric',

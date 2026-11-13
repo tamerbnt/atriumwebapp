@@ -132,7 +132,7 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
               <Sprout size={20} />
             </div>
             <div>
-              <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {cycleToEdit
                   ? (isAr ? 'تعديل دورة المحصول الفلاحي' : 'Modifier le Cycle de Culture')
                   : (isAr ? 'فتح دورة محصول وموسم فلاحي جديد' : 'Nouveau Cycle de Culture & Assolement')}
@@ -141,7 +141,7 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
+            className="p-1.5 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
           >
             <X size={18} />
           </button>
@@ -229,7 +229,7 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
           </div>
 
           <div className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-3 border border-neutral-100 dark:border-neutral-800">
-            <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+            <span className="text-xs font-bold text-black dark:text-white">
               {isAr ? 'أهداف الإنتاج والتكاليف التقديرية' : 'Objectifs de Rendement & Budget'}
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

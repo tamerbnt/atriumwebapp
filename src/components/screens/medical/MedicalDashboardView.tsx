@@ -169,7 +169,7 @@ export const MedicalDashboardView: React.FC = () => {
         {/* POD 1: Patient Flow & Waiting Room Velocity (42% width) */}
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'قاعة الانتظار وحركة اليوم' : language === 'fr' ? 'File d’Attente & Consultations' : 'Patient Flow & Queue Velocity'}
+            title={language === 'ar' ? 'قاعة الانتظار وحركة اليوم' : language === 'fr' ? 'File d’Attente & Consultations' : 'Patient Flow'}
             icon={<Stethoscope size={18} className="text-[#d4522f]" />}
             badge={
               <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
@@ -269,7 +269,7 @@ export const MedicalDashboardView: React.FC = () => {
         {/* POD 2: Patient Base Development (58% width) */}
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'تطور سجل المرضى والمتابعات' : language === 'fr' ? 'Développement Dossiers Patients' : 'Patient Base & Clinical Development'}
+            title={language === 'ar' ? 'سجل المرضى والمتابعات' : language === 'fr' ? 'Dossiers Patients' : 'Patient Records'}
             icon={<Users size={18} className="text-[#d4522f]" />}
             rightControls={
               <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
@@ -344,7 +344,7 @@ export const MedicalDashboardView: React.FC = () => {
         {/* POD 3: Financial Trajectory (42% width) */}
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'المسار المالي وإيراد العيادة' : language === 'fr' ? 'Trajectoire Financière & Recettes' : 'Financial Trajectory & P&L'}
+            title={language === 'ar' ? 'الإيرادات والأرباح' : language === 'fr' ? 'Revenus & Recettes' : 'Revenue & Profit'}
             icon={<TrendingUp size={18} className="text-[#d4522f]" />}
             rightControls={
               <span className="text-xs font-semibold text-gray-500 uppercase">
@@ -452,7 +452,7 @@ export const MedicalDashboardView: React.FC = () => {
         {/* POD 4: Clinical Intelligence & Patient Safety Guardian (58% width) */}
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'ذكاء الفحوصات وحارس سلامة المرضى' : language === 'fr' ? 'Intelligence Clinique & Safety Sentinel' : 'Clinical Intelligence & Safety Guardian'}
+            title={language === 'ar' ? 'المؤشرات والتنبيهات' : language === 'fr' ? 'Analyses & Alertes' : 'Insights & Alerts'}
             icon={<HeartPulse size={18} className="text-[#d4522f]" />}
             className="flex-1 flex flex-col justify-between"
           >
@@ -485,7 +485,7 @@ export const MedicalDashboardView: React.FC = () => {
 
               {/* Safety Sentinel Card */}
               <GuardianCard
-                title={language === 'ar' ? 'حارس سلامة الوصفات والجرعات' : 'Prescription Safety & Interaction Sentinel'}
+                title={language === 'ar' ? 'سلامة الوصفات والجرعات' : 'Prescription Safety'}
                 subtitle={
                   language === 'ar'
                     ? 'فحص آلي للتداخلات الدوائية وملاءمة الجرعات وفق سن المريض وتاريخ الحساسية'

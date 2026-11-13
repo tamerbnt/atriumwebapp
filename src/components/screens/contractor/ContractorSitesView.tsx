@@ -241,13 +241,13 @@ export const ContractorSitesView: React.FC = () => {
             <HardHat size={16} />
           </div>
           <div>
-            <div className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
+            <div className="font-mono font-bold text-xs text-black dark:text-white flex items-center gap-1.5">
               {p.projectCode}
               {pinnedIds.has(p.id) && (
                 <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />
               )}
             </div>
-            <div className="text-[10px] text-neutral-400">
+            <div className="text-[10px] text-black/55 dark:text-white/55">
               {p.startDate ? `ODS: ${p.startDate}` : 'BTP'}
             </div>
           </div>
@@ -262,11 +262,11 @@ export const ContractorSitesView: React.FC = () => {
       minWidth: '220px',
       cell: (p) => (
         <div>
-          <div className="font-semibold text-xs text-neutral-900 dark:text-neutral-100 line-clamp-1">
+          <div className="font-semibold text-xs text-black dark:text-white line-clamp-1">
             {p.projectName}
           </div>
-          <div className="text-[11px] text-neutral-500 flex items-center gap-1">
-            <Building size={11} className="text-neutral-400 shrink-0" />
+          <div className="text-[11px] text-black/70 dark:text-white/75 flex items-center gap-1">
+            <Building size={11} className="text-black/55 dark:text-white/55 shrink-0" />
             <span className="truncate">{p.clientName}</span>
           </div>
         </div>
@@ -279,7 +279,7 @@ export const ContractorSitesView: React.FC = () => {
       sortable: true,
       minWidth: '150px',
       cell: (p) => (
-        <div className="flex items-center gap-1 text-xs text-neutral-600 dark:text-neutral-300">
+        <div className="flex items-center gap-1 text-xs text-black/70 dark:text-white">
           <MapPin size={12} className="text-[#d4522f] shrink-0" />
           <span className="truncate">{p.siteLocation}</span>
         </div>
@@ -294,8 +294,8 @@ export const ContractorSitesView: React.FC = () => {
       cell: (p) => (
         <div className="space-y-1 w-full max-w-[130px]">
           <div className="flex items-center justify-between text-[11px]">
-            <span className="font-mono font-bold text-neutral-900 dark:text-neutral-100">{p.progressPercent}%</span>
-            <span className="text-[10px] text-neutral-400">{p.targetEndDate}</span>
+            <span className="font-mono font-bold text-black dark:text-white">{p.progressPercent}%</span>
+            <span className="text-[10px] text-black/55 dark:text-white/55">{p.targetEndDate}</span>
           </div>
           <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
             <div
@@ -314,7 +314,7 @@ export const ContractorSitesView: React.FC = () => {
       minWidth: '140px',
       cell: (p) => (
         <div>
-          <div className="font-mono font-bold text-xs text-neutral-900 dark:text-white">
+          <div className="font-mono font-bold text-xs text-black dark:text-white">
             {formatMoney(p.contractAmountDzd)}
           </div>
           <div className="text-[10px] text-emerald-600 dark:text-emerald-400">
@@ -353,7 +353,7 @@ export const ContractorSitesView: React.FC = () => {
       sortable: true,
       minWidth: '140px',
       cell: (p) => (
-        <div className="text-xs text-neutral-700 dark:text-neutral-300 truncate">
+        <div className="text-xs text-black dark:text-white truncate">
           {p.supervisorName}
         </div>
       ),
@@ -394,7 +394,7 @@ export const ContractorSitesView: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+              <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {isAr ? 'المشاريع والورشات (Chantiers)' : 'Projets & Chantiers en Cours'}
               </h1>
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
@@ -429,7 +429,7 @@ export const ContractorSitesView: React.FC = () => {
       {/* Canonical 3-Card Top Metrics Pod Tray */}
       <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div>
-          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+          <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
             {isAr ? 'توزيع الورشات والالتزامات التعاقدية' : 'Suivi Opérationnel & Engagements BTP'}
           </h2>
         </div>
@@ -437,11 +437,11 @@ export const ContractorSitesView: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Card 1: Chantiers en cours */}
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+            <span className="text-[11px] font-medium text-black/70 dark:text-white/70">
               {isAr ? 'الورشات النشطة قيد الإنجاز' : 'Chantiers en Cours'}
             </span>
             <div>
-              <div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">
+              <div className="text-2xl font-bold tracking-tight text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
                 {activeCount}
               </div>
               <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">
@@ -452,14 +452,14 @@ export const ContractorSitesView: React.FC = () => {
 
           {/* Card 2: Réceptions */}
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+            <span className="text-[11px] font-medium text-black/70 dark:text-white/70">
               {isAr ? 'الاستلامات المؤقتة والنهائية' : 'Réceptions & Clôtures'}
             </span>
             <div>
-              <div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono tabular-nums">
+              <div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
                 {handoverCount}
               </div>
-              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
+              <p className="text-[11px] text-black/55 dark:text-white/60 mt-0.5 font-medium">
                 {isAr ? 'مشاريع مسلّمة ومرحلة الضمان' : 'Livrés avec PV de réception'}
               </p>
             </div>
@@ -468,7 +468,7 @@ export const ContractorSitesView: React.FC = () => {
           {/* Card 3: Dark Espresso Anchor Card */}
           <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-neutral-300">
+              <span className="text-[11px] font-medium text-white/75">
                 {isAr ? 'إجمالي محفظة الصفقات' : 'Montant Total Engagé'}
               </span>
               <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">
@@ -476,7 +476,7 @@ export const ContractorSitesView: React.FC = () => {
               </span>
             </div>
             <div>
-              <div className="text-2xl font-black text-white font-mono tabular-nums">
+              <div className="text-2xl font-black text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
                 {formatMoney(totalContractDzd)}
               </div>
               <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
@@ -493,11 +493,11 @@ export const ContractorSitesView: React.FC = () => {
         {/* Table Control Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <HardHat size={16} className="text-neutral-500" />
-            <span className="text-sm font-bold text-neutral-900 dark:text-white">
+            <HardHat size={16} className="text-black/70 dark:text-white/75" />
+            <span className="text-sm font-bold text-black dark:text-white">
               {isAr ? 'دليل الورشات والمشاريع' : 'Registre Général des Chantiers'}
             </span>
-            <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
+            <span className="text-xs text-black/55 dark:text-white/55 font-semibold tabular-nums ml-1">
               {filteredProjects.length}
             </span>
           </div>
@@ -578,7 +578,7 @@ export const ContractorSitesView: React.FC = () => {
             }}
             onEdit={handleEdit}
             onDelete={handleDelete}
-            emptyIcon={<HardHat size={32} className="text-neutral-400" />}
+            emptyIcon={<HardHat size={32} className="text-black/55 dark:text-white/55" />}
             emptyTitle={isAr ? 'لا توجد ورشات' : 'Aucun chantier trouvé'}
             emptyDescription={
               searchQuery
@@ -617,23 +617,23 @@ export const ContractorSitesView: React.FC = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-bold text-neutral-900 dark:text-white line-clamp-1">
+                  <h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">
                     {p.projectName}
                   </h3>
-                  <div className="text-xs text-neutral-500 font-medium mt-0.5 flex items-center gap-1">
-                    <Building size={12} className="text-neutral-400 shrink-0" />
+                  <div className="text-xs text-black/70 dark:text-white/75 font-medium mt-0.5 flex items-center gap-1">
+                    <Building size={12} className="text-black/55 dark:text-white/55 shrink-0" />
                     <span className="truncate">{p.clientName}</span>
                   </div>
                 </div>
 
-                <div className="text-xs text-neutral-600 dark:text-neutral-400 flex items-center gap-1.5 bg-neutral-50 dark:bg-neutral-800/50 p-2 rounded-xl">
+                <div className="text-xs text-black/70 dark:text-white/70 flex items-center gap-1.5 bg-neutral-50 dark:bg-neutral-800/50 p-2 rounded-xl">
                   <MapPin size={13} className="shrink-0 text-[#d4522f]" />
                   <span className="truncate text-[11px]">{p.siteLocation}</span>
                 </div>
 
                 <div className="space-y-1 pt-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-neutral-500 font-medium text-[11px]">{isAr ? 'الإنجاز:' : 'Avancement:'}</span>
+                    <span className="text-black/70 dark:text-white/75 font-medium text-[11px]">{isAr ? 'الإنجاز:' : 'Avancement:'}</span>
                     <span className="font-mono font-bold text-[#d4522f] text-xs">{p.progressPercent}%</span>
                   </div>
                   <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
@@ -646,14 +646,14 @@ export const ContractorSitesView: React.FC = () => {
 
                 <div className="pt-2.5 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
                   <div>
-                    <div className="text-[10px] text-neutral-400 uppercase tracking-wider">Montant Marché</div>
-                    <div className="font-mono font-bold text-neutral-900 dark:text-white mt-0.5 text-xs">
+                    <div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider rtl:normal-case rtl:tracking-normal">Montant Marché</div>
+                    <div className="font-mono font-bold text-black dark:text-white mt-0.5 text-xs">
                       {formatMoney(p.contractAmountDzd)}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-[10px] text-neutral-400 uppercase tracking-wider">Conducteur</div>
-                    <div className="font-medium text-neutral-700 dark:text-neutral-300 mt-0.5 truncate max-w-[110px] text-xs">
+                    <div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider rtl:normal-case rtl:tracking-normal">Conducteur</div>
+                    <div className="font-medium text-black dark:text-white mt-0.5 truncate max-w-[110px] text-xs">
                       {p.supervisorName}
                     </div>
                   </div>
@@ -674,7 +674,7 @@ export const ContractorSitesView: React.FC = () => {
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="font-mono font-bold text-xs text-neutral-900 dark:text-white">
+                    <span className="font-mono font-bold text-xs text-black dark:text-white">
                       {selectedProject.projectCode}
                     </span>
                     <span
@@ -687,14 +687,14 @@ export const ContractorSitesView: React.FC = () => {
                       {selectedProject.status}
                     </span>
                   </div>
-                  <p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 line-clamp-1">
+                  <p className="text-xs font-semibold text-black dark:text-white line-clamp-1">
                     {selectedProject.projectName}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedProject(null)}
-                className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"
               >
                 <X size={16} />
               </button>
@@ -718,7 +718,7 @@ export const ContractorSitesView: React.FC = () => {
               </button>
               <button
                 onClick={() => handleEdit(selectedProject)}
-                className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 transition-colors"
+                className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-neutral-100 text-black hover:bg-neutral-200 dark:bg-neutral-800 dark:text-white transition-colors"
               >
                 <Edit size={12} />
                 {isAr ? 'تعديل' : 'Modifier'}
@@ -738,7 +738,7 @@ export const ContractorSitesView: React.FC = () => {
                 className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
                   activeTab === 'dossier'
                     ? 'border-[#d4522f] text-[#d4522f] font-bold'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                    : 'border-transparent text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
                 }`}
               >
                 {isAr ? 'المشروع' : 'Dossier'}
@@ -748,7 +748,7 @@ export const ContractorSitesView: React.FC = () => {
                 className={`pb-2 px-2 font-medium border-b-2 transition-colors flex items-center gap-1 ${
                   activeTab === 'boq'
                     ? 'border-[#d4522f] text-[#d4522f] font-bold'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                    : 'border-transparent text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
                 }`}
               >
                 {isAr ? 'المقايسة' : 'BOQ'}
@@ -761,7 +761,7 @@ export const ContractorSitesView: React.FC = () => {
                 className={`pb-2 px-2 font-medium border-b-2 transition-colors flex items-center gap-1 ${
                   activeTab === 'logs'
                     ? 'border-[#d4522f] text-[#d4522f] font-bold'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                    : 'border-transparent text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
                 }`}
               >
                 {isAr ? 'التقارير' : 'Journaux'}
@@ -774,7 +774,7 @@ export const ContractorSitesView: React.FC = () => {
                 className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
                   activeTab === 'notes'
                     ? 'border-[#d4522f] text-[#d4522f] font-bold'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                    : 'border-transparent text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
                 }`}
               >
                 {isAr ? 'التوجيهات' : 'Consignes'}
@@ -786,20 +786,20 @@ export const ContractorSitesView: React.FC = () => {
               <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
                 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">{isAr ? 'صاحب المشروع:' : 'Maître d’Ouvrage:'}</span>
-                    <span className="font-semibold text-neutral-900 dark:text-white truncate max-w-[190px]">
+                    <span className="text-black/70 dark:text-white/75">{isAr ? 'صاحب المشروع:' : 'Maître d’Ouvrage:'}</span>
+                    <span className="font-semibold text-black dark:text-white truncate max-w-[190px]">
                       {selectedProject.clientName}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">{isAr ? 'موقع الورشة:' : 'Localisation:'}</span>
-                    <span className="font-semibold text-neutral-900 dark:text-white truncate max-w-[190px]">
+                    <span className="text-black/70 dark:text-white/75">{isAr ? 'موقع الورشة:' : 'Localisation:'}</span>
+                    <span className="font-semibold text-black dark:text-white truncate max-w-[190px]">
                       {selectedProject.siteLocation}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">{isAr ? 'المهندس المشرف:' : 'Conducteur Travaux:'}</span>
-                    <span className="font-semibold text-neutral-900 dark:text-white">
+                    <span className="text-black/70 dark:text-white/75">{isAr ? 'المهندس المشرف:' : 'Conducteur Travaux:'}</span>
+                    <span className="font-semibold text-black dark:text-white">
                       {selectedProject.supervisorName}
                     </span>
                   </div>
@@ -807,13 +807,13 @@ export const ContractorSitesView: React.FC = () => {
 
                 <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">{isAr ? 'قيمة الصفقة:' : 'Montant Total Marché:'}</span>
-                    <span className="font-mono font-bold text-neutral-900 dark:text-white">
+                    <span className="text-black/70 dark:text-white/75">{isAr ? 'قيمة الصفقة:' : 'Montant Total Marché:'}</span>
+                    <span className="font-mono font-bold text-black dark:text-white">
                       {formatMoney(selectedProject.contractAmountDzd)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">{isAr ? 'الضمان المالي:' : 'Garantie Financière:'}</span>
+                    <span className="text-black/70 dark:text-white/75">{isAr ? 'الضمان المالي:' : 'Garantie Financière:'}</span>
                     {selectedProject.hasBankCautionReplacement ? (
                       <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full flex items-center gap-1">
                         <CheckCircle2 size={11} />
@@ -826,26 +826,26 @@ export const ContractorSitesView: React.FC = () => {
                     )}
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">Organisme CTC & BET:</span>
-                    <span className="text-[11px] font-medium text-neutral-800 dark:text-neutral-200">
+                    <span className="text-black/70 dark:text-white/75">Organisme CTC & BET:</span>
+                    <span className="text-[11px] font-medium text-black dark:text-white">
                       CTC Centre · BET Arch-Design
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">Wilaya d’exécution:</span>
-                    <span className="text-[11px] font-mono font-bold text-neutral-900 dark:text-white">
+                    <span className="text-black/70 dark:text-white/75">Wilaya d’exécution:</span>
+                    <span className="text-[11px] font-mono font-bold text-black dark:text-white">
                       Wilaya {selectedProject.wilayaNumber || 16} (Algérie)
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">{isAr ? 'تاريخ انطلاق الأشغال:' : 'Ordre de Service (ODS):'}</span>
-                    <span className="text-neutral-800 dark:text-neutral-200 font-mono">
+                    <span className="text-black/70 dark:text-white/75">{isAr ? 'تاريخ انطلاق الأشغال:' : 'Ordre de Service (ODS):'}</span>
+                    <span className="text-black dark:text-white font-mono">
                       {selectedProject.startDate || '—'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">{isAr ? 'تاريخ التسليم التعاقدي:' : 'Échéance Contractuelle:'}</span>
-                    <span className="text-neutral-800 dark:text-neutral-200 font-mono">
+                    <span className="text-black/70 dark:text-white/75">{isAr ? 'تاريخ التسليم التعاقدي:' : 'Échéance Contractuelle:'}</span>
+                    <span className="text-black dark:text-white font-mono">
                       {selectedProject.targetEndDate || '—'}
                     </span>
                   </div>
@@ -860,7 +860,7 @@ export const ContractorSitesView: React.FC = () => {
                 {/* Progress bar card */}
                 <div className="p-3 rounded-xl bg-orange-50/50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30 space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+                    <span className="text-xs font-semibold text-black dark:text-white">
                       {isAr ? 'نسبة الإنجاز الفعلية' : 'Avancement Consigné'}
                     </span>
                     <span className="font-mono font-bold text-[#d4522f]">
@@ -881,7 +881,7 @@ export const ContractorSitesView: React.FC = () => {
             {activeTab === 'boq' && (
               <div className="space-y-3 text-xs animate-in fade-in duration-150 max-h-[360px] overflow-y-auto pr-1">
                 {currentBoqItems.length === 0 ? (
-                  <div className="text-center py-8 text-neutral-400">
+                  <div className="text-center py-8 text-black/55 dark:text-white/55">
                     <FileSpreadsheet size={28} className="mx-auto mb-2 opacity-40" />
                     <p>{isAr ? 'لا توجد مقايسة مسجلة لهذه الورشة' : 'Aucun article BOQ lié à ce chantier'}</p>
                   </div>
@@ -892,17 +892,17 @@ export const ContractorSitesView: React.FC = () => {
                       className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1.5"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-mono font-bold text-[10px] bg-neutral-200 dark:bg-neutral-700 px-1.5 py-0.5 rounded text-neutral-700 dark:text-neutral-300">
+                        <span className="font-mono font-bold text-[10px] bg-neutral-200 dark:bg-neutral-700 px-1.5 py-0.5 rounded text-black dark:text-white">
                           {item.itemCode}
                         </span>
-                        <span className="font-mono text-neutral-900 dark:text-white font-bold">
+                        <span className="font-mono text-black dark:text-white font-bold">
                           {formatMoney(item.totalPlannedDzd)}
                         </span>
                       </div>
-                      <p className="text-[11px] font-medium text-neutral-700 dark:text-neutral-300 line-clamp-2">
+                      <p className="text-[11px] font-medium text-black dark:text-white line-clamp-2">
                         {item.designation}
                       </p>
-                      <div className="flex items-center justify-between text-[10px] text-neutral-500 pt-1 border-t border-neutral-200/50 dark:border-neutral-700/50">
+                      <div className="flex items-center justify-between text-[10px] text-black/70 dark:text-white/75 pt-1 border-t border-neutral-200/50 dark:border-neutral-700/50">
                         <span>
                           Qté: {item.executedQty} / {item.plannedQty} {item.unit}
                         </span>
@@ -920,7 +920,7 @@ export const ContractorSitesView: React.FC = () => {
             {activeTab === 'logs' && (
               <div className="space-y-3 text-xs animate-in fade-in duration-150 max-h-[360px] overflow-y-auto pr-1">
                 {currentDailyLogs.length === 0 ? (
-                  <div className="text-center py-8 text-neutral-400">
+                  <div className="text-center py-8 text-black/55 dark:text-white/55">
                     <BookOpen size={28} className="mx-auto mb-2 opacity-40" />
                     <p>{isAr ? 'لا توجد تقارير يومية مسجلة' : 'Aucun journal quotidien consigné'}</p>
                     <button
@@ -940,11 +940,11 @@ export const ContractorSitesView: React.FC = () => {
                         <span className="font-mono font-bold text-[#d4522f]">
                           {log.logDate}
                         </span>
-                        <span className="text-[10px] text-neutral-500">
+                        <span className="text-[10px] text-black/70 dark:text-white/75">
                           {log.workforceCount} ouvriers • {log.weatherCondition}
                         </span>
                       </div>
-                      <p className="text-[11px] text-neutral-800 dark:text-neutral-200">
+                      <p className="text-[11px] text-black dark:text-white">
                         {log.worksSummary}
                       </p>
                       {log.incidentsOrDelays && (
@@ -962,7 +962,7 @@ export const ContractorSitesView: React.FC = () => {
             {/* Tab 4: Directives & Notes */}
             {activeTab === 'notes' && (
               <div className="space-y-3 text-xs animate-in fade-in duration-150">
-                <p className="text-neutral-500 text-[11px]">
+                <p className="text-black/70 dark:text-white/75 text-[11px]">
                   {isAr
                     ? 'تعليمات وتوجيهات السلامة وتنبيهات توريد المواد لمهندس الورشة:'
                     : 'Consignes de sécurité, ordres de service internes et réserves du conducteur :'}
@@ -976,7 +976,7 @@ export const ContractorSitesView: React.FC = () => {
                       ? 'سجل ملاحظات الورشة، تعليمات السلامة والتموين...'
                       : 'Noter les consignes de ferraillage, contrôles de résistance béton, sécurité EPI...'
                   }
-                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none"
+                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none"
                 />
                 <button
                   onClick={handleSaveNotes}

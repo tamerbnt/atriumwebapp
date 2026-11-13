@@ -267,7 +267,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
       {isEditing && (
         <div className="mb-5 p-3.5 bg-neutral-50 dark:bg-[#202024] border border-neutral-200/70 dark:border-neutral-800 rounded-2xl flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">{t('members_status_col', language)}:</span>
+            <span className="text-xs font-semibold text-black/65 dark:text-white/65 uppercase tracking-wider rtl:normal-case rtl:tracking-normal">{t('members_status_col', language)}:</span>
             <span
               className={`px-2.5 py-1 text-xs font-semibold rounded-full ${
                 status === 'InChair'
@@ -310,7 +310,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
               <button
                 type="button"
                 onClick={handleCancelBooking}
-                className="px-2.5 py-1.5 text-xs font-medium rounded-xl text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200/60 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                className="px-2.5 py-1.5 text-xs font-medium rounded-xl text-black/75 dark:text-white/75 hover:bg-neutral-200/60 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
               >
                 {t('action_cancel', language)}
               </button>
@@ -319,7 +319,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             <button
               type="button"
               onClick={handleDelete}
-              className="p-1.5 text-neutral-400 hover:text-rose-500 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
+              className="p-1.5 text-black/50 dark:text-white/50 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
               title={t('apt_action_delete_title', language)}
             >
               <Trash2 size={15} />
@@ -333,7 +333,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         {!isEditing && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+              <label className="text-xs font-bold text-black/80 dark:text-white/80">
                 {t('apt_field_intake_mode', language)}
               </label>
               <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 p-0.5 rounded-lg text-xs font-medium">
@@ -343,7 +343,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
                     bookingMode === 'registered'
                       ? 'bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-xs'
-                      : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                      : 'text-black/65 dark:text-white/65 hover:text-black dark:hover:text-white'
                   }`}
                 >
                   {t('apt_mode_registered', language)}
@@ -354,7 +354,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
                     bookingMode === 'walkin'
                       ? 'bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-xs'
-                      : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                      : 'text-black/65 dark:text-white/65 hover:text-black dark:hover:text-white'
                   }`}
                 >
                   {t('apt_mode_walkin', language)}
@@ -409,10 +409,10 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         {isEditing && (
           <div className="p-3 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl flex items-center justify-between">
             <div>
-              <p className="text-xs text-neutral-500 font-medium">{t('apt_booked_client', language)}</p>
-              <p className="text-sm font-bold text-neutral-900 dark:text-white">{appointment?.clientName}</p>
+              <p className="text-xs text-black/65 dark:text-white/65 font-medium">{t('apt_booked_client', language)}</p>
+              <p className="text-sm font-bold text-black dark:text-white">{appointment?.clientName}</p>
             </div>
-            <span className="text-xs text-neutral-500 flex items-center gap-1">
+            <span className="text-xs text-black/65 dark:text-white/65 flex items-center gap-1 tabular-nums">
               <Phone size={12} /> {appointment?.clientPhone}
             </span>
           </div>
@@ -492,10 +492,10 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+            <label className="text-xs font-bold text-black/80 dark:text-white/80">
               {t('apt_field_estimated_end', language)} ({durationMinutes}m)
             </label>
-            <div className="w-full h-10 px-3 flex items-center bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-sm font-semibold rounded-xl">
+            <div className="w-full h-10 px-3 flex items-center bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white text-sm font-semibold rounded-xl tabular-nums">
               {calculatedEndTime}
             </div>
           </div>
@@ -540,7 +540,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
         {/* Treatment Notes */}
         <div className="space-y-1">
-          <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
+          <label className="text-xs font-bold text-black/80 dark:text-white/80 flex items-center gap-1.5">
             <FileText size={14} /> {t('apt_field_notes', language)}
           </label>
           <textarea
@@ -548,7 +548,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
             placeholder={t('apt_ph_notes', language)}
-            className="w-full p-2.5 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-[#d4522f]"
+            className="w-full p-2.5 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-black dark:text-white placeholder:text-black/45 dark:placeholder:text-white/45 focus:outline-none focus:border-[#d4522f]"
           />
         </div>
 

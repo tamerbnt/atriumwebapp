@@ -1939,13 +1939,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <div className="w-7 h-7 rounded-lg bg-[#d4522f] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
                   {activePmRole === 'direction' ? 'D' : activePmRole === 'chef_projet' ? 'Y' : activePmRole === 'crea' ? 'M' : activePmRole === 'superviseur' ? 'S' : activePmRole === 'rh' ? 'R' : 'N'}
                 </div>
-                <span className="text-[9px] text-[#A1A1AA] truncate tracking-wider uppercase font-semibold">
-                  NCH Platform
+                <span className="text-[9px] text-white/70 truncate tracking-wider uppercase font-semibold">
+                  ATRIUM
                 </span>
               </div>
             ) : (
-              <span className="text-[9px] font-sans text-neutral-400/80 tracking-widest uppercase block select-none">
-                NCH PLATFORM
+              <span className="text-[9px] font-sans text-white/70 tracking-widest uppercase block select-none">
+                ATRIUM
               </span>
             )
           }

@@ -143,7 +143,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                   setLangMenuOpen(false);
                 }}
                 className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                  isLanguageAuto ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-neutral-300 hover:bg-neutral-800'
+                  isLanguageAuto ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
                 }`}
               >
                 <span>🌐 {t('settings_system_default', language)}</span>
@@ -157,7 +157,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                   setLangMenuOpen(false);
                 }}
                 className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                  !isLanguageAuto && language === 'en' ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-neutral-300 hover:bg-neutral-800'
+                  !isLanguageAuto && language === 'en' ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
                 }`}
               >
                 <span>🇺🇸 English (US)</span>
@@ -170,7 +170,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                   setLangMenuOpen(false);
                 }}
                 className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                  !isLanguageAuto && language === 'fr' ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-neutral-300 hover:bg-neutral-800'
+                  !isLanguageAuto && language === 'fr' ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
                 }`}
               >
                 <span>🇫🇷 Français</span>
@@ -183,7 +183,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                   setLangMenuOpen(false);
                 }}
                 className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                  !isLanguageAuto && language === 'ar' ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-neutral-300 hover:bg-neutral-800'
+                  !isLanguageAuto && language === 'ar' ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
                 }`}
               >
                 <span>🇩🇿 العربية (RTL)</span>
@@ -204,7 +204,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-black tracking-tight text-white">ATRIUM</h1>
           </div>
-          <p className="text-xs text-neutral-400 mt-1">
+          <p className="text-xs text-white/70 mt-1">
             {t('login_subtitle', language)}
           </p>
         </div>
@@ -214,7 +214,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
           type="button"
           onClick={handleGoogleLogin}
           disabled={isGoogleLoading}
-          className="w-full h-11 rounded-xl bg-white hover:bg-neutral-100 text-neutral-800 text-xs font-bold transition-all flex items-center justify-center gap-2.5 shadow-md cursor-pointer mb-2 disabled:opacity-75"
+          className="w-full h-11 rounded-xl bg-white hover:bg-neutral-100 text-black text-xs font-bold transition-all flex items-center justify-center gap-2.5 shadow-md cursor-pointer mb-2 disabled:opacity-75"
         >
           <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
             <path
@@ -252,7 +252,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
 
         <div className="relative flex py-2 items-center mb-3">
           <div className="flex-grow border-t border-neutral-800"></div>
-          <span className="flex-shrink mx-3 text-[10px] text-neutral-500 font-semibold uppercase tracking-wider">
+          <span className="flex-shrink mx-3 text-[10px] text-white/60 font-semibold uppercase tracking-wider">
             {language === 'ar' ? 'أو الدخول بكلمة المرور / رمز PIN' : language === 'fr' ? 'ou connexion par mot de passe / code PIN' : 'or sign in with password / PIN'}
           </span>
           <div className="flex-grow border-t border-neutral-800"></div>
@@ -269,7 +269,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             className={`py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 ${
               authMode === 'password'
                 ? 'bg-[#d4522f] text-white shadow-xs font-bold'
-                : 'text-neutral-400 hover:text-white'
+                : 'text-white/70 hover:text-white'
             }`}
           >
             <Mail size={13} />
@@ -284,7 +284,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             className={`py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 ${
               authMode === 'pin'
                 ? 'bg-[#d4522f] text-white shadow-xs font-bold'
-                : 'text-neutral-400 hover:text-white'
+                : 'text-white/70 hover:text-white'
             }`}
           >
             <Hash size={13} />
@@ -317,8 +317,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
 
             <div className="flex flex-col items-center w-full">
               <div className="flex items-center justify-between w-full max-w-[360px] px-1 mb-1">
-                <span className="text-[11px] text-neutral-400">
-                  {language === 'ar' ? 'بيانات الاعتماد الأمنية' : language === 'fr' ? 'Identifiants de sécurité' : 'Security Credential'}
+                <span className="text-[11px] text-white/70">
+                  {language === 'ar' ? 'كلمة المرور' : language === 'fr' ? 'Mot de passe' : 'Password'}
                 </span>
                 <button
                   type="button"
@@ -341,7 +341,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             </div>
 
             <div className="flex items-center justify-between pt-1">
-              <label className="flex items-center gap-2 cursor-pointer text-xs text-neutral-400">
+              <label className="flex items-center gap-2 cursor-pointer text-xs text-white/75">
                 <input
                   type="checkbox"
                   checked={rememberDevice}
@@ -367,7 +367,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
           /* TERMINAL PIN PAD FORM */
           <div className="space-y-4">
             <div className="text-center">
-              <p className="text-xs text-neutral-400">
+              <p className="text-xs text-white/70">
                 {language === 'ar'
                   ? 'أدخل رمز PIN المكون من 4 أرقام لفتح هذا الجهاز'
                   : language === 'fr'
@@ -405,9 +405,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                   }}
                   className={`h-12 rounded-xl text-sm font-bold flex items-center justify-center transition-all cursor-pointer ${
                     btn === 'C'
-                      ? 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white'
+                      ? 'bg-neutral-800 text-white/75 hover:bg-neutral-700 hover:text-white'
                       : btn === '⌫'
-                      ? 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white'
+                      ? 'bg-neutral-800 text-white/75 hover:bg-neutral-700 hover:text-white'
                       : 'bg-neutral-900 border border-neutral-800 text-white hover:bg-neutral-800 hover:border-neutral-700 active:scale-95'
                   }`}
                 >
@@ -416,7 +416,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
               ))}
             </div>
 
-            <p className="text-center text-[11px] text-neutral-500 font-mono">
+            <p className="text-center text-[11px] text-white/60 font-mono">
               {language === 'ar'
                 ? 'أدخل رمز PIN الخاص بحسابك'
                 : language === 'fr'
@@ -428,7 +428,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
 
         {/* Onboarding Link Section (Section 11.2) */}
         <div className="mt-6 text-center pt-3 border-t border-neutral-800/80">
-          <p className="text-xs text-neutral-400">
+          <p className="text-xs text-white/70">
             {language === 'ar'
               ? 'هل تؤسس نشاطاً تجارياً أو فرعاً جديداً؟'
               : language === 'fr'
@@ -441,7 +441,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             className="mt-2 text-xs font-bold text-[#d4522f] hover:text-[#b03b1b] flex items-center justify-center gap-1.5 mx-auto transition-colors cursor-pointer"
           >
             <Sparkles size={13} />
-            <span>{language === 'ar' ? 'بدء معالج التهيئة متعدد المراحل' : language === 'fr' ? 'Lancer l\'assistant de configuration' : 'Start Multi-Step Business Onboarding'}</span>
+            <span>{language === 'ar' ? 'إنشاء نشاط جديد' : language === 'fr' ? 'Créer un espace' : 'Create a Business'}</span>
           </button>
         </div>
       </div>
@@ -453,14 +453,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             <h3 className="text-base font-bold">
               {language === 'ar' ? 'استرجاع كلمة المرور' : language === 'fr' ? 'Récupération du mot de passe' : 'Password Recovery'}
             </h3>
-            <p className="text-xs text-neutral-300 leading-relaxed">
+            <p className="text-xs text-white/80 leading-relaxed">
               {language === 'ar'
                 ? 'لأمان المحطات وأجهزة سطح المكتب، يتم إرسال رموز الاسترجاع إلى البريد الإلكتروني المعتمد أو عبر القسيمة الرئيسية.'
                 : language === 'fr'
                 ? 'Pour la sécurité locale des postes Atrium, les codes de récupération sont transmis à l\'adresse de l\'administrateur ou via le bon maître.'
                 : 'For local security in Atrium desktop & web terminals, password recovery codes are routed to the registered account owner email or master cash voucher.'}
             </p>
-            <div className="p-3 rounded-xl bg-neutral-900 border border-neutral-800 text-xs text-neutral-400">
+            <div className="p-3 rounded-xl bg-neutral-900 border border-neutral-800 text-xs text-white/75">
               {language === 'ar'
                 ? <>تلميح: سجّل الدخول باستخدام عنوان بريدك الإلكتروني المعتمد أو رمز PIN المكون من 4 أرقام.</>
                 : language === 'fr'

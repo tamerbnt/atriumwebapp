@@ -171,7 +171,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
               {staff.fullName.charAt(0)}
             </div>
             <div>
-              <h2 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+              <h2 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
                 <span>{staff.fullName}</span>
                 <span
                   className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getStatusColor(
@@ -181,7 +181,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
                   {getStatusLabel(staff.status)}
                 </span>
               </h2>
-              <p className="text-xs text-neutral-500">{staff.role}</p>
+              <p className="text-xs text-black/70 dark:text-white/75">{staff.role}</p>
             </div>
           </div>
 
@@ -189,7 +189,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
             {canEdit && (
               <button
                 onClick={() => onEdit(staff)}
-                className="p-2 rounded-xl text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                className="p-2 rounded-xl text-black/65 hover:text-black dark:text-white/70 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                 title={isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier'}
               >
                 <Edit className="w-4 h-4" />
@@ -197,7 +197,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
             )}
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              className="p-2 rounded-xl text-black/65 hover:text-black dark:text-white/70 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -215,7 +215,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
                     staff.isClockedInToday ? 'bg-emerald-500 animate-pulse' : 'bg-neutral-400'
                   }`}
                 />
-                <span className="font-semibold text-neutral-900 dark:text-neutral-100">
+                <span className="font-semibold text-black dark:text-white">
                   {staff.isClockedInToday
                     ? isAr
                       ? `حاضر الآن (دخول ${staff.lastClockInTime || '08:00'})`
@@ -229,7 +229,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
                     : 'Non pointé aujourd\'hui'}
                 </span>
               </div>
-              <p className="text-[11px] font-mono text-neutral-500 mt-0.5">
+              <p className="text-[11px] font-mono text-black/65 dark:text-white/70 mt-0.5 tabular-nums">
                 Badge: {staff.cardId || 'NON-ATTRIBUÉ'}
               </p>
             </div>
@@ -238,7 +238,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
               onClick={() => punchStaffAttendance(staff.id)}
               className={`px-3 py-1.5 rounded-xl font-semibold text-xs shadow-xs transition-colors ${
                 staff.isClockedInToday
-                  ? 'bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-300'
+                  ? 'bg-neutral-200 dark:bg-neutral-700 text-black dark:text-white hover:bg-neutral-300'
                   : 'bg-[#d4522f] text-white hover:bg-[#b0674b]'
               }`}
             >
@@ -259,13 +259,13 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
           {/* Performance Radar / KPI */}
           <div className="p-4 rounded-2xl bg-gradient-to-br from-[#d4522f]/5 to-transparent border border-[#d4522f]/20">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-neutral-900 dark:text-neutral-100 font-semibold">
+              <div className="flex items-center gap-2 text-black dark:text-white font-semibold">
                 <TrendingUp className="w-4 h-4 text-[#d4522f]" />
                 <span>
                   {isAr ? metricLabel.labelAr : isEn ? metricLabel.labelEn : metricLabel.labelFr}
                 </span>
               </div>
-              <span className="font-bold text-sm text-[#d4522f]">
+              <span className="font-bold text-sm text-[#d4522f] tabular-nums">
                 {staff.performance?.kpiValue ?? '92%'}
               </span>
             </div>
@@ -275,7 +275,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
                 style={{ width: `${staff.performance?.scorePercentage ?? 85}%` }}
               />
             </div>
-            <p className="text-[10px] text-neutral-500 mt-2">
+            <p className="text-[10px] text-black/65 dark:text-white/70 mt-2">
               {isAr
                 ? 'مؤشر أداء شهري محدث دورياً بناءً على العمليات المنجزة'
                 : isEn
@@ -286,37 +286,37 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
 
           {/* Contact & Personal Coordinates */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-neutral-500 uppercase tracking-wider text-[10px]">
+            <h3 className="font-semibold text-black/65 dark:text-white/70 uppercase tracking-wider text-[10px]">
               {isAr ? 'الاتصال' : isEn ? 'Contact' : 'Contact'}
             </h3>
             <div className="space-y-2 rounded-2xl bg-neutral-50 dark:bg-neutral-800/30 p-3.5 border border-neutral-200 dark:border-neutral-800">
               <div className="flex items-center justify-between">
-                <span className="text-neutral-500 flex items-center gap-1.5">
+                <span className="text-black/65 dark:text-white/70 flex items-center gap-1.5">
                   <Mail className="w-3.5 h-3.5" /> {isAr ? 'البريد' : isEn ? 'Email' : 'Email'}
                 </span>
-                <span className="font-medium text-neutral-900 dark:text-neutral-100 font-mono text-[11px]">
+                <span className="font-medium text-black dark:text-white font-mono text-[11px]">
                   {staff.email}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-neutral-500 flex items-center gap-1.5">
+                <span className="text-black/65 dark:text-white/70 flex items-center gap-1.5">
                   <Phone className="w-3.5 h-3.5" /> {isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone'}
                 </span>
-                <span className="font-medium text-neutral-900 dark:text-neutral-100 font-mono text-[11px]">
+                <span className="font-medium text-black dark:text-white font-mono text-[11px] tabular-nums">
                   {staff.phoneNumber}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-neutral-500 flex items-center gap-1.5">
+                <span className="text-black/65 dark:text-white/70 flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5" /> {isAr ? 'العنوان' : isEn ? 'Address' : 'Adresse'}
                 </span>
-                <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                <span className="font-medium text-black dark:text-white">
                   {staff.address || '-'}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-neutral-500">{isAr ? 'العمر' : isEn ? 'Age' : 'Âge'}</span>
-                <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                <span className="text-black/65 dark:text-white/70">{isAr ? 'العمر' : isEn ? 'Age' : 'Âge'}</span>
+                <span className="font-medium text-black dark:text-white tabular-nums">
                   {staff.age ? `${staff.age}` : '-'} · {staff.gender === 'female' ? (isAr ? 'أنثى' : isEn ? 'Female' : 'Femme') : (isAr ? 'ذكر' : isEn ? 'Male' : 'Homme')}
                 </span>
               </div>
@@ -326,7 +326,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
           {/* Confidential Compensation & Legal Dossier (Strict RBAC Guard) */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-neutral-500 uppercase tracking-wider text-[10px]">
+              <h3 className="font-semibold text-black/65 dark:text-white/70 uppercase tracking-wider text-[10px]">
                 {isAr ? 'العقد والراتب' : isEn ? 'Payroll' : 'Contrat'}
               </h3>
               {!isOwnerViewer && (
@@ -339,26 +339,26 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
             {isOwnerViewer ? (
               <div className="space-y-2 rounded-2xl bg-neutral-50 dark:bg-neutral-800/30 p-3.5 border border-neutral-200 dark:border-neutral-800">
                 <div className="flex items-center justify-between">
-                  <span className="text-neutral-500">{isAr ? 'العقد' : isEn ? 'Contract' : 'Contrat'}</span>
+                  <span className="text-black/65 dark:text-white/70">{isAr ? 'العقد' : isEn ? 'Contract' : 'Contrat'}</span>
                   <span className="font-semibold uppercase text-[#d4522f]">
                     {staff.recruitmentType || 'CDI'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-neutral-500">{isAr ? 'الراتب' : isEn ? 'Salary' : 'Salaire'}</span>
-                  <span className="font-bold text-neutral-900 dark:text-neutral-100">
+                  <span className="text-black/65 dark:text-white/70">{isAr ? 'الراتب' : isEn ? 'Salary' : 'Salaire'}</span>
+                  <span className="font-bold text-black dark:text-white tabular-nums">
                     {(staff.salary || 0).toLocaleString()} DZD
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-neutral-500">{isAr ? 'يوم الدفع' : isEn ? 'Payday' : 'Échéance'}</span>
-                  <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                  <span className="text-black/65 dark:text-white/70">{isAr ? 'يوم الدفع' : isEn ? 'Payday' : 'Échéance'}</span>
+                  <span className="font-medium text-black dark:text-white tabular-nums">
                     {staff.paymentDay || 28}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-neutral-500">{isAr ? 'الدفع' : isEn ? 'Method' : 'Paiement'}</span>
-                  <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                  <span className="text-black/65 dark:text-white/70">{isAr ? 'الدفع' : isEn ? 'Method' : 'Paiement'}</span>
+                  <span className="font-medium text-black dark:text-white">
                     {staff.paymentMethod === 'ccp'
                       ? `${staff.ccpNumber || '—'}`
                       : staff.paymentMethod === 'bank_transfer'
@@ -369,8 +369,8 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
               </div>
             ) : (
               <div className="p-4 rounded-2xl bg-neutral-100/60 dark:bg-neutral-800/20 border border-dashed border-neutral-300 dark:border-neutral-700 text-center">
-                <Lock className="w-5 h-5 text-neutral-400 mx-auto mb-1.5" />
-                <p className="text-[11px] font-semibold text-neutral-700 dark:text-neutral-300">
+                <Lock className="w-5 h-5 text-black/55 dark:text-white/60 mx-auto mb-1.5" />
+                <p className="text-[11px] font-semibold text-black/85 dark:text-white/85">
                   {isAr ? 'بيانات مقيدة' : isEn ? 'Restricted' : 'Masqué'}
                 </p>
               </div>
@@ -380,26 +380,26 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
           {/* Medical Dossier */}
           {(staff.bloodGroup || staff.emergencyContactName) && (
             <div className="space-y-3">
-              <h3 className="font-semibold text-neutral-500 uppercase tracking-wider text-[10px]">
+              <h3 className="font-semibold text-black/65 dark:text-white/70 uppercase tracking-wider text-[10px]">
                 {isAr ? 'الطوارئ' : isEn ? 'Emergency' : 'Urgence'}
               </h3>
               <div className="space-y-2 rounded-2xl bg-neutral-50 dark:bg-neutral-800/30 p-3.5 border border-neutral-200 dark:border-neutral-800">
                 {staff.bloodGroup && (
                   <div className="flex items-center justify-between">
-                    <span className="text-neutral-500">{isAr ? 'الدم' : isEn ? 'Blood' : 'Groupe'}</span>
+                    <span className="text-black/65 dark:text-white/70">{isAr ? 'الدم' : isEn ? 'Blood' : 'Groupe'}</span>
                     <span className="font-bold text-red-500">{staff.bloodGroup}</span>
                   </div>
                 )}
                 {staff.emergencyContactName && (
                   <div className="flex items-center justify-between">
-                    <span className="text-neutral-500">{isAr ? 'الطوارئ' : isEn ? 'Contact' : 'Urgence'}</span>
-                    <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                    <span className="text-black/65 dark:text-white/70">{isAr ? 'الطوارئ' : isEn ? 'Contact' : 'Urgence'}</span>
+                    <span className="font-medium text-black dark:text-white">
                       {staff.emergencyContactName} ({staff.emergencyContactPhone || '—'})
                     </span>
                   </div>
                 )}
                 {staff.medicalNotes && (
-                  <p className="text-[11px] text-neutral-500 italic mt-1 border-t border-neutral-200 dark:border-neutral-700 pt-1.5">
+                  <p className="text-[11px] text-black/70 dark:text-white/75 italic mt-1 border-t border-neutral-200 dark:border-neutral-700 pt-1.5">
                     "{staff.medicalNotes}"
                   </p>
                 )}

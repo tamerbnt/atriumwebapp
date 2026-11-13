@@ -114,7 +114,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(Number(e.target.value))}
-              className="bg-transparent text-xs font-bold text-neutral-800 dark:text-neutral-200 focus:outline-hidden cursor-pointer"
+              className="bg-transparent text-xs font-bold text-black dark:text-white focus:outline-hidden cursor-pointer"
             >
               {months.map((m) => (
                 <option key={m.value} value={m.value}>
@@ -125,7 +125,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="bg-transparent text-xs font-bold text-neutral-800 dark:text-neutral-200 focus:outline-hidden cursor-pointer"
+              className="bg-transparent text-xs font-bold text-black dark:text-white focus:outline-hidden cursor-pointer tabular-nums"
             >
               <option value={2026}>2026</option>
               <option value={2025}>2025</option>
@@ -143,7 +143,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
               {activeRun.status === 'paid' ? '✔️ ' + (isAr ? 'رواتب مدفوعة' : 'Clôturée & Payée') : '⏳ ' + (isAr ? 'مسودة قيد المراجعة' : 'Brouillon')}
             </span>
           ) : (
-            <span className="text-xs text-neutral-400 font-medium">
+            <span className="text-xs text-black/60 dark:text-white/65 font-medium">
               {isAr ? 'لم يتم احتساب الرواتب بعد' : 'Paie non encore générée'}
             </span>
           )}
@@ -164,7 +164,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
             variant="secondary"
             size="md"
             onClick={handleGenerate}
-            icon={<RefreshCw className="w-4 h-4 text-neutral-500" />}
+            icon={<RefreshCw className="w-4 h-4 text-black/70 dark:text-white/75" />}
             className="h-10 text-xs font-semibold"
           >
             <span>{activeSlips.length > 0 ? (isAr ? 'إعادة الحساب' : isEn ? 'Recalculate' : 'Recalculer') : (isAr ? 'حساب' : isEn ? 'Calculate' : 'Calculer')}</span>
@@ -187,35 +187,35 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
       {/* 4 Financial Aggregate KPI Cards — Pure White Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-neutral-800">
-          <p className="text-[11px] font-semibold text-neutral-500 uppercase">{isAr ? 'صافي الأجور' : isEn ? 'Net Pay' : 'Net à Payer'}</p>
-          <p className="text-xl font-bold font-mono text-[#d4522f] mt-1">
-            {totalNet > 0 ? totalNet.toLocaleString() : '0'} <span className="text-xs font-normal text-neutral-400">DZD</span>
+          <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'صافي الأجور' : isEn ? 'Net Pay' : 'Net à Payer'}</p>
+          <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-[#d4522f] mt-1.5 tabular-nums">
+            {totalNet > 0 ? totalNet.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/60 dark:text-white/65">DZD</span>
           </p>
-          <p className="text-[10px] text-neutral-400 mt-0.5">{activeSlips.length} {isAr ? 'قسيمة' : isEn ? 'slips' : 'bulletins'}</p>
+          <p className="text-[10px] text-black/60 dark:text-white/65 mt-1 tabular-nums">{activeSlips.length} {isAr ? 'قسيمة' : isEn ? 'slips' : 'bulletins'}</p>
         </div>
 
         <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-neutral-800">
-          <p className="text-[11px] font-semibold text-neutral-500 uppercase">{isAr ? 'الضمان الاجتماعي' : isEn ? 'Social Security' : 'Cotisations'}</p>
-          <p className="text-xl font-bold font-mono text-emerald-600 mt-1">
-            {totalCnas > 0 ? totalCnas.toLocaleString() : '0'} <span className="text-xs font-normal text-neutral-400">DZD</span>
+          <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'الضمان الاجتماعي' : isEn ? 'Social Security' : 'Cotisations'}</p>
+          <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-emerald-600 mt-1.5 tabular-nums">
+            {totalCnas > 0 ? totalCnas.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/60 dark:text-white/65">DZD</span>
           </p>
-          <p className="text-[10px] text-neutral-400 mt-0.5">{isAr ? 'الموظف وصاحب العمل' : isEn ? 'Staff + Employer' : 'Salarial + Patronal'}</p>
+          <p className="text-[10px] text-black/60 dark:text-white/65 mt-1">{isAr ? 'الموظف وصاحب العمل' : isEn ? 'Staff + Employer' : 'Salarial + Patronal'}</p>
         </div>
 
         <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-neutral-800">
-          <p className="text-[11px] font-semibold text-neutral-500 uppercase">{isAr ? 'ضريبة الدخل' : isEn ? 'Income Tax' : 'Impôt'}</p>
-          <p className="text-xl font-bold font-mono text-neutral-900 dark:text-white mt-1">
-            {totalIrg > 0 ? totalIrg.toLocaleString() : '0'} <span className="text-xs font-normal text-neutral-400">DZD</span>
+          <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'ضريبة الدخل' : isEn ? 'Income Tax' : 'Impôt'}</p>
+          <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white mt-1.5 tabular-nums">
+            {totalIrg > 0 ? totalIrg.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/60 dark:text-white/65">DZD</span>
           </p>
-          <p className="text-[10px] text-neutral-400 mt-0.5">{isAr ? 'مقتطع' : isEn ? 'Withheld' : 'Retenue'}</p>
+          <p className="text-[10px] text-black/60 dark:text-white/65 mt-1">{isAr ? 'مقتطع' : isEn ? 'Withheld' : 'Retenue'}</p>
         </div>
 
         <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-neutral-800">
-          <p className="text-[11px] font-semibold text-neutral-500 uppercase">{isAr ? 'السلفيات' : isEn ? 'Advances' : 'Acomptes'}</p>
-          <p className="text-xl font-bold font-mono text-amber-600 mt-1">
-            {totalAdvances > 0 ? totalAdvances.toLocaleString() : '0'} <span className="text-xs font-normal text-neutral-400">DZD</span>
+          <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'السلفيات' : isEn ? 'Advances' : 'Acomptes'}</p>
+          <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-amber-600 mt-1.5 tabular-nums">
+            {totalAdvances > 0 ? totalAdvances.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/60 dark:text-white/65">DZD</span>
           </p>
-          <p className="text-[10px] text-neutral-400 mt-0.5">{isAr ? 'مخصوم' : isEn ? 'Deducted' : 'Déduits'}</p>
+          <p className="text-[10px] text-black/60 dark:text-white/65 mt-1">{isAr ? 'مخصوم' : isEn ? 'Deducted' : 'Déduits'}</p>
         </div>
       </div>
 
@@ -223,7 +223,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
       <div className="bg-white dark:bg-[#18181B] rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden shadow-xs">
         <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
           <div>
-            <h4 className="text-sm font-bold text-neutral-900 dark:text-white">
+            <h4 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {isAr ? 'جدول الرواتب' : isEn ? 'Payroll Sheet' : 'Livre de Paie'}
             </h4>
           </div>
@@ -236,8 +236,8 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
 
         {activeSlips.length === 0 ? (
           <div className="p-12 text-center">
-            <Receipt className="w-10 h-10 text-neutral-300 mx-auto mb-3" />
-            <h5 className="text-sm font-bold text-neutral-700 dark:text-neutral-300">
+            <Receipt className="w-10 h-10 text-black/30 dark:text-white/35 mx-auto mb-3" />
+            <h5 className="text-sm font-bold text-black/80 dark:text-white/85">
               {isAr ? 'لا توجد رواتب' : isEn ? 'No payroll' : 'Aucune paie'}
             </h5>
             <AtriumButton onClick={handleGenerate} className="h-9 px-4 text-xs font-bold mt-3">
@@ -246,9 +246,9 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full text-left text-xs border-collapse tabular-nums">
               <thead>
-                <tr className="bg-neutral-50 dark:bg-[#202024] text-neutral-600 dark:text-neutral-400 border-b border-neutral-200 dark:border-neutral-800">
+                <tr className="bg-neutral-50 dark:bg-[#202024] text-black/70 dark:text-white/75 border-b border-neutral-200 dark:border-neutral-800">
                   <th className="p-3 font-semibold">{isAr ? 'الموظف' : isEn ? 'Staff' : 'Collaborateur'}</th>
                   <th className="p-3 font-semibold text-right">{isAr ? 'الأساسي' : isEn ? 'Base' : 'Base'}</th>
                   <th className="p-3 font-semibold text-right">{isAr ? 'العلاوات' : isEn ? 'Bonus' : 'Primes'}</th>
@@ -257,7 +257,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
                   <th className="p-3 font-semibold text-right text-red-600">{isAr ? 'الضريبة' : isEn ? 'Tax' : 'Impôt'}</th>
                   <th className="p-3 font-semibold text-right text-emerald-600">{isAr ? 'البدلات' : isEn ? 'Allowances' : 'Indemnités'}</th>
                   <th className="p-3 font-semibold text-right text-amber-600">{isAr ? 'السلف' : isEn ? 'Advances' : 'Acomptes'}</th>
-                  <th className="p-3 font-semibold text-right font-bold text-neutral-900 dark:text-white">{isAr ? 'الصافي' : isEn ? 'Net' : 'Net'}</th>
+                  <th className="p-3 font-semibold text-right font-bold text-black dark:text-white">{isAr ? 'الصافي' : isEn ? 'Net' : 'Net'}</th>
                   <th className="p-3 font-semibold text-center">{isAr ? 'الدفع' : isEn ? 'Method' : 'Mode'}</th>
                   <th className="p-3 font-semibold text-right pr-4">{isAr ? 'إجراء' : isEn ? 'Actions' : 'Actions'}</th>
                 </tr>
@@ -268,14 +268,14 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
                   return (
                     <tr key={slip.id} className="hover:bg-neutral-50/60 dark:hover:bg-neutral-800/40 transition-colors">
                       <td className="p-3">
-                        <div className="font-bold text-neutral-900 dark:text-white">{slip.staffFullName}</div>
-                        <div className="text-[11px] text-neutral-400 font-mono">{slip.matricule} · {slip.role}</div>
+                        <div className="font-bold text-black dark:text-white">{slip.staffFullName}</div>
+                        <div className="text-[11px] text-black/60 dark:text-white/65 font-mono">{slip.matricule} · {slip.role}</div>
                       </td>
                       <td className="p-3 text-right font-mono">{slip.baseSalary.toLocaleString()} DZD</td>
                       <td className="p-3 text-right font-mono">
                         {slip.coachingCommission ? `${slip.coachingCommission.toLocaleString()} DZD` : '-'}
                       </td>
-                      <td className="p-3 text-right font-mono font-bold text-neutral-800 dark:text-neutral-200">
+                      <td className="p-3 text-right font-mono font-bold text-black dark:text-white">
                         {slip.salaireBrutCotisable.toLocaleString()}
                       </td>
                       <td className="p-3 text-right font-mono text-red-600">
@@ -294,7 +294,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
                         {slip.netAPayer.toLocaleString()} DZD
                       </td>
                       <td className="p-3 text-center">
-                        <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+                        <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-black/80 dark:text-white/85">
                           {slip.paymentMethod}
                         </span>
                       </td>
@@ -303,7 +303,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
                           <button
                             type="button"
                             onClick={() => setActiveSlipForPrint(slip)}
-                            className="p-1.5 text-xs font-semibold rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-[#d4522f] hover:bg-[#d4522f]/10 transition-colors cursor-pointer"
+                            className="p-1.5 text-xs font-semibold rounded-lg bg-neutral-100 dark:bg-neutral-800 text-black/80 dark:text-white/85 hover:text-[#d4522f] hover:bg-[#d4522f]/10 transition-colors cursor-pointer"
                             title={isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer'}
                           >
                             <FileText className="w-4 h-4" />
@@ -332,7 +332,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
       <div className="bg-white dark:bg-[#18181B] rounded-2xl border border-neutral-200 dark:border-neutral-800 p-4 shadow-xs">
         <div className="flex items-center justify-between pb-3 mb-3 border-b border-neutral-200 dark:border-neutral-800">
           <div>
-            <h4 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
+            <h4 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
               {isAr ? 'السلفيات' : isEn ? 'Salary Advances' : 'Acomptes'}
             </h4>
           </div>
@@ -347,7 +347,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         </div>
 
         {salaryAdvances.length === 0 ? (
-          <p className="text-xs text-neutral-400 py-3 text-center">{isAr ? 'لا توجد سلفيات' : isEn ? 'No advances' : 'Aucun acompte'}</p>
+          <p className="text-xs text-black/60 dark:text-white/65 py-3 text-center">{isAr ? 'لا توجد سلفيات' : isEn ? 'No advances' : 'Aucun acompte'}</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {salaryAdvances.map((adv) => (
@@ -356,16 +356,16 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
                 className="p-3 rounded-xl bg-neutral-50 dark:bg-[#202024] border border-neutral-200 dark:border-neutral-800 flex items-center justify-between"
               >
                 <div>
-                  <div className="font-bold text-xs text-neutral-900 dark:text-white">{adv.staffName}</div>
-                  <div className="text-[11px] font-mono text-neutral-400">{adv.voucherNumber} · {adv.dateIssued}</div>
-                  {adv.reason && <div className="text-[10px] text-neutral-500 italic mt-0.5">"{adv.reason}"</div>}
+                  <div className="font-bold text-xs text-black dark:text-white">{adv.staffName}</div>
+                  <div className="text-[11px] font-mono text-black/60 dark:text-white/65 tabular-nums">{adv.voucherNumber} · {adv.dateIssued}</div>
+                  {adv.reason && <div className="text-[10px] text-black/70 dark:text-white/75 italic mt-0.5">"{adv.reason}"</div>}
                 </div>
                 <div className="text-right">
-                  <div className="font-mono font-bold text-xs text-[#d4522f]">{adv.amountDzd.toLocaleString()} DZD</div>
+                  <div className="font-mono font-bold text-xs text-[#d4522f] tabular-nums">{adv.amountDzd.toLocaleString()} DZD</div>
                   <span
                     className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase ${
                       adv.status === 'deducted'
-                        ? 'bg-neutral-200 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
+                        ? 'bg-neutral-200 text-black/75 dark:bg-neutral-800 dark:text-white/75'
                         : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
                     }`}
                   >

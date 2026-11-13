@@ -27,13 +27,13 @@
   --pod: #F3EDE7;
   --line: #E6DED6;
   /* text */
-  --atr-ink: #0a0a0a;
-  --atr-mut: #6b645e;
+  --atr-ink: #000000;
+  --atr-mut: rgba(0, 0, 0, 0.72);
   /* brand accent: #D4522F */
   --atr-acc: #d4522f;
-  --atr-onacc: #0a0a0a; /* ink on orange: 4.7:1. White would only reach 4.2:1 */
+  --atr-onacc: #000000; /* ink on orange: high contrast */
   --atr-accq: #e8643f; /* the liquid on an accent button: lighter, so ink text stays readable */
-  --atr-acc-text: #b03b1b; /* accent used as text, border or focus ring on light surfaces (5.5:1) */
+  --atr-acc-text: #ab391a; /* accent used as text, border or focus ring on light surfaces (>= 4.5:1 even over wash) */
   --atr-hl: rgba(212, 82, 47, 0.12); /* soft accent wash */
   /* status */
   --atr-ok: #096b40;
@@ -43,11 +43,11 @@
   /* switch (brand: orange body, cream liquid, ink knob) */
   --atr-sw-body: var(--atr-acc);
   --atr-sw-liquid: #f4ede6;
-  --atr-sw-knob: #0a0a0a;
+  --atr-sw-knob: #000000;
   /* showpiece "ink" tone: dark body, cream liquid */
-  --atr-lb-body: #0a0a0a;
+  --atr-lb-body: #000000;
   --atr-lb-liq: #f4ede6;
-  --atr-lb-t1: #f4ede6;
+  --atr-lb-t1: #ffffff;
   /* elevation */
   --atr-shadow-pop: 0 14px 34px rgba(0, 0, 0, 0.22);
   color-scheme: light;
@@ -66,10 +66,11 @@
   --atr-shell-gap: 12px;
   /* the sidebar is dark in both themes */
   --atr-side: #151413;
-  --atr-side-ink: #ece6e0;
-  --atr-side-mut: #a39b93;
+  --atr-side-ink: #ffffff;
+  --atr-side-mut: rgba(255, 255, 255, 0.72);
   --atr-side-hl: rgba(255, 255, 255, 0.07);
-  --atr-font-brand: 'Sigana Condensed', 'Cinzel', 'Inter Tight', sans-serif;
+  --atr-font-ui: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --atr-font-brand: 'Sigana Condensed', 'Barlow Condensed', 'Cinzel', sans-serif;
 }
 
 [data-atrium-theme='dark'] {
@@ -79,10 +80,10 @@
   --atr-line: #3a3734;
   --pod: #232323;
   --line: #3a3734;
-  --atr-ink: #f2ece6;
-  --atr-mut: #a79f97;
+  --atr-ink: #ffffff;
+  --atr-mut: rgba(255, 255, 255, 0.75);
   --atr-acc: #e8643f; /* the brighter orange used by the logo on dark */
-  --atr-onacc: #0a0a0a;
+  --atr-onacc: #000000;
   --atr-accq: #f28a69;
   --atr-acc-text: #ee7452;
   --atr-hl: rgba(232, 100, 63, 0.18);
@@ -93,11 +94,11 @@
   /* the switch keeps the brand orange in both themes: cream on #E8643F would only reach 2.9:1 */
   --atr-sw-body: #d4522f;
   --atr-sw-liquid: #f4ede6;
-  --atr-sw-knob: #0a0a0a;
+  --atr-sw-knob: #000000;
   /* on a dark surface the ink tone flips: cream body, orange liquid, ink text */
-  --atr-lb-body: #f2ece6;
+  --atr-lb-body: #ffffff;
   --atr-lb-liq: #e8643f;
-  --atr-lb-t1: #0a0a0a;
+  --atr-lb-t1: #000000;
   --atr-shadow-pop: 0 14px 34px rgba(0, 0, 0, 0.5);
   color-scheme: dark;
 }

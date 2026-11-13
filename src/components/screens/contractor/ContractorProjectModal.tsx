@@ -110,7 +110,7 @@ export const ContractorProjectModal: React.FC<ContractorProjectModalProps> = ({
               <HardHat size={20} />
             </div>
             <div>
-              <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {initialData
                   ? (isAr ? 'تعديل بيانات الورشة' : 'Modifier le Chantier')
                   : (isAr ? 'فتح ورشة عمل جديدة (Chantier)' : 'Nouveau Chantier & Marché BTP')}
@@ -119,7 +119,7 @@ export const ContractorProjectModal: React.FC<ContractorProjectModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           >
             <X size={18} />
           </button>

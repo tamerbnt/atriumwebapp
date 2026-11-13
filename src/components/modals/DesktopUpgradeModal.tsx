@@ -165,7 +165,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#d4522f] text-white">
                   {t('topbar_desktop_app', language)}
                 </span>
-                <span className="text-xs text-neutral-300">Windows · macOS · Linux</span>
+                <span className="text-xs text-white/85">Windows · macOS · Linux</span>
               </div>
               <h3 className="text-xl font-black text-white tracking-tight">
                 {t('upgrade_modal_title', language)}
@@ -179,19 +179,19 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
 
           {/* Quick Capabilities Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-5 pt-4 border-t border-white/10 text-[11px]">
-            <div className="flex items-center gap-2 text-neutral-300">
+            <div className="flex items-center gap-2 text-white/85">
               <Building2 size={14} className="text-[#d4522f] shrink-0" />
               <span>{t('settings_branches_title', language)}</span>
             </div>
-            <div className="flex items-center gap-2 text-neutral-300">
+            <div className="flex items-center gap-2 text-white/85">
               <Printer size={14} className="text-[#d4522f] shrink-0" />
               <span>{t('shop_print_thermal', language)}</span>
             </div>
-            <div className="flex items-center gap-2 text-neutral-300">
+            <div className="flex items-center gap-2 text-white/85">
               <WifiOff size={14} className="text-[#d4522f] shrink-0" />
               <span>{t('topbar_offline', language)}</span>
             </div>
-            <div className="flex items-center gap-2 text-neutral-300">
+            <div className="flex items-center gap-2 text-white/85">
               <ShieldCheck size={14} className="text-[#d4522f] shrink-0" />
               <span>{t('settings_lifetime_badge', language)}</span>
             </div>
@@ -203,12 +203,12 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
           {/* Free Web Tier Card */}
           <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700/60 space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="font-extrabold text-neutral-900 dark:text-white">{t('upgrade_free_badge', language)}</span>
+              <span className="font-extrabold text-black dark:text-white">{t('upgrade_free_badge', language)}</span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
                 {t('status_active', language)}
               </span>
             </div>
-            <ul className="space-y-1.5 text-neutral-600 dark:text-neutral-300 text-[11px]">
+            <ul className="space-y-1.5 text-black/75 dark:text-white/80 text-[11px]">
               <li className="flex items-center gap-1.5">
                 <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
                 <span>
@@ -244,7 +244,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
                 {t('settings_lifetime_badge', language)}
               </span>
             </div>
-            <ul className="space-y-1.5 text-neutral-700 dark:text-neutral-300 text-[11px]">
+            <ul className="space-y-1.5 text-black/80 dark:text-white/85 text-[11px]">
               <li className="flex items-center gap-1.5">
                 <Sparkles size={13} className="text-[#d4522f] shrink-0" />
                 <span><strong>{language === 'ar' ? 'فروع متعددة' : language === 'fr' ? 'Multi-agences' : 'Multi-Branch'}</strong> {language === 'ar' ? 'وسلاسل تجارية' : language === 'fr' ? 'Réseaux & Marques' : 'Chains & Brands'}</span>
@@ -267,7 +267,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
 
         {/* The Seamless Data Sync Reassurance Box */}
         <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/60 space-y-3">
-          <div className="flex items-center gap-2 text-neutral-900 dark:text-white font-bold text-xs">
+          <div className="flex items-center gap-2 text-black dark:text-white font-bold text-xs">
             <Cloud size={16} className="text-[#d4522f]" />
             <span>
               {language === 'ar'
@@ -278,7 +278,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
             </span>
           </div>
 
-          <div className="space-y-2 text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+          <div className="space-y-2 text-xs text-black/75 dark:text-white/80 leading-relaxed">
             <div className="flex items-start gap-2">
               <div className="w-5 h-5 rounded-full bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
                 1
@@ -322,7 +322,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
 
           {/* Backup Button */}
           <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-t border-neutral-200 dark:border-neutral-700">
-            <span className="text-[11px] text-neutral-400">
+            <span className="text-[11px] text-black/60 dark:text-white/65">
               {language === 'ar' ? 'هل ترغب في حفظ نسخة احتياطية إضافية؟' : language === 'fr' ? 'Souhaitez-vous une copie de sauvegarde hors-ligne ?' : 'Want an extra offline safety copy?'}
             </span>
             <button
@@ -345,7 +345,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
 
         {/* Download Buttons */}
         <div className="space-y-2.5">
-          <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300">
+          <label className="block text-xs font-bold text-black/85 dark:text-white/85">
             {language === 'ar' ? 'تحميل تطبيق أتريوم المكتبي' : language === 'fr' ? 'Télécharger l\'application de bureau Atrium' : 'Download Atrium Desktop Application'}
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -382,7 +382,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
 
         {/* Bottom Voucher Prompt */}
         <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800 text-xs">
-          <span className="text-neutral-500 dark:text-neutral-400">
+          <span className="text-black/70 dark:text-white/70">
             {language === 'ar' ? 'هل تمتلك قسيمة ترخيص مسبقاً؟' : language === 'fr' ? 'Vous possédez déjà un bon de licence ?' : 'Already purchased an Atrium License Voucher?'}
           </span>
           {onOpenVoucherModal && (

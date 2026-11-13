@@ -143,7 +143,7 @@ export const LogisticsDashboardView: React.FC = () => {
             ? 'مؤشرات أسطول التوصيل، تتبع الطرود الموزعة والتحصيل عند الاستلام (COD) والفرز بالمحطات'
             : language === 'fr'
             ? 'Suivi de flotte en direct, taux de livraison premier passage et reversement des fonds COD.'
-            : 'Live delivery fleet velocity, first-attempt success rate, and COD cash remittance analytics.'
+            : 'Live deliveries, first-attempt success rate, and COD cash reconciliation.'
         }
         currentBranchName={currentBranch?.name || 'Hub Logistique Central Alger'}
         branches={branches}
@@ -157,7 +157,7 @@ export const LogisticsDashboardView: React.FC = () => {
         {/* POD 1: Fleet Velocity & Delivery Flow (42% width) */}
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'حركة الأسطول والطرود اليوم' : language === 'fr' ? 'Activité Flotte & Livraisons' : 'Fleet Velocity & Delivery Flow'}
+            title={language === 'ar' ? 'حركة الأسطول والطرود اليوم' : language === 'fr' ? 'Activité Flotte & Livraisons' : 'Daily Deliveries'}
             icon={<Truck size={18} className="text-[#d4522f]" />}
             badge={
               <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
@@ -257,7 +257,7 @@ export const LogisticsDashboardView: React.FC = () => {
         {/* POD 2: Delivery Volume Development (58% width) */}
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'تطور حجم الشحنات والطرود' : language === 'fr' ? 'Développement Expéditions & Volume' : 'Delivery Volume Development'}
+            title={language === 'ar' ? 'حجم الشحنات والطرود' : language === 'fr' ? 'Expéditions & Volumes' : 'Shipments & COD'}
             icon={<Package size={18} className="text-[#d4522f]" />}
             rightControls={
               <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
@@ -332,7 +332,7 @@ export const LogisticsDashboardView: React.FC = () => {
         {/* POD 3: Financial Trajectory (42% width) */}
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'المسار المالي وأتعاب الشحن' : language === 'fr' ? 'Trajectoire Financière & COD' : 'Financial Trajectory & P&L'}
+            title={language === 'ar' ? 'الإيرادات والأرباح' : language === 'fr' ? 'Revenus & COD' : 'Revenue & Profit'}
             icon={<TrendingUp size={18} className="text-[#d4522f]" />}
             rightControls={
               <span className="text-xs font-semibold text-gray-500 uppercase">
@@ -440,7 +440,7 @@ export const LogisticsDashboardView: React.FC = () => {
         {/* POD 4: Routing Intelligence & COD Remittance Guardian (58% width) */}
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'ذكاء التوجيه وحارس أموال COD' : language === 'fr' ? 'Intelligence Routage & COD Sentinel' : 'Routing Intelligence & COD Guardian'}
+            title={language === 'ar' ? 'المؤشرات والتنبيهات' : language === 'fr' ? 'Analyses & Alertes' : 'Insights & Alerts'}
             icon={<ShieldCheck size={18} className="text-[#d4522f]" />}
             className="flex-1 flex flex-col justify-between"
           >
@@ -473,7 +473,7 @@ export const LogisticsDashboardView: React.FC = () => {
 
               {/* COD Remittance Guardian Card */}
               <GuardianCard
-                title={language === 'ar' ? 'حارس تسوية أموال الدفع عند الاستلام (COD)' : 'COD Cash Remittance & Reconciliation Sentinel'}
+                title={language === 'ar' ? 'تسوية أموال COD' : 'Delivery & COD'}
                 subtitle={
                   language === 'ar'
                     ? 'مطابقة آلية فورية بين مبالغ الوصولات المحصلة من السائقين وكشوفات التحويل للمتاجر الإلكترونية'

@@ -192,7 +192,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
             ? 'مؤشرات حركة نقاط البيع، تتبع التذاكر، المخزون الحي وربحية المتجر'
             : language === 'fr'
             ? 'Flux des caisses en direct, rotation des stocks et rentabilité des ventes.'
-            : 'Live checkout flow, inventory velocity, and store profitability analytics.'
+            : 'Live checkout flow, stock turnover, and store profitability.'
         }
         currentBranchName={currentBranch?.name || 'Caisse Centrale Atrium'}
         branches={branches}
@@ -206,7 +206,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
         {/* POD 1: Live Checkout Flow (42% width) */}
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'حركة الصناديق والمبيعات' : language === 'fr' ? 'Activité des Caisses' : 'Register & Checkout Velocity'}
+            title={language === 'ar' ? 'حركة الصناديق والمبيعات' : language === 'fr' ? 'Activité des Caisses' : 'Register Activity'}
             icon={<ShoppingBag size={18} className="text-[#d4522f]" />}
             badge={
               <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
@@ -306,7 +306,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
         {/* POD 2: Ticket & Customer Asset Development (58% width) */}
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'تطور التذاكر وحجم المبيعات' : language === 'fr' ? 'Développement Tickets & Ventes' : 'Sales & Product Asset Development'}
+            title={language === 'ar' ? 'التذاكر وحجم المبيعات' : language === 'fr' ? 'Tickets & Ventes' : 'Sales & Tickets'}
             icon={<TrendingUp size={18} className="text-[#d4522f]" />}
             rightControls={
               <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
@@ -381,7 +381,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
         {/* POD 3: Financial Trajectory & P&L (42% width) */}
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'مسار الإيرادات وهوامش الربح' : language === 'fr' ? 'Trajectoire Financière & Marges' : 'Financial Trajectory & P&L'}
+            title={language === 'ar' ? 'الإيرادات والأرباح' : language === 'fr' ? 'Revenus & Marges' : 'Revenue & Profit'}
             icon={<Receipt size={18} className="text-[#d4522f]" />}
             rightControls={
               <span className="text-xs font-semibold text-gray-500 uppercase">
@@ -491,7 +491,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
         {/* POD 4: Intelligence & Stock Sentinel Guardian (58% width) */}
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'ذكاء المنتجات وحارس المخزون' : language === 'fr' ? 'Intelligence Produits & Stock Sentinel' : 'Inventory Intelligence & Sentinel Guardian'}
+            title={language === 'ar' ? 'المؤشرات والتنبيهات' : language === 'fr' ? 'Analyses & Alertes' : 'Insights & Alerts'}
             icon={<Package size={18} className="text-[#d4522f]" />}
             className="flex-1 flex flex-col justify-between"
           >
@@ -524,7 +524,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
 
               {/* Stock Sentinel Guardian Card */}
               <GuardianCard
-                title={language === 'ar' ? 'حارس المخزون والوفرة الذكي' : 'Stock Sentinel & Cash Flow Guardian'}
+                title={language === 'ar' ? 'المخزون والتدفق النقدي' : 'Stock & Cash Flow'}
                 subtitle={
                   language === 'ar'
                     ? 'نظام المراقبة المستمرة لمستويات المخزون وإصدار تنبيهات إعادة الطلب التلقائية'

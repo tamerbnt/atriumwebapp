@@ -107,7 +107,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
       <div>
         <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-black/[0.04] dark:bg-white/[0.08] border border-neutral-200/60 dark:border-neutral-700 flex items-center justify-center text-black dark:text-white">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <rect x="3" y="3" width="7" height="7" rx="1.5" />
               <rect x="14" y="3" width="7" height="7" rx="1.5" />
@@ -115,7 +115,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               <rect x="3" y="14" width="7" height="7" rx="1.5" />
             </svg>
           </div>
-          <h1 className="text-[34px] sm:text-[44px] font-extrabold uppercase leading-none tracking-[0.01em] text-neutral-900 dark:text-white font-['Barlow_Condensed'] rtl:text-[28px] rtl:sm:text-[34px] rtl:leading-tight">
+          <h1 className="text-[36px] sm:text-[46px] font-extrabold uppercase leading-none tracking-[0.015em] text-black dark:text-white font-['Barlow_Condensed'] rtl:text-[28px] rtl:sm:text-[34px] rtl:leading-tight rtl:tracking-normal">
             {displayTitle}
           </h1>
         </div>

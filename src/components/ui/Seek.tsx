@@ -177,7 +177,7 @@ export const Seek: React.FC<SeekProps> = ({
             e.stopPropagation();
             handleToggle();
           }}
-          className="sek-lens-btn absolute left-0 top-0 h-full flex items-center justify-center cursor-pointer z-10 text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
+          className="sek-lens-btn absolute left-0 top-0 h-full flex items-center justify-center cursor-pointer z-10 text-black/65 hover:text-black dark:text-white/70 dark:hover:text-white transition-colors"
           style={{
             width: `${shutSize}px`,
             background: 'none',
@@ -219,7 +219,7 @@ export const Seek: React.FC<SeekProps> = ({
           <button
             type="button"
             onClick={handleClear}
-            className="sek-clear absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors cursor-pointer z-10"
+            className="sek-clear absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center text-black/55 hover:text-black dark:text-white/60 dark:hover:text-white transition-colors cursor-pointer z-10"
             title="Clear search"
             aria-label="Clear search"
           >

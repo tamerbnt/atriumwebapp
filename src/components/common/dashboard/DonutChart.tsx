@@ -87,7 +87,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({
       {(title || showFilter) && (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 w-full pb-2">
           {title && (
-            <span className="text-[11px] font-bold text-neutral-600 dark:text-neutral-300">
+            <span className="text-[11.5px] font-bold text-black/80 dark:text-white/85">
               {title}
             </span>
           )}
@@ -107,7 +107,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({
                     className={`px-2 py-0.5 rounded-md text-[10px] font-semibold transition-all duration-150 cursor-pointer select-none ${
                       isSelected
                         ? 'bg-white dark:bg-neutral-700 text-[#d4522f] dark:text-[#E09070] shadow-xs'
-                        : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                        : 'text-black/65 dark:text-white/70 hover:text-black dark:hover:text-white'
                     }`}
                   >
                     {opt.label}
@@ -134,7 +134,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({
             fill="transparent"
             stroke="currentColor"
             strokeWidth={strokeWidth}
-            className="text-neutral-100 dark:text-neutral-800"
+            className="text-black/[0.06] dark:text-white/[0.08]"
           />
 
           {(() => {
@@ -176,18 +176,18 @@ export const DonutChart: React.FC<DonutChartProps> = ({
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-2 text-center">
           {activeSegment ? (
             <div className="animate-in fade-in zoom-in-95 duration-150">
-              <span className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500 block leading-tight truncate max-w-[70px]">
+              <span className="text-[10px] font-medium text-black/65 dark:text-white/70 block leading-tight truncate max-w-[70px]">
                 {activeSegment.label}
               </span>
-              <span className="text-xs font-bold font-mono tabular-nums text-neutral-900 dark:text-white block leading-tight">
+              <span className="text-xs font-bold font-mono tabular-nums text-black dark:text-white block leading-tight">
                 {Math.round((activeSegment.value / total) * 100)}%
               </span>
-              <span className="text-[8px] font-mono text-neutral-500 block leading-tight">
+              <span className="text-[8.5px] font-mono tabular-nums text-black/65 dark:text-white/70 block leading-tight">
                 {activeSegment.value.toLocaleString()} {unit}
               </span>
             </div>
           ) : (
-            <span className="text-[11px] font-bold font-mono text-neutral-800 dark:text-white">
+            <span className="text-[11px] font-bold font-mono tabular-nums text-black dark:text-white">
               {centerLabel || `${total.toLocaleString()} ${unit}`}
             </span>
           )}
@@ -205,10 +205,10 @@ export const DonutChart: React.FC<DonutChartProps> = ({
               key={idx}
               className={`flex items-center gap-1.5 text-[10px] cursor-pointer transition-all duration-200 ${
                 isHovered
-                  ? 'text-neutral-900 dark:text-white font-bold scale-105'
+                  ? 'text-black dark:text-white font-bold scale-105'
                   : isOtherHovered
-                  ? 'text-neutral-400 dark:text-neutral-600 opacity-60'
-                  : 'text-neutral-600 dark:text-neutral-400'
+                  ? 'text-black/45 dark:text-white/45 opacity-60'
+                  : 'text-black/75 dark:text-white/75'
               }`}
               onMouseEnter={() => setHoveredIdx(idx)}
               onMouseLeave={() => setHoveredIdx(null)}

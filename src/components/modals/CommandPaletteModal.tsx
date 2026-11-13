@@ -147,7 +147,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         { id: 'pm_compta_expenses', label: t('pm_screen_compta_expenses'), role: t('pm_role_compta_name'), icon: <ShieldCheck size={15} /> },
         { id: 'pm_compta_stock', label: t('pm_screen_compta_stock'), role: t('pm_role_compta_name'), icon: <ShoppingBag size={15} /> },
         // Settings
-        { id: 'settings', label: t('nav_settings', language), role: 'NCH Activator', icon: <Settings size={15} /> },
+        { id: 'settings', label: t('nav_settings', language), role: language === 'ar' ? 'النظام' : language === 'fr' ? 'Système' : 'System', icon: <Settings size={15} /> },
       ];
 
       pmNavItems.forEach((nav) => {
@@ -454,7 +454,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         >
           <div
             className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-transform ${
-              isBusy ? 'scale-110 text-neutral-900 dark:text-white' : 'text-[#d4522f]'
+              isBusy ? 'scale-110 text-black dark:text-white' : 'text-[#d4522f]'
             }`}
           >
             <Search size={18} strokeWidth={isBusy ? 2.4 : 2} />
@@ -474,7 +474,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
               busyTimerRef.current = setTimeout(() => setIsBusy(false), 240);
             }}
             placeholder={t('cmd_palette_placeholder', language)}
-            className="w-full bg-transparent text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none"
+            className="w-full bg-transparent text-sm text-black dark:text-white placeholder:text-black/45 dark:placeholder:text-white/45 focus:outline-none"
           />
           {query.length > 0 && (
             <button
@@ -483,7 +483,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                 setQuery('');
                 inputRef.current?.focus();
               }}
-              className="p-1 rounded-full text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors"
+              className="p-1 rounded-full text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white transition-colors"
               title={language === 'ar' ? 'مسح البحث' : language === 'fr' ? 'Effacer la recherche' : 'Clear query'}
             >
               <X size={15} />
@@ -492,7 +492,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors ml-1"
+            className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white transition-colors ml-1"
             title={language === 'ar' ? 'إغلاق (Esc)' : language === 'fr' ? 'Fermer (Esc)' : 'Close (Esc)'}
           >
             <span className="text-[11px] font-mono px-1.5 py-0.5 rounded border border-neutral-200 dark:border-neutral-700">ESC</span>
@@ -502,7 +502,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         {/* Results List */}
         <div className="overflow-y-auto p-2 divide-y divide-neutral-50 dark:divide-neutral-800/40">
           {filteredItems.length === 0 ? (
-            <div className="py-12 text-center text-xs text-neutral-400">
+            <div className="py-12 text-center text-xs text-black/55 dark:text-white/55">
               {t('cmd_palette_no_results', language)} {query && `"${query}"`}.
             </div>
           ) : (
@@ -514,10 +514,10 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                   type="button"
                   onClick={item.onSelect}
                   onMouseEnter={() => setSelectedIndex(index)}
-                  className={`w-full flex items-center justify-between p-3 rounded-2xl text-left transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between p-3 rounded-2xl text-left rtl:text-right transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-[#FDF4F0] dark:bg-neutral-800 text-neutral-900 dark:text-white scale-[1.01]'
-                      : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
+                      ? 'bg-[#FDF4F0] dark:bg-neutral-800 text-black dark:text-white scale-[1.01]'
+                      : 'text-black/80 dark:text-white/80 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
@@ -525,7 +525,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                       className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
                         isSelected
                           ? 'bg-[#d4522f] text-white shadow-xs'
-                          : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
+                          : 'bg-neutral-100 dark:bg-neutral-800 text-black/65 dark:text-white/65'
                       }`}
                     >
                       {item.icon}
@@ -533,7 +533,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                     <div className="min-w-0">
                       <div className="text-xs font-bold truncate">{item.title}</div>
                       {item.subtitle && (
-                        <div className="text-[11px] text-neutral-400 truncate -mt-0.5">
+                        <div className="text-[11px] text-black/55 dark:text-white/55 truncate -mt-0.5">
                           {item.subtitle}
                         </div>
                       )}
@@ -541,7 +541,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 uppercase">
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/65 dark:text-white/65 uppercase rtl:normal-case">
                       {item.category === 'Navigation'
                         ? (language === 'ar' ? 'تنقل' : language === 'fr' ? 'Navigation' : 'Navigation')
                         : item.category === 'Action'
@@ -563,22 +563,22 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         </div>
 
         {/* Footer Shortcut Hints */}
-        <div className="p-3 bg-neutral-50 dark:bg-neutral-950/60 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-[11px] text-neutral-400">
+        <div className="p-3 bg-neutral-50 dark:bg-neutral-950/60 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md font-mono text-[9px] shadow-2xs">
+              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md font-mono text-[9px] text-black dark:text-white shadow-2xs">
                 ↑↓
               </kbd>
               {language === 'ar' ? 'تنقل' : language === 'fr' ? 'Naviguer' : 'Navigate'}
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md font-mono text-[9px] shadow-2xs">
+              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md font-mono text-[9px] text-black dark:text-white shadow-2xs">
                 ↵
               </kbd>
               {language === 'ar' ? 'اختيار' : language === 'fr' ? 'Sélectionner' : 'Select'}
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md font-mono text-[9px] shadow-2xs">
+              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md font-mono text-[9px] text-black dark:text-white shadow-2xs">
                 ESC
               </kbd>
               {language === 'ar' ? 'إغلاق' : language === 'fr' ? 'Fermer' : 'Close'}
@@ -587,7 +587,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
 
           <div className="flex items-center gap-1 font-semibold text-[#d4522f]">
             <Command size={11} />
-            <span>Atrium Navigator</span>
+            <span>Atrium</span>
           </div>
         </div>
       </div>

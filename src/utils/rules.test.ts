@@ -74,7 +74,7 @@ test('status config maps status to proper visual tokens', () => {
 test('getCategoryTerminology dynamically adapts terms to vertical', () => {
   const gymTerms = getCategoryTerminology('membership_session', 'en');
   assert.equal(gymTerms.members, 'Members');
-  assert.equal(gymTerms.scheduler, 'Class Schedule');
+  assert.equal(gymTerms.scheduler, 'Schedule');
 
   const salonTerms = getCategoryTerminology('appointment_service', 'fr');
   assert.equal(salonTerms.members, 'Clients');

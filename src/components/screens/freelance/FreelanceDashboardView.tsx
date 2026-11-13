@@ -169,7 +169,7 @@ export const FreelanceDashboardView: React.FC = () => {
             ? 'تتبع ساعات العمل المفوترة، محفظة العملاء وتدفق الفواتير والسيولة للمستقلين'
             : language === 'fr'
             ? 'Suivi du temps facturable en direct, trésorerie et encaissement des honoraires.'
-            : 'Live billable time tracking, client portfolio, and freelance cash runway.'
+            : 'Live billable time tracking, client portfolio, and cash flow.'
         }
         currentBranchName={currentBranch?.name || 'Studio Freelance Atrium'}
         branches={branches}
@@ -283,7 +283,7 @@ export const FreelanceDashboardView: React.FC = () => {
         {/* POD 2: Client Roster Development (58% width) */}
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'تطور محفظة العملاء والمشاريع' : language === 'fr' ? 'Développement Portefeuille Clients' : 'Client Roster & Project Development'}
+            title={language === 'ar' ? 'محفظة العملاء والمشاريع' : language === 'fr' ? 'Clients & Missions' : 'Clients & Projects'}
             icon={<Briefcase size={18} className="text-[#d4522f]" />}
             rightControls={
               <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
@@ -358,7 +358,7 @@ export const FreelanceDashboardView: React.FC = () => {
         {/* POD 3: Financial Trajectory (42% width) */}
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'المسار المالي وسعر الساعة' : language === 'fr' ? 'Trajectoire Financière & TJM' : 'Financial Trajectory & P&L'}
+            title={language === 'ar' ? 'الإيرادات والأرباح' : language === 'fr' ? 'Revenus & TJM' : 'Revenue & Profit'}
             icon={<TrendingUp size={18} className="text-[#d4522f]" />}
             rightControls={
               <span className="text-xs font-semibold text-gray-500 uppercase">
@@ -468,7 +468,7 @@ export const FreelanceDashboardView: React.FC = () => {
         {/* POD 4: Project Intelligence & Runway Guardian (58% width) */}
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'ذكاء المشاريع وحارس السيولة' : language === 'fr' ? 'Intelligence Missions & Runway Guardian' : 'Project Intelligence & Runway Guardian'}
+            title={language === 'ar' ? 'المؤشرات والتنبيهات' : language === 'fr' ? 'Analyses & Alertes' : 'Insights & Alerts'}
             icon={<Receipt size={18} className="text-[#d4522f]" />}
             className="flex-1 flex flex-col justify-between"
           >
@@ -501,15 +501,15 @@ export const FreelanceDashboardView: React.FC = () => {
 
               {/* Cashflow Runway Guardian Card */}
               <GuardianCard
-                title={language === 'ar' ? 'حارس السيولة واستمرارية التدفق' : 'Cashflow Runway & Solvency Guardian'}
+                title={language === 'ar' ? 'استقرار التدفق المالي' : 'Cashflow Health'}
                 subtitle={
                   language === 'ar'
                     ? 'حساب آلي لعدد أشهر الأمان المالي وتنبيهات مواعيد استحقاق الفواتير لدى العملاء'
-                    : 'Calcul en continu du runway de trésorerie (6.5 mois d’avance) et relance des factures.'
+                    : 'Suivi continu des réserves de trésorerie (6.5 mois d’avance) et relance des factures.'
                 }
                 score={94}
-                statusText={language === 'ar' ? 'مستوى الأمان المالي ممتاز (6.5 شهر)' : 'Runway confortable : 6.5 mois de réserves sécurisées !'}
-                metricLabel={language === 'ar' ? 'أشهر الأمان' : 'Runway'}
+                statusText={language === 'ar' ? 'مستوى الأمان المالي ممتاز (6.5 شهر)' : 'Réserves confortables : 6.5 mois d’avance'}
+                metricLabel={language === 'ar' ? 'أشهر الاحتياط' : 'Réserve'}
                 metricValue="6.5 mois"
                 trendText={language === 'ar' ? 'مؤمن' : 'Trésorerie saine'}
                 defaultEnabled={true}

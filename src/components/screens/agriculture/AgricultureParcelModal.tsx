@@ -125,7 +125,7 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
               <Sprout size={20} />
             </div>
             <div>
-              <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {initialData
                   ? (isAr ? 'تعديل بيانات القطعة الفلاحية' : 'Modifier la Parcelle Agricole')
                   : (isAr ? 'تسجيل قطعة فلاحية / امتياز جديد' : 'Nouvelle Parcelle Agricole & Cadastre')}
@@ -135,7 +135,7 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-full text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            className="p-1 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           >
             <X size={18} />
           </button>
@@ -162,7 +162,7 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
 
           {/* Cadastre & Concession Loi 10-03 */}
           <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/80 space-y-3">
-            <span className="text-[11px] font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-black dark:text-white uppercase tracking-wider block rtl:normal-case rtl:tracking-normal">
               {isAr ? 'البيانات العقارية والمسح الفلاحي' : 'Régime Foncier & Concession (Loi 10-03)'}
             </span>
 
@@ -285,7 +285,7 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 cursor-pointer"
+              className="px-4 py-2 text-xs font-semibold rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-black dark:text-white cursor-pointer"
             >
               {isAr ? 'إلغاء' : 'Annuler'}
             </button>

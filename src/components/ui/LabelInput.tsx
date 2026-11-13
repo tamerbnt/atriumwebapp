@@ -316,7 +316,7 @@ export function LabelInput({
         </label>
 
         {prefix && (
-          <div className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 z-10 flex items-center pointer-events-none text-neutral-400">
+          <div className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 z-10 flex items-center pointer-events-none text-black/60 dark:text-white/65">
             {prefix}
           </div>
         )}
@@ -358,7 +358,7 @@ export function LabelInput({
         />
 
         {suffix && !isSecret && (
-          <div className="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 z-10 flex items-center text-neutral-400">
+          <div className="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 z-10 flex items-center text-black/60 dark:text-white/65">
             {suffix}
           </div>
         )}

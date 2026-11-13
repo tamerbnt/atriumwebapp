@@ -33,779 +33,526 @@ import { CacobatphDossierModal } from './CacobatphDossierModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
-export const ContractorBillingView: React.FC = () => {
-  const { language, currentBusiness, currentBranch, currentUser, isSyncing, networkMode, retryCloudSync, lastSyncedAt } = useAtriumStore();
-  const isAr = language === 'ar';
-  const { dgps, projects, selectedProjectId, setSelectedProjectId, addDgp, updateDgpStatus } = useContractorData();
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
-  const [sortBy, setSortBy] = useState<string>('issuedDate');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
-  const [selectedDgp, setSelectedDgp] = useState<ContractorDgp | null>(() => dgps[0] || null);
-  const [activeInspectorTab, setActiveInspectorTab] = useState<'decompte' | 'certificat' | 'actions'>('decompte');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
-  const [isCacobatphModalOpen, setIsCacobatphModalOpen] = useState(false);
 
-  // Form states
-  const [periodLabel, setPeriodLabel] = useState('Situation Travaux - Mois Courant');
-  const [periodGross, setPeriodGross] = useState('15000000');
-  const [retentionPct, setRetentionPct] = useState('5');
-  const [advanceAmort, setAdvanceAmort] = useState('1500000');
-  const [hasBankCaution, setHasBankCaution] = useState(false);
-  const [penaltiesDzd, setPenaltiesDzd] = useState('0');
-  const [vatRate, setVatRate] = useState('19');
-
-  const [billingStatus, setBillingStatus] = useState<'all' | 'bet' | 'paid'>('all');
-
-  const selectedProject = projects.find((p) => p.id === selectedProjectId) || projects[0];
-  const projectDgps = dgps.filter((d) => d.projectId === (selectedProject?.id || selectedProjectId));
-
-  const filteredDgps = useMemo(() => {
-    return projectDgps.filter((d) => {
-      if (billingStatus === 'paid' && d.status !== 'Paid') return false;
-      if (billingStatus === 'bet' && d.status === 'Paid') return false;
-      return (
-        d.dgpNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        d.periodLabel.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    });
-  }, [projectDgps, searchQuery, billingStatus]);
-
-  const sortedDgps = useMemo(() => {
-    const list = [...filteredDgps];
-    list.sort((a, b) => {
-      const isPinnedA = pinnedIds.has(a.id);
-      const isPinnedB = pinnedIds.has(b.id);
-      if (isPinnedA && !isPinnedB) return -1;
-      if (!isPinnedA && isPinnedB) return 1;
-
-      if (sortBy === 'netPayableDzd') {
-        return sortDir === 'asc'
-          ? a.netPayableDzd - b.netPayableDzd
-          : b.netPayableDzd - a.netPayableDzd;
-      }
-      if (sortBy === 'dgpNumber') {
-        return sortDir === 'asc'
-          ? a.dgpNumber.localeCompare(b.dgpNumber)
-          : b.dgpNumber.localeCompare(a.dgpNumber);
-      }
-      return sortDir === 'asc'
-        ? (a.issuedDate || '').localeCompare(b.issuedDate || '')
-        : (b.issuedDate || '').localeCompare(a.issuedDate || '');
-    });
-    return list;
-  }, [filteredDgps, pinnedIds, sortBy, sortDir]);
-
-  const totalBilledGross = projectDgps.reduce((acc, d) => acc + d.periodGrossDzd, 0);
-  const totalRetention = projectDgps.reduce((acc, d) => acc + d.retentionGuaranteeDzd, 0);
-  const totalNetPayable = projectDgps.reduce((acc, d) => acc + d.netPayableDzd, 0);
-
-  const projectOptions = projects.map((p) => ({
-    value: p.id,
-    label: `${p.projectCode} - ${p.projectName.substring(0, 24)}...`,
-  }));
-
-  const handleTogglePin = (id: string) => {
-    setPinnedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-    showToast(isAr ? 'تم تحديث التثبيت' : 'Situation épinglée', 'info');
-  };
-
-  const handlePrintDgp = (d: ContractorDgp) => {
-    setSelectedDgp(d);
-    setIsPrintModalOpen(true);
-  };
-
-  const handleCreateDgp = (e: React.FormEvent) => {
-    e.preventDefault();
-    const gross = parseFloat(periodGross) || 0;
-    const retPercent = parseFloat(retentionPct) || 5;
-    const advance = parseFloat(advanceAmort) || 0;
-    const penDzd = parseFloat(penaltiesDzd) || 0;
-    const vatPercent = parseFloat(vatRate) || 19;
-
-    const calc = calculateDecompteProvisoire({
-      grossAmountCurrentHtDzd: gross,
-      cumulativePreviousGrossHtDzd: totalBilledGross,
-      retentionPercent: retPercent,
-      hasBankCautionReplacement: hasBankCaution,
-      advanceReimbursementRate: gross > 0 ? advance / gross : 0,
-      penaltiesDeductedDzd: penDzd,
-      vatRatePercent: vatPercent,
-    });
-
-    const newDgp: ContractorDgp = {
-      id: `dgp_${Date.now()}`,
-      accountId: 'acc_01',
-      businessId: currentBusiness?.id || 'biz_contractor',
-      branchId: currentBranch?.id || 'branch_contractor_main',
-      staffId: currentUser?.id || 'staff_01',
-      projectId: selectedProject?.id || selectedProjectId,
-      dgpNumber: `DGP-${String(projectDgps.length + 1).padStart(2, '0')}-${selectedProject?.projectCode || 'CHANT'}`,
-      periodLabel: periodLabel.trim(),
-      grossCompletedDzd: calc.cumulativeGrossHtDzd,
-      previousCumulDzd: totalBilledGross,
-      periodGrossDzd: gross,
-      retentionGuaranteePercent: retPercent,
-      retentionGuaranteeDzd: calc.retentionGuaranteeDzd,
-      hasBankCautionReplacement: hasBankCaution,
-      advanceAmortizationDzd: calc.advanceReimbursementDzd,
-      penaltiesDeductedDzd: calc.penaltiesDeductedDzd,
-      tvaPercent: calc.vatRatePercent,
-      tvaAmountDzd: calc.vatAmountDzd,
-      netPayableDzd: calc.netPayableDzd,
-      status: 'ApprovedBE',
-      issuedDate: new Date().toISOString().split('T')[0],
-      createdAt: new Date().toISOString(),
-    };
-
-    addDgp(newDgp);
-    setIsModalOpen(false);
-    setSelectedDgp(newDgp);
-    showToast(
-      isAr ? 'تم تحرير كشف الحساب والوضعية المالية (DGP)' : 'Situation DGP enregistrée avec succès',
-      'success'
-    );
-  };
-
-  const columns: ColumnDefinition<ContractorDgp>[] = [
-    {
-      key: 'dgpNumber',
-      header: isAr ? 'رقم الكشف / الفترة' : 'Situation & Période',
-      sortable: true,
-      minWidth: '220px',
-      renderCell: (d) => {
-        const isPinned = pinnedIds.has(d.id);
-        return (
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800">
-              <Building2 size={16} />
-            </div>
-            <div className="min-w-0">
-              <div className="font-bold text-xs text-neutral-900 dark:text-white flex items-center gap-1.5 truncate">
-                {d.dgpNumber}
-                {isPinned && <span className="text-xs text-amber-500">📌</span>}
-              </div>
-              <div className="text-[11px] text-neutral-400 truncate max-w-[180px]">
-                {d.periodLabel}
-              </div>
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'periodGrossDzd',
-      header: isAr ? 'المبلغ الإجمالي HT' : 'Montant Brut HT',
-      sortable: true,
-      minWidth: '140px',
-      renderCell: (d) => (
-        <div className="font-mono text-xs text-neutral-800 dark:text-neutral-200">
-          {formatMoney(d.periodGrossDzd)}
-        </div>
-      ),
-    },
-    {
-      key: 'retentionGuaranteeDzd',
-      header: isAr ? 'اقتطاع الضمان (5%)' : 'Retenue (5%)',
-      minWidth: '130px',
-      renderCell: (d) => (
-        <div className="font-mono text-xs text-amber-600 dark:text-amber-400">
-          {formatMoney(d.retentionGuaranteeDzd)}
-        </div>
-      ),
-    },
-    {
-      key: 'netPayableDzd',
-      header: isAr ? 'الصافي للدفع TTC' : 'Net à Payer TTC',
-      sortable: true,
-      minWidth: '140px',
-      renderCell: (d) => (
-        <div className="font-mono font-bold text-xs text-[#d4522f]">
-          {formatMoney(d.netPayableDzd)}
-        </div>
-      ),
-    },
-    {
-      key: 'status',
-      header: isAr ? 'حالة الاعتماد' : 'Validation',
-      sortable: true,
-      minWidth: '120px',
-      renderCell: (d) => (
-        <span
-          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-            d.status === 'Paid'
-              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-              : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
-          }`}
-        >
-          {d.status === 'Paid' ? (isAr ? 'مدفوع' : 'Réglé') : (isAr ? 'معتمد BET' : 'Approuvé BET')}
-        </span>
-      ),
-    },
-  ];
-
-  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
-    isLoading: isSyncing || networkMode === 'force_skeleton',
-    hasCachedData: dgps.length > 0,
-  });
-
-  if (showSkeleton && (dgps.length === 0 || networkMode === 'force_skeleton')) {
-    return (
-      <SkeletonCollectionScreen
-        kpiCount={3}
-        columns={[
-          { width: '2.5*', minWidth: '180px' },
-          { width: '1.4*', minWidth: '140px' },
-          { width: '1.2*', minWidth: '120px' },
-          { width: '1.4*', minWidth: '140px' },
-          { width: '1.5*', minWidth: '150px' },
-        ]}
-        viewMode={viewMode}
-        isOffline={isOffline}
-        isTimedOut={isTimedOut}
-        lastSyncedAt={lastSyncedAt}
-        onRetry={retryCloudSync || retry}
-      />
-    );
-  }
-
-  return (
-    <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Top Header Strip with Action Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
-            <Wallet size={22} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
-                {isAr ? 'الكشوفات المالية والضمان (DGP)' : 'Décomptes Généraux Provisoires (DGP)'}
-              </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
-                {projectDgps.length} situations
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <AtriumButton
-            variant="outline"
-            onClick={() => setIsCacobatphModalOpen(true)}
-            icon={<Cloud size={14} />}
-          >
-            {isAr ? 'ملف CACOBATPH' : 'Dossier CACOBATPH 48h'}
-          </AtriumButton>
-          <AtriumButton
-            variant="primary"
-            onClick={() => setIsModalOpen(true)}
-            icon={<Plus size={14} />}
-          >
-            {isAr ? 'كشف جديد (DGP)' : 'Nouvelle Situation DGP'}
-          </AtriumButton>
-        </div>
-      </div>
-
-      {/* KPI Pod Tray */}
-      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
-        <div>
-          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
-            {isAr ? 'الوضعية المالية للمشروع' : 'Situation Financière & Retenues du Projet'}
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'الكشوفات المحررة' : 'Situations Émises'}
-            </span>
-            <div>
-              <div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">
-                {projectDgps.length}
-              </div>
-              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">
-                {isAr ? 'مقبولة من مكتب الدراسات' : 'Approuvées par le BET'}
-              </p>
-            </div>
-          </div>
-
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'اقتطاع الضمان المحجوز (5%)' : 'Retenue de Garantie Cumulée'}
-            </span>
-            <div>
-              <div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono tabular-nums">
-                {formatMoney(totalRetention)}
-              </div>
-              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
-                {isAr ? 'تسترجع عند الاستلام النهائي' : 'Libérée à la réception définitive'}
-              </p>
-            </div>
-          </div>
-
-          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-neutral-300">
-                {isAr ? 'إجمالي الصافي المستحق' : 'Net des Situations Travaux'}
-              </span>
-              <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">
-                TVA 19% Incluse
-              </span>
-            </div>
-            <div>
-              <div className="text-2xl font-black text-white font-mono tabular-nums">
-                {formatMoney(totalNetPayable)}
-              </div>
-              <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
-                <CheckCircle2 size={11} />
-                {isAr ? 'بعد خصم التسبيق واقتطاع الضمان' : 'Déduction des avances effectuée'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
-      <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
-        {/* Domain Filter Header Strip */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
-              {isAr ? 'كشوف الحساب والوضعيات المالية (DGP)' : 'Décomptes Généraux & Situations de Travaux (DGP)'}
-            </h2>
-          </div>
-
-          {/* Kinetic Live BTP Billing Filter Switcher */}
-          <LiveSegmentedControl
-            value={billingStatus}
-            onChange={(val) => setBillingStatus(val as any)}
-            size="sm"
-            options={[
-              {
-                id: 'all',
-                label: isAr ? 'جميع الكشوفات' : 'Toutes les situations',
-                count: projectDgps.length,
-              },
-              {
-                id: 'bet',
-                label: isAr ? 'مقبولة BET' : 'Approuvées BET',
-                count: projectDgps.filter((d) => d.status !== 'Paid').length,
-              },
-              {
-                id: 'paid',
-                label: isAr ? 'مسددة' : 'Mandatées / Réglées',
-                count: projectDgps.filter((d) => d.status === 'Paid').length,
-              },
-            ]}
-          />
-        </div>
-
-        {/* Main Workspace Area with Dual Collection and 390px Inspector */}
-        <div className="flex items-start gap-4">
-          {/* Collection */}
-          <div className="flex-1 min-w-0 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-            <div className="flex items-center gap-2.5">
-              <div className="w-56">
-                <FilterSelect
-                  value={selectedProject?.id || selectedProjectId}
-                  onChange={setSelectedProjectId}
-                  options={projectOptions}
-                />
-              </div>
-              <div className="w-52">
-                <Seek
-                  value={searchQuery}
-                  onChange={setSearchQuery}
-                  placeholder={isAr ? 'بحث برقم الكشف...' : 'Filtrer situation, libellé...'}
-                />
-              </div>
-            </div>
-
-            <div className="text-xs text-neutral-500 dark:text-neutral-400">
-              {sortedDgps.length} {isAr ? 'كشوفات' : 'situations'}
-            </div>
-          </div>
-
-          <UniversalDataCollection<ContractorDgp>
-            items={sortedDgps}
-            keyExtractor={(d) => d.id}
-            defaultViewMode={viewMode}
-            columns={columns}
-            sortBy={sortBy}
-            sortDirection={sortDir}
-            onSortChange={(key) => {
-              if (sortBy === key) {
-                setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-              } else {
-                setSortBy(key);
-                setSortDir('asc');
-              }
-            }}
-            selectedIds={selectedIds}
-            onSelectionChange={setSelectedIds}
-            isPinned={(d) => pinnedIds.has(d.id)}
-            onTogglePin={(d) => handleTogglePin(d.id)}
-            onItemClick={(d) => setSelectedDgp(d)}
-            customActions={(d) => [
-              {
-                id: 'print',
-                label: isAr ? 'طباعة' : 'Imprimer',
-                icon: <Printer size={13} />,
-                variant: 'primary',
-                onClick: () => handlePrintDgp(d),
-              },
-              {
-                id: 'cert',
-                label: isAr ? 'شهادة الدفع' : 'Certificat',
-                icon: <ShieldCheck size={13} />,
-                onClick: () => setSelectedDgp(d),
-              },
-            ]}
-            renderCard={(d) => {
-              const isPinned = pinnedIds.has(d.id);
-              return (
-                <div className="flex flex-col w-full space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
-                      {d.dgpNumber} {isPinned && '📌'}
-                    </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                      {d.status === 'Paid' ? 'Réglé' : 'Approuvé BET'}
-                    </span>
-                  </div>
-
-                  <div className="text-xs text-neutral-500 line-clamp-1">
-                    {d.periodLabel}
-                  </div>
-
-                  <div className="bg-neutral-50 dark:bg-neutral-900/60 rounded-xl p-3 space-y-1.5 font-mono text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-neutral-400">Montant Brut HT:</span>
-                      <span>{formatMoney(d.periodGrossDzd)}</span>
-                    </div>
-                    <div className="flex justify-between text-amber-600 dark:text-amber-400">
-                      <span>Retenue (5%):</span>
-                      <span>-{formatMoney(d.retentionGuaranteeDzd)}</span>
-                    </div>
-                    <div className="flex justify-between font-bold text-neutral-900 dark:text-white pt-1 border-t border-neutral-200 dark:border-neutral-700">
-                      <span>Net TTC:</span>
-                      <span className="text-[#d4522f]">{formatMoney(d.netPayableDzd)}</span>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-neutral-400">
-                    <span>Date: {d.issuedDate}</span>
-                    <span>TVA 19%</span>
-                  </div>
-                </div>
-              );
-            }}
-            emptyTitle={isAr ? 'لا توجد كشوفات' : 'Aucune situation DGP'}
-            emptyDescription={isAr ? 'قم بتحرير أول كشف أشغال للمشروع' : 'Créez votre première situation de travaux'}
-          />
-        </div>
-
-        {/* 390px Inline Side Inspector Drawer */}
-        {selectedDgp && (
-          <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
-            {/* Header */}
-            <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-800/60 flex items-center justify-between">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-950/60 text-[#d4522f] font-bold text-sm flex items-center justify-center shrink-0 border border-orange-200/60">
-                  <Wallet size={18} />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="font-bold text-sm text-neutral-900 dark:text-white truncate">
-                    {selectedDgp.dgpNumber}
-                  </h3>
-                  <div className="flex items-center gap-1.5 text-xs text-neutral-400">
-                    <span className="font-mono">Date: {selectedDgp.issuedDate}</span>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setSelectedDgp(null)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            {/* Navigation Tabs */}
-            <div className="flex items-center border-b border-neutral-100 dark:border-neutral-800 px-4 bg-white dark:bg-neutral-850 text-xs">
-              <button
-                type="button"
-                onClick={() => setActiveInspectorTab('decompte')}
-                className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${
-                  activeInspectorTab === 'decompte'
-                    ? 'border-[#d4522f] text-[#d4522f]'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
-                }`}
-              >
-                {isAr ? 'البيان المالي' : 'Décompte'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveInspectorTab('certificat')}
-                className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${
-                  activeInspectorTab === 'certificat'
-                    ? 'border-[#d4522f] text-[#d4522f]'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
-                }`}
-              >
-                {isAr ? 'الشهادة والضمان' : 'Certificat'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveInspectorTab('actions')}
-                className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${
-                  activeInspectorTab === 'actions'
-                    ? 'border-[#d4522f] text-[#d4522f]'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
-                }`}
-              >
-                {isAr ? 'الإجراءات' : 'Actions'}
-              </button>
-            </div>
-
-            {/* Content Body */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
-              {activeInspectorTab === 'decompte' && (
-                <div className="space-y-4 animate-in fade-in duration-150">
-                  <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-2 font-mono">
-                    <div className="flex justify-between items-center text-neutral-600 dark:text-neutral-400">
-                      <span>Cumul précédent:</span>
-                      <span>{formatMoney(selectedDgp.previousCumulDzd || 0)}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm font-bold text-neutral-900 dark:text-white">
-                      <span>Montant du mois HT:</span>
-                      <span>{formatMoney(selectedDgp.periodGrossDzd)}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-amber-600 dark:text-amber-400">
-                      <span>Retenue garantie (5%):</span>
-                      <span>-{formatMoney(selectedDgp.retentionGuaranteeDzd)}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-neutral-500">
-                      <span>Amortissement avances:</span>
-                      <span>-{formatMoney(selectedDgp.advanceAmortizationDzd || 0)}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-blue-600 dark:text-blue-400">
-                      <span>TVA (19%):</span>
-                      <span>+{formatMoney(selectedDgp.tvaAmountDzd || 0)}</span>
-                    </div>
-                    <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700 flex justify-between items-center font-bold text-sm">
-                      <span>Net à Mandater TTC:</span>
-                      <span className="text-[#d4522f]">{formatMoney(selectedDgp.netPayableDzd)}</span>
-                    </div>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 text-emerald-800 dark:text-emerald-300 space-y-1">
-                    <span className="font-bold">Attachement des travaux validé</span>
-                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400">
-                      Métrés contradictoires signés sur chantier avec le conducteur de travaux et le Maître d'Œuvre.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {activeInspectorTab === 'certificat' && (
-                <div className="space-y-3 animate-in fade-in duration-150">
-                  <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-2">
-                    <div className="flex items-center gap-2 font-bold text-neutral-900 dark:text-white">
-                      <ShieldCheck size={16} className="text-[#d4522f]" />
-                      <span>Certificat de Paiement BTP</span>
-                    </div>
-                    <div className="space-y-1.5 font-mono text-[11px] text-neutral-600 dark:text-neutral-400">
-                      <div>Marché: {selectedProject?.projectCode}</div>
-                      <div>Maître d'Ouvrage: {selectedProject?.clientName || 'Ministère / Promoteur'}</div>
-                      <div>Bureau d'Études: BET Technique & Architecture</div>
-                    </div>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 text-amber-800 dark:text-amber-300 space-y-1">
-                    <span className="font-bold">Libération de la caution</span>
-                    <p className="text-[11px]">
-                      La retenue de garantie cumulée ({formatMoney(totalRetention)}) sera débloquée 12 mois après la réception provisoire.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {activeInspectorTab === 'actions' && (
-                <div className="space-y-2.5 animate-in fade-in duration-150">
-                  <button
-                    type="button"
-                    onClick={() => handlePrintDgp(selectedDgp)}
-                    className="w-full p-3 rounded-xl bg-[#d4522f] text-white font-semibold flex items-center justify-between hover:bg-[#b0674b] transition-colors cursor-pointer"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Printer size={16} />
-                      Imprimer décompte provisoire
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleTogglePin(selectedDgp.id)}
-                    className="w-full p-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold flex items-center justify-between hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Pin size={16} />
-                      {pinnedIds.has(selectedDgp.id) ? 'Détacher' : 'Épingler la situation'}
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      updateDgpStatus(selectedDgp.id, 'Paid');
-                      setSelectedDgp({ ...selectedDgp, status: 'Paid' });
-                      showToast('Situation enregistrée comme réglée', 'success');
-                    }}
-                    className="w-full p-3 rounded-xl bg-emerald-600 text-white font-semibold flex items-center justify-between hover:bg-emerald-700 transition-colors cursor-pointer"
-                  >
-                    <span className="flex items-center gap-2">
-                      <CheckCircle2 size={16} />
-                      Marquer comme réglée
-                    </span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-      </div>
-
-      {/* Modal Nouvel Attachement DGP */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5">
-            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
-                  <Plus size={16} />
-                </div>
-                <h3 className="font-bold text-sm text-neutral-900 dark:text-white">
-                  {isAr ? 'تحرير كشف حساب جديد (DGP)' : 'Établir une Nouvelle Situation DGP'}
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateDgp} className="space-y-4">
-              <LabelInput
-                label="Libellé de la période"
-                value={periodLabel}
-                onChange={(e) => setPeriodLabel(e.target.value)}
-                required
-              />
-
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label="Montant brut du mois (HT DZD)"
-                  type="number"
-                  value={periodGross}
-                  onChange={(e) => setPeriodGross(e.target.value)}
-                  required
-                />
-                <LabelInput
-                  label="Retenue de garantie (%)"
-                  type="number"
-                  value={retentionPct}
-                  onChange={(e) => setRetentionPct(e.target.value)}
-                  required
-                />
-              </div>
-
-              <LabelInput
-                label="Amortissement avances forfaitaires (DZD)"
-                type="number"
-                value={advanceAmort}
-                onChange={(e) => setAdvanceAmort(e.target.value)}
-              />
-
-              <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
-                    {isAr ? 'تعويض اقتطاع الضمان بكفالة بنكية' : 'Caution bancaire de substitution'}
-                  </div>
-                  <div className="text-[11px] text-neutral-500">
-                    {isAr ? 'إلغاء الاقتطاع المالي 5% بموجب كفالة معتمدة' : 'Dispense de retenue 5% (Art. 99 Décret 15-247)'}
-                  </div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={hasBankCaution}
-                  onChange={(e) => setHasBankCaution(e.target.checked)}
-                  className="w-4 h-4 rounded text-[#d4522f] accent-[#d4522f] cursor-pointer"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label="Pénalités éventuelles déduites (DZD)"
-                  type="number"
-                  value={penaltiesDzd}
-                  onChange={(e) => setPenaltiesDzd(e.target.value)}
-                />
-                <LabelSelect
-                  label="Taux TVA Applicable"
-                  value={vatRate}
-                  onChange={(val) => setVatRate(val)}
-                  options={[
-                    { value: '19', label: '19% - Travaux BTP Standard' },
-                    { value: '9', label: '9% - Logement Social (AADL/LPP)' },
-                  ]}
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                <AtriumButton variant="outline" onClick={() => setIsModalOpen(false)}>
-                  Annuler
-                </AtriumButton>
-                <AtriumButton variant="primary" type="submit">
-                  Enregistrer situation
-                </AtriumButton>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Official Legal Décompte Provisoire Print Modal */}
-      <ContractorDecomptePrintModal
-        isOpen={isPrintModalOpen}
-        onClose={() => setIsPrintModalOpen(false)}
-        dgp={selectedDgp}
-        project={selectedProject}
-      />
-
-      {/* CACOBATPH 48h Weather Dossier Modal */}
-      <CacobatphDossierModal
-        isOpen={isCacobatphModalOpen}
-        onClose={() => setIsCacobatphModalOpen(false)}
-        project={selectedProject}
-      />
-    </div>
-  );
+export const ContractorBillingView: React.FC<any> = () => {
+	const { language, currentBusiness, currentBranch, currentUser, isSyncing, networkMode, retryCloudSync, lastSyncedAt } = useAtriumStore();
+	const isAr = language === "ar";
+	const { dgps, projects, selectedProjectId, setSelectedProjectId, addDgp, updateDgpStatus } = useContractorData();
+	const [searchQuery, setSearchQuery] = React.useState("");
+	const [viewMode, setViewMode] = React.useState("list");
+	const [sortBy, setSortBy] = React.useState("issuedDate");
+	const [sortDir, setSortDir] = React.useState("desc");
+	const [selectedIds, setSelectedIds] = React.useState(/* @__PURE__ */ new Set());
+	const [pinnedIds, setPinnedIds] = React.useState(/* @__PURE__ */ new Set());
+	const [selectedDgp, setSelectedDgp] = React.useState(() => dgps[0] || null);
+	const [activeInspectorTab, setActiveInspectorTab] = React.useState("decompte");
+	const [isModalOpen, setIsModalOpen] = React.useState(false);
+	const [isPrintModalOpen, setIsPrintModalOpen] = React.useState(false);
+	const [isCacobatphModalOpen, setIsCacobatphModalOpen] = React.useState(false);
+	const [periodLabel, setPeriodLabel] = React.useState("Situation Travaux - Mois Courant");
+	const [periodGross, setPeriodGross] = React.useState("15000000");
+	const [retentionPct, setRetentionPct] = React.useState("5");
+	const [advanceAmort, setAdvanceAmort] = React.useState("1500000");
+	const [hasBankCaution, setHasBankCaution] = React.useState(false);
+	const [penaltiesDzd, setPenaltiesDzd] = React.useState("0");
+	const [vatRate, setVatRate] = React.useState("19");
+	const [billingStatus, setBillingStatus] = React.useState("all");
+	const selectedProject = projects.find((p) => p.id === selectedProjectId) || projects[0];
+	const projectDgps = dgps.filter((d) => d.projectId === (selectedProject?.id || selectedProjectId));
+	const filteredDgps = React.useMemo(() => {
+		return projectDgps.filter((d) => {
+			if (billingStatus === "paid" && d.status !== "Paid") return false;
+			if (billingStatus === "bet" && d.status === "Paid") return false;
+			return d.dgpNumber.toLowerCase().includes(searchQuery.toLowerCase()) || d.periodLabel.toLowerCase().includes(searchQuery.toLowerCase());
+		});
+	}, [
+		projectDgps,
+		searchQuery,
+		billingStatus
+	]);
+	const sortedDgps = React.useMemo(() => {
+		const list = [...filteredDgps];
+		list.sort((a, b) => {
+			const isPinnedA = pinnedIds.has(a.id);
+			const isPinnedB = pinnedIds.has(b.id);
+			if (isPinnedA && !isPinnedB) return -1;
+			if (!isPinnedA && isPinnedB) return 1;
+			if (sortBy === "netPayableDzd") return sortDir === "asc" ? a.netPayableDzd - b.netPayableDzd : b.netPayableDzd - a.netPayableDzd;
+			if (sortBy === "dgpNumber") return sortDir === "asc" ? a.dgpNumber.localeCompare(b.dgpNumber) : b.dgpNumber.localeCompare(a.dgpNumber);
+			return sortDir === "asc" ? (a.issuedDate || "").localeCompare(b.issuedDate || "") : (b.issuedDate || "").localeCompare(a.issuedDate || "");
+		});
+		return list;
+	}, [
+		filteredDgps,
+		pinnedIds,
+		sortBy,
+		sortDir
+	]);
+	const totalBilledGross = projectDgps.reduce((acc, d) => acc + d.periodGrossDzd, 0);
+	const totalRetention = projectDgps.reduce((acc, d) => acc + d.retentionGuaranteeDzd, 0);
+	const totalNetPayable = projectDgps.reduce((acc, d) => acc + d.netPayableDzd, 0);
+	const projectOptions = projects.map((p) => ({
+		value: p.id,
+		label: `${p.projectCode} - ${p.projectName.substring(0, 24)}...`
+	}));
+	const handleTogglePin = (id: any) => {
+		setPinnedIds((prev) => {
+			const next = new Set(prev);
+			if (next.has(id)) next.delete(id);
+			else next.add(id);
+			return next;
+		});
+		showToast(isAr ? "تم تحديث التثبيت" : "Situation épinglée", "info");
+	};
+	const handlePrintDgp = (d: any) => {
+		setSelectedDgp(d);
+		setIsPrintModalOpen(true);
+	};
+	const handleCreateDgp = (e: any) => {
+		e.preventDefault();
+		const gross = parseFloat(periodGross) || 0;
+		const retPercent = parseFloat(retentionPct) || 5;
+		const advance = parseFloat(advanceAmort) || 0;
+		const penDzd = parseFloat(penaltiesDzd) || 0;
+		const vatPercent = parseFloat(vatRate) || 19;
+		const calc = calculateDecompteProvisoire({
+			grossAmountCurrentHtDzd: gross,
+			cumulativePreviousGrossHtDzd: totalBilledGross,
+			retentionPercent: retPercent,
+			hasBankCautionReplacement: hasBankCaution,
+			advanceReimbursementRate: gross > 0 ? advance / gross : 0,
+			penaltiesDeductedDzd: penDzd,
+			vatRatePercent: vatPercent
+		});
+		const newDgp = {
+			id: `dgp_${Date.now()}`,
+			accountId: "acc_01",
+			businessId: currentBusiness?.id || "biz_contractor",
+			branchId: currentBranch?.id || "branch_contractor_main",
+			staffId: currentUser?.id || "staff_01",
+			projectId: selectedProject?.id || selectedProjectId,
+			dgpNumber: `DGP-${String(projectDgps.length + 1).padStart(2, "0")}-${selectedProject?.projectCode || "CHANT"}`,
+			periodLabel: periodLabel.trim(),
+			grossCompletedDzd: calc.cumulativeGrossHtDzd,
+			previousCumulDzd: totalBilledGross,
+			periodGrossDzd: gross,
+			retentionGuaranteePercent: retPercent,
+			retentionGuaranteeDzd: calc.retentionGuaranteeDzd,
+			hasBankCautionReplacement: hasBankCaution,
+			advanceAmortizationDzd: calc.advanceReimbursementDzd,
+			penaltiesDeductedDzd: calc.penaltiesDeductedDzd,
+			tvaPercent: calc.vatRatePercent,
+			tvaAmountDzd: calc.vatAmountDzd,
+			netPayableDzd: calc.netPayableDzd,
+			status: "ApprovedBE",
+			issuedDate: (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
+			createdAt: (/* @__PURE__ */ new Date()).toISOString()
+		};
+		addDgp(newDgp);
+		setIsModalOpen(false);
+		setSelectedDgp(newDgp);
+		showToast(isAr ? "تم تحرير كشف الحساب والوضعية المالية (DGP)" : "Situation DGP enregistrée avec succès", "success");
+	};
+	const columns = [
+		{
+			key: "dgpNumber",
+			header: isAr ? "رقم الكشف / الفترة" : "Situation & Période",
+			sortable: true,
+			minWidth: "220px",
+			renderCell: (d: any) => {
+				const isPinned = pinnedIds.has(d.id);
+				return /* @__PURE__ */ <div className="flex items-center gap-3">
+<div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800"><Building2 size={16} /></div>
+<div className="min-w-0">
+<div className="font-bold text-xs text-neutral-900 dark:text-white flex items-center gap-1.5 truncate">
+{d.dgpNumber}
+{isPinned && /* @__PURE__ */ <span className="text-xs text-amber-500">📌</span>}
+</div>
+<div className="text-[11px] text-neutral-400 truncate max-w-[180px]">{d.periodLabel}</div>
+</div>
+</div>;
+			}
+		},
+		{
+			key: "periodGrossDzd",
+			header: isAr ? "المبلغ الإجمالي HT" : "Montant Brut HT",
+			sortable: true,
+			minWidth: "140px",
+			renderCell: (d: any) => /* @__PURE__ */ <div className="font-mono text-xs text-neutral-800 dark:text-neutral-200">{formatMoney(d.periodGrossDzd)}</div>
+		},
+		{
+			key: "retentionGuaranteeDzd",
+			header: isAr ? "اقتطاع الضمان (5%)" : "Retenue (5%)",
+			minWidth: "130px",
+			renderCell: (d: any) => /* @__PURE__ */ <div className="font-mono text-xs text-amber-600 dark:text-amber-400">{formatMoney(d.retentionGuaranteeDzd)}</div>
+		},
+		{
+			key: "netPayableDzd",
+			header: isAr ? "الصافي للدفع TTC" : "Net à Payer TTC",
+			sortable: true,
+			minWidth: "140px",
+			renderCell: (d: any) => /* @__PURE__ */ <div className="font-mono font-bold text-xs text-[#d4522f]">{formatMoney(d.netPayableDzd)}</div>
+		},
+		{
+			key: "status",
+			header: isAr ? "حالة الاعتماد" : "Validation",
+			sortable: true,
+			minWidth: "120px",
+			renderCell: (d: any) => /* @__PURE__ */ <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${d.status === "Paid" ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300"}`}>
+{d.status === "Paid" ? isAr ? "مدفوع" : "Réglé" : isAr ? "معتمد BET" : "Approuvé BET"}
+</span>
+		}
+	];
+	const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+		isLoading: isSyncing || networkMode === "force_skeleton",
+		hasCachedData: dgps.length > 0
+	});
+	if (showSkeleton && (dgps.length === 0 || networkMode === "force_skeleton")) return /* @__PURE__ */ <SkeletonCollectionScreen kpiCount={3} columns={[
+			{
+				width: "2.5*",
+				minWidth: "180px"
+			},
+			{
+				width: "1.4*",
+				minWidth: "140px"
+			},
+			{
+				width: "1.2*",
+				minWidth: "120px"
+			},
+			{
+				width: "1.4*",
+				minWidth: "140px"
+			},
+			{
+				width: "1.5*",
+				minWidth: "150px"
+			}
+		]} viewMode={viewMode} isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={retryCloudSync || retry} />;
+	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+<div className="flex items-center gap-3">
+<div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Wallet size={22} /></div>
+<div>
+<div className="flex items-center gap-2">
+<h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+{isAr ? "الكشوفات المالية والضمان (DGP)" : "Décomptes Généraux Provisoires (DGP)"}
+</h1>
+<span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
+{projectDgps.length}
+{" situations"}
+</span>
+</div>
+</div>
+</div>
+<div className="flex items-center gap-2">
+<AtriumButton variant="outline" onClick={() => setIsCacobatphModalOpen(true)} icon={<Cloud size={14} />}>{isAr ? "ملف CACOBATPH" : "Dossier CACOBATPH 48h"}</AtriumButton>
+<AtriumButton variant="primary" onClick={() => setIsModalOpen(true)} icon={<Plus size={14} />}>{isAr ? "كشف جديد (DGP)" : "Nouvelle Situation DGP"}</AtriumButton>
+</div>
+</div>
+<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div>
+<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+{isAr ? "الوضعية المالية للمشروع" : "Situation Financière & Retenues du Projet"}
+</h2>
+</div>
+<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "الكشوفات المحررة" : "Situations Émises"}</span>
+<div>
+<div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">{projectDgps.length}</div>
+<p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">{isAr ? "مقبولة من مكتب الدراسات" : "Approuvées par le BET"}</p>
+</div>
+</div>
+<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+<span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{isAr ? "اقتطاع الضمان المحجوز (5%)" : "Retenue de Garantie Cumulée"}</span>
+<div>
+<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono tabular-nums">{formatMoney(totalRetention)}</div>
+<p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">{isAr ? "تسترجع عند الاستلام النهائي" : "Libérée à la réception définitive"}</p>
+</div>
+</div>
+<div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+<div className="flex items-center justify-between">
+<span className="text-[11px] font-medium text-neutral-300">{isAr ? "إجمالي الصافي المستحق" : "Net des Situations Travaux"}</span>
+<span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">TVA 19% Incluse</span>
+</div>
+<div>
+<div className="text-2xl font-black text-white font-mono tabular-nums">{formatMoney(totalNetPayable)}</div>
+<p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
+<CheckCircle2 size={11} />
+{isAr ? "بعد خصم التسبيق واقتطاع الضمان" : "Déduction des avances effectuée"}
+</p>
+</div>
+</div>
+</div>
+</div>
+<div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-4">
+<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div>
+<h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+{isAr ? "كشوف الحساب والوضعيات المالية (DGP)" : "Décomptes Généraux & Situations de Travaux (DGP)"}
+</h2>
+</div>
+<LiveSegmentedControl value={billingStatus} onChange={(val) => setBillingStatus(val)} size="sm" options={[
+							{
+								id: "all",
+								label: isAr ? "جميع الكشوفات" : "Toutes les situations",
+								count: projectDgps.length
+							},
+							{
+								id: "bet",
+								label: isAr ? "مقبولة BET" : "Approuvées BET",
+								count: projectDgps.filter((d) => d.status !== "Paid").length
+							},
+							{
+								id: "paid",
+								label: isAr ? "مسددة" : "Mandatées / Réglées",
+								count: projectDgps.filter((d) => d.status === "Paid").length
+							}
+						]} />
+</div>
+<div className="flex items-start gap-4">
+<div className="flex-1 min-w-0 space-y-4">
+<div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+<div className="flex items-center gap-2.5">
+<div className="w-56">
+<FilterSelect value={selectedProject?.id || selectedProjectId} onChange={setSelectedProjectId} options={projectOptions} />
+</div>
+<div className="w-52">
+<Seek value={searchQuery} onChange={setSearchQuery} placeholder={isAr ? "بحث برقم الكشف..." : "Filtrer situation, libellé..."} />
+</div>
+</div>
+<div className="text-xs text-neutral-500 dark:text-neutral-400">
+{sortedDgps.length}
+{" "}
+{isAr ? "كشوفات" : "situations"}
+</div>
+</div>
+<UniversalDataCollection items={sortedDgps} keyExtractor={(d) => d.id} defaultViewMode={viewMode} columns={columns} sortBy={sortBy} sortDirection={sortDir} onSortChange={(key) => {
+								if (sortBy === key) setSortDir((prev) => prev === "asc" ? "desc" : "asc");
+								else {
+									setSortBy(key);
+									setSortDir("asc");
+								}
+							}} selectedIds={selectedIds} onSelectionChange={setSelectedIds} isPinned={(d) => pinnedIds.has(d.id)} onTogglePin={(d) => handleTogglePin(d.id)} onItemClick={(d) => setSelectedDgp(d)} customActions={(d) => [{
+								id: "print",
+								label: isAr ? "طباعة" : "Imprimer",
+								icon: /* @__PURE__ */ <Printer size={13} />,
+								variant: "primary",
+								onClick: () => handlePrintDgp(d)
+							}, {
+								id: "cert",
+								label: isAr ? "شهادة الدفع" : "Certificat",
+								icon: /* @__PURE__ */ <ShieldCheck size={13} />,
+								onClick: () => setSelectedDgp(d)
+							}]} renderCard={(d) => {
+								const isPinned = pinnedIds.has(d.id);
+								return /* @__PURE__ */ <div className="flex flex-col w-full space-y-3">
+<div className="flex items-center justify-between">
+<span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+{d.dgpNumber}
+{" "}
+{isPinned && "📌"}
+</span>
+<span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">{d.status === "Paid" ? "Réglé" : "Approuvé BET"}</span>
+</div>
+<div className="text-xs text-neutral-500 line-clamp-1">{d.periodLabel}</div>
+<div className="bg-neutral-50 dark:bg-neutral-900/60 rounded-xl p-3 space-y-1.5 font-mono text-xs">
+<div className="flex justify-between">
+<span className="text-neutral-400">Montant Brut HT:</span>
+<span>{formatMoney(d.periodGrossDzd)}</span>
+</div>
+<div className="flex justify-between text-amber-600 dark:text-amber-400">
+<span>Retenue (5%):</span>
+<span>
+-
+{formatMoney(d.retentionGuaranteeDzd)}
+</span>
+</div>
+<div className="flex justify-between font-bold text-neutral-900 dark:text-white pt-1 border-t border-neutral-200 dark:border-neutral-700">
+<span>Net TTC:</span>
+<span className="text-[#d4522f]">{formatMoney(d.netPayableDzd)}</span>
+</div>
+</div>
+<div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-neutral-400">
+<span>
+{"Date: "}
+{d.issuedDate}
+</span>
+<span>TVA 19%</span>
+</div>
+</div>;
+							}} emptyTitle={isAr ? "لا توجد كشوفات" : "Aucune situation DGP"} emptyDescription={isAr ? "قم بتحرير أول كشف أشغال للمشروع" : "Créez votre première situation de travaux"} />
+</div>
+{selectedDgp && /* @__PURE__ */ <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
+<div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-800/60 flex items-center justify-between">
+<div className="flex items-center gap-3 min-w-0">
+<div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-950/60 text-[#d4522f] font-bold text-sm flex items-center justify-center shrink-0 border border-orange-200/60"><Wallet size={18} /></div>
+<div className="min-w-0">
+<h3 className="font-bold text-sm text-neutral-900 dark:text-white truncate">{selectedDgp.dgpNumber}</h3>
+<div className="flex items-center gap-1.5 text-xs text-neutral-400">
+<span className="font-mono">
+{"Date: "}
+{selectedDgp.issuedDate}
+</span>
+</div>
+</div>
+</div>
+<button type="button" onClick={() => setSelectedDgp(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={16} /></button>
+</div>
+<div className="flex items-center border-b border-neutral-100 dark:border-neutral-800 px-4 bg-white dark:bg-neutral-850 text-xs">
+<button type="button" onClick={() => setActiveInspectorTab("decompte")} className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${activeInspectorTab === "decompte" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200"}`}>{isAr ? "البيان المالي" : "Décompte"}</button>
+<button type="button" onClick={() => setActiveInspectorTab("certificat")} className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${activeInspectorTab === "certificat" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200"}`}>{isAr ? "الشهادة والضمان" : "Certificat"}</button>
+<button type="button" onClick={() => setActiveInspectorTab("actions")} className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${activeInspectorTab === "actions" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200"}`}>{isAr ? "الإجراءات" : "Actions"}</button>
+</div>
+<div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+{activeInspectorTab === "decompte" && /* @__PURE__ */ <div className="space-y-4 animate-in fade-in duration-150">
+<div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-2 font-mono">
+<div className="flex justify-between items-center text-neutral-600 dark:text-neutral-400">
+<span>Cumul précédent:</span>
+<span>{formatMoney(selectedDgp.previousCumulDzd || 0)}</span>
+</div>
+<div className="flex justify-between items-center text-sm font-bold text-neutral-900 dark:text-white">
+<span>Montant du mois HT:</span>
+<span>{formatMoney(selectedDgp.periodGrossDzd)}</span>
+</div>
+<div className="flex justify-between items-center text-amber-600 dark:text-amber-400">
+<span>Retenue garantie (5%):</span>
+<span>
+-
+{formatMoney(selectedDgp.retentionGuaranteeDzd)}
+</span>
+</div>
+<div className="flex justify-between items-center text-neutral-500">
+<span>Amortissement avances:</span>
+<span>
+-
+{formatMoney(selectedDgp.advanceAmortizationDzd || 0)}
+</span>
+</div>
+<div className="flex justify-between items-center text-blue-600 dark:text-blue-400">
+<span>TVA (19%):</span>
+<span>
++
+{formatMoney(selectedDgp.tvaAmountDzd || 0)}
+</span>
+</div>
+<div className="pt-2 border-t border-neutral-200 dark:border-neutral-700 flex justify-between items-center font-bold text-sm">
+<span>Net à Mandater TTC:</span>
+<span className="text-[#d4522f]">{formatMoney(selectedDgp.netPayableDzd)}</span>
+</div>
+</div>
+<div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 text-emerald-800 dark:text-emerald-300 space-y-1">
+<span className="font-bold">Attachement des travaux validé</span>
+<p className="text-[11px] text-emerald-600 dark:text-emerald-400">
+Métrés contradictoires signés sur chantier avec le conducteur de travaux et le Maître d'Œuvre.
+</p>
+</div>
+</div>}
+{activeInspectorTab === "certificat" && /* @__PURE__ */ <div className="space-y-3 animate-in fade-in duration-150">
+<div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-2">
+<div className="flex items-center gap-2 font-bold text-neutral-900 dark:text-white">
+<ShieldCheck size={16} className="text-[#d4522f]" />
+<span>Certificat de Paiement BTP</span>
+</div>
+<div className="space-y-1.5 font-mono text-[11px] text-neutral-600 dark:text-neutral-400">
+<div>
+{"Marché: "}
+{selectedProject?.projectCode}
+</div>
+<div>
+{"Maître d'Ouvrage: "}
+{selectedProject?.clientName || "Ministère / Promoteur"}
+</div>
+<div>Bureau d'Études: BET Technique & Architecture</div>
+</div>
+</div>
+<div className="p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 text-amber-800 dark:text-amber-300 space-y-1">
+<span className="font-bold">Libération de la caution</span>
+<p className="text-[11px]">
+La retenue de garantie cumulée (
+{formatMoney(totalRetention)}
+) sera débloquée 12 mois après la réception provisoire.
+</p>
+</div>
+</div>}
+{activeInspectorTab === "actions" && /* @__PURE__ */ <div className="space-y-2.5 animate-in fade-in duration-150">
+<button type="button" onClick={() => handlePrintDgp(selectedDgp)} className="w-full p-3 rounded-xl bg-[#d4522f] text-white font-semibold flex items-center justify-between hover:bg-[#b0674b] transition-colors cursor-pointer">
+<span className="flex items-center gap-2">
+<Printer size={16} />
+Imprimer décompte provisoire
+</span>
+</button>
+<button type="button" onClick={() => handleTogglePin(selectedDgp.id)} className="w-full p-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold flex items-center justify-between hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer">
+<span className="flex items-center gap-2">
+<Pin size={16} />
+{pinnedIds.has(selectedDgp.id) ? "Détacher" : "Épingler la situation"}
+</span>
+</button>
+<button type="button" onClick={() => {
+													updateDgpStatus(selectedDgp.id, "Paid");
+													setSelectedDgp({
+														...selectedDgp,
+														status: "Paid"
+													});
+													showToast("Situation enregistrée comme réglée", "success");
+												}} className="w-full p-3 rounded-xl bg-emerald-600 text-white font-semibold flex items-center justify-between hover:bg-emerald-700 transition-colors cursor-pointer">
+<span className="flex items-center gap-2">
+<CheckCircle2 size={16} />
+Marquer comme réglée
+</span>
+</button>
+</div>}
+</div>
+</div>}
+</div>
+</div>
+{isModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
+<div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5">
+<div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+<div className="flex items-center gap-2">
+<div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Plus size={16} /></div>
+<h3 className="font-bold text-sm text-neutral-900 dark:text-white">{isAr ? "تحرير كشف حساب جديد (DGP)" : "Établir une Nouvelle Situation DGP"}</h3>
+</div>
+<button type="button" onClick={() => setIsModalOpen(false)} className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={16} /></button>
+</div>
+<form onSubmit={handleCreateDgp} className="space-y-4">
+<LabelInput label="Libellé de la période" value={periodLabel} onChange={(e) => setPeriodLabel(e.target.value)} required />
+<div className="grid grid-cols-2 gap-3">
+<LabelInput label="Montant brut du mois (HT DZD)" type="number" value={periodGross} onChange={(e) => setPeriodGross(e.target.value)} required />
+<LabelInput label="Retenue de garantie (%)" type="number" value={retentionPct} onChange={(e) => setRetentionPct(e.target.value)} required />
+</div>
+<LabelInput label="Amortissement avances forfaitaires (DZD)" type="number" value={advanceAmort} onChange={(e) => setAdvanceAmort(e.target.value)} />
+<div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
+<div>
+<div className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+{isAr ? "تعويض اقتطاع الضمان بكفالة بنكية" : "Caution bancaire de substitution"}
+</div>
+<div className="text-[11px] text-neutral-500">
+{isAr ? "إلغاء الاقتطاع المالي 5% بموجب كفالة معتمدة" : "Dispense de retenue 5% (Art. 99 Décret 15-247)"}
+</div>
+</div>
+<input type="checkbox" checked={hasBankCaution} onChange={(e) => setHasBankCaution(e.target.checked)} className="w-4 h-4 rounded text-[#d4522f] accent-[#d4522f] cursor-pointer" />
+</div>
+<div className="grid grid-cols-2 gap-3">
+<LabelInput label="Pénalités éventuelles déduites (DZD)" type="number" value={penaltiesDzd} onChange={(e) => setPenaltiesDzd(e.target.value)} />
+<LabelSelect label="Taux TVA Applicable" value={vatRate} onChange={(val) => setVatRate(val)} options={[{
+										value: "19",
+										label: "19% - Travaux BTP Standard"
+									}, {
+										value: "9",
+										label: "9% - Logement Social (AADL/LPP)"
+									}]} />
+</div>
+<div className="flex justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+<AtriumButton variant="outline" onClick={() => setIsModalOpen(false)}>Annuler</AtriumButton>
+<AtriumButton variant="primary" type="submit">Enregistrer situation</AtriumButton>
+</div>
+</form>
+</div>
+</div>}
+<ContractorDecomptePrintModal isOpen={isPrintModalOpen} onClose={() => setIsPrintModalOpen(false)} dgp={selectedDgp} project={selectedProject} />
+<CacobatphDossierModal isOpen={isCacobatphModalOpen} onClose={() => setIsCacobatphModalOpen(false)} project={selectedProject} />
+</div>;
 };

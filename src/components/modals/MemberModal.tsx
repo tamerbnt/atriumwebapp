@@ -996,7 +996,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
           <div>
             <h3
               id="member-modal-title"
-              className="text-lg font-bold text-neutral-900 dark:text-white"
+              className="text-xl font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans tracking-tight rtl:tracking-normal text-black dark:text-white"
             >
               {displayedEdit
                 ? language === 'ar'
@@ -1006,7 +1006,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                 ? `تسجيل ${terminology.memberSingle} جديد`
                 : `Nouveau ${terminology.memberSingle.toLowerCase()}`}
             </h3>
-            <p className="text-xs text-neutral-500 mt-0.5">
+            <p className="text-xs text-black/65 dark:text-white/65 mt-0.5">
               {currentBranch.name} · Atrium Health & Roster
             </p>
           </div>
@@ -1014,7 +1014,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
             type="button"
             onClick={requestClose}
             aria-label="Fermer la boîte de dialogue"
-            className="w-8 h-8 rounded-full grid place-items-center text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full grid place-items-center text-black/60 dark:text-white/65 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -1024,7 +1024,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
         <form onSubmit={handleSubmit} noValidate className="space-y-4 pt-4">
           {/* Section 1: Identification */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+            <h4 className="text-xs font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-black/60 dark:text-white/60">
               {t('member_section_personal', language)}
             </h4>
 
@@ -1056,7 +1056,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                 <div>
                   <label
                     htmlFor="member-fullName"
-                    className="block text-[11px] font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mb-1"
+                    className="block text-[11px] font-bold text-black/75 dark:text-white/75 uppercase tracking-wider rtl:normal-case rtl:tracking-normal mb-1"
                   >
                     {t('modal_name', language)} *
                   </label>
@@ -1074,7 +1074,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                       setFullName(e.target.value);
                       if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: undefined }));
                     }}
-                    className={`w-full h-10 px-3 rounded-xl border text-sm font-medium transition-colors bg-white dark:bg-[#262422] text-[#1B1917] dark:text-[#F3EDE7] focus:outline-none ${
+                    className={`w-full h-10 px-3 rounded-xl border text-sm font-medium transition-colors bg-white dark:bg-[#262422] text-black dark:text-white placeholder:text-black/45 dark:placeholder:text-white/45 focus:outline-none ${
                       errors.fullName
                         ? 'border-[#B8321C] focus:border-[#B8321C] ring-1 ring-[#B8321C]'
                         : 'border-[#E4DCD5] dark:border-[#3A3734] focus:border-[#C9441F]'
@@ -1122,7 +1122,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                 <div>
                   <label
                     htmlFor="member-email"
-                    className="block text-[11px] font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mb-1"
+                    className="block text-[11px] font-bold text-black/75 dark:text-white/75 uppercase tracking-wider rtl:normal-case rtl:tracking-normal mb-1"
                   >
                     {t('modal_email', language)} *
                   </label>
@@ -1140,7 +1140,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                       setEmail(e.target.value);
                       if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
                     }}
-                    className={`w-full h-10 px-3 rounded-xl border text-sm font-medium transition-colors bg-white dark:bg-[#262422] text-[#1B1917] dark:text-[#F3EDE7] focus:outline-none ${
+                    className={`w-full h-10 px-3 rounded-xl border text-sm font-medium transition-colors bg-white dark:bg-[#262422] text-black dark:text-white placeholder:text-black/45 dark:placeholder:text-white/45 focus:outline-none ${
                       errors.email
                         ? 'border-[#B8321C] focus:border-[#B8321C] ring-1 ring-[#B8321C]'
                         : 'border-[#E4DCD5] dark:border-[#3A3734] focus:border-[#C9441F]'
@@ -1195,7 +1195,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                   />
                 ) : (
                   <div>
-                    <label className="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1">
+                    <label className="block text-[11px] font-bold text-black/75 dark:text-white/75 uppercase tracking-wider rtl:normal-case rtl:tracking-normal mb-1">
                       {t('member_field_gender', language)}
                     </label>
                     <LiveSegmentedControl
@@ -1231,7 +1231,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
 
             {/* Section 2: Membership Plan */}
             <div className="space-y-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+              <h4 className="text-xs font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-black/60 dark:text-white/60">
                 {t('member_section_membership', language)}
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1281,7 +1281,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
 
             {/* Section 3: Emergency & Notes */}
             <div className="space-y-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+              <h4 className="text-xs font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-black/60 dark:text-white/60">
                 {t('member_section_emergency', language)}
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1330,7 +1330,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                <label className="block text-xs font-semibold text-black/80 dark:text-white/80 mb-1">
                   {t('member_field_private_notes', language)}
                 </label>
                 <textarea
@@ -1341,7 +1341,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                     setNotes(e.target.value);
                   }}
                   placeholder="Notes médicales, objectifs ou restrictions..."
-                  className="w-full p-2.5 text-sm border rounded-xl border-[#E4DCD5] dark:border-[#3A3734] bg-white dark:bg-[#262422] text-neutral-900 dark:text-white focus:outline-none focus:border-[#C9441F] resize-none"
+                  className="w-full p-2.5 text-sm border rounded-xl border-[#E4DCD5] dark:border-[#3A3734] bg-white dark:bg-[#262422] text-black dark:text-white placeholder:text-black/45 dark:placeholder:text-white/45 focus:outline-none focus:border-[#C9441F] resize-none"
                 />
               </div>
             </div>

@@ -275,10 +275,10 @@ export const EducationAttendanceView: React.FC = () => {
             {st.fullName.charAt(0)}
           </div>
           <div>
-            <div className="font-semibold text-neutral-900 dark:text-white">
+            <div className="font-semibold text-black dark:text-white">
               {st.fullName}
             </div>
-            <div className="text-[11px] text-neutral-400">
+            <div className="text-[11px] text-black/55 dark:text-white/55">
               {st.phone || st.email || 'No contact'}
             </div>
           </div>
@@ -293,11 +293,11 @@ export const EducationAttendanceView: React.FC = () => {
       sortable: true,
       renderCell: (st: EduStudent) => (
         <div className="space-y-0.5">
-          <span className="font-medium text-neutral-800 dark:text-neutral-200">
+          <span className="font-medium text-black dark:text-white">
             {st.schoolGrade || 'Standard'}
           </span>
           {st.rfidBadgeCode && (
-            <span className="block text-[10px] text-neutral-400 font-mono">
+            <span className="block text-[10px] text-black/55 dark:text-white/55 font-mono">
               {st.rfidBadgeCode}
             </span>
           )}
@@ -325,7 +325,7 @@ export const EducationAttendanceView: React.FC = () => {
                 style={{ width: `${rate}%` }}
               />
             </div>
-            <span className="font-bold text-neutral-800 dark:text-neutral-200 tabular-nums text-xs">
+            <span className="font-bold text-black dark:text-white tabular-nums text-xs">
               {rate}%
             </span>
           </div>
@@ -362,7 +362,7 @@ export const EducationAttendanceView: React.FC = () => {
               </span>
             ))}
             {studentRecords.length === 0 && (
-              <span className="text-neutral-400 italic text-[11px]">{t('edu_no_sessions')}</span>
+              <span className="text-black/55 dark:text-white/55 italic text-[11px]">{t('edu_no_sessions')}</span>
             )}
           </div>
         );
@@ -380,7 +380,7 @@ export const EducationAttendanceView: React.FC = () => {
             e.stopPropagation();
             setIsRollCallOpen(true);
           }}
-          className="px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-neutral-700 dark:text-neutral-300 text-xs font-semibold transition-colors cursor-pointer"
+          className="px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-black dark:text-white text-xs font-semibold transition-colors cursor-pointer"
         >
           {t('edu_btn_roll_call')}
         </button>
@@ -403,15 +403,15 @@ export const EducationAttendanceView: React.FC = () => {
               {st.fullName.charAt(0)}
             </div>
             <div>
-              <h3 className="font-bold text-neutral-900 dark:text-white text-sm">
+              <h3 className="font-bold text-black dark:text-white text-sm">
                 {st.fullName}
               </h3>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              <p className="text-[11px] text-black/70 dark:text-white/70">
                 {st.phone || st.email || 'No phone'}
               </p>
             </div>
           </div>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white">
             {st.schoolGrade || 'Enrolled'}
           </span>
         </div>
@@ -419,10 +419,10 @@ export const EducationAttendanceView: React.FC = () => {
         {/* Rate Gauge */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-[11px]">
-            <span className="text-neutral-500 dark:text-neutral-400 font-medium">
+            <span className="text-black/70 dark:text-white/70 font-medium">
               {t('edu_col_attendance')}
             </span>
-            <span className="font-bold text-neutral-900 dark:text-white tabular-nums">
+            <span className="font-bold text-black dark:text-white tabular-nums">
               {rate}%
             </span>
           </div>
@@ -455,7 +455,7 @@ export const EducationAttendanceView: React.FC = () => {
               </span>
             ))}
             {studentRecords.length === 0 && (
-              <span className="text-[10px] text-neutral-400 italic">No logs yet</span>
+              <span className="text-[10px] text-black/55 dark:text-white/55 italic">No logs yet</span>
             )}
           </div>
 
@@ -514,7 +514,7 @@ export const EducationAttendanceView: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white">
+                <h1 className="text-[34px] sm:text-[44px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                   {t('edu_attendance_title')}
                 </h1>
               </div>
@@ -551,8 +551,8 @@ export const EducationAttendanceView: React.FC = () => {
         {/* Top Metrics Pod Tray (Screenshot_30: bg-[#F3EDE7], rounded-[24px], p-5) */}
         <div className="bg-[#F3EDE7] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#E6DED6] dark:border-neutral-800/60 shadow-2xs space-y-3">
           <div>
-            <h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
-              {language === 'ar' ? 'مؤشرات الحضور والانضباط الأكاديمي' : language === 'fr' ? 'Assiduité & Santé Pédagogique' : 'Attendance Telemetry & Academic Health'}
+            <h3 className="text-xs font-bold text-black dark:text-white tracking-tight">
+              {language === 'ar' ? 'مؤشرات الحضور والانضباط الأكاديمي' : language === 'fr' ? 'Assiduité & Santé Pédagogique' : 'Attendance Overview'}
             </h3>
           </div>
 
@@ -560,7 +560,7 @@ export const EducationAttendanceView: React.FC = () => {
             {/* Inset White Card 1: Cohort Attendance Rate */}
             <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                <span className="text-[11px] font-medium text-black/70 dark:text-white/70">
                   {t('edu_kpi_cohort_att_rate')}
                 </span>
                 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
@@ -568,13 +568,13 @@ export const EducationAttendanceView: React.FC = () => {
                 </span>
               </div>
               <div>
-                <span className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">
+                <span className="text-2xl font-bold text-black dark:text-white tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                   {cohortAttRate}%
                 </span>
-                <span className="text-xs text-neutral-400 tabular-nums ml-1">
+                <span className="text-xs text-black/55 dark:text-white/55 tabular-nums ml-1">
                   attendance fidelity
                 </span>
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                <p className="text-[11px] text-black/70 dark:text-white/70 mt-0.5">
                   {language === 'ar' ? 'نسبة الانضباط الأكاديمي' : 'Présence effective constatée'}
                 </p>
               </div>
@@ -583,7 +583,7 @@ export const EducationAttendanceView: React.FC = () => {
             {/* Inset White Card 2: Active Roster */}
             <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                <span className="text-[11px] font-medium text-black/70 dark:text-white/70">
                   {t('edu_kpi_active_roster')}
                 </span>
                 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
@@ -591,13 +591,13 @@ export const EducationAttendanceView: React.FC = () => {
                 </span>
               </div>
               <div>
-                <span className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">
+                <span className="text-2xl font-bold text-black dark:text-white tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                   {cohortStudents.length}
                 </span>
-                <span className="text-xs text-neutral-400 ml-1">
+                <span className="text-xs text-black/55 dark:text-white/55 ml-1">
                   {t('edu_seats_of', { count: String(activeCohort?.maxStudents || 20) })}
                 </span>
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                <p className="text-[11px] text-black/70 dark:text-white/70 mt-0.5">
                   {language === 'ar' ? 'الطلبة المسجلون بالفوج' : 'Effectif présent sur registre'}
                 </p>
               </div>
@@ -606,7 +606,7 @@ export const EducationAttendanceView: React.FC = () => {
             {/* Inset Card 3: DARK ESPRESSO CARD (#1F1D1B) — Academic Performance */}
             <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-medium text-neutral-400">
+                <span className="text-[11px] font-medium text-white/75">
                   {t('edu_kpi_academic_perf')}
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 inline-block">
@@ -614,10 +614,10 @@ export const EducationAttendanceView: React.FC = () => {
                 </span>
               </div>
               <div>
-                <span className="text-2xl font-bold text-[#FB923C] tabular-nums tracking-tight font-mono">
+                <span className="text-2xl font-bold text-[#FB923C] tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                   {avgGrade}%
                 </span>
-                <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+                <p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
                   <span>{language === 'ar' ? 'المعدل العام التراكمي' : 'Moyenne générale pondérée'}</span>
                 </p>
@@ -633,7 +633,7 @@ export const EducationAttendanceView: React.FC = () => {
               <span className="w-6 h-6 rounded-full bg-[#d4522f] text-white text-xs font-bold flex items-center justify-center">
                 {selectedStudentIds.size}
               </span>
-              <span className="text-xs font-semibold text-neutral-900 dark:text-white">
+              <span className="text-xs font-semibold text-black dark:text-white">
                 {selectedStudentIds.size} {selectedStudentIds.size === 1 ? 'student' : 'students'} selected
               </span>
             </div>
@@ -666,7 +666,7 @@ export const EducationAttendanceView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSelectedStudentIds(new Set())}
-                className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white text-xs font-semibold hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
               >
                 Deselect All
               </button>
@@ -682,11 +682,11 @@ export const EducationAttendanceView: React.FC = () => {
             {/* Title & Mode Switcher */}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <Users size={18} className="text-neutral-700 dark:text-neutral-300" />
-                <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
+                <Users size={18} className="text-black dark:text-white" />
+                <h2 className="text-sm font-bold text-black dark:text-white">
                   {activeTab === 'attendance' ? t('edu_tab_rollcall') : t('edu_tab_gradebook')}
                 </h2>
-                <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">
+                <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-black dark:text-white">
                   {filteredCohortStudents.length}
                 </span>
               </div>
@@ -699,7 +699,7 @@ export const EducationAttendanceView: React.FC = () => {
                   className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
                     activeTab === 'attendance'
                       ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f]'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                      : 'text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white'
                   }`}
                 >
                   {t('edu_tab_rollcall')}
@@ -710,7 +710,7 @@ export const EducationAttendanceView: React.FC = () => {
                   className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
                     activeTab === 'gradebook'
                       ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f]'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                      : 'text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white'
                   }`}
                 >
                   {t('edu_tab_gradebook')}
@@ -745,7 +745,7 @@ export const EducationAttendanceView: React.FC = () => {
               <button
                 type="button"
                 onClick={handleExportCSV}
-                className="h-9 px-3 bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                className="h-9 px-3 bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
                 title="Export CSV"
               >
                 <Download size={13} />
@@ -776,7 +776,7 @@ export const EducationAttendanceView: React.FC = () => {
             <div className="w-full overflow-x-auto">
               <table className="w-full text-left rtl:text-right border-separate border-spacing-y-1.5 text-xs">
                 <thead>
-                  <tr className="bg-transparent text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                  <tr className="bg-transparent text-[11px] font-semibold text-black/70 dark:text-white/70 uppercase tracking-wider rtl:normal-case rtl:tracking-normal">
                     <th className="py-2.5 px-4">{t('edu_col_student')}</th>
                     {assessmentTitles.map((title) => (
                       <th key={title} className="py-2.5 px-4">
@@ -803,10 +803,10 @@ export const EducationAttendanceView: React.FC = () => {
                         className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200/80 dark:border-neutral-800 shadow-2xs hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors"
                       >
                         <td className="py-3.5 px-4">
-                          <div className="font-semibold text-neutral-900 dark:text-white">
+                          <div className="font-semibold text-black dark:text-white">
                             {st.fullName}
                           </div>
-                          <div className="text-[10px] text-neutral-400">{st.schoolGrade || 'Standard'}</div>
+                          <div className="text-[10px] text-black/55 dark:text-white/55">{st.schoolGrade || 'Standard'}</div>
                         </td>
 
                         {assessmentTitles.map((title) => {
@@ -814,11 +814,11 @@ export const EducationAttendanceView: React.FC = () => {
                           return (
                             <td key={title} className="py-3.5 px-4 tabular-nums">
                               {grade ? (
-                                <span className="font-semibold text-neutral-900 dark:text-white">
+                                <span className="font-semibold text-black dark:text-white">
                                   {grade.score} / {grade.maxScore}
                                 </span>
                               ) : (
-                                <span className="text-neutral-400">—</span>
+                                <span className="text-black/55 dark:text-white/55">—</span>
                               )}
                             </td>
                           );
@@ -838,7 +838,7 @@ export const EducationAttendanceView: React.FC = () => {
                               {avgScore}%
                             </span>
                           ) : (
-                            <span className="text-neutral-400 italic">—</span>
+                            <span className="text-black/55 dark:text-white/55 italic">—</span>
                           )}
                         </td>
 
@@ -852,7 +852,7 @@ export const EducationAttendanceView: React.FC = () => {
                               }));
                               setIsGradeModalOpen(true);
                             }}
-                            className="px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-neutral-700 dark:text-neutral-300 text-xs font-semibold transition-colors cursor-pointer"
+                            className="px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-black dark:text-white text-xs font-semibold transition-colors cursor-pointer"
                           >
                             {t('edu_btn_record_grade')}
                           </button>
@@ -872,13 +872,13 @@ export const EducationAttendanceView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
           <div className="relative w-full max-w-md bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6">
             <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
-              <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {t('edu_grade_modal_title')}
               </h2>
               <button
                 type="button"
                 onClick={() => setIsGradeModalOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -942,14 +942,14 @@ export const EducationAttendanceView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                <label className="block font-semibold text-black dark:text-white mb-1">
                   {t('edu_grade_remarks')}
                 </label>
                 <textarea
                   rows={2}
                   value={gradeForm.teacherRemarks}
                   onChange={(e) => setGradeForm({ ...gradeForm, teacherRemarks: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
+                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black dark:text-white"
                 />
               </div>
 

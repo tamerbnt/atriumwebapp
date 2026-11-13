@@ -193,7 +193,7 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
               <ShieldCheck size={20} />
             </div>
             <div>
-              <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {logToEdit
                   ? (isAr ? 'تعديل المعالجة النباتية' : 'Modifier le Traitement Phytosanitaire')
                   : (isAr ? 'قيد معالجة جديدة وفترة الأمان DAR' : 'Consigner un Traitement & Délai DAR (INPV)')}
@@ -202,7 +202,7 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
+            className="p-1.5 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
           >
             <X size={18} />
           </button>
@@ -211,7 +211,7 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
         {/* Quick INPV Presets Selector Chips */}
         <div className="mt-4 p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl border border-neutral-100 dark:border-neutral-800">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-neutral-600 dark:text-neutral-300 flex items-center gap-1.5">
+            <span className="text-[11px] font-bold text-black/70 dark:text-white flex items-center gap-1.5">
               <Zap size={13} className="text-[#d4522f]" />
               {isAr ? 'مواد معتمدة ومطابقة لوزارة الفلاحة (INPV)' : 'Produits Homologués INPV Algérie (Pré-remplissage 1-clic)'}
             </span>
@@ -225,7 +225,7 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
                 className={`text-[10.5px] px-2.5 py-1 rounded-lg border transition font-medium ${
                   productName === p.name
                     ? 'bg-[#d4522f] text-white border-[#d4522f]'
-                    : 'bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:border-[#d4522f]'
+                    : 'bg-white dark:bg-neutral-800 text-black dark:text-white border-neutral-200 dark:border-neutral-700 hover:border-[#d4522f]'
                 }`}
               >
                 {p.name} <span className="opacity-70 text-[9.5px]">({p.darDays}j DAR)</span>
@@ -346,7 +346,7 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
               onChange={(e) => setSafetyGearConfirmed(e.target.checked)}
               className="rounded text-[#d4522f] focus:ring-[#d4522f]"
             />
-            <label htmlFor="safetyGear" className="text-xs text-neutral-600 dark:text-neutral-300 cursor-pointer">
+            <label htmlFor="safetyGear" className="text-xs text-black/70 dark:text-white cursor-pointer">
               {isAr
                 ? 'أؤكد ارتداء معدات الوقاية الفردية (EPI) ومراعاة اتجاه الرياح'
                 : 'Je confirme le port des Équipements de Protection Individuelle (EPI) et le respect des normes INPV'}

@@ -38,12 +38,12 @@ export const CollectionEmptyState: React.FC<CollectionEmptyStateProps> = ({
       </div>
 
       {/* Primary title text */}
-      <h3 className="relative z-10 text-[20px] font-semibold text-neutral-900 dark:text-neutral-50 mb-1.5 tracking-tight">
+      <h3 className="relative z-10 text-xl font-bold text-black dark:text-white mb-1.5 tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
         {title}
       </h3>
 
       {/* Description text */}
-      <p className="relative z-10 text-[14px] text-neutral-500 dark:text-neutral-400 max-w-[320px] mb-6 leading-relaxed">
+      <p className="relative z-10 text-[14px] text-black/70 dark:text-white/75 max-w-[320px] mb-6 leading-relaxed">
         {description}
       </p>
 

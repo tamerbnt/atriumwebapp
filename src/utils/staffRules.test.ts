@@ -252,7 +252,7 @@ test('Staff Rules: Category Performance Metric Labels returns appropriate KPI me
   assert.ok(med.labelFr.includes('Consultations'));
 
   const btp = getCategoryPerformanceMetricLabel('construction_contractor');
-  assert.ok(btp.labelFr.includes('Chantier'));
+  assert.ok(btp.labelFr.includes('Avancement'));
 
   const gar = getCategoryPerformanceMetricLabel('auto_garage');
   assert.ok(gar.labelFr.includes('Réparation'));

@@ -61,16 +61,16 @@ const BLUEPRINTS: Record<string, BlueprintData> = {
       en: 'Unified customer records, streamlined operational pipelines, zero clutter',
     },
     screenBadge: {
-      fr: 'Écrans : Tableaux de Bord & Collections 360°',
-      ar: 'الشاشات: لوحة القيادة الموحدة وملفات 360°',
-      en: 'Modules: Unified Dashboards & 360° Hubs',
+      fr: 'Écrans : Tableaux de Bord & Dossiers Clients',
+      ar: 'الشاشات: لوحة القيادة وملفات الزبائن',
+      en: 'Modules: Unified Dashboards & Client Hubs',
     },
     mechanisms: [
       {
         title: {
-          fr: 'Dossiers Clients & Passports Métiers 360°',
-          ar: 'ملف شامل 360° لكل زبون ومؤسسة',
-          en: '360° Unified Customer Passports',
+          fr: 'Fiches Clients & Dossiers Unifiés',
+          ar: 'ملف موحد لكل زبون ومؤسسة',
+          en: 'Unified Customer Profiles',
         },
         desc: {
           fr: 'Consolidation immédiate des coordonnées, historique complet des transactions, soldes en cours et documents rattachés en un seul écran.',
@@ -80,9 +80,9 @@ const BLUEPRINTS: Record<string, BlueprintData> = {
       },
       {
         title: {
-          fr: 'Canvas Opérationnel à Élévation Unique',
-          ar: 'واجهة تشغيل موحدة ذات عمق بصري واحد',
-          en: 'Single-Elevation Operational Canvas',
+          fr: 'Interface Épurée Liste & Détails',
+          ar: 'واجهة تشغيل واضحة ومنظمة',
+          en: 'Clean List & Detail Workspace',
         },
         desc: {
           fr: 'Élimination des cartes imbriquées et de la surcharge visuelle : bascule rapide entre vue Liste dense et vue Grille avec tiroir inspecteur latéral.',
@@ -156,9 +156,9 @@ const BLUEPRINTS: Record<string, BlueprintData> = {
       },
       {
         title: {
-          fr: 'Traçabilité Quadruple & Journal d’Audit Infalsifiable',
-          ar: 'توثيق رقابي رباعي وسجل عمليات غير قابل للتعديل',
-          en: 'Quadruple Traceability & Immutable Audit Trail',
+          fr: 'Journal d’Audit Complet & Horodaté',
+          ar: 'سجل عمليات موثق وغير قابل للتعديل',
+          en: 'Complete Audit Log & Staff Tracking',
         },
         desc: {
           fr: 'Chaque création de facture, remise accordée, ou modification de statut est scellée avec l’identifiant précis du collaborateur émetteur (staff_id).',
@@ -170,7 +170,7 @@ const BLUEPRINTS: Record<string, BlueprintData> = {
     result: {
       stat: '0 conflit',
       label: {
-        fr: 'Zéro chevauchement de responsabilités et traçabilité interne totale',
+        fr: 'Zéro chevauchement de responsabilités et suivi interne complet',
         ar: 'انعدام تداخل الصلاحيات وتوثيق دقيق لكل عملية يقوم بها الفريق',
         en: 'Zero role ambiguity and airtight accountability across your entire team',
       },
@@ -243,9 +243,9 @@ const BLUEPRINTS: Record<string, BlueprintData> = {
 
   goal_client_retention: {
     title: {
-      fr: 'Fidélisation Clients & Radar de Performance',
+      fr: 'Fidélisation Clients & Suivi d’Activité',
       ar: 'تعزيز ولاء الزبائن ومؤشرات الأداء في الوقت الحقيقي',
-      en: 'Customer Retention & Real-Time Business Radar',
+      en: 'Customer Retention & Live Insights',
     },
     subtitle: {
       fr: 'Historique d’interactions, relances proactives et pilotage de la rentabilité',
@@ -253,9 +253,9 @@ const BLUEPRINTS: Record<string, BlueprintData> = {
       en: 'Interaction history, proactive follow-ups, and live profitability metrics',
     },
     screenBadge: {
-      fr: 'Écrans : Répertoire Clients 360°, Alertes & KPI Radar',
-      ar: 'الشاشات: سجل الزبائن، التنبيهات ورادار الأداء',
-      en: 'Modules: 360° Client CRM, Proactive Alerts & Radar',
+      fr: 'Écrans : Répertoire Clients, Alertes & Rapports',
+      ar: 'الشاشات: سجل الزبائن، التنبيهات والتقارير',
+      en: 'Modules: Client Directory, Alerts & Reports',
     },
     mechanisms: [
       {
@@ -284,9 +284,9 @@ const BLUEPRINTS: Record<string, BlueprintData> = {
       },
       {
         title: {
-          fr: 'Radar de Performance Opérationnel Sans Latence',
-          ar: 'رادار حي لمتابعة وتيرة العمل والإيرادات',
-          en: 'Real-Time Operational Pulse & Business Radar',
+          fr: 'Suivi de Performance en Temps Réel',
+          ar: 'متابعة حية لوتيرة العمل والإيرادات',
+          en: 'Real-Time Performance Insights',
         },
         desc: {
           fr: 'Suivi en direct du panier moyen, de la rentabilité par jour et du taux de fréquentation sans calculs manuels sur tableur.',
@@ -434,14 +434,14 @@ const BLUEPRINTS: Record<string, BlueprintData> = {
 
   goal_total_inventory_traceability: {
     title: {
-      fr: 'Traçabilité Totale des Stocks, Dépôts & Matières Premières',
-      ar: 'تتبع شامل للمخزون، المستودعات والمواد الأولية',
-      en: 'End-to-End Inventory, Multi-Warehouse & Raw Material Control',
+      fr: 'Gestion des Stocks, Dépôts & Matières Premières',
+      ar: 'متابعة شاملة للمخزون، المستودعات والمواد الأولية',
+      en: 'Inventory, Multi-Warehouse & Raw Material Control',
     },
     subtitle: {
       fr: 'Décrémentation temps réel, alertes seuil critique et valorisation PMP',
-      ar: 'خصم فوري للمخزون مع الباركود، رادار التنبيه وتقييم التكلفة الحقيقية',
-      en: 'Real-time barcode deduction, low-stock radar, and weighted cost math',
+      ar: 'خصم فوري للمخزون مع الباركود، تنبيهات النقص وتقييم التكلفة الحقيقية',
+      en: 'Real-time barcode deduction, low-stock alerts, and weighted cost math',
     },
     screenBadge: {
       fr: 'Écrans : Inventaire Caisse & Entrepôts B2B',
@@ -463,9 +463,9 @@ const BLUEPRINTS: Record<string, BlueprintData> = {
       },
       {
         title: {
-          fr: 'Radar de Réapprovisionnement & Seuil Critique',
-          ar: 'رادار إنذار ذكي عند اقتراب نفاذ السلع',
-          en: 'Predictive Low-Stock & Safety Threshold Radar',
+          fr: 'Alertes de Réapprovisionnement & Seuil Critique',
+          ar: 'تنبيهات ذكية عند اقتراب نفاذ السلع',
+          en: 'Low-Stock Alerts & Safety Thresholds',
         },
         desc: {
           fr: 'Notification proactive dès qu’un article descend sous son seuil de sécurité avec génération automatique du bon de commande fournisseur.',
@@ -489,7 +489,7 @@ const BLUEPRINTS: Record<string, BlueprintData> = {
     result: {
       stat: '0%',
       label: {
-        fr: 'Zéro rupture imprévue et traçabilité financière intégrale',
+        fr: 'Zéro rupture imprévue et suivi financier complet',
         ar: 'انعدام النفاذ المفاجئ مع شفافية مالية مطلقة للمخزون',
         en: 'Zero unexpected stockouts and airtight financial margins',
       },
@@ -539,9 +539,9 @@ const BLUEPRINTS: Record<string, BlueprintData> = {
       },
       {
         title: {
-          fr: 'Bordereaux Certifiés & Traçabilité Quadruple',
-          ar: 'صكوك SFP 01 معتمدة وتتبع رباعي للعمليات',
-          en: 'Certified SFP 01 Slips & Quadruple Traceability',
+          fr: 'Bordereaux Certifiés & Suivi Complet',
+          ar: 'صكوك SFP 01 معتمدة ومتابعة شاملة للعمليات',
+          en: 'Certified SFP 01 Slips & Full Audit Log',
         },
         desc: {
           fr: 'Chaque mandat est scellé avec le numéro de compte CCP, la clé de contrôle, et l’identifiant de l’opérateur émetteur.',
@@ -572,9 +572,9 @@ const BLUEPRINTS: Record<string, BlueprintData> = {
       en: 'Live triage queues, 2-second full record lookups, and strict privacy',
     },
     screenBadge: {
-      fr: 'Écrans : File d’Attente & Dossier Patient 360°',
-      ar: 'الشاشات: قاعة الانتظار والملف الطبي الشامل',
-      en: 'Modules: Triage Queue & 360° Medical Record',
+      fr: 'Écrans : File d’Attente & Dossier Patient',
+      ar: 'الشاشات: قاعة الانتظار والملف الطبي',
+      en: 'Modules: Triage Queue & Medical Record',
     },
     mechanisms: [
       {
@@ -591,9 +591,9 @@ const BLUEPRINTS: Record<string, BlueprintData> = {
       },
       {
         title: {
-          fr: 'Dossier 360° & Historique Médical / Scolaire',
-          ar: 'ملف شامل 360° للسوابق والمتابعات السابقة',
-          en: '360° Chronological Consultation History',
+          fr: 'Dossier Complet & Historique Médical / Scolaire',
+          ar: 'ملف شامل للسوابق والمتابعات السابقة',
+          en: 'Complete Consultation History',
         },
         desc: {
           fr: 'Centralisation des constantes vitales, antécédents, diagnostics antérieurs et comptes-rendus avec recherche instantanée par nom ou numéro.',
@@ -631,9 +631,9 @@ const BLUEPRINTS: Record<string, BlueprintData> = {
       en: 'Multi-Branch Management & Role-Based Security Governance',
     },
     subtitle: {
-      fr: 'Standard Quadruple Traceability, bascule FastSwitch et pistes d’audit',
-      ar: 'عزل أمني رباعي، تنقل سريع بين الفروع وسجل رقابي كامل',
-      en: 'Quadruple traceability, FastSwitch multi-facility access, and audit trails',
+      fr: 'Suivi multi-niveaux, bascule FastSwitch et journaux d’audit',
+      ar: 'عزل أمني، تنقل سريع بين الفروع وسجل رقابي كامل',
+      en: 'Multi-branch tracking, FastSwitch access, and audit trails',
     },
     screenBadge: {
       fr: 'Écrans : FastSwitch & Administration Paramètres',
@@ -643,9 +643,9 @@ const BLUEPRINTS: Record<string, BlueprintData> = {
     mechanisms: [
       {
         title: {
-          fr: 'Standard Quadruple Traceability',
-          ar: 'معيار الأمان والتوثيق الرباعي المعتمد',
-          en: 'Quadruple Traceability Contract',
+          fr: 'Contrôle d’Accès Multi-Niveaux',
+          ar: 'معيار الأمان والتوثيق المعتمد',
+          en: 'Multi-Level Audit & Data Isolation',
         },
         desc: {
           fr: 'Chaque écriture comptable, modification de prix ou transaction est scellée avec account_id, business_id, branch_id et staff_id.',
@@ -723,18 +723,18 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
                 <Sparkles className="w-3 h-3 text-[#d4522f]" />
                 {isAr ? 'ميزات حقيقية مثبتة' : isFr ? 'Fonctionnalités réelles & certifiées' : 'Verifiable Built-in Capabilities'}
               </span>
-              <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-neutral-300">
+              <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/85">
                 {data.screenBadge[language] || data.screenBadge.en}
               </span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-black text-white leading-snug">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-white leading-snug tracking-tight">
               {data.title[language] || data.title.en}
             </h2>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+            className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -756,7 +756,7 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
                     {mech.title[language] || mech.title.en}
                   </h4>
                 </div>
-                <p className="text-xs text-neutral-400 leading-relaxed pl-8">
+                <p className="text-xs text-white/75 leading-relaxed pl-8 rtl:pl-0 rtl:pr-8">
                   {mech.desc[language] || mech.desc.en}
                 </p>
               </div>
@@ -765,10 +765,10 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
 
           {/* Quantifiable Result Card */}
           <div className="p-4 rounded-2xl bg-gradient-to-r from-[#1C1A18] to-neutral-900 border border-[#d4522f]/30 flex items-center gap-4">
-            <div className="text-2xl sm:text-3xl font-black text-[#d4522f] font-mono shrink-0">
+            <div className="text-2xl sm:text-3xl font-black text-[#d4522f] font-mono tabular-nums shrink-0">
               {data.result.stat}
             </div>
-            <div className="text-xs text-neutral-300 font-medium leading-relaxed">
+            <div className="text-xs text-white/90 font-medium leading-relaxed">
               {data.result.label[language] || data.result.label.en}
             </div>
           </div>
@@ -779,7 +779,7 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="text-xs font-semibold text-neutral-400 hover:text-white transition-colors cursor-pointer"
+            className="text-xs font-semibold text-white/70 hover:text-white transition-colors cursor-pointer"
           >
             {isAr ? 'إلغاء' : isFr ? 'Fermer' : 'Close'}
           </button>

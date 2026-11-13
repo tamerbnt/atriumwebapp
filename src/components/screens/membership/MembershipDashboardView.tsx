@@ -281,13 +281,13 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
 
           {/* POD 3: FINANCIAL TRAJECTORY & P&L (Screenshot 91 Bottom-Left) */}
           <DashboardPod
-            title={language === 'ar' ? 'اتجاه الإيرادات والربحية' : language === 'fr' ? 'Revenue Trend' : 'Revenue Trend'}
+            title={language === 'ar' ? 'الإيرادات والأرباح' : language === 'fr' ? 'Revenus & Marges' : 'Revenue & Profit'}
             subtitle={
               language === 'ar'
                 ? 'متابعة صافي الربحية وتطور المقبوضات الشهرية'
                 : language === 'fr'
-                ? 'Suivi de la rentabilité nette et tendance des encaissements.'
-                : 'Net profitability and cash inflow trajectory.'
+                ? 'Suivi de la rentabilité nette et des encaissements.'
+                : 'Net profit and monthly cash flow.'
             }
             icon={<TrendingUp size={17} />}
             headerRight={
@@ -439,7 +439,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
         <div className="lg:col-span-7 space-y-5 flex flex-col justify-between">
           {/* POD 2: BASE GROWTH & ASSETS (Screenshot 90 Top-Right) */}
           <DashboardPod
-            title={language === 'ar' ? 'تطور المشتركين' : language === 'fr' ? 'Member Development' : 'Member Development'}
+            title={language === 'ar' ? 'تطور المشتركين' : language === 'fr' ? 'Croissance Membres' : 'Member Growth'}
             subtitle={
               language === 'ar'
                 ? 'نمو المشتركين النشطين ومعدل التجديدات'
@@ -501,7 +501,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
 
           {/* POD 4: DOMAIN GUARDIAN & INTELLIGENCE (Screenshot 91 Bottom-Right) */}
           <DashboardPod
-            title={language === 'ar' ? 'ذكاء المشتركين والحماية' : language === 'fr' ? 'Intelligence Membres & Rétention' : 'Intelligence & Retention'}
+            title={language === 'ar' ? 'المؤشرات والتنبيهات' : language === 'fr' ? 'Analyses & Rétention' : 'Insights & Retention'}
             subtitle={
               language === 'ar'
                 ? 'قنوات الاستقطاب، دورية الزيارات ومحرك الوقاية من الانسحاب'
@@ -538,7 +538,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
 
             {/* Signature Dark Espresso Retention Guardian Card */}
             <GuardianCard
-              title={language === 'ar' ? 'حارس ولاء المشتركين' : language === 'fr' ? 'Retention Guardian' : 'Retention Guardian'}
+              title={language === 'ar' ? 'ولاء المشتركين' : language === 'fr' ? 'Fidélisation Membres' : 'Member Retention'}
               subtitle={
                 language === 'ar'
                   ? 'مؤشر صحة مجتمع النادي ممتاز جداً!'

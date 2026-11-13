@@ -37,7 +37,7 @@ export const DashboardMetricCard: React.FC<DashboardMetricCardProps> = ({
   const badgeColors: Record<string, string> = {
     green: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400',
     amber: 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400',
-    neutral: 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300',
+    neutral: 'bg-black/[0.06] dark:bg-white/10 text-black/80 dark:text-white/85',
     red: 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400',
   };
 
@@ -52,17 +52,17 @@ export const DashboardMetricCard: React.FC<DashboardMetricCardProps> = ({
     >
       <div>
         <div className="flex items-center justify-between gap-1">
-          <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400 block truncate">
+          <span className="text-[11.5px] font-semibold text-black/70 dark:text-white/75 block truncate">
             {label}
           </span>
           {trend && (
             <span
-              className={`text-[10px] font-bold font-mono ${
+              className={`text-[10px] font-bold font-mono tabular-nums ${
                 trendDirection === 'down'
-                  ? 'text-red-500'
+                  ? 'text-red-600 dark:text-red-400'
                   : trendDirection === 'neutral'
-                  ? 'text-neutral-400'
-                  : 'text-emerald-600'
+                  ? 'text-black/60 dark:text-white/65'
+                  : 'text-emerald-600 dark:text-emerald-400'
               }`}
             >
               {trend}
@@ -80,12 +80,12 @@ export const DashboardMetricCard: React.FC<DashboardMetricCardProps> = ({
 
       <div>
         <div className="flex items-baseline gap-1">
-          <span className="text-xl lg:text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
+          <span className="text-[26px] lg:text-[30px] leading-none font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed'] rtl:font-sans rtl:text-xl rtl:lg:text-2xl">
             {value}
           </span>
         </div>
         {displaySubtext && (
-          <span className="text-[11px] text-neutral-400 dark:text-neutral-500 font-semibold font-mono block mt-0.5">
+          <span className="text-[11px] text-black/60 dark:text-white/65 font-medium tabular-nums block mt-1">
             {displaySubtext}
           </span>
         )}

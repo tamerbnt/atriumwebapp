@@ -69,8 +69,8 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
 
   return (
     <div className={`inline-flex items-center gap-1.5 ${className}`}>
-      {icon && <span className="text-neutral-400 shrink-0">{icon}</span>}
-      {label && <span className="text-neutral-400 text-xs font-normal">{label}:</span>}
+      {icon && <span className="text-black/65 dark:text-white/70 shrink-0">{icon}</span>}
+      {label && <span className="text-black/70 dark:text-white/75 text-xs font-medium">{label}:</span>}
       <LiveSelect
         options={normalizedOptions}
         value={controlledValue !== undefined ? String(controlledValue) : undefined}

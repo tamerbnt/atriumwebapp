@@ -90,7 +90,7 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
             </div>
             <div>
               <h3 className="text-sm font-bold text-white">{t('fast_switch_title_lock', language)}</h3>
-              <p className="text-[11px] text-neutral-400">
+              <p className="text-[11px] text-white/70">
                 {t('fast_switch_operator_security', language)}
               </p>
             </div>
@@ -98,7 +98,7 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+            className="w-8 h-8 rounded-full bg-neutral-900 border border-neutral-800 text-white/65 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
           >
             <X size={14} />
           </button>
@@ -117,7 +117,7 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
                   {currentUser.role}
                 </span>
               </div>
-              <span className="text-[11px] text-neutral-400">{currentUser.email}</span>
+              <span className="text-[11px] text-white/70">{currentUser.email}</span>
             </div>
           </div>
           <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
@@ -127,7 +127,7 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
 
         {/* Staff Quick Tap Switch List */}
         <div>
-          <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-2">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-white/70 mb-2">
             {t('fast_switch_switch_to', language)}
           </div>
           <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
@@ -141,16 +141,16 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
                   className={`w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition-colors cursor-pointer ${
                     isCurrent
                       ? 'bg-[#2A2420] border-[#d4522f] text-white font-bold'
-                      : 'bg-neutral-900/60 border-neutral-800 text-neutral-300 hover:bg-neutral-800/80 hover:text-white'
+                      : 'bg-neutral-900/60 border-neutral-800 text-white/85 hover:bg-neutral-800/80 hover:text-white'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-7 h-7 rounded-full bg-neutral-800 text-neutral-300 flex items-center justify-center text-xs font-bold">
+                    <div className="w-7 h-7 rounded-full bg-neutral-800 text-white/90 flex items-center justify-center text-xs font-bold">
                       {stf.fullName.charAt(0)}
                     </div>
                     <div className="truncate">
                       <div className="text-xs font-medium truncate">{stf.fullName}</div>
-                      <div className="text-[10px] text-neutral-400">{stf.role}</div>
+                      <div className="text-[10px] text-white/70">{stf.role}</div>
                     </div>
                   </div>
                   <div className="text-[10px] font-mono text-[#d4522f]">
@@ -165,7 +165,7 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
         {/* 4-Digit Quick PIN Pad */}
         <div className="pt-2 border-t border-neutral-800 space-y-2.5">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-neutral-400 font-medium">{t('fast_switch_pin_label', language)}</span>
+            <span className="text-white/75 font-medium">{t('fast_switch_pin_label', language)}</span>
             <div className="flex items-center gap-2">
               {[0, 1, 2, 3].map((idx) => (
                 <div
@@ -224,7 +224,7 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
               logout();
               onClose();
             }}
-            className="h-9 px-3.5 rounded-xl bg-neutral-900 border border-neutral-800 hover:bg-rose-950/40 hover:border-rose-900 text-neutral-300 hover:text-rose-400 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="h-9 px-3.5 rounded-xl bg-neutral-900 border border-neutral-800 hover:bg-rose-950/40 hover:border-rose-900 text-white/85 hover:text-rose-400 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <LogOut size={13} />
             <span>{t('topbar_logout', language)}</span>

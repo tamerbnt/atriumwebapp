@@ -107,7 +107,7 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
       icon: (
         <Pin
           className={`w-3.5 h-3.5 ${
-            isPinned ? 'fill-[#F59E0B] text-[#F59E0B]' : 'text-neutral-400'
+            isPinned ? 'fill-[#F59E0B] text-[#F59E0B]' : 'text-black/55 dark:text-white/60'
           }`}
         />
       ),

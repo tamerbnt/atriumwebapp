@@ -62,7 +62,7 @@ export const ToastContainer: React.FC = () => {
             {/* Content */}
             <div className="flex-1 min-w-0 pr-1">
               <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                <h4 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
+                <h4 className="text-xs font-bold text-black dark:text-white tracking-tight">
                   {toast.title}
                 </h4>
 
@@ -74,7 +74,7 @@ export const ToastContainer: React.FC = () => {
                   </span>
                 )}
                 {toast.syncStatus === 'local' && (
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[10px] font-medium text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[10px] font-medium text-black/75 dark:text-white/85 border border-neutral-200 dark:border-neutral-700">
                     <Database size={10} />
                     Saved to Local Storage
                   </span>
@@ -87,7 +87,7 @@ export const ToastContainer: React.FC = () => {
                 )}
               </div>
 
-              <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed break-words">
+              <p className="text-xs text-black/75 dark:text-white/80 leading-relaxed break-words">
                 {toast.message}
               </p>
             </div>
@@ -95,7 +95,7 @@ export const ToastContainer: React.FC = () => {
             {/* Dismiss Button */}
             <button
               onClick={() => dismissToast(toast.id)}
-              className="shrink-0 p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              className="shrink-0 p-1 rounded-lg text-black/55 hover:text-black dark:text-white/60 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
               title="Dismiss notification"
             >
               <X size={14} />

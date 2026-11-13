@@ -142,9 +142,9 @@ export const SUBSCRIPTION_PLANS: PlanMeta[] = [
     descFr: '3 Sociétés • 5 Branches • Staff illimité',
     descAr: '3 مؤسسات • 5 فروع • موظفين غير محدود',
     descEn: '3 Businesses • 5 Branches • Unlimited Staff',
-    featuresFr: ['3 Sociétés • 5 Branches', 'Collaborateurs illimités', 'Multi-dépôts & transferts inter-sites', 'Radar télémétrique temps réel'],
+    featuresFr: ['3 Sociétés • 5 Branches', 'Collaborateurs illimités', 'Multi-dépôts & transferts inter-sites', 'Rapports en temps réel'],
     featuresAr: ['3 مؤسسات • 5 فروع', 'موظفون غير محدودين', 'مستودعات وتحويلات بين الفروع', 'لوحة قيادة وتحليل فوري'],
-    featuresEn: ['3 Businesses • 5 Branches', 'Unlimited team members', 'Multi-depots & inter-branch sync', 'Real-time telemetry radar'],
+    featuresEn: ['3 Businesses • 5 Branches', 'Unlimited team members', 'Multi-depots & inter-branch sync', 'Real-time reports'],
   },
   {
     tier: 'enterprise',
@@ -159,9 +159,9 @@ export const SUBSCRIPTION_PLANS: PlanMeta[] = [
     descFr: 'Sociétés illimitées • Multi-dépôts • VIP',
     descAr: 'مؤسسات غير محدودة • مستودعات متعددة',
     descEn: 'Unlimited Businesses • Multi-depots • VIP',
-    featuresFr: ['Sociétés & Branches illimitées', 'Audit & Traçabilité quadruple', 'Export fiscal CNAS & TVA', 'Support prioritaire VIP & SLA'],
-    featuresAr: ['مؤسسات وفروع غير محدودة', 'تتبع ومطابقة رباعية معتمدة', 'تصدير جبائي وقانوني كامل', 'دعم فني VIP مخصص وسريع'],
-    featuresEn: ['Unlimited Businesses & Branches', 'Quadruple audit traceability', 'Full CNAS & TVA fiscal exports', 'Dedicated VIP SLA support'],
+    featuresFr: ['Sociétés & Branches illimitées', 'Journal d’audit complet', 'Export fiscal CNAS & TVA', 'Support prioritaire VIP & SLA'],
+    featuresAr: ['مؤسسات وفروع غير محدودة', 'سجل تدقيق ومطابقة شامل', 'تصدير جبائي وقانوني كامل', 'دعم فني VIP مخصص وسريع'],
+    featuresEn: ['Unlimited Businesses & Branches', 'Full audit log', 'Full CNAS & TVA fiscal exports', 'Dedicated VIP SLA support'],
   },
 ];
 
@@ -522,7 +522,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         ? 'سنقوم بتخصيص لوحة القيادة والمؤشرات الحيوية وفقاً لأولوياتك'
         : isFr
         ? 'Nous adapterons les widgets et indicateurs de votre tableau de bord'
-        : "We'll tailor your real-time widgets and radar to target your biggest bottlenecks",
+        : "We'll tailor your dashboard and reports to your priorities",
     },
     {
       title: isAr ? 'ما الذي تريد تحقيقه مع أتريوم؟' : isFr ? 'Que souhaitez-vous accomplir avec Atrium ?' : 'What do you want to achieve with Atrium?',
@@ -923,7 +923,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             {isAuthenticated && (
               <div className="flex items-center justify-between gap-3 p-2.5 mb-2 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md shrink-0">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-[11px] font-medium text-neutral-300 truncate">
+                  <span className="text-[11px] font-medium text-white/85 truncate">
                     {isAr ? 'أنت متصل حالياً:' : isFr ? 'Connecté en tant que :' : 'Signed in as:'}{' '}
                     <strong className="text-white font-semibold">{currentUser?.fullName}</strong>
                   </span>
@@ -1028,7 +1028,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 {isAuthenticated && (
                   <div className="flex items-center justify-between gap-3 p-2.5 mb-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md shrink-0">
                     <div className="flex flex-col min-w-0">
-                      <span className="text-[11px] font-medium text-neutral-300 truncate">
+                      <span className="text-[11px] font-medium text-white/85 truncate">
                         {isAr ? 'أنت متصل حالياً:' : isFr ? 'Connecté en tant que :' : 'Signed in as:'}{' '}
                         <strong className="text-white font-semibold">{currentUser?.fullName}</strong>
                       </span>
@@ -1121,7 +1121,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     type="button"
                     onClick={handleGoogleLogin}
                     disabled={isGoogleLoading}
-                    className="w-full h-10 rounded-xl bg-white hover:bg-neutral-100 text-neutral-800 text-xs font-bold transition-all flex items-center justify-center gap-2.5 shadow-md cursor-pointer disabled:opacity-75 active:scale-[0.99]"
+                    className="w-full h-10 rounded-xl bg-white hover:bg-neutral-100 text-black text-xs font-bold transition-all flex items-center justify-center gap-2.5 shadow-md cursor-pointer disabled:opacity-75 active:scale-[0.99]"
                   >
                     {isGoogleLoading ? (
                       <div className="w-4 h-4 border-2 border-neutral-700 border-t-transparent rounded-full animate-spin" />
@@ -1314,10 +1314,10 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         badge: isAr ? 'تنظيم وهيكلة' : isFr ? 'Organisation & Clarté' : 'Structure & Workflows',
                         title: isAr ? 'هيكلة النشاط والعمليات اليومية' : isFr ? 'Structurer mon activité & mes flux' : 'Structuring Your Business & Workflows',
                         summary: isAr
-                          ? 'توحيد ملفات الزبائن 360°، مساحات عمل مركزية ومتابعة دقيقة دون تشتت إداري.'
+                          ? 'توحيد ملفات الزبائن، مساحات عمل مركزية ومتابعة دقيقة دون تشتت إداري.'
                           : isFr
-                          ? 'Standardisation des flux, fiches clients 360° et pilotage centralisé sans dispersion.'
-                          : 'Standardize workflows, 360° customer records & centralized control without clutter.',
+                          ? 'Standardisation des flux, fiches clients unifiées et pilotage centralisé sans dispersion.'
+                          : 'Standardize workflows, unified customer records & centralized control without clutter.',
                       },
                       {
                         id: 'goal_connect_team' as const,
@@ -1345,12 +1345,12 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         id: 'goal_client_retention' as const,
                         icon: TrendingUp,
                         badge: isAr ? 'الولاء ومؤشرات الأداء' : isFr ? 'Fidélisation & Croissance' : 'Retention & Growth',
-                        title: isAr ? 'تعزيز ولاء الزبائن والنمو' : isFr ? 'Fidéliser mes clients & croissance' : 'Customer Retention & Growth Radar',
+                        title: isAr ? 'تعزيز ولاء الزبائن والنمو' : isFr ? 'Fidéliser mes clients & croissance' : 'Customer Retention & Growth',
                         summary: isAr
-                          ? 'سجل كامل للتعاملات، تنبيهات استباقية للعملاء ورادار مباشر لمتابعة الأداء.'
+                          ? 'سجل كامل للتعاملات، تنبيهات استباقية للعملاء ومتابعة مباشرة للأداء.'
                           : isFr
-                          ? 'Historique complet des interactions, alertes proactives et radar de performance en direct.'
-                          : 'Complete interaction history, smart inactivity reminders, and real-time business health radar.',
+                          ? 'Historique complet des interactions, alertes proactives et suivi de performance en direct.'
+                          : 'Complete interaction history, smart reminders, and live business health insights.',
                       },
                     ].map((goal) => {
                       const isSelected = selectedGoalId === goal.id;
@@ -1943,10 +1943,10 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       <footer className="relative z-10 w-full text-center py-1.5 shrink-0 flex items-center justify-center gap-4">
         <p className="text-[10px] text-[#BFA395]/60 font-medium tracking-wide pointer-events-none">
           {isAr
-            ? 'أتريوم لنظم التشغيل المؤسسية • منصة متكاملة ومرخصة لبيئة الأعمال الوطنية • إصدار الإنتاج 2026'
+            ? 'أتريوم • منصة إدارة الأعمال • 2026'
             : isFr
-            ? 'Atrium OS • Plateforme de Gestion Unifiée & Conformité Réglementaire • Version Production 2026'
-            : 'Atrium OS • Unified Operating System & Multi-Vertical Cockpit • Production Edition 2026'}
+            ? 'Atrium • Plateforme de Gestion d’Entreprise • 2026'
+            : 'Atrium • Business Management Platform • 2026'}
         </p>
         <button
           type="button"
@@ -1984,7 +1984,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   <h3 className="font-extrabold text-sm sm:text-base text-white">
                     {isAr ? 'الحصول على ترخيص Atrium OS' : isFr ? 'Obtenir une licence Atrium OS' : 'Get an Atrium OS License'}
                   </h3>
-                  <p className="text-[11px] text-neutral-400">
+                  <p className="text-[11px] text-white/70">
                     {isAr ? 'ترخيص دائم مدى الحياة بدون رسوم دورية' : isFr ? 'Licence perpétuelle à vie • Facture proforma & convention' : 'Perpetual lifetime license • Official invoice'}
                   </p>
                 </div>
@@ -1993,7 +1993,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               <button
                 type="button"
                 onClick={() => setShowLicenseModal(false)}
-                className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -2013,7 +2013,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 <div className="text-sm font-extrabold font-mono text-[#E09070]">
                   {SUBSCRIPTION_PLANS.find((p) => p.tier === selectedPlanTier)?.[isAr ? 'priceAr' : isFr ? 'priceFr' : 'priceEn']}
                 </div>
-                <div className="text-[10px] text-neutral-400">
+                <div className="text-[10px] text-white/70">
                   {isAr ? 'دفعة واحدة لمدى الحياة' : isFr ? 'Paiement unique à vie' : 'One-time payment'}
                 </div>
               </div>
@@ -2022,11 +2022,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             {/* Contact & Settlement Channels */}
             <div className="space-y-2 mb-3.5 text-xs">
               <div className="p-2.5 rounded-xl bg-neutral-900 border border-white/5 space-y-1.5">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-white/70 flex items-center gap-1.5">
                   <CreditCard className="w-3.5 h-3.5 text-[#d4522f]" />
                   <span>{isAr ? 'قنوات الدفع المعتمدة بالدينار' : isFr ? 'Canaux de règlement en Algérie' : 'Algerian Payment Options'}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-[11px] text-neutral-300">
+                <div className="grid grid-cols-2 gap-2 text-[11px] text-white/85">
                   <div>• Virement Postal CCP / SFP 01</div>
                   <div>• Virement Bancaire (BNA, BEA, CPA)</div>
                   <div>• Application BaridiMob</div>
@@ -2051,7 +2051,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
                 <a
                   href="tel:+213550123456"
-                  className="px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200 font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer text-xs"
+                  className="px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/90 font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer text-xs"
                 >
                   <Phone className="w-3.5 h-3.5 text-[#d4522f]" />
                   <span>+213 (0) 550 12 34 56</span>

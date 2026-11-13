@@ -294,7 +294,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
 
         {/* Section 1: Identity */}
         <div className="space-y-4">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#d4522f]">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-[#d4522f]">
             <User className="w-4 h-4" />
             <span>{isAr ? 'الهوية والدور' : isEn ? 'Identity & Role' : 'Identité & Poste'}</span>
           </div>
@@ -306,7 +306,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                 value={fullName}
                 onChange={(val) => setFullName(val)}
                 required
-                prefix={<User className="w-4 h-4 text-neutral-400" />}
+                prefix={<User className="w-4 h-4 text-black/50 dark:text-white/50" />}
               />
               {errors.fullName && <p className="text-[11px] text-red-500 mt-1">{errors.fullName}</p>}
             </div>
@@ -317,7 +317,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                 value={role}
                 options={categoryRoles}
                 onChange={(val) => setRole(val as StaffRole)}
-                prefix={<Shield className="w-4 h-4 text-neutral-400" />}
+                prefix={<Shield className="w-4 h-4 text-black/50 dark:text-white/50" />}
               />
             </div>
 
@@ -328,7 +328,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                 value={email}
                 onChange={(val) => setEmail(val)}
                 required
-                prefix={<Mail className="w-4 h-4 text-neutral-400" />}
+                prefix={<Mail className="w-4 h-4 text-black/50 dark:text-white/50" />}
               />
               {errors.email && <p className="text-[11px] text-red-500 mt-1">{errors.email}</p>}
             </div>
@@ -340,7 +340,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                 onChange={(val) => setPhoneNumber(val)}
                 required
                 placeholder="0550 12 34 56"
-                prefix={<Phone className="w-4 h-4 text-neutral-400" />}
+                prefix={<Phone className="w-4 h-4 text-black/50 dark:text-white/50" />}
               />
               {errors.phoneNumber && <p className="text-[11px] text-red-500 mt-1">{errors.phoneNumber}</p>}
             </div>
@@ -355,7 +355,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                 onChange={(val) => setAge(val)}
               />
               <div>
-                <label className="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-black/70 dark:text-white/70 uppercase tracking-wider rtl:normal-case rtl:tracking-normal mb-1">
                   {isAr ? 'الجنس' : isEn ? 'Gender' : 'Genre'}
                 </label>
                 <LiveSegmentedControl
@@ -390,10 +390,10 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                   <QrCode className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">
+                  <p className="text-xs font-semibold text-black dark:text-white">
                     {isAr ? 'شارة الدخول' : isEn ? 'Access Badge' : 'Badge Accès'}
                   </p>
-                  <p className="text-[11px] text-neutral-500">
+                  <p className="text-[11px] text-black/60 dark:text-white/60">
                     {isAr ? 'لتسجيل الحضور السريع' : isEn ? 'For quick check-in' : 'Pour pointage rapide'}
                   </p>
                 </div>
@@ -405,7 +405,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                   value={cardId}
                   onChange={(e) => setCardId(e.target.value.toUpperCase())}
                   placeholder="RFID-000000"
-                  className="font-mono text-xs px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 w-full sm:w-36 focus:outline-hidden focus:border-[#d4522f]"
+                  className="font-mono text-xs px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-black dark:text-white placeholder:text-black/45 dark:placeholder:text-white/45 w-full sm:w-36 focus:outline-hidden focus:border-[#d4522f]"
                 />
                 <button
                   type="button"
@@ -425,18 +425,18 @@ export const StaffModal: React.FC<StaffModalProps> = ({
           <button
             type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="w-full flex items-center justify-between p-3 rounded-2xl bg-neutral-100/70 dark:bg-neutral-800/40 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-left transition-colors"
+            className="w-full flex items-center justify-between p-3 rounded-2xl bg-neutral-100/70 dark:bg-neutral-800/40 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-left rtl:text-right transition-colors"
           >
             <div className="flex items-center gap-2.5">
               <FileText className="w-4 h-4 text-[#d4522f]" />
-              <span className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">
+              <span className="text-xs font-semibold text-black dark:text-white">
                 {isAr ? 'خيارات إضافية' : isEn ? 'More Details' : 'Options Avancées'}
               </span>
             </div>
             {showAdvanced ? (
-              <ChevronUp className="w-4 h-4 text-neutral-500" />
+              <ChevronUp className="w-4 h-4 text-black/60 dark:text-white/60" />
             ) : (
-              <ChevronDown className="w-4 h-4 text-neutral-500" />
+              <ChevronDown className="w-4 h-4 text-black/60 dark:text-white/60" />
             )}
           </button>
 
@@ -444,7 +444,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
             <div className="mt-4 space-y-6 animate-in fade-in duration-200">
               {/* Contract & Compensation */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#d4522f]">
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-[#d4522f]">
                   <CreditCard className="w-4 h-4" />
                   <span>{isAr ? 'العقد والراتب' : isEn ? 'Pay & Contract' : 'Contrat & Paie'}</span>
                 </div>
@@ -469,7 +469,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                       type="number"
                       value={salary}
                       onChange={(val) => setSalary(val)}
-                      suffix={<span className="text-[11px] text-neutral-400">DZD</span>}
+                      suffix={<span className="text-[11px] text-black/55 dark:text-white/55">DZD</span>}
                     />
                   </div>
 
@@ -534,11 +534,11 @@ export const StaffModal: React.FC<StaffModalProps> = ({
 
               {/* Multi-Credential Authentication Toggles */}
               <div className="space-y-3 p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700/60">
-                <div className="flex items-center gap-2 text-xs font-semibold text-neutral-900 dark:text-neutral-100">
+                <div className="flex items-center gap-2 text-xs font-semibold text-black dark:text-white">
                   <KeyRound className="w-4 h-4 text-[#d4522f]" />
                   <span>{isAr ? 'بيانات الدخول' : isEn ? 'Login Access' : 'Accès Connexion'}</span>
                 </div>
-                <p className="text-[11px] text-neutral-500">
+                <p className="text-[11px] text-black/60 dark:text-white/60">
                   {isAr
                     ? 'طرق تسجيل الدخول المتاحة'
                     : isEn
@@ -547,7 +547,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                  <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 cursor-pointer text-xs">
+                  <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 cursor-pointer text-xs text-black dark:text-white">
                     <input
                       type="checkbox"
                       checked={canLoginEmail}
@@ -557,7 +557,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                     <span>{isAr ? 'البريد' : isEn ? 'Email' : 'Email'}</span>
                   </label>
 
-                  <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 cursor-pointer text-xs">
+                  <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 cursor-pointer text-xs text-black dark:text-white">
                     <input
                       type="checkbox"
                       checked={canLoginPhone}
@@ -567,7 +567,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                     <span>{isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone'}</span>
                   </label>
 
-                  <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 cursor-pointer text-xs">
+                  <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 cursor-pointer text-xs text-black dark:text-white">
                     <input
                       type="checkbox"
                       checked={canLoginPin}
@@ -592,7 +592,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                     <button
                       type="button"
                       onClick={handleGeneratePin}
-                      className="text-xs px-3 py-2 rounded-xl bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5"
+                      className="text-xs px-3 py-2 rounded-xl bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors text-black dark:text-white flex items-center gap-1.5"
                     >
                       <Sparkles className="w-3.5 h-3.5 text-[#d4522f]" />
                       <span>{isAr ? 'توليد' : isEn ? 'Generate' : 'Générer'}</span>
@@ -604,7 +604,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
 
               {/* Medical & Emergency Contact */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#d4522f]">
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-[#d4522f]">
                   <HeartPulse className="w-4 h-4" />
                   <span>{isAr ? 'الطوارئ والصحة' : isEn ? 'Emergency Info' : 'Urgences'}</span>
                 </div>
@@ -642,7 +642,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
 
               {/* Category-Specific Operational Details */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#d4522f]">
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-[#d4522f]">
                   <Building className="w-4 h-4" />
                   <span>{getCategoryPropertiesTitle(currentCategory, isAr, isEn)}</span>
                 </div>

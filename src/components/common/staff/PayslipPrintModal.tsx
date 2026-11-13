@@ -39,7 +39,7 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
             <span className="font-mono text-xs font-bold text-[#d4522f] bg-[#d4522f]/10 px-2.5 py-1 rounded-lg">
               {slip.receiptNumber}
             </span>
-            <span className="text-xs text-neutral-500 font-medium">
+            <span className="text-xs text-black/70 dark:text-white/75 font-medium">
               {slip.periodLabel}
             </span>
           </div>
@@ -51,7 +51,7 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-full text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+              className="p-2 rounded-full text-black/60 hover:text-black dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -62,13 +62,13 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
         <div id="payslip-document" className="bg-white text-black p-6 md:p-8 rounded-xl border border-neutral-300 font-sans text-xs">
           {/* Header Block */}
           <div className="text-center pb-4 border-b-2 border-black/80 mb-4">
-            <p className="text-[10px] uppercase font-bold tracking-widest text-neutral-600">
+            <p className="text-[10px] uppercase font-bold tracking-widest text-black/70">
               République Algérienne Démocratique et Populaire
             </p>
-            <h2 className="text-lg font-black tracking-tight text-neutral-900 uppercase mt-1">
+            <h2 className="text-xl font-black tracking-tight text-black uppercase mt-1 font-['Barlow_Condensed',sans-serif]">
               {businessName}
             </h2>
-            <p className="text-[11px] text-neutral-600 mt-0.5">
+            <p className="text-[11px] text-black/70 mt-0.5">
               Complexe Sportif & Salle de Musculation · Alger Centre · NIF: 002416098124589 · RC: 16/00-88124
             </p>
             <div className="inline-block mt-2 px-4 py-1 bg-black text-white font-bold text-xs uppercase tracking-wider rounded-sm">
@@ -79,28 +79,28 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
           {/* Employee & Administrative Information */}
           <div className="grid grid-cols-2 gap-4 p-3 bg-neutral-50 rounded-lg border border-neutral-200 mb-4">
             <div className="space-y-1">
-              <p><span className="font-bold text-neutral-600">Collaborateur :</span> <strong className="text-neutral-900 text-sm">{slip.staffFullName}</strong></p>
-              <p><span className="font-bold text-neutral-600">Matricule :</span> <span className="font-mono font-bold">{slip.matricule}</span></p>
-              <p><span className="font-bold text-neutral-600">Poste / Fonction :</span> {slip.role}</p>
-              <p><span className="font-bold text-neutral-600">N° Sécurité Sociale (NSS) :</span> <span className="font-mono">{slip.nss || '89 04 16 0000 00'}</span></p>
+              <p><span className="font-bold text-black/70">Collaborateur :</span> <strong className="text-black text-sm">{slip.staffFullName}</strong></p>
+              <p><span className="font-bold text-black/70">Matricule :</span> <span className="font-mono font-bold tabular-nums">{slip.matricule}</span></p>
+              <p><span className="font-bold text-black/70">Poste / Fonction :</span> {slip.role}</p>
+              <p><span className="font-bold text-black/70">N° Sécurité Sociale (NSS) :</span> <span className="font-mono tabular-nums">{slip.nss || '89 04 16 0000 00'}</span></p>
             </div>
             <div className="space-y-1 text-right">
-              <p><span className="font-bold text-neutral-600">Mode de Règlement :</span> <strong className="uppercase">{slip.paymentMethod === 'ccp' ? 'Virement CCP Poste' : slip.paymentMethod === 'bank_transfer' ? 'Virement Bancaire' : 'Espèces (Caisse)'}</strong></p>
+              <p><span className="font-bold text-black/70">Mode de Règlement :</span> <strong className="uppercase">{slip.paymentMethod === 'ccp' ? 'Virement CCP Poste' : slip.paymentMethod === 'bank_transfer' ? 'Virement Bancaire' : 'Espèces (Caisse)'}</strong></p>
               {slip.ccpNumber && (
-                <p><span className="font-bold text-neutral-600">Compte CCP :</span> <span className="font-mono font-bold">{slip.ccpNumber} / {slip.ccpKey}</span></p>
+                <p><span className="font-bold text-black/70">Compte CCP :</span> <span className="font-mono font-bold tabular-nums">{slip.ccpNumber} / {slip.ccpKey}</span></p>
               )}
               {slip.bankRib && (
-                <p><span className="font-bold text-neutral-600">RIB Bancaire :</span> <span className="font-mono text-[10px]">{slip.bankRib}</span></p>
+                <p><span className="font-bold text-black/70">RIB Bancaire :</span> <span className="font-mono text-[10px] tabular-nums">{slip.bankRib}</span></p>
               )}
-              <p><span className="font-bold text-neutral-600">Jours travaillés :</span> <span className="font-mono font-bold">{slip.workedDays} / {slip.standardDays} j</span></p>
-              <p><span className="font-bold text-neutral-600">Date d'édition :</span> {slip.paidDate || new Date().toISOString().slice(0, 10)}</p>
+              <p><span className="font-bold text-black/70">Jours travaillés :</span> <span className="font-mono font-bold tabular-nums">{slip.workedDays} / {slip.standardDays} j</span></p>
+              <p><span className="font-bold text-black/70">Date d'édition :</span> <span className="tabular-nums">{slip.paidDate || new Date().toISOString().slice(0, 10)}</span></p>
             </div>
           </div>
 
           {/* Breakdown Table */}
-          <table className="w-full border-collapse border border-neutral-300 text-[11px] mb-4">
+          <table className="w-full border-collapse border border-neutral-300 text-[11px] mb-4 tabular-nums">
             <thead>
-              <tr className="bg-neutral-100 text-neutral-700 text-left">
+              <tr className="bg-neutral-100 text-black text-left">
                 <th className="border border-neutral-300 p-2 font-bold">Rubriques de Paie</th>
                 <th className="border border-neutral-300 p-2 text-right font-bold w-24">Base (DZD)</th>
                 <th className="border border-neutral-300 p-2 text-center font-bold w-16">Taux</th>
@@ -115,7 +115,7 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
                 <td className="border border-neutral-300 p-1.5 text-right font-mono">{slip.baseSalary.toLocaleString()}</td>
                 <td className="border border-neutral-300 p-1.5 text-center font-mono">100%</td>
                 <td className="border border-neutral-300 p-1.5 text-right font-mono font-bold">{slip.actualBaseSalary.toLocaleString()}</td>
-                <td className="border border-neutral-300 p-1.5 text-right font-mono text-neutral-400">-</td>
+                <td className="border border-neutral-300 p-1.5 text-right font-mono text-black/50">-</td>
               </tr>
 
               {/* Primes cotisables */}
@@ -125,15 +125,15 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
                   <td className="border border-neutral-300 p-1.5 text-right font-mono">{prime.amount.toLocaleString()}</td>
                   <td className="border border-neutral-300 p-1.5 text-center font-mono">-</td>
                   <td className="border border-neutral-300 p-1.5 text-right font-mono font-bold">{prime.amount.toLocaleString()}</td>
-                  <td className="border border-neutral-300 p-1.5 text-right font-mono text-neutral-400">-</td>
+                  <td className="border border-neutral-300 p-1.5 text-right font-mono text-black/50">-</td>
                 </tr>
               ))}
 
               {/* Total Brut Cotisable Row */}
               <tr className="bg-neutral-50 font-bold">
-                <td colSpan={3} className="border border-neutral-300 p-1.5 uppercase text-neutral-700">Total Salaire Brut Cotisable</td>
-                <td className="border border-neutral-300 p-1.5 text-right font-mono text-neutral-900">{slip.salaireBrutCotisable.toLocaleString()}</td>
-                <td className="border border-neutral-300 p-1.5 text-right font-mono text-neutral-400">-</td>
+                <td colSpan={3} className="border border-neutral-300 p-1.5 uppercase text-black/85">Total Salaire Brut Cotisable</td>
+                <td className="border border-neutral-300 p-1.5 text-right font-mono text-black">{slip.salaireBrutCotisable.toLocaleString()}</td>
+                <td className="border border-neutral-300 p-1.5 text-right font-mono text-black/50">-</td>
               </tr>
 
               {/* CNAS Salarial 9% */}
@@ -141,15 +141,15 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
                 <td className="border border-neutral-300 p-1.5">Cotisation Sécurité Sociale (CNAS Salariale)</td>
                 <td className="border border-neutral-300 p-1.5 text-right font-mono">{slip.salaireBrutCotisable.toLocaleString()}</td>
                 <td className="border border-neutral-300 p-1.5 text-center font-mono font-bold text-red-600">9.0%</td>
-                <td className="border border-neutral-300 p-1.5 text-right font-mono text-neutral-400">-</td>
+                <td className="border border-neutral-300 p-1.5 text-right font-mono text-black/50">-</td>
                 <td className="border border-neutral-300 p-1.5 text-right font-mono font-bold text-red-600">{slip.cnasSalarial.toLocaleString()}</td>
               </tr>
 
               {/* Total Brut Imposable Row */}
               <tr className="bg-neutral-50 font-bold">
-                <td colSpan={3} className="border border-neutral-300 p-1.5 uppercase text-neutral-700">Salaire Brut Imposable</td>
-                <td className="border border-neutral-300 p-1.5 text-right font-mono text-neutral-900">{slip.salaireBrutImposable.toLocaleString()}</td>
-                <td className="border border-neutral-300 p-1.5 text-right font-mono text-neutral-400">-</td>
+                <td colSpan={3} className="border border-neutral-300 p-1.5 uppercase text-black/85">Salaire Brut Imposable</td>
+                <td className="border border-neutral-300 p-1.5 text-right font-mono text-black">{slip.salaireBrutImposable.toLocaleString()}</td>
+                <td className="border border-neutral-300 p-1.5 text-right font-mono text-black/50">-</td>
               </tr>
 
               {/* IRG 2022 */}
@@ -157,7 +157,7 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
                 <td className="border border-neutral-300 p-1.5">Impôt sur le Revenu Global (IRG - Barème 2022)</td>
                 <td className="border border-neutral-300 p-1.5 text-right font-mono">{slip.salaireBrutImposable.toLocaleString()}</td>
                 <td className="border border-neutral-300 p-1.5 text-center font-mono">Barème</td>
-                <td className="border border-neutral-300 p-1.5 text-right font-mono text-neutral-400">-</td>
+                <td className="border border-neutral-300 p-1.5 text-right font-mono text-black/50">-</td>
                 <td className="border border-neutral-300 p-1.5 text-right font-mono font-bold text-red-600">{slip.irgTax.toLocaleString()}</td>
               </tr>
 
@@ -168,7 +168,7 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
                   <td className="border border-neutral-300 p-1.5 text-right font-mono">{allowance.amount.toLocaleString()}</td>
                   <td className="border border-neutral-300 p-1.5 text-center font-mono">-</td>
                   <td className="border border-neutral-300 p-1.5 text-right font-mono font-bold text-emerald-700">{allowance.amount.toLocaleString()}</td>
-                  <td className="border border-neutral-300 p-1.5 text-right font-mono text-neutral-400">-</td>
+                  <td className="border border-neutral-300 p-1.5 text-right font-mono text-black/50">-</td>
                 </tr>
               ))}
 
@@ -178,7 +178,7 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
                   <td className="border border-neutral-300 p-1.5 font-bold text-amber-900">Acomptes sur Salaire Déduits</td>
                   <td className="border border-neutral-300 p-1.5 text-right font-mono">{slip.acomptesDeduits.toLocaleString()}</td>
                   <td className="border border-neutral-300 p-1.5 text-center font-mono">-</td>
-                  <td className="border border-neutral-300 p-1.5 text-right font-mono text-neutral-400">-</td>
+                  <td className="border border-neutral-300 p-1.5 text-right font-mono text-black/50">-</td>
                   <td className="border border-neutral-300 p-1.5 text-right font-mono font-bold text-amber-900">{slip.acomptesDeduits.toLocaleString()}</td>
                 </tr>
               )}
@@ -186,22 +186,22 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
           </table>
 
           {/* Employer Contributions (Quote-part patronale) */}
-          <div className="p-2.5 bg-neutral-50 rounded-lg border border-neutral-200 mb-4 text-[10px] text-neutral-600 flex justify-between items-center">
+          <div className="p-2.5 bg-neutral-50 rounded-lg border border-neutral-200 mb-4 text-[10px] text-black/70 flex justify-between items-center tabular-nums">
             <span><strong>Quote-part patronale Sécurité Sociale (26%) :</strong> <span className="font-mono">{slip.cnasPatronal.toLocaleString()} DZD</span></span>
-            <span><strong>Coût global du poste pour l'employeur :</strong> <span className="font-mono font-bold text-neutral-900">{(slip.salaireBrutCotisable + slip.cnasPatronal + (slip.primesNonImposables?.reduce((s, p) => s + p.amount, 0) || 0)).toLocaleString()} DZD</span></span>
+            <span><strong>Coût global du poste pour l'employeur :</strong> <span className="font-mono font-bold text-black">{(slip.salaireBrutCotisable + slip.cnasPatronal + (slip.primesNonImposables?.reduce((s, p) => s + p.amount, 0) || 0)).toLocaleString()} DZD</span></span>
           </div>
 
           {/* Net to Pay Box */}
-          <div className="flex items-center justify-between p-4 bg-black text-white rounded-lg mb-4">
+          <div className="flex items-center justify-between p-4 bg-black text-white rounded-lg mb-4 tabular-nums">
             <div>
-              <p className="text-[10px] uppercase font-bold tracking-widest text-neutral-400">Net à Payer (DZD)</p>
-              <p className="text-xl font-black font-mono tracking-tight mt-0.5">
-                {slip.netAPayer.toLocaleString()} <span className="text-xs font-normal text-neutral-400">Dinars Algériens</span>
+              <p className="text-[10px] uppercase font-bold tracking-widest text-white/70">Net à Payer (DZD)</p>
+              <p className="text-xl font-black font-mono tracking-tight mt-0.5 text-white">
+                {slip.netAPayer.toLocaleString()} <span className="text-xs font-normal text-white/75">Dinars Algériens</span>
               </p>
             </div>
             <div className="text-right max-w-sm">
-              <p className="text-[9px] uppercase font-bold tracking-widest text-neutral-400">Arrêté en toutes lettres :</p>
-              <p className="text-xs italic font-serif leading-snug mt-0.5 text-neutral-200">
+              <p className="text-[9px] uppercase font-bold tracking-widest text-white/70">Arrêté en toutes lettres :</p>
+              <p className="text-xs italic font-serif leading-snug mt-0.5 text-white/90">
                 "{amountInWords}"
               </p>
             </div>
@@ -210,12 +210,12 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
           {/* Signatures */}
           <div className="grid grid-cols-2 gap-8 pt-4 border-t border-neutral-300 text-[10px]">
             <div className="h-20 flex flex-col justify-between">
-              <span className="font-bold text-neutral-600">Cachet & Signature de l'Employeur :</span>
-              <span className="italic text-neutral-400 text-[9px]">[Document validé électroniquement par la Direction]</span>
+              <span className="font-bold text-black/75">Cachet & Signature de l'Employeur :</span>
+              <span className="italic text-black/55 text-[9px]">[Document validé électroniquement par la Direction]</span>
             </div>
             <div className="h-20 flex flex-col justify-between text-right">
-              <span className="font-bold text-neutral-600">Signature du Salarié :</span>
-              <span className="italic text-neutral-400 text-[9px]">Pour acquit et acceptation</span>
+              <span className="font-bold text-black/75">Signature du Salarié :</span>
+              <span className="italic text-black/55 text-[9px]">Pour acquit et acceptation</span>
             </div>
           </div>
         </div>

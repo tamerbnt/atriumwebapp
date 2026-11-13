@@ -25,10 +25,10 @@ export const ContractorStaffView: React.FC = () => {
             {member.fullName.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <div className="font-semibold text-neutral-900 dark:text-white text-xs truncate">
+            <div className="font-semibold text-black dark:text-white text-xs truncate">
               {member.fullName}
             </div>
-            <div className="text-[11px] text-neutral-500 truncate flex items-center gap-1.5">
+            <div className="text-[11px] text-black/70 dark:text-white/75 truncate flex items-center gap-1.5">
               <span>{member.role}</span>
               {member.assignedChantierId && (
                 <>
@@ -66,7 +66,7 @@ export const ContractorStaffView: React.FC = () => {
                   : 'bg-neutral-400'
               }`}
             />
-            <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200">
+            <span className="text-xs font-medium text-black dark:text-white">
               {member.status === 'active'
                 ? isPresent
                   ? isAr
@@ -106,7 +106,7 @@ export const ContractorStaffView: React.FC = () => {
       header: isAr ? 'بطاقة كاكوباتف' : isEn ? 'CACOBATPH Card' : 'N° CACOBATPH',
       accessorKey: 'cacobatphCardNumber',
       cell: (member) => (
-        <span className="text-xs font-mono text-neutral-700 dark:text-neutral-300">
+        <span className="text-xs font-mono text-black dark:text-white">
           {member.cacobatphCardNumber || (isAr ? 'قيد التصريح' : 'Déclaration')}
         </span>
       ),
@@ -116,7 +116,7 @@ export const ContractorStaffView: React.FC = () => {
       header: isAr ? 'المشروع / الورشة' : isEn ? 'Assigned Site' : 'Chantier Affecté',
       accessorKey: 'assignedChantierId',
       cell: (member) => (
-        <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+        <span className="text-xs font-medium text-black dark:text-white">
           {member.assignedChantierId || (isAr ? 'كل الورشات' : 'Multi-sites')}
         </span>
       ),
@@ -126,7 +126,7 @@ export const ContractorStaffView: React.FC = () => {
       header: isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone',
       accessorKey: 'phoneNumber',
       cell: (member) => (
-        <span className="text-xs text-neutral-600 dark:text-neutral-300 tabular-nums">
+        <span className="text-xs text-black/70 dark:text-white tabular-nums">
           {member.phoneNumber || '—'}
         </span>
       ),

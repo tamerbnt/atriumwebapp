@@ -57,20 +57,20 @@ export const StaffSubTabSwitcher: React.FC<StaffSubTabSwitcherProps> = ({
             onClick={() => onChange(tab.id)}
             className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold tracking-tight transition-all cursor-pointer select-none whitespace-nowrap ${
               isActive
-                ? 'bg-white dark:bg-[#262422] text-[#18181B] dark:text-white shadow-sm border border-black/5 dark:border-white/10'
-                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-black/3 dark:hover:bg-white/5'
+                ? 'bg-white dark:bg-[#262422] text-black dark:text-white shadow-sm border border-black/5 dark:border-white/10'
+                : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/3 dark:hover:bg-white/5'
             }`}
           >
-            <span className={isActive ? 'text-[#d4522f]' : 'text-neutral-500 dark:text-neutral-400'}>
+            <span className={isActive ? 'text-[#d4522f]' : 'text-black/65 dark:text-white/70'}>
               {tab.icon}
             </span>
             <span>{tab.label}</span>
             {tab.badge && (
               <span
-                className={`text-[10px] font-mono px-1.5 py-0.5 rounded-md font-bold ${
+                className={`text-[10px] font-mono px-1.5 py-0.5 rounded-md font-bold tabular-nums ${
                   isActive
                     ? 'bg-[#d4522f]/10 text-[#d4522f]'
-                    : 'bg-neutral-200/70 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+                    : 'bg-neutral-200/70 dark:bg-neutral-800 text-black/70 dark:text-white/75'
                 }`}
               >
                 {tab.badge}

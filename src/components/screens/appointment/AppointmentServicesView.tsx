@@ -273,11 +273,11 @@ export const AppointmentServicesView: React.FC = () => {
             style={{ backgroundColor: service.color || '#d4522f' }}
           />
           <div className="min-w-0">
-            <span className="font-bold text-xs text-neutral-900 dark:text-white block truncate">
+            <span className="font-bold text-xs text-black dark:text-white block truncate">
               {service.name}
             </span>
             {service.description && (
-              <span className="text-[10px] text-neutral-400 block truncate max-w-[220px]">
+              <span className="text-[10px] text-black/55 dark:text-white/55 block truncate max-w-[220px]">
                 {service.description}
               </span>
             )}
@@ -303,7 +303,7 @@ export const AppointmentServicesView: React.FC = () => {
           Barber: 'Barbier',
         };
         return (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white">
             {catMap[service.category] || service.category}
           </span>
         );
@@ -316,11 +316,11 @@ export const AppointmentServicesView: React.FC = () => {
       minWidth: '120px',
       sortable: true,
       renderCell: (service) => (
-        <div className="flex items-center gap-1.5 text-xs text-neutral-700 dark:text-neutral-300">
-          <Clock className="w-3.5 h-3.5 text-neutral-400" />
+        <div className="flex items-center gap-1.5 text-xs text-black dark:text-white">
+          <Clock className="w-3.5 h-3.5 text-black/55 dark:text-white/55" />
           <span className="font-semibold tabular-nums">{service.durationMinutes} min</span>
           {service.bufferMinutes ? (
-            <span className="text-[10px] text-neutral-400 font-mono">
+            <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
               (+{service.bufferMinutes}m)
             </span>
           ) : null}
@@ -334,7 +334,7 @@ export const AppointmentServicesView: React.FC = () => {
       minWidth: '100px',
       sortable: true,
       renderCell: (service) => (
-        <span className="text-xs text-neutral-500 font-mono tabular-nums">
+        <span className="text-xs text-black/70 dark:text-white/75 font-mono tabular-nums">
           {formatMoney(service.costPrice || 0)}
         </span>
       ),
@@ -358,7 +358,7 @@ export const AppointmentServicesView: React.FC = () => {
       minWidth: '120px',
       sortable: true,
       renderCell: (service) => (
-        <span className="text-xs font-bold text-neutral-900 dark:text-white font-mono tabular-nums">
+        <span className="text-xs font-bold text-black dark:text-white font-mono tabular-nums">
           {formatMoney(service.price)}
         </span>
       ),
@@ -373,7 +373,7 @@ export const AppointmentServicesView: React.FC = () => {
           <button
             type="button"
             onClick={() => handleOpenEditModal(service)}
-            className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors cursor-pointer"
             title="Modifier le tarif"
           >
             <Edit2 className="w-3.5 h-3.5" />
@@ -381,7 +381,7 @@ export const AppointmentServicesView: React.FC = () => {
           <button
             type="button"
             onClick={() => setServiceToDelete(service)}
-            className="p-1.5 text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
             title="Supprimer du catalogue"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -425,11 +425,11 @@ export const AppointmentServicesView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-neutral-900 dark:text-white flex items-center gap-2.5">
+            <h1 className="text-[32px] sm:text-[40px] rtl:text-[26px] rtl:sm:text-[32px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               <Scissors className="text-[#d4522f]" size={32} />
               <span>Catalogue des Soins & Prestations</span>
             </h1>
-            <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-800">
+            <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-800 rtl:normal-case">
               {servicesCatalog.length} Prestations
             </span>
           </div>
@@ -462,11 +462,11 @@ export const AppointmentServicesView: React.FC = () => {
         <div className="flex items-center justify-between pb-2 border-b border-[#E9EEF0] dark:border-neutral-800">
           <div className="flex items-center gap-2">
             <Tag size={18} className="text-[#d4522f]" />
-            <h2 className="text-xs font-black uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
+            <h2 className="text-xs font-black uppercase tracking-wider text-black dark:text-white rtl:normal-case rtl:tracking-normal">
               Indicateurs Clés de Rentabilité & Tarification
             </h2>
           </div>
-          <span className="text-xs text-neutral-400 font-medium">
+          <span className="text-xs text-black/55 dark:text-white/55 font-medium">
             {currentBranch?.name || 'Salon Principal'} · Grille Officielle
           </span>
         </div>
@@ -476,8 +476,8 @@ export const AppointmentServicesView: React.FC = () => {
           {/* Card 1: Total Prestations & Durée */}
           <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
-              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
-                <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+              <div className="flex items-center justify-between text-black/70 dark:text-white/70">
+                <span className="text-xs font-semibold text-black/70 dark:text-white/70">
                   Total Prestations
                 </span>
                 <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full">
@@ -485,16 +485,16 @@ export const AppointmentServicesView: React.FC = () => {
                 </span>
               </div>
             </div>
-            <div className="text-2xl font-black font-mono text-neutral-900 dark:text-white tracking-tight tabular-nums">
-              {catalogMetrics.totalServices} <span className="text-xs font-normal text-neutral-400">soins au barème</span>
+            <div className="text-2xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums text-black dark:text-white tracking-tight">
+              {catalogMetrics.totalServices} <span className="text-xs font-normal text-black/55 dark:text-white/55">soins au barème</span>
             </div>
           </div>
 
           {/* Card 2: Average Service Price & Commission */}
           <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
-              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
-                <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+              <div className="flex items-center justify-between text-black/70 dark:text-white/70">
+                <span className="text-xs font-semibold text-black/70 dark:text-white/70">
                   Tarif Moyen Soin
                 </span>
                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
@@ -502,7 +502,7 @@ export const AppointmentServicesView: React.FC = () => {
                 </span>
               </div>
             </div>
-            <div className="text-2xl font-black font-mono text-neutral-900 dark:text-white tracking-tight tabular-nums">
+            <div className="text-2xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums text-black dark:text-white tracking-tight">
               {formatMoney(catalogMetrics.avgPrice)}
             </div>
           </div>
@@ -525,19 +525,19 @@ export const AppointmentServicesView: React.FC = () => {
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-neutral-300">
+                <span className="text-xs font-medium text-white/75">
                   Rentabilité & Valorisation
                 </span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
                   Marge Nette ~{catalogMetrics.avgGrossMargin}%
                 </span>
               </div>
-              <div className="text-2xl font-black font-mono tracking-tight text-white tabular-nums">
-                ~{catalogMetrics.avgGrossMargin}% <span className="text-xs font-normal text-neutral-400">marge brute</span>
+              <div className="text-2xl font-black font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums tracking-tight text-white">
+                ~{catalogMetrics.avgGrossMargin}% <span className="text-xs font-normal text-white/75">marge brute</span>
               </div>
             </div>
 
-            <div className="pt-1.5 border-t border-neutral-800/80 flex items-center justify-between text-[10px] text-neutral-400">
+            <div className="pt-1.5 border-t border-neutral-800/80 flex items-center justify-between text-[10px] text-white/75">
               <span>Positionnement salon haute coiffure</span>
               <span className="text-[#FB923C] font-semibold">Grille certifiée</span>
             </div>
@@ -555,7 +555,7 @@ export const AppointmentServicesView: React.FC = () => {
               <Scissors size={18} />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-neutral-900 dark:text-white">
+              <span className="text-sm font-bold text-black dark:text-white">
                 Prestations & Forfaits
               </span>
               <span className="text-xs px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f] font-semibold">
@@ -584,13 +584,13 @@ export const AppointmentServicesView: React.FC = () => {
                   className={`px-3 py-1.5 text-xs font-semibold rounded-xl whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer ${
                     activeCategory === cat.id
                       ? 'bg-[#d4522f] text-white shadow-xs'
-                      : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-[#E9EEF0] dark:border-neutral-700/60'
+                      : 'bg-white dark:bg-neutral-800 text-black/70 dark:text-white/70 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-[#E9EEF0] dark:border-neutral-700/60'
                   }`}
                 >
                   <span>{cat.label}</span>
                   <span
                     className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                      activeCategory === cat.id ? 'bg-white/20 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-500'
+                      activeCategory === cat.id ? 'bg-white/20 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75'
                     }`}
                   >
                     {cat.count}
@@ -663,24 +663,24 @@ export const AppointmentServicesView: React.FC = () => {
                         className="w-3 h-3 rounded-full shrink-0 shadow-2xs"
                         style={{ backgroundColor: service.color || '#d4522f' }}
                       />
-                      <span className="font-bold text-xs text-neutral-900 dark:text-white truncate">
+                      <span className="font-bold text-xs text-black dark:text-white truncate">
                         {service.name}
                       </span>
                     </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white">
                       {service.category}
                     </span>
                   </div>
                   {service.description && (
-                    <p className="text-[11px] text-neutral-400 line-clamp-2 mt-1">
+                    <p className="text-[11px] text-black/55 dark:text-white/55 line-clamp-2 mt-1">
                       {service.description}
                     </p>
                   )}
                 </div>
 
                 <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-700/60">
-                  <div className="flex items-center gap-1 text-[11px] text-neutral-500">
-                    <Clock size={12} className="text-neutral-400" />
+                  <div className="flex items-center gap-1 text-[11px] text-black/70 dark:text-white/75">
+                    <Clock size={12} className="text-black/55 dark:text-white/55" />
                     <span>{service.durationMinutes} min</span>
                   </div>
                   <span className="font-mono font-bold text-sm text-[#d4522f] tabular-nums">
@@ -713,13 +713,13 @@ export const AppointmentServicesView: React.FC = () => {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
           <div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-              <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+              <h3 className="text-base font-bold text-black dark:text-white">
                 {editingService ? 'Modifier la Prestation' : 'Nouvelle Prestation de Luxe'}
               </h3>
               <button
                 type="button"
                 onClick={() => setIsServiceModalOpen(false)}
-                className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
+                className="text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -809,7 +809,7 @@ export const AppointmentServicesView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsServiceModalOpen(false)}
-                  className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 cursor-pointer"
+                  className="h-10 px-4 text-xs font-semibold text-black/70 dark:text-white/75 rounded-full hover:bg-neutral-100 cursor-pointer"
                 >
                   Annuler
                 </button>

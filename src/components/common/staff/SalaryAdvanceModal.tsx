@@ -61,7 +61,7 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          className="absolute top-5 right-5 p-2 rounded-full text-black/60 hover:text-black dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
@@ -71,10 +71,10 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
             <DollarSign className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
+            <h3 className="text-xl font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {isAr ? 'سلفة راتب' : isEn ? 'Salary Advance' : 'Acompte Salaire'}
             </h3>
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-black/70 dark:text-white/75">
               {isAr ? 'تخصم من الراتب' : isEn ? 'Deducted next payroll' : 'Déduit sur paie'}
             </p>
           </div>
@@ -82,7 +82,7 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
+            <label className="block text-xs font-semibold text-black/85 dark:text-white/85 mb-1.5">
               {isAr ? 'الموظف' : isEn ? 'Staff' : 'Collaborateur'}
             </label>
             <LabelSelect
@@ -96,7 +96,7 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
+            <label className="block text-xs font-semibold text-black/85 dark:text-white/85 mb-1.5">
               {isAr ? 'المبلغ' : isEn ? 'Amount' : 'Montant'}
             </label>
             <div className="relative">
@@ -108,19 +108,19 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
                 required
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202024] text-neutral-900 dark:text-white font-mono font-bold text-base focus:ring-2 focus:ring-[#d4522f] focus:outline-hidden"
+                className="w-full px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202024] text-black dark:text-white font-mono font-bold text-base tabular-nums focus:ring-2 focus:ring-[#d4522f] focus:outline-hidden"
               />
-              <span className="absolute right-4 top-2.5 text-xs font-bold text-neutral-400">DZD</span>
+              <span className="absolute right-4 top-2.5 text-xs font-bold text-black/60 dark:text-white/65">DZD</span>
             </div>
             {selectedStaff?.salary && (
-              <p className="text-[11px] text-neutral-400 mt-1">
+              <p className="text-[11px] text-black/60 dark:text-white/65 mt-1 tabular-nums">
                 {isAr ? `الحد: ${Math.round(selectedStaff.salary * 0.8).toLocaleString()} دج` : isEn ? `Max: ${Math.round(selectedStaff.salary * 0.8).toLocaleString()} DZD` : `Max : ${Math.round(selectedStaff.salary * 0.8).toLocaleString()} DZD`}
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
+            <label className="block text-xs font-semibold text-black/85 dark:text-white/85 mb-1.5">
               {isAr ? 'الدفع' : isEn ? 'Method' : 'Paiement'}
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -136,7 +136,7 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
                   className={`px-3 py-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
                     paymentMethod === m.id
                       ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
-                      : 'border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800'
+                      : 'border-neutral-200 dark:border-neutral-800 text-black/75 dark:text-white/75 hover:bg-neutral-50 dark:hover:bg-neutral-800'
                   }`}
                 >
                   {m.label}
@@ -146,7 +146,7 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
+            <label className="block text-xs font-semibold text-black/85 dark:text-white/85 mb-1.5">
               {isAr ? 'ملاحظة' : isEn ? 'Note' : 'Motif'}
             </label>
             <input
@@ -154,7 +154,7 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder={isAr ? 'ملاحظة...' : isEn ? 'Reason...' : 'Motif...'}
-              className="w-full px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202024] text-neutral-900 dark:text-white text-xs focus:ring-2 focus:ring-[#d4522f] focus:outline-hidden"
+              className="w-full px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-[#202024] text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/55 text-xs focus:ring-2 focus:ring-[#d4522f] focus:outline-hidden"
             />
           </div>
 
@@ -162,7 +162,7 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white cursor-pointer"
+              className="px-4 py-2 text-xs font-semibold text-black/75 hover:text-black dark:text-white/75 dark:hover:text-white cursor-pointer"
             >
               {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
             </button>

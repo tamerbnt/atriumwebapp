@@ -257,13 +257,13 @@ export const TopBar: React.FC<TopBarProps> = ({
           <button
             type="button"
             onClick={() => setScreen(isProjectMilestone ? 'pm_dir_dashboard' : 'dashboard')}
-            className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+            className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
           >
             <Home size={12} />
             <span>{homeLabel}</span>
           </button>
-          <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-          <span className="text-neutral-900 dark:text-white font-semibold">
+          <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+          <span className="text-black dark:text-white font-semibold">
             {t('nav_settings', language)}
           </span>
         </nav>
@@ -343,15 +343,15 @@ export const TopBar: React.FC<TopBarProps> = ({
           <button
             type="button"
             onClick={() => setScreen('pm_dir_dashboard')}
-            className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+            className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
           >
             <Home size={12} />
             <span>{homeLabel}</span>
           </button>
-          <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-          <span className="text-neutral-500 font-medium">{resolved.role}</span>
-          <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-          <span className="text-neutral-900 dark:text-white font-semibold">{resolved.screen}</span>
+          <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+          <span className="text-black/70 dark:text-white/75 font-medium">{resolved.role}</span>
+          <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+          <span className="text-black dark:text-white font-semibold">{resolved.screen}</span>
         </nav>
       );
     }
@@ -361,7 +361,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       case 'trading_dashboard':
         return (
           <div className="flex items-center gap-1.5 text-xs">
-            <span className="font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
+            <span className="font-semibold text-black dark:text-white flex items-center gap-1.5">
               <Home size={13} className="text-[#d4522f]" />
               {homeLabel}
             </span>
@@ -373,13 +373,13 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               type="button"
               onClick={() => setScreen('trading_dashboard')}
-              className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">
+            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <span className="text-black dark:text-white font-semibold">
               {t('nav_trading_sales', language)}
             </span>
           </nav>
@@ -390,13 +390,13 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               type="button"
               onClick={() => setScreen('trading_dashboard')}
-              className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">
+            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <span className="text-black dark:text-white font-semibold">
               {t('nav_trading_purchases', language)}
             </span>
           </nav>
@@ -407,13 +407,13 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               type="button"
               onClick={() => setScreen('trading_dashboard')}
-              className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">
+            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <span className="text-black dark:text-white font-semibold">
               {t('nav_trading_inventory', language)}
             </span>
           </nav>
@@ -424,13 +424,13 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               type="button"
               onClick={() => setScreen('trading_dashboard')}
-              className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">
+            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <span className="text-black dark:text-white font-semibold">
               {t('nav_trading_directory', language)}
             </span>
           </nav>
@@ -441,13 +441,13 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               type="button"
               onClick={() => setScreen('trading_dashboard')}
-              className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">
+            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <span className="text-black dark:text-white font-semibold">
               {t('nav_trading_catalog', language)}
             </span>
           </nav>
@@ -458,13 +458,13 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               type="button"
               onClick={() => setScreen('trading_dashboard')}
-              className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">
+            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <span className="text-black dark:text-white font-semibold">
               {t('nav_trading_finance', language)}
             </span>
           </nav>
@@ -475,13 +475,13 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               type="button"
               onClick={() => setScreen('dashboard')}
-              className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">
+            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <span className="text-black dark:text-white font-semibold">
               {isFreelance
                 ? t('topbar_solo_timetracker_crumb', language)
                 : isRental
@@ -502,21 +502,21 @@ export const TopBar: React.FC<TopBarProps> = ({
                   selectMember(null);
                   setScreen('dashboard');
                 }}
-                className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+                className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <Home size={12} />
                 <span>{homeLabel}</span>
               </button>
-              <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
+              <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
               <button
                 type="button"
                 onClick={() => selectMember(null)}
-                className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors cursor-pointer"
+                className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors cursor-pointer"
               >
                 {isFreelance ? t('topbar_solo_clients_crumb', language) : terminology.members}
               </button>
-              <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-              <span className="text-neutral-900 dark:text-white font-semibold truncate max-w-[130px] sm:max-w-[200px]">
+              <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+              <span className="text-black dark:text-white font-semibold truncate max-w-[130px] sm:max-w-[200px]">
                 {selectedMember.fullName}
               </span>
             </nav>
@@ -527,13 +527,13 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               type="button"
               onClick={() => setScreen('dashboard')}
-              className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">
+            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <span className="text-black dark:text-white font-semibold">
               {isFreelance ? t('topbar_solo_clients_crumb', language) : terminology.members}
             </span>
           </nav>
@@ -544,13 +544,13 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               type="button"
               onClick={() => setScreen('dashboard')}
-              className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">
+            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <span className="text-black dark:text-white font-semibold">
               {isFreelance
                 ? t('topbar_solo_proposals_crumb', language)
                 : isPOS
@@ -565,13 +565,13 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               type="button"
               onClick={() => setScreen('dashboard')}
-              className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">
+            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <span className="text-black dark:text-white font-semibold">
               {isFreelance
                 ? t('topbar_solo_invoices_crumb', language)
                 : terminology.shop}
@@ -584,13 +584,13 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               type="button"
               onClick={() => setScreen('dashboard')}
-              className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">
+            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <span className="text-black dark:text-white font-semibold">
               {isFreelance
                 ? t('topbar_solo_deliverables_crumb', language)
                 : terminology.scheduler}
@@ -603,13 +603,13 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               type="button"
               onClick={() => setScreen('dashboard')}
-              className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">
+            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <span className="text-black dark:text-white font-semibold">
               {language === 'ar' ? 'المواعيد' : language === 'fr' ? 'Agenda' : 'Agenda'}
             </span>
           </nav>
@@ -620,13 +620,13 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               type="button"
               onClick={() => setScreen('dashboard')}
-              className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">
+            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <span className="text-black dark:text-white font-semibold">
               {isFreelance
                 ? t('topbar_solo_finance_crumb', language)
                 : t('nav_finance', language)}
@@ -639,13 +639,13 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               type="button"
               onClick={() => setScreen('dashboard')}
-              className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">
+            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <span className="text-black dark:text-white font-semibold">
               {isFreelance
                 ? t('topbar_solo_history_crumb', language)
                 : t('nav_history', language)}
@@ -658,13 +658,13 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               type="button"
               onClick={() => setScreen('dashboard')}
-              className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">
+            <ChevronRight size={13} className="text-black/35 dark:text-white/35" />
+            <span className="text-black dark:text-white font-semibold">
               {language === 'ar' ? 'الفريق' : language === 'fr' ? 'Équipe' : 'Staff'}
             </span>
           </nav>
@@ -675,7 +675,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               type="button"
               onClick={() => setScreen('dashboard')}
-              className="text-neutral-400 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-black/65 dark:text-white/70 hover:text-[#d4522f] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
               <span>{homeLabel}</span>
@@ -695,7 +695,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         <button
           type="button"
           onClick={onToggleMobileMenu}
-          className="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+          className="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center text-black/80 dark:text-white/85 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
           aria-label="Toggle mobile navigation menu"
         >
           <MenuIcon size={17} />
@@ -717,12 +717,12 @@ export const TopBar: React.FC<TopBarProps> = ({
               <button
                 type="button"
                 onClick={() => setScreen(isFreelance ? 'analytics' : 'scheduler')}
-                className="font-bold text-neutral-900 dark:text-white font-mono tabular-nums hover:text-[#d4522f] transition-colors cursor-pointer"
+                className="font-bold text-black dark:text-white font-mono tabular-nums hover:text-[#d4522f] transition-colors cursor-pointer"
                 title={t('topbar_tt_view_timer', language)}
               >
                 {formatDuration(activeTimer.elapsedSeconds)}
               </button>
-              <span className="text-[11px] text-neutral-500 max-w-[120px] truncate hidden sm:inline">
+              <span className="text-[11px] text-black/70 dark:text-white/75 max-w-[120px] truncate hidden sm:inline">
                 {activeTimer.clientName}
               </span>
               <div className="flex items-center gap-1 pl-1 border-l border-neutral-300 dark:border-neutral-700">
@@ -759,7 +759,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               type="button"
               onClick={() => setScreen(isFreelance ? 'analytics' : 'scheduler')}
-              className="flex items-center gap-1.5 text-[11px] font-semibold text-neutral-600 dark:text-neutral-300 hover:text-[#d4522f] transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 text-[11px] font-semibold text-black/80 dark:text-white/85 hover:text-[#d4522f] transition-colors cursor-pointer"
               title={t('topbar_tt_open_timer', language)}
             >
               <Clock size={13} className="text-[#d4522f]" />
@@ -791,7 +791,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           icon={<ChevronUp size={16} />}
           tone="soft"
           onClick={toggleTopBarCollapsed}
-          className="hidden sm:inline-flex !w-8 !h-8 !rounded-full text-neutral-500 dark:text-neutral-400"
+          className="hidden sm:inline-flex !w-8 !h-8 !rounded-full text-black/65 dark:text-white/70"
           title={language === 'ar' ? 'طي الشريط' : language === 'fr' ? 'Réduire' : 'Collapse'}
           aria-label="Collapse header"
         />
@@ -935,13 +935,13 @@ export const TopBar: React.FC<TopBarProps> = ({
                   {currentUser.fullName.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex flex-col text-left rtl:text-right min-w-0">
-                  <span className="font-semibold text-xs text-neutral-800 dark:text-neutral-200 leading-tight truncate max-w-[110px]">
+                  <span className="font-semibold text-xs text-black dark:text-white leading-tight truncate max-w-[110px]">
                     {currentUser.fullName.split(' ')[0]}
                   </span>
                 </div>
                 <ChevronDown
                   size={12}
-                  className={`text-neutral-400 transition-transform ${open ? 'rotate-180' : ''}`}
+                  className={`text-black/55 dark:text-white/60 transition-transform ${open ? 'rotate-180' : ''}`}
                 />
               </LiveButton>
             )}

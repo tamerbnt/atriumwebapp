@@ -110,7 +110,7 @@ export const ActionNode: React.FC<ActionNodeProps> = ({
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <div className="nod-name truncate text-neutral-900 dark:text-white">
+            <div className="nod-name truncate text-black dark:text-white font-semibold tracking-tight">
               {title}
             </div>
             {tag && (

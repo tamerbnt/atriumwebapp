@@ -967,7 +967,7 @@ export const PosOrdersView: React.FC = () => {
             <p className="text-xs text-neutral-500">
               {language === 'ar'
                 ? 'سيتم إعادة الأصناف تلقائياً إلى المخزون وتسجيل حركة إرجاع في سجل التدقيق.'
-                : 'Les articles seront automatiquement réintégrés dans l’inventaire physique avec traçabilité complète.'}
+                : 'Les articles seront automatiquement réintégrés dans l’inventaire physique avec suivi complet.'}
             </p>
 
             <LabelInput

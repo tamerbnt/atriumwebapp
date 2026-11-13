@@ -174,17 +174,17 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60">
           <div>
-            <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+            <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {t('edu_roll_call_title')}
             </h2>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            <p className="text-xs text-black/70 dark:text-white/70">
               {activeCohort?.name || t('edu_label_cohort')} · {activeSession?.date || t('common_today')}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
           >
             <X size={16} />
           </button>
@@ -233,7 +233,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-neutral-500">
+            <span className="text-black/70 dark:text-white/75">
               {t('edu_present_tally', {
                 present: String(presentCount),
                 total: String(totalCount),
@@ -243,7 +243,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
             <button
               type="button"
               onClick={markAllPresent}
-              className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 font-semibold text-neutral-800 dark:text-neutral-200 cursor-pointer shadow-2xs"
+              className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 font-semibold text-black dark:text-white cursor-pointer shadow-2xs"
             >
               {t('edu_mark_all_present')}
             </button>
@@ -261,14 +261,14 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
                 className="flex items-center justify-between p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-700 transition-all shadow-2xs"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">
+                  <div className="w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">
                     {student.fullName.charAt(0)}
                   </div>
                   <div>
-                    <div className="font-semibold text-neutral-900 dark:text-white">
+                    <div className="font-semibold text-black dark:text-white">
                       {student.fullName}
                     </div>
-                    <div className="text-[10px] text-neutral-400">
+                    <div className="text-[10px] text-black/55 dark:text-white/55">
                       {student.guardianName
                         ? t('edu_guardian_prefix', { name: student.guardianName })
                         : student.phone}
@@ -291,7 +291,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
                             : st === 'Absent'
                             ? 'bg-rose-600 text-white shadow-2xs'
                             : 'bg-blue-600 text-white shadow-2xs'
-                          : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                          : 'bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white'
                       }`}
                     >
                       {getStatusLabel(st)}
@@ -303,7 +303,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
           })}
 
           {studentsInCohort.length === 0 && (
-            <div className="py-12 text-center text-neutral-400 italic">
+            <div className="py-12 text-center text-black/55 dark:text-white/55 italic">
               {t('edu_no_students_enrolled')}
             </div>
           )}

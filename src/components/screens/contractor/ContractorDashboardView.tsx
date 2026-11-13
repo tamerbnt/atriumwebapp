@@ -121,7 +121,7 @@ export const ContractorDashboardView: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 bg-white min-h-screen p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
+    <div className="flex-1 bg-white dark:bg-[#0C0C0E] min-h-screen p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
       <OfflineRetryBanner
         isOffline={isOffline}
         isTimedOut={isTimedOut}
@@ -152,7 +152,7 @@ export const ContractorDashboardView: React.FC = () => {
         {/* POD 1: Site Velocity & Jobsite Flow (42% width) */}
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'حركة الورشات والعمال الميدانيين' : language === 'fr' ? 'Activité Chantiers & Équipes' : 'Site Velocity & Jobsite Flow'}
+            title={language === 'ar' ? 'حركة الورشات والعمال الميدانيين' : language === 'fr' ? 'Activité Chantiers & Équipes' : 'Active Sites'}
             icon={<HardHat size={18} className="text-[#d4522f]" />}
             badge={
               <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
@@ -160,12 +160,12 @@ export const ContractorDashboardView: React.FC = () => {
               </span>
             }
             rightControls={
-              <div className="flex items-center bg-[#F0F2F5] p-0.5 rounded-lg text-xs font-semibold">
+              <div className="flex items-center bg-[#F0F2F5] dark:bg-neutral-800 p-0.5 rounded-lg text-xs font-semibold">
                 <button
                   type="button"
                   onClick={() => setTimeFilter('today')}
                   className={`px-3 py-1 rounded-md transition-all ${
-                    timeFilter === 'today' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                    timeFilter === 'today' ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-sm' : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
                   }`}
                 >
                   {language === 'ar' ? 'اليوم' : 'Today'}
@@ -174,7 +174,7 @@ export const ContractorDashboardView: React.FC = () => {
                   type="button"
                   onClick={() => setTimeFilter('yesterday')}
                   className={`px-3 py-1 rounded-md transition-all ${
-                    timeFilter === 'yesterday' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                    timeFilter === 'yesterday' ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-sm' : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
                   }`}
                 >
                   {language === 'ar' ? 'أمس' : 'Yesterday'}
@@ -184,32 +184,32 @@ export const ContractorDashboardView: React.FC = () => {
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <span className="text-xs font-medium text-gray-500 block mb-1">
+                    <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">
                       {language === 'ar' ? 'الورشات قيد الإنجاز' : 'Chantiers en Cours'}
                     </span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold font-mono text-gray-900 tabular-nums">
+                      <span className="text-3xl font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
                         {activeProjects}
                       </span>
-                      <span className="text-xs text-gray-400">/ 6 max</span>
+                      <span className="text-xs text-black/55 dark:text-white/55">/ 6 max</span>
                     </div>
                     <span className="inline-block mt-2 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[11px] font-medium rounded-full">
                       ● {language === 'ar' ? 'أشغال نشطة' : 'Chantiers ouverts'}
                     </span>
                   </div>
-                  <div className="w-px h-12 bg-gray-200 mx-4" />
+                  <div className="w-px h-12 bg-neutral-200 dark:bg-neutral-700 mx-4" />
                   <div className="flex-1">
-                    <span className="text-xs font-medium text-gray-500 block mb-1">
+                    <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">
                       {language === 'ar' ? 'العمال الميدانيين اليوم' : 'Effectif sur Site'}
                     </span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold font-mono text-gray-900 tabular-nums">
+                      <span className="text-3xl font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
                         {workersOnSite}
                       </span>
-                      <span className="text-xs text-gray-400">{language === 'ar' ? 'عامل' : 'personnes'}</span>
+                      <span className="text-xs text-black/55 dark:text-white/55">{language === 'ar' ? 'عامل' : 'personnes'}</span>
                     </div>
                     <span className="inline-block mt-2 px-2 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium rounded-full">
                       {language === 'ar' ? 'معايير السلامة HSE OK' : 'Sécurité HSE validée'}
@@ -217,30 +217,30 @@ export const ContractorDashboardView: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-gray-100">
-                  <span className="text-[11px] text-gray-400 block mb-2">
+                <div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700/60">
+                  <span className="text-[11px] text-black/55 dark:text-white/55 block mb-2">
                     {language === 'ar' ? 'كثافة نشاط الآليات والعمال على مدار 24 ساعة' : 'Courbe horaire de présence chantier (24h)'}
                   </span>
                   <HourlyCurveChart data={hourlyData} color="#d4522f" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                 <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-xs font-medium text-gray-500">
+                  <span className="text-xs font-medium text-black/70 dark:text-white/75">
                     {language === 'ar' ? 'نسبة حضور اليد العاملة اليوم' : 'Taux de Présence Ouvriers'}
                   </span>
-                  <span className="text-base font-bold font-mono text-gray-900 tabular-nums">
+                  <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums tabular-nums">
                     {workersOnSite} / {dailyLaborTarget}
                   </span>
                 </div>
-                <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-1">
+                <div className="w-full bg-neutral-100 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
                   <div
                     className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
                     style={{ width: `${targetPct}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-[11px] text-gray-400">
+                <div className="flex justify-between text-[11px] text-black/55 dark:text-white/55">
                   <span>{targetPct}% {language === 'ar' ? 'حضور' : 'de présence'}</span>
                   <span>{dailyLaborTarget} ouvriers {language === 'ar' ? 'مخطط' : 'prévus'}</span>
                 </div>
@@ -252,22 +252,22 @@ export const ContractorDashboardView: React.FC = () => {
         {/* POD 2: Project Portfolio Development (58% width) */}
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'تطور الصفقات والمشاريع المعتمدة' : language === 'fr' ? 'Développement Portefeuille Marchés' : 'Project Portfolio Development'}
+            title={language === 'ar' ? 'الصفقات والمشاريع' : language === 'fr' ? 'Portefeuille Marchés' : 'Project Portfolio'}
             icon={<Building size={18} className="text-[#d4522f]" />}
             rightControls={
-              <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
+              <div className="flex items-center gap-1 text-xs font-semibold text-black/70 dark:text-white/75">
                 <button
                   type="button"
                   onClick={() => setCurrentMonthIndex((prev) => (prev > 0 ? prev - 1 : 11))}
-                  className="p-1 hover:bg-gray-200 rounded"
+                  className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"
                 >
                   <ChevronLeft size={14} />
                 </button>
-                <span className="px-1 text-gray-800">{months[currentMonthIndex]} 2026</span>
+                <span className="px-1 text-black dark:text-white">{months[currentMonthIndex]} 2026</span>
                 <button
                   type="button"
                   onClick={() => setCurrentMonthIndex((prev) => (prev < 11 ? prev + 1 : 0))}
-                  className="p-1 hover:bg-gray-200 rounded"
+                  className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"
                 >
                   <ChevronRight size={14} />
                 </button>
@@ -302,12 +302,12 @@ export const ContractorDashboardView: React.FC = () => {
                 />
               </div>
 
-              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-semibold text-gray-700">
+                  <span className="text-xs font-semibold text-black dark:text-white">
                     {language === 'ar' ? 'نسبة التقدم الأسبوعي للأشغال (%)' : 'Avancement physique hebdomadaire des lots'}
                   </span>
-                  <span className="text-[11px] text-gray-400">
+                  <span className="text-[11px] text-black/55 dark:text-white/55">
                     {language === 'ar' ? 'مقارنة شهرية' : '4 dernières semaines'}
                   </span>
                 </div>
@@ -327,43 +327,43 @@ export const ContractorDashboardView: React.FC = () => {
         {/* POD 3: Financial Trajectory (42% width) */}
         <div className="lg:col-span-5 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'المسار المالي وكشوفات الأشغال DGP' : language === 'fr' ? 'Trajectoire Financière & Décomptes DGP' : 'Financial Trajectory & P&L'}
+            title={language === 'ar' ? 'الإيرادات والأرباح' : language === 'fr' ? 'Revenus & Décomptes DGP' : 'Revenue & Profit'}
             icon={<TrendingUp size={18} className="text-[#d4522f]" />}
             rightControls={
-              <span className="text-xs font-semibold text-gray-500 uppercase">
+              <span className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase rtl:normal-case">
                 {months[currentMonthIndex]} 2026
               </span>
             }
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
-              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
-                <div className="grid grid-cols-3 gap-2 pb-3 border-b border-gray-100">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
+                <div className="grid grid-cols-3 gap-2 pb-3 border-b border-neutral-200 dark:border-neutral-700/60">
                   <div>
-                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'صافي المقاولة' : 'Marge Nette'}</span>
-                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'صافي المقاولة' : 'Marge Nette'}</span>
+                    <span className="text-lg font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
                       {formatMoney(1950000)}
                     </span>
                     <span className="text-[10px] text-emerald-600 block">23% Brut</span>
                   </div>
                   <div>
-                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'كشوفات محررة' : 'DGP Ce Mois'}</span>
-                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'كشوفات محررة' : 'DGP Ce Mois'}</span>
+                    <span className="text-lg font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
                       {formatMoney(8500000)}
                     </span>
                     <span className="text-[10px] text-emerald-600 block">+15%</span>
                   </div>
                   <div>
-                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'مواد ومقاولون' : 'Fournitures & ST'}</span>
-                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'مواد ومقاولون' : 'Fournitures & ST'}</span>
+                    <span className="text-lg font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
                       {formatMoney(6550000)}
                     </span>
-                    <span className="text-[10px] text-gray-400 block">77% CA</span>
+                    <span className="text-[10px] text-black/55 dark:text-white/55 block">77% CA</span>
                   </div>
                 </div>
 
                 <div className="pt-3">
-                  <span className="text-[11px] text-gray-400 block mb-1">
+                  <span className="text-[11px] text-black/55 dark:text-white/55 block mb-1">
                     {language === 'ar' ? 'منحنى تحصيل الكشوفات على مدار 30 يوماً' : 'Tendance des encaissements DGP sur 30 jours'}
                   </span>
                   <MonthlyAreaChart data={monthlyBilling} color="#8B5CF6" />
@@ -371,56 +371,56 @@ export const ContractorDashboardView: React.FC = () => {
               </div>
 
               {/* 4 KPIs Inset Grid */}
-              <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-semibold text-gray-700">
+                  <span className="text-xs font-semibold text-black dark:text-white">
                     {language === 'ar' ? 'مؤشرات الأداء الميداني BTP' : 'Indicateurs de Pilotage Chantier'}
                   </span>
-                  <Info size={13} className="text-gray-400" />
+                  <Info size={13} className="text-black/55 dark:text-white/55" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
-                    <span className="text-[11px] text-gray-500 block">
+                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
                       {language === 'ar' ? 'انحراف الميزانية DQE' : 'Écart Budgétaire DQE'}
                     </span>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-mono text-gray-900">+1.4%</span>
+                      <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">+1.4%</span>
                       <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
                         Maitrisé
                       </span>
                     </div>
                   </div>
 
-                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
-                    <span className="text-[11px] text-gray-500 block">
+                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
                       {language === 'ar' ? 'إنتاجية اليد العاملة' : 'Productivité Main d’Œuvre'}
                     </span>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-mono text-gray-900">104%</span>
+                      <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">104%</span>
                       <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
                         Rendement
                       </span>
                     </div>
                   </div>
 
-                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
-                    <span className="text-[11px] text-gray-500 block">
+                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
                       {language === 'ar' ? 'مطابقة اختبارات CTC' : 'Conformité Essais CTC'}
                     </span>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-mono text-gray-900">100%</span>
+                      <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">100%</span>
                       <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
                         Écrasement OK
                       </span>
                     </div>
                   </div>
 
-                  <div className="bg-[#F3EDE7] p-3 rounded-xl">
-                    <span className="text-[11px] text-gray-500 block">
+                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
+                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
                       {language === 'ar' ? 'أيام بدون حوادث عمل' : 'Jours Sans Accident (HSE)'}
                     </span>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-mono text-gray-900">420 j</span>
+                      <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">420 j</span>
                       <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
                         Zéro blessé
                       </span>
@@ -435,28 +435,28 @@ export const ContractorDashboardView: React.FC = () => {
         {/* POD 4: Engineering Intelligence & Delay Overrun Guardian (58% width) */}
         <div className="lg:col-span-7 flex flex-col">
           <DashboardPod
-            title={language === 'ar' ? 'ذكاء الورشات وحارس الآجال والتكاليف' : language === 'fr' ? 'Intelligence Chantier & Overrun Sentinel' : 'Engineering Intelligence & Overrun Guardian'}
+            title={language === 'ar' ? 'المؤشرات والتنبيهات' : language === 'fr' ? 'Analyses & Alertes' : 'Insights & Alerts'}
             icon={<ShieldCheck size={18} className="text-[#d4522f]" />}
             className="flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-gray-700">
+                    <span className="text-xs font-semibold text-black dark:text-white">
                       {language === 'ar' ? 'توزيع مصاريف الورشة' : 'Ventilation des Dépenses'}
                     </span>
-                    <Info size={13} className="text-gray-400" />
+                    <Info size={13} className="text-black/55 dark:text-white/55" />
                   </div>
                   <DonutChart segments={siteExpenses} centerLabel={`${activeProjects} Chantiers`} />
                 </div>
 
-                <div className="bg-white rounded-[18px] p-4 border border-[#E6DED6] shadow-sm">
+                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-gray-700">
+                    <span className="text-xs font-semibold text-black dark:text-white">
                       {language === 'ar' ? 'نسبة الإنجاز حسب الورشة' : 'Avancement DQE par Chantier'}
                     </span>
-                    <Info size={13} className="text-gray-400" />
+                    <Info size={13} className="text-black/55 dark:text-white/55" />
                   </div>
                   <PillBarHistogram
                     data={siteComparison}
@@ -468,7 +468,7 @@ export const ContractorDashboardView: React.FC = () => {
 
               {/* Overrun Guardian Card */}
               <GuardianCard
-                title={language === 'ar' ? 'حارس منع التأخير وتجاوز التكاليف (Overrun Sentinel)' : 'Schedule Delay & Cost Overrun Sentinel'}
+                title={language === 'ar' ? 'تنبيهات الآجال والتكاليف' : 'Schedule & Budget'}
                 subtitle={
                   language === 'ar'
                     ? 'مقارنة مستمرة بين المخطط الزمني للتعاقد والتقدم الفيزيائي على أرض الواقع لتفادي غرامات التأخير'
