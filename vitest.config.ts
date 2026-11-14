@@ -8,7 +8,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['src/atrium/__tests__/**/*.test.ts'],
+    include: ['src/atrium/__tests__/**/*.test.{ts,tsx}'],
   },
   resolve: {
     alias: {

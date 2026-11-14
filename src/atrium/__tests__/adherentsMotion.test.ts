@@ -146,4 +146,26 @@ describe('Adherents Spring (Sp) Motion Module', () => {
       s.destroy();
     });
   });
+
+  it('remains stable under 30fps / dropped-frame cadence using adaptive 2-substep integration', async () => {
+    const { frame } = await import('../../components/screens/membership/motion/adherentsMotion');
+    (globalThis as any).requestAnimationFrame = () => 1;
+    const s = new Sp(0, 28);
+    s.setTarget(100);
+
+    let ts = 1000;
+    frame(ts);
+    let maxVal = s.x;
+    for (let i = 0; i < 40; i++) {
+      ts += 33.34; // ~30fps dropped frames (dt ≈ 2.0)
+      frame(ts);
+      if (s.x > maxVal) maxVal = s.x;
+      if (s.rest()) break;
+    }
+
+    expect(maxVal).toBeLessThan(112);
+    expect(s.rest()).toBe(true);
+    expect(s.x).toBe(100);
+    s.destroy();
+  });
 });

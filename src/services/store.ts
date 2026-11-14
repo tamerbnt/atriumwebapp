@@ -263,7 +263,9 @@ export type ActiveScreen =
   | 'trading_catalog'
   | 'trading_finance'
   // Category 11: Real Estate & Property Management (Algeria)
-  | 'realestate_mandates';
+  | 'realestate_mandates'
+  // Dev-only Phase 1 Component Catalog
+  | 'chart_catalog';
 
 export type SupabaseStatus = 'connected' | 'connecting' | 'offline' | 'unconfigured';
 
@@ -904,6 +906,157 @@ export function selectCurrentBranchFromState(state: AppState) {
 
 export function selectCurrentPlansFromState(state: AppState) {
   return (state.plansByBranch && state.plansByBranch[state.currentBranchId]) || EMPTY_PLANS;
+}
+
+let cachedMembersSrc: Member[] | null = null;
+let cachedMembersBranch = '';
+let cachedMembersResult: Member[] = [];
+
+export function selectCurrentMembersFromState(state: AppState): Member[] {
+  if (state.members === cachedMembersSrc && state.currentBranchId === cachedMembersBranch) {
+    return cachedMembersResult;
+  }
+  cachedMembersSrc = state.members;
+  cachedMembersBranch = state.currentBranchId;
+  cachedMembersResult = state.members.filter((m) => m.facilityId === state.currentBranchId);
+  return cachedMembersResult;
+}
+
+export function selectSelectedMemberFromState(state: AppState): Member | null {
+  if (!state.selectedMemberId) return null;
+  const list = selectCurrentMembersFromState(state);
+  return list.find((m) => m.id === state.selectedMemberId) || null;
+}
+
+let cachedTermCategory: BusinessCategory | null = null;
+let cachedTermLanguage: SupportedLanguage | null = null;
+let cachedTermResult: ReturnType<typeof getCategoryTerminology> | null = null;
+
+export function selectTerminologyFromState(state: AppState) {
+  const biz = selectCurrentBusinessFromState(state);
+  const cat = biz.category;
+  const lang = state.language;
+  if (cachedTermCategory === cat && cachedTermLanguage === lang && cachedTermResult) {
+    return cachedTermResult;
+  }
+  cachedTermCategory = cat;
+  cachedTermLanguage = lang;
+  cachedTermResult = getCategoryTerminology(cat, lang);
+  return cachedTermResult;
+}
+
+export function setSystemDefaultLanguageAction() {
+  const sysLang = getSystemDefaultLanguage();
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('atrium_language', sysLang);
+      localStorage.setItem('atrium_language_mode', 'auto');
+    }
+  } catch {}
+  globalState = { ...globalState, language: sysLang, isLanguageAuto: true };
+  if (typeof document !== 'undefined') {
+    document.documentElement.setAttribute('dir', sysLang === 'ar' ? 'rtl' : 'ltr');
+    document.documentElement.setAttribute('lang', sysLang);
+  }
+  notify();
+}
+
+export function openOnboardingAction() {
+  globalState = { ...globalState, isOnboardingOpen: true };
+  notify();
+}
+
+export function closeOnboardingAction() {
+  globalState = { ...globalState, isOnboardingOpen: false };
+  notify();
+}
+
+export function closeFastSwitchAction() {
+  globalState = { ...globalState, isFastSwitchOpen: false };
+  notify();
+}
+
+export function closeDesktopUpgradeModalAction() {
+  globalState = { ...globalState, isDesktopUpgradeModalOpen: false };
+  notify();
+}
+
+export function toggleTopBarCollapsedAction() {
+  globalState = { ...globalState, isTopBarCollapsed: !globalState.isTopBarCollapsed };
+  notify();
+}
+
+export function setTopBarCollapsedAction(collapsed: boolean) {
+  globalState = { ...globalState, isTopBarCollapsed: collapsed };
+  notify();
+}
+
+function resolveSubRolesForUserGlobal(user: CurrentUser) {
+  const isOwner = user.role === 'Owner' || (user.roleRank && user.roleRank >= 8);
+  const r = (user.role || '').toLowerCase();
+  return {
+    activeMembershipRole: (isOwner ? 'owner' : 'staff') as any,
+    activeAppointmentRole: (isOwner ? 'owner' : 'staff') as any,
+    activePosRole: (isOwner ? 'owner' : 'staff') as any,
+    activeEducationRole: (isOwner ? 'owner' : 'staff') as any,
+    activeGarageRole: (isOwner ? 'gerant' : (r.includes('mecanic') ? 'mecanicien' : r.includes('magasin') ? 'magasinier' : r.includes('caisse') ? 'caisse' : r.includes('recept') ? 'reception' : 'gerant')) as any,
+    activeRealEstateRole: (isOwner ? 'direction' : (r.includes('negoc') ? 'negociateur' : r.includes('gest') ? 'gestionnaire_locatif' : r.includes('compt') || r.includes('notair') ? 'notaire_compta' : 'direction')) as any,
+    activeManufacturingRole: (isOwner ? 'gerant' : (r.includes('atelier') ? 'chef_atelier' : r.includes('operat') ? 'operateur' : r.includes('magasin') ? 'magasinier' : r.includes('qualit') ? 'controleur' : 'gerant')) as any,
+    activeLegalRole: (isOwner ? 'avocat_associe' : (r.includes('avocat') ? 'avocat_collaborateur' : r.includes('clerc') ? 'clerc_notaire' : r.includes('compt') || r.includes('caisse') ? 'secretaire_caisse' : 'avocat_associe')) as any,
+    activeLogisticsRole: (isOwner ? 'gerant' : (r.includes('dispatch') ? 'dispatcher' : r.includes('tri') ? 'hub_sorter' : r.includes('stop') ? 'stop_desk_agent' : 'gerant')) as any,
+    activeContractorRole: (isOwner ? 'gerant' : (r.includes('conduct') ? 'conducteur' : r.includes('chantier') ? 'chef_chantier' : r.includes('metreur') ? 'metreur' : r.includes('compt') ? 'comptable' : 'gerant')) as any,
+    activeAgriRole: (isOwner ? 'gerant' : (r.includes('culture') ? 'chef_culture' : r.includes('zoo') ? 'zootechnicien' : r.includes('magasin') ? 'magasinier' : 'gerant')) as any,
+  };
+}
+
+export function loginWithPinAction(pin: string) {
+  const cleanPin = pin.trim();
+  const staffMatch = globalState.staff.find((s) => s.pinCode === cleanPin);
+  if (staffMatch) {
+    if (staffMatch.status === 'frozen' || staffMatch.status === 'terminated') {
+      return { success: false, message: 'Ce compte est actuellement suspendu ou désactivé.' };
+    }
+    const user: CurrentUser = {
+      id: staffMatch.id,
+      fullName: staffMatch.fullName,
+      email: staffMatch.email,
+      role: staffMatch.role,
+      roleRank: staffMatch.roleRank,
+      branchId: staffMatch.facilityId,
+      pinCode: staffMatch.pinCode,
+    };
+    globalState = {
+      ...globalState,
+      currentUser: user,
+      isAuthenticated: true,
+      isFastSwitchOpen: false,
+      ...resolveSubRolesForUserGlobal(user),
+    };
+    notify();
+    return { success: true, user };
+  }
+
+  if (cleanPin === '1234') {
+    const ownerUser: CurrentUser = {
+      id: 'stf_01',
+      fullName: globalState.account.fullName,
+      email: globalState.account.email,
+      role: 'Owner',
+      roleRank: 8,
+      pinCode: '1234',
+    };
+    globalState = {
+      ...globalState,
+      currentUser: ownerUser,
+      isAuthenticated: true,
+      isFastSwitchOpen: false,
+      ...resolveSubRolesForUserGlobal(ownerUser),
+    };
+    notify();
+    return { success: true, user: ownerUser };
+  }
+
+  return { success: false, message: 'Invalid 4-digit PIN code. (Try 1234 for Owner, 5566 for Manager, 9988 for Cashier)' };
 }
 
 export { getCategoryTerminology };

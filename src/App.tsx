@@ -1,5 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useAtriumStore } from './services/store';
+import {
+  useAtriumSelector,
+  selectCurrentBusinessFromState,
+  setSystemDefaultLanguageAction,
+  openOnboardingAction,
+  closeOnboardingAction,
+  closeFastSwitchAction,
+  closeDesktopUpgradeModalAction,
+  toggleTopBarCollapsedAction,
+  setTopBarCollapsedAction,
+  loginWithPinAction,
+} from './services/store';
 import { Member } from './types/index';
 import { AppShell } from '@/atrium';
 import { Sidebar } from './components/layout/Sidebar';
@@ -32,6 +43,7 @@ const DesktopUpgradeModal = React.lazy(() =>
 // All 116 Screens lazy-loaded with Category Chunk Partitioning
 import {
   SettingsScreen,
+  DashboardCatalogScreen,
   FreelanceDashboardView,
   FreelanceClientsView,
   FreelanceDeliverablesView,
@@ -156,39 +168,37 @@ import { ChevronDown } from 'lucide-react';
 import { useTranslation } from './utils/useTranslation';
 
 export default function App() {
-  const {
-    currentBusiness,
-    activeScreen,
-    theme,
-    language,
-    isLanguageAuto,
-    setSystemDefaultLanguage,
-    isAuthenticated,
-    isOnboardingOpen,
-    isFastSwitchOpen,
-    isDesktopUpgradeModalOpen,
-    desktopUpgradeReason,
-    openOnboarding,
-    closeOnboarding,
-    closeFastSwitch,
-    closeDesktopUpgradeModal,
-    activeGarageRole,
-    activeLegalRole,
-    activeLogisticsRole,
-    activeContractorRole,
-    activeRealEstateRole,
-    activeManufacturingRole,
-    activeAgriRole,
-    activeMembershipRole,
-    activeAppointmentRole,
-    activePosRole,
-    activeEducationRole,
-    isTopBarCollapsed,
-    isTopBarAutoHide,
-    toggleTopBarCollapsed,
-    setTopBarCollapsed,
-    loginWithPin,
-  } = useAtriumStore();
+  const currentBusiness = useAtriumSelector(selectCurrentBusinessFromState);
+  const activeScreen = useAtriumSelector((s) => s.activeScreen);
+  const theme = useAtriumSelector((s) => s.theme);
+  const language = useAtriumSelector((s) => s.language);
+  const isLanguageAuto = useAtriumSelector((s) => s.isLanguageAuto);
+  const setSystemDefaultLanguage = setSystemDefaultLanguageAction;
+  const isAuthenticated = useAtriumSelector((s) => s.isAuthenticated);
+  const isOnboardingOpen = useAtriumSelector((s) => s.isOnboardingOpen);
+  const isFastSwitchOpen = useAtriumSelector((s) => s.isFastSwitchOpen);
+  const isDesktopUpgradeModalOpen = useAtriumSelector((s) => s.isDesktopUpgradeModalOpen);
+  const desktopUpgradeReason = useAtriumSelector((s) => s.desktopUpgradeReason);
+  const openOnboarding = openOnboardingAction;
+  const closeOnboarding = closeOnboardingAction;
+  const closeFastSwitch = closeFastSwitchAction;
+  const closeDesktopUpgradeModal = closeDesktopUpgradeModalAction;
+  const activeGarageRole = useAtriumSelector((s) => s.activeGarageRole);
+  const activeLegalRole = useAtriumSelector((s) => s.activeLegalRole);
+  const activeLogisticsRole = useAtriumSelector((s) => s.activeLogisticsRole);
+  const activeContractorRole = useAtriumSelector((s) => s.activeContractorRole);
+  const activeRealEstateRole = useAtriumSelector((s) => s.activeRealEstateRole);
+  const activeManufacturingRole = useAtriumSelector((s) => s.activeManufacturingRole);
+  const activeAgriRole = useAtriumSelector((s) => s.activeAgriRole);
+  const activeMembershipRole = useAtriumSelector((s) => s.activeMembershipRole);
+  const activeAppointmentRole = useAtriumSelector((s) => s.activeAppointmentRole);
+  const activePosRole = useAtriumSelector((s) => s.activePosRole);
+  const activeEducationRole = useAtriumSelector((s) => s.activeEducationRole);
+  const isTopBarCollapsed = useAtriumSelector((s) => s.isTopBarCollapsed || false);
+  const isTopBarAutoHide = useAtriumSelector((s) => s.isTopBarAutoHide ?? false);
+  const toggleTopBarCollapsed = toggleTopBarCollapsedAction;
+  const setTopBarCollapsed = setTopBarCollapsedAction;
+  const loginWithPin = loginWithPinAction;
 
   const { t } = useTranslation();
 
@@ -323,6 +333,9 @@ export default function App() {
   const isProjectMilestone = currentBusiness?.category === 'project_milestone';
 
   const renderActiveScreen = () => {
+    if (import.meta.env.DEV && activeScreen === 'chart_catalog') {
+      return <DashboardCatalogScreen />;
+    }
     if (activeScreen === 'staff') {
       const cat = currentBusiness?.category;
       if (cat === 'project_milestone') return <ProjectRhView initialTab="talents" />;

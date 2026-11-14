@@ -43,3 +43,6 @@ export type { Placement } from './components/Panel/position';
 
 export { configureMotion, motion, PHI, ZETA } from './motion';
 export type { MotionTier, MotionConfig } from './motion';
+
+export * from './charts';
+

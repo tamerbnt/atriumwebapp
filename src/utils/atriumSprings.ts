@@ -467,12 +467,33 @@ export class SegmentedBlobController implements SpringBody {
     this.opts = opts;
   }
 
-  measure() {
-    const leftOffset = parseFloat(getComputedStyle(this.blob).left) || 0;
-    this.W = this.blob.offsetWidth || 1;
-    const r = this.opts[0] ? parseFloat(getComputedStyle(this.opts[0]).borderTopLeftRadius) : 0;
-    this.rad = r > 10 ? Math.min(r, (this.blob.offsetHeight || 30) / 2) : (r || 5);
-    this.geo = this.opts.map((o) => [o.offsetLeft - leftOffset, o.offsetLeft - leftOffset + o.offsetWidth]);
+  private lastLeftOffset = -1;
+  private hasMeasuredStyle = false;
+
+  measure(): boolean {
+    if (!this.hasMeasuredStyle) {
+      this.hasMeasuredStyle = true;
+      this.lastLeftOffset = parseFloat(getComputedStyle(this.blob).left) || 0;
+      const r = this.opts[0] ? parseFloat(getComputedStyle(this.opts[0]).borderTopLeftRadius) : 0;
+      this.rad = r > 10 ? Math.min(r, (this.blob.offsetHeight || 30) / 2) : (r || 5);
+    }
+    const leftOffset = this.lastLeftOffset;
+    const nextW = this.blob.offsetWidth || 1;
+    let changed = nextW !== this.W || this.geo.length !== this.opts.length;
+    const nextGeo: Array<[number, number]> = new Array(this.opts.length);
+    for (let i = 0; i < this.opts.length; i++) {
+      const o = this.opts[i];
+      const l = o.offsetLeft - leftOffset;
+      const right = l + o.offsetWidth;
+      nextGeo[i] = [l, right];
+      const prev = this.geo[i];
+      if (!prev || prev[0] !== l || prev[1] !== right) {
+        changed = true;
+      }
+    }
+    this.W = nextW;
+    this.geo = nextGeo;
+    return changed;
   }
 
   aim() {

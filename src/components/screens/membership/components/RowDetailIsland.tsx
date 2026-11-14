@@ -38,7 +38,11 @@ export interface RowDetailIslandProps {
   className?: string;
 }
 
-const DET_CONTROLLED_BASE_STYLE: React.CSSProperties = { display: 'none' };
+const DET_CONTROLLED_BASE_STYLE: React.CSSProperties = {
+  display: 'none',
+  left: 0,
+  top: 0,
+};
 
 const DC_CONTROLLED_BASE_STYLE: React.CSSProperties = {
   display: 'none',

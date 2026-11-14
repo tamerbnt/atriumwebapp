@@ -102,27 +102,57 @@ function syncDirtySpringsFromLegacyWrites(): void {
   });
 }
 
+const toRemoveScratch: Sp[] = [];
+let visibilityListenerBound = false;
+
+function ensureVisibilityListener(): void {
+  if (visibilityListenerBound || typeof document === 'undefined') return;
+  visibilityListenerBound = true;
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      prevTime = 0;
+    }
+  });
+}
+
 export const frame = (timestamp: number): void => {
   rafId = 0;
-  const dt = prevTime ? clamp((timestamp - prevTime) / 16.67, 0, 2.5) : 1;
+  const dt = prevTime ? clamp((timestamp - prevTime) / 16.67, 0.05, 2.5) : 1;
   prevTime = timestamp;
 
   const reduced = checkReducedMotion();
 
   if (runningSprings.size > 0) {
-    const toRemove: Sp[] = [];
-    runningSprings.forEach((s) => {
-      s.step(dt, reduced);
-      if (s.rest()) {
-        if (s.x !== s.t || s.v !== 0) {
-          s.snap();
+    toRemoveScratch.length = 0;
+    if (!reduced && dt > 1.25) {
+      const halfDt = dt * 0.5;
+      runningSprings.forEach((s) => {
+        s.step(halfDt, false);
+        if (!s.rest()) {
+          s.step(halfDt, false);
         }
-        toRemove.push(s);
-      }
-    });
-    for (let i = 0; i < toRemove.length; i++) {
-      runningSprings.delete(toRemove[i]);
+        if (s.rest()) {
+          if (s.x !== s.t || s.v !== 0) {
+            s.snap();
+          }
+          toRemoveScratch.push(s);
+        }
+      });
+    } else {
+      runningSprings.forEach((s) => {
+        s.step(dt, reduced);
+        if (s.rest()) {
+          if (s.x !== s.t || s.v !== 0) {
+            s.snap();
+          }
+          toRemoveScratch.push(s);
+        }
+      });
     }
+    for (let i = 0; i < toRemoveScratch.length; i++) {
+      runningSprings.delete(toRemoveScratch[i]);
+    }
+    toRemoveScratch.length = 0;
   }
 
   notifyFrameSubscribers();
@@ -136,6 +166,7 @@ export const frame = (timestamp: number): void => {
 };
 
 export const wake = (): void => {
+  ensureVisibilityListener();
   syncDirtySpringsFromLegacyWrites();
   if (checkReducedMotion()) {
     runningSprings.forEach((s) => {

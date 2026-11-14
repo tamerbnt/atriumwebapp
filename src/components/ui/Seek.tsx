@@ -31,7 +31,7 @@ export interface SeekProps {
   autoFocusOnOpen?: boolean;
 }
 
-export const Seek: React.FC<SeekProps> = ({
+export const Seek: React.FC<SeekProps> = React.memo(({
   value,
   onChange,
   placeholder,
@@ -45,11 +45,17 @@ export const Seek: React.FC<SeekProps> = ({
   const defaultPlaceholder = language === 'ar' ? 'بحث...' : language === 'fr' ? 'Rechercher...' : 'Search...';
   const effectivePlaceholder = placeholder !== undefined ? placeholder : defaultPlaceholder;
   const [isOpen, setIsOpen] = useState(Boolean(value && value.length > 0));
-  const [isPress, setIsPress] = useState(false);
-  const [isBusy, setIsBusy] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const busyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const valueRef = useRef(value);
+  valueRef.current = value;
+
+  useEffect(() => {
+    return () => {
+      if (busyTimerRef.current) clearTimeout(busyTimerRef.current);
+    };
+  }, []);
 
   // If value is set externally, open automatically
   useEffect(() => {
@@ -58,28 +64,29 @@ export const Seek: React.FC<SeekProps> = ({
     }
   }, [value]);
 
-  // Click outside to collapse if empty
+  // Click outside to collapse if empty (only active while open)
   useEffect(() => {
+    if (!isOpen) return;
     const handleOutsideClick = (e: MouseEvent) => {
       const target = e.target as Node | null;
       if (!target || !document.contains(target)) return;
       if (containerRef.current && !containerRef.current.contains(target)) {
-        if (!value || value.trim().length === 0) {
+        if (!valueRef.current || valueRef.current.trim().length === 0) {
           setIsOpen(false);
         }
       }
     };
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, [value]);
+  }, [isOpen]);
 
   // Handle opening
   const handleOpen = () => {
     setIsOpen(true);
     if (autoFocusOnOpen) {
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         inputRef.current?.focus();
-      }, 50);
+      });
     }
   };
 
@@ -111,11 +118,15 @@ export const Seek: React.FC<SeekProps> = ({
     const val = e.target.value;
     onChange(val);
 
-    // Pulse busy state on typing
-    setIsBusy(true);
+    // Pulse busy attribute on typing without triggering React re-renders
+    if (containerRef.current) {
+      containerRef.current.setAttribute("data-busy", "true");
+    }
     if (busyTimerRef.current) clearTimeout(busyTimerRef.current);
     busyTimerRef.current = setTimeout(() => {
-      setIsBusy(false);
+      if (containerRef.current) {
+        containerRef.current.setAttribute("data-busy", "false");
+      }
     }, 280);
   };
 
@@ -136,8 +147,8 @@ export const Seek: React.FC<SeekProps> = ({
       ref={containerRef}
       className={`sek ${className}`}
       data-open={isOpen ? "true" : "false"}
-      data-press={isPress ? "true" : "false"}
-      data-busy={isBusy ? "true" : "false"}
+      data-press="false"
+      data-busy="false"
       style={
         {
           "--frame": `${isOpen ? openWidth : shutSize}px`,
@@ -155,8 +166,9 @@ export const Seek: React.FC<SeekProps> = ({
             inputRef.current?.focus();
           }
         }}
-        onMouseDown={() => setIsPress(true)}
-        onMouseUp={() => setIsPress(false)}
+        onMouseDown={() => containerRef.current?.setAttribute("data-press", "true")}
+        onMouseUp={() => containerRef.current?.setAttribute("data-press", "false")}
+        onMouseLeave={() => containerRef.current?.setAttribute("data-press", "false")}
         style={
           {
             "--w": `${currentWidth}px`,
@@ -245,6 +257,8 @@ export const Seek: React.FC<SeekProps> = ({
       </div>
     </div>
   );
-};
+});
+
+Seek.displayName = "Seek";
 
 export default Seek;

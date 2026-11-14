@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { X, ChevronUp, ChevronDown, Trash2 } from 'lucide-react';
-import { clamp, Sp, wake } from '../motion/adherentsMotion';
+import { Sp, subscribeFrame, subscribeCleanup, wake } from '../motion/adherentsMotion';
+import { computePanelMetrics } from '../motion/adherentsMath';
 import { LiveSegmentedControl } from '../../../ui/live/LiveSegmentedControl';
 
 export interface SlideInTab {
@@ -54,89 +55,97 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
   children,
   className = '',
 }) => {
-  // Panel Spring (pp: 0..100)
+  // Panel Spring (pp: 0..100) — zero React re-renders per frame
   const ppRef = useRef<Sp | null>(null);
-  const ixRef = useRef<Sp | null>(null); // Tab indicator left spring
-  const iwRef = useRef<Sp | null>(null); // Tab indicator width spring
+  const [rendered, setRendered] = useState<boolean>(isOpen);
 
-  const [ppVal, setPpVal] = useState<number>(0);
-  const [indLeft, setIndLeft] = useState<number>(0);
-  const [indWidth, setIndWidth] = useState<number>(0);
-
+  const scrimRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
-  const tabsContainerRef = useRef<HTMLDivElement>(null);
   const storedOriginRef = useRef<HTMLElement | null>(null);
+  const lastDrawKeyRef = useRef<string>('');
+  const willChangeRef = useRef<boolean>(false);
 
-  // Initialize springs
-  if (!ppRef.current) {
-    ppRef.current = new Sp(0, 24);
-    ixRef.current = new Sp(0, 26);
-    iwRef.current = new Sp(0, 26);
+  if (isOpen && !rendered) {
+    setRendered(true);
   }
 
-  // Subscribe to springs
-  useEffect(() => {
-    const pp = ppRef.current!;
-    const ix = ixRef.current!;
-    const iw = iwRef.current!;
+  // Initialize spring
+  if (!ppRef.current) {
+    ppRef.current = new Sp(0, 24);
+  }
 
-    const unsubPp = pp.subscribe((v) => setPpVal(v));
-    const unsubIx = ix.subscribe((v) => setIndLeft(v));
-    const unsubIw = iw.subscribe((v) => setIndWidth(v));
+  const drawPanel = useCallback(() => {
+    const pp = ppRef.current;
+    if (!pp) return;
+    const pm = computePanelMetrics(pp.x, pp.t);
+    const txQ = Math.round(pm.translateX * 2) / 2;
+    const opQ = Math.round(pm.scrimOpacity * 100) / 100;
+    const vis = pm.visible ? 'visible' : 'hidden';
+    const ptr = pp.t > 0 ? 'auto' : 'none';
+    const key = `${vis}|${txQ}|${opQ}|${ptr}`;
 
-    return () => {
-      unsubPp();
-      unsubIx();
-      unsubIw();
-    };
+    const isMoving = !pp.rest();
+    if (isMoving !== willChangeRef.current) {
+      willChangeRef.current = isMoving;
+      if (panelRef.current) panelRef.current.style.willChange = isMoving ? 'transform' : '';
+      if (scrimRef.current) scrimRef.current.style.willChange = isMoving ? 'opacity' : '';
+    }
+
+    if (key !== lastDrawKeyRef.current) {
+      lastDrawKeyRef.current = key;
+      if (panelRef.current) {
+        panelRef.current.style.visibility = vis;
+        panelRef.current.style.transform = `translate3d(${txQ}px, 0, 0)`;
+      }
+      if (scrimRef.current) {
+        scrimRef.current.style.visibility = vis;
+        scrimRef.current.style.opacity = String(opQ);
+        scrimRef.current.style.pointerEvents = ptr;
+      }
+    }
   }, []);
 
+  useLayoutEffect(() => {
+    if (!rendered) return;
+    const unsubDraw = subscribeFrame(drawPanel);
+    const unsubClean = subscribeCleanup(() => {
+      const pp = ppRef.current;
+      if (pp && pp.t === 0 && pp.x < 1 && pp.rest()) {
+        setRendered(false);
+      }
+    });
+    drawPanel();
+    return () => {
+      unsubDraw();
+      unsubClean();
+    };
+  }, [rendered, drawPanel]);
+
   // Sync open state
-  useEffect(() => {
-    const pp = ppRef.current!;
+  useLayoutEffect(() => {
+    const pp = ppRef.current;
+    if (!pp) return;
     if (isOpen) {
       if (originElement) {
         storedOriginRef.current = originElement;
       }
       pp.setTarget(100);
-      // Accessibility: focus close button on open
-      setTimeout(() => {
-        closeBtnRef.current?.focus();
+      drawPanel();
+      wake();
+      const focusTimer = setTimeout(() => {
+        closeBtnRef.current?.focus({ preventScroll: true });
       }, 40);
+      return () => clearTimeout(focusTimer);
     } else {
       pp.setTarget(0);
+      drawPanel();
+      wake();
       if (storedOriginRef.current && storedOriginRef.current.isConnected) {
-        storedOriginRef.current.focus();
+        storedOriginRef.current.focus({ preventScroll: true });
       }
     }
-  }, [isOpen, originElement]);
-
-  // Sync tab indicator springs
-  useEffect(() => {
-    if (!tabsContainerRef.current || !activeTab) return;
-    const activeBtn = tabsContainerRef.current.querySelector(
-      `[data-tab-id="${activeTab}"]`
-    ) as HTMLElement | null;
-
-    if (activeBtn) {
-      const targetLeft = activeBtn.offsetLeft;
-      const targetWidth = activeBtn.offsetWidth;
-
-      const ix = ixRef.current!;
-      const iw = iwRef.current!;
-      ix.t = targetLeft;
-      iw.t = targetWidth;
-
-      // Snap indicator on first open
-      if (ppRef.current && ppRef.current.x < 1) {
-        ix.snap();
-        iw.snap();
-      } else {
-        wake();
-      }
-    }
-  }, [activeTab, isOpen]);
+  }, [isOpen, originElement, drawPanel]);
 
   // Focus trap and keyboard navigation
   useEffect(() => {
@@ -200,33 +209,22 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
   useEffect(() => {
     return () => {
       ppRef.current?.destroy();
-      ixRef.current?.destroy();
-      iwRef.current?.destroy();
       ppRef.current = null;
-      ixRef.current = null;
-      iwRef.current = null;
     };
   }, []);
 
-  // Panel slide interpolation:
-  // translateX = (1 - pq) * 620px
-  // pq clamped to 1.08 allows small overshoot bounce
-  const pq = clamp(ppVal / 100, 0, 1.08);
-  const isVisible = ppVal >= 1 || isOpen;
-  const panelTransform = `translateX(${(1 - pq) * 620}px)`;
-  const scrimOpacity = clamp(pq, 0, 1);
-
-  if (!isVisible && !isOpen) return null;
+  if (!rendered && !isOpen) return null;
 
   return (
     <>
       {/* 1. Backdrop Scrim */}
       <div
-        className="scrim fixed inset-0 z-[60] bg-[#1F1D1B]/38 backdrop-blur-[6px] transition-opacity duration-150"
+        ref={scrimRef}
+        className="scrim fixed inset-0 z-[60] bg-[#1F1D1B]/38"
         style={{
-          opacity: scrimOpacity,
-          visibility: isVisible ? 'visible' : 'hidden',
-          pointerEvents: isVisible && ppVal > 10 ? 'auto' : 'none',
+          opacity: 0,
+          visibility: 'hidden',
+          pointerEvents: 'none',
         }}
         onClick={onClose}
         aria-hidden="true"
@@ -239,10 +237,11 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
         aria-modal="true"
         aria-hidden={!isOpen}
         aria-labelledby="pnl-title"
-        className={`pnl fixed right-3.5 top-3.5 bottom-3.5 w-[560px] max-w-[calc(100vw-28px)] z-[61] rounded-[30px] bg-white dark:bg-[#1C1B1A] flex flex-col shadow-[-20px_0_60px_rgba(27,25,23,0.22)] border border-[#E6DED6] dark:border-[#3A3734] overflow-hidden ${className}`}
+        className={`pnl fixed right-3.5 top-3.5 bottom-3.5 w-[560px] max-w-[calc(100vw-28px)] z-[61] rounded-[30px] bg-white dark:bg-[#1C1B1A] flex flex-col shadow-[-14px_0_40px_rgba(27,25,23,0.22)] border border-[#E6DED6] dark:border-[#3A3734] overflow-hidden ${className}`}
         style={{
-          visibility: isVisible ? 'visible' : 'hidden',
-          transform: panelTransform,
+          visibility: 'hidden',
+          transform: 'translate3d(620px, 0, 0)',
+          contain: 'layout paint',
         }}
       >
         {/* Header (.ph) */}

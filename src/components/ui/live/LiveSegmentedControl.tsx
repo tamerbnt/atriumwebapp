@@ -178,8 +178,13 @@ export const LiveSegmentedControl = React.memo(forwardRef<HTMLDivElement, LiveSe
       const ctrl = controllerRef.current;
       if (!ctrl) return;
       ctrl.opts = itemRefs.current.slice(0, options.length).filter(Boolean) as HTMLButtonElement[];
-      ctrl.measure();
-      ctrl.setIndex(indexRef.current, false);
+      const changed = ctrl.measure();
+      if (!changed) return;
+      if (ctrl.settled()) {
+        ctrl.setIndex(indexRef.current, false);
+      } else {
+        ctrl.aim();
+      }
     }, [optionsLayoutKey, options.length]);
 
     // Animate blob when index changes

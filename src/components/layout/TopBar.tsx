@@ -945,6 +945,24 @@ export const TopBar: React.FC<TopBarProps> = ({
         )}
 
 
+        {/* Dev-Only Phase 1 Dashboard Component Catalog Trigger */}
+        {import.meta.env.DEV && (
+          <LiveButton
+            tone={activeScreen === 'chart_catalog' ? 'accent' : 'soft'}
+            onClick={() =>
+              setScreen(
+                activeScreen === 'chart_catalog' ? 'dashboard' : 'chart_catalog'
+              )
+            }
+            className="!rounded-full !px-2.5 !h-[32px] border border-[#E6DED6] dark:border-neutral-700/70 text-[11px] font-semibold cursor-pointer hidden sm:inline-flex items-center gap-1.5"
+            title="Phase 1 Dashboard Component Catalog (Dev only)"
+            aria-label="Toggle dashboard component catalog"
+          >
+            <BarChart2 size={13} />
+            <span>Catalog 19</span>
+          </LiveButton>
+        )}
+
         {/* Focus Mode / Collapse Header Button */}
         <LiveIconButton
           icon={<ChevronUp size={16} />}

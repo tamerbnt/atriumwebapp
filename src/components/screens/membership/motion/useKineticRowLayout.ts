@@ -95,6 +95,23 @@ function isRowAtRest(r: ManagedRow): boolean {
   );
 }
 
+const qThousandth = (v: number): number => Math.round(v * 1000) / 1000;
+
+function needsStyleApply(r: ManagedRow, viewMode: 'list' | 'grid'): boolean {
+  const prev = r.lastApplied;
+  if (!prev) return true;
+  if (prev.mode !== viewMode) return true;
+  if (!isRowAtRest(r) || prev.moving) return true;
+  return (
+    prev.x !== qHalf(r.sx.x) ||
+    prev.y !== qHalf(r.sy.x) ||
+    prev.w !== qHalf(Math.max(0, r.sw.x)) ||
+    prev.h !== qHalf(Math.max(0, r.sh.x)) ||
+    prev.p !== qTenth(r.p.x) ||
+    prev.e !== qTenth(r.e.x)
+  );
+}
+
 function applyRowStyles(r: ManagedRow, viewMode: 'list' | 'grid'): void {
   const { rowEl, slabEl, innEl, detEl, dcEl, rbEl } = r.refs;
   if (!rowEl) return;
@@ -157,13 +174,11 @@ function applyRowStyles(r: ManagedRow, viewMode: 'list' | 'grid'): void {
     if (rp === 100) {
       if (!r.slabFull) {
         r.slabFull = true;
-        slabEl.style.top = '0px';
-        slabEl.style.height = '100%';
+        slabEl.style.transform = '';
       }
-    } else if (!prev || prev.p !== rp || prev.h !== rh || r.slabFull) {
+    } else if (!prev || prev.p !== rp || r.slabFull) {
       r.slabFull = false;
-      slabEl.style.top = `${qHalf(geom.slabTop)}px`;
-      slabEl.style.height = `${qHalf(geom.slabHeight)}px`;
+      slabEl.style.transform = `translate3d(0, 0, 0) scaleY(${qThousandth(geom.qv)})`;
     }
   }
 
@@ -182,8 +197,7 @@ function applyRowStyles(r: ManagedRow, viewMode: 'list' | 'grid'): void {
       if (d.display !== 'none') d.display = 'none';
     } else {
       if (d.display !== 'block') d.display = 'block';
-      d.left = `${qHalf(geom.islandLeft)}px`;
-      d.top = `${qHalf(geom.islandTop)}px`;
+      d.transform = `translate3d(${qHalf(geom.islandLeft)}px, ${qHalf(geom.islandTop)}px, 0)`;
       d.width = `${qHalf(geom.islandWidth)}px`;
       d.height = `${qHalf(geom.islandHeight)}px`;
       d.borderRadius = `${qTenth(geom.islandRadius)}px`;
@@ -317,6 +331,9 @@ export function useKineticRowLayout({
   const prevMatchingIdsRef = useRef<Set<string>>(new Set());
   const exitingCountRef = useRef<number>(0);
   const needsCleanupScanRef = useRef<boolean>(false);
+  const lastScrollWindowKeyRef = useRef<string>('');
+  const mountedWindowRef = useRef<{ minY: number; maxY: number; metaKey: string } | null>(null);
+  const drawRemoveScratchRef = useRef<ManagedRow[]>([]);
 
   const getWindowBounds = useCallback(
     (hysteresis = 0): { minY: number; maxY: number; hasScroller: boolean } => {
@@ -340,7 +357,8 @@ export function useKineticRowLayout({
     const moving = movingRowsRef.current;
     if (moving.size === 0) return;
     const mode = viewModeRef.current;
-    const toRemove: ManagedRow[] = [];
+    const toRemove = drawRemoveScratchRef.current;
+    toRemove.length = 0;
 
     moving.forEach((r) => {
       applyRowStyles(r, mode);
@@ -352,6 +370,7 @@ export function useKineticRowLayout({
     for (let i = 0; i < toRemove.length; i++) {
       moving.delete(toRemove[i]);
     }
+    toRemove.length = 0;
   }, []);
 
   const commitRenderedRows = useCallback((nextOrderedIds: string[]) => {
@@ -478,7 +497,7 @@ export function useKineticRowLayout({
     }
   }, []);
 
-  // Fast O(log N + visible) scroll window synchronization
+  // Fast O(log N + visible) scroll window synchronization with window-range memoization
   const syncWindowOnScroll = useCallback(() => {
     const map = managedMapRef.current;
     const membersList = matchingRef.current;
@@ -490,16 +509,48 @@ export function useKineticRowLayout({
     const { minY, maxY, hasScroller } = getWindowBounds(0);
     if (!hasScroller) return;
 
-    const keepBounds = getWindowBounds(WINDOW_HYSTERESIS_PX);
+    const metaKey = `${membersList.length}:${mode}:${openId ?? ''}:${focusedId ?? ''}:${expanded.size}`;
+    const visMinY = scrollTopRef.current;
+    const visMaxY = visMinY + viewportHRef.current;
+    const prevWin = mountedWindowRef.current;
+    if (
+      prevWin &&
+      prevWin.metaKey === metaKey &&
+      visMinY - 140 >= prevWin.minY &&
+      visMaxY + 140 <= prevWin.maxY &&
+      movingRowsRef.current.size === 0 &&
+      exitingCountRef.current === 0
+    ) {
+      return;
+    }
+
     const [startIdx, endIdx] = findWindowRange(membersList, targets, mode, minY, maxY);
+    const windowKey = `${startIdx}:${endIdx}:${metaKey}`;
+    if (
+      windowKey === lastScrollWindowKeyRef.current &&
+      movingRowsRef.current.size === 0 &&
+      exitingCountRef.current === 0
+    ) {
+      mountedWindowRef.current = { minY, maxY, metaKey };
+      return;
+    }
+    lastScrollWindowKeyRef.current = windowKey;
+    mountedWindowRef.current = { minY, maxY, metaKey };
+
+    const keepBounds = getWindowBounds(WINDOW_HYSTERESIS_PX);
+    const [keepStartIdx, keepEndIdx] = findWindowRange(membersList, targets, mode, keepBounds.minY, keepBounds.maxY);
 
     const wantedSet = new Set<string>();
     const nextOrderedIds: string[] = [];
 
-    for (let i = startIdx; i < endIdx; i++) {
+    const loopStart = Math.min(keepStartIdx, startIdx);
+    const loopEnd = Math.max(keepEndIdx, endIdx);
+    for (let i = loopStart; i < loopEnd; i++) {
       const id = membersList[i].id;
-      wantedSet.add(id);
-      nextOrderedIds.push(id);
+      if ((i >= startIdx && i < endIdx) || map.has(id)) {
+        wantedSet.add(id);
+        nextOrderedIds.push(id);
+      }
     }
 
     const specialIds = [openId, focusedId];
@@ -555,7 +606,9 @@ export function useKineticRowLayout({
           lastApplied: null,
         };
         map.set(id, r);
-        movingRowsRef.current.add(r);
+        if (!isRowAtRest(r)) {
+          movingRowsRef.current.add(r);
+        }
         changed = true;
       } else {
         existing.member = m;
@@ -589,7 +642,12 @@ export function useKineticRowLayout({
       const r = map.get(id);
       if (r) {
         movingRowsRef.current.delete(r);
-        [r.p, r.e, r.sx, r.sy, r.sw, r.sh].forEach((s) => s.destroy());
+        r.p.destroy();
+        r.e.destroy();
+        r.sx.destroy();
+        r.sy.destroy();
+        r.sw.destroy();
+        r.sh.destroy();
         map.delete(id);
         changed = true;
       }
@@ -609,6 +667,8 @@ export function useKineticRowLayout({
       const mode = viewModeRef.current;
       const openId = openMemberIdRef.current;
       const focusedId = focusedIdRef.current;
+      lastScrollWindowKeyRef.current = '';
+      mountedWindowRef.current = null;
 
       if (rowsElRef.current && rowsElRef.current.clientWidth > 0) {
         containerWidthRef.current = rowsElRef.current.clientWidth;
@@ -738,7 +798,7 @@ export function useKineticRowLayout({
             r.sw.snap();
           }
 
-          if (!isRowAtRest(r) || !r.lastApplied || r.lastApplied.mode !== mode) {
+          if (needsStyleApply(r, mode)) {
             movingRowsRef.current.add(r);
           }
 
@@ -870,8 +930,8 @@ export function useKineticRowLayout({
     let prevW = containerWidthRef.current;
     const ro = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const w = Math.round(entry.contentRect.width);
-        if (w > 0 && Math.abs(w - prevW) > 1) {
+        const w = Math.round(el.clientWidth || entry.contentRect.width);
+        if (w > 0 && w !== prevW) {
           prevW = w;
           containerWidthRef.current = w;
           place(true);

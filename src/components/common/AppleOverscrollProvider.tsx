@@ -35,6 +35,11 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) return;
 
+    const styleCache = new WeakMap<
+      HTMLElement,
+      { overflowY: string; overflowX: string; obY: string; obX: string; ts: number }
+    >();
+
     // Helper: Find the scrollable container that should either scroll natively or rubber-band
     // deltaSign: < 0 means scrolling toward start (top/left), > 0 means scrolling toward end (bottom/right)
     const resolveScrollContainer = (
@@ -44,6 +49,7 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
     ): { container: HTMLElement; canScrollNatively: boolean; edgeSign: 1 | -1 } | null => {
       let current = el;
       let fallbackEdge: { container: HTMLElement; edgeSign: 1 | -1 } | null = null;
+      const now = performance.now();
 
       while (current && current !== document.body && current !== document.documentElement) {
         if (current.hasAttribute('data-no-rubber-band')) {
@@ -56,8 +62,19 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
           : current.scrollWidth - current.clientWidth;
 
         if (sizeDiff > 2) {
-          const style = window.getComputedStyle(current);
-          const overflowProp = isY ? style.overflowY : style.overflowX;
+          let cached = styleCache.get(current);
+          if (!cached || now - cached.ts > 400) {
+            const style = window.getComputedStyle(current);
+            cached = {
+              overflowY: style.overflowY,
+              overflowX: style.overflowX,
+              obY: style.overscrollBehaviorY,
+              obX: style.overscrollBehaviorX,
+              ts: now,
+            };
+            styleCache.set(current, cached);
+          }
+          const overflowProp = isY ? cached.overflowY : cached.overflowX;
 
           if (overflowProp === 'auto' || overflowProp === 'scroll') {
             const pos = isY ? current.scrollTop : current.scrollLeft;
@@ -75,7 +92,7 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
               fallbackEdge = { container: current, edgeSign };
             }
 
-            const overscrollBehavior = isY ? style.overscrollBehaviorY : style.overscrollBehaviorX;
+            const overscrollBehavior = isY ? cached.obY : cached.obX;
             if (overscrollBehavior === 'contain' || overscrollBehavior === 'none') {
               return { container: current, canScrollNatively: false, edgeSign };
             }

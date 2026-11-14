@@ -1,7 +1,15 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { X, AlertCircle } from 'lucide-react';
-import { useAtriumStore } from '../../services/store';
+import {
+  useAtriumSelector,
+  selectCurrentPlansFromState,
+  selectCurrentBranchFromState,
+  selectTerminologyFromState,
+  addMemberAction,
+  updateMemberAction,
+  showToast as showToastAction,
+} from '../../services/store';
 import { Member, Gender } from '../../types/index';
 import {
   Sp,
@@ -44,15 +52,13 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
   useKineticSpring = false,
   originElement,
 }) => {
-  const {
-    plans,
-    currentBranch,
-    terminology,
-    addMember,
-    updateMember,
-    language,
-    showToast,
-  } = useAtriumStore();
+  const plans = useAtriumSelector(selectCurrentPlansFromState);
+  const currentBranch = useAtriumSelector(selectCurrentBranchFromState);
+  const terminology = useAtriumSelector(selectTerminologyFromState);
+  const addMember = addMemberAction;
+  const updateMember = updateMemberAction;
+  const language = useAtriumSelector((s) => s.language);
+  const showToast = showToastAction;
 
   const getDefaultCardId = () => `RFID-${Math.floor(100000 + Math.random() * 900000)}`;
   const getTodayIso = () => new Date().toISOString().split('T')[0];
@@ -546,7 +552,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
       lastModalDrawKeyRef.current = drawKey;
 
       root.style.opacity = String(opQ);
-      dialog.style.transform = `scale(${scQ})`;
+      dialog.style.transform = `scale3d(${scQ}, ${scQ}, 1)`;
     };
 
     const cleanModal = () => {
@@ -561,7 +567,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
         s.snap();
         lastModalDrawKeyRef.current = '1|1';
         root.style.opacity = '1';
-        dialog.style.transform = 'scale(1)';
+        dialog.style.transform = 'scale3d(1, 1, 1)';
         root.style.willChange = '';
         dialog.style.willChange = '';
         root.setAttribute('data-settled', 'true');
@@ -917,11 +923,14 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
 
   const planOptions = useMemo(
     () =>
-      plans.map((p) => ({
-        value: p.id,
-        label: p.name,
-        sublabel: `${p.durationDays} j · ${p.price.toLocaleString()} DZD`,
-      })),
+      plans.map((p) => {
+        const priceVal = typeof p.price === 'number' ? p.price : p.price?.amount ?? 0;
+        return {
+          value: p.id,
+          label: p.name,
+          sublabel: `${p.durationDays} j · ${priceVal.toLocaleString()} DZD`,
+        };
+      }),
     [plans]
   );
 

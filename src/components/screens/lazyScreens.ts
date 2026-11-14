@@ -17,6 +17,7 @@ function lazyNamed<P = any>(
 }
 
 export const SettingsScreen = lazyNamed<any>(() => import('./SettingsScreen'), 'SettingsScreen');
+export const DashboardCatalogScreen = lazyNamed<any>(() => import('../dev/DashboardCatalogScreen'), 'DashboardCatalogScreen');
 export const FreelanceDashboardView = lazyNamed<any>(() => import('./freelance/FreelanceDashboardView'), 'FreelanceDashboardView');
 export const FreelanceClientsView = lazyNamed<any>(() => import('./freelance/FreelanceClientsView'), 'FreelanceClientsView');
 export const FreelanceDeliverablesView = lazyNamed<any>(() => import('./freelance/FreelanceDeliverablesView'), 'FreelanceDeliverablesView');

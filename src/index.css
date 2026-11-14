@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./atrium/styles/tokens.css";
+@import "./atrium/charts/charts.css";
 
 @theme {
   --color-pod: #F3EDE7;
@@ -90,14 +91,17 @@
 }
 .slab {
   position: absolute;
+  top: 0;
   left: 0;
   right: 0;
+  height: 100%;
   border-radius: 16px;
   border-width: 1px;
   border-style: solid;
   box-sizing: border-box;
   z-index: 0;
   contain: layout style paint;
+  transform-origin: center center;
   transition: box-shadow 160ms, border-color 160ms;
 }
 .row:hover .slab {
@@ -116,7 +120,7 @@
   grid-template-columns: 22px minmax(200px, 1fr) 190px 120px 155px 105px;
   gap: 16px;
   align-items: center;
-  padding: 0 176px 0 14px;
+  padding: 0 177px 0 15px;
   box-sizing: border-box;
   contain: layout style;
 }
@@ -141,7 +145,7 @@
 .rows[data-v="g"] .c-sd { grid-area: sd; text-align: right; align-self: end; }
 
 [dir="rtl"] .in {
-  padding: 0 14px 0 176px;
+  padding: 0 15px 0 177px;
 }
 [dir="rtl"] .th-adherents {
   padding: 0 14px 0 176px;
@@ -807,6 +811,7 @@ div[tabindex],
   scroll-behavior: auto;
   overflow-anchor: none;
   overscroll-behavior: auto;
+  contain: layout style;
 }
 
 .members-x-wrap {
@@ -1586,6 +1591,7 @@ div[tabindex],
   width: var(--frame, 260px);
   height: var(--frameh, 40px);
   font-family: var(--font-ui);
+  contain: layout style;
 }
 
 .sek-skin {

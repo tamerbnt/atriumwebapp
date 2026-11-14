@@ -84,16 +84,13 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
 
   useEffect(() => {
     if (isExpanded) {
-      if (detailMounted) return;
-      const timer = setTimeout(() => {
-        setDetailMounted(true);
-      }, 280);
-      return () => clearTimeout(timer);
+      if (!detailMounted) setDetailMounted(true);
+      return;
     }
     if (!detailMounted) return;
     const timer = setTimeout(() => {
       setDetailMounted(false);
-    }, 450);
+    }, 420);
     return () => clearTimeout(timer);
   }, [isExpanded, detailMounted]);
 

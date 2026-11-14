@@ -62,7 +62,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
   showToast,
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'access' | 'billing'>(initialTab);
-  const [notesText, setNotesText] = useState('');
+  const [notesText, setNotesText] = useState(() => member?.notes || '');
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   // Retain the last displayed member during close bounce so content stays visible until settled
@@ -75,6 +75,8 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
   // DOM refs for direct rAF style writes (zero per-frame React state updates)
   const scrimRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLElement | null>(null);
+  const ptabsRef = useRef<HTMLDivElement | null>(null);
+  const ptabsWidthRef = useRef<number>(500);
   const pindRef = useRef<HTMLElement | null>(null);
   const tabBtnRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const closeBtnRef = useRef<HTMLButtonElement | null>(null);
@@ -103,15 +105,27 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
 
   const wasOpenRef = useRef(false);
   const prevMemberIdRef = useRef<string | null>(null);
+  const prevSyncedNotesKeyRef = useRef<string>('');
   const prevTabRef = useRef(activeTab);
   const entranceEpochRef = useRef(0);
 
-  // Compute entrance epoch synchronously during render (eliminates second mount pass on open/tab/step)
+  // Compute entrance epoch & sync notes/initialTab synchronously during render (eliminates double mount passes)
   {
     const curId = activeMember?.id ?? null;
     const justOpened = isOpen && !wasOpenRef.current;
     const switchedMember = isOpen && curId !== prevMemberIdRef.current;
     const switchedTab = isOpen && activeTab !== prevTabRef.current;
+    if (justOpened && initialTab && initialTab !== activeTab) {
+      setActiveTab(initialTab);
+    }
+    const notesSyncKey = `${curId ?? ''}|${activeMember?.notes ?? ''}`;
+    if (activeMember && notesSyncKey !== prevSyncedNotesKeyRef.current) {
+      prevSyncedNotesKeyRef.current = notesSyncKey;
+      const nextNotes = activeMember.notes || '';
+      if (notesText !== nextNotes) {
+        setNotesText(nextNotes);
+      }
+    }
     if (justOpened || switchedMember || switchedTab) {
       entranceEpochRef.current += 1;
     }
@@ -133,13 +147,6 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
       : 30;
   const remainingSessions = activeMember?.remainingSessions ?? 24;
   const sessionPct = clamp((remainingSessions / Math.max(1, totalPlanSessions)) * 100, 0, 100);
-
-  // Sync notes text when member changes
-  useEffect(() => {
-    if (activeMember) {
-      setNotesText(activeMember.notes || '');
-    }
-  }, [activeMember?.id, activeMember?.notes]);
 
   const lastPanelKeyRef = useRef<string>('');
   const lastIndKeyRef = useRef<string>('');
@@ -183,22 +190,24 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
       }
     }
 
-    // 2. Tab indicator (only when ix/iw move)
+    // 2. Tab indicator (compositor clip-path, zero per-frame width reflow)
     const ixQ = Math.round(ix.x * 2) / 2;
     const iwQ = Math.round(Math.max(0, iw.x) * 2) / 2;
-    const indKey = `${ixQ}|${iwQ}`;
+    const tabsW = ptabsWidthRef.current || 500;
+    const leftClip = Math.max(0, ixQ);
+    const rightClip = Math.max(0, tabsW - (ixQ + iwQ));
+    const indKey = `${leftClip}|${rightClip}`;
     const isIndMoving = !ix.rest() || !iw.rest();
     if (isIndMoving !== indWillChangeRef.current) {
       indWillChangeRef.current = isIndMoving;
       if (pindRef.current) {
-        pindRef.current.style.willChange = isIndMoving ? 'transform' : '';
+        pindRef.current.style.willChange = isIndMoving ? 'clip-path' : '';
       }
     }
     if (indKey !== lastIndKeyRef.current) {
       lastIndKeyRef.current = indKey;
       if (pindRef.current) {
-        pindRef.current.style.transform = `translate3d(${ixQ}px, 0, 0)`;
-        pindRef.current.style.width = `${iwQ}px`;
+        pindRef.current.style.clipPath = `inset(0 ${rightClip}px 0 ${leftClip}px round 10px)`;
       }
     }
 
@@ -248,16 +257,18 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
 
     if (isOpen && activeMember) {
       openerRef.current = openerElement || (document.activeElement as HTMLElement | null);
-      if (initialTab && initialTab !== activeTab) {
-        setActiveTab(initialTab);
-      }
 
       if (panelRef.current) {
         panelRef.current.setAttribute('aria-hidden', 'false');
       }
 
+      if (ptabsRef.current && ptabsRef.current.clientWidth > 0) {
+        ptabsWidthRef.current = ptabsRef.current.clientWidth;
+      }
+
       // Snap tab indicator when opening from closed state
-      const activeBtn = tabBtnRefs.current[activeTab];
+      const resolvedTab = initialTab || activeTab;
+      const activeBtn = tabBtnRefs.current[resolvedTab];
       if (activeBtn) {
         ix.t = activeBtn.offsetLeft;
         iw.t = activeBtn.offsetWidth;
@@ -297,6 +308,9 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
     const iw = iwRef.current;
     if (!pp || !ix || !iw) return;
 
+    if (ptabsRef.current && ptabsRef.current.clientWidth > 0) {
+      ptabsWidthRef.current = ptabsRef.current.clientWidth;
+    }
     const btn = tabBtnRefs.current[activeTab];
     if (btn) {
       ix.setTarget(btn.offsetLeft);
@@ -310,24 +324,18 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
     }
   }, [activeTab, isOpen, drawPanel]);
 
-  // Progress bar .bar2 next-rAF GPU scaleX fill on open / tab change / prev-next
-  useEffect(() => {
+  // Progress bar .bar2 pre-paint reset + single-rAF GPU scaleX fill
+  useLayoutEffect(() => {
     if (!isOpen || activeTab !== 'overview') return;
     const fillEl = barFillRef.current;
     if (!fillEl) return;
     fillEl.style.transform = 'scaleX(0)';
-    let innerRaf = 0;
-    const outerRaf = requestAnimationFrame(() => {
-      innerRaf = requestAnimationFrame(() => {
-        if (barFillRef.current) {
-          barFillRef.current.style.transform = `scaleX(${sessionPct / 100})`;
-        }
-      });
+    const raf = requestAnimationFrame(() => {
+      if (barFillRef.current) {
+        barFillRef.current.style.transform = `scaleX(${sessionPct / 100})`;
+      }
     });
-    return () => {
-      cancelAnimationFrame(outerRaf);
-      cancelAnimationFrame(innerRaf);
-    };
+    return () => cancelAnimationFrame(raf);
   }, [entranceEpoch, isOpen, activeTab]);
 
   // Update progress bar scale dynamically when sessions change in-place without replaying sections
@@ -338,11 +346,16 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
     }
   }, [sessionPct, isOpen, activeTab]);
 
-  // Prev / Next step through filtered+sorted list
-  const currentIndex = useMemo(
-    () => (activeMember ? allMembers.findIndex((m) => m.id === activeMember.id) : -1),
-    [allMembers, activeMember?.id]
-  );
+  // O(1) Prev / Next index lookup across 1,000+ filtered+sorted rows
+  const memberIndexMap = useMemo(() => {
+    const map = new Map<string, number>();
+    for (let i = 0; i < allMembers.length; i++) {
+      map.set(allMembers[i].id, i);
+    }
+    return map;
+  }, [allMembers]);
+
+  const currentIndex = activeMember ? memberIndexMap.get(activeMember.id) ?? -1 : -1;
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex >= 0 && currentIndex < allMembers.length - 1;
 
@@ -590,8 +603,9 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
               </div>
             </div>
 
-            {/* TABS WITH DUAL-SPRING INDICATOR (.ptabs) */}
+            {/* TABS WITH DUAL-SPRING CLIP-PATH INDICATOR (.ptabs) */}
             <div
+              ref={ptabsRef}
               className="ptabs relative flex mx-[26px] p-1 rounded-[14px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422]"
               role="tablist"
               aria-label="Sections du dossier adhérent"
@@ -599,8 +613,8 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
               <i
                 ref={pindRef}
                 aria-hidden="true"
-                className="absolute top-1 bottom-1 left-0 rounded-[10px] bg-[var(--atr-acc,#d4522f)] z-0 pointer-events-none"
-                style={{ width: '0px', transform: 'translate3d(4px, 0, 0)' }}
+                className="absolute top-1 bottom-1 left-0 right-0 rounded-[10px] bg-[var(--atr-acc,#d4522f)] z-0 pointer-events-none"
+                style={{ clipPath: 'inset(0 100% 0 4px round 10px)' }}
               />
               {TABS.map((tab) => {
                 const isSelected = activeTab === tab.id;

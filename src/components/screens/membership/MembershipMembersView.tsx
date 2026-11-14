@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect, useCallback, useDeferredValue } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback, useDeferredValue } from 'react';
 import { createPortal } from 'react-dom';
 import { compactFilterLabel } from '../../../utils/filterLexicon';
 import {
@@ -32,14 +32,39 @@ import {
   List,
   LayoutGrid,
 } from 'lucide-react';
-import { useAtriumSelector } from '../../../services/store';
+import {
+  useAtriumSelector,
+  selectCurrentMembersFromState,
+  selectCurrentPlansFromState,
+  selectTerminologyFromState,
+  selectSelectedMemberFromState,
+  selectMemberAction,
+  closeDetailAction,
+  updateMemberAction,
+  deleteMemberAction,
+  checkInMemberAction,
+  showToast as showToastAction,
+} from '../../../services/store';
 import { Member, MemberStatus } from '../../../types/index';
 import { calculateDaysRemaining, formatMoney, localizeStatus } from '../../../utils/rules';
 import { AppointmentModal } from '../../modals/AppointmentModal';
 import { MemberRow, MemberRowData } from './components/MemberRow';
 import { FloatingBulkBar } from './components/FloatingBulkBar';
 import { MemberSlideOverInspector } from './MemberSlideOverInspector';
-import { useSpringCountRef } from './motion/adherentsMotion';
+import {
+  Sp,
+  TUNES,
+  subscribeFrame,
+  subscribeCleanup,
+  wake,
+  checkReducedMotion,
+  useSpringCountRef,
+} from './motion/adherentsMotion';
+import {
+  computeMemberModalMetrics,
+  computeModalTransformOrigin,
+  shouldFinishClosing,
+} from '../../modals/memberModalMotion';
 import { useKineticRowLayout } from './motion/useKineticRowLayout';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Button as BrandedAtriumButton, LiquidButton } from '@/atrium';
@@ -208,12 +233,161 @@ const MembersKpiBanner = React.memo(({ membersLabel, membersLower, language, act
 
 MembersKpiBanner.displayName = "MembersKpiBanner";
 
-const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, language, displayCount, totalMembersCount, membersLower, membersUpper, hasActiveAdvancedFilters, onResetFilters, genderFilter, onChangeGender, ageGroupFilter, onChangeAgeGroup, ageGroupCounts, planFilter, onChangePlan, dynamicAvailablePlans, planCounts, statusFilter, onChangeStatus, extendedStatusOptions, genderFilterOptions }: any) => {
-	if (!isOpen) return null;
-	return createPortal(/* @__PURE__ */ <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 bg-black/45 dark:bg-black/70 transform-gpu animate-in fade-in duration-150" onClick={(e) => {
+const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, triggerRef, language, displayCount, totalMembersCount, membersLower, membersUpper, hasActiveAdvancedFilters, onResetFilters, genderFilter, onChangeGender, ageGroupFilter, onChangeAgeGroup, ageGroupCounts, planFilter, onChangePlan, dynamicAvailablePlans, planCounts, statusFilter, onChangeStatus, extendedStatusOptions, genderFilterOptions }: any) => {
+	const hasMountedRef = useRef(isOpen);
+	if (isOpen) hasMountedRef.current = true;
+	const scrimRef = useRef<HTMLDivElement | null>(null);
+	const dialogRef = useRef<HTMLDivElement | null>(null);
+	const springRef = useRef<Sp | null>(null);
+	const stateRef = useRef<'closed' | 'opening' | 'open' | 'closing'>('closed');
+	const lastDrawKeyRef = useRef<string>('');
+	const willChangeRef = useRef<boolean>(false);
+
+	if (!springRef.current) {
+		springRef.current = new Sp(isOpen ? 100 : 0, TUNES.modal);
+	}
+
+	const setDialogRef = useCallback((el: HTMLDivElement | null) => {
+		dialogRef.current = el;
+		if (filterPopoverRef) filterPopoverRef.current = el;
+	}, [filterPopoverRef]);
+
+	const finishClosing = useCallback(() => {
+		const root = scrimRef.current;
+		const dialog = dialogRef.current;
+		const s = springRef.current;
+		if (s) {
+			s.t = 0;
+			s.x = 0;
+			s.v = 0;
+		}
+		if (root) {
+			root.hidden = true;
+			root.style.opacity = '0';
+			root.style.pointerEvents = 'none';
+			root.style.willChange = '';
+		}
+		if (dialog) {
+			dialog.style.transform = checkReducedMotion() ? 'scale3d(1, 1, 1)' : 'scale3d(0.72, 0.72, 1)';
+			dialog.style.willChange = '';
+		}
+		stateRef.current = 'closed';
+	}, []);
+
+	useEffect(() => {
+		const drawFilterModal = () => {
+			const st = stateRef.current;
+			if (st === 'closed' || checkReducedMotion()) return;
+			const root = scrimRef.current;
+			const dialog = dialogRef.current;
+			const s = springRef.current;
+			if (!root || !dialog || !s) return;
+			if (st === 'open' && s.rest()) return;
+
+			const metrics = computeMemberModalMetrics(s.x, false);
+			const opQ = Math.round(metrics.opacity * 100) / 100;
+			const scQ = Math.round(metrics.scale * 1000) / 1000;
+			const key = `${opQ}|${scQ}`;
+			if (key !== lastDrawKeyRef.current) {
+				lastDrawKeyRef.current = key;
+				root.style.opacity = String(opQ);
+				dialog.style.transform = `scale3d(${scQ}, ${scQ}, 1)`;
+			}
+		};
+
+		const cleanFilterModal = () => {
+			const st = stateRef.current;
+			if (st === 'closed' || checkReducedMotion()) return;
+			const root = scrimRef.current;
+			const dialog = dialogRef.current;
+			const s = springRef.current;
+			if (!root || !dialog || !s) return;
+
+			if (st === 'opening' && s.t === 100 && s.rest()) {
+				s.snap();
+				lastDrawKeyRef.current = '1|1';
+				root.style.opacity = '1';
+				dialog.style.transform = 'scale3d(1, 1, 1)';
+				if (willChangeRef.current) {
+					willChangeRef.current = false;
+					root.style.willChange = '';
+					dialog.style.willChange = '';
+				}
+				stateRef.current = 'open';
+			} else if (st === 'closing' && shouldFinishClosing(s.x, s.t)) {
+				lastDrawKeyRef.current = '';
+				willChangeRef.current = false;
+				finishClosing();
+			}
+		};
+
+		const unsubDraw = subscribeFrame(drawFilterModal);
+		const unsubClean = subscribeCleanup(cleanFilterModal);
+		return () => {
+			unsubDraw();
+			unsubClean();
+			springRef.current?.destroy();
+			springRef.current = null;
+		};
+	}, [finishClosing]);
+
+	useLayoutEffect(() => {
+		const root = scrimRef.current;
+		const dialog = dialogRef.current;
+		const s = springRef.current;
+		if (!root || !dialog || !s) return;
+
+		if (isOpen) {
+			const st = stateRef.current;
+			if (st === 'opening' || st === 'open') return;
+			const reduced = checkReducedMotion();
+			stateRef.current = reduced ? 'open' : 'opening';
+			root.hidden = false;
+			root.style.pointerEvents = 'auto';
+			root.style.opacity = reduced ? '1' : '0';
+			dialog.style.transform = reduced ? 'scale3d(1, 1, 1)' : 'scale3d(0.72, 0.72, 1)';
+
+			const dRect = dialog.getBoundingClientRect();
+			const tRect = triggerRef?.current?.isConnected ? triggerRef.current.getBoundingClientRect() : null;
+			dialog.style.transformOrigin = computeModalTransformOrigin(tRect, dRect, window.innerWidth, window.innerHeight);
+
+			if (reduced) {
+				s.t = 100;
+				s.snap();
+				lastDrawKeyRef.current = '1|1';
+			} else {
+				willChangeRef.current = true;
+				root.style.willChange = 'opacity';
+				dialog.style.willChange = 'transform';
+				if (st === 'closed') {
+					s.x = 0;
+					s.v = 0;
+				}
+				s.setTarget(100);
+				wake();
+			}
+		} else if (stateRef.current === 'opening' || stateRef.current === 'open') {
+			const reduced = checkReducedMotion();
+			root.style.pointerEvents = 'none';
+			if (reduced) {
+				finishClosing();
+			} else {
+				stateRef.current = 'closing';
+				willChangeRef.current = true;
+				root.style.willChange = 'opacity';
+				dialog.style.willChange = 'transform';
+				s.setTarget(0);
+				wake();
+			}
+		}
+	}, [isOpen, finishClosing, triggerRef]);
+
+	if (!hasMountedRef.current) return null;
+
+	return createPortal(/* @__PURE__ */ <div ref={scrimRef} hidden={!isOpen && stateRef.current === 'closed'} className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 bg-black/45 dark:bg-black/70 select-none" style={{ opacity: 0, pointerEvents: 'none' }} onClick={(e) => {
 			if (e.target === e.currentTarget) onClose();
-		}} role="dialog" aria-modal="true" aria-label={language === "ar" ? "مرشحات متقدمة" : language === "fr" ? "Filtres avancés" : "Advanced Filters"}>
-<div ref={filterPopoverRef} style={{ contain: 'layout paint' }} className="w-full max-w-lg max-h-[85vh] bg-white dark:bg-[#1C1B1A] rounded-[26px] border border-[#E6DED6] dark:border-[#3A3734] shadow-[0_18px_48px_rgba(0,0,0,0.22)] p-5 sm:p-6 space-y-4 transform-gpu animate-in zoom-in-95 duration-150 text-black dark:text-white overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+		}} role="dialog" aria-modal="true" aria-hidden={!isOpen} aria-label={language === "ar" ? "مرشحات متقدمة" : language === "fr" ? "Filtres avancés" : "Advanced Filters"}>
+<div ref={setDialogRef} style={{ contain: 'layout paint' }} className="w-full max-w-lg max-h-[85vh] bg-white dark:bg-[#1C1B1A] rounded-[26px] border border-[#E6DED6] dark:border-[#3A3734] shadow-[0_18px_48px_rgba(0,0,0,0.22)] p-5 sm:p-6 space-y-4 text-black dark:text-white overflow-hidden flex flex-col select-text" onClick={(e) => e.stopPropagation()}>
 <div className="flex items-center justify-between pb-3.5 border-b border-[#E6DED6] dark:border-[#3A3734] shrink-0">
 <div className="flex items-center gap-2.5">
 <div className="w-9 h-9 rounded-full bg-[#d4522f]/12 dark:bg-[#d4522f]/20 flex items-center justify-center text-[#d4522f] shadow-2xs"><SlidersHorizontal size={16} /></div>
@@ -351,22 +525,135 @@ const MembersFilterModal = React.memo(({ isOpen, onClose, filterPopoverRef, lang
 
 MembersFilterModal.displayName = "MembersFilterModal";
 
+const MembersKineticListStage = React.memo(({
+	scrollContainerRef,
+	sortedMembers,
+	expandedMemberIds,
+	viewMode,
+	filterKey,
+	openMemberId,
+	selectedMemberIds,
+	pinnedMemberIds,
+	memberSortBy,
+	memberSortDir,
+	memberRowDataMap,
+	lastRowDataMapRef,
+	terminology,
+	language,
+	onPruneSelection,
+	onFilterChange,
+	onToggleSelectAll,
+	onToggleSort,
+	onSelectRow,
+	onToggleExpand,
+	onOpenDetails,
+	onEdit,
+	onMessage,
+	onDelete,
+	onRenew,
+	onArchive,
+	onToggleStatus,
+	onTogglePin,
+	onPay,
+}: any) => {
+	const rowsElRef = useRef<HTMLDivElement | null>(null);
+	const { renderedRows, registerRowRefs } = useKineticRowLayout({
+		matchingMembers: sortedMembers,
+		expandedMemberIds,
+		viewMode,
+		filterKey,
+		rowsElRef,
+		scrollContainerRef,
+		openMemberId,
+		onPruneSelection,
+		onFilterChange,
+	});
+
+	const sortColumns = useMemo(() => [
+		{ key: "member", label: terminology.memberSingle },
+		{ key: "plan", label: t("member_col_plan", language) },
+		{ key: "status", label: t("member_col_access", language) },
+		{ key: "expiration", label: t("member_col_expiration", language) },
+		{ key: "balance", label: language === "ar" ? "الرصيد" : language === "fr" ? "Solde" : "Balance" },
+	], [terminology.memberSingle, language]);
+
+	const selectedCount = selectedMemberIds.size;
+	const totalCount = sortedMembers.length;
+
+	return (
+		<div className="w-full">
+			<div className="w-full members-x-wrap">
+				<div className="w-full flex flex-col min-w-[940px] h-[560px] sm:h-[702px]">
+					<div className="th th-adherents shrink-0 bg-white dark:bg-[#1C1B1A] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[var(--atr-ink,#000000)] dark:text-white box-border select-none" data-v={viewMode === "grid" ? "g" : "l"} aria-hidden={viewMode === "grid"}>
+						<button type="button" role="checkbox" tabIndex={viewMode === "grid" ? -1 : 0} aria-checked={selectedCount === 0 ? "false" : selectedCount === totalCount && totalCount > 0 ? "true" : "mixed"} aria-label="Tout sélectionner" onClick={onToggleSelectAll} className={`cb w-[22px] h-[22px] rounded-[7px] border-[1.5px] grid place-items-center p-0 cursor-pointer ${selectedCount === totalCount && totalCount > 0 ? "bg-[var(--atr-acc,#d4522f)] border-[var(--atr-acc,#d4522f)] text-white" : "bg-white dark:bg-[#262422] border-[#D4C8BC] dark:border-[#5A5550] text-transparent hover:border-[var(--atr-acc,#d4522f)]"}`}>
+							<Check className={`w-3.5 h-3.5 stroke-[3] transition-opacity duration-120 ${selectedCount > 0 ? "opacity-100 text-white" : "opacity-0"}`} />
+						</button>
+						{sortColumns.map((col) => {
+							const isOn = memberSortBy === col.key;
+							const dir = memberSortDir;
+							return (
+								<button key={col.key} type="button" data-k={col.key} data-on={isOn ? "true" : void 0} tabIndex={viewMode === "grid" ? -1 : 0} aria-sort={isOn ? dir === "asc" ? "ascending" : "descending" : "none"} onClick={() => onToggleSort(col.key)} className="text-left rtl:text-right font-semibold text-[11.5px] uppercase tracking-[0.05em] rtl:normal-case rtl:tracking-normal text-black/68 dark:text-white/75 flex items-center gap-1.5 cursor-pointer hover:text-[var(--atr-acc,#d4522f)] bg-transparent border-0 p-0 whitespace-nowrap truncate min-w-0">
+									<span className="truncate">{col.label}</span>
+									<i className={`not-italic text-[11px] px-1.5 py-0.5 rounded-[5px] ${isOn ? "bg-[var(--atr-hl,rgba(212,82,47,0.12))] text-[var(--atr-acc,#d4522f)]" : "bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#2B2927] text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/70"}`}>{isOn ? dir === "asc" ? "↑" : "↓" : "↕"}</i>
+								</button>
+							);
+						})}
+					</div>
+					<div ref={scrollContainerRef} className="scr relative mt-2.5 overflow-y-auto overflow-x-hidden pb-[70px] flex-1 min-h-0">
+						<div ref={rowsElRef} role="list" aria-label="Adhérents" data-v={viewMode === "grid" ? "g" : "l"} className="rows relative w-full">
+							{renderedRows.map((rowItem) => {
+								const member = rowItem.member;
+								const memberRowData = memberRowDataMap.get(member.id) ?? lastRowDataMapRef.current.get(member.id);
+								if (!memberRowData) return null;
+								return (
+									<MemberRow
+										key={member.id}
+										member={memberRowData}
+										isSelected={selectedMemberIds.has(member.id)}
+										isOpen={openMemberId === member.id}
+										isExpanded={expandedMemberIds.has(member.id)}
+										isPinned={pinnedMemberIds.has(member.id)}
+										registerRowRefs={registerRowRefs}
+										onSelect={onSelectRow}
+										onToggleExpand={onToggleExpand}
+										onOpenDetails={onOpenDetails}
+										onEdit={onEdit}
+										onMessage={onMessage}
+										onDelete={onDelete}
+										onRenew={onRenew}
+										onArchive={onArchive}
+										onToggleStatus={onToggleStatus}
+										onTogglePin={onTogglePin}
+										onPay={onPay}
+									/>
+								);
+							})}
+						</div>
+						{sortedMembers.length === 0 && <p className="empty text-center text-black/68 dark:text-white/70 py-10">Aucun adhérent ne correspond. Modifiez la recherche ou les filtres.</p>}
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+});
+
+MembersKineticListStage.displayName = "MembersKineticListStage";
+
 export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, onEditMember }) => {
-	const members = useAtriumSelector((s) => s.members);
-	const plans = useAtriumSelector((s) => s.plans);
-	const terminology = useAtriumSelector((s) => s.terminology);
+	const members = useAtriumSelector(selectCurrentMembersFromState);
+	const plans = useAtriumSelector(selectCurrentPlansFromState);
+	const terminology = useAtriumSelector(selectTerminologyFromState);
 	const language = useAtriumSelector((s) => s.language);
-	const selectedMember = useAtriumSelector((s) => s.selectedMember);
+	const selectedMember = useAtriumSelector(selectSelectedMemberFromState);
 	const isDetailOpen = useAtriumSelector((s) => s.isDetailOpen);
-	const selectMember = useAtriumSelector((s) => s.selectMember);
-	const closeDetail = useAtriumSelector((s) => s.closeDetail);
-	const updateMember = useAtriumSelector((s) => s.updateMember);
-	const deleteMember = useAtriumSelector((s) => s.deleteMember);
-	const checkInMember = useAtriumSelector((s) => s.checkInMember);
-	const showToast = useAtriumSelector((s) => s.showToast);
+	const selectMember = selectMemberAction;
+	const closeDetail = closeDetailAction;
+	const updateMember = updateMemberAction;
+	const deleteMember = deleteMemberAction;
+	const checkInMember = checkInMemberAction;
+	const showToast = showToastAction;
 	const isSyncing = useAtriumSelector((s) => s.isSyncing);
-	const networkMode = useAtriumSelector((s) => s.networkMode);
-	const retryCloudSync = useAtriumSelector((s) => s.retryCloudSync);
+	const networkMode = useAtriumSelector((s) => s.networkMode || 'online');
 	const [statusFilter, setStatusFilter] = React.useState("All");
 	const [genderFilter, setGenderFilter] = React.useState("All");
 	const [ageGroupFilter, setAgeGroupFilter] = React.useState("All");
@@ -714,7 +1001,6 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 		"aria-label": "Grid View"
 	}], []);
 	const scrollContainerRef = React.useRef<any>(null);
-	const rowsElRef = React.useRef<any>(null);
 	const filterKey = `${deferredStatusFilter}|${deferredPlanFilter}|${deferredGenderFilter}|${deferredAgeGroupFilter}|${deferredSearchQuery}`;
 	const handlePruneSelection = React.useCallback((hiddenIds: any[]) => {
 		if (hiddenIds.length === 0) return;
@@ -733,17 +1019,6 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 		const scr = scrollContainerRef.current;
 		if (scr && scr.scrollTop > 0) scr.scrollTop = 0;
 	}, []);
-	const { renderedRows, registerRowRefs } = useKineticRowLayout({
-		matchingMembers: sortedMembers,
-		expandedMemberIds,
-		viewMode,
-		filterKey,
-		rowsElRef,
-		scrollContainerRef,
-		openMemberId: isDetailOpen ? selectedMember?.id ?? null : null,
-		onPruneSelection: handlePruneSelection,
-		onFilterChange: handleFilterScrollReset
-	});
 	const lastRowDataMapRef = React.useRef(/* @__PURE__ */ new Map());
 	const memberRowDataMap = React.useMemo(() => {
 		const map = /* @__PURE__ */ new Map();
@@ -754,18 +1029,47 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 		}
 		return map;
 	}, [preparedMembers]);
+	const sortedIndexByIdMap = React.useMemo(() => {
+		const map = /* @__PURE__ */ new Map<string, number>();
+		for (let i = 0; i < sortedMembers.length; i++) {
+			map.set(sortedMembers[i].id, i);
+		}
+		return map;
+	}, [sortedMembers]);
+	const sortedIndexByIdRef = React.useRef(sortedIndexByIdMap);
+	sortedIndexByIdRef.current = sortedIndexByIdMap;
 	const sortedMembersRef = React.useRef(sortedMembers);
 	sortedMembersRef.current = sortedMembers;
 	const membersByIdRef = React.useRef(/* @__PURE__ */ new Map());
 	membersByIdRef.current = React.useMemo(() => {
 		const map = /* @__PURE__ */ new Map();
-		members.forEach((m) => map.set(m.id, m));
+		for (let i = 0; i < members.length; i++) {
+			const m = members[i];
+			map.set(m.id, m);
+		}
 		return map;
 	}, [members]);
+	const handleToggleSelectAll = React.useCallback(() => {
+		const list = sortedMembersRef.current;
+		setSelectedMemberIds((prev) => {
+			if (prev.size === list.length) return /* @__PURE__ */ new Set();
+			return new Set(list.map((m) => m.id));
+		});
+	}, []);
+	const handleToggleSort = React.useCallback((colKey: string) => {
+		setMemberSortBy((prevBy) => {
+			if (prevBy === colKey) {
+				setMemberSortDir((prevDir) => (prevDir === "asc" ? "desc" : "asc"));
+				return prevBy;
+			}
+			setMemberSortDir("asc");
+			return colKey;
+		});
+	}, []);
 	const handleSelectRow = React.useCallback((id: any, e: any) => {
 		const key = String(id);
 		const list = sortedMembersRef.current;
-		const idx = list.findIndex((m) => m.id === key);
+		const idx = sortedIndexByIdRef.current.get(key) ?? -1;
 		setSelectedMemberIds((prev) => {
 			const next = new Set(prev);
 			if (e.shiftKey && lastSelectedIdxRef.current > -1 && idx > -1) {
@@ -1053,7 +1357,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 				width: "100px",
 				minWidth: "90px"
 			}
-		]} viewMode={viewMode} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
+		]} viewMode={viewMode} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retry} />;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200 relative">
 <MembersHeaderBar title={terminology.members} addLabel={`${t("action_add", language)} ${terminology.memberSingle}`} onAddMember={onAddMember} />
 <MembersKpiBanner membersLabel={terminology.members} membersLower={terminology.members.toLowerCase()} language={language} activeMembersCount={activeMembersCount} expiringCount={expiringCount} displayCount={displayMembers.length} statusFilter={statusFilter} onToggleStatusFilter={handleToggleKpiStatusFilter} activeCountRef={activeCountRef} expiringChipCountRef={expiringChipCountRef} expiringBigCountRef={expiringBigCountRef} inflowChipCountRef={inflowChipCountRef} inflowBigCountRef={inflowBigCountRef} />
@@ -1061,11 +1365,11 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 <div className="flex flex-wrap items-center justify-between gap-3 w-full">
 <div className="flex items-center gap-2.5 shrink-0">
 <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">{language === "ar" ? "قائمة المشتركين" : "Liste des adhérents"}</h2>
-</div>
 <div aria-live="polite" className="sr-only">
 {displayMembers.length === 0 ? "Aucun adhérent ne correspond" : `${displayMembers.length} adhérent${displayMembers.length > 1 ? "s" : ""} trouvé${displayMembers.length > 1 ? "s" : ""}`}
 </div>
-<div className="flex items-center gap-2.5 min-w-0 flex-wrap">
+</div>
+<div className="flex flex-wrap items-center justify-end gap-2.5 min-w-0 ms-auto">
 <Seek value={searchQuery} onChange={setSearchQuery} placeholder={language === "ar" ? `البحث في ${terminology.members}...` : language === "fr" ? `Rechercher...` : `Search...`} shutSize={40} openWidth={240} className="shrink-0 !rounded-xl" />
 <div className="shrink-0">
 <LiveSegmentedControl size="md" options={quickStatusOptions} value={statusFilter === "Expired" || statusFilter === "Archived" ? "All" : statusFilter} onValueChange={(val) => setStatusFilter(val)} aria-label={language === "ar" ? "تصفية المشتركين" : "Filtre des adhérents"} />
@@ -1077,7 +1381,6 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 {activeFiltersCount > 0 && /* @__PURE__ */ <span className="w-5 h-5 rounded-md text-[11px] font-bold flex items-center justify-center bg-[#d4522f] text-white tabular-nums">{activeFiltersCount}</span>}
 <ChevronDown size={13} className={`transition-transform duration-200 text-black/62 dark:text-white/65 ${isFilterPopoverOpen ? "rotate-180" : ""}`} />
 </button>
-</div>
 </div>
 <div className="flex items-center gap-2 shrink-0">
 <LiveSegmentedControl size="md" options={viewSwitcherOptions} value={viewMode} onValueChange={(val) => setViewMode(val as "list" | "grid")} aria-label="View Switcher" />
@@ -1092,7 +1395,8 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 									}} title={t("members_export_csv", language)} aria-label={t("members_export_csv", language)} className="shrink-0 !h-10 !max-h-10 !rounded-xl" style={EXPORT_BTN_STYLE} />
 </div>
 </div>
-<MembersFilterModal isOpen={isFilterPopoverOpen} onClose={closeFilterPopover} filterPopoverRef={filterPopoverRef} language={language} displayCount={displayMembers.length} totalMembersCount={members.length} membersLower={terminology.members.toLowerCase()} membersUpper={terminology.members} hasActiveAdvancedFilters={hasActiveAdvancedFilters} onResetFilters={handleResetFilters} genderFilter={genderFilter} onChangeGender={setGenderFilter} ageGroupFilter={ageGroupFilter} onChangeAgeGroup={setAgeGroupFilter} ageGroupCounts={ageGroupCounts} planFilter={planFilter} onChangePlan={setPlanFilter} dynamicAvailablePlans={dynamicAvailablePlans} planCounts={planCounts} statusFilter={statusFilter} onChangeStatus={setStatusFilter} extendedStatusOptions={extendedStatusOptions} genderFilterOptions={genderFilterOptions} />
+</div>
+<MembersFilterModal isOpen={isFilterPopoverOpen} onClose={closeFilterPopover} filterPopoverRef={filterPopoverRef} triggerRef={filterButtonRef} language={language} displayCount={displayMembers.length} totalMembersCount={members.length} membersLower={terminology.members.toLowerCase()} membersUpper={terminology.members} hasActiveAdvancedFilters={hasActiveAdvancedFilters} onResetFilters={handleResetFilters} genderFilter={genderFilter} onChangeGender={setGenderFilter} ageGroupFilter={ageGroupFilter} onChangeAgeGroup={setAgeGroupFilter} ageGroupCounts={ageGroupCounts} planFilter={planFilter} onChangePlan={setPlanFilter} dynamicAvailablePlans={dynamicAvailablePlans} planCounts={planCounts} statusFilter={statusFilter} onChangeStatus={setStatusFilter} extendedStatusOptions={extendedStatusOptions} genderFilterOptions={genderFilterOptions} />
 {hasActiveAdvancedFilters && /* @__PURE__ */ <div className="flex items-center gap-2 flex-wrap pt-0.5 text-xs">
 <span className="text-black/62 dark:text-white/65 font-medium text-[11px]">
 {language === "ar" ? "المرشحات النشطة:" : language === "fr" ? "Filtres actifs:" : "Active filters:"}
@@ -1128,66 +1432,37 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 {language === "ar" ? "إعادة" : language === "fr" ? "Effacer" : "Reset"}
 </button>
 </div>}
-<div className="w-full">
-<div className="w-full members-x-wrap">
-<div className="w-full flex flex-col min-w-[940px] h-[560px] sm:h-[702px]">
-<div className="th th-adherents shrink-0 bg-white dark:bg-[#1C1B1A] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[var(--atr-ink,#000000)] dark:text-white box-border select-none" data-v={viewMode === "grid" ? "g" : "l"} aria-hidden={viewMode === "grid"}>
-<button type="button" role="checkbox" tabIndex={viewMode === "grid" ? -1 : 0} aria-checked={selectedMemberIds.size === 0 ? "false" : selectedMemberIds.size === sortedMembers.length && sortedMembers.length > 0 ? "true" : "mixed"} aria-label="Tout sélectionner" onClick={() => {
-											if (selectedMemberIds.size === sortedMembers.length) setSelectedMemberIds(/* @__PURE__ */ new Set());
-											else setSelectedMemberIds(new Set(sortedMembers.map((m) => m.id)));
-										}} className={`cb w-[22px] h-[22px] rounded-[7px] border-[1.5px] grid place-items-center p-0 cursor-pointer ${selectedMemberIds.size === sortedMembers.length && sortedMembers.length > 0 ? "bg-[var(--atr-acc,#d4522f)] border-[var(--atr-acc,#d4522f)] text-white" : "bg-white dark:bg-[#262422] border-[#D4C8BC] dark:border-[#5A5550] text-transparent hover:border-[var(--atr-acc,#d4522f)]"}`}>
-<Check className={`w-3.5 h-3.5 stroke-[3] transition-opacity duration-120 ${selectedMemberIds.size > 0 ? "opacity-100 text-white" : "opacity-0"}`} />
-</button>
-{[
-										{
-											key: "member",
-											label: terminology.memberSingle
-										},
-										{
-											key: "plan",
-											label: t("member_col_plan", language)
-										},
-										{
-											key: "status",
-											label: t("member_col_access", language)
-										},
-										{
-											key: "expiration",
-											label: t("member_col_expiration", language)
-										},
-										{
-											key: "balance",
-											label: language === "ar" ? "الرصيد" : language === "fr" ? "Solde" : "Balance"
-										}
-									].map((col) => {
-										const isOn = memberSortBy === col.key;
-										const dir = memberSortDir;
-										return /* @__PURE__ */ <button key={col.key} type="button" data-k={col.key} data-on={isOn ? "true" : void 0} tabIndex={viewMode === "grid" ? -1 : 0} aria-sort={isOn ? dir === "asc" ? "ascending" : "descending" : "none"} onClick={() => {
-												if (memberSortBy === col.key) setMemberSortDir((prev) => prev === "asc" ? "desc" : "asc");
-												else {
-													setMemberSortBy(col.key);
-													setMemberSortDir("asc");
-												}
-											}} className="text-left rtl:text-right font-semibold text-[11.5px] uppercase tracking-[0.05em] rtl:normal-case rtl:tracking-normal text-black/68 dark:text-white/75 flex items-center gap-1.5 cursor-pointer hover:text-[var(--atr-acc,#d4522f)] bg-transparent border-0 p-0 whitespace-nowrap truncate min-w-0">
-<span className="truncate">{col.label}</span>
-<i className={`not-italic text-[11px] px-1.5 py-0.5 rounded-[5px] ${isOn ? "bg-[var(--atr-hl,rgba(212,82,47,0.12))] text-[var(--atr-acc,#d4522f)]" : "bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#2B2927] text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/70"}`}>{isOn ? dir === "asc" ? "↑" : "↓" : "↕"}</i>
-</button>;
-									})}
-</div>
-<div ref={scrollContainerRef} className="scr relative mt-2.5 overflow-y-auto overflow-x-hidden pr-1 pb-[70px] flex-1 min-h-0">
-<div ref={rowsElRef} role="list" aria-label="Adhérents" data-v={viewMode === "grid" ? "g" : "l"} className="rows relative w-full">
-{renderedRows.map((rowItem) => {
-											const member = rowItem.member;
-											const memberRowData = memberRowDataMap.get(member.id) ?? lastRowDataMapRef.current.get(member.id);
-											if (!memberRowData) return null;
-											return /* @__PURE__ */ <MemberRow key={member.id} member={memberRowData} isSelected={selectedMemberIds.has(member.id)} isOpen={isDetailOpen && selectedMember?.id === member.id} isExpanded={expandedMemberIds.has(member.id)} isPinned={pinnedMemberIds.has(member.id)} registerRowRefs={registerRowRefs} onSelect={handleSelectRow} onToggleExpand={toggleExpandMember} onOpenDetails={handleOpenRowDetails} onEdit={handleEditRow} onMessage={handleMessageRow} onDelete={handleDeleteRow} onRenew={handleRenewRow} onArchive={handleArchiveRow} onToggleStatus={handleToggleStatusRow} onTogglePin={handleTogglePinRow} onPay={handlePayRow} />;
-										})}
-</div>
-{sortedMembers.length === 0 && /* @__PURE__ */ <p className="empty text-center text-black/68 dark:text-white/70 py-10">Aucun adhérent ne correspond. Modifiez la recherche ou les filtres.</p>}
-</div>
-</div>
-</div>
-</div>
+<MembersKineticListStage
+	scrollContainerRef={scrollContainerRef}
+	sortedMembers={sortedMembers}
+	expandedMemberIds={expandedMemberIds}
+	viewMode={viewMode}
+	filterKey={filterKey}
+	openMemberId={isDetailOpen ? selectedMember?.id ?? null : null}
+	selectedMemberIds={selectedMemberIds}
+	pinnedMemberIds={pinnedMemberIds}
+	memberSortBy={memberSortBy}
+	memberSortDir={memberSortDir}
+	memberRowDataMap={memberRowDataMap}
+	lastRowDataMapRef={lastRowDataMapRef}
+	terminology={terminology}
+	language={language}
+	onPruneSelection={handlePruneSelection}
+	onFilterChange={handleFilterScrollReset}
+	onToggleSelectAll={handleToggleSelectAll}
+	onToggleSort={handleToggleSort}
+	onSelectRow={handleSelectRow}
+	onToggleExpand={toggleExpandMember}
+	onOpenDetails={handleOpenRowDetails}
+	onEdit={handleEditRow}
+	onMessage={handleMessageRow}
+	onDelete={handleDeleteRow}
+	onRenew={handleRenewRow}
+	onArchive={handleArchiveRow}
+	onToggleStatus={handleToggleStatusRow}
+	onTogglePin={handleTogglePinRow}
+	onPay={handlePayRow}
+/>
 </div>
 <MemberSlideOverInspector isOpen={isDetailOpen && Boolean(selectedMember)} member={selectedMember} allMembers={sortedMembers} openerElement={panelOpenerRef.current} initialTab={panelInitialTab} onClose={closeDetail} onSelectMember={handleInspectorSelectMember} onEdit={handleInspectorEdit} onDelete={handleInspectorDelete} onCheckIn={handleInspectorCheckIn} onRenew={handleInspectorRenew} onToggleBlock={handleInspectorToggleBlock} onUpdateNotes={handleInspectorUpdateNotes} showToast={handleInspectorToast} />
 <FloatingBulkBar selectedCount={selectedMemberIds.size} onClear={handleBulkClear} onExport={handleExportCSV} onRenew={handleBulkRenew} onArchive={handleBulkArchive} onDelete={handleBulkDelete} />
