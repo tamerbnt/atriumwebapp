@@ -5,6 +5,7 @@ import {
   BubbleScatterChart,
   CapacityWaffle,
   ChartLocale,
+  ChartSegmented,
   ChartState,
   CohortHeatmap,
   ConversionFunnel,
@@ -109,90 +110,67 @@ export const DashboardCatalogScreen: React.FC = () => {
           </div>
         </div>
 
-        {/* Interactive Switchers */}
+        {/* Interactive Branded Switchers */}
         <div className="flex flex-wrap items-center gap-2.5 text-xs">
-          {/* Theme */}
-          <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-[var(--ax-soft)]">
-            {(['light', 'dark'] as PreviewTheme[]).map((th) => (
-              <button
-                key={th}
-                type="button"
-                onClick={() => setPreviewTheme(th)}
-                className={`px-2.5 py-1 rounded-lg font-semibold cursor-pointer ${
-                  previewTheme === th ? 'bg-[var(--ax-th)] shadow-xs' : 'opacity-70'
-                }`}
-              >
-                {th === 'light' ? 'Clair (#F7F4F1)' : 'Sombre (#0E0D0C)'}
-              </button>
-            ))}
-          </div>
+          <ChartSegmented
+            ariaLabel="Theme"
+            value={previewTheme}
+            onChange={(v) => setPreviewTheme(v as PreviewTheme)}
+            options={[
+              { id: 'light', label: 'Clair' },
+              { id: 'dark', label: 'Sombre' },
+            ]}
+          />
 
-          {/* State */}
-          <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-[var(--ax-soft)]">
-            {(['ready', 'loading', 'empty', 'error'] as ChartState[]).map((st) => (
-              <button
-                key={st}
-                type="button"
-                onClick={() => setCardState(st)}
-                className={`px-2.5 py-1 rounded-lg font-semibold capitalize cursor-pointer ${
-                  cardState === st ? 'bg-[var(--ax-th)] shadow-xs' : 'opacity-70'
-                }`}
-              >
-                {st}
-              </button>
-            ))}
-          </div>
+          <ChartSegmented
+            ariaLabel="Card State"
+            value={cardState}
+            onChange={(v) => setCardState(v as ChartState)}
+            options={[
+              { id: 'ready', label: 'Ready' },
+              { id: 'loading', label: 'Loading' },
+              { id: 'empty', label: 'Empty' },
+              { id: 'error', label: 'Error' },
+            ]}
+          />
 
-          {/* Data Stress */}
-          <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-[var(--ax-soft)]">
-            {(['nominal', 'partial', 'extreme', 'zeros'] as CatalogStressPreset[]).map((pr) => (
-              <button
-                key={pr}
-                type="button"
-                onClick={() => setPreset(pr)}
-                className={`px-2.5 py-1 rounded-lg font-semibold capitalize cursor-pointer ${
-                  preset === pr ? 'bg-[var(--ax-th)] shadow-xs' : 'opacity-70'
-                }`}
-              >
-                {pr}
-              </button>
-            ))}
-          </div>
+          <ChartSegmented
+            ariaLabel="Stress Preset"
+            value={preset}
+            onChange={(v) => setPreset(v as CatalogStressPreset)}
+            options={[
+              { id: 'nominal', label: 'Nominal' },
+              { id: 'partial', label: 'Partial' },
+              { id: 'extreme', label: 'Extreme' },
+              { id: 'zeros', label: 'Zeros' },
+            ]}
+          />
 
-          {/* Viewport Simulator */}
-          <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-[var(--ax-soft)]">
-            {(['fluid', 1440, 768, 320] as PreviewWidth[]).map((w) => (
-              <button
-                key={String(w)}
-                type="button"
-                onClick={() => setWidth(w)}
-                className={`px-2.5 py-1 rounded-lg font-semibold cursor-pointer ${
-                  width === w ? 'bg-[var(--ax-th)] shadow-xs' : 'opacity-70'
-                }`}
-              >
-                {w === 'fluid' ? 'Fluid' : `${w}px`}
-              </button>
-            ))}
-          </div>
+          <ChartSegmented
+            ariaLabel="Viewport Width"
+            value={String(width)}
+            onChange={(v) => setWidth(v === 'fluid' ? 'fluid' : (Number(v) as PreviewWidth))}
+            options={[
+              { id: 'fluid', label: 'Fluid' },
+              { id: '1440', label: '1440px' },
+              { id: '768', label: '768px' },
+              { id: '320', label: '320px' },
+            ]}
+          />
 
-          {/* Locale / RTL */}
-          <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-[var(--ax-soft)]">
-            {(['fr', 'en', 'ar'] as ChartLocale[]).map((loc) => (
-              <button
-                key={loc}
-                type="button"
-                onClick={() => setLocale(loc)}
-                className={`px-2.5 py-1 rounded-lg font-semibold uppercase cursor-pointer ${
-                  locale === loc ? 'bg-[var(--ax-th)] shadow-xs' : 'opacity-70'
-                }`}
-              >
-                {loc === 'ar' ? 'AR (RTL)' : loc}
-              </button>
-            ))}
-          </div>
+          <ChartSegmented
+            ariaLabel="Locale"
+            value={locale}
+            onChange={(v) => setLocale(v as ChartLocale)}
+            options={[
+              { id: 'fr', label: 'FR' },
+              { id: 'en', label: 'EN' },
+              { id: 'ar', label: 'AR (RTL)' },
+            ]}
+          />
 
           {/* Treemap Controls */}
-          <label className="inline-flex items-center gap-2 px-2.5 py-1 rounded-xl bg-[var(--ax-soft)]">
+          <label className="inline-flex items-center gap-2 px-2.5 py-1 rounded-xl bg-[var(--ax-soft)] text-[var(--ax-on)]">
             <span>Treemap φ: {treemapRatio.toFixed(2)}</span>
             <input
               type="range"
@@ -207,10 +185,11 @@ export const DashboardCatalogScreen: React.FC = () => {
 
           <button
             type="button"
+            data-no-liquid="true"
             onClick={() =>
               setTreemapVariant((v) => (v === 'squarified' ? 'split' : 'squarified'))
             }
-            className="px-2.5 py-1 rounded-xl bg-[var(--ax-soft)] font-semibold cursor-pointer"
+            className="px-2.5 py-1 rounded-xl bg-[var(--ax-soft)] text-[var(--ax-on)] font-semibold cursor-pointer"
           >
             Treemap: {treemapVariant}
           </button>

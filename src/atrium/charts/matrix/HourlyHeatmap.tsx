@@ -129,7 +129,7 @@ export const HourlyHeatmap: React.FC<HourlyHeatmapProps> = React.memo(
         data-testid={testId}
         headerRight={
           <div className="flex flex-col items-end text-right rtl:text-left">
-            <span className="ax-disp ax-big-hm text-[var(--ax-on)]">
+            <span className="ax-disp ax-big-hm text-[var(--ax-acc)]">
               <RollingDigits
                 value={formatChartValue(currentCell.val, { locale, format, unit })}
               />
@@ -147,18 +147,16 @@ export const HourlyHeatmap: React.FC<HourlyHeatmapProps> = React.memo(
                 {rows[metrics.peak.r]} {cols[metrics.peak.c]}
               </strong>
             </span>
-            <div className="flex items-center gap-1.5">
-              <span>{lowLabel || strings.lowLabel}</span>
-              {[0.12, 0.32, 0.56, 0.78, 1].map((op, i) => (
-                <span
-                  key={i}
-                  className="w-3 h-3 rounded-[3px] border border-[var(--ax-bdr)]"
-                  style={{
-                    background: `color-mix(in srgb, var(--ax-c1) ${Math.round(op * 100)}%, var(--ax-soft))`,
-                  }}
-                />
-              ))}
-              <span>{highLabel || strings.highLabel}</span>
+            <div className="flex items-center gap-2">
+              <span>{lowLabel || strings.calmLabel}</span>
+              <span
+                className="h-2.5 w-20 rounded-full border border-[var(--ax-bdr)]"
+                style={{
+                  background:
+                    'linear-gradient(90deg, color-mix(in srgb, var(--ax-c1) 12%, var(--ax-slab)), var(--ax-c1))',
+                }}
+              />
+              <span>{highLabel || strings.fullLabel}</span>
             </div>
           </div>
         }
@@ -231,16 +229,21 @@ export const HourlyHeatmap: React.FC<HourlyHeatmapProps> = React.memo(
                     data-c={c}
                     role="gridcell"
                     aria-selected={isSelected}
-                    className="h-[22px] rounded-[5px] cursor-pointer transition-opacity duration-150"
+                    className={`ax-pop-item h-[22px] rounded-[5px] cursor-pointer ${
+                      isSelected ? 'relative z-10' : ''
+                    }`}
                     style={{
                       background: bg,
                       opacity: isCross ? 1 : 0.3,
+                      transform: isSelected ? 'scale(1.12)' : 'scale(1)',
                       outline:
                         isSelected || isPeak
                           ? '2px solid var(--ax-on)'
                           : '1px solid transparent',
                       outlineOffset: '-1px',
-                    }}
+                      '--ax-delay': `${Math.min((r * cols.length + c) * 7, 280)}ms`,
+                      transition: 'transform 0.24s var(--ax-sp2), opacity 0.16s ease',
+                    } as React.CSSProperties}
                   />
                 );
               })}

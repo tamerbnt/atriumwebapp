@@ -74,7 +74,7 @@ export const DumbbellChart: React.FC<DumbbellChartProps> = React.memo(
     const isEmpty = state === 'ready' && processed.rows.length === 0;
     const effectiveState = isEmpty ? 'empty' : state;
 
-    const ariaSummary = `${title}: comparaison sur ${processed.rows.length} éléments`;
+    const ariaSummary = `${title}: ${processed.rows.length} ${strings.itemsWord}`;
 
     return (
       <ChartCard
@@ -94,21 +94,29 @@ export const DumbbellChart: React.FC<DumbbellChartProps> = React.memo(
         data-testid={testId}
         footer={
           <div className="flex flex-wrap items-center justify-between gap-2 ax-tk pt-1">
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-3.5">
               <span className="inline-flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full border-2 border-[var(--ax-c4)] bg-[var(--ax-slab)]" />
+                <span className="w-2.5 h-2.5 rounded-full border-[2.5px] border-[var(--ax-c4)] bg-[var(--ax-slab)]" />
                 <span>{prevLabel || strings.previousLabel}</span>
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-[var(--ax-c1)]" />
-                <span>{currentLabel || strings.currentLabel}</span>
+                <span>{strings.improvementLabel}</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-[var(--ax-on)]" />
+                <span>{strings.degradationLabel}</span>
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              {processed.scale.ticks.map((tk, idx) => (
+            <div className="flex items-center gap-2" dir="ltr">
+              {[
+                processed.scale.min,
+                (processed.scale.min + processed.scale.max) / 2,
+                processed.scale.max,
+              ].map((tk, idx) => (
                 <span key={idx} className="opacity-70">
                   {formatCompactTick(tk, locale)}
-                  {idx < processed.scale.ticks.length - 1 ? ' ·' : ''}
+                  {idx < 2 ? ' ·' : ''}
                 </span>
               ))}
             </div>
@@ -128,8 +136,8 @@ export const DumbbellChart: React.FC<DumbbellChartProps> = React.memo(
               row.improved === null
                 ? 'var(--ax-c4)'
                 : row.improved
-                  ? 'var(--ax-ok)'
-                  : 'var(--ax-c1)';
+                  ? 'var(--ax-c1)'
+                  : 'var(--ax-on)';
 
             return (
               <div
@@ -139,48 +147,68 @@ export const DumbbellChart: React.FC<DumbbellChartProps> = React.memo(
                 onPointerEnter={() => setHoveredIdx(idx)}
                 onFocus={() => setHoveredIdx(idx)}
                 onBlur={() => setHoveredIdx(null)}
-                className="ax-plot-focus ax-row-stack grid grid-cols-[minmax(92px,136px)_minmax(0,1fr)_auto] items-center gap-3 cursor-pointer transition-opacity duration-150"
-                style={{ opacity: isDim ? 0.42 : 1 }}
+                className={`ax-plot-focus ax-row-stack grid grid-cols-[minmax(76px,98px)_minmax(0,1fr)_auto] items-center gap-2.5 px-1.5 py-1 rounded-[10px] cursor-pointer transition-all duration-150 ${
+                  isHovered ? 'bg-[var(--ax-soft)]' : ''
+                }`}
+                style={{ opacity: isDim ? 0.4 : 1 }}
               >
                 <span
-                  className="text-[12.5px] font-medium text-[var(--ax-on)] truncate"
+                  className="text-[12px] font-medium text-[var(--ax-on)] truncate"
                   title={row.label}
                 >
                   {row.label}
                 </span>
 
-                {/* Track + Connector + Hollow Previous Ring + Filled Current Dot */}
-                <div className="relative h-5 flex items-center">
-                  <div className="absolute inset-x-0 h-[1.5px] bg-[var(--ax-bdr)] rounded-full" />
+                {/* Track + 4px Connector + Hollow Previous Ring + Filled Current Dot */}
+                <div className="relative h-5 mx-1.5 flex items-center">
+                  <div className="absolute inset-x-0 h-[4px] bg-[var(--ax-soft)] rounded-full" />
 
                   <div
-                    className="absolute h-[3px] rounded-full transition-opacity duration-200"
+                    className="ax-bar-x absolute h-[4px] rounded-full"
                     style={{
                       insetInlineStart: `${row.leftPct}%`,
                       width: `${Math.max(0.5, row.widthPct)}%`,
                       background: dotColor,
+                      transformOrigin: row.valPct >= row.prevPct ? 'left center' : 'right center',
+                      transitionDelay: `${Math.min(idx * 55, 260)}ms`,
                     }}
                   />
 
                   {/* Previous Hollow Ring */}
                   <span
-                    className="absolute w-2.5 h-2.5 rounded-full border-2 border-[var(--ax-c4)] bg-[var(--ax-slab)] -translate-x-1/2 rtl:translate-x-1/2 z-10"
+                    className="absolute -translate-x-1/2 rtl:translate-x-1/2 z-10 pointer-events-none"
                     style={{ insetInlineStart: `${row.prevPct}%` }}
-                  />
+                  >
+                    <span
+                      className="ax-pop-item block w-3 h-3 rounded-full border-[2.5px] border-[var(--ax-c4)] bg-[var(--ax-slab)]"
+                      style={{
+                        transform: isHovered ? 'scale(1.3)' : 'scale(1)',
+                        '--ax-delay': `${Math.min(idx * 55, 260)}ms`,
+                        transition: 'transform 0.24s var(--ax-sp2)',
+                      } as React.CSSProperties}
+                    />
+                  </span>
 
                   {/* Current Filled Dot */}
                   <span
-                    className="absolute w-3 h-3 rounded-full -translate-x-1/2 rtl:translate-x-1/2 z-20 ring-2 ring-[var(--ax-slab)]"
-                    style={{
-                      insetInlineStart: `${row.valPct}%`,
-                      background: dotColor,
-                    }}
-                  />
+                    className="absolute -translate-x-1/2 rtl:translate-x-1/2 z-20 pointer-events-none"
+                    style={{ insetInlineStart: `${row.valPct}%` }}
+                  >
+                    <span
+                      className="ax-pop-item block w-3 h-3 rounded-full ring-2 ring-[var(--ax-slab)]"
+                      style={{
+                        background: dotColor,
+                        transform: isHovered ? 'scale(1.3)' : 'scale(1)',
+                        '--ax-delay': `${Math.min(idx * 55 + 70, 320)}ms`,
+                        transition: 'transform 0.24s var(--ax-sp2)',
+                      } as React.CSSProperties}
+                    />
+                  </span>
                 </div>
 
                 {/* Current Value & Semantic Delta Chip */}
-                <div className="ax-row-meta-sm flex items-center justify-end gap-2 shrink-0">
-                  <span className="ax-nv">
+                <div className="ax-row-meta-sm flex items-center justify-end gap-1.5 shrink-0">
+                  <span className="ax-nv text-[12px]" dir="ltr">
                     {formatChartValue(row.value, { locale, format, currency, unit })}
                   </span>
                   <span
@@ -189,13 +217,13 @@ export const DumbbellChart: React.FC<DumbbellChartProps> = React.memo(
                         ? 'ax-chip-neutral'
                         : row.improved
                           ? 'ax-chip-ok'
-                          : 'ax-chip-bad'
+                          : 'ax-chip-neutral'
                     }`}
                   >
                     <span aria-hidden="true">
                       {row.diff > 0 ? '▲' : row.diff < 0 ? '▼' : '•'}
                     </span>
-                    <span>
+                    <span dir="ltr">
                       {formatChartValue(row.diff, {
                         locale,
                         format,

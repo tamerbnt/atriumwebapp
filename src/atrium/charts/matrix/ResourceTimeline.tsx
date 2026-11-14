@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ChartCard } from '../primitives/ChartCard';
 import { RollingDigits } from '../primitives/RollingDigits';
 import { useIsRtl } from '../hooks';
+import { getDefaultChartStrings } from '../math';
 import { ResourceTimelineProps, TimelineTone } from '../types';
 
 const TONE_STYLE: Record<TimelineTone, { bg: string; fg: string }> = {
@@ -29,10 +30,13 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
     startHour,
     endHour,
     nowHour,
-    nowLabel = 'Maintenant',
+    nowLabel,
+    toneLabels,
     maxVisibleResources = 7,
   }) => {
     const isRtl = useIsRtl(locale);
+    const strings = getDefaultChartStrings(locale);
+    const resolvedNowLabel = nowLabel || strings.nowLabel;
     const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
 
     const spanHours = Math.max(1, endHour - startHour);
@@ -84,7 +88,32 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
       return `${String(hh).padStart(2, '0')}h${mm > 0 ? String(mm).padStart(2, '0') : ''}`;
     };
 
-    const ariaSummary = `${title}: ${clippedBlocks.length} créneaux sur ${visibleResources.length} ressources`;
+    const activeTones = useMemo(() => {
+      const present = new Set<TimelineTone>();
+      clippedBlocks.forEach((b) => present.add(b.tone || 'primary'));
+      return (['primary', 'secondary', 'neutral'] as TimelineTone[]).filter((t) =>
+        present.has(t)
+      );
+    }, [clippedBlocks]);
+
+    const defaultToneLabel = (tone: TimelineTone) => {
+      if (tone === 'secondary') return toneLabels?.secondary || strings.secondaryToneLabel;
+      if (tone === 'neutral') return toneLabels?.neutral || strings.neutralToneLabel;
+      return toneLabels?.primary || strings.primaryToneLabel;
+    };
+
+    const bookedHours = useMemo(
+      () =>
+        clippedBlocks.reduce(
+          (sum, b) => sum + Math.max(0, b.endHour - b.startHour),
+          0
+        ),
+      [clippedBlocks]
+    );
+    const totalSlotHours = Math.max(1, visibleResources.length * spanHours);
+    const occupancyPct = Math.min(100, Math.round((bookedHours / totalSlotHours) * 100));
+
+    const ariaSummary = `${title}: ${occupancyPct}% (${clippedBlocks.length} ${strings.slotsWord} / ${visibleResources.length} ${strings.resourcesWord})`;
 
     return (
       <ChartCard
@@ -104,27 +133,55 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
         data-testid={testId}
         headerRight={
           <div className="flex flex-col items-end text-right rtl:text-left">
-            <span className="ax-disp ax-big-mid text-[var(--ax-on)]">
-              <RollingDigits value={clippedBlocks.length} />
+            <span className="ax-disp ax-big-mid text-[var(--ax-acc)]">
+              <RollingDigits value={`${occupancyPct}%`} />
             </span>
-            <span className="ax-tk truncate max-w-[140px]">
+            <span className="ax-tk truncate max-w-[165px]">
               {activeBlock
                 ? `${activeBlock.label} · ${formatHour(activeBlock.startHour)}–${formatHour(
                     activeBlock.endHour
                   )}`
-                : `${formatHour(startHour)} – ${formatHour(endHour)}`}
+                : `${clippedBlocks.length} ${strings.slotsWord} · ${formatHour(startHour)}–${formatHour(endHour)}`}
             </span>
           </div>
         }
+        footer={
+          (activeTones.length > 0 || showNow) ? (
+            <div className="flex flex-wrap items-center justify-between gap-2 ax-tk pt-1">
+              <div className="flex flex-wrap items-center gap-3">
+                {activeTones.map((tone) => (
+                  <span key={tone} className="inline-flex items-center gap-1.5">
+                    <span
+                      className="w-2.5 h-2.5 rounded-[3px] shrink-0"
+                      style={{ background: TONE_STYLE[tone].bg }}
+                    />
+                    <span>{defaultToneLabel(tone)}</span>
+                  </span>
+                ))}
+              </div>
+              {showNow && (
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-[2px] h-3 rounded-full bg-[var(--ax-acc)]" />
+                  <span>
+                    {resolvedNowLabel}:{' '}
+                    <strong className="text-[var(--ax-on)]" dir="ltr">
+                      {formatHour(nowHour!)}
+                    </strong>
+                  </span>
+                </span>
+              )}
+            </div>
+          ) : undefined
+        }
       >
         <div
-          className="relative flex flex-col gap-2 select-none"
+          className="relative flex flex-col gap-2.5 select-none"
           role="region"
           aria-label={ariaSummary}
           onPointerLeave={() => setActiveBlockId(null)}
         >
           {/* Hour Ticks Header */}
-          <div className="grid grid-cols-[84px_minmax(0,1fr)] gap-2 items-center">
+          <div className="grid grid-cols-[108px_minmax(0,1fr)] gap-2.5 items-center">
             <span />
             <div className="relative h-4 ax-tk">
               {hourTicks.map((h) => {
@@ -139,6 +196,14 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
                   </span>
                 );
               })}
+              {showNow && (
+                <span
+                  className="absolute -top-0.5 -translate-x-1/2 rtl:translate-x-1/2 px-1.5 py-[1px] rounded bg-[var(--ax-acc)] text-[var(--ax-tc1)] text-[9px] font-semibold whitespace-nowrap z-20"
+                  style={{ insetInlineStart: `${nowPct}%` }}
+                >
+                  {formatHour(nowHour!)}
+                </span>
+              )}
             </div>
           </div>
 
@@ -149,7 +214,7 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
               return (
                 <div
                   key={res.id}
-                  className="grid grid-cols-[84px_minmax(0,1fr)] gap-2 items-center"
+                  className="grid grid-cols-[108px_minmax(0,1fr)] gap-2.5 items-center"
                 >
                   <div className="min-w-0">
                     <div className="text-[12px] font-medium text-[var(--ax-on)] truncate">
@@ -162,7 +227,7 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
                     )}
                   </div>
 
-                  <div className="relative h-8 rounded-[10px] bg-[var(--ax-soft)] overflow-hidden">
+                  <div className="relative h-10 rounded-[10px] bg-[var(--ax-soft)] overflow-hidden">
                     {/* Vertical Hour Gridlines */}
                     {hourTicks.map((h) => {
                       const pct = ((h - startHour) / spanHours) * 100;
@@ -178,14 +243,14 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
                     {/* Optional Current-Time Hairline */}
                     {showNow && (
                       <span
-                        title={nowLabel}
-                        className="absolute inset-y-0 w-[1.5px] bg-[var(--ax-acc)] z-20 pointer-events-none"
+                        title={resolvedNowLabel}
+                        className="absolute inset-y-0 w-[2px] bg-[var(--ax-acc)] z-20 pointer-events-none"
                         style={{ insetInlineStart: `${nowPct}%` }}
                       />
                     )}
 
-                    {/* Blocks */}
-                    {rowBlocks.map((b) => {
+                    {/* Blocks (34px pill height inside 40px lane) */}
+                    {rowBlocks.map((b, bIdx) => {
                       const tone = TONE_STYLE[b.tone || 'primary'];
                       const isActive = activeBlockId === b.id;
                       const isDim = activeBlockId !== null && !isActive;
@@ -193,6 +258,7 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
                         <button
                           key={b.id}
                           type="button"
+                          data-no-liquid="true"
                           onPointerEnter={() => setActiveBlockId(b.id)}
                           onFocus={() => setActiveBlockId(b.id)}
                           onBlur={() => setActiveBlockId(null)}
@@ -202,18 +268,22 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
                           aria-label={`${res.label} — ${b.label}, ${formatHour(
                             b.startHour
                           )} à ${formatHour(b.endHour)}`}
-                          className="ax-plot-focus absolute top-1 bottom-1 rounded-[7px] px-2 flex items-center text-[11px] font-semibold truncate cursor-pointer transition-opacity duration-150"
+                          className="ax-abs ax-bar-x ax-plot-focus top-[3px] bottom-[3px] rounded-[8px] px-2.5 flex items-center text-[11px] font-semibold truncate cursor-pointer"
                           style={{
-                            insetInlineStart: `${isRtl ? b.leftPct : b.leftPct}%`,
+                            insetInlineStart: `${b.leftPct}%`,
                             width: `${b.widthPct}%`,
                             background: tone.bg,
                             color: tone.fg,
                             opacity: isDim ? 0.34 : 1,
                             zIndex: isActive ? 15 : 10,
+                            transform: isActive
+                              ? 'translate3d(0, -1px, 0) scale(1.02)'
+                              : 'translate3d(0, 0, 0) scale(1)',
                             boxShadow: isActive ? '0 0 0 2px var(--ax-on)' : undefined,
+                            transitionDelay: isActive ? '0ms' : `${Math.min(bIdx * 45, 220)}ms`,
                           }}
                         >
-                          <span className="truncate">{b.label}</span>
+                          <span className="truncate leading-none">{b.label}</span>
                         </button>
                       );
                     })}

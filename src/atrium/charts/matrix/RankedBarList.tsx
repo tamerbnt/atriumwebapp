@@ -5,7 +5,7 @@ import { useIsRtl } from '../hooks';
 import { formatChartValue } from '../math';
 import { RankedBarListProps } from '../types';
 
-const ROW_HEIGHT = 44;
+const ROW_HEIGHT = 48;
 
 export const RankedBarList: React.FC<RankedBarListProps> = React.memo(
   ({
@@ -58,8 +58,6 @@ export const RankedBarList: React.FC<RankedBarListProps> = React.memo(
       capped.forEach((it, idx) => rankById.set(it.id, idx));
       const maxVal = capped.length > 0 ? Math.max(...capped.map((i) => i.val), 1) : 1;
 
-      // Render in stable item id order (only top items) so CSS transform: translate3d
-      // smoothly reorders ranks vertically on criterion switch without layout thrash!
       const stableItems = items.filter((it) => rankById.has(it.id));
       return { ordered: stableItems, rankById, maxVal, visibleCount: capped.length };
     }, [items, activeCriterion, maxVisible]);
@@ -110,6 +108,7 @@ export const RankedBarList: React.FC<RankedBarListProps> = React.memo(
             const ratio = Math.max(0.02, Math.min(1, val / ranked.maxVal));
             const isHovered = hoveredId === item.id;
             const isDim = hoveredId !== null && !isHovered;
+            const isAccent = hoveredId !== null ? isHovered : rank === 0;
 
             return (
               <div
@@ -119,13 +118,15 @@ export const RankedBarList: React.FC<RankedBarListProps> = React.memo(
                 onPointerEnter={() => setHoveredId(item.id)}
                 onFocus={() => setHoveredId(item.id)}
                 onBlur={() => setHoveredId(null)}
-                className="ax-plot-focus absolute inset-x-0 top-0 flex flex-col justify-center gap-1.5 cursor-pointer"
+                className={`ax-plot-focus absolute inset-x-0 top-0 flex flex-col justify-center gap-1.5 px-1.5 rounded-[10px] cursor-pointer ${
+                  isHovered ? 'bg-[var(--ax-soft)]' : ''
+                }`}
                 style={{
-                  height: ROW_HEIGHT - 4,
+                  height: ROW_HEIGHT - 2,
                   transform: `translate3d(0, ${rank * ROW_HEIGHT}px, 0)`,
-                  opacity: isDim ? 0.38 : 1,
+                  opacity: isDim ? 0.34 : 1,
                   transition:
-                    'transform 0.48s var(--ax-sp2), opacity 0.18s ease',
+                    'transform 0.6s var(--ax-sp), opacity 0.18s ease, background-color 0.16s ease',
                   willChange: 'transform',
                 }}
               >
@@ -148,14 +149,13 @@ export const RankedBarList: React.FC<RankedBarListProps> = React.memo(
                   </span>
                 </div>
 
-                {/* Track + Compositor scaleX Fill */}
-                <div className="h-[7px] w-full rounded-full bg-[var(--ax-soft)] overflow-hidden">
+                {/* 14px Track + Compositor scaleX Fill (coral lead/hover vs ink others) */}
+                <div className="h-[14px] w-full rounded-[7px] bg-[var(--ax-soft)] overflow-hidden">
                   <div
-                    className="ax-bar-x h-full w-full rounded-full"
+                    className="ax-bar-x h-full w-full rounded-[7px]"
                     style={{
                       transform: `scaleX(${ratio})`,
-                      background:
-                        rank === 0 ? 'var(--ax-c1)' : isHovered ? 'var(--ax-on)' : 'var(--ax-c3)',
+                      background: isAccent ? 'var(--ax-c1)' : 'var(--ax-on)',
                     }}
                   />
                 </div>

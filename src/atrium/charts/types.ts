@@ -234,6 +234,7 @@ export interface ResourceTimelineProps extends ChartCommonProps {
   endHour: number;
   nowHour?: number;
   nowLabel?: string;
+  toneLabels?: Partial<Record<TimelineTone, string>>;
   maxVisibleResources?: number;
 }
 
@@ -266,6 +267,11 @@ export interface WaterfallChartProps extends ChartCommonProps {
   currency?: string;
   unit?: string;
   shareBasisIndex?: number;
+  legendLabels?: {
+    total?: string;
+    positive?: string;
+    negative?: string;
+  };
 }
 
 export interface CohortRow {
@@ -298,6 +304,7 @@ export interface BubbleScatterChartProps extends ChartCommonProps {
   groups: BubbleGroup[];
   points: BubblePoint[];
   xAxisLabel?: string;
+  sizeLabel?: string;
   yFormat?: ChartValueFormat;
   xFormat?: ChartValueFormat;
   sizeFormat?: ChartValueFormat;
@@ -338,6 +345,7 @@ export interface SquarifiedTreemapProps extends ChartCommonProps {
   format?: ChartValueFormat;
   currency?: string;
   unit?: string;
+  showLegend?: boolean;
 }
 
 export interface HistogramBin {
@@ -351,6 +359,7 @@ export interface HistogramChartProps extends ChartCommonProps {
   highlightIndex?: number;
   showMedian?: boolean;
   medianLabel?: string;
+  otherBinsLabel?: string;
   totalLabel?: string;
   format?: ChartValueFormat;
   currency?: string;

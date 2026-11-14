@@ -357,14 +357,40 @@ export interface DefaultChartStrings {
   currentLabel: string;
   actualLabel: string;
   targetLabel: string;
+  benchmarkLabel: string;
   occupiedLabel: string;
   availableLabel: string;
   lowLabel: string;
   highLabel: string;
   conversionLabel: string;
+  dropoffLabel: string;
   stepLabel: string;
   minLabel: string;
   maxLabel: string;
+  cancelledLabel: string;
+  nowLabel: string;
+  cohortAvgLabel: string;
+  positiveLabel: string;
+  negativeLabel: string;
+  totalStepLabel: string;
+  otherBinsLabel: string;
+  sizeLegendLabel: string;
+  primaryToneLabel: string;
+  secondaryToneLabel: string;
+  neutralToneLabel: string;
+  improvementLabel: string;
+  degradationLabel: string;
+  diffLabel: string;
+  calmLabel: string;
+  fullLabel: string;
+  periodsWord: string;
+  bucketsWord: string;
+  itemsWord: string;
+  pointsWord: string;
+  retentionAvgWord: string;
+  slotsWord: string;
+  resourcesWord: string;
+  indicatorsWord: string;
 }
 
 const CHART_STRINGS: Record<ChartLocale, DefaultChartStrings> = {
@@ -383,14 +409,40 @@ const CHART_STRINGS: Record<ChartLocale, DefaultChartStrings> = {
     currentLabel: 'Actuel',
     actualLabel: 'Réalisé',
     targetLabel: 'Objectif',
+    benchmarkLabel: 'Réf. secteur',
     occupiedLabel: 'Occupé',
     availableLabel: 'Disponible',
     lowLabel: 'Bas',
     highLabel: 'Élevé',
     conversionLabel: 'Conversion',
+    dropoffLabel: 'Perte max',
     stepLabel: 'Étape',
     minLabel: 'Min',
     maxLabel: 'Max',
+    cancelledLabel: 'Annulés',
+    nowLabel: 'Maintenant',
+    cohortAvgLabel: 'Moyenne M+',
+    positiveLabel: 'Hausses',
+    negativeLabel: 'Déductions',
+    totalStepLabel: 'Solde / Total',
+    otherBinsLabel: 'Autres tranches',
+    sizeLegendLabel: 'Taille = Volume',
+    primaryToneLabel: 'Principal',
+    secondaryToneLabel: 'Secondaire',
+    neutralToneLabel: 'Logistique / Autre',
+    improvementLabel: 'Amélioration',
+    degradationLabel: 'Dégradation',
+    diffLabel: 'Écart',
+    calmLabel: 'Calme',
+    fullLabel: 'Plein',
+    periodsWord: 'périodes',
+    bucketsWord: 'tranches',
+    itemsWord: 'éléments',
+    pointsWord: 'points analysés',
+    retentionAvgWord: 'rétention moyenne',
+    slotsWord: 'créneaux',
+    resourcesWord: 'ressources',
+    indicatorsWord: 'indicateurs',
   },
   en: {
     loading: 'Loading data…',
@@ -407,14 +459,40 @@ const CHART_STRINGS: Record<ChartLocale, DefaultChartStrings> = {
     currentLabel: 'Current',
     actualLabel: 'Actual',
     targetLabel: 'Target',
+    benchmarkLabel: 'Benchmark',
     occupiedLabel: 'Occupied',
     availableLabel: 'Available',
     lowLabel: 'Low',
     highLabel: 'High',
     conversionLabel: 'Conversion',
+    dropoffLabel: 'Max drop',
     stepLabel: 'Step',
     minLabel: 'Min',
     maxLabel: 'Max',
+    cancelledLabel: 'Refunds',
+    nowLabel: 'Now',
+    cohortAvgLabel: 'M+ Avg',
+    positiveLabel: 'Gains',
+    negativeLabel: 'Deductions',
+    totalStepLabel: 'Total / Net',
+    otherBinsLabel: 'Other bins',
+    sizeLegendLabel: 'Size = Volume',
+    primaryToneLabel: 'Primary',
+    secondaryToneLabel: 'Secondary',
+    neutralToneLabel: 'Ops / Other',
+    improvementLabel: 'Improved',
+    degradationLabel: 'Declined',
+    diffLabel: 'Delta',
+    calmLabel: 'Quiet',
+    fullLabel: 'Peak',
+    periodsWord: 'periods',
+    bucketsWord: 'buckets',
+    itemsWord: 'items',
+    pointsWord: 'analyzed points',
+    retentionAvgWord: 'average retention',
+    slotsWord: 'slots',
+    resourcesWord: 'resources',
+    indicatorsWord: 'indicators',
   },
   ar: {
     loading: 'جارٍ تحميل البيانات…',
@@ -431,14 +509,40 @@ const CHART_STRINGS: Record<ChartLocale, DefaultChartStrings> = {
     currentLabel: 'الحالي',
     actualLabel: 'الفعلي',
     targetLabel: 'الهدف',
+    benchmarkLabel: 'المرجع',
     occupiedLabel: 'مشغول',
     availableLabel: 'متاح',
     lowLabel: 'منخفض',
     highLabel: 'مرتفع',
     conversionLabel: 'التحويل',
+    dropoffLabel: 'أكبر تسرب',
     stepLabel: 'المرحلة',
     minLabel: 'الأدنى',
     maxLabel: 'الأقصى',
+    cancelledLabel: 'ملغاة',
+    nowLabel: 'الآن',
+    cohortAvgLabel: 'متوسط الفوج',
+    positiveLabel: 'إضافات',
+    negativeLabel: 'خصومات',
+    totalStepLabel: 'الإجمالي / الصافي',
+    otherBinsLabel: 'بقية الفئات',
+    sizeLegendLabel: 'الحجم = الإيراد',
+    primaryToneLabel: 'رئيسي',
+    secondaryToneLabel: 'ثانوي',
+    neutralToneLabel: 'لوجستي / آخر',
+    improvementLabel: 'تحسن',
+    degradationLabel: 'تراجع',
+    diffLabel: 'الفارق',
+    calmLabel: 'هادئ',
+    fullLabel: 'ذروة',
+    periodsWord: 'فترات',
+    bucketsWord: 'فئات',
+    itemsWord: 'عناصر',
+    pointsWord: 'نقاط محللة',
+    retentionAvgWord: 'متوسط الاحتفاظ',
+    slotsWord: 'حجوزات',
+    resourcesWord: 'موارد',
+    indicatorsWord: 'مؤشرات',
   },
 };
 

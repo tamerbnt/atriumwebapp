@@ -1,4 +1,5 @@
-import React, { useCallback } from 'react';
+import React from 'react';
+import { Segmented } from '../../components/Segmented/Segmented';
 
 export interface ChartSegmentedOption {
   id: string;
@@ -15,70 +16,25 @@ export interface ChartSegmentedProps {
 }
 
 /**
- * Spring-animated pill switcher (.seg / .th parity) using GPU-only translateX.
- * Supports keyboard Left/Right switching and RTL mirroring.
+ * Branded Atrium liquid-blob segmented control for chart period & metric toggles.
+ * Uses dual-spring SegBody clip-path physics and ink-to-on-accent color mixing.
  */
 export const ChartSegmented: React.FC<ChartSegmentedProps> = React.memo(
-  ({ options, value, onChange, ariaLabel, isRtl = false, className = '' }) => {
-    const activeIdx = Math.max(
-      0,
-      options.findIndex((o) => o.id === value)
-    );
-    const count = Math.max(1, options.length);
-
-    const handleKeyDown = useCallback(
-      (e: React.KeyboardEvent, idx: number) => {
-        if (options.length <= 1) return;
-        const nextKey = isRtl ? 'ArrowLeft' : 'ArrowRight';
-        const prevKey = isRtl ? 'ArrowRight' : 'ArrowLeft';
-        if (e.key === nextKey) {
-          e.preventDefault();
-          const next = (idx + 1) % options.length;
-          onChange(options[next].id);
-        } else if (e.key === prevKey) {
-          e.preventDefault();
-          const prev = (idx - 1 + options.length) % options.length;
-          onChange(options[prev].id);
-        }
-      },
-      [options, onChange, isRtl]
-    );
-
+  ({ options, value, onChange, ariaLabel, className = '' }) => {
     if (options.length === 0) return null;
 
-    const thumbPct = activeIdx * 100 * (isRtl ? -1 : 1);
-
     return (
-      <div
-        className={`ax-seg ${className}`}
-        role="group"
+      <Segmented
+        options={options.map((opt) => ({
+          value: opt.id,
+          label: opt.label,
+        }))}
+        value={value}
+        onValueChange={onChange}
+        size={30}
         aria-label={ariaLabel}
-        style={{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` }}
-      >
-        <span
-          aria-hidden="true"
-          className="ax-seg-th"
-          style={{
-            width: `calc((100% - 6px) / ${count})`,
-            transform: `translate3d(${thumbPct}%, 0, 0)`,
-          }}
-        />
-        {options.map((opt, idx) => {
-          const pressed = idx === activeIdx;
-          return (
-            <button
-              key={opt.id}
-              type="button"
-              className="ax-seg-btn"
-              aria-pressed={pressed}
-              onClick={() => onChange(opt.id)}
-              onKeyDown={(e) => handleKeyDown(e, idx)}
-            >
-              {opt.label}
-            </button>
-          );
-        })}
-      </div>
+        className={`shrink-0 ${className}`.trim()}
+      />
     );
   }
 );

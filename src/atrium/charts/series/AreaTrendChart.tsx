@@ -50,6 +50,7 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
     );
     const resolvedRangeId = activeRangeId ?? internalRangeId;
     const [activeIdx, setActiveIdx] = useState<number | null>(null);
+    const [lastIdx, setLastIdx] = useState<number>(0);
 
     const currentRange = useMemo(() => {
       if (!ranges || ranges.length === 0) return null;
@@ -167,10 +168,15 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
       onRangeChange?.(id);
     };
 
+    const setScrubIdx = (idx: number | null) => {
+      setActiveIdx(idx);
+      if (idx !== null) setLastIdx(idx);
+    };
+
     const onKeyDown = useChartKeyboardScrub(
       geom.pts.length,
       activeIdx,
-      setActiveIdx,
+      setScrubIdx,
       isRtl
     );
 
@@ -181,13 +187,22 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
       const svgX = ((e.clientX - rect.left) / rect.width) * geom.W;
       const usableW = geom.W - geom.PAD_L - geom.PAD_R;
       const frac = Math.max(0, Math.min(1, (svgX - geom.PAD_L) / usableW));
-      setActiveIdx(Math.round(frac * (geom.pts.length - 1)));
+      setScrubIdx(Math.round(frac * (geom.pts.length - 1)));
     };
 
     const activePt =
       activeIdx !== null && geom.pts[activeIdx] ? geom.pts[activeIdx] : null;
     const activePrevPt =
       activeIdx !== null && geom.prevPts[activeIdx] ? geom.prevPts[activeIdx] : null;
+    const tipIndex = activeIdx !== null ? activeIdx : Math.min(lastIdx, Math.max(0, geom.pts.length - 1));
+    const tipPt = geom.pts[tipIndex] || null;
+    const tipLeftPct = tipPt ? (tipPt.x / geom.W) * 100 : 15;
+    const tipFlipLeft = tipIndex >= Math.ceil(geom.pts.length * 0.6);
+    const tipDeltaPct =
+      tipPt && typeof tipPt.raw.previous === 'number' && tipPt.raw.previous !== 0
+        ? ((tipPt.raw.value - tipPt.raw.previous) / Math.abs(tipPt.raw.previous)) * 100
+        : null;
+
     const peakPt =
       showPeak && geom.pts.length >= 2 && geom.peakIdx >= 0
         ? geom.pts[geom.peakIdx]
@@ -201,7 +216,6 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
       unit,
     })}`;
 
-    // Label step so dense series (e.g. 30 daily points) never collide on X-axis
     const xLabelStep =
       geom.pts.length <= 8 ? 1 : Math.ceil(geom.pts.length / 6);
 
@@ -273,26 +287,105 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
         }
       >
         {/* Headline Total */}
-        <div className="flex items-baseline gap-2.5">
-          <span className="ax-disp ax-big-plot text-[var(--ax-on)]">
-            <RollingDigits
-              value={formatChartValue(headlineVal, {
-                locale,
-                format,
-                currency,
-                unit,
-              })}
-            />
-          </span>
-          {activePt && (
-            <span className="ax-tk text-[var(--ax-acc)] font-semibold">
-              {activePt.raw.label}
+        <div className="flex flex-wrap items-baseline justify-between gap-2.5">
+          <div className="flex items-baseline gap-2.5 min-w-0">
+            <span className="ax-disp ax-big-plot text-[var(--ax-on)]">
+              <RollingDigits
+                value={formatChartValue(headlineVal, {
+                  locale,
+                  format,
+                  currency,
+                  unit,
+                })}
+              />
+            </span>
+            {activePt && (
+              <span className="ax-tk text-[var(--ax-acc)] font-semibold">
+                {activePt.raw.label}
+              </span>
+            )}
+          </div>
+          {activePt && typeof activePt.raw.previous === 'number' && (
+            <span className="ax-tk">
+              {previousLabel || strings.previousLabel}:{' '}
+              <strong className="text-[var(--ax-on)]" dir="ltr">
+                {formatChartValue(activePt.raw.previous, {
+                  locale,
+                  format,
+                  currency,
+                  unit,
+                })}
+              </strong>
             </span>
           )}
         </div>
 
-        {/* SVG Plot */}
+        {/* SVG Plot + Floating Black High-Contrast Tip */}
         <div className="relative">
+          {tipPt && (
+            <div
+              className="ax-tip"
+              data-open={activePt ? 'true' : 'false'}
+              style={{
+                top: 8,
+                left: tipFlipLeft
+                  ? `clamp(2px, calc(${tipLeftPct}% - min(196px, 66cqw) - 10px), calc(100% - min(196px, 66cqw) - 2px))`
+                  : `clamp(2px, calc(${tipLeftPct}% + 10px), calc(100% - min(196px, 66cqw) - 2px))`,
+              }}
+              aria-hidden={!activePt}
+            >
+              <div className="ax-tip-hd">
+                <span className="ax-tip-lbl">{tipPt.raw.label}</span>
+                {tipDeltaPct !== null && (
+                  <span
+                    className="ax-tip-tot"
+                    dir="ltr"
+                    style={{
+                      color: tipDeltaPct >= 0 ? 'var(--ax-tip-ok)' : 'var(--ax-tip-acc)',
+                    }}
+                  >
+                    {formatChartValue(tipDeltaPct, {
+                      locale,
+                      format: 'percent',
+                      signed: true,
+                      maximumFractionDigits: 1,
+                    })}
+                  </span>
+                )}
+              </div>
+              <div className="ax-tip-row">
+                <span className="ax-tip-key">
+                  <span className="ax-tip-sw" style={{ background: 'var(--ax-c1)' }} />
+                  <span>{currentLabel || strings.currentLabel}</span>
+                </span>
+                <span className="ax-tip-val" dir="ltr">
+                  {formatChartValue(tipPt.raw.value, {
+                    locale,
+                    format,
+                    currency,
+                    unit,
+                  })}
+                </span>
+              </div>
+              {typeof tipPt.raw.previous === 'number' && (
+                <div className="ax-tip-row">
+                  <span className="ax-tip-key">
+                    <span className="ax-tip-sw" style={{ background: 'var(--ax-c4)' }} />
+                    <span>{previousLabel || strings.previousLabel}</span>
+                  </span>
+                  <span className="ax-tip-val" dir="ltr">
+                    {formatChartValue(tipPt.raw.previous, {
+                      locale,
+                      format,
+                      currency,
+                      unit,
+                    })}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
           <svg
             ref={svgRef}
             viewBox={`0 0 ${geom.W} ${geom.H}`}
@@ -345,45 +438,71 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
               );
             })}
 
-            {/* Average dashed reference */}
+            {/* Average dashed reference (label on right edge matching Main.dc.html) */}
             {showAverage && geom.pts.length >= 2 && (
-              <line
-                x1={geom.PAD_L}
-                y1={geom.avgY}
-                x2={geom.W - geom.PAD_R}
-                y2={geom.avgY}
-                stroke="var(--ax-acc)"
-                strokeWidth="1.2"
-                strokeDasharray="4 4"
-                opacity="0.7"
-              />
+              <g>
+                <line
+                  x1={geom.PAD_L}
+                  y1={geom.avgY}
+                  x2={geom.W - geom.PAD_R}
+                  y2={geom.avgY}
+                  stroke="var(--ax-acc)"
+                  strokeWidth="1.2"
+                  strokeDasharray="4 4"
+                  opacity="0.7"
+                />
+                <text
+                  x={geom.W - geom.PAD_R - 2}
+                  y={geom.avgY - 4}
+                  textAnchor="end"
+                  className="fill-[var(--ax-acc)]"
+                  style={{
+                    fontFamily: 'JetBrains Mono, monospace',
+                    fontSize: '9.5px',
+                    fontWeight: 600,
+                  }}
+                >
+                  {averageLabel || strings.avgLabel}
+                </text>
+              </g>
             )}
 
-            {/* Area & Curves */}
-            {geom.areaD && <path d={geom.areaD} fill={`url(#${uid}-area)`} />}
+            {/* Area & Curves (re-triggered on range toggle) */}
+            <g key={currentRange?.id || 'default'}>
+              {geom.areaD && (
+                <path
+                  d={geom.areaD}
+                  fill={`url(#${uid}-area)`}
+                  className="ax-area-fade"
+                />
+              )}
 
-            {geom.prevD && (
-              <path
-                d={geom.prevD}
-                fill="none"
-                stroke="var(--ax-c4)"
-                strokeWidth="1.8"
-                strokeDasharray="4 4"
-                strokeLinecap="round"
-              />
-            )}
+              {geom.prevD && (
+                <path
+                  d={geom.prevD}
+                  fill="none"
+                  stroke="var(--ax-c4)"
+                  strokeWidth="1.8"
+                  strokeDasharray="4 4"
+                  strokeLinecap="round"
+                  className="ax-area-fade"
+                />
+              )}
 
-            {geom.d && (
-              <path
-                d={geom.d}
-                fill="none"
-                stroke="var(--ax-c1)"
-                strokeWidth="2.6"
-                strokeLinecap="round"
-              />
-            )}
+              {geom.d && (
+                <path
+                  d={geom.d}
+                  pathLength={100}
+                  fill="none"
+                  stroke="var(--ax-c1)"
+                  strokeWidth="2.6"
+                  strokeLinecap="round"
+                  className="ax-line-draw"
+                />
+              )}
+            </g>
 
-            {/* Annotated Peak Ring */}
+            {/* Annotated Peak Ring & Inline Callout */}
             {peakPt && !activePt && (
               <g>
                 <circle
@@ -403,6 +522,40 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
                   stroke="var(--ax-c1)"
                   strokeWidth="2"
                 />
+                {(() => {
+                  const tagTxt = `${peakLabel || strings.peakLabel} · ${formatCompactTick(
+                    peakPt.raw.value,
+                    locale
+                  )}`;
+                  const tagW = Math.max(58, tagTxt.length * 6.4 + 14);
+                  const tx = Math.min(geom.W - geom.PAD_R - tagW, Math.max(geom.PAD_L, peakPt.x - tagW / 2));
+                  const ty = Math.max(2, peakPt.y - 25);
+                  return (
+                    <g>
+                      <rect
+                        x={tx}
+                        y={ty}
+                        width={tagW}
+                        height={17}
+                        rx={5}
+                        fill="var(--ax-tip-bg)"
+                      />
+                      <text
+                        x={tx + tagW / 2}
+                        y={ty + 11.5}
+                        textAnchor="middle"
+                        fill="var(--ax-tip-on)"
+                        style={{
+                          fontFamily: 'JetBrains Mono, monospace',
+                          fontSize: '9.5px',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {tagTxt}
+                      </text>
+                    </g>
+                  );
+                })()}
               </g>
             )}
 
@@ -428,71 +581,63 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
               );
             })}
 
-            {/* Scrubber vertical crosshair + dual dots */}
+            {/* Scrubber vertical crosshair + smooth spring dual dots */}
             {activePt && (
-              <g>
+              <g pointerEvents="none">
                 <line
-                  x1={activePt.x}
+                  x1={0}
                   y1={geom.PAD_T}
-                  x2={activePt.x}
+                  x2={0}
                   y2={geom.H - geom.PAD_B}
                   stroke="var(--ax-on)"
                   strokeWidth="1"
                   strokeDasharray="3 3"
                   opacity="0.45"
+                  style={{
+                    transform: `translate3d(${activePt.x}px, 0, 0)`,
+                    transition: 'transform 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
+                  }}
                 />
                 {activePrevPt && (
                   <circle
-                    cx={activePrevPt.x}
-                    cy={activePrevPt.y}
+                    cx={0}
+                    cy={0}
                     r="4"
                     fill="var(--ax-slab)"
                     stroke="var(--ax-c4)"
                     strokeWidth="2"
+                    style={{
+                      transform: `translate3d(${activePrevPt.x}px, ${activePrevPt.y}px, 0)`,
+                      transition: 'transform 0.24s var(--ax-sp)',
+                    }}
                   />
                 )}
                 <circle
-                  cx={activePt.x}
-                  cy={activePt.y}
+                  cx={0}
+                  cy={0}
+                  r="9"
+                  fill="var(--ax-c1)"
+                  opacity="0.18"
+                  style={{
+                    transform: `translate3d(${activePt.x}px, ${activePt.y}px, 0)`,
+                    transition: 'transform 0.24s var(--ax-sp)',
+                  }}
+                />
+                <circle
+                  cx={0}
+                  cy={0}
                   r="5"
                   fill="var(--ax-c1)"
                   stroke="var(--ax-slab)"
                   strokeWidth="2.2"
+                  style={{
+                    transform: `translate3d(${activePt.x}px, ${activePt.y}px, 0)`,
+                    transition: 'transform 0.24s var(--ax-sp)',
+                  }}
                 />
               </g>
             )}
           </svg>
-
-          {activePt && (
-            <div
-              className="ax-tip top-1"
-              style={{
-                left: `${Math.min(72, Math.max(8, (activePt.x / geom.W) * 100 - 10))}%`,
-              }}
-            >
-              <div className="font-semibold">{activePt.raw.label}</div>
-              <div>
-                {currentLabel || strings.currentLabel}:{' '}
-                {formatChartValue(activePt.raw.value, {
-                  locale,
-                  format,
-                  currency,
-                  unit,
-                })}
-              </div>
-              {typeof activePt.raw.previous === 'number' && (
-                <div className="opacity-75">
-                  {previousLabel || strings.previousLabel}:{' '}
-                  {formatChartValue(activePt.raw.previous, {
-                    locale,
-                    format,
-                    currency,
-                    unit,
-                  })}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </ChartCard>
     );

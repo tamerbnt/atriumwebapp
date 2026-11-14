@@ -208,7 +208,7 @@ export const KpiSparkCard: React.FC<KpiSparkCardProps> = React.memo(
               <span aria-hidden="true">
                 {computedDelta > 0 ? '▲' : computedDelta < 0 ? '▼' : '•'}
               </span>
-              <span>
+              <span dir="ltr">
                 {formatChartValue(computedDelta, {
                   locale,
                   format: 'percent',
@@ -252,7 +252,9 @@ export const KpiSparkCard: React.FC<KpiSparkCardProps> = React.memo(
                 </linearGradient>
               </defs>
 
-              {geom.areaD && <path d={geom.areaD} fill={`url(#${uid}-grad)`} />}
+              {geom.areaD && (
+                <path d={geom.areaD} fill={`url(#${uid}-grad)`} className="ax-area-fade" />
+              )}
 
               {geom.prevD && (
                 <path
@@ -262,16 +264,19 @@ export const KpiSparkCard: React.FC<KpiSparkCardProps> = React.memo(
                   strokeWidth="1.4"
                   strokeDasharray="3 3"
                   strokeLinecap="round"
+                  className="ax-area-fade"
                 />
               )}
 
               {geom.d && (
                 <path
                   d={geom.d}
+                  pathLength={100}
                   fill="none"
                   stroke="var(--ax-c1)"
                   strokeWidth="2.2"
                   strokeLinecap="round"
+                  className="ax-line-draw"
                 />
               )}
 
@@ -279,49 +284,105 @@ export const KpiSparkCard: React.FC<KpiSparkCardProps> = React.memo(
                 <circle cx={geom.pts[0].x} cy={geom.pts[0].y} r="4" fill="var(--ax-c1)" />
               )}
 
+              {/* Subtle zero/baseline dotted hairline */}
+              {geom.pts.length >= 2 && (
+                <line
+                  x1={6}
+                  y1={geom.H - 4}
+                  x2={geom.W - 6}
+                  y2={geom.H - 4}
+                  stroke="var(--ax-bdr)"
+                  strokeWidth="1"
+                  strokeDasharray="2 3"
+                  opacity="0.7"
+                />
+              )}
+
+              {/* Persistent live end-point dot with halo at rest */}
+              {!activePt && geom.pts.length >= 2 && (() => {
+                const lastPt = geom.pts[geom.pts.length - 1];
+                return (
+                  <g className="ax-pop-item" style={{ transformOrigin: `${lastPt.x}px ${lastPt.y}px` }}>
+                    <circle
+                      cx={lastPt.x}
+                      cy={lastPt.y}
+                      r="6.5"
+                      fill="var(--ax-c1)"
+                      opacity="0.2"
+                    />
+                    <circle
+                      cx={lastPt.x}
+                      cy={lastPt.y}
+                      r="3.2"
+                      fill="var(--ax-slab)"
+                      stroke="var(--ax-c1)"
+                      strokeWidth="2"
+                    />
+                  </g>
+                );
+              })()}
+
               {activePt && (
-                <g>
+                <g pointerEvents="none">
                   <line
-                    x1={activePt.x}
+                    x1={0}
                     y1={2}
-                    x2={activePt.x}
+                    x2={0}
                     y2={geom.H - 2}
                     stroke="var(--ax-bdr)"
                     strokeWidth="1"
                     strokeDasharray="2 2"
+                    style={{
+                      transform: `translate3d(${activePt.x}px, 0, 0)`,
+                      transition: 'transform 0.18s cubic-bezier(0.22, 1, 0.36, 1)',
+                    }}
                   />
                   {activePrevPt && (
                     <circle
-                      cx={activePrevPt.x}
-                      cy={activePrevPt.y}
+                      cx={0}
+                      cy={0}
                       r="3"
                       fill="var(--ax-slab)"
                       stroke="var(--ax-c4)"
                       strokeWidth="1.5"
+                      style={{
+                        transform: `translate3d(${activePrevPt.x}px, ${activePrevPt.y}px, 0)`,
+                        transition: 'transform 0.22s var(--ax-sp)',
+                      }}
                     />
                   )}
                   <circle
-                    cx={activePt.x}
-                    cy={activePt.y}
+                    cx={0}
+                    cy={0}
                     r="4.2"
                     fill="var(--ax-c1)"
                     stroke="var(--ax-slab)"
                     strokeWidth="2"
+                    style={{
+                      transform: `translate3d(${activePt.x}px, ${activePt.y}px, 0)`,
+                      transition: 'transform 0.22s var(--ax-sp)',
+                    }}
                   />
                 </g>
               )}
             </svg>
 
-            <div className="flex items-center justify-between text-[11px] ax-tk">
+            <div className="flex items-center justify-between gap-2 text-[11px] ax-tk">
               <span>
                 {minLabel || strings.minLabel}:{' '}
-                <strong className="font-semibold text-[var(--ax-sub)]">
+                <strong className="font-semibold text-[var(--ax-sub)]" dir="ltr">
                   {formatChartValue(geom.minVal, { locale, format, currency, unit })}
                 </strong>
               </span>
+              {geom.prevD && (
+                <span className="inline-flex items-center gap-1.5 opacity-85">
+                  <span className="w-3 border-t-[1.5px] border-dashed border-[var(--ax-c4)]" />
+                  <span>{strings.previousLabel}</span>
+                </span>
+              )}
               <span>
                 {maxLabel || strings.maxLabel}:{' '}
-                <strong className="font-semibold text-[var(--ax-sub)]">
+                <strong className="font-semibold text-[var(--ax-sub)]" dir="ltr">
                   {formatChartValue(geom.maxVal, { locale, format, currency, unit })}
                 </strong>
               </span>

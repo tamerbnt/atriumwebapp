@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { ChartCard } from '../primitives/ChartCard';
+import { RollingDigits } from '../primitives/RollingDigits';
 import {
   formatChartValue,
   formatCompactTick,
+  getDefaultChartStrings,
   niceScale,
 } from '../math';
 import { BubbleScatterChartProps } from '../types';
@@ -32,6 +34,7 @@ export const BubbleScatterChart: React.FC<BubbleScatterChartProps> = React.memo(
     groups,
     points,
     xAxisLabel,
+    sizeLabel,
     yFormat = 'currency',
     xFormat = 'number',
     sizeFormat = 'currency',
@@ -40,6 +43,7 @@ export const BubbleScatterChart: React.FC<BubbleScatterChartProps> = React.memo(
     yUnit,
     sizeUnit,
   }) => {
+    const strings = getDefaultChartStrings(locale);
     const [activeId, setActiveId] = useState<string | null>(null);
     const [hiddenGroups, setHiddenGroups] = useState<Record<string, boolean>>({});
 
@@ -125,7 +129,7 @@ export const BubbleScatterChart: React.FC<BubbleScatterChartProps> = React.memo(
     }, [visiblePoints, groupMeta]);
 
     const activeBubble = geom.bubbles.find((b) => b.id === activeId) || null;
-    const ariaSummary = `${title}: ${visiblePoints.length} points analysés`;
+    const ariaSummary = `${title}: ${visiblePoints.length} ${strings.pointsWord}`;
 
     return (
       <ChartCard
@@ -143,6 +147,39 @@ export const BubbleScatterChart: React.FC<BubbleScatterChartProps> = React.memo(
         ariaSummary={ariaSummary}
         className={className}
         data-testid={testId}
+        headerRight={
+          <div className="flex flex-col items-end text-right rtl:text-left">
+            <span className="ax-disp ax-big-mid text-[var(--ax-on)]">
+              <RollingDigits
+                value={
+                  activeBubble
+                    ? formatChartValue(activeBubble.y, {
+                        locale,
+                        format: yFormat,
+                        currency,
+                        unit: yUnit,
+                      })
+                    : visiblePoints.length
+                }
+              />
+            </span>
+            <span className="ax-tk truncate max-w-[240px]">
+              {activeBubble
+                ? `${activeBubble.label} · ${formatChartValue(activeBubble.x, {
+                    locale,
+                    format: xFormat,
+                    currency,
+                    unit: xUnit,
+                  })} · ${formatChartValue(activeBubble.size, {
+                    locale,
+                    format: sizeFormat,
+                    currency,
+                    unit: sizeUnit,
+                  })}`
+                : strings.pointsWord}
+            </span>
+          </div>
+        }
         footer={
           <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
             <div className="flex flex-wrap items-center gap-3">
@@ -153,6 +190,7 @@ export const BubbleScatterChart: React.FC<BubbleScatterChartProps> = React.memo(
                   <button
                     key={g.id}
                     type="button"
+                    data-no-liquid="true"
                     onClick={() =>
                       setHiddenGroups((prev) => ({ ...prev, [g.id]: !prev[g.id] }))
                     }
@@ -170,7 +208,13 @@ export const BubbleScatterChart: React.FC<BubbleScatterChartProps> = React.memo(
                 );
               })}
             </div>
-            {xAxisLabel && <span className="ax-tk">{xAxisLabel}</span>}
+            <div className="flex items-center gap-2.5 ax-tk">
+              <span className="inline-flex items-center gap-1">
+                <span className="inline-block w-2.5 h-2.5 rounded-full border border-[var(--ax-mut)]" />
+                <span>{sizeLabel || strings.sizeLegendLabel}</span>
+              </span>
+              {xAxisLabel && <span>· {xAxisLabel}</span>}
+            </div>
           </div>
         }
       >
@@ -232,74 +276,81 @@ export const BubbleScatterChart: React.FC<BubbleScatterChartProps> = React.memo(
               );
             })}
 
+            {/* Active Bubble Crosshairs */}
+            {activeBubble && (
+              <g pointerEvents="none" opacity="0.45">
+                <line
+                  x1={activeBubble.cx}
+                  y1={geom.PAD_T}
+                  x2={activeBubble.cx}
+                  y2={geom.H - geom.PAD_B}
+                  stroke="var(--ax-on)"
+                  strokeWidth="1"
+                  strokeDasharray="3 3"
+                />
+                <line
+                  x1={geom.PAD_L}
+                  y1={activeBubble.cy}
+                  x2={geom.W - geom.PAD_R}
+                  y2={activeBubble.cy}
+                  stroke="var(--ax-on)"
+                  strokeWidth="1"
+                  strokeDasharray="3 3"
+                />
+              </g>
+            )}
+
             {/* Bubbles */}
-            {geom.bubbles.map((b) => {
+            {geom.bubbles.map((b, idx) => {
               const isActive = activeId === b.id;
               const isDim = activeId !== null && !isActive;
               return (
-                <circle
+                <g
                   key={b.id}
-                  cx={b.cx}
-                  cy={b.cy}
-                  r={b.r}
-                  fill={b.color}
-                  fillOpacity={isActive ? 0.92 : 0.72}
-                  stroke={isActive ? 'var(--ax-on)' : 'var(--ax-slab)'}
-                  strokeWidth={isActive ? 2 : 1.5}
-                  className="cursor-pointer outline-none"
-                  opacity={isDim ? 0.25 : 1}
-                  style={{ transition: 'opacity 0.16s ease, fill-opacity 0.16s ease' }}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`${b.label} (${b.groupLabel})`}
-                  onPointerEnter={() => setActiveId(b.id)}
-                  onFocus={() => setActiveId(b.id)}
-                  onBlur={() => setActiveId(null)}
-                />
+                  className="ax-pop-item"
+                  style={{
+                    transformOrigin: `${b.cx}px ${b.cy}px`,
+                    '--ax-delay': `${Math.min(idx * 36, 320)}ms`,
+                  } as React.CSSProperties}
+                >
+                  {isActive && (
+                    <circle
+                      cx={b.cx}
+                      cy={b.cy}
+                      r={b.r + 6}
+                      fill="none"
+                      stroke={b.color}
+                      strokeWidth="1.8"
+                      opacity="0.45"
+                      pointerEvents="none"
+                    />
+                  )}
+                  <circle
+                    cx={b.cx}
+                    cy={b.cy}
+                    r={b.r}
+                    fill={b.color}
+                    fillOpacity={isActive ? 0.96 : 0.76}
+                    stroke={isActive ? 'var(--ax-on)' : 'var(--ax-slab)'}
+                    strokeWidth={isActive ? 2.2 : 1.5}
+                    className="cursor-pointer outline-none"
+                    opacity={isDim ? 0.25 : 1}
+                    style={{
+                      transformOrigin: `${b.cx}px ${b.cy}px`,
+                      transform: isActive ? 'scale(1.12)' : 'scale(1)',
+                      transition: 'transform 0.3s var(--ax-sp2), opacity 0.16s ease, fill-opacity 0.16s ease',
+                    }}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`${b.label} (${b.groupLabel})`}
+                    onPointerEnter={() => setActiveId(b.id)}
+                    onFocus={() => setActiveId(b.id)}
+                    onBlur={() => setActiveId(null)}
+                  />
+                </g>
               );
             })}
           </svg>
-
-          {activeBubble && (
-            <div
-              className="ax-tip top-1"
-              style={{
-                left: `${Math.min(
-                  68,
-                  Math.max(8, (activeBubble.cx / geom.W) * 100 - 12)
-                )}%`,
-              }}
-            >
-              <div className="font-semibold">
-                {activeBubble.label} · {activeBubble.groupLabel}
-              </div>
-              <div>
-                X:{' '}
-                {formatChartValue(activeBubble.x, {
-                  locale,
-                  format: xFormat,
-                  currency,
-                  unit: xUnit,
-                })}{' '}
-                · Y:{' '}
-                {formatChartValue(activeBubble.y, {
-                  locale,
-                  format: yFormat,
-                  currency,
-                  unit: yUnit,
-                })}
-              </div>
-              <div className="opacity-80">
-                Vol:{' '}
-                {formatChartValue(activeBubble.size, {
-                  locale,
-                  format: sizeFormat,
-                  currency,
-                  unit: sizeUnit,
-                })}
-              </div>
-            </div>
-          )}
         </div>
       </ChartCard>
     );

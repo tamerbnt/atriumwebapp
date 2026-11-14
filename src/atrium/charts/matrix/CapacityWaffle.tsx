@@ -84,11 +84,13 @@ export const CapacityWaffle: React.FC<CapacityWaffleProps> = React.memo(
         data-testid={testId}
         headerRight={
           <div className="flex flex-col items-end text-right rtl:text-left">
-            <span className="ax-disp ax-big-donut text-[var(--ax-on)]">
+            <span className="ax-disp ax-big-donut text-[var(--ax-acc)]">
               <RollingDigits value={`${previewPct}${unitLabel}`} />
             </span>
             <span className="ax-tk">
-              {metrics.safeOcc} / {metrics.safeCap}
+              {hoverIndex !== null && hoverIndex >= metrics.filledDots
+                ? `+${hoverIndex + 1 - metrics.filledDots}${unitLabel} · ${metrics.safeOcc} / ${metrics.safeCap}`
+                : `${metrics.safeOcc} / ${metrics.safeCap}`}
             </span>
           </div>
         }
@@ -130,6 +132,7 @@ export const CapacityWaffle: React.FC<CapacityWaffleProps> = React.memo(
                 hoverIndex !== null &&
                 ((idx <= hoverIndex && !isFilled) || (idx > hoverIndex && isFilled));
               const isCursor = hoverIndex === idx;
+              const isHoverRange = hoverIndex !== null && idx <= hoverIndex;
 
               return (
                 <circle
@@ -137,19 +140,25 @@ export const CapacityWaffle: React.FC<CapacityWaffleProps> = React.memo(
                   data-dot={idx}
                   cx={cx}
                   cy={cy}
-                  r={isCursor ? 8.8 : 7.5}
+                  r={7.5}
                   fill={
                     isFilled
                       ? isPreview
                         ? 'var(--ax-c3)'
                         : 'var(--ax-c1)'
                       : isPreview
-                        ? 'color-mix(in srgb, var(--ax-c1) 45%, var(--ax-waffle-off))'
+                        ? 'var(--ax-c3)'
                         : 'var(--ax-waffle-off)'
                   }
+                  stroke={isHoverRange ? 'var(--ax-on)' : 'none'}
+                  strokeWidth={isCursor ? 1.8 : isHoverRange ? 0.9 : 0}
+                  className="ax-pop-item"
                   style={{
-                    transition: 'fill 0.16s ease, r 0.24s var(--ax-sp2)',
-                  }}
+                    transformOrigin: `${cx}px ${cy}px`,
+                    transform: isCursor ? 'scale(1.22)' : 'scale(1)',
+                    '--ax-delay': `${Math.min(idx * 3, 280)}ms`,
+                    transition: 'fill 0.16s ease, transform 0.24s var(--ax-sp2)',
+                  } as React.CSSProperties}
                 />
               );
             })}

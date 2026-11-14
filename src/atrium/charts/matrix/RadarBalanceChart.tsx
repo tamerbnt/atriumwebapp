@@ -148,14 +148,14 @@ export const RadarBalanceChart: React.FC<RadarBalanceChartProps> = React.memo(
               {hasBenchmark && (
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-3 border-t-[1.5px] border-dashed border-[var(--ax-c4)]" />
-                  <span>{benchmarkLabel || strings.targetLabel}</span>
+                  <span>{benchmarkLabel || strings.benchmarkLabel}</span>
                 </span>
               )}
             </div>
             {activeAxis && typeof activeAxis.benchmark === 'number' && (
               <span>
-                {benchmarkLabel || strings.targetLabel}:{' '}
-                <strong className="text-[var(--ax-on)]">
+                {benchmarkLabel || strings.benchmarkLabel}:{' '}
+                <strong className="text-[var(--ax-on)]" dir="ltr">
                   {Math.round(activeAxis.benchmark)}
                   {unit}
                 </strong>
@@ -166,8 +166,8 @@ export const RadarBalanceChart: React.FC<RadarBalanceChartProps> = React.memo(
       >
         <div className="flex justify-center">
           <svg
-            viewBox="0 0 260 224"
-            className="w-full max-w-[280px] h-[216px] overflow-visible select-none"
+            viewBox="0 0 260 228"
+            className="w-full max-w-[280px] h-[222px] overflow-visible select-none"
             role="img"
             aria-label={ariaSummary}
             onPointerLeave={() => setActiveIdx(null)}
@@ -226,6 +226,11 @@ export const RadarBalanceChart: React.FC<RadarBalanceChartProps> = React.memo(
                 stroke="var(--ax-c4)"
                 strokeWidth="1.5"
                 strokeDasharray="4 3"
+                className="ax-pop-item"
+                style={{
+                  transformOrigin: `${geom.CX}px ${geom.CY}px`,
+                  '--ax-delay': '60ms',
+                } as React.CSSProperties}
               />
             )}
 
@@ -237,6 +242,11 @@ export const RadarBalanceChart: React.FC<RadarBalanceChartProps> = React.memo(
                 stroke="var(--ax-c1)"
                 strokeWidth="2.2"
                 strokeLinejoin="round"
+                className="ax-pop-item"
+                style={{
+                  transformOrigin: `${geom.CX}px ${geom.CY}px`,
+                  '--ax-delay': '120ms',
+                } as React.CSSProperties}
               />
             )}
 
@@ -244,23 +254,41 @@ export const RadarBalanceChart: React.FC<RadarBalanceChartProps> = React.memo(
             {geom.spokes.map((s, idx) => {
               const isActive = activeIdx === idx;
               return (
-                <circle
-                  key={s.axis.id}
-                  cx={s.valPt.x}
-                  cy={s.valPt.y}
-                  r={isActive ? 5.5 : 3.8}
-                  fill={isActive ? 'var(--ax-on)' : 'var(--ax-c1)'}
-                  stroke="var(--ax-slab)"
-                  strokeWidth="1.8"
-                  className="cursor-pointer outline-none"
-                  style={{ transition: 'r 0.2s var(--ax-sp2)' }}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`${s.axis.label}: ${Math.round(s.axis.value)}${unit}`}
-                  onPointerEnter={() => setActiveIdx(idx)}
-                  onFocus={() => setActiveIdx(idx)}
-                  onBlur={() => setActiveIdx(null)}
-                />
+                <g key={s.axis.id}>
+                  <circle
+                    cx={s.valPt.x}
+                    cy={s.valPt.y}
+                    r="9"
+                    fill="var(--ax-c1)"
+                    opacity={isActive ? 0.24 : 0}
+                    pointerEvents="none"
+                    style={{
+                      transformOrigin: `${s.valPt.x}px ${s.valPt.y}px`,
+                      transform: isActive ? 'scale(1)' : 'scale(0.4)',
+                      transition: 'transform 0.26s var(--ax-sp2), opacity 0.18s ease',
+                    }}
+                  />
+                  <circle
+                    cx={s.valPt.x}
+                    cy={s.valPt.y}
+                    r="4.2"
+                    fill={isActive ? 'var(--ax-on)' : 'var(--ax-c1)'}
+                    stroke="var(--ax-slab)"
+                    strokeWidth="1.8"
+                    className="cursor-pointer outline-none"
+                    style={{
+                      transformOrigin: `${s.valPt.x}px ${s.valPt.y}px`,
+                      transform: isActive ? 'scale(1.32)' : 'scale(1)',
+                      transition: 'transform 0.24s var(--ax-sp2), fill 0.16s ease',
+                    }}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`${s.axis.label}: ${Math.round(s.axis.value)}${unit}`}
+                    onPointerEnter={() => setActiveIdx(idx)}
+                    onFocus={() => setActiveIdx(idx)}
+                    onBlur={() => setActiveIdx(null)}
+                  />
+                </g>
               );
             })}
           </svg>

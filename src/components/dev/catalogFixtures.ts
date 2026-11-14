@@ -87,20 +87,23 @@ export function buildCatalogFixtures(preset: CatalogStressPreset, locale: ChartL
       ],
       periods: [
         {
-          id: '7d',
-          label: lbl('7 jours', '7 days', '7 أيام'),
-          buckets: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((d, idx) => ({
-            label: d,
-            values: {
-              subs: preset === 'zeros' ? 0 : (120000 + idx * 18000) * mul,
-              pos: preset === 'zeros' ? 0 : (45000 + (idx % 3) * 14000) * mul,
-              corp: preset === 'zeros' ? 0 : (32000 + idx * 9000) * mul,
-            },
-            cancelled:
-              preset === 'partial' || preset === 'zeros'
-                ? undefined
-                : (idx % 2 === 0 ? 18000 : 8500) * mul,
-          })),
+          id: '12d',
+          label: lbl('12 jours', '12 days', '12 يوماً'),
+          buckets: ['03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14'].map(
+            (d, idx) => ({
+              label: `${d} Nov`,
+              shortLabel: d,
+              values: {
+                subs: preset === 'zeros' ? 0 : (115000 + ((idx * 37) % 90) * 1600) * mul,
+                pos: preset === 'zeros' ? 0 : (42000 + ((idx * 23) % 55) * 1100) * mul,
+                corp: preset === 'zeros' ? 0 : (28000 + ((idx * 19) % 45) * 1300) * mul,
+              },
+              cancelled:
+                preset === 'partial' || preset === 'zeros'
+                  ? undefined
+                  : (idx % 3 === 0 ? 22000 : idx % 2 === 0 ? 12500 : 6500) * mul,
+            })
+          ),
         },
         {
           id: '4w',
@@ -125,6 +128,11 @@ export function buildCatalogFixtures(preset: CatalogStressPreset, locale: ChartL
         'Share of revenue across active plans and services',
         'حصة الإيرادات حسب الباقات النشطة'
       ),
+      helpText: lbl(
+        'Survolez un segment ou une ligne de légende pour isoler sa part exacte.',
+        'Hover any slice or legend row to isolate its exact share.',
+        'مرّر المؤشر فوق أي شريحة لعرض نسبتها الدقيقة.'
+      ),
       segments:
         preset === 'zeros'
           ? [{ id: 'only', label: lbl('Offre unique', 'Single Plan', 'عرض وحيد'), value: 100 }]
@@ -144,17 +152,29 @@ export function buildCatalogFixtures(preset: CatalogStressPreset, locale: ChartL
         'Smoothed trend vs prior period with average & peak callouts',
         'الاتجاه الممهد مقارنة بالفترة السابقة مع المتوسط والذروة'
       ),
+      helpText: lbl(
+        'Compare la courbe actuelle (ligne continue) à la période précédente (pointillés) avec repères moyenne et pic.',
+        'Compares the current curve (solid) with the prior period (dashed), highlighting average and peak.',
+        'يقارن المنحنى الحالي بالفترة السابقة مع إبراز المتوسط والذروة.'
+      ),
       ranges: [
         {
           id: '12m',
-          label: lbl('6 mois', '6 mo', '6 أشهر'),
-          points: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'].map((m, idx) => ({
+          label: lbl('12 mois', '12 mo', '12 شهراً'),
+          points: [
+            'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin',
+            'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc',
+          ].map((m, idx) => ({
             label: m,
-            value: preset === 'zeros' ? 0 : (380000 + idx * 75000 + (idx % 2) * 55000) * mul,
+            value:
+              preset === 'zeros'
+                ? 0
+                : (360000 + idx * 38000 + Math.sin(idx * 0.9) * 85000 + (idx === 9 ? 110000 : 0)) *
+                  mul,
             previous:
               preset === 'partial' || preset === 'zeros'
                 ? undefined
-                : (340000 + idx * 52000) * mul,
+                : (320000 + idx * 31000 + Math.cos(idx * 0.7) * 42000) * mul,
           })),
         },
         {
@@ -178,6 +198,11 @@ export function buildCatalogFixtures(preset: CatalogStressPreset, locale: ChartL
         'Jauge multi-indicateurs sur 270° avec repère d’objectif',
         '270° multi-metric gauge with target marker',
         'مؤشر قياس دائري بزاوية 270 درجة'
+      ),
+      helpText: lbl(
+        'Le trait perpendiculaire sur l’arc indique le seuil d’objectif fixé pour l’indicateur actif.',
+        'The tick mark along the arc indicates the target threshold for the selected metric.',
+        'تشير العلامة العمودية على القوس إلى الهدف المحدد للمؤشر النشط.'
       ),
       metrics: [
         {
@@ -204,6 +229,11 @@ export function buildCatalogFixtures(preset: CatalogStressPreset, locale: ChartL
         'Traffic intensity across days and time slots',
         'كثافة الحضور حسب الأيام والساعات'
       ),
+      helpText: lbl(
+        'Plus la cellule est saturée, plus la charge sur le créneau est élevée. Le contour marque le pic.',
+        'Darker cells represent higher traffic load. The outlined cell marks the peak slot.',
+        'كلما زادت كثافة اللون ارتفع الضغط. الإطار يحدد ساعة الذروة.'
+      ),
       rows: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
       cols: ['08h', '10h', '12h', '14h', '16h', '18h', '20h'],
       cells: [
@@ -224,6 +254,11 @@ export function buildCatalogFixtures(preset: CatalogStressPreset, locale: ChartL
         'Site performance vs optional sector benchmark',
         'أداء الوحدة مقارنة بالمعيار المرجعي'
       ),
+      helpText: lbl(
+        'Le polygone plein mesure vos scores normalisés (0–100%) face au contour pointillé de référence.',
+        'The filled polygon shows normalized scores (0–100%) against the dashed benchmark contour.',
+        'يعرض المضلع المملوء النتائج المطبعة مقارنة بالحد المرجعي المتقطع.'
+      ),
       axes: [
         { id: 'qual', label: lbl('Qualité', 'Quality', 'الجودة'), value: 86, benchmark: preset === 'partial' ? undefined : 78 },
         { id: 'deliv', label: lbl('Délais', 'Lead Time', 'الآجال'), value: 74, benchmark: preset === 'partial' ? undefined : 80 },
@@ -239,6 +274,11 @@ export function buildCatalogFixtures(preset: CatalogStressPreset, locale: ChartL
         'Basculez le critère pour réordonner en douceur sans recalcul de mise en page',
         'Switch criteria for smooth GPU rank reordering',
         'بدّل المعيار لإعادة الترتيب بسلاسة'
+      ),
+      helpText: lbl(
+        'Les longueurs sont normalisées par rapport au 1er du classement sur le critère sélectionné.',
+        'Bar widths normalize relative to the top performer for the active criterion.',
+        'يتم توحيد الأطوال نسبةً إلى المتصدر وفق المعيار المحدد.'
       ),
       criteria: [
         { id: 'rev', label: lbl('Revenus', 'Revenue', 'الإيراد'), format: 'currency' as const, currency: 'DZD' },
@@ -268,6 +308,11 @@ export function buildCatalogFixtures(preset: CatalogStressPreset, locale: ChartL
         '100-dot grid with interactive projection preview',
         'شبكة 100 نقطة مع معاينة تفاعلية'
       ),
+      helpText: lbl(
+        'Chaque point représente 1% de capacité ; survolez la grille pour simuler un palier d’occupation.',
+        'Each dot represents 1% of capacity; hover the grid to preview an occupancy scenario.',
+        'يمثل كل مؤشر 1٪ من السعة؛ مرّر على الشبكة لمعاينة سيناريو إشغال.'
+      ),
       occupied: preset === 'zeros' ? 0 : 73,
       capacity: 100,
     },
@@ -279,9 +324,19 @@ export function buildCatalogFixtures(preset: CatalogStressPreset, locale: ChartL
         'Hourly allocation lanes with optional live time hairline',
         'إشغال القاعات والمحطات بالساعة'
       ),
+      helpText: lbl(
+        'Visualise les créneaux réservés par ressource et signale l’heure en cours par un fil rouge.',
+        'Displays booked time blocks per resource with an optional live-time marker.',
+        'يعرض الحجوزات الزمنية لكل مورد مع خط يشير إلى التوقيت الحالي.'
+      ),
       startHour: 8,
       endHour: 18,
       nowHour: preset === 'partial' ? undefined : 13.5,
+      toneLabels: {
+        primary: lbl('Prioritaire', 'Primary', 'رئيسي'),
+        secondary: lbl('Collectif / VIP', 'Group / VIP', 'جماعي / خاص'),
+        neutral: lbl('Logistique', 'Logistics', 'لوجستي'),
+      },
       resources: [
         { id: 'r1', label: lbl('Salle A / Poste 1', 'Room A / Bay 1', 'قاعة أ') },
         { id: 'r2', label: lbl('Salle B / Poste 2', 'Room B / Bay 2', 'قاعة ب') },
@@ -305,6 +360,11 @@ export function buildCatalogFixtures(preset: CatalogStressPreset, locale: ChartL
         'Step-by-step retention from inquiry to cleared revenue',
         'معدل التحويل عبر كل مرحلة'
       ),
+      helpText: lbl(
+        'Le pourcentage à droite mesure la rétention par rapport à l’étape précédente.',
+        'The right-hand percentage measures retention from the preceding stage.',
+        'تقيس النسبة على الجانب معدل البقاء مقارنة بالمرحلة السابقة.'
+      ),
       stages: [
         { id: 'f1', label: lbl('Demandes entrantes', 'Leads', 'الطلبات الواردة'), value: preset === 'zeros' ? 0 : 1240 * (preset === 'extreme' ? 100 : 1) },
         { id: 'f2', label: lbl('Devis / Essais', 'Trials / Quotes', 'التجارب والعروض'), value: preset === 'zeros' ? 0 : 810 * (preset === 'extreme' ? 100 : 1) },
@@ -320,6 +380,11 @@ export function buildCatalogFixtures(preset: CatalogStressPreset, locale: ChartL
         'Cumulative waterfall across costs, adjustments and net margin',
         'التدفق التراكمي للتكاليف والهامش الصافي'
       ),
+      helpText: lbl(
+        'Relie le chiffre initial au résultat net en isolant les apports positifs (vert) et charges (corail).',
+        'Bridges starting volume to net total across positive additions (green) and deductions (coral).',
+        'يربط الإيراد الابتدائي بالصافي عبر الإضافات والخصومات التراكمية.'
+      ),
       steps:
         preset === 'extreme'
           ? [
@@ -330,11 +395,11 @@ export function buildCatalogFixtures(preset: CatalogStressPreset, locale: ChartL
               { id: 'w5', label: lbl('Résultat net', 'Net', 'الصافي'), value: 0, kind: 'total' as const },
             ]
           : [
-              { id: 'w1', label: lbl('CA Brut', 'Gross Rev.', 'الإيراد الخام'), value: 4_850_000, kind: 'total' as const },
-              { id: 'w2', label: lbl('Achats', 'Purchases', 'المشتريات'), value: -1_920_000, kind: 'delta' as const },
-              { id: 'w3', label: lbl('Salaires', 'Payroll', 'الرواتب'), value: -1_150_000, kind: 'delta' as const },
+              { id: 'w1', label: lbl('CA Brut', 'Gross Rev.', 'الخام'), value: 4_850_000, kind: 'total' as const },
+              { id: 'w2', label: lbl('Achats', 'Purchases', 'شراء'), value: -1_920_000, kind: 'delta' as const },
+              { id: 'w3', label: lbl('Salaires', 'Payroll', 'رواتب'), value: -1_150_000, kind: 'delta' as const },
               { id: 'w4', label: lbl('Extras', 'Add-ons', 'إضافات'), value: 380_000, kind: 'delta' as const },
-              { id: 'w5', label: lbl('Charges', 'OpEx', 'المصاريف'), value: -490_000, kind: 'delta' as const },
+              { id: 'w5', label: lbl('Charges', 'OpEx', 'مصاريف'), value: -490_000, kind: 'delta' as const },
               { id: 'w6', label: lbl('Net', 'Net', 'الصافي'), value: 0, kind: 'total' as const },
             ],
     },
@@ -345,6 +410,11 @@ export function buildCatalogFixtures(preset: CatalogStressPreset, locale: ChartL
         'Part des comptes encore actifs mois après mois (M0 → M5)',
         'Share of accounts remaining active by join month',
         'نسبة الحسابات النشطة شهراً بعد شهر'
+      ),
+      helpText: lbl(
+        'Chaque ligne suit la cohorte d’un mois donné depuis son activation (M0 = 100%) jusqu’à M+5.',
+        'Each row tracks a monthly signup cohort from activation (M0 = 100%) through M+5.',
+        'يتتبع كل صف فوج الانضمام الشهري منذ التفعيل وحتى الشهر الخامس.'
       ),
       cohorts: [
         { label: 'Jan', values: [100, 88, 79, 72, 68, 65] },
@@ -362,6 +432,12 @@ export function buildCatalogFixtures(preset: CatalogStressPreset, locale: ChartL
         'Behavioral segment scatter with revenue-encoded radius',
         'توزيع الشرائح حسب التكرار وقيمة السلة'
       ),
+      helpText: lbl(
+        'Axe horizontal : fréquence, axe vertical : panier moyen, rayon : volume total. Cliquez la légende pour filtrer.',
+        'X shows frequency, Y average basket, and radius total volume. Toggle legend groups to filter.',
+        'المحور الأفقي للتكرار والعمودي لقيمة السلة والحجم لإجمالي الإيراد.'
+      ),
+      xAxisLabel: lbl('Fréquence / mois', 'Freq. / month', 'التكرار / شهر'),
       groups: [
         { id: 'vip', label: 'Premium' },
         { id: 'reg', label: lbl('Réguliers', 'Regular', 'منتظم') },
@@ -384,6 +460,11 @@ export function buildCatalogFixtures(preset: CatalogStressPreset, locale: ChartL
         '80% zone track, optional target marker and achievement pill',
         'منطقة 80٪ مع علامة الهدف وشارة التحقيق'
       ),
+      helpText: lbl(
+        'La bande claire marque 80% de l’échelle, le trait vertical indique l’objectif et la pilule indique % atteint.',
+        'Shaded track marks 80% reference, vertical tick is the target, and badge shows attainment %.',
+        'يشير الشريط إلى 80٪، والخط العمودي للهدف، والشارة لنسبة الإنجاز.'
+      ),
       items: [
         { id: 'bl1', label: lbl('Abonnements', 'Memberships', 'الاشتراكات') + longSuffix, value: 1_940_000 * mul, target: preset === 'partial' ? undefined : 1_800_000 * mul },
         { id: 'bl2', label: lbl('Prestations', 'Services', 'الخدمات'), value: 1_120_000 * mul, target: preset === 'partial' ? undefined : 1_350_000 * mul },
@@ -398,6 +479,11 @@ export function buildCatalogFixtures(preset: CatalogStressPreset, locale: ChartL
         'Subdivision proportionnelle (ratio d’or φ=1,618) et masquage progressif',
         'Golden-ratio squarified tiles with progressive labels',
         'تقسيم تناسبي بنسبة ذهبية'
+      ),
+      helpText: lbl(
+        'Surface proportionnelle au poids économique. Les plus petits blocs restent lisibles dans la légende et au survol.',
+        'Tile area matches revenue share; smaller tiles remain accessible in the legend and tooltip.',
+        'مساحة كل مربع تتناسب مع حصته من الإيرادات وتظهر التفاصيل في المفتاح.'
       ),
       items: [
         { id: 't1', label: lbl('Gros & Distribution', 'Wholesale', 'الجملة') + longSuffix, value: 4_200_000 * (preset === 'extreme' ? 85 : 1) },
@@ -416,6 +502,11 @@ export function buildCatalogFixtures(preset: CatalogStressPreset, locale: ChartL
         'Frequency histogram highlighting the cumulative median bin',
         'مدرج تكراري يبرز الفئة الوسيطة تلقائياً'
       ),
+      helpText: lbl(
+        'La barre en accent corail désigne automatiquement la tranche contenant la médiane cumulée (50%).',
+        'The coral bar highlights the bin containing the cumulative 50% median.',
+        'يمثل العمود البرتقالي تلقائياً الفئة التي تحتوي على الوسيط التراكمي 50٪.'
+      ),
       bins: [
         { id: 'h1', label: '< 2k', value: 42 },
         { id: 'h2', label: '2–5k', value: 118 },
@@ -432,6 +523,11 @@ export function buildCatalogFixtures(preset: CatalogStressPreset, locale: ChartL
         'Anneau creux (période précédente) vers point plein (période actuelle)',
         'Hollow prior ring to filled current dot with semantic delta badge',
         'من الدائرة الفارغة إلى النقطة الممتلئة مع فارق الأداء'
+      ),
+      helpText: lbl(
+        'Le trait relie N-1 (anneau creux) à N (point plein) ; vert pour une progression, corail pour un repli.',
+        'Connects prior period (hollow ring) to current (filled dot); green shows growth, coral shows decline.',
+        'يربط الخط بين الفترة السابقة (حلقة) والحالية (نقطة) مع تلوين دلالي للتغير.'
       ),
       items: [
         { id: 'db1', label: lbl('Alger Centre', 'Algiers Hub', 'الجزائر الوسطى') + longSuffix, prev: 1_120_000 * mul, value: 1_490_000 * mul },

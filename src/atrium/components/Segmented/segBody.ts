@@ -46,7 +46,9 @@ export class SegBody implements Body {
   /** Move to option j. With `animate` false it jumps (initial layout, resize). */
   setIndex(j: number, animate: boolean): void {
     if (animate && j === this.index) return;
-    const right = j > this.index;
+    const prevX = this.geo[this.index]?.[0] ?? this.index;
+    const nextX = this.geo[j]?.[0] ?? j;
+    const right = nextX > prevX;
     if (animate) {
       this.R.k = right ? 420 : 200;
       this.L.k = right ? 200 : 420;

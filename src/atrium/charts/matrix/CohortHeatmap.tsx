@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ChartCard } from '../primitives/ChartCard';
 import { RollingDigits } from '../primitives/RollingDigits';
 import { useIsRtl } from '../hooks';
+import { getDefaultChartStrings } from '../math';
 import { CohortHeatmapProps } from '../types';
 
 export const CohortHeatmap: React.FC<CohortHeatmapProps> = React.memo(
@@ -23,6 +24,7 @@ export const CohortHeatmap: React.FC<CohortHeatmapProps> = React.memo(
     unit = '%',
   }) => {
     const isRtl = useIsRtl(locale);
+    const strings = getDefaultChartStrings(locale);
     const [active, setActive] = useState<{ r: number; c: number } | null>(null);
 
     const maxCols = useMemo(
@@ -77,7 +79,7 @@ export const CohortHeatmap: React.FC<CohortHeatmapProps> = React.memo(
       }
     };
 
-    const ariaSummary = `${title}: rétention moyenne ${latestAvg}${unit}`;
+    const ariaSummary = `${title}: ${strings.retentionAvgWord} ${latestAvg}${unit}`;
 
     return (
       <ChartCard
@@ -97,7 +99,7 @@ export const CohortHeatmap: React.FC<CohortHeatmapProps> = React.memo(
         data-testid={testId}
         headerRight={
           <div className="flex flex-col items-end text-right rtl:text-left">
-            <span className="ax-disp ax-big-hm text-[var(--ax-on)]">
+            <span className="ax-disp ax-big-hm text-[var(--ax-acc)]">
               <RollingDigits
                 value={`${
                   typeof activeVal === 'number' ? Math.round(activeVal) : latestAvg
@@ -107,8 +109,26 @@ export const CohortHeatmap: React.FC<CohortHeatmapProps> = React.memo(
             <span className="ax-tk">
               {active
                 ? `${cohorts[active.r]?.label} · ${columnPrefix}${active.c}`
-                : 'Moyenne M+'}
+                : strings.cohortAvgLabel}
             </span>
+          </div>
+        }
+        footer={
+          <div className="flex items-center justify-between gap-2 pt-1 ax-tk">
+            <span dir="ltr">
+              {columnPrefix}0 = 100{unit}
+            </span>
+            <div className="flex items-center gap-2">
+              <span>{strings.lowLabel}</span>
+              <span
+                className="h-2.5 w-20 rounded-full border border-[var(--ax-bdr)]"
+                style={{
+                  background:
+                    'linear-gradient(90deg, color-mix(in srgb, var(--ax-c1) 14%, var(--ax-slab)), var(--ax-c1))',
+                }}
+              />
+              <span>{strings.highLabel}</span>
+            </div>
           </div>
         }
       >
@@ -179,13 +199,18 @@ export const CohortHeatmap: React.FC<CohortHeatmapProps> = React.memo(
                     data-c={c}
                     role="gridcell"
                     aria-selected={isSelected}
-                    className="h-[26px] rounded-[6px] flex items-center justify-center ax-mono text-[10.5px] font-medium cursor-pointer transition-opacity duration-150"
+                    className={`ax-pop-item h-[26px] rounded-[6px] flex items-center justify-center ax-mono text-[10.5px] font-medium cursor-pointer ${
+                      isSelected ? 'relative z-10' : ''
+                    }`}
                     style={{
                       background: `color-mix(in srgb, var(--ax-c1) ${mixPct}%, var(--ax-slab))`,
                       color: textColor,
-                      opacity: isCross ? 1 : 0.32,
+                      opacity: isCross ? 1 : 0.3,
+                      transform: isSelected ? 'scale(1.1)' : 'scale(1)',
                       outline: isSelected ? '2px solid var(--ax-on)' : undefined,
-                    }}
+                      '--ax-delay': `${Math.min((r * maxCols + c) * 9, 280)}ms`,
+                      transition: 'transform 0.24s var(--ax-sp2), opacity 0.16s ease',
+                    } as React.CSSProperties}
                   >
                     {Math.round(pct)}
                   </div>

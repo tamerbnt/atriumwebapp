@@ -1,7 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { ChartCard } from '../primitives/ChartCard';
 import { RollingDigits } from '../primitives/RollingDigits';
-import { formatChartValue, formatCompactTick, niceScale } from '../math';
+import {
+  formatChartValue,
+  formatCompactTick,
+  getDefaultChartStrings,
+  niceScale,
+} from '../math';
 import { WaterfallChartProps } from '../types';
 
 export const WaterfallChart: React.FC<WaterfallChartProps> = React.memo(
@@ -23,7 +28,9 @@ export const WaterfallChart: React.FC<WaterfallChartProps> = React.memo(
     currency = 'DZD',
     unit,
     shareBasisIndex = 0,
+    legendLabels,
   }) => {
+    const strings = getDefaultChartStrings(locale);
     const [activeIdx, setActiveIdx] = useState<number | null>(null);
 
     const processed = useMemo(() => {
@@ -117,7 +124,7 @@ export const WaterfallChart: React.FC<WaterfallChartProps> = React.memo(
         data-testid={testId}
         headerRight={
           <div className="flex flex-col items-end text-right rtl:text-left">
-            <span className="ax-disp ax-big-mid text-[var(--ax-on)]">
+            <span className="ax-disp ax-big-mid text-[var(--ax-acc)]">
               <RollingDigits
                 value={formatChartValue(displayVal, {
                   locale,
@@ -136,19 +143,37 @@ export const WaterfallChart: React.FC<WaterfallChartProps> = React.memo(
             </span>
           </div>
         }
+        footer={
+          processed.bars.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-3 ax-tk pt-1">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-[3px] bg-[var(--ax-on)]" />
+                <span>{legendLabels?.total || strings.totalStepLabel}</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-[3px] bg-[var(--ax-ok)]" />
+                <span>{legendLabels?.positive || strings.positiveLabel}</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-[3px] bg-[var(--ax-c1)]" />
+                <span>{legendLabels?.negative || strings.negativeLabel}</span>
+              </span>
+            </div>
+          ) : undefined
+        }
       >
         <div
-          className="relative flex gap-2.5 pt-2"
+          className="relative flex gap-2.5 pt-4"
           onPointerLeave={() => setActiveIdx(null)}
         >
           {/* Y-axis */}
           <div
-            className="flex flex-col justify-between items-end shrink-0 pb-6 ax-tk select-none"
-            style={{ height: 184 }}
+            className="flex flex-col justify-between items-end shrink-0 ax-tk select-none"
+            style={{ height: 156 }}
             aria-hidden="true"
           >
             {[...processed.scale.ticks].reverse().map((tick, idx) => (
-              <span key={idx} className="leading-none">
+              <span key={idx} className="leading-none -translate-y-0.5">
                 {formatCompactTick(tick, locale)}
               </span>
             ))}
@@ -156,7 +181,7 @@ export const WaterfallChart: React.FC<WaterfallChartProps> = React.memo(
 
           {/* Plot Area */}
           <div className="relative flex-1 min-w-0">
-            <div className="relative h-[160px] w-full">
+            <div className="relative h-[156px] w-full">
               {processed.scale.ticks.map((tick, idx) => (
                 <div
                   key={idx}
@@ -178,57 +203,95 @@ export const WaterfallChart: React.FC<WaterfallChartProps> = React.memo(
               >
                 {processed.bars.map((bar, idx) => {
                   const bottomPct = yPct(bar.lo);
-                  const heightPct = Math.max(2.5, yPct(bar.hi) - bottomPct);
+                  const heightPct = Math.max(3, yPct(bar.hi) - bottomPct);
                   const isActive = activeIdx === idx;
                   const isDim = activeIdx !== null && !isActive;
 
                   const fill =
                     bar.polarity === 'total'
-                      ? 'var(--ax-on)'
+                      ? idx === processed.bars.length - 1
+                        ? 'var(--ax-c1)'
+                        : 'var(--ax-on)'
                       : bar.polarity === 'pos'
                         ? 'var(--ax-ok)'
-                        : 'var(--ax-c1)';
+                        : isActive
+                          ? 'var(--ax-c1)'
+                          : 'var(--ax-c3)';
 
                   const nextBar = processed.bars[idx + 1];
                   const connectorBottomPct = yPct(bar.end);
+                  const barLabel = `${bar.kind === 'delta' && bar.val > 0 ? '+' : ''}${formatCompactTick(
+                    bar.val,
+                    locale
+                  )}`;
+
+                  const isNegOnly = bar.hi <= 0;
+                  const delayStyle = {
+                    '--ax-delay': `${Math.min(idx * 55, 320)}ms`,
+                  } as React.CSSProperties;
 
                   return (
                     <div
                       key={bar.id}
-                      className="relative h-full flex items-end"
-                      style={{ opacity: isDim ? 0.36 : 1, transition: 'opacity 0.16s ease' }}
+                      className="relative h-full w-full"
+                      style={{ opacity: isDim ? 0.34 : 1, transition: 'opacity 0.16s ease' }}
                     >
                       {/* Dashed Connector to next bar */}
                       {nextBar && (
                         <div
-                          className="absolute left-1/2 -right-2 border-t border-dashed border-[var(--ax-mut)] pointer-events-none"
-                          style={{ bottom: `${connectorBottomPct}%` }}
+                          className="absolute w-[calc(100%+8px)] border-t border-dashed border-[var(--ax-mut)] pointer-events-none"
+                          style={{ insetInlineStart: '50%', bottom: `${connectorBottomPct}%` }}
                         />
                       )}
 
-                      <button
-                        type="button"
-                        onPointerEnter={() => setActiveIdx(idx)}
-                        onFocus={() => setActiveIdx(idx)}
-                        onBlur={() => setActiveIdx(null)}
-                        onClick={() => setActiveIdx((prev) => (prev === idx ? null : idx))}
-                        aria-label={`${bar.label}: ${formatChartValue(bar.val, {
-                          locale,
-                          format,
-                          currency,
-                          unit,
-                          signed: bar.kind === 'delta',
-                        })}`}
-                        className="ax-plot-focus ax-bar-y absolute inset-x-0 rounded-[7px] cursor-pointer"
+                      {/* Floating bar value label */}
+                      <span
+                        dir="ltr"
+                        className="ax-tk absolute inset-x-0 text-center text-[9.5px] leading-none pointer-events-none whitespace-nowrap"
+                        style={
+                          bar.polarity === 'neg'
+                            ? { top: `calc(${100 - bottomPct}% + 3px)` }
+                            : { bottom: `calc(${Math.max(0, bottomPct) + heightPct}% + 3px)` }
+                        }
+                        aria-hidden="true"
+                      >
+                        {barLabel}
+                      </span>
+
+                      <div
+                        className={`ax-abs left-0 right-0 w-full ${
+                          isNegOnly ? 'ax-col-neg-enter' : 'ax-col-enter'
+                        }`}
                         style={{
+                          ...delayStyle,
                           bottom: `${Math.max(0, bottomPct)}%`,
                           height: `${heightPct}%`,
-                          background: fill,
-                          boxShadow: isActive ? '0 0 0 2px var(--ax-acc)' : undefined,
                           transformOrigin:
-                            bar.hi <= 0 ? 'top center' : bottomPct >= zeroPct ? 'bottom center' : 'center',
+                            isNegOnly ? 'top center' : bottomPct >= zeroPct ? 'bottom center' : 'center',
                         }}
-                      />
+                      >
+                        <button
+                          type="button"
+                          data-no-liquid="true"
+                          onPointerEnter={() => setActiveIdx(idx)}
+                          onFocus={() => setActiveIdx(idx)}
+                          onBlur={() => setActiveIdx(null)}
+                          onClick={() => setActiveIdx((prev) => (prev === idx ? null : idx))}
+                          aria-label={`${bar.label}: ${formatChartValue(bar.val, {
+                            locale,
+                            format,
+                            currency,
+                            unit,
+                            signed: bar.kind === 'delta',
+                          })}`}
+                          className="ax-plot-focus ax-bar-y w-full h-full rounded-[6px] cursor-pointer"
+                          style={{
+                            background: fill,
+                            transform: isActive ? 'scale3d(1.06, 1.03, 1)' : 'scale3d(1, 1, 1)',
+                            boxShadow: isActive ? '0 0 0 2px var(--ax-acc)' : undefined,
+                          }}
+                        />
+                      </div>
                     </div>
                   );
                 })}

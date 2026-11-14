@@ -77,7 +77,7 @@ export const BulletChart: React.FC<BulletChartProps> = React.memo(
     const isEmpty = state === 'ready' && processed.rows.length === 0;
     const effectiveState = isEmpty ? 'empty' : state;
 
-    const ariaSummary = `${title}: ${processed.rows.length} indicateurs`;
+    const ariaSummary = `${title}: ${processed.rows.length} ${strings.indicatorsWord}`;
 
     return (
       <ChartCard
@@ -96,23 +96,17 @@ export const BulletChart: React.FC<BulletChartProps> = React.memo(
         className={className}
         data-testid={testId}
         footer={
-          <div className="flex flex-wrap items-center justify-between gap-2 ax-tk pt-1">
-            <div className="flex items-center gap-3">
-              <span className="inline-flex items-center gap-1.5">
-                <span className="w-3 h-1.5 rounded-full bg-[var(--ax-c1)]" />
-                <span>{actualLegendLabel || strings.actualLabel}</span>
-              </span>
-              {processed.hasAnyTarget && (
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="w-[2px] h-3 bg-[var(--ax-on)]" />
-                  <span>{targetLegendLabel || strings.targetLabel}</span>
-                </span>
-              )}
-            </div>
+          <div className="flex flex-wrap items-center gap-4 ax-tk pt-1">
             <span className="inline-flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[var(--ax-ok)]" />
-              <span>{achievedLabel || strings.achievedLabel}</span>
+              <span className="w-4 h-[9px] rounded-full bg-[var(--ax-c1)]" />
+              <span>{actualLegendLabel || strings.actualLabel}</span>
             </span>
+            {processed.hasAnyTarget && (
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-[3px] h-4 rounded-full bg-[var(--ax-on)]" />
+                <span>{targetLegendLabel || strings.targetLabel}</span>
+              </span>
+            )}
           </div>
         }
       >
@@ -134,46 +128,53 @@ export const BulletChart: React.FC<BulletChartProps> = React.memo(
                 onPointerEnter={() => setHoveredIdx(idx)}
                 onFocus={() => setHoveredIdx(idx)}
                 onBlur={() => setHoveredIdx(null)}
-                className="ax-plot-focus ax-row-stack grid grid-cols-[minmax(96px,140px)_minmax(0,1fr)_auto] items-center gap-3 cursor-pointer transition-opacity duration-150"
-                style={{ opacity: isDim ? 0.42 : 1 }}
+                className={`ax-plot-focus ax-row-stack grid grid-cols-[minmax(76px,104px)_minmax(0,1fr)_auto] items-center gap-2.5 px-1.5 py-1 rounded-[10px] cursor-pointer transition-all duration-150 ${
+                  isHovered ? 'bg-[var(--ax-soft)]' : ''
+                }`}
+                style={{ opacity: isDim ? 0.4 : 1 }}
               >
                 <span
-                  className="text-[12.5px] font-medium text-[var(--ax-on)] truncate"
+                  className="text-[12px] font-medium text-[var(--ax-on)] truncate"
                   title={row.label}
                 >
                   {row.label}
                 </span>
 
-                {/* 80% neutral zone + actual fill + optional target hairline */}
-                <div className="relative h-6 rounded-[8px] bg-[var(--ax-soft)] flex items-center px-0 overflow-hidden">
+                {/* 24px track with 80% neutral zone + centered 10px coral fill + overhanging 3px target tick */}
+                <div className="relative h-6 rounded-[6px] bg-[var(--ax-soft)] flex items-center">
                   <div
-                    className="h-full bg-[var(--ax-soft)] border-e border-[var(--ax-bdr)] pointer-events-none"
+                    className="h-full rounded-s-[6px] bg-[var(--ax-on)]/[0.06] pointer-events-none"
                     style={{ width: '80%' }}
                     aria-hidden="true"
                   />
                   <div
-                    className="ax-bar-x absolute top-1.5 bottom-1.5 inset-inline-start-0 rounded-full w-full"
+                    className="ax-bar-x absolute top-1/2 -translate-y-1/2 h-2.5 inset-inline-start-0 rounded-full w-full"
                     style={{
                       transform: `scaleX(${Math.max(0.015, row.valPct / 100)})`,
-                      background: row.isReached ? 'var(--ax-ok)' : 'var(--ax-c1)',
+                      background: 'var(--ax-c1)',
+                      transitionDelay: `${Math.min(idx * 65, 260)}ms`,
                     }}
                   />
                   {row.tgtPct !== undefined && (
                     <span
                       aria-hidden="true"
-                      className="absolute top-0.5 bottom-0.5 w-[2.5px] rounded-full bg-[var(--ax-on)] z-10 pointer-events-none"
-                      style={{ insetInlineStart: `calc(${row.tgtPct}% - 1px)` }}
+                      className="absolute -top-[3px] -bottom-[3px] w-[3px] rounded-full bg-[var(--ax-on)] z-10 pointer-events-none transition-transform duration-200"
+                      style={{
+                        insetInlineStart: `calc(${row.tgtPct}% - 1.5px)`,
+                        transform: isHovered ? 'scaleY(1.16)' : 'scaleY(1)',
+                      }}
                     />
                   )}
                 </div>
 
-                {/* Readout & Achievement Badge */}
-                <div className="ax-row-meta-sm flex items-center justify-end gap-2 shrink-0">
-                  <span className="ax-nv">
+                {/* Readout & Semantic Achievement Chip (green on target reached, neutral otherwise) */}
+                <div className="ax-row-meta-sm flex items-center justify-end gap-1.5 shrink-0">
+                  <span className="ax-nv text-[12px]" dir="ltr">
                     {formatChartValue(row.val, { locale, format, currency, unit })}
                   </span>
                   {row.deltaPct !== undefined && (
                     <span
+                      dir="ltr"
                       className={`ax-chip ${
                         row.isReached ? 'ax-chip-ok' : 'ax-chip-neutral'
                       }`}

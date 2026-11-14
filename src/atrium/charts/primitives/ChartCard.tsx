@@ -140,7 +140,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
           </div>
           {subtitle && <p className="ax-sub">{subtitle}</p>}
         </div>
-        {headerRight && <div className="shrink-0">{headerRight}</div>}
+        {headerRight && <div className="min-w-0 max-w-full shrink-0">{headerRight}</div>}
       </header>
 
       {state === 'loading' ? (
@@ -151,7 +151,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
         <div className="ax-err" role="alert">
           <span>{errorMessage || strings.error}</span>
           {onRetry && (
-            <button type="button" className="ax-retry" onClick={onRetry}>
+            <button type="button" data-no-liquid="true" className="ax-retry" onClick={onRetry}>
               {strings.retry}
             </button>
           )}

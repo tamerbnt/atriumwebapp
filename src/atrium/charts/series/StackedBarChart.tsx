@@ -12,6 +12,9 @@ import {
 import { StackedBarChartProps } from '../types';
 
 const DEFAULT_SERIES_COLORS = ['var(--ax-c1)', 'var(--ax-c3)', 'var(--ax-c4)', 'var(--ax-c5)'];
+const POS_H = 140;
+const NEG_H = 26;
+const LIFT_PX = 2;
 
 export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
   ({
@@ -49,6 +52,7 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
     const resolvedPeriodId = activePeriodId ?? internalPeriodId;
     const [hiddenIds, setHiddenIds] = useState<Record<string, boolean>>({});
     const [activeIdx, setActiveIdx] = useState<number | null>(null);
+    const [lastIdx, setLastIdx] = useState<number>(0);
 
     const handlePeriodChange = (id: string) => {
       setInternalPeriodId(id);
@@ -102,10 +106,15 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
         ? currentPeriod.headlineValue
         : metrics.sumTotal;
 
+    const setScrubIdx = (idx: number | null) => {
+      setActiveIdx(idx);
+      if (idx !== null) setLastIdx(idx);
+    };
+
     const onKeyDown = useChartKeyboardScrub(
       activeBuckets.length,
       activeIdx,
-      setActiveIdx,
+      setScrubIdx,
       isRtl
     );
 
@@ -120,7 +129,7 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
       const rawFrac = (e.clientX - rect.left) / rect.width;
       const frac = Math.max(0, Math.min(0.9999, isRtl ? 1 - rawFrac : rawFrac));
       const idx = Math.floor(frac * activeBuckets.length);
-      setActiveIdx(idx);
+      setScrubIdx(idx);
     };
 
     const avgRatio =
@@ -128,15 +137,49 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
 
     const activeBucket =
       activeIdx !== null && activeBuckets[activeIdx] ? activeBuckets[activeIdx] : null;
+    const tipBucketIndex = activeIdx !== null ? activeIdx : Math.min(lastIdx, Math.max(0, activeBuckets.length - 1));
+    const tipBucket = activeBuckets[tipBucketIndex] || null;
     const activeBucketTotal =
       activeIdx !== null ? metrics.totals[activeIdx] ?? 0 : headline;
+
+    // Tight spring bounding ring geometry (wraps active bar stack + optional below-zero bar)
+    const nCols = Math.max(1, activeBuckets.length);
+    const ringGeometry = useMemo(() => {
+      const idx = Math.min(lastIdx, nCols - 1);
+      const colPct = 100 / nCols;
+      const leftPct = (isRtl ? nCols - 1 - idx : idx) * colPct;
+      const posVal = metrics.totals[idx] || 0;
+      const posRatio = metrics.scale.max > 0 ? Math.min(1, posVal / metrics.scale.max) : 0;
+      const posPx = Math.max(posVal > 0 ? 6 : 0, posRatio * (POS_H - LIFT_PX));
+      const cancelVal = Math.max(0, activeBuckets[idx]?.cancelled || 0);
+      const cancelPx =
+        hasAnyCancelled && metrics.maxCancel > 0 && cancelVal > 0
+          ? Math.max(6, (cancelVal / metrics.maxCancel) * (NEG_H - 4))
+          : 0;
+
+      const topPx = Math.max(0, POS_H - LIFT_PX - posPx - 4);
+      const bottomEdgePx = POS_H + (cancelPx > 0 ? cancelPx + 6 : 2);
+      const heightPx = Math.max(18, bottomEdgePx - topPx);
+
+      const centerPct = leftPct + colPct / 2;
+      const flipToLeftSide = centerPct > 56;
+
+      return {
+        leftPct,
+        colPct,
+        topPx,
+        heightPx,
+        centerPct,
+        flipToLeftSide,
+      };
+    }, [lastIdx, nCols, isRtl, metrics.totals, metrics.scale.max, metrics.maxCancel, activeBuckets, hasAnyCancelled]);
 
     const ariaSummary = `${title}: ${formatChartValue(headline, {
       locale,
       format,
       currency,
       unit,
-    })}, ${activeBuckets.length} périodes`;
+    })}, ${activeBuckets.length} ${strings.periodsWord}`;
 
     return (
       <ChartCard
@@ -166,41 +209,49 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
           ) : undefined
         }
         footer={
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-            <div className="flex flex-wrap items-center gap-3">
-              {activeSeries.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => toggleSeries(s.id)}
-                  aria-pressed={!s.hidden}
-                  className={`inline-flex items-center gap-1.5 text-[11.5px] font-medium cursor-pointer transition-opacity ${
-                    s.hidden ? 'opacity-40 line-through' : 'opacity-95 hover:opacity-100'
-                  }`}
-                >
-                  <span
-                    className="w-2.5 h-2.5 rounded-[3px] shrink-0"
-                    style={{ background: s.color }}
-                  />
-                  <span className="text-[var(--ax-sub)]">{s.label}</span>
-                </button>
-              ))}
-              {hasAnyCancelled && (
-                <span className="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-[var(--ax-sub)]">
-                  <span className="w-2.5 h-2.5 rounded-[3px] ax-es border border-[var(--ax-bdr)] shrink-0" />
-                  <span>{cancelledLabel || 'Annulés'}</span>
-                </span>
-              )}
-            </div>
-            {showAverage && (
-              <span className="ax-tk">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5 ax-tk">
+            {showAverage ? (
+              <span>
                 {averageLabel || strings.avgLabel}:{' '}
-                {formatChartValue(metrics.avg, { locale, format, currency, unit })}
+                <strong className="text-[var(--ax-on)]" dir="ltr">
+                  {formatChartValue(metrics.avg, { locale, format, currency, unit })}
+                </strong>
               </span>
+            ) : (
+              <span />
             )}
+            <span>
+              {activeBuckets.length} {strings.periodsWord}
+            </span>
           </div>
         }
       >
+        {/* Filter Pills (.leg2) positioned cleanly above headline figure */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          {activeSeries.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              data-no-liquid="true"
+              onClick={() => toggleSeries(s.id)}
+              aria-pressed={!s.hidden}
+              className="ax-leg-pill"
+            >
+              <span
+                className="w-2.5 h-2.5 rounded-[3px] shrink-0"
+                style={{ background: s.color }}
+              />
+              <span>{s.label}</span>
+            </button>
+          ))}
+          {hasAnyCancelled && (
+            <span className="inline-flex items-center gap-1.5 px-2 py-[3px] rounded-[8px] border border-[var(--ax-bdr)] text-[11px] font-medium text-[var(--ax-sub)]">
+              <span className="w-2.5 h-2.5 rounded-[3px] ax-es border border-[var(--ax-bdr)] shrink-0" />
+              <span>{cancelledLabel || strings.cancelledLabel}</span>
+            </span>
+          )}
+        </div>
+
         {/* Headline Total */}
         <div className="flex items-baseline justify-between gap-3">
           <div className="flex items-baseline gap-2.5 min-w-0">
@@ -226,27 +277,29 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
                 currentPeriod.deltaPercent >= 0 ? 'ax-chip-ok' : 'ax-chip-bad'
               }`}
             >
-              {currentPeriod.deltaPercent >= 0 ? '▲' : '▼'}{' '}
-              {formatChartValue(currentPeriod.deltaPercent, {
-                locale,
-                format: 'percent',
-                signed: true,
-                maximumFractionDigits: 1,
-              })}
+              <span aria-hidden="true">{currentPeriod.deltaPercent >= 0 ? '▲' : '▼'}</span>
+              <span dir="ltr">
+                {formatChartValue(currentPeriod.deltaPercent, {
+                  locale,
+                  format: 'percent',
+                  signed: true,
+                  maximumFractionDigits: 1,
+                })}
+              </span>
             </span>
           )}
         </div>
 
         {/* Plot */}
-        <div className="relative flex gap-2.5 pt-2">
-          {/* Y-axis ticks */}
+        <div className="relative flex gap-2.5 pt-1">
+          {/* Y-axis ticks aligned strictly to positive 0..max zone above hatched baseline */}
           <div
-            className="flex flex-col justify-between items-end shrink-0 pb-6 ax-tk select-none"
-            style={{ height: hasAnyCancelled ? 188 : 162 }}
+            className="flex flex-col justify-between items-end shrink-0 ax-tk select-none"
+            style={{ height: POS_H }}
             aria-hidden="true"
           >
             {[...metrics.scale.ticks].reverse().map((tick, idx) => (
-              <span key={idx} className="leading-none">
+              <span key={idx} className="leading-none -translate-y-0.5">
                 {formatCompactTick(tick, locale)}
               </span>
             ))}
@@ -262,114 +315,223 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
             onKeyDown={onKeyDown}
             className="relative flex-1 min-w-0 ax-plot-focus select-none cursor-pointer"
           >
-            {/* Gridlines */}
-            <div
-              className="relative w-full"
-              style={{ height: hasAnyCancelled ? 164 : 138 }}
-            >
-              {metrics.scale.ticks.map((_, idx) => {
-                const pct =
-                  metrics.scale.ticks.length > 1
-                    ? (idx / (metrics.scale.ticks.length - 1)) * 100
-                    : 0;
-                return (
-                  <div
-                    key={idx}
-                    className="absolute inset-x-0 border-t border-dashed border-[var(--ax-bdr)] pointer-events-none"
-                    style={{ bottom: `${hasAnyCancelled ? 26 + pct * 0.84 : pct}%` }}
-                  />
-                );
-              })}
+            <div key={currentPeriod?.id || 'default'} className="relative w-full">
+              {/* Spring-gliding tight bounding ring around hovered column (matches Main.dc.html #ring) */}
+              <span
+                className="ax-ring"
+                data-active={activeBucket ? 'true' : 'false'}
+                aria-hidden="true"
+                style={{
+                  left: `${ringGeometry.leftPct}%`,
+                  width: `${ringGeometry.colPct}%`,
+                  top: `${ringGeometry.topPx}px`,
+                  height: `${ringGeometry.heightPx}px`,
+                }}
+              />
 
-              {/* Moving average guide line */}
-              {showAverage && metrics.avg > 0 && (
+              {/* Floating black high-contrast data rectangle (.ax-tip) */}
+              {tipBucket && (
                 <div
-                  className="absolute inset-x-0 border-t-[1.5px] border-dashed border-[var(--ax-acc)] pointer-events-none z-10"
+                  className="ax-tip"
+                  data-open={activeBucket ? 'true' : 'false'}
                   style={{
-                    bottom: `${
-                      hasAnyCancelled ? 26 + avgRatio * 84 : avgRatio * 100
-                    }%`,
+                    top: 4,
+                    left: ringGeometry.flipToLeftSide
+                      ? `clamp(2px, calc(${ringGeometry.leftPct}% - min(196px, 66cqw) - 8px), calc(100% - min(196px, 66cqw) - 2px))`
+                      : `clamp(2px, calc(${ringGeometry.leftPct + ringGeometry.colPct}% + 8px), calc(100% - min(196px, 66cqw) - 2px))`,
                   }}
-                />
+                  aria-hidden={!activeBucket}
+                >
+                  <div className="ax-tip-hd">
+                    <span className="ax-tip-lbl">{tipBucket.label}</span>
+                    <span className="ax-tip-tot" dir="ltr">
+                      {formatChartValue(metrics.totals[tipBucketIndex] || 0, {
+                        locale,
+                        format,
+                        currency,
+                        unit,
+                      })}
+                    </span>
+                  </div>
+                  {visibleSeries.map((s) => (
+                    <div key={s.id} className="ax-tip-row">
+                      <span className="ax-tip-key">
+                        <span className="ax-tip-sw" style={{ background: s.color }} />
+                        <span>{s.label}</span>
+                      </span>
+                      <span className="ax-tip-val" dir="ltr">
+                        {formatChartValue(Math.max(0, tipBucket.values[s.id] || 0), {
+                          locale,
+                          format,
+                          currency,
+                          unit,
+                        })}
+                      </span>
+                    </div>
+                  ))}
+                  {hasAnyCancelled && (tipBucket.cancelled || 0) > 0 && (
+                    <div className="ax-tip-row">
+                      <span className="ax-tip-key">
+                        <span
+                          className="ax-tip-sw ax-es"
+                          style={{
+                            border: '1px solid color-mix(in srgb, var(--ax-tip-on) 30%, transparent)',
+                          }}
+                        />
+                        <span>{cancelledLabel || strings.cancelledLabel}</span>
+                      </span>
+                      <span
+                        className="ax-tip-val"
+                        dir="ltr"
+                        style={{ color: 'var(--ax-tip-acc)' }}
+                      >
+                        -
+                        {formatChartValue(tipBucket.cancelled || 0, {
+                          locale,
+                          format,
+                          currency,
+                          unit,
+                        })}
+                      </span>
+                    </div>
+                  )}
+                </div>
               )}
 
-              {/* Columns */}
-              <div
-                className="relative z-10 h-full grid gap-1.5 items-end"
-                style={{
-                  gridTemplateColumns: `repeat(${activeBuckets.length}, minmax(0, 1fr))`,
-                }}
-              >
-                {activeBuckets.map((bucket, idx) => {
-                  const isActive = activeIdx === idx;
-                  const isDimmed = activeIdx !== null && !isActive;
-                  const positiveHeightPct =
-                    metrics.scale.max > 0
-                      ? Math.min(100, (metrics.totals[idx] / metrics.scale.max) * 100)
+              {/* Positive 0..max Zone with 2px baseline lift */}
+              <div className="relative w-full" style={{ height: POS_H }}>
+                {metrics.scale.ticks.map((tick, idx) => {
+                  const pct =
+                    metrics.scale.ticks.length > 1
+                      ? (idx / (metrics.scale.ticks.length - 1)) * 100
                       : 0;
-                  const cancelRatio =
-                    hasAnyCancelled && metrics.maxCancel > 0
-                      ? Math.min(1, Math.max(0, bucket.cancelled || 0) / metrics.maxCancel)
-                      : 0;
-
                   return (
                     <div
-                      key={`${bucket.label}-${idx}`}
-                      className="h-full flex flex-col justify-end items-center transition-opacity duration-150"
-                      style={{ opacity: isDimmed ? 0.35 : 1 }}
-                    >
-                      {/* Positive stack */}
-                      <div
-                        className="w-full flex flex-col justify-end"
-                        style={{ height: hasAnyCancelled ? 'calc(100% - 26px)' : '100%' }}
-                      >
-                        <div
-                          className="ax-bar-y w-full flex flex-col-reverse overflow-hidden rounded-t-[6px]"
-                          style={{
-                            height: `${Math.max(positiveHeightPct, metrics.totals[idx] > 0 ? 3 : 0)}%`,
-                            boxShadow: isActive ? '0 0 0 2px var(--ax-acc)' : undefined,
-                          }}
-                        >
-                          {visibleSeries.map((s) => {
-                            const val = Math.max(0, bucket.values[s.id] || 0);
-                            const slicePct =
-                              metrics.totals[idx] > 0
-                                ? (val / metrics.totals[idx]) * 100
-                                : 0;
-                            if (slicePct <= 0) return null;
-                            return (
-                              <div
-                                key={s.id}
-                                style={{
-                                  height: `${slicePct}%`,
-                                  background: s.color,
-                                }}
-                              />
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Negative / Cancelled hatched baseline */}
-                      {hasAnyCancelled && (
-                        <div className="w-full h-[26px] border-t border-[var(--ax-bdr)] flex items-start justify-center pt-[2px]">
-                          {(bucket.cancelled || 0) > 0 && (
-                            <div
-                              className="w-full ax-es rounded-b-[4px] border border-[var(--ax-bdr)]"
-                              style={{ height: `${Math.max(20, cancelRatio * 100)}%` }}
-                            />
-                          )}
-                        </div>
-                      )}
-                    </div>
+                      key={idx}
+                      className={`absolute inset-x-0 pointer-events-none ${
+                        tick === 0
+                          ? 'border-t border-[var(--ax-on)]/25'
+                          : 'border-t border-dashed border-[var(--ax-bdr)] opacity-75'
+                      }`}
+                      style={{ bottom: `${pct}%` }}
+                    />
                   );
                 })}
+
+                {/* Moving average dashed hairline with right-aligned badge */}
+                {showAverage && metrics.avg > 0 && (
+                  <div
+                    className="absolute inset-x-0 border-t-[1.5px] border-dashed border-[var(--ax-acc)] pointer-events-none z-20 flex justify-end"
+                    style={{ bottom: `${avgRatio * 100}%` }}
+                  >
+                    <span className="ax-tk me-1 -translate-y-1/2 px-1.5 py-[1px] rounded border border-[var(--ax-acc)]/35 bg-[var(--ax-slab)] text-[9.5px] text-[var(--ax-acc)] font-semibold leading-none shadow-xs">
+                      {averageLabel || strings.avgLabel}
+                    </span>
+                  </div>
+                )}
+
+                {/* Positive Stacked Columns (2px lift from baseline + 2px air gap between slices) */}
+                <div
+                  className="relative z-10 h-full grid gap-[6px] items-end pb-[2px] px-[2px]"
+                  style={{
+                    gridTemplateColumns: `repeat(${activeBuckets.length}, minmax(0, 1fr))`,
+                  }}
+                >
+                  {activeBuckets.map((bucket, idx) => {
+                    const isActive = activeIdx === idx;
+                    const isDimmed = activeIdx !== null && !isActive;
+                    const positiveHeightPct =
+                      metrics.scale.max > 0
+                        ? Math.min(100, (metrics.totals[idx] / metrics.scale.max) * 100)
+                        : 0;
+                    const delayStyle = {
+                      '--ax-delay': `${Math.min(idx * 16, 260)}ms`,
+                    } as React.CSSProperties;
+
+                    return (
+                      <div
+                        key={`${bucket.label}-${idx}`}
+                        className="relative h-full flex flex-col justify-end items-center transition-opacity duration-200"
+                        style={{ opacity: isDimmed ? 0.3 : 1 }}
+                      >
+                        <div
+                          className="ax-col-enter relative z-10 w-full flex flex-col justify-end"
+                          style={{
+                            ...delayStyle,
+                            height: `${Math.max(positiveHeightPct, metrics.totals[idx] > 0 ? 3 : 0)}%`,
+                          }}
+                        >
+                          <div className="ax-bar-y w-full h-full flex flex-col-reverse gap-[2px] overflow-hidden rounded-t-[5px]">
+                            {visibleSeries.map((s) => {
+                              const val = Math.max(0, bucket.values[s.id] || 0);
+                              const slicePct =
+                                metrics.totals[idx] > 0
+                                  ? (val / metrics.totals[idx]) * 100
+                                  : 0;
+                              if (slicePct <= 0) return null;
+                              return (
+                                <div
+                                  key={s.id}
+                                  className="w-full rounded-[3px]"
+                                  style={{
+                                    height: `${slicePct}%`,
+                                    background: s.color,
+                                  }}
+                                />
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
+
+              {/* Hatched negative/cancelled bars hanging strictly below 0 baseline */}
+              {hasAnyCancelled && (
+                <div
+                  className="grid gap-[6px] px-[2px] pt-[3px]"
+                  style={{
+                    height: NEG_H,
+                    gridTemplateColumns: `repeat(${activeBuckets.length}, minmax(0, 1fr))`,
+                  }}
+                >
+                  {activeBuckets.map((bucket, idx) => {
+                    const isActive = activeIdx === idx;
+                    const isDimmed = activeIdx !== null && !isActive;
+                    const cancelRatio =
+                      metrics.maxCancel > 0
+                        ? Math.min(1, Math.max(0, bucket.cancelled || 0) / metrics.maxCancel)
+                        : 0;
+                    const negDelayStyle = {
+                      '--ax-delay': `${Math.min(idx * 16 + 60, 320)}ms`,
+                    } as React.CSSProperties;
+                    return (
+                      <div
+                        key={`neg-${idx}`}
+                        className="h-full flex items-start justify-center transition-opacity duration-200"
+                        style={{ opacity: isDimmed ? 0.3 : 1 }}
+                      >
+                        {(bucket.cancelled || 0) > 0 && (
+                          <div
+                            className="ax-col-neg-enter w-full ax-es rounded-b-[4px] border border-[var(--ax-on)]/25"
+                            style={{
+                              ...negDelayStyle,
+                              height: `${Math.max(26, cancelRatio * 100)}%`,
+                            }}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* X-axis labels */}
             <div
-              className="grid gap-1.5 pt-1.5 text-center ax-tk"
+              className="grid gap-[6px] pt-1.5 text-center ax-tk"
               style={{
                 gridTemplateColumns: `repeat(${activeBuckets.length}, minmax(0, 1fr))`,
               }}
@@ -377,55 +539,14 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
               {activeBuckets.map((b, idx) => (
                 <span
                   key={idx}
-                  className={`truncate ${
-                    activeIdx === idx ? 'text-[var(--ax-on)] font-semibold' : ''
+                  className={`truncate transition-colors duration-150 ${
+                    activeIdx === idx ? 'text-[var(--ax-acc)] font-semibold' : ''
                   }`}
                 >
                   {b.shortLabel || b.label}
                 </span>
               ))}
             </div>
-
-            {/* Floating Tip */}
-            {activeBucket && activeIdx !== null && (
-              <div
-                className="ax-tip top-1"
-                style={{
-                  insetInlineStart: `${Math.min(
-                    76,
-                    Math.max(4, ((activeIdx + 0.5) / activeBuckets.length) * 100 - 12)
-                  )}%`,
-                }}
-              >
-                <div className="font-semibold mb-0.5">{activeBucket.label}</div>
-                {visibleSeries.map((s) => (
-                  <div key={s.id} className="flex items-center justify-between gap-3">
-                    <span className="opacity-75">{s.label}</span>
-                    <span>
-                      {formatChartValue(activeBucket.values[s.id] || 0, {
-                        locale,
-                        format,
-                        currency,
-                        unit,
-                      })}
-                    </span>
-                  </div>
-                ))}
-                {hasAnyCancelled && (activeBucket.cancelled || 0) > 0 && (
-                  <div className="flex items-center justify-between gap-3 opacity-80 border-t border-white/15 mt-1 pt-0.5">
-                    <span>{cancelledLabel || 'Annulés'}</span>
-                    <span>
-                      {formatChartValue(activeBucket.cancelled || 0, {
-                        locale,
-                        format,
-                        currency,
-                        unit,
-                      })}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       </ChartCard>

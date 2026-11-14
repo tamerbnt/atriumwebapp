@@ -50,7 +50,9 @@ function SegmentedInner<T extends string>(props: SegmentedProps<T>, ref: Ref<HTM
   idxRef.current = idx;
   const merged = useMergedRef<HTMLDivElement>(ref, groupRef);
 
-  // build the blob once the DOM exists; re-measure when the group resizes or fonts arrive
+  const layoutKey = options.map((o) => `${o.value}:${String(o.label ?? '')}`).join('|');
+
+  // build the blob once the DOM exists; re-measure when the group resizes, labels change, or fonts arrive
   useIsoLayoutEffect(() => {
     const group = groupRef.current;
     const blob = blobRef.current;
@@ -80,7 +82,7 @@ function SegmentedInner<T extends string>(props: SegmentedProps<T>, ref: Ref<HTM
       bodyRef.current = null;
       group.removeAttribute('data-live');
     };
-  }, [options.length]);
+  }, [options.length, layoutKey]);
 
   // a value change (click, key, or the parent) slides the blob
   useEffect(() => {
@@ -145,9 +147,10 @@ function SegmentedInner<T extends string>(props: SegmentedProps<T>, ref: Ref<HTM
             optRefs.current[i] = el;
           }}
           type="button"
+          data-no-liquid="true"
           role="radio"
           aria-checked={i === idx}
-          aria-label={o['aria-label']}
+          aria-label={o['aria-label'] || (typeof o.label === 'string' ? o.label : undefined)}
           title={o.tooltip}
           disabled={o.disabled}
           tabIndex={i === idx ? 0 : -1}

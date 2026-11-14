@@ -125,8 +125,8 @@ export const DonutChart: React.FC<DonutChartProps> = React.memo(
         data-testid={testId}
       >
         <div className="flex flex-col items-center gap-4">
-          {/* 200px Centered Ring */}
-          <div className="relative w-[196px] h-[196px] flex items-center justify-center">
+          {/* 192px Centered Ring */}
+          <div className="relative w-[192px] h-[192px] flex items-center justify-center">
             <svg
               viewBox="0 0 100 100"
               className="w-full h-full -rotate-90 overflow-visible"
@@ -144,20 +144,23 @@ export const DonutChart: React.FC<DonutChartProps> = React.memo(
                     key={slice.id}
                     cx="50"
                     cy="50"
-                    r="36"
+                    r="37.5"
                     fill="none"
                     pathLength={100}
                     stroke={slice.color}
-                    strokeWidth={isActive ? 15.5 : 11}
+                    strokeWidth={isActive ? 16 : 11}
                     strokeDasharray={`${dashLen} ${100 - dashLen}`}
                     strokeDashoffset={-slice.offset}
                     strokeLinecap="butt"
-                    opacity={isDim ? 0.52 : 1}
-                    className="cursor-pointer outline-none"
+                    opacity={isDim ? 0.55 : 1}
+                    className="ax-donut-arc cursor-pointer outline-none"
                     style={{
+                      transformOrigin: '50px 50px',
+                      transform: isActive ? 'scale(1.02)' : 'scale(1)',
+                      '--ax-delay': `${Math.min(idx * 55, 280)}ms`,
                       transition:
-                        'stroke-width 0.34s var(--ax-sp2), opacity 0.2s ease',
-                    }}
+                        'stroke-width 0.4s var(--ax-sp), transform 0.4s var(--ax-sp), opacity 0.2s ease',
+                    } as React.CSSProperties}
                     tabIndex={0}
                     role="button"
                     aria-label={`${slice.label}: ${Math.round(slice.pct)}% (${formatChartValue(
@@ -173,18 +176,18 @@ export const DonutChart: React.FC<DonutChartProps> = React.memo(
               })}
             </svg>
 
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-6 text-center">
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-7 text-center">
               <span className="ax-disp ax-big-donut text-[var(--ax-on)]">
                 <RollingDigits value={centerMain} />
               </span>
-              <span className="text-[11.5px] font-medium text-[var(--ax-sub)] truncate max-w-[116px] mt-0.5">
+              <span className="text-[11px] font-medium leading-tight text-[var(--ax-sub)] line-clamp-2 max-w-[118px] mt-0.5">
                 {centerCaption}
               </span>
             </div>
           </div>
 
           {/* Interactive Legend */}
-          <div className="w-full flex flex-col gap-1.5">
+          <div className="w-full flex flex-col gap-1">
             {processed.slices.map((slice, idx) => {
               const isActive = activeIdx === idx;
               const isDim = activeIdx !== null && !isActive;
@@ -192,6 +195,7 @@ export const DonutChart: React.FC<DonutChartProps> = React.memo(
                 <button
                   key={slice.id}
                   type="button"
+                  data-no-liquid="true"
                   onPointerEnter={() => setActiveIdx(idx)}
                   onPointerLeave={() => setActiveIdx(null)}
                   onFocus={() => setActiveIdx(idx)}
@@ -207,7 +211,7 @@ export const DonutChart: React.FC<DonutChartProps> = React.memo(
                 >
                   <span className="flex items-center gap-2 min-w-0">
                     <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      className="w-2.5 h-2.5 rounded-[3px] shrink-0"
                       style={{ background: slice.color }}
                     />
                     <span className="text-[12px] font-medium text-[var(--ax-on)] truncate">

@@ -50,12 +50,15 @@
   --ax-shadow-h: 0 12px 36px rgba(10, 10, 10, 0.07);
   --ax-tip-bg: #0a0a0a;
   --ax-tip-on: #ffffff;
+  --ax-tip-acc: #ee7452;
+  --ax-tip-ok: #5be3a3;
   color-scheme: light;
 }
 
 [data-atrium-theme='dark'] .ax-card:not([data-surface='light']),
 .dark .ax-card:not([data-surface='light']),
 .ax-card[data-surface='dark'],
+.ax-scope[data-atrium-theme='dark']:not([data-surface='light']),
 [data-atrium-theme='dark'] .ax-scope:not([data-surface='light']) {
   --ax-bg: #0e0d0c;
   --ax-slab: #151413;
@@ -82,6 +85,13 @@
   --ax-shadow-h: 0 14px 36px rgba(0, 0, 0, 0.42);
   --ax-tip-bg: #f4ede6;
   --ax-tip-on: #151413;
+  --ax-tip-acc: #b03b1b;
+  --ax-tip-ok: #096b40;
+  --atr-line: #3a3734;
+  --atr-ink: #f4ede6;
+  --atr-acc: #ee7452;
+  --atr-onacc: #000000;
+  --atr-acc-text: #ee7452;
   color-scheme: dark;
 }
 
@@ -111,6 +121,13 @@
   --ax-shadow-h: 0 12px 36px rgba(10, 10, 10, 0.07);
   --ax-tip-bg: #0a0a0a;
   --ax-tip-on: #ffffff;
+  --ax-tip-acc: #ee7452;
+  --ax-tip-ok: #5be3a3;
+  --atr-line: #e6ded6;
+  --atr-ink: #000000;
+  --atr-acc: #d4522f;
+  --atr-onacc: #000000;
+  --atr-acc-text: #ab391a;
   color-scheme: light;
 }
 
@@ -171,8 +188,20 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
+}
+
+/* Prevent global liquid button rules from overriding absolute chart elements */
+.ax-card button.ax-abs,
+.ax-card .ax-abs {
+  position: absolute !important;
+  overflow: visible;
+}
+
+.ax-card button.ax-tm-tile {
+  position: absolute !important;
+  overflow: hidden;
 }
 
 .ax-head-meta {
@@ -262,32 +291,41 @@
 
 .ax-pop {
   position: absolute;
-  top: calc(100% + 8px);
-  inset-inline-start: 0;
-  z-index: 40;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 45;
   width: min(232px, 70cqw);
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: var(--ax-slab);
-  color: var(--ax-on);
-  border: 1px solid var(--ax-bdr);
-  box-shadow: 0 14px 32px rgba(10, 10, 10, 0.16);
-  font-size: 12px;
-  line-height: 17px;
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: var(--ax-tip-bg);
+  color: var(--ax-tip-on);
+  border: 1px solid color-mix(in srgb, var(--ax-tip-on) 14%, transparent);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.24);
+  font-size: 11.5px;
+  line-height: 16px;
   font-weight: 400;
   opacity: 0;
-  transform: translate3d(0, -4px, 0) scale(0.95);
-  filter: blur(4px);
+  transform: translate3d(0, 5px, 0) scale(0.95);
+  filter: blur(2px);
   pointer-events: none;
-  transform-origin: top left;
+  transform-origin: top center;
   transition:
-    opacity 0.28s ease,
+    opacity 0.16s ease,
     transform 0.57s var(--ax-sp),
-    filter 0.36s ease;
+    filter 0.57s var(--ax-sp);
 }
 
-[dir='rtl'] .ax-pop {
-  transform-origin: top right;
+.ax-pop::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: var(--ax-arrow-x, 10px);
+  width: 9px;
+  height: 9px;
+  background: var(--ax-tip-bg);
+  border-top: 1px solid color-mix(in srgb, var(--ax-tip-on) 14%, transparent);
+  border-left: 1px solid color-mix(in srgb, var(--ax-tip-on) 14%, transparent);
+  transform: translateX(-50%) rotate(45deg);
 }
 
 .ax-pop[data-open='true'] {
@@ -344,6 +382,36 @@
   font-size: 10.5px;
   font-weight: 500;
   color: var(--ax-mut);
+}
+
+/* ---------- Interactive Filter Pills (.leg2 parity) ---------- */
+.ax-leg-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 8px;
+  border: 1px solid var(--ax-bdr);
+  background: transparent;
+  color: var(--ax-on);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  cursor: pointer;
+  transition:
+    opacity 0.16s ease,
+    border-color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.ax-leg-pill:hover {
+  border-color: color-mix(in srgb, var(--ax-acc) 55%, var(--ax-bdr));
+  background: var(--ax-soft);
+}
+
+.ax-leg-pill[aria-pressed='false'] {
+  opacity: 0.42;
+  text-decoration: line-through;
 }
 
 /* ---------- Semantic Delta & Achievement Chips ---------- */
@@ -409,10 +477,10 @@
   background: transparent;
   color: var(--ax-sub);
   font-family: var(--atr-font-ui, 'Inter', sans-serif);
-  font-size: 11.5px;
+  font-size: 11px;
   line-height: 1;
   font-weight: 600;
-  padding: 6px 10px;
+  padding: 5px 9px;
   border-radius: 8px;
   cursor: pointer;
   white-space: nowrap;
@@ -432,6 +500,8 @@
 .ax-roll {
   display: inline-flex;
   align-items: baseline;
+  direction: ltr;
+  unicode-bidi: isolate;
   font-variant-numeric: tabular-nums;
 }
 
@@ -439,6 +509,7 @@
   display: inline-block;
   overflow: hidden;
   line-height: 1.04;
+  white-space: pre;
 }
 
 .ax-roll-in {
@@ -487,23 +558,119 @@
   );
 }
 
-/* ---------- Floating Scrubber / Hover Tooltip ---------- */
+/* ---------- High-Contrast Floating Data Rectangle (.ax-tip) ---------- */
 .ax-tip {
   position: absolute;
-  z-index: 30;
+  z-index: 35;
   pointer-events: none;
-  padding: 6px 10px;
-  border-radius: 10px;
+  width: min(196px, 66cqw);
+  padding: 9px 12px;
+  border-radius: 12px;
   background: var(--ax-tip-bg);
   color: var(--ax-tip-on);
-  font-family: 'JetBrains Mono', var(--atr-font-mono), monospace;
+  border: 1px solid color-mix(in srgb, var(--ax-tip-on) 14%, transparent);
+  font-family: var(--atr-font-ui, 'Inter', sans-serif);
   font-size: 11px;
   line-height: 15px;
-  font-weight: 500;
   font-variant-numeric: tabular-nums;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
+  opacity: 0;
+  transform: translate3d(0, 4px, 0) scale(0.97);
+  transition:
+    left 0.35s var(--ax-sp2),
+    right 0.35s var(--ax-sp2),
+    opacity 0.16s ease,
+    transform 0.28s var(--ax-sp2);
+}
+
+.ax-tip[data-open='true'] {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.ax-tip-hd {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ax-tip-on) 16%, transparent);
+}
+
+.ax-tip-lbl {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--ax-tip-on) 68%, transparent);
   white-space: nowrap;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2);
-  transition: opacity 0.16s ease, transform 0.24s var(--ax-sp2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ax-tip-tot {
+  font-family: 'JetBrains Mono', var(--atr-font-mono), monospace;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ax-tip-on);
+  white-space: nowrap;
+}
+
+.ax-tip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 3px;
+}
+
+.ax-tip-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: color-mix(in srgb, var(--ax-tip-on) 80%, transparent);
+}
+
+.ax-tip-key > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ax-tip-sw {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.ax-tip-val {
+  font-family: 'JetBrains Mono', var(--atr-font-mono), monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ax-tip-on);
+  white-space: nowrap;
+}
+
+/* ---------- Tight Spring Column Bounding Ring (.ax-ring) ---------- */
+.ax-ring {
+  position: absolute;
+  z-index: 25;
+  pointer-events: none;
+  border: 1.5px solid var(--ax-mut);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ax-on) 4%, transparent);
+  opacity: 0;
+  transition:
+    left 0.3s var(--ax-sp2),
+    top 0.3s var(--ax-sp2),
+    width 0.3s var(--ax-sp2),
+    height 0.3s var(--ax-sp2),
+    opacity 0.16s ease;
+}
+
+.ax-ring[data-active='true'] {
+  opacity: 1;
 }
 
 /* ---------- Standardized Card States (Loading / Empty / Error) ---------- */
@@ -584,16 +751,72 @@
   border-radius: 8px;
 }
 
-/* ---------- Compositor Scale Entry Utilities ---------- */
+/* ---------- Compositor Scale Entry & Graph Motion Utilities ---------- */
+@keyframes ax-grow-y {
+  0% {
+    opacity: 0.22;
+    transform: scaleY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes ax-grow-x {
+  0% {
+    opacity: 0.25;
+    transform: scaleX(0);
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes ax-draw-path {
+  0% {
+    stroke-dashoffset: 100;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes ax-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes ax-pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.78);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes ax-donut-draw {
+  0% {
+    stroke-dasharray: 0 100;
+  }
+}
+
 .ax-bar-y {
   transform-origin: bottom center;
-  transition: transform 0.6s var(--ax-sp2), opacity 0.2s ease;
+  transition: transform 0.56s var(--ax-sp2), opacity 0.2s ease, box-shadow 0.2s ease;
   will-change: transform;
 }
 
 .ax-bar-x {
   transform-origin: left center;
-  transition: transform 0.6s var(--ax-sp2), opacity 0.2s ease;
+  transition: transform 0.58s var(--ax-sp2), opacity 0.2s ease, background-color 0.2s ease;
   will-change: transform;
 }
 
@@ -601,8 +824,79 @@
   transform-origin: right center;
 }
 
-/* ---------- Container Queries (<440px, <360px) ---------- */
-@container (max-width: 439px) {
+.ax-card[data-visible='false'] .ax-bar-x {
+  transform: scaleX(0) !important;
+}
+
+.ax-card[data-visible='false'] .ax-bar-y {
+  transform: scaleY(0) !important;
+}
+
+.ax-card[data-visible='true'] .ax-col-enter {
+  transform-origin: bottom center;
+  animation: ax-grow-y 0.66s var(--ax-sp2) var(--ax-delay, 0ms) both;
+  will-change: transform, opacity;
+}
+
+.ax-card[data-visible='true'] .ax-col-neg-enter {
+  transform-origin: top center;
+  animation: ax-grow-y 0.56s var(--ax-sp2) var(--ax-delay, 0ms) both;
+  will-change: transform, opacity;
+}
+
+.ax-card[data-visible='true'] .ax-line-draw {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 0;
+  animation: ax-draw-path 0.86s cubic-bezier(0.22, 1, 0.36, 1) var(--ax-delay, 0ms) both;
+}
+
+.ax-card[data-visible='true'] .ax-area-fade {
+  animation: ax-fade-in 0.62s ease var(--ax-delay, 120ms) both;
+}
+
+.ax-card[data-visible='true'] .ax-pop-item {
+  animation: ax-pop-in 0.54s var(--ax-sp2) var(--ax-delay, 0ms) both;
+  will-change: transform, opacity;
+}
+
+.ax-card[data-visible='true'] .ax-donut-arc {
+  animation: ax-donut-draw 0.72s var(--ax-sp2) var(--ax-delay, 0ms) both;
+}
+
+/* Treemap sibling dimming + crisp tile hover */
+.ax-tmw:hover .ax-tm-tile {
+  opacity: 0.68;
+}
+
+.ax-tmw .ax-tm-tile:hover,
+.ax-tmw .ax-tm-tile[data-active='true'] {
+  opacity: 1 !important;
+  transform: scale(0.985) !important;
+  filter: brightness(1.06);
+}
+
+/* Crisp column ring indicator for histogram bins */
+.ax-col-ring {
+  position: absolute;
+  inset: -4px -3px;
+  border-radius: 10px;
+  background: var(--ax-soft);
+  border: 1.5px solid color-mix(in srgb, var(--ax-acc) 55%, transparent);
+  pointer-events: none;
+  opacity: 0;
+  transform: scale3d(0.94, 0.98, 1);
+  transition: opacity 0.16s ease, transform 0.32s var(--ax-sp2);
+}
+
+.ax-col-ring[data-active='true'] {
+  opacity: 1;
+  transform: scale3d(1, 1, 1);
+}
+
+/* ---------- Container Queries (content-box inline-size thresholds) ----------
+   Note: 1440px 3-col cards (~392px outer) have ~350px inner inline-size;
+   320px cards (~288px-304px outer) have ~246px-270px inner inline-size. */
+@container (max-width: 315px) {
   .ax-hide-sm {
     display: none !important;
   }
@@ -615,10 +909,15 @@
   }
 }
 
-@container (max-width: 359px) {
+@container (max-width: 280px) {
   .ax-head {
     flex-direction: column;
     align-items: stretch;
+  }
+  .ax-head [role='radiogroup'] {
+    --atr-h: 26px !important;
+    max-width: 100%;
+    overflow-x: auto;
   }
   .ax-card {
     padding: 16px;
@@ -634,11 +933,19 @@
   .ax-seg-th,
   .ax-bar-y,
   .ax-bar-x,
-  .ax-tip {
+  .ax-tip,
+  .ax-ring,
+  .ax-col-ring {
     transition: none !important;
   }
   .ax-roll-in,
-  .ax-skel-block {
+  .ax-skel-block,
+  .ax-col-enter,
+  .ax-col-neg-enter,
+  .ax-line-draw,
+  .ax-area-fade,
+  .ax-pop-item,
+  .ax-donut-arc {
     animation: none !important;
   }
   .ax-reveal {

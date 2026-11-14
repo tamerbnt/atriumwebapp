@@ -11,7 +11,7 @@ export interface RollingDigitsProps {
  * alternating pa / pb keyframe with 60ms stagger per digit slot.
  */
 export const RollingDigits: React.FC<RollingDigitsProps> = React.memo(
-  ({ value, className = '', staggerMs = 60 }) => {
+  ({ value, className = '', staggerMs = 26 }) => {
     const str = String(value);
     const prevRef = useRef<string>(str);
     const phaseRef = useRef<'a' | 'b'>('a');
@@ -29,17 +29,17 @@ export const RollingDigits: React.FC<RollingDigitsProps> = React.memo(
     const phase = phaseRef.current;
 
     return (
-      <span className={`ax-roll ${className}`} aria-live="off">
+      <span dir="ltr" className={`ax-roll ${className}`} aria-live="off">
         {chars.map((ch, idx) => {
           const isStatic = ch === ' ' || ch === '\u00a0' || ch === '\u202f';
           if (isStatic) {
             return (
               <span key={`sp-${idx}`} className="ax-roll-ch">
-                {ch}
+                {ch === ' ' ? '\u00a0' : ch}
               </span>
             );
           }
-          const delay = Math.min(idx * staggerMs, 420);
+          const delay = Math.min(idx * staggerMs, 180);
           return (
             <span key={`d-${idx}-${chars.length}`} className="ax-roll-ch">
               <span
