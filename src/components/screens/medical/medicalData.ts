@@ -12,6 +12,7 @@ import {
   ClinicConsumableItem,
   DailyCashClosure,
 } from '../../../types';
+import { useAtriumStore } from '../../../services/store';
 
 export const INITIAL_PRACTITIONERS: MedicalPractitioner[] = [
   {
@@ -771,6 +772,16 @@ export const INITIAL_CASH_CLOSURES: DailyCashClosure[] = [
 ];
 
 export const useMedicalData = () => {
+  const { currentBranchId } = useAtriumStore();
+  const activeBranchId = currentBranchId || 'branch_medical_main';
+  const belongsToActiveBranch = (item: { branchId?: string; facilityId?: string }) =>
+    (item.branchId || item.facilityId || 'branch_medical_main') === activeBranchId;
+  const withBranch = <T extends object>(item: T): T =>
+    ({
+      ...item,
+      branchId: (item as { branchId?: string }).branchId || activeBranchId,
+    }) as T;
+
   const [practitioners, setPractitioners] = useState<MedicalPractitioner[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_medical_practitioners_v2');
@@ -941,7 +952,7 @@ export const useMedicalData = () => {
 
   // Actions
   const addPatient = (patient: MedicalPatient) => {
-    setPatients((prev) => [patient, ...prev]);
+    setPatients((prev) => [withBranch(patient), ...prev]);
   };
 
   const updatePatient = (updated: MedicalPatient) => {
@@ -953,7 +964,7 @@ export const useMedicalData = () => {
   };
 
   const addConsultation = (cons: MedicalConsultation) => {
-    setConsultations((prev) => [cons, ...prev]);
+    setConsultations((prev) => [withBranch(cons), ...prev]);
   };
 
   const updateConsultationStatus = (id: string, status: MedicalConsultation['status']) => {
@@ -969,7 +980,7 @@ export const useMedicalData = () => {
   };
 
   const addAppointment = (apt: MedicalAppointmentSlot) => {
-    setAppointments((prev) => [...prev, apt]);
+    setAppointments((prev) => [...prev, withBranch(apt)]);
   };
 
   const updateAppointmentStatus = (id: string, status: MedicalAppointmentSlot['status']) => {
@@ -979,7 +990,7 @@ export const useMedicalData = () => {
   };
 
   const addPrescription = (rx: MedicalPrescription) => {
-    setPrescriptions((prev) => [rx, ...prev]);
+    setPrescriptions((prev) => [withBranch(rx), ...prev]);
   };
 
   const saveDoctorConfig = (doctorId: string, config: DoctorOrdonnanceConfig) => {
@@ -990,19 +1001,19 @@ export const useMedicalData = () => {
   };
 
   const addCertificate = (cert: MedicalCertificateRecord) => {
-    setCertificates((prev) => [cert, ...prev]);
+    setCertificates((prev) => [withBranch(cert), ...prev]);
   };
 
   const addLabRecord = (lab: MedicalLabRecord) => {
-    setLabRecords((prev) => [lab, ...prev]);
+    setLabRecords((prev) => [withBranch(lab), ...prev]);
   };
 
   const addChifaClaim = (claim: ChifaClaimRecord) => {
-    setChifaClaims((prev) => [claim, ...prev]);
+    setChifaClaims((prev) => [withBranch(claim), ...prev]);
   };
 
   const addCashClosure = (closure: DailyCashClosure) => {
-    setCashClosures((prev) => [closure, ...prev]);
+    setCashClosures((prev) => [withBranch(closure), ...prev]);
   };
 
   const [isEmergencyAlarmActive, setIsEmergencyAlarmActive] = useState<boolean>(() => {
@@ -1063,16 +1074,27 @@ export const useMedicalData = () => {
     }
   };
 
+  const scopedPractitioners = practitioners.filter(belongsToActiveBranch);
+  const scopedPatients = patients.filter(belongsToActiveBranch);
+  const scopedConsultations = consultations.filter(belongsToActiveBranch);
+  const scopedAppointments = appointments.filter(belongsToActiveBranch);
+  const scopedPrescriptions = prescriptions.filter(belongsToActiveBranch);
+  const scopedLabRecords = labRecords.filter(belongsToActiveBranch);
+  const scopedCertificates = certificates.filter(belongsToActiveBranch);
+  const scopedChifaClaims = chifaClaims.filter(belongsToActiveBranch);
+  const scopedConsumables = consumables.filter(belongsToActiveBranch);
+  const scopedCashClosures = cashClosures.filter(belongsToActiveBranch);
+
   const getNextAvailableGeneralist = (): MedicalPractitioner | null => {
-    const generalists = practitioners.filter(
+    const generalists = scopedPractitioners.filter(
       (p) =>
         p.specialty.toLowerCase().includes('générale') ||
         p.department.toLowerCase().includes('générale')
     );
-    if (generalists.length === 0) return practitioners[0] || null;
+    if (generalists.length === 0) return scopedPractitioners[0] || null;
 
     const counts = generalists.map((doc) => {
-      const count = consultations.filter(
+      const count = scopedConsultations.filter(
         (c) => c.status === 'InWaitingQueue' && c.staffId === doc.id
       ).length;
       return { doc, count };
@@ -1085,49 +1107,49 @@ export const useMedicalData = () => {
   const resetToDemoData = () => {
     setPractitioners(INITIAL_PRACTITIONERS);
     setDoctorConfigs(DEFAULT_ORDONNANCE_CONFIGS);
-    setPatients([]);
-    setConsultations([]);
-    setAppointments([]);
-    setPrescriptions([]);
-    setLabRecords([]);
-    setCertificates([]);
-    setChifaClaims([]);
-    setConsumables([]);
-    setCashClosures([]);
+    setPatients((prev) => prev.filter((p) => !belongsToActiveBranch(p)));
+    setConsultations((prev) => prev.filter((c) => !belongsToActiveBranch(c)));
+    setAppointments((prev) => prev.filter((a) => !belongsToActiveBranch(a)));
+    setPrescriptions((prev) => prev.filter((r) => !belongsToActiveBranch(r)));
+    setLabRecords((prev) => prev.filter((l) => !belongsToActiveBranch(l)));
+    setCertificates((prev) => prev.filter((c) => !belongsToActiveBranch(c)));
+    setChifaClaims((prev) => prev.filter((c) => !belongsToActiveBranch(c)));
+    setConsumables((prev) => prev.filter((c) => !belongsToActiveBranch(c)));
+    setCashClosures((prev) => prev.filter((c) => !belongsToActiveBranch(c)));
     setIsEmergencyAlarmActive(false);
   };
 
   return {
-    practitioners,
+    practitioners: scopedPractitioners,
     selectedDoctorId,
     setSelectedDoctorId,
     doctorConfigs,
     saveDoctorConfig,
-    patients,
+    patients: scopedPatients,
     addPatient,
     updatePatient,
     deletePatient,
-    consultations,
+    consultations: scopedConsultations,
     addConsultation,
     updateConsultationStatus,
     markConsultationPaid,
-    appointments,
+    appointments: scopedAppointments,
     addAppointment,
     updateAppointmentStatus,
-    prescriptions,
+    prescriptions: scopedPrescriptions,
     addPrescription,
-    labRecords,
+    labRecords: scopedLabRecords,
     addLabRecord,
-    certificates,
+    certificates: scopedCertificates,
     addCertificate,
-    chifaClaims,
+    chifaClaims: scopedChifaClaims,
     addChifaClaim,
-    consumables,
+    consumables: scopedConsumables,
     depleteConsumable,
     restockConsumable,
     depleteForAct,
-    cashClosures,
-    dailyClosures: cashClosures,
+    cashClosures: scopedCashClosures,
+    dailyClosures: scopedCashClosures,
     addCashClosure,
     addDailyClosure: addCashClosure,
     updateDoctorConfig: saveDoctorConfig,

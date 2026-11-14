@@ -1,47 +1,41 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import { CalendarPlus } from 'lucide-react';
 import {
-  DoorOpen,
-  Calendar,
-  Clock,
-  ShieldCheck,
-  Building2,
-  TrendingUp,
-  Receipt,
-  Users,
-  Plus,
-  ChevronLeft,
-  ChevronRight,
-  Info,
-} from 'lucide-react';
+  AreaTrendChart,
+  CapacityWaffle,
+  DonutChart,
+  KpiMetricInverseCard,
+  KpiSparkCard,
+  RadialGauge,
+  ResourceTimeline,
+} from '@/atrium';
 import { useAtriumStore } from '../../../services/store';
-import { formatCurrencyAmount } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonDashboardVenue } from '../../ui/skeleton/StructuralSkeletons';
-import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { BookingModal } from './BookingModal';
 import {
+  DashboardBentoFrame,
+  DashboardBentoGrid,
   DashboardHeader,
-  DashboardPod,
-  DashboardMetricCard,
-  DarkEspressoCard,
-  HourlyCurveChart,
-  PillBarHistogram,
-  MonthlyAreaChart,
-  DonutChart,
-  GuardianCard,
+  getSurfaceProps,
+  localizeText,
+  toChartLocale,
 } from '../../common/dashboard';
+import { resolveChartState, type DashboardPeriodKey } from '../../../utils/dashboardSelectors/common';
+import { selectVenueDashboard } from '../../../utils/dashboardSelectors/coreVerticals';
 
 export const VenueDashboardView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
   const {
+    theme,
     currentBranch,
     branches,
     switchBranch,
     rentableUnits,
     rentalBookings,
     securityDeposits,
-    setScreen,
     resetVenueMockData,
     isSyncing,
     networkMode,
@@ -54,97 +48,26 @@ export const VenueDashboardView: React.FC = () => {
     hasCachedData: (rentableUnits || []).length > 0 || (rentalBookings || []).length > 0,
   });
 
-  const [timeFilter, setTimeFilter] = useState<'today' | 'yesterday'>('today');
-  const [currentMonthIndex, setCurrentMonthIndex] = useState(10); // November
+  const [period, setPeriod] = useState<DashboardPeriodKey>('30d');
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const months = ['JAN', 'FEV', 'MAR', 'AVR', 'MAI', 'JUIN', 'JUIL', 'AOU', 'SEP', 'OCT', 'NOV', 'DEC'];
 
-  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const locale = toChartLocale(language);
+  const featuredSurface = getSurfaceProps(theme, true);
+  const standardSurface = getSurfaceProps(theme, false);
 
-  // Today's bookings
-  const todayBookings = useMemo(() => {
-    return (rentalBookings || []).filter((b) => {
-      const start = b.startDateTime ? b.startDateTime.split('T')[0] : '';
-      const end = b.endDateTime ? b.endDateTime.split('T')[0] : '';
-      return start <= todayStr && end >= todayStr;
-    });
-  }, [rentalBookings, todayStr]);
+  const data = useMemo(
+    () =>
+      selectVenueDashboard({
+        units: rentableUnits,
+        bookings: rentalBookings,
+        deposits: securityDeposits,
+        period,
+        language,
+      }),
+    [rentableUnits, rentalBookings, securityDeposits, period, language]
+  );
 
-  const activeOccupiedUnits = useMemo(() => {
-    return (rentableUnits || []).filter((u) => u.status === 'Occupied').length;
-  }, [rentableUnits]);
-
-  const totalUnitsCount = (rentableUnits || []).length || 8;
-  const occupancyRate = Math.round((activeOccupiedUnits / Math.max(1, totalUnitsCount)) * 100);
-
-  const todayRevenue = useMemo(() => {
-    return todayBookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0) || 45000;
-  }, [todayBookings]);
-
-  const dailyTarget = 80000;
-  const targetPct = Math.min(100, Math.round((todayRevenue / dailyTarget) * 100));
-
-  // Hourly event traffic curve
-  const hourlyData = useMemo(() => {
-    return [0, 1, 4, 7, 3];
-  }, []);
-
-  // 4-week bookings trend
-  const weeklyBookingsTrend = useMemo(() => {
-    const base = rentalBookings.length || 16;
-    return [
-      { week: language === 'ar' ? 'أسبوع 1' : 'week 1', value: Math.max(2, Math.round(base * 0.2)) },
-      { week: language === 'ar' ? 'أسبوع 2' : 'week 2', value: Math.max(3, Math.round(base * 0.28)) },
-      { week: language === 'ar' ? 'أسبوع 3' : 'week 3', value: Math.max(4, Math.round(base * 0.32)) },
-      { week: language === 'ar' ? 'أسبوع 4' : 'week 4', value: Math.max(3, Math.round(base * 0.2)) },
-    ];
-  }, [rentalBookings.length, language]);
-
-  // 30-day cash curve
-  const monthlyRevenue = useMemo(() => {
-    return Array.from({ length: 30 }, (_, i) => {
-      const factor = Math.sin((i / 30) * Math.PI) * 0.6 + 0.4;
-      return Math.round((todayRevenue || 40000) * factor * (1 + (i % 5) * 0.12));
-    });
-  }, [todayRevenue]);
-
-  // Space Type Revenue Donut
-  const spaceCategories = useMemo(() => {
-    const map = new Map<string, number>();
-    (rentableUnits || []).forEach((u) => {
-      const cat = u.type || (language === 'ar' ? 'قاعات أفراح' : 'Salles');
-      map.set(cat, (map.get(cat) || 0) + 1);
-    });
-    if (map.size === 0) {
-      return [
-        { label: language === 'ar' ? 'قاعات مؤتمرات' : 'Salles Séminaires', value: 40, color: '#d4522f' },
-        { label: language === 'ar' ? 'مساحات عمل مشتركة' : 'Espaces Coworking', value: 35, color: '#3B82F6' },
-        { label: language === 'ar' ? 'قاعات حفلات' : 'Salles Événements', value: 25, color: '#10B981' },
-      ];
-    }
-    const colors = ['#d4522f', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'];
-    let idx = 0;
-    return Array.from(map.entries()).map(([label, value]) => ({
-      label,
-      value,
-      color: colors[idx++ % colors.length],
-    }));
-  }, [rentableUnits, language]);
-
-  // Weekly utilization histogram
-  const weekDaysTraffic = useMemo(() => {
-    return [
-      { week: 'Lun', value: 3 },
-      { week: 'Mar', value: 4 },
-      { week: 'Mer', value: 6 },
-      { week: 'Jeu', value: 8 },
-      { week: 'Ven', value: 9 },
-      { week: 'Sam', value: 8 },
-      { week: 'Dim', value: 2 },
-    ];
-  }, []);
-
-  if (showSkeleton) {
+  if (showSkeleton && rentableUnits.length === 0 && rentalBookings.length === 0) {
     return (
       <div className="p-6">
         <SkeletonDashboardVenue />
@@ -153,382 +76,218 @@ export const VenueDashboardView: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 sm:space-y-7 animate-in fade-in duration-200">
-      <OfflineRetryBanner
-        isOffline={isOffline}
-        isTimedOut={isTimedOut}
-        isSyncing={isSyncing}
-        lastSyncedAt={lastSyncedAt}
-        onRetry={retryCloudSync}
-      />
-
-      {/* Header */}
+    <DashboardBentoFrame
+      theme={theme}
+      isRtl={isRtl}
+      isOffline={isOffline}
+      isTimedOut={isTimedOut}
+      isSyncing={isSyncing}
+      lastSyncedAt={lastSyncedAt}
+      onRetry={retryCloudSync}
+      data-testid="venue-dashboard"
+    >
       <DashboardHeader
         title={t('nav_dashboard', language)}
-        subtitle={
-          language === 'ar'
-            ? 'مؤشرات إشغال القاعات، الحجوزات النشطة وتدفق الودائع والربحية'
-            : language === 'fr'
-            ? 'Occupation des espaces en direct, suivi des cautions et rentabilité événementielle.'
-            : 'Live venue occupancy, rental booking pipeline, and security deposit analytics.'
-        }
-        currentBranchName={currentBranch?.name || 'Palais des Événements Atrium'}
+        subtitle={localizeText(
+          language,
+          'Occupation des espaces en direct, suivi des cautions et rentabilité événementielle.',
+          'Live venue occupancy, rental booking pipeline, and security deposits.',
+          'مؤشرات إشغال القاعات، الحجوزات النشطة وتدفق الودائع.'
+        )}
+        currentBranchName={currentBranch?.name}
         branches={branches}
         onSwitchBranch={switchBranch}
         onResetDemoData={resetVenueMockData}
-        exportFileName="venue_dashboard_report"
+        period={period}
+        onPeriodChange={(next) => setPeriod(next as DashboardPeriodKey)}
+        extraActions={
+          <AtriumButton
+            variant="primary"
+            size="sm"
+            icon={<CalendarPlus size={15} />}
+            onClick={() => setIsBookingModalOpen(true)}
+          >
+            {localizeText(language, 'Nouvelle réservation', 'New Booking', 'حجز جديد')}
+          </AtriumButton>
+        }
       />
 
-      {/* TOP ROW: Two Pods */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* POD 1: Venue Occupancy & Turnaround Flow (42% width) */}
-        <div className="lg:col-span-5 flex flex-col">
-          <DashboardPod
-            title={language === 'ar' ? 'إشغال المساحات وحركة اليوم' : language === 'fr' ? 'Occupation des Espaces' : 'Venue Occupancy & Flow'}
-            icon={<DoorOpen size={18} className="text-[#d4522f]" />}
-            badge={
-              <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                {activeOccupiedUnits} / {totalUnitsCount} {language === 'ar' ? 'قاعات محجوزة' : 'Salles Occupées'}
-              </span>
-            }
-            rightControls={
-              <div className="flex items-center bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 p-0.5 rounded-xl text-xs font-semibold shadow-2xs">
-                <button
-                  type="button"
-                  onClick={() => setTimeFilter('today')}
-                  title={language === 'ar' ? 'عرض مؤشرات اليوم' : language === 'fr' ? "Activité d'aujourd'hui" : "Today's activity"}
-                  className={`px-3 py-1 rounded-md transition-all ${
-                    timeFilter === 'today' ? 'bg-[#d4522f] text-white shadow-xs' : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
-                  }`}
-                >
-                  {language === 'ar' ? 'اليوم' : language === 'fr' ? "Aujourd'hui" : 'Today'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTimeFilter('yesterday')}
-                  title={language === 'ar' ? 'عرض مؤشرات الأمس' : language === 'fr' ? "Activité d'hier" : "Yesterday's activity"}
-                  className={`px-3 py-1 rounded-md transition-all ${
-                    timeFilter === 'yesterday' ? 'bg-[#d4522f] text-white shadow-xs' : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
-                  }`}
-                >
-                  {language === 'ar' ? 'أمس' : language === 'fr' ? 'Hier' : 'Yesterday'}
-                </button>
-              </div>
-            }
-            className="flex-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">
-                      {language === 'ar' ? 'القاعات المؤجرة الآن' : 'Salles en Location'}
-                    </span>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                        {activeOccupiedUnits}
-                      </span>
-                      <span className="text-xs text-black/55 dark:text-white/55">/ {totalUnitsCount}</span>
-                    </div>
-                    <span className="inline-block mt-2 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[11px] font-medium rounded-full">
-                      ● {occupancyRate}% {language === 'ar' ? 'نسبة الإشغال' : 'Taux d’occupation'}
-                    </span>
-                  </div>
-                  <div className="w-px h-12 bg-[#E6DED6] dark:bg-neutral-700 mx-4" />
-                  <div className="flex-1">
-                    <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">
-                      {language === 'ar' ? 'تسليم واستلام اليوم' : 'Check-in / Check-out'}
-                    </span>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                        {todayBookings.length}
-                      </span>
-                      <span className="text-xs text-black/55 dark:text-white/55">{language === 'ar' ? 'مواعيد' : 'créneaux'}</span>
-                    </div>
-                    <span className="inline-block mt-2 px-2 py-0.5 bg-amber-50 text-amber-600 text-[11px] font-medium rounded-full">
-                      {language === 'ar' ? 'جاهزية العقود' : 'États des lieux OK'}
-                    </span>
-                  </div>
-                </div>
+      <DashboardBentoGrid>
+        {/* Row 1: Booking Revenue Spark + Outstanding Balance Inverse + Occupancy & Contracts Gauge (espresso) */}
+        <KpiSparkCard
+          title={localizeText(language, 'Recettes réservations', 'Booking Revenue', 'مداخيل الحجوزات')}
+          subtitle={localizeText(
+            language,
+            `Cautions retenues : ${data.heldDepositsTotal.toLocaleString()} DZD`,
+            `Held deposits: ${data.heldDepositsTotal.toLocaleString()} DZD`,
+            `الودائع المحتجزة: ${data.heldDepositsTotal.toLocaleString()} دج`
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(rentalBookings.length > 0)}
+          value={data.bookingRevenue}
+          deltaPercent={data.revenueDelta}
+          format="currency"
+          currency="DZD"
+          series={data.revenueSpark}
+          emptyMessage={localizeText(
+            language,
+            'Aucune réservation active enregistrée.',
+            'No active bookings recorded.',
+            'لا توجد حجوزات نشطة مسجلة.'
+          )}
+        />
 
-                <div className="mt-4 pt-3 border-t border-[#E6DED6] dark:border-neutral-700/60">
-                  <span className="text-[11px] text-black/55 dark:text-white/55 block mb-2">
-                    {language === 'ar' ? 'كثافة الفعاليات على مدار 24 ساعة' : 'Charge horaire des événements (24h)'}
-                  </span>
-                  <HourlyCurveChart data={hourlyData} color="#d4522f" />
-                </div>
-              </div>
+        <KpiMetricInverseCard
+          title={localizeText(language, 'Soldes restants dus', 'Outstanding Balance', 'المستحقات المتبقية')}
+          subtitle={localizeText(
+            language,
+            'Reliquats à encaisser avant remise des clés',
+            'Remaining balances due before check-in',
+            'المبالغ المتبقية للتحصيل قبل التسليم'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(rentalBookings.length > 0)}
+          value={data.outstandingBalance}
+          format="currency"
+          currency="DZD"
+          series={[]}
+          emptyMessage={localizeText(
+            language,
+            'Aucun contrat locatif ouvert.',
+            'No open rental balances.',
+            'لا توجد عقود إيجار مفتوحة.'
+          )}
+        />
 
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-xs font-medium text-black/70 dark:text-white/75">
-                    {language === 'ar' ? 'إيرادات الإيجار اليوم' : 'Recette Locative Aujourd’hui'}
-                  </span>
-                  <span className="text-base font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                    {formatCurrencyAmount(todayRevenue)}
-                  </span>
-                </div>
-                <div className="w-full bg-[#E6DED6]/70 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
-                  <div
-                    className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
-                    style={{ width: `${targetPct}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-[11px] text-black/55 dark:text-white/55">
-                  <span>{targetPct}% {language === 'ar' ? 'من الهدف' : 'de l’objectif journalier'}</span>
-                  <span>{formatCurrencyAmount(dailyTarget)}</span>
-                </div>
-              </div>
-            </div>
-          </DashboardPod>
-        </div>
+        <RadialGauge
+          title={localizeText(language, 'Taux d’occupation & Contrats', 'Occupancy & Signed Contracts', 'معدل الإشغال والعقود')}
+          subtitle={localizeText(
+            language,
+            `${data.occupiedUnits} / ${data.totalUnits} espaces occupés`,
+            `${data.occupiedUnits} / ${data.totalUnits} spaces occupied`,
+            `${data.occupiedUnits} / ${data.totalUnits} مساحات مشغولة`
+          )}
+          locale={locale}
+          {...featuredSurface}
+          state={resolveChartState(rentableUnits.length > 0 || rentalBookings.length > 0)}
+          metrics={data.gauges}
+          emptyMessage={localizeText(
+            language,
+            'Configurez des salles ou espaces locatifs.',
+            'Add rentable units to track occupancy.',
+            'أضف قاعات أو مساحات لمتابعة الإشغال.'
+          )}
+        />
 
-        {/* POD 2: Booking Asset Development (58% width) */}
-        <div className="lg:col-span-7 flex flex-col">
-          <DashboardPod
-            title={language === 'ar' ? 'الحجوزات والمساحات' : language === 'fr' ? 'Réservations & Espaces' : 'Booking Growth'}
-            icon={<Calendar size={18} className="text-[#d4522f]" />}
-            rightControls={
-              <div className="flex items-center gap-1 text-xs font-semibold text-black/70 dark:text-white/75">
-                <button
-                  type="button"
-                  onClick={() => setCurrentMonthIndex((prev) => (prev > 0 ? prev - 1 : 11))}
-                  className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"
-                >
-                  <ChevronLeft size={14} />
-                </button>
-                <span className="px-1 text-black dark:text-white">{months[currentMonthIndex]} 2026</span>
-                <button
-                  type="button"
-                  onClick={() => setCurrentMonthIndex((prev) => (prev < 11 ? prev + 1 : 0))}
-                  className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"
-                >
-                  <ChevronRight size={14} />
-                </button>
-              </div>
-            }
-            className="flex-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <DashboardMetricCard
-                  label={language === 'ar' ? 'المساحات الجاهزة' : 'Espaces Configurés'}
-                  value={totalUnitsCount}
-                  badgeText={language === 'ar' ? 'قاعات ومقرات' : 'Opérationnels'}
-                  badgeVariant="success"
-                  tooltip={language === 'ar' ? 'المساحات المتاحة للتأجير' : 'Salles et plateaux disponibles'}
-                />
+        {/* Row 2: Unit Timeline (wide) + Capacity Waffle */}
+        <ResourceTimeline
+          className="md:col-span-2 xl:col-span-2"
+          title={localizeText(language, 'Planning des salles & espaces', 'Space Allocation Timeline', 'جدول حجز القاعات والمساحات')}
+          subtitle={localizeText(
+            language,
+            'Créneaux occupés et réservations confirmées',
+            'Active check-ins and scheduled venue bookings',
+            'الحجوزات المؤكدة والتسليمات الجارية'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.resources.length > 0 && data.blocks.length > 0)}
+          resources={data.resources}
+          blocks={data.blocks}
+          startHour={7}
+          endHour={23}
+          nowHour={new Date().getHours() + new Date().getMinutes() / 60}
+          toneLabels={{
+            primary: localizeText(language, 'En cours', 'Checked In', 'قيد الاستخدام'),
+            secondary: localizeText(language, 'Confirmé', 'Confirmed', 'مؤكد'),
+            neutral: localizeText(language, 'Option', 'Pending', 'معلق'),
+          }}
+          emptyMessage={localizeText(
+            language,
+            'Aucune réservation planifiée.',
+            'No bookings scheduled on units.',
+            'لا توجد حجوزات مجدولة على المساحات.'
+          )}
+        />
 
-                <DashboardMetricCard
-                  label={language === 'ar' ? 'الحجوزات المؤكدة' : 'Réservations Confirmées'}
-                  value={Math.max((rentalBookings || []).length, 12)}
-                  badgeText={language === 'ar' ? 'عقود سارية' : 'Contrats'}
-                  badgeVariant="neutral"
-                  tooltip={language === 'ar' ? 'عقود تم تأكيدها ودفع عربونها' : 'Réservations avec acompte'}
-                />
+        <CapacityWaffle
+          title={localizeText(language, 'Capacité active', 'Space Utilization', 'استغلال المساحات')}
+          subtitle={localizeText(
+            language,
+            'Unités actuellement occupées vs libres',
+            'Occupied rentable units vs available pool',
+            'الوحدات المشغولة مقابل المتاحة'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.totalUnits > 0)}
+          occupied={data.occupiedUnits}
+          capacity={data.totalUnits}
+          occupiedLabel={localizeText(language, 'Occupées', 'Occupied', 'مشغول')}
+          availableLabel={localizeText(language, 'Disponibles', 'Open', 'متاح')}
+          emptyMessage={localizeText(
+            language,
+            'Aucun espace référencé.',
+            'No spaces registered.',
+            'لا توجد مساحات مسجلة.'
+          )}
+        />
 
-                <DarkEspressoCard
-                  label={language === 'ar' ? 'الودائع المحتجزة' : 'Cautions Séquestrées'}
-                  value={(securityDeposits || []).filter((s) => s.status === 'Held').length || 4}
-                  sublabel={language === 'ar' ? 'ضمانات مالية نشطة' : 'Garanties sous séquestre'}
-                  badgeText={language === 'ar' ? 'مؤمن' : 'Sécurisé'}
-                  badgeVariant="neutral"
-                />
-              </div>
+        {/* Row 3: Space Type Donut + Cashflow Area Trend (wide) */}
+        <DonutChart
+          title={localizeText(language, 'Revenus par type d’espace', 'Revenue by Space Type', 'الإيرادات حسب نوع المساحة')}
+          subtitle={localizeText(
+            language,
+            'Part de facturation par catégorie de salle',
+            'Revenue breakdown by unit category',
+            'توزيع العائدات حسب نوع القاعة'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.donutSegments.length > 0)}
+          segments={data.donutSegments}
+          format="currency"
+          currency="DZD"
+          emptyMessage={localizeText(
+            language,
+            'Aucune location facturée.',
+            'No billed space bookings.',
+            'لا توجد حجوزات مفوترة.'
+          )}
+        />
 
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-semibold text-black/70 dark:text-white/75">
-                    {language === 'ar' ? 'حجم الحجوزات خلال الأسابيع الـ 4 الماضية' : 'Volume de réservations par semaine'}
-                  </span>
-                  <span className="text-[11px] text-black/55 dark:text-white/55">
-                    {language === 'ar' ? 'تطور العقود' : '4 dernières semaines'}
-                  </span>
-                </div>
-                <PillBarHistogram
-                  data={weeklyBookingsTrend}
-                  maxScale={Math.max(...weeklyBookingsTrend.map((w) => w.value)) * 1.3}
-                  barColor="#d4522f"
-                />
-              </div>
-            </div>
-          </DashboardPod>
-        </div>
-      </div>
+        <AreaTrendChart
+          className="md:col-span-2 xl:col-span-2"
+          title={localizeText(language, 'Trajectoire des encaissements', 'Rental Revenue Trend', 'تطور مداخيل التأجير')}
+          subtitle={localizeText(
+            language,
+            'Comparatif entre la fenêtre active et précédente',
+            'Active booking period compared to prior period',
+            'مقارنة الفترة الحالية بالفترة السابقة'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(rentalBookings.length > 0)}
+          points={data.areaPoints}
+          format="currency"
+          currency="DZD"
+          emptyMessage={localizeText(
+            language,
+            'Aucune donnée d’encaissement locatif.',
+            'No rental cashflow trend data.',
+            'لا توجد بيانات تدفق نقدي للتأجير.'
+          )}
+        />
+      </DashboardBentoGrid>
 
-      {/* BOTTOM ROW: Two Pods */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* POD 3: Financial Trajectory (42% width) */}
-        <div className="lg:col-span-5 flex flex-col">
-          <DashboardPod
-            title={language === 'ar' ? 'الإيرادات والأرباح' : language === 'fr' ? 'Revenus & Marges' : 'Revenue & Profit'}
-            icon={<TrendingUp size={18} className="text-[#d4522f]" />}
-            rightControls={
-              <span className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase">
-                {months[currentMonthIndex]} 2026
-              </span>
-            }
-            className="flex-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="grid grid-cols-3 gap-2 pb-3 border-b border-[#E6DED6] dark:border-neutral-700/60">
-                  <div>
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'صافي العائد' : 'Net Locatif'}</span>
-                    <span className="text-lg font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                      {formatCurrencyAmount(Math.round(todayRevenue * 0.76))}
-                    </span>
-                    <span className="text-[10px] text-emerald-600 block">+7.5%</span>
-                  </div>
-                  <div>
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'الإيجار الإجمالي' : 'Revenu Brut'}</span>
-                    <span className="text-lg font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                      {formatCurrencyAmount(todayRevenue)}
-                    </span>
-                    <span className="text-[10px] text-emerald-600 block">+8.2%</span>
-                  </div>
-                  <div>
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'صيانة وتنظيف' : 'Charges & Entretien'}</span>
-                    <span className="text-lg font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                      {formatCurrencyAmount(Math.round(todayRevenue * 0.24))}
-                    </span>
-                    <span className="text-[10px] text-black/55 dark:text-white/55 block">24% CA</span>
-                  </div>
-                </div>
-
-                <div className="pt-3">
-                  <span className="text-[11px] text-black/55 dark:text-white/55 block mb-1">
-                    {language === 'ar' ? 'منحنى التدفق النقدي على مدار 30 يوماً' : 'Tendance des encaissements sur 30 jours'}
-                  </span>
-                  <MonthlyAreaChart data={monthlyRevenue} color="#8B5CF6" />
-                </div>
-              </div>
-
-              {/* 4 KPIs Inset Grid */}
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-semibold text-black/70 dark:text-white/75">
-                    {language === 'ar' ? 'مؤشرات الأداء العقاري' : 'Indicateurs Métier'}
-                  </span>
-                  <Info size={13} className="text-black/55 dark:text-white/55" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
-                      {language === 'ar' ? 'عائد الساعة/القاعة' : 'RevPAH (Heure)'}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
-                        {formatCurrencyAmount(3200)}
-                      </span>
-                      <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
-                        Optimal
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
-                      {language === 'ar' ? 'مدة الحجز المتوسطة' : 'Durée Moyenne'}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">1.8 j</span>
-                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                        Événement
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
-                      {language === 'ar' ? 'إعادة الإيجار للمستأجرين' : 'Taux Récurrence'}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">68%</span>
-                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                        B2B Corp
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
-                      {language === 'ar' ? 'سلامة الودائع' : 'Restitution Cautions'}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">97%</span>
-                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                        Sans litige
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </DashboardPod>
-        </div>
-
-        {/* POD 4: Intelligence & Overbooking Guardian (58% width) */}
-        <div className="lg:col-span-7 flex flex-col">
-          <DashboardPod
-            title={language === 'ar' ? 'المؤشرات والتنبيهات' : language === 'fr' ? 'Analyses & Alertes' : 'Insights & Alerts'}
-            icon={<ShieldCheck size={18} className="text-[#d4522f]" />}
-            className="flex-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-black/70 dark:text-white/75">
-                      {language === 'ar' ? 'توزيع أنواع المساحات' : 'Typologie des Espaces'}
-                    </span>
-                    <Info size={13} className="text-black/55 dark:text-white/55" />
-                  </div>
-                  <DonutChart segments={spaceCategories} centerLabel={`${totalUnitsCount} Salles`} />
-                </div>
-
-                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-black/70 dark:text-white/75">
-                      {language === 'ar' ? 'الإشغال حسب أيام الأسبوع' : 'Affluence par Jour'}
-                    </span>
-                    <Info size={13} className="text-black/55 dark:text-white/55" />
-                  </div>
-                  <PillBarHistogram
-                    data={weekDaysTraffic}
-                    maxScale={10}
-                    barColor="#3B82F6"
-                  />
-                </div>
-              </div>
-
-              {/* Overbooking Guardian Card */}
-              <GuardianCard
-                title={language === 'ar' ? 'تعارض الحجوزات' : 'Booking Conflicts'}
-                subtitle={
-                  language === 'ar'
-                    ? 'فحص آلي مستمر لجدول الحجوزات لمنع الحجز المزدوج وضمان فترات التنظيف والتهيئة'
-                    : 'Surveillance proactive des chevauchements de créneaux et temps de nettoyage inter-événements.'
-                }
-                score={98}
-                statusText={language === 'ar' ? 'لا يوجد أي تعارض زمني!' : 'Aucun conflit de réservation détecté !'}
-                metricLabel={language === 'ar' ? 'سلامة الجداول' : 'Conformité'}
-                metricValue="100%"
-                trendText={language === 'ar' ? 'مؤمن' : 'Créneaux validés'}
-                defaultEnabled={true}
-              />
-            </div>
-          </DashboardPod>
-        </div>
-      </div>
-
-      {/* Booking Modal */}
       {isBookingModalOpen && (
         <BookingModal
           isOpen={isBookingModalOpen}
           onClose={() => setIsBookingModalOpen(false)}
         />
       )}
-    </div>
+    </DashboardBentoFrame>
   );
 };

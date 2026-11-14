@@ -11,6 +11,7 @@ import {
   LegalClientEntity,
 } from '../../../types';
 import { calculateCPCADeadline, calculateNotaryDecret08243, calculateArticle317Stamp } from '../../../utils/legalRules';
+import { useAtriumStore } from '../../../services/store';
 
 export const INITIAL_LEGAL_ENTITIES: LegalClientEntity[] = [
   {
@@ -504,6 +505,16 @@ export const INITIAL_DAILY_CLOSURE: DailyCashClosure = {
  * Universal React Hook managing persistent state across the 4 Legal/Notary/Accounting personas.
  */
 export const useLegalData = () => {
+  const { currentBranchId } = useAtriumStore();
+  const activeBranchId = currentBranchId || 'branch_legal_main';
+  const belongsToActiveBranch = (item: { branchId?: string; facilityId?: string }) =>
+    (item.branchId || item.facilityId || 'branch_legal_main') === activeBranchId;
+  const withBranch = <T extends object>(item: T): T =>
+    ({
+      ...item,
+      branchId: (item as { branchId?: string }).branchId || activeBranchId,
+    }) as T;
+
   const [entities, setEntities] = useState<LegalClientEntity[]>(() => {
     try {
       const s = localStorage.getItem('atrium_legal_entities');
@@ -601,60 +612,63 @@ export const useLegalData = () => {
   }, [entities, matters, hearings, deadlines, notaryDeeds, escrowAccounts, scfEntries, cashReceipts, dailyClosure]);
 
   // Operational action handlers
-  const addEntity = (entity: LegalClientEntity) => setEntities((prev) => [entity, ...prev]);
-  const addMatter = (matter: LegalMatter) => setMatters((prev) => [matter, ...prev]);
+  const addEntity = (entity: LegalClientEntity) => setEntities((prev) => [withBranch(entity), ...prev]);
+  const addMatter = (matter: LegalMatter) => setMatters((prev) => [withBranch(matter), ...prev]);
   const updateMatter = (matter: LegalMatter) => setMatters((prev) => prev.map((m) => (m.id === matter.id ? matter : m)));
   const deleteMatter = (id: string) => setMatters((prev) => prev.filter((m) => m.id !== id));
 
-  const addHearing = (hearing: LegalHearing) => setHearings((prev) => [hearing, ...prev]);
+  const addHearing = (hearing: LegalHearing) => setHearings((prev) => [withBranch(hearing), ...prev]);
   const updateHearing = (hearing: LegalHearing) => setHearings((prev) => prev.map((h) => (h.id === hearing.id ? hearing : h)));
   const deleteHearing = (id: string) => setHearings((prev) => prev.filter((h) => h.id !== id));
 
-  const addCPCADeadline = (dl: CPCADeadline) => setDeadlines((prev) => [dl, ...prev]);
+  const addCPCADeadline = (dl: CPCADeadline) => setDeadlines((prev) => [withBranch(dl), ...prev]);
   const updateCPCADeadline = (dl: CPCADeadline) => setDeadlines((prev) => prev.map((d) => (d.id === dl.id ? dl : d)));
 
-  const addNotaryDeed = (deed: NotaryDeed) => setNotaryDeeds((prev) => [deed, ...prev]);
+  const addNotaryDeed = (deed: NotaryDeed) => setNotaryDeeds((prev) => [withBranch(deed), ...prev]);
   const updateNotaryDeed = (deed: NotaryDeed) => setNotaryDeeds((prev) => prev.map((d) => (d.id === deed.id ? deed : d)));
 
   const updateEscrowAccount = (acc: EscrowAccount) => setEscrowAccounts((prev) => prev.map((a) => (a.id === acc.id ? acc : a)));
 
-  const addSCFEntry = (entry: SCFJournalEntry) => setScfEntries((prev) => [entry, ...prev]);
+  const addSCFEntry = (entry: SCFJournalEntry) => setScfEntries((prev) => [withBranch(entry), ...prev]);
 
   const addCashReceipt = (rc: CashReceipt) => {
-    setCashReceipts((prev) => [rc, ...prev]);
+    const scopedRc = withBranch(rc);
+    setCashReceipts((prev) => [scopedRc, ...prev]);
     // update daily closure
     setDailyClosure((prev) => ({
       ...prev,
-      totalCashReceivedDzd: (prev.totalCashReceivedDzd || 0) + rc.netCollectedDzd,
-      theoreticalCashDzd: (prev.theoreticalCashDzd || 0) + rc.netCollectedDzd,
-      totalTimbreAccruedDzd: (prev.totalTimbreAccruedDzd || 0) + rc.timbreFiscalDzd,
-      actualPhysicalCashCountedDzd: (prev.actualPhysicalCashCountedDzd || 0) + rc.netCollectedDzd,
+      totalCashReceivedDzd: (prev.totalCashReceivedDzd || 0) + scopedRc.netCollectedDzd,
+      theoreticalCashDzd: (prev.theoreticalCashDzd || 0) + scopedRc.netCollectedDzd,
+      totalTimbreAccruedDzd: (prev.totalTimbreAccruedDzd || 0) + scopedRc.timbreFiscalDzd,
+      actualPhysicalCashCountedDzd: (prev.actualPhysicalCashCountedDzd || 0) + scopedRc.netCollectedDzd,
     }));
   };
 
-  const updateDailyClosure = (cl: DailyCashClosure) => setDailyClosure(cl);
+  const updateDailyClosure = (cl: DailyCashClosure) => setDailyClosure(withBranch(cl));
 
   const resetLegalMockData = () => {
-    setEntities([]);
-    setMatters([]);
-    setHearings([]);
-    setDeadlines([]);
-    setNotaryDeeds([]);
-    setEscrowAccounts([]);
-    setScfEntries([]);
-    setCashReceipts([]);
-    setDailyClosure(INITIAL_DAILY_CLOSURE);
+    setEntities((prev) => prev.filter((e) => !belongsToActiveBranch(e)));
+    setMatters((prev) => prev.filter((m) => !belongsToActiveBranch(m)));
+    setHearings((prev) => prev.filter((h) => !belongsToActiveBranch(h)));
+    setDeadlines((prev) => prev.filter((d) => !belongsToActiveBranch(d)));
+    setNotaryDeeds((prev) => prev.filter((n) => !belongsToActiveBranch(n)));
+    setEscrowAccounts((prev) => prev.filter((a) => !belongsToActiveBranch(a)));
+    setScfEntries((prev) => prev.filter((s) => !belongsToActiveBranch(s)));
+    setCashReceipts((prev) => prev.filter((c) => !belongsToActiveBranch(c)));
+    if (activeBranchId === 'branch_legal_main') {
+      setDailyClosure(INITIAL_DAILY_CLOSURE);
+    }
   };
 
   return {
-    entities,
-    matters,
-    hearings,
-    deadlines,
-    notaryDeeds,
-    escrowAccounts,
-    scfEntries,
-    cashReceipts,
+    entities: entities.filter(belongsToActiveBranch),
+    matters: matters.filter(belongsToActiveBranch),
+    hearings: hearings.filter(belongsToActiveBranch),
+    deadlines: deadlines.filter(belongsToActiveBranch),
+    notaryDeeds: notaryDeeds.filter(belongsToActiveBranch),
+    escrowAccounts: escrowAccounts.filter(belongsToActiveBranch),
+    scfEntries: scfEntries.filter(belongsToActiveBranch),
+    cashReceipts: cashReceipts.filter(belongsToActiveBranch),
     dailyClosure,
     addEntity,
     addMatter,

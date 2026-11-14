@@ -1,40 +1,35 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import { FileText, Pause, Play } from 'lucide-react';
 import {
-  Briefcase,
-  Clock,
-  TrendingUp,
-  Receipt,
-  Users,
-  Play,
-  Pause,
-  Plus,
-  FileText,
-  ChevronLeft,
-  ChevronRight,
-  Info,
-} from 'lucide-react';
+  AreaTrendChart,
+  ConversionFunnel,
+  DonutChart,
+  DumbbellChart,
+  KpiMetricInverseCard,
+  KpiSparkCard,
+  RadialGauge,
+} from '@/atrium';
 import { useAtriumStore } from '../../../services/store';
-import { formatCurrencyAmount, formatDuration } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonDashboardFreelance } from '../../ui/skeleton/StructuralSkeletons';
-import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { InvoicePreviewModal } from './InvoicePreviewModal';
 import {
+  DashboardBentoFrame,
+  DashboardBentoGrid,
   DashboardHeader,
-  DashboardPod,
-  DashboardMetricCard,
-  DarkEspressoCard,
-  HourlyCurveChart,
-  PillBarHistogram,
-  MonthlyAreaChart,
-  DonutChart,
-  GuardianCard,
+  getSurfaceProps,
+  localizeText,
+  toChartLocale,
 } from '../../common/dashboard';
+import { resolveChartState, type DashboardPeriodKey } from '../../../utils/dashboardSelectors/common';
+import { selectFreelanceDashboard } from '../../../utils/dashboardSelectors/coreVerticals';
 
 export const FreelanceDashboardView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
   const {
+    theme,
     currentBranch,
     branches,
     switchBranch,
@@ -43,11 +38,11 @@ export const FreelanceDashboardView: React.FC = () => {
     timeLogs,
     freelanceInvoices,
     freelanceProposals,
+    freelanceExpenses,
     activeTimer,
     startTimer,
     pauseTimer,
     resumeTimer,
-    stopTimer,
     setScreen,
     resetFreelanceMockData,
     isSyncing,
@@ -61,89 +56,29 @@ export const FreelanceDashboardView: React.FC = () => {
     hasCachedData: (freelanceClients || []).length > 0 || (timeLogs || []).length > 0,
   });
 
-  const [timeFilter, setTimeFilter] = useState<'today' | 'yesterday'>('today');
-  const [currentMonthIndex, setCurrentMonthIndex] = useState(10); // November
+  const [period, setPeriod] = useState<DashboardPeriodKey>('30d');
   const [selectedInvoice, setSelectedInvoice] = useState<any | null>(null);
-  const months = ['JAN', 'FEV', 'MAR', 'AVR', 'MAI', 'JUIN', 'JUIL', 'AOU', 'SEP', 'OCT', 'NOV', 'DEC'];
 
-  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const locale = toChartLocale(language);
+  const featuredSurface = getSurfaceProps(theme, true);
+  const standardSurface = getSurfaceProps(theme, false);
 
-  // Today's time logs
-  const todayLogs = useMemo(() => {
-    return (timeLogs || []).filter((l) => l.date === todayStr);
-  }, [timeLogs, todayStr]);
-
-  const loggedMinutesToday = useMemo(() => {
-    return todayLogs.reduce((acc, l) => acc + Math.round((l.durationSeconds || 0) / 60), 0) || 285;
-  }, [todayLogs]);
-
-  const loggedHoursDecimal = (loggedMinutesToday / 60).toFixed(1);
-  const targetHours = 7.0;
-  const targetPct = Math.min(100, Math.round((parseFloat(loggedHoursDecimal) / targetHours) * 100));
-
-  // Hourly curve of focus time
-  const hourlyData = useMemo(() => {
-    return [0, 1, 3, 4, 1];
-  }, []);
-
-  // 4-week billable hours trend
-  const weeklyHoursTrend = useMemo(() => {
-    return [
-      { week: language === 'ar' ? 'أسبوع 1' : 'week 1', value: 34 },
-      { week: language === 'ar' ? 'أسبوع 2' : 'week 2', value: 38 },
-      { week: language === 'ar' ? 'أسبوع 3' : 'week 3', value: 32 },
-      { week: language === 'ar' ? 'أسبوع 4' : 'week 4', value: 36 },
-    ];
-  }, [language]);
-
-  // Total clients & pending invoices
-  const totalClients = (freelanceClients || []).length || 8;
-  const activeProjectsCount = (freelanceProjects || []).length || 5;
-
-  const unpaidInvoices = useMemo(
-    () => (freelanceInvoices || []).filter((i) => i.status === 'Sent' || i.status === 'Overdue'),
-    [freelanceInvoices]
+  const data = useMemo(
+    () =>
+      selectFreelanceDashboard({
+        clients: freelanceClients,
+        projects: freelanceProjects,
+        timeLogs,
+        invoices: freelanceInvoices,
+        proposals: freelanceProposals,
+        expenses: freelanceExpenses,
+        period,
+        language,
+      }),
+    [freelanceClients, freelanceProjects, timeLogs, freelanceInvoices, freelanceProposals, freelanceExpenses, period, language]
   );
 
-  const pendingAmount = unpaidInvoices.reduce((sum, i) => sum + (i.totalAmount || 0), 0) || 185000;
-
-  // 30-day cash curve
-  const monthlyRevenue = useMemo(() => {
-    const base = 420000;
-    return Array.from({ length: 30 }, (_, i) => {
-      const factor = Math.sin((i / 30) * Math.PI) * 0.5 + 0.5;
-      return Math.round(base * factor * (1 + (i % 5) * 0.15));
-    });
-  }, []);
-
-  // Client Revenue Donut
-  const clientRevenueShare = useMemo(() => {
-    const colors = ['#d4522f', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'];
-    if ((freelanceClients || []).length === 0) {
-      return [
-        { label: 'Sonatrach Tech', value: 45, color: '#d4522f' },
-        { label: 'Fintech Alger', value: 35, color: '#3B82F6' },
-        { label: 'E-Commerce DZ', value: 20, color: '#10B981' },
-      ];
-    }
-    return (freelanceClients || []).slice(0, 4).map((c, idx) => ({
-      label: c.name,
-      value: Math.max(10, Math.round(100 / Math.max(1, freelanceClients.length))),
-      color: colors[idx % colors.length],
-    }));
-  }, [freelanceClients]);
-
-  // Weekly deliverables completed
-  const weeklyOutput = useMemo(() => {
-    return [
-      { week: 'Sprints', value: 8 },
-      { week: 'Livraisons', value: 12 },
-      { week: 'Revues', value: 6 },
-      { week: 'Devis', value: 4 },
-    ];
-  }, []);
-
-  if (showSkeleton) {
+  if (showSkeleton && freelanceClients.length === 0 && freelanceInvoices.length === 0) {
     return (
       <div className="p-6">
         <SkeletonDashboardFreelance />
@@ -151,377 +86,239 @@ export const FreelanceDashboardView: React.FC = () => {
     );
   }
 
-  return (
-    <div className="space-y-6 sm:space-y-7 animate-in fade-in duration-200">
-      <OfflineRetryBanner
-        isOffline={isOffline}
-        isTimedOut={isTimedOut}
-        isSyncing={isSyncing}
-        lastSyncedAt={lastSyncedAt}
-        onRetry={retryCloudSync}
-      />
+  const handleTimerToggle = () => {
+    if (activeTimer?.isRunning) {
+      pauseTimer();
+    } else if (activeTimer) {
+      resumeTimer();
+    } else if (freelanceProjects[0]) {
+      const firstProject = freelanceProjects[0];
+      startTimer(
+        firstProject.clientId || freelanceClients[0]?.id || 'client_general',
+        firstProject.clientName || freelanceClients[0]?.name || 'Client',
+        firstProject.id,
+        firstProject.title,
+        'Session focus'
+      );
+    } else {
+      setScreen('scheduler');
+    }
+  };
 
-      {/* Header */}
+  return (
+    <DashboardBentoFrame
+      theme={theme}
+      isRtl={isRtl}
+      isOffline={isOffline}
+      isTimedOut={isTimedOut}
+      isSyncing={isSyncing}
+      lastSyncedAt={lastSyncedAt}
+      onRetry={retryCloudSync}
+      data-testid="freelance-dashboard"
+    >
       <DashboardHeader
         title={t('nav_dashboard', language)}
-        subtitle={
-          language === 'ar'
-            ? 'تتبع ساعات العمل المفوترة، محفظة العملاء وتدفق الفواتير والسيولة للمستقلين'
-            : language === 'fr'
-            ? 'Suivi du temps facturable en direct, trésorerie et encaissement des honoraires.'
-            : 'Live billable time tracking, client portfolio, and cash flow.'
-        }
-        currentBranchName={currentBranch?.name || 'Studio Freelance Atrium'}
+        subtitle={localizeText(
+          language,
+          'Suivi du temps facturable en direct, trésorerie et encaissement des honoraires.',
+          'Live billable time tracking, client portfolio, and cash flow.',
+          'تتبع ساعات العمل المفوترة، محفظة العملاء وتدفق الفواتير.'
+        )}
+        currentBranchName={currentBranch?.name}
         branches={branches}
         onSwitchBranch={switchBranch}
         onResetDemoData={resetFreelanceMockData}
-        exportFileName="freelance_dashboard_report"
+        period={period}
+        onPeriodChange={(next) => setPeriod(next as DashboardPeriodKey)}
+        extraActions={
+          <div className="flex items-center gap-2 flex-wrap max-w-full">
+            {freelanceInvoices[0] && (
+              <AtriumButton
+                variant="outline"
+                size="sm"
+                icon={<FileText size={15} />}
+                onClick={() => setSelectedInvoice(freelanceInvoices[0])}
+              >
+                {localizeText(language, 'Dernière facture', 'Latest Invoice', 'آخر فاتورة')}
+              </AtriumButton>
+            )}
+            <AtriumButton
+              variant="primary"
+              size="sm"
+              icon={activeTimer?.isRunning ? <Pause size={15} /> : <Play size={15} />}
+              onClick={handleTimerToggle}
+            >
+              {activeTimer?.isRunning
+                ? localizeText(language, 'Pause Chrono', 'Pause Timer', 'إيقاف المؤقت')
+                : localizeText(language, 'Démarrer Chrono', 'Start Timer', 'بدء المؤقت')}
+            </AtriumButton>
+          </div>
+        }
       />
 
-      {/* TOP ROW: Two Pods */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* POD 1: Billable Hours & Time Flow (42% width) */}
-        <div className="lg:col-span-5 flex flex-col">
-          <DashboardPod
-            title={language === 'ar' ? 'ساعات العمل والإنتاجية' : language === 'fr' ? 'Heures Facturables & Focus' : 'Billable Hours & Time Flow'}
-            icon={<Clock size={18} className="text-[#d4522f]" />}
-            badge={
-              <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                {activeTimer ? (language === 'ar' ? 'المؤقت نشط الآن' : 'Timer Actif') : (language === 'ar' ? 'مؤقت متوقف' : 'En pause')}
-              </span>
-            }
-            rightControls={
-              <div className="flex items-center bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 p-0.5 rounded-xl text-xs font-semibold shadow-2xs">
-                <button
-                  type="button"
-                  onClick={() => setTimeFilter('today')}
-                  title={language === 'ar' ? 'بيانات اليوم' : language === 'fr' ? "Données d'aujourd'hui" : "Today's activity"}
-                  className={`px-3 py-1 rounded-md transition-all ${
-                    timeFilter === 'today' ? 'bg-[#d4522f] text-white shadow-xs' : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
-                  }`}
-                >
-                  {language === 'ar' ? 'اليوم' : language === 'fr' ? "Aujourd'hui" : 'Today'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTimeFilter('yesterday')}
-                  title={language === 'ar' ? 'بيانات الأمس' : language === 'fr' ? "Données d'hier" : "Yesterday's activity"}
-                  className={`px-3 py-1 rounded-md transition-all ${
-                    timeFilter === 'yesterday' ? 'bg-[#d4522f] text-white shadow-xs' : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
-                  }`}
-                >
-                  {language === 'ar' ? 'أمس' : language === 'fr' ? 'Hier' : 'Yesterday'}
-                </button>
-              </div>
-            }
-            className="flex-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">
-                      {language === 'ar' ? 'ساعات مسجلة اليوم' : 'Temps Passé Aujourd’hui'}
-                    </span>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                        {loggedHoursDecimal}h
-                      </span>
-                      <span className="text-xs text-black/55 dark:text-white/55">/ {targetHours}h obj</span>
-                    </div>
-                    <span className="inline-block mt-2 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[11px] font-medium rounded-full">
-                      ● {language === 'ar' ? 'إنتاجية مركزة' : 'Focus élevé'}
-                    </span>
-                  </div>
-                  <div className="w-px h-12 bg-[#E6DED6] dark:bg-neutral-700 mx-4" />
-                  <div className="flex-1">
-                    <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">
-                      {language === 'ar' ? 'المشاريع الجارية' : 'Projets Actifs'}
-                    </span>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                        {activeProjectsCount}
-                      </span>
-                      <span className="text-xs text-black/55 dark:text-white/55">{language === 'ar' ? 'عقود' : 'missions'}</span>
-                    </div>
-                    <span className="inline-block mt-2 px-2 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium rounded-full">
-                      {totalClients} {language === 'ar' ? 'عميل' : 'clients'}
-                    </span>
-                  </div>
-                </div>
+      <DashboardBentoGrid>
+        {/* Row 1: Collected Revenue + Unpaid Invoices Inverse + Billable & Collection Gauge (espresso) */}
+        <KpiSparkCard
+          title={localizeText(language, 'Honoraires encaissés', 'Collected Revenue', 'الأتعاب المحصلة')}
+          subtitle={localizeText(
+            language,
+            `${data.totalClients} clients · frais ${data.expenseTotal.toLocaleString()} DZD`,
+            `${data.totalClients} clients · expenses ${data.expenseTotal.toLocaleString()} DZD`,
+            `${data.totalClients} عملاء · مصاريف ${data.expenseTotal.toLocaleString()} دج`
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(freelanceInvoices.length > 0)}
+          value={data.collectedRevenue}
+          deltaPercent={data.revenueDelta}
+          format="currency"
+          currency="DZD"
+          series={data.revenueSpark}
+          emptyMessage={localizeText(
+            language,
+            'Aucune facture encaissée sur la période.',
+            'No paid invoices in this period.',
+            'لا توجد فواتير مدفوعة في هذه الفترة.'
+          )}
+        />
 
-                <div className="mt-4 pt-3 border-t border-[#E6DED6] dark:border-neutral-700/60">
-                  <span className="text-[11px] text-black/55 dark:text-white/55 block mb-2">
-                    {language === 'ar' ? 'توزيع ساعات العمل على مدار 24 ساعة' : 'Courbe horaire du travail facturé (24h)'}
-                  </span>
-                  <HourlyCurveChart data={hourlyData} color="#d4522f" />
-                </div>
-              </div>
+        <KpiMetricInverseCard
+          title={localizeText(language, 'Créances en attente', 'Unpaid Invoices', 'فواتير غير محصلة')}
+          subtitle={localizeText(
+            language,
+            'Factures envoyées ou échues en attente de règlement',
+            'Sent and overdue invoices awaiting settlement',
+            'فواتير مرسلة أو متأخرة بانتظار السداد'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(freelanceInvoices.length > 0)}
+          value={data.unpaidAmount}
+          format="currency"
+          currency="DZD"
+          series={[]}
+          emptyMessage={localizeText(
+            language,
+            'Aucune facture émise.',
+            'No invoices issued yet.',
+            'لم تصدر أي فواتير بعد.'
+          )}
+        />
 
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-xs font-medium text-black/70 dark:text-white/75">
-                    {language === 'ar' ? 'هدف ساعات الإنتاج اليومي' : 'Objectif d’Heures Journalier'}
-                  </span>
-                  <span className="text-base font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                    {loggedHoursDecimal} / {targetHours}h
-                  </span>
-                </div>
-                <div className="w-full bg-[#E6DED6]/70 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
-                  <div
-                    className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
-                    style={{ width: `${targetPct}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-[11px] text-black/55 dark:text-white/55">
-                  <span>{targetPct}% {language === 'ar' ? 'من الهدف' : 'de l’objectif'}</span>
-                  <span>{targetHours}h / {language === 'ar' ? 'يوم' : 'jour'}</span>
-                </div>
-              </div>
-            </div>
-          </DashboardPod>
-        </div>
+        <RadialGauge
+          title={localizeText(language, 'Ratio facturable & recouvrement', 'Utilization & Collection', 'نسبة الفوترة والتحصيل')}
+          subtitle={localizeText(
+            language,
+            'Temps facturable sur heures pointées et factures réglées',
+            'Billable share of logged hours and paid invoice ratio',
+            'نسبة الساعات المفوترة والفواتير المسددة'
+          )}
+          locale={locale}
+          {...featuredSurface}
+          state={resolveChartState(timeLogs.length > 0 || freelanceInvoices.length > 0)}
+          metrics={data.gauges}
+          emptyMessage={localizeText(
+            language,
+            'Enregistrez des pointages ou factures pour calculer le ratio.',
+            'Log time or issue invoices to track utilization.',
+            'سجل ساعات عمل أو فواتير لحساب النسبة.'
+          )}
+        />
 
-        {/* POD 2: Client Roster Development (58% width) */}
-        <div className="lg:col-span-7 flex flex-col">
-          <DashboardPod
-            title={language === 'ar' ? 'محفظة العملاء والمشاريع' : language === 'fr' ? 'Clients & Missions' : 'Clients & Projects'}
-            icon={<Briefcase size={18} className="text-[#d4522f]" />}
-            rightControls={
-              <div className="flex items-center gap-1 text-xs font-semibold text-black/70 dark:text-white/75">
-                <button
-                  type="button"
-                  onClick={() => setCurrentMonthIndex((prev) => (prev > 0 ? prev - 1 : 11))}
-                  className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"
-                >
-                  <ChevronLeft size={14} />
-                </button>
-                <span className="px-1 text-black dark:text-white">{months[currentMonthIndex]} 2026</span>
-                <button
-                  type="button"
-                  onClick={() => setCurrentMonthIndex((prev) => (prev < 11 ? prev + 1 : 0))}
-                  className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"
-                >
-                  <ChevronRight size={14} />
-                </button>
-              </div>
-            }
-            className="flex-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <DashboardMetricCard
-                  label={language === 'ar' ? 'العملاء النشطون' : 'Clients Référencés'}
-                  value={totalClients}
-                  badgeText={language === 'ar' ? 'مستمرون' : 'Actifs'}
-                  badgeVariant="success"
-                  tooltip={language === 'ar' ? 'عملاء بعقود جارية' : 'Clients avec missions en cours'}
-                />
+        {/* Row 2: Revenue Trend Area (wide) + Proposals-to-Paid Funnel */}
+        <AreaTrendChart
+          className="md:col-span-2 xl:col-span-2"
+          title={localizeText(language, 'Tendance des encaissements', 'Cash Collection Trend', 'اتجاه التحصيل النقدي')}
+          subtitle={localizeText(
+            language,
+            'Flux d’honoraires encaissés sur la période',
+            'Paid freelance invoices vs prior window',
+            'الفواتير المحصلة مقارنة بالفترة السابقة'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(freelanceInvoices.length > 0)}
+          points={data.areaPoints}
+          format="currency"
+          currency="DZD"
+          emptyMessage={localizeText(
+            language,
+            'Aucune donnée d’encaissement disponible.',
+            'No cashflow trend available.',
+            'لا توجد بيانات تحصيل متاحة.'
+          )}
+        />
 
-                <DashboardMetricCard
-                  label={language === 'ar' ? 'عروض أسعار معلقة' : 'Devis en Attente'}
-                  value={Math.max((freelanceProposals || []).length, 3)}
-                  badgeText={language === 'ar' ? 'قيد المراجعة' : 'Pipeline'}
-                  badgeVariant="neutral"
-                  tooltip={language === 'ar' ? 'مقترحات مقدمة للعملاء' : 'Propositions envoyées'}
-                />
+        <ConversionFunnel
+          title={localizeText(language, 'Tunnel devis → paiement', 'Proposal to Cash Funnel', 'مسار العروض إلى الدفع')}
+          subtitle={localizeText(
+            language,
+            'Devis émis → Acceptés → Facturés → Encaissés',
+            'Proposals → Accepted → Invoiced → Paid',
+            'العروض ← المقبولة ← المفوترة ← المدفوعة'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.funnelStages.length > 0)}
+          stages={data.funnelStages}
+          emptyMessage={localizeText(
+            language,
+            'Aucun devis ni facture enregistré.',
+            'No proposals or invoices recorded.',
+            'لا توجد عروض أسعار أو فواتير مسجلة.'
+          )}
+        />
 
-                <DarkEspressoCard
-                  label={language === 'ar' ? 'فواتير غير محصلة' : 'Créances à Encaisser'}
-                  value={formatCurrencyAmount(pendingAmount)}
-                  sublabel={language === 'ar' ? 'مستحقات واجبة السداد' : 'Factures émises'}
-                  badgeText={unpaidInvoices.length > 2 ? 'Relance' : 'Normal'}
-                  badgeVariant={unpaidInvoices.length > 2 ? 'warning' : 'neutral'}
-                />
-              </div>
+        {/* Row 3: Client Share Donut + Estimated vs Logged Hours Dumbbell (wide) */}
+        <DonutChart
+          title={localizeText(language, 'Répartition par client', 'Revenue by Client', 'توزيع الإيرادات حسب العميل')}
+          subtitle={localizeText(
+            language,
+            'Part de facturation par compte client',
+            'Billed invoice share across clients',
+            'حصة كل عميل من إجمالي الفواتير'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.donutSegments.length > 0)}
+          segments={data.donutSegments}
+          format="currency"
+          currency="DZD"
+          emptyMessage={localizeText(
+            language,
+            'Aucune facture client émise.',
+            'No client invoices billed.',
+            'لا توجد فواتير عملاء صادرة.'
+          )}
+        />
 
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-semibold text-black/70 dark:text-white/75">
-                    {language === 'ar' ? 'ساعات العمل الأسبوعية (آخر 4 أسابيع)' : 'Heures hebdomadaires travaillées'}
-                  </span>
-                  <span className="text-[11px] text-black/55 dark:text-white/55">
-                    {language === 'ar' ? 'تطور الإنتاجية' : '4 dernières semaines'}
-                  </span>
-                </div>
-                <PillBarHistogram
-                  data={weeklyHoursTrend}
-                  maxScale={45}
-                  barColor="#d4522f"
-                />
-              </div>
-            </div>
-          </DashboardPod>
-        </div>
-      </div>
+        <DumbbellChart
+          className="md:col-span-2 xl:col-span-2"
+          title={localizeText(language, 'Heures estimées vs réalisées', 'Estimated vs Logged Hours', 'الساعات المقدرة مقابل الفعلية')}
+          subtitle={localizeText(
+            language,
+            'Écart de charge par mission active',
+            'Actual tracked hours against initial project estimates',
+            'مقارنة الساعات المسجلة بالتقديرات الأولية'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.hoursDumbbell.length > 0)}
+          items={data.hoursDumbbell}
+          prevLabel={localizeText(language, 'Estimé', 'Estimated', 'مقدر')}
+          currentLabel={localizeText(language, 'Réalisé', 'Logged', 'فعلي')}
+          higherIsBetter={false}
+          unit="h"
+          deltaUnit="h"
+          emptyMessage={localizeText(
+            language,
+            'Créez un projet freelance pour suivre les heures.',
+            'Create a project to compare estimated vs logged hours.',
+            'أضف مشروعاً لمقارنة الساعات المقدرة والفعلية.'
+          )}
+        />
+      </DashboardBentoGrid>
 
-      {/* BOTTOM ROW: Two Pods */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* POD 3: Financial Trajectory (42% width) */}
-        <div className="lg:col-span-5 flex flex-col">
-          <DashboardPod
-            title={language === 'ar' ? 'الإيرادات والأرباح' : language === 'fr' ? 'Revenus & TJM' : 'Revenue & Profit'}
-            icon={<TrendingUp size={18} className="text-[#d4522f]" />}
-            rightControls={
-              <span className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase">
-                {months[currentMonthIndex]} 2026
-              </span>
-            }
-            className="flex-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="grid grid-cols-3 gap-2 pb-3 border-b border-[#E6DED6] dark:border-neutral-700/60">
-                  <div>
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'صافي الدخل' : 'Revenu Net'}</span>
-                    <span className="text-lg font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                      {formatCurrencyAmount(340000)}
-                    </span>
-                    <span className="text-[10px] text-emerald-600 block">+12%</span>
-                  </div>
-                  <div>
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'مفوتر هذا الشهر' : 'Facturé Mois'}</span>
-                    <span className="text-lg font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                      {formatCurrencyAmount(420000)}
-                    </span>
-                    <span className="text-[10px] text-emerald-600 block">+15%</span>
-                  </div>
-                  <div>
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'مصاريف تشغيل' : 'Frais & Outils'}</span>
-                    <span className="text-lg font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                      {formatCurrencyAmount(80000)}
-                    </span>
-                    <span className="text-[10px] text-black/55 dark:text-white/55 block">19% CA</span>
-                  </div>
-                </div>
-
-                <div className="pt-3">
-                  <span className="text-[11px] text-black/55 dark:text-white/55 block mb-1">
-                    {language === 'ar' ? 'منحنى التدفق النقدي على مدار 30 يوماً' : 'Tendance des encaissements sur 30 jours'}
-                  </span>
-                  <MonthlyAreaChart data={monthlyRevenue} color="#8B5CF6" />
-                </div>
-              </div>
-
-              {/* 4 KPIs Inset Grid */}
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-semibold text-black/70 dark:text-white/75">
-                    {language === 'ar' ? 'مؤشرات الأداء المستقل' : 'Indicateurs de Rentabilité'}
-                  </span>
-                  <Info size={13} className="text-black/55 dark:text-white/55" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
-                      {language === 'ar' ? 'سعر الساعة الفعلي' : 'Taux Horaire Réel'}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
-                        {formatCurrencyAmount(3800)}/h
-                      </span>
-                      <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
-                        Rentable
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
-                      {language === 'ar' ? 'سرعة التحصيل' : 'Délai d’Encaissement'}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">14 j</span>
-                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                        Rapide
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
-                      {language === 'ar' ? 'نسبة الاستغلال' : 'Taux d’Utilisation'}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">82%</span>
-                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                        Optimal
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
-                      {language === 'ar' ? 'تركيز العملاء' : 'Concentration Client'}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">35% max</span>
-                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                        Diversifié
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </DashboardPod>
-        </div>
-
-        {/* POD 4: Project Intelligence & Runway Guardian (58% width) */}
-        <div className="lg:col-span-7 flex flex-col">
-          <DashboardPod
-            title={language === 'ar' ? 'المؤشرات والتنبيهات' : language === 'fr' ? 'Analyses & Alertes' : 'Insights & Alerts'}
-            icon={<Receipt size={18} className="text-[#d4522f]" />}
-            className="flex-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-black/70 dark:text-white/75">
-                      {language === 'ar' ? 'توزيع الإيراد حسب العميل' : 'Répartition CA par Client'}
-                    </span>
-                    <Info size={13} className="text-black/55 dark:text-white/55" />
-                  </div>
-                  <DonutChart segments={clientRevenueShare} centerLabel={`${totalClients} Clients`} />
-                </div>
-
-                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-black/70 dark:text-white/75">
-                      {language === 'ar' ? 'حجم المخرجات المنجزة' : 'Livrables par Type'}
-                    </span>
-                    <Info size={13} className="text-black/55 dark:text-white/55" />
-                  </div>
-                  <PillBarHistogram
-                    data={weeklyOutput}
-                    maxScale={15}
-                    barColor="#3B82F6"
-                  />
-                </div>
-              </div>
-
-              {/* Cashflow Runway Guardian Card */}
-              <GuardianCard
-                title={language === 'ar' ? 'استقرار التدفق المالي' : 'Cashflow Health'}
-                subtitle={
-                  language === 'ar'
-                    ? 'حساب آلي لعدد أشهر الأمان المالي وتنبيهات مواعيد استحقاق الفواتير لدى العملاء'
-                    : 'Suivi continu des réserves de trésorerie (6.5 mois d’avance) et relance des factures.'
-                }
-                score={94}
-                statusText={language === 'ar' ? 'مستوى الأمان المالي ممتاز (6.5 شهر)' : 'Réserves confortables : 6.5 mois d’avance'}
-                metricLabel={language === 'ar' ? 'أشهر الاحتياط' : 'Réserve'}
-                metricValue="6.5 mois"
-                trendText={language === 'ar' ? 'مؤمن' : 'Trésorerie saine'}
-                defaultEnabled={true}
-              />
-            </div>
-          </DashboardPod>
-        </div>
-      </div>
-
-      {/* Invoice Preview Modal */}
       {selectedInvoice && (
         <InvoicePreviewModal
           isOpen={!!selectedInvoice}
@@ -529,6 +326,6 @@ export const FreelanceDashboardView: React.FC = () => {
           onClose={() => setSelectedInvoice(null)}
         />
       )}
-    </div>
+    </DashboardBentoFrame>
   );
 };

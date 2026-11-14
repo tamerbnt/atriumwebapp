@@ -9,6 +9,7 @@ import {
   SubcontractorAgreement,
   EquipmentLogRecord,
 } from '../../../types/index';
+import { useAtriumStore } from '../../../services/store';
 
 export const INITIAL_CONTRACTOR_PROJECTS: ContractorProject[] = [
   {
@@ -640,6 +641,16 @@ export const INITIAL_EQUIPMENT_LOGS: EquipmentLogRecord[] = [
 ];
 
 export const useContractorData = () => {
+  const { currentBranchId } = useAtriumStore();
+  const activeBranchId = currentBranchId || 'branch_contractor_main';
+  const belongsToActiveBranch = (item: { branchId?: string; facilityId?: string }) =>
+    (item.branchId || item.facilityId || 'branch_contractor_main') === activeBranchId;
+  const withBranch = <T extends object>(item: T): T =>
+    ({
+      ...item,
+      branchId: (item as { branchId?: string }).branchId || activeBranchId,
+    }) as T;
+
   const [projects, setProjects] = useState<ContractorProject[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_contractor_projects');
@@ -757,7 +768,7 @@ export const useContractorData = () => {
   }, [subcontractors]);
 
   const addProject = (project: ContractorProject) => {
-    setProjects((prev) => [project, ...prev]);
+    setProjects((prev) => [withBranch(project), ...prev]);
   };
 
   const updateProject = (project: ContractorProject) => {
@@ -769,7 +780,7 @@ export const useContractorData = () => {
   };
 
   const addBoqItem = (item: ContractorBoqItem) => {
-    setBoqItems((prev) => [...prev, item]);
+    setBoqItems((prev) => [...prev, withBranch(item)]);
   };
 
   const updateBoqItem = (item: ContractorBoqItem) => {
@@ -781,11 +792,11 @@ export const useContractorData = () => {
   };
 
   const addDailyLog = (log: ContractorDailyLog) => {
-    setDailyLogs((prev) => [log, ...prev]);
+    setDailyLogs((prev) => [withBranch(log), ...prev]);
   };
 
   const addDgp = (dgp: ContractorDgp) => {
-    setDgps((prev) => [dgp, ...prev]);
+    setDgps((prev) => [withBranch(dgp), ...prev]);
   };
 
   const updateDgpStatus = (id: string, status: ContractorDgp['status']) => {
@@ -793,19 +804,19 @@ export const useContractorData = () => {
   };
 
   const addServiceOrder = (os: ContractorServiceOrder) => {
-    setServiceOrders((prev) => [os, ...prev]);
+    setServiceOrders((prev) => [withBranch(os), ...prev]);
   };
 
   const addConcretePour = (pour: ConcretePourRecord) => {
-    setConcretePours((prev) => [pour, ...prev]);
+    setConcretePours((prev) => [withBranch(pour), ...prev]);
   };
 
   const addSubcontractor = (sub: SubcontractorAgreement) => {
-    setSubcontractors((prev) => [sub, ...prev]);
+    setSubcontractors((prev) => [withBranch(sub), ...prev]);
   };
 
   const addEquipmentLog = (log: EquipmentLogRecord) => {
-    setEquipmentLogs((prev) => [log, ...prev]);
+    setEquipmentLogs((prev) => [withBranch(log), ...prev]);
   };
 
   useEffect(() => {
@@ -815,35 +826,25 @@ export const useContractorData = () => {
   }, [equipmentLogs]);
 
   const resetContractorDemoData = () => {
-    setProjects([]);
-    setBoqItems([]);
-    setDailyLogs([]);
-    setDgps([]);
-    setServiceOrders([]);
-    setConcretePours([]);
-    setSubcontractors([]);
-    setEquipmentLogs([]);
-    try {
-      localStorage.setItem('atrium_contractor_projects', JSON.stringify([]));
-      localStorage.setItem('atrium_contractor_boq', JSON.stringify([]));
-      localStorage.setItem('atrium_contractor_logs', JSON.stringify([]));
-      localStorage.setItem('atrium_contractor_dgps', JSON.stringify([]));
-      localStorage.setItem('atrium_contractor_os', JSON.stringify([]));
-      localStorage.setItem('atrium_contractor_concrete', JSON.stringify([]));
-      localStorage.setItem('atrium_contractor_subcontractors', JSON.stringify([]));
-      localStorage.setItem('atrium_contractor_equipment', JSON.stringify([]));
-    } catch {}
+    setProjects((prev) => prev.filter((p) => !belongsToActiveBranch(p)));
+    setBoqItems((prev) => prev.filter((b) => !belongsToActiveBranch(b)));
+    setDailyLogs((prev) => prev.filter((l) => !belongsToActiveBranch(l)));
+    setDgps((prev) => prev.filter((d) => !belongsToActiveBranch(d)));
+    setServiceOrders((prev) => prev.filter((s) => !belongsToActiveBranch(s)));
+    setConcretePours((prev) => prev.filter((c) => !belongsToActiveBranch(c)));
+    setSubcontractors((prev) => prev.filter((s) => !belongsToActiveBranch(s)));
+    setEquipmentLogs((prev) => prev.filter((e) => !belongsToActiveBranch(e)));
   };
 
   return {
-    projects,
-    boqItems,
-    dailyLogs,
-    dgps,
-    serviceOrders,
-    concretePours,
-    subcontractors,
-    equipmentLogs,
+    projects: projects.filter(belongsToActiveBranch),
+    boqItems: boqItems.filter(belongsToActiveBranch),
+    dailyLogs: dailyLogs.filter(belongsToActiveBranch),
+    dgps: dgps.filter(belongsToActiveBranch),
+    serviceOrders: serviceOrders.filter(belongsToActiveBranch),
+    concretePours: concretePours.filter(belongsToActiveBranch),
+    subcontractors: subcontractors.filter(belongsToActiveBranch),
+    equipmentLogs: equipmentLogs.filter(belongsToActiveBranch),
     selectedProjectId,
     setSelectedProjectId,
     addProject,

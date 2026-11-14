@@ -1,37 +1,29 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import { Receipt, ShoppingCart } from 'lucide-react';
 import {
-  ShoppingBag,
-  TrendingUp,
-  Receipt,
-  Package,
-  AlertTriangle,
-  CreditCard,
-  Building2,
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  RotateCcw,
-  Warehouse,
-  Printer,
-  Info,
-} from 'lucide-react';
+  AreaTrendChart,
+  HourlyHeatmap,
+  KpiMetricInverseCard,
+  KpiSparkCard,
+  RankedBarList,
+  SquarifiedTreemap,
+  WaterfallChart,
+} from '@/atrium';
 import { useAtriumStore } from '../../../services/store';
-import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonDashboardPos } from '../../ui/skeleton/StructuralSkeletons';
-import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
+import { AtriumButton } from '../../ui/AtriumButton';
 import {
+  DashboardBentoFrame,
+  DashboardBentoGrid,
   DashboardHeader,
-  DashboardPod,
-  DashboardMetricCard,
-  DarkEspressoCard,
-  HourlyCurveChart,
-  PillBarHistogram,
-  MonthlyAreaChart,
-  DonutChart,
-  GuardianCard,
+  getSurfaceProps,
+  localizeText,
+  toChartLocale,
 } from '../../common/dashboard';
+import { resolveChartState, type DashboardPeriodKey } from '../../../utils/dashboardSelectors/common';
+import { selectPosDashboard } from '../../../utils/dashboardSelectors/coreVerticals';
 
 export interface PosDashboardViewProps {
   onAddMember?: () => void;
@@ -39,14 +31,13 @@ export interface PosDashboardViewProps {
 }
 
 export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
-  onAddMember,
   onOpenVoucherModal,
 }) => {
   const { t, language, isRtl } = useTranslation();
   const {
+    theme,
     products,
     sales,
-    parkedOrders,
     currentBranch,
     branches,
     switchBranch,
@@ -63,110 +54,23 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
     hasCachedData: products.length > 0 || sales.length > 0,
   });
 
-  const [timeFilter, setTimeFilter] = useState<'today' | 'yesterday'>('today');
-  const [currentMonthIndex, setCurrentMonthIndex] = useState(10); // November
-  const months = ['JAN', 'FEV', 'MAR', 'AVR', 'MAI', 'JUIN', 'JUIL', 'AOU', 'SEP', 'OCT', 'NOV', 'DEC'];
+  const [period, setPeriod] = useState<DashboardPeriodKey>('30d');
+  const locale = toChartLocale(language);
+  const featuredSurface = getSurfaceProps(theme, true);
+  const standardSurface = getSurfaceProps(theme, false);
 
-  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
-
-  // Today's sales
-  const todaySales = useMemo(() => {
-    return (sales || []).filter((s) => s.createdAt?.startsWith(todayStr));
-  }, [sales, todayStr]);
-
-  const todayGross = useMemo(() => {
-    return todaySales.reduce((sum, s) => sum + (s.totalAmount || 0), 0);
-  }, [todaySales]);
-
-  const activeTicketsCount = todaySales.length;
-  const parkedCount = (parkedOrders || []).length;
-
-  const dailyTarget = 120000;
-  const targetPct = Math.min(100, Math.round((todayGross / dailyTarget) * 100));
-
-  // Hourly sales curve
-  const hourlyData = useMemo(() => {
-    const counts = [0, 0, 0, 0, 0];
-    todaySales.forEach((s) => {
-      const h = s.createdAt ? new Date(s.createdAt).getHours() : 14;
-      if (h < 9) counts[0]++;
-      else if (h < 12) counts[1]++;
-      else if (h < 15) counts[2]++;
-      else if (h < 18) counts[3]++;
-      else counts[4]++;
-    });
-    if (counts.every((v) => v === 0)) return [0, 2, 7, 5, 2];
-    return counts;
-  }, [todaySales]);
-
-  // Total products & low stock items
-  const lowStockItems = useMemo(
-    () => (products || []).filter((p) => (p.stockQuantity || 0) <= (p.reorderLevel || 5)),
-    [products]
+  const data = useMemo(
+    () =>
+      selectPosDashboard({
+        sales,
+        products,
+        period,
+        language,
+      }),
+    [sales, products, period, language]
   );
 
-  // 4-week revenue trend
-  const weeklyRevenueTrend = useMemo(() => {
-    const base = sales.reduce((sum, s) => sum + (s.totalAmount || 0), 0) || 180000;
-    return [
-      { week: language === 'ar' ? 'أسبوع 1' : 'week 1', value: Math.round(base * 0.22) },
-      { week: language === 'ar' ? 'أسبوع 2' : 'week 2', value: Math.round(base * 0.26) },
-      { week: language === 'ar' ? 'أسبوع 3' : 'week 3', value: Math.round(base * 0.3) },
-      { week: language === 'ar' ? 'أسبوع 4' : 'week 4', value: Math.round(base * 0.22) },
-    ];
-  }, [sales, language]);
-
-  // 30-day cash trajectory
-  const monthlyRevenue = useMemo(() => {
-    return Array.from({ length: 30 }, (_, i) => {
-      const factor = Math.sin((i / 30) * Math.PI) * 0.5 + 0.5;
-      return Math.round((todayGross || 25000) * factor * (1 + (i % 4) * 0.15));
-    });
-  }, [todayGross]);
-
-  // Category sales mix donut
-  const categoryMix = useMemo(() => {
-    const map = new Map<string, number>();
-    products.forEach((p) => {
-      const cat = p.category || (language === 'ar' ? 'عام' : 'Général');
-      map.set(cat, (map.get(cat) || 0) + 1);
-    });
-    if (map.size === 0) {
-      return [
-        { label: language === 'ar' ? 'مأكولات ومشروبات' : 'Boissons & Snacks', value: 48, color: '#d4522f' },
-        { label: language === 'ar' ? 'إلكترونيات واكسسوار' : 'Accessoires', value: 32, color: '#3B82F6' },
-        { label: language === 'ar' ? 'مواد استهلاكية' : 'Consommables', value: 20, color: '#10B981' },
-      ];
-    }
-    const colors = ['#d4522f', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'];
-    let idx = 0;
-    return Array.from(map.entries()).map(([label, value]) => ({
-      label,
-      value,
-      color: colors[idx++ % colors.length],
-    }));
-  }, [products, language]);
-
-  // Top SKUs
-  const topProducts = useMemo(() => {
-    const top = [...(products || [])]
-      .sort((a, b) => (b.price?.amount || 0) - (a.price?.amount || 0))
-      .slice(0, 4);
-    if (top.length === 0) {
-      return [
-        { week: 'Espresso', value: 42 },
-        { week: 'Croissant', value: 28 },
-        { week: 'Jus Frais', value: 19 },
-        { week: 'Sandwich', value: 15 },
-      ];
-    }
-    return top.map((p) => ({
-      week: p.name.length > 12 ? p.name.substring(0, 10) + '..' : p.name,
-      value: Math.max(5, Math.round(p.stockQuantity || 10)),
-    }));
-  }, [products]);
-
-  if (showSkeleton) {
+  if (showSkeleton && products.length === 0 && sales.length === 0) {
     return (
       <div className="p-6">
         <SkeletonDashboardPos />
@@ -175,378 +79,219 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
   }
 
   return (
-    <div className="space-y-6 sm:space-y-7 animate-in fade-in duration-200">
-      <OfflineRetryBanner
-        isOffline={isOffline}
-        isTimedOut={isTimedOut}
-        isSyncing={isSyncing}
-        lastSyncedAt={lastSyncedAt}
-        onRetry={retryCloudSync}
-      />
-
-      {/* Header */}
+    <DashboardBentoFrame
+      theme={theme}
+      isRtl={isRtl}
+      isOffline={isOffline}
+      isTimedOut={isTimedOut}
+      isSyncing={isSyncing}
+      lastSyncedAt={lastSyncedAt}
+      onRetry={retryCloudSync}
+      data-testid="pos-dashboard"
+    >
       <DashboardHeader
         title={t('nav_dashboard', language)}
-        subtitle={
-          language === 'ar'
-            ? 'مؤشرات حركة نقاط البيع، تتبع التذاكر، المخزون الحي وربحية المتجر'
-            : language === 'fr'
-            ? 'Flux des caisses en direct, rotation des stocks et rentabilité des ventes.'
-            : 'Live checkout flow, stock turnover, and store profitability.'
-        }
-        currentBranchName={currentBranch?.name || 'Caisse Centrale Atrium'}
+        subtitle={localizeText(
+          language,
+          'Flux des caisses en direct, rotation des stocks et marge nette.',
+          'Live checkout flow, stock valuation, and net retail margin.',
+          'مؤشرات نقاط البيع، حركة المخزون وصافي الهامش.'
+        )}
+        currentBranchName={currentBranch?.name}
         branches={branches}
         onSwitchBranch={switchBranch}
         onResetDemoData={resetPosMockData}
-        exportFileName="pos_dashboard_report"
+        period={period}
+        onPeriodChange={(next) => setPeriod(next as DashboardPeriodKey)}
+        extraActions={
+          <div className="flex items-center gap-2 flex-wrap max-w-full">
+            {onOpenVoucherModal && (
+              <AtriumButton
+                variant="outline"
+                size="sm"
+                icon={<Receipt size={15} />}
+                onClick={onOpenVoucherModal}
+              >
+                {localizeText(language, 'Bon / Remise', 'Voucher', 'قسيمة')}
+              </AtriumButton>
+            )}
+            <AtriumButton
+              variant="primary"
+              size="sm"
+              icon={<ShoppingCart size={15} />}
+              onClick={() => setScreen('shop')}
+            >
+              {localizeText(language, 'Ouvrir Caisse', 'Open Register', 'فتح الصندوق')}
+            </AtriumButton>
+          </div>
+        }
       />
 
-      {/* TOP ROW: Two Pods */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* POD 1: Live Checkout Flow (42% width) */}
-        <div className="lg:col-span-5 flex flex-col">
-          <DashboardPod
-            title={language === 'ar' ? 'حركة الصناديق والمبيعات' : language === 'fr' ? 'Activité des Caisses' : 'Register Activity'}
-            icon={<ShoppingBag size={18} className="text-[#d4522f]" />}
-            badge={
-              <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                {activeTicketsCount} {language === 'ar' ? 'تذكرة اليوم' : 'Tickets'}
-              </span>
-            }
-            rightControls={
-              <div className="flex items-center bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 p-0.5 rounded-xl text-xs font-semibold shadow-2xs">
-                <button
-                  type="button"
-                  onClick={() => setTimeFilter('today')}
-                  title={language === 'ar' ? 'إحصائيات اليوم' : language === 'fr' ? "Statistiques d'aujourd'hui" : "Today's activity"}
-                  className={`px-3 py-1 rounded-md transition-all ${
-                    timeFilter === 'today' ? 'bg-[#d4522f] text-white shadow-xs' : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
-                  }`}
-                >
-                  {language === 'ar' ? 'اليوم' : language === 'fr' ? "Aujourd'hui" : 'Today'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTimeFilter('yesterday')}
-                  title={language === 'ar' ? 'إحصائيات الأمس' : language === 'fr' ? "Statistiques d'hier" : "Yesterday's activity"}
-                  className={`px-3 py-1 rounded-md transition-all ${
-                    timeFilter === 'yesterday' ? 'bg-[#d4522f] text-white shadow-xs' : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
-                  }`}
-                >
-                  {language === 'ar' ? 'أمس' : language === 'fr' ? 'Hier' : 'Yesterday'}
-                </button>
-              </div>
-            }
-            className="flex-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">
-                      {language === 'ar' ? 'تذاكر مغلقة اليوم' : 'Tickets Encaissés'}
-                    </span>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                        {activeTicketsCount}
-                      </span>
-                      <span className="text-xs text-black/55 dark:text-white/55">/ 80 obj</span>
-                    </div>
-                    <span className="inline-block mt-2 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[11px] font-medium rounded-full">
-                      ● {language === 'ar' ? 'الصندوق نشط' : 'Caisse ouverte'}
-                    </span>
-                  </div>
-                  <div className="w-px h-12 bg-[#E6DED6] dark:bg-neutral-700 mx-4" />
-                  <div className="flex-1">
-                    <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">
-                      {language === 'ar' ? 'طلبات معلقة' : 'Commandes en attente'}
-                    </span>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                        {parkedCount}
-                      </span>
-                      <span className="text-xs text-black/55 dark:text-white/55">{language === 'ar' ? 'معلق' : 'parquées'}</span>
-                    </div>
-                    <span className="inline-block mt-2 px-2 py-0.5 bg-amber-50 text-amber-600 text-[11px] font-medium rounded-full">
-                      {language === 'ar' ? 'استئناف سريع' : 'Prêt à encaisser'}
-                    </span>
-                  </div>
-                </div>
+      <DashboardBentoGrid>
+        {/* Row 1: Gross Revenue Spark + Low Stock Inverse Alert + Top SKUs */}
+        <KpiSparkCard
+          title={localizeText(language, 'Chiffre d’affaires caisse', 'Register Revenue', 'مبيعات الصندوق')}
+          subtitle={localizeText(
+            language,
+            `${data.ticketsCount} tickets · panier moyen ${data.avgTicket.toLocaleString()} DZD`,
+            `${data.ticketsCount} tickets · avg ${data.avgTicket.toLocaleString()} DZD`,
+            `${data.ticketsCount} تذاكر · متوسط ${data.avgTicket.toLocaleString()} دج`
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(sales.length > 0)}
+          value={data.grossRevenue}
+          deltaPercent={data.revenueDelta}
+          format="currency"
+          currency="DZD"
+          series={data.revenueSpark}
+          emptyMessage={localizeText(
+            language,
+            'Aucun ticket encaissé sur la période.',
+            'No sales recorded in this period.',
+            'لا توجد تذاكر مسجلة في هذه الفترة.'
+          )}
+        />
 
-                <div className="mt-4 pt-3 border-t border-[#E6DED6] dark:border-neutral-700/60">
-                  <span className="text-[11px] text-black/55 dark:text-white/55 block mb-2">
-                    {language === 'ar' ? 'كثافة المبيعات على مدار 24 ساعة' : 'Flux horaire des encaissements (24h)'}
-                  </span>
-                  <HourlyCurveChart data={hourlyData} color="#d4522f" />
-                </div>
-              </div>
+        <KpiMetricInverseCard
+          title={localizeText(language, 'Ruptures & alertes stock', 'Low Stock Alerts', 'تنبيهات نقص المخزون')}
+          subtitle={localizeText(
+            language,
+            `${data.lowStockCount} références sous seuil sur ${data.totalProducts} articles`,
+            `${data.lowStockCount} SKUs below reorder level out of ${data.totalProducts}`,
+            `${data.lowStockCount} مواد تحت الحد الأدنى من ${data.totalProducts}`
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(products.length > 0)}
+          value={data.lowStockCount}
+          format="number"
+          unit={localizeText(language, 'articles', 'SKUs', 'مادة')}
+          series={[]}
+          emptyMessage={localizeText(
+            language,
+            'Ajoutez des articles pour surveiller les seuils.',
+            'Add catalog items to track stock levels.',
+            'أضف منتجات لمتابعة المخزون.'
+          )}
+        />
 
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-xs font-medium text-black/70 dark:text-white/75">
-                    {language === 'ar' ? 'إجمالي المبيعات اليوم' : 'Chiffre d’Affaires Aujourd’hui'}
-                  </span>
-                  <span className="text-base font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                    {formatMoney(todayGross)}
-                  </span>
-                </div>
-                <div className="w-full bg-[#E6DED6]/70 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
-                  <div
-                    className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
-                    style={{ width: `${targetPct}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-[11px] text-black/55 dark:text-white/55">
-                  <span>{targetPct}% {language === 'ar' ? 'من الهدف' : 'de l’objectif journalier'}</span>
-                  <span>{formatMoney(dailyTarget)}</span>
-                </div>
-              </div>
-            </div>
-          </DashboardPod>
-        </div>
+        <RankedBarList
+          title={localizeText(language, 'Top articles vendus', 'Top Selling SKUs', 'أفضل المنتجات مبيعاً')}
+          subtitle={localizeText(
+            language,
+            'Par chiffre d’affaires ou volume d’unités',
+            'Ranked by net revenue or units sold',
+            'الترتيب حسب المبيعات أو الكمية'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.rankedSkus.length > 0)}
+          criteria={[
+            { id: 'revenue', label: localizeText(language, 'CA', 'Revenue', 'المبيعات'), format: 'currency', currency: 'DZD' },
+            { id: 'units', label: localizeText(language, 'Unités', 'Units', 'الوحدات'), format: 'number' },
+          ]}
+          items={data.rankedSkus}
+          emptyMessage={localizeText(
+            language,
+            'Aucune ligne de vente sur la période.',
+            'No line items sold in this period.',
+            'لا توجد مبيعات منتجات في هذه الفترة.'
+          )}
+        />
 
-        {/* POD 2: Ticket & Customer Asset Development (58% width) */}
-        <div className="lg:col-span-7 flex flex-col">
-          <DashboardPod
-            title={language === 'ar' ? 'التذاكر وحجم المبيعات' : language === 'fr' ? 'Tickets & Ventes' : 'Sales & Tickets'}
-            icon={<TrendingUp size={18} className="text-[#d4522f]" />}
-            rightControls={
-              <div className="flex items-center gap-1 text-xs font-semibold text-black/70 dark:text-white/75">
-                <button
-                  type="button"
-                  onClick={() => setCurrentMonthIndex((prev) => (prev > 0 ? prev - 1 : 11))}
-                  className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"
-                >
-                  <ChevronLeft size={14} />
-                </button>
-                <span className="px-1 text-black dark:text-white">{months[currentMonthIndex]} 2026</span>
-                <button
-                  type="button"
-                  onClick={() => setCurrentMonthIndex((prev) => (prev < 11 ? prev + 1 : 0))}
-                  className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"
-                >
-                  <ChevronRight size={14} />
-                </button>
-              </div>
-            }
-            className="flex-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <DashboardMetricCard
-                  label={language === 'ar' ? 'إجمالي المنتجات' : 'Articles Référencés'}
-                  value={products.length || 24}
-                  badgeText={language === 'ar' ? 'نشط بالكتالوج' : 'En rayon'}
-                  badgeVariant="success"
-                  tooltip={language === 'ar' ? 'جميع المنتجات المتوفرة للبيع' : 'Produits disponibles à la vente'}
-                />
+        {/* Row 2: Sales Area Trend (wide) + Inventory Valuation Treemap */}
+        <AreaTrendChart
+          className="md:col-span-2 xl:col-span-2"
+          title={localizeText(language, 'Trajectoire des ventes', 'Sales Trajectory', 'مسار المبيعات')}
+          subtitle={localizeText(
+            language,
+            'Période sélectionnée comparée à la fenêtre précédente',
+            'Current timeframe compared against prior window',
+            'الفترة الحالية مقارنة بالفترة السابقة'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(sales.length > 0)}
+          points={data.areaPoints}
+          format="currency"
+          currency="DZD"
+          emptyMessage={localizeText(
+            language,
+            'Aucune donnée d’encaissement disponible.',
+            'No checkout trend data available.',
+            'لا توجد بيانات مبيعات متاحة.'
+          )}
+        />
 
-                <DashboardMetricCard
-                  label={language === 'ar' ? 'تذاكر هذا الشهر' : 'Total Tickets Mois'}
-                  value={Math.max(sales.length, 38)}
-                  badgeText={language === 'ar' ? 'معاملات' : 'Ventes'}
-                  badgeVariant="neutral"
-                  tooltip={language === 'ar' ? 'عدد التذاكر المسجلة خلال 30 يوماً' : 'Nombre de tickets passés en caisse'}
-                />
+        <SquarifiedTreemap
+          title={localizeText(language, 'Valeur stock par catégorie', 'Inventory by Category', 'قيمة المخزون حسب الفئة')}
+          subtitle={localizeText(
+            language,
+            'Valorisation au coût d’achat des stocks actifs',
+            'Stock valuation grouped by product category',
+            'تقييم المخزون الحالي حسب الفئة'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.treemapItems.length > 0)}
+          items={data.treemapItems}
+          format="currency"
+          currency="DZD"
+          emptyMessage={localizeText(
+            language,
+            'Aucun stock valorisé en rayon.',
+            'No valued stock in inventory.',
+            'لا يوجد مخزون مقيم حالياً.'
+          )}
+        />
 
-                <DarkEspressoCard
-                  label={language === 'ar' ? 'تنبيه نقص المخزون' : 'Alerte Rupture Stock'}
-                  value={lowStockItems.length}
-                  sublabel={language === 'ar' ? 'مواد تتطلب إعادة طلب' : 'Articles sous seuil critique'}
-                  badgeText={lowStockItems.length > 0 ? 'Urgent' : 'Sécurisé'}
-                  badgeVariant={lowStockItems.length > 0 ? 'warning' : 'neutral'}
-                />
-              </div>
+        {/* Row 3: Hourly Register Rush + Net Margin Waterfall (featured espresso, wide) */}
+        <HourlyHeatmap
+          title={localizeText(language, 'Heures de pointe caisse', 'Peak Checkout Hours', 'ساعات ذروة البيع')}
+          subtitle={localizeText(
+            language,
+            'Volume de tickets par jour et tranche horaire',
+            'Ticket density by weekday and hour',
+            'توزيع الفواتير حسب اليوم والساعة'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.rushHeatmap.hasAny)}
+          rows={data.rushHeatmap.rows}
+          cols={data.rushHeatmap.cols}
+          cells={data.rushHeatmap.cells}
+          emptyMessage={localizeText(
+            language,
+            'Aucun passage en caisse horodaté.',
+            'No timestamped tickets recorded.',
+            'لا توجد فواتير مؤرخة.'
+          )}
+        />
 
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-semibold text-black/70 dark:text-white/75">
-                    {language === 'ar' ? 'مبيعات الأسابيع الـ 4 الماضية (دج)' : 'Chiffre d’affaires hebdomadaire'}
-                  </span>
-                  <span className="text-[11px] text-black/55 dark:text-white/55">
-                    {language === 'ar' ? 'تطور أسبوعي' : '4 semaines'}
-                  </span>
-                </div>
-                <PillBarHistogram
-                  data={weeklyRevenueTrend}
-                  maxScale={Math.max(...weeklyRevenueTrend.map((w) => w.value)) * 1.2}
-                  barColor="#d4522f"
-                />
-              </div>
-            </div>
-          </DashboardPod>
-        </div>
-      </div>
-
-      {/* BOTTOM ROW: Two Pods */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* POD 3: Financial Trajectory & P&L (42% width) */}
-        <div className="lg:col-span-5 flex flex-col">
-          <DashboardPod
-            title={language === 'ar' ? 'الإيرادات والأرباح' : language === 'fr' ? 'Revenus & Marges' : 'Revenue & Profit'}
-            icon={<Receipt size={18} className="text-[#d4522f]" />}
-            rightControls={
-              <span className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase">
-                {months[currentMonthIndex]} 2026
-              </span>
-            }
-            className="flex-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="grid grid-cols-3 gap-2 pb-3 border-b border-[#E6DED6] dark:border-neutral-700/60">
-                  <div>
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'صافي الهامش' : 'Marge Nette'}</span>
-                    <span className="text-lg font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                      {formatMoney(Math.round(todayGross * 0.38))}
-                    </span>
-                    <span className="text-[10px] text-emerald-600 block">38% Brut</span>
-                  </div>
-                  <div>
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'إجمالي المبيعات' : 'CA Brut'}</span>
-                    <span className="text-lg font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                      {formatMoney(todayGross)}
-                    </span>
-                    <span className="text-[10px] text-emerald-600 block">+5.3%</span>
-                  </div>
-                  <div>
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'تكلفة البضاعة' : 'Coût d’Achat'}</span>
-                    <span className="text-lg font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                      {formatMoney(Math.round(todayGross * 0.62))}
-                    </span>
-                    <span className="text-[10px] text-black/55 dark:text-white/55 block">62% CA</span>
-                  </div>
-                </div>
-
-                <div className="pt-3">
-                  <span className="text-[11px] text-black/55 dark:text-white/55 block mb-1">
-                    {language === 'ar' ? 'منحنى التدفق النقدي على مدار 30 يوماً' : 'Tendance des encaissements sur 30 jours'}
-                  </span>
-                  <MonthlyAreaChart data={monthlyRevenue} color="#8B5CF6" />
-                </div>
-              </div>
-
-              {/* 4 KPIs Inset Grid */}
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-semibold text-black/70 dark:text-white/75">
-                    {language === 'ar' ? 'مؤشرات كفاءة الصندوق' : 'Indicateurs de Performance'}
-                  </span>
-                  <Info size={13} className="text-black/55 dark:text-white/55" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
-                      {language === 'ar' ? 'متوسط السلة' : 'Panier Moyen'}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
-                        {formatMoney(todayGross > 0 && activeTicketsCount > 0 ? Math.round(todayGross / activeTicketsCount) : 1850)}
-                      </span>
-                      <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
-                        Ticket
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
-                      {language === 'ar' ? 'نسبة الدفع نقداً' : 'Part Paiement Cash'}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">82%</span>
-                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                        Espèces
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
-                      {language === 'ar' ? 'معدل دوران المخزون' : 'Rotation Stocks'}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">5.4x</span>
-                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                        Rapide
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
-                      {language === 'ar' ? 'نسبة الإرجاع والإلغاء' : 'Taux d’Annulation'}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">0.8%</span>
-                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                        Conforme
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </DashboardPod>
-        </div>
-
-        {/* POD 4: Intelligence & Stock Sentinel Guardian (58% width) */}
-        <div className="lg:col-span-7 flex flex-col">
-          <DashboardPod
-            title={language === 'ar' ? 'المؤشرات والتنبيهات' : language === 'fr' ? 'Analyses & Alertes' : 'Insights & Alerts'}
-            icon={<Package size={18} className="text-[#d4522f]" />}
-            className="flex-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-black/70 dark:text-white/75">
-                      {language === 'ar' ? 'توزيع المبيعات حسب الفئة' : 'Répartition par Catégorie'}
-                    </span>
-                    <Info size={13} className="text-black/55 dark:text-white/55" />
-                  </div>
-                  <DonutChart segments={categoryMix} centerLabel={products.length > 0 ? `${products.length} SKUs` : 'Articles'} />
-                </div>
-
-                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-black/70 dark:text-white/75">
-                      {language === 'ar' ? 'أفضل المنتجات حركة' : 'Top Articles Vendus'}
-                    </span>
-                    <Info size={13} className="text-black/55 dark:text-white/55" />
-                  </div>
-                  <PillBarHistogram
-                    data={topProducts}
-                    maxScale={Math.max(...topProducts.map((p) => p.value)) * 1.3}
-                    barColor="#3B82F6"
-                  />
-                </div>
-              </div>
-
-              {/* Stock Sentinel Guardian Card */}
-              <GuardianCard
-                title={language === 'ar' ? 'المخزون والتدفق النقدي' : 'Stock & Cash Flow'}
-                subtitle={
-                  language === 'ar'
-                    ? 'نظام المراقبة المستمرة لمستويات المخزون وإصدار تنبيهات إعادة الطلب التلقائية'
-                    : 'Surveillance proactive des seuils de réapprovisionnement et alertes péremption.'
-                }
-                score={lowStockItems.length === 0 ? 96 : Math.max(70, 96 - lowStockItems.length * 8)}
-                statusText={
-                  lowStockItems.length === 0
-                    ? language === 'ar' ? 'المخزون مؤمّن بالكامل!' : 'Stock parfaitement approvisionné !'
-                    : `${lowStockItems.length} ${language === 'ar' ? 'مواد بحاجة لإعادة طلب' : 'articles sous le seuil d’alerte'}`
-                }
-                metricLabel={language === 'ar' ? 'جاهزية المخزون' : 'Disponibilité'}
-                metricValue={`${lowStockItems.length === 0 ? '98%' : '88%'}`}
-                trendText={language === 'ar' ? 'معدل سليم' : 'Seuils sous contrôle'}
-                defaultEnabled={true}
-              />
-            </div>
-          </DashboardPod>
-        </div>
-      </div>
-    </div>
+        <WaterfallChart
+          className="md:col-span-2 xl:col-span-2"
+          title={localizeText(language, 'Pont de marge nette', 'Net Margin Bridge', 'جسر صافي الهامش')}
+          subtitle={localizeText(
+            language,
+            'Ventes brutes → Remises → Coût d’achat → TVA → Marge nette',
+            'Gross Sales → Discounts → COGS → Taxes → Net Margin',
+            'المبيعات الإجمالية ← التخفيضات ← التكلفة ← الضرائب ← الصافي'
+          )}
+          locale={locale}
+          {...featuredSurface}
+          state={resolveChartState(data.waterfallSteps.length > 0)}
+          steps={data.waterfallSteps}
+          format="currency"
+          currency="DZD"
+          emptyMessage={localizeText(
+            language,
+            'Aucune vente sur la période pour calculer la marge.',
+            'No sales in period to compute margin bridge.',
+            'لا توجد مبيعات لحساب صافي الهامش.'
+          )}
+        />
+      </DashboardBentoGrid>
+    </DashboardBentoFrame>
   );
 };

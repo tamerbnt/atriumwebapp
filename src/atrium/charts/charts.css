@@ -824,6 +824,15 @@
   transform-origin: right center;
 }
 
+[dir='rtl'] .ax-card svg {
+  direction: ltr;
+}
+
+[dir='rtl'] .ax-card svg text {
+  unicode-bidi: plaintext;
+  letter-spacing: 0 !important;
+}
+
 .ax-card[data-visible='false'] .ax-bar-x {
   transform: scaleX(0) !important;
 }

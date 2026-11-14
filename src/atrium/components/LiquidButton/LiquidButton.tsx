@@ -240,6 +240,8 @@ export const LiquidButton = forwardRef<HTMLButtonElement, LiquidButtonProps>(fun
         x={kind === 'continue' ? 28 : 92}
         y={46}
         fontSize={28}
+        textAnchor="start"
+        style={{ direction: 'ltr', unicodeBidi: 'plaintext' }}
       />
     </g>
   ));
@@ -301,7 +303,7 @@ export const LiquidButton = forwardRef<HTMLButtonElement, LiquidButtonProps>(fun
         {...sizeProps(size, style)}
         {...rest}
       >
-        <svg ref={svgRef} className={s.svg} viewBox={`0 0 300 ${H}`} aria-hidden="true" focusable="false">
+        <svg ref={svgRef} className={s.svg} viewBox={`0 0 300 ${H}`} style={{ direction: 'ltr' }} aria-hidden="true" focusable="false">
           <defs>
             <clipPath id={ids.clip}>
               <rect ref={clipr} x={0} y={0} width={300} height={H} rx={10.6} />

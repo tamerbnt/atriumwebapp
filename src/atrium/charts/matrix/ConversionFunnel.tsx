@@ -95,8 +95,8 @@ export const ConversionFunnel: React.FC<ConversionFunnelProps> = React.memo(
 
     const rowHeight = Math.max(36, Math.min(48, Math.floor(196 / Math.max(1, processed.rows.length))));
     const svgH = processed.rows.length * rowHeight + 8;
-    const cx = 200;
-    const maxTrapHalfW = 92;
+    const cx = 204;
+    const maxTrapHalfW = 84;
 
     return (
       <ChartCard
@@ -155,6 +155,7 @@ export const ConversionFunnel: React.FC<ConversionFunnelProps> = React.memo(
           <svg
             viewBox={`0 0 400 ${svgH}`}
             className="w-full h-auto overflow-visible"
+            style={{ direction: 'ltr' }}
             role="img"
             aria-label={ariaSummary}
           >
@@ -208,7 +209,7 @@ export const ConversionFunnel: React.FC<ConversionFunnelProps> = React.memo(
 
                   {/* Stage label left */}
                   <text
-                    x="0"
+                    x="4"
                     y={yMid + 4}
                     textAnchor="start"
                     className="fill-[var(--ax-on)]"
@@ -216,6 +217,7 @@ export const ConversionFunnel: React.FC<ConversionFunnelProps> = React.memo(
                       fontFamily: 'Inter, sans-serif',
                       fontSize: '12px',
                       fontWeight: isActive ? 600 : 500,
+                      unicodeBidi: 'plaintext',
                     }}
                   >
                     {row.label}
@@ -223,19 +225,19 @@ export const ConversionFunnel: React.FC<ConversionFunnelProps> = React.memo(
 
                   {/* Hairline guide from label toward trapezoid */}
                   <line
-                    x1="96"
+                    x1="108"
                     y1={yMid}
                     x2={cx - hwTop - 8}
                     y2={yMid}
                     stroke="var(--ax-bdr)"
                     strokeWidth="1"
                     strokeDasharray="2 3"
-                    opacity={hwTop < 84 ? 0.65 : 0}
+                    opacity={hwTop < 80 ? 0.65 : 0}
                   />
 
                   {/* Count · Step Retention right */}
                   <text
-                    x="400"
+                    x="396"
                     y={yMid + 4}
                     textAnchor="end"
                     className="fill-[var(--ax-on)]"

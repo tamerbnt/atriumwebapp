@@ -24,3 +24,13 @@ export type { DonutChartProps, DonutSegment } from './DonutChart';
 
 export { GuardianCard } from './GuardianCard';
 export type { GuardianCardProps } from './GuardianCard';
+
+export {
+  DashboardBentoFrame,
+  DashboardBentoGrid,
+  getInlineDarkSurface,
+  getSurfaceProps,
+  toChartLocale,
+  localizeText,
+} from './DashboardBentoFrame';
+export type { DashboardBentoFrameProps } from './DashboardBentoFrame';

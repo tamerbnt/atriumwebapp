@@ -9,6 +9,7 @@ import {
   BuyerDemandProfile,
 } from '../../../types';
 import { computeRentalTimbreFiscal, calculateMandateCommission } from '../../../utils/realEstateRules';
+import { useAtriumStore } from '../../../services/store';
 
 export const INITIAL_PROPERTIES: RealEstateProperty[] = [
   {
@@ -698,6 +699,16 @@ export const INITIAL_BUYERS: BuyerDemandProfile[] = [
 ];
 
 export const useRealEstateData = () => {
+  const { currentBranchId } = useAtriumStore();
+  const activeBranchId = currentBranchId || 'branch_realestate_main';
+  const belongsToActiveBranch = (item: { branchId?: string; facilityId?: string }) =>
+    (item.branchId || item.facilityId || 'branch_realestate_main') === activeBranchId;
+  const withBranch = <T extends object>(item: T): T =>
+    ({
+      ...item,
+      branchId: (item as { branchId?: string }).branchId || activeBranchId,
+    }) as T;
+
   const [properties, setProperties] = useState<RealEstateProperty[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_realestate_props_v2');
@@ -805,7 +816,7 @@ export const useRealEstateData = () => {
 
   // Operations
   const addProperty = (prop: RealEstateProperty) => {
-    setProperties((prev) => [prop, ...prev]);
+    setProperties((prev) => [withBranch(prop), ...prev]);
   };
 
   const updateProperty = (prop: RealEstateProperty) => {
@@ -817,7 +828,7 @@ export const useRealEstateData = () => {
   };
 
   const addMandate = (mandate: RealEstateMandate) => {
-    setMandates((prev) => [mandate, ...prev]);
+    setMandates((prev) => [withBranch(mandate), ...prev]);
   };
 
   const updateMandate = (mandate: RealEstateMandate) => {
@@ -829,7 +840,7 @@ export const useRealEstateData = () => {
   };
 
   const addLease = (lease: RealEstateLease) => {
-    setLeases((prev) => [lease, ...prev]);
+    setLeases((prev) => [withBranch(lease), ...prev]);
   };
 
   const updateLease = (lease: RealEstateLease) => {
@@ -841,40 +852,40 @@ export const useRealEstateData = () => {
   };
 
   const addQuittance = (quittance: RentalQuittanceRecord) => {
-    setQuittances((prev) => [quittance, ...prev]);
+    setQuittances((prev) => [withBranch(quittance), ...prev]);
   };
 
   const addVisit = (visit: BonDeVisiteRecord) => {
-    setVisits((prev) => [visit, ...prev]);
+    setVisits((prev) => [withBranch(visit), ...prev]);
   };
 
   const addInspection = (insp: RealEstateInspection) => {
-    setInspections((prev) => [insp, ...prev]);
+    setInspections((prev) => [withBranch(insp), ...prev]);
   };
 
   const addBuyer = (buyer: BuyerDemandProfile) => {
-    setBuyers((prev) => [buyer, ...prev]);
+    setBuyers((prev) => [withBranch(buyer), ...prev]);
   };
 
-  // Reset to empty state
+  // Reset active branch to empty state
   const resetToDemoSeeds = () => {
-    setProperties([]);
-    setMandates([]);
-    setLeases([]);
-    setQuittances([]);
-    setVisits([]);
-    setInspections([]);
-    setBuyers([]);
+    setProperties((prev) => prev.filter((p) => !belongsToActiveBranch(p)));
+    setMandates((prev) => prev.filter((m) => !belongsToActiveBranch(m)));
+    setLeases((prev) => prev.filter((l) => !belongsToActiveBranch(l)));
+    setQuittances((prev) => prev.filter((q) => !belongsToActiveBranch(q)));
+    setVisits((prev) => prev.filter((v) => !belongsToActiveBranch(v)));
+    setInspections((prev) => prev.filter((i) => !belongsToActiveBranch(i)));
+    setBuyers((prev) => prev.filter((b) => !belongsToActiveBranch(b)));
   };
 
   return {
-    properties,
-    mandates,
-    leases,
-    quittances,
-    visits,
-    inspections,
-    buyers,
+    properties: properties.filter(belongsToActiveBranch),
+    mandates: mandates.filter(belongsToActiveBranch),
+    leases: leases.filter(belongsToActiveBranch),
+    quittances: quittances.filter(belongsToActiveBranch),
+    visits: visits.filter(belongsToActiveBranch),
+    inspections: inspections.filter(belongsToActiveBranch),
+    buyers: buyers.filter(belongsToActiveBranch),
     addProperty,
     updateProperty,
     deleteProperty,

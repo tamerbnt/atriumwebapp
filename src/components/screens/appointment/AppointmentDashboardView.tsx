@@ -1,39 +1,30 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import { CalendarPlus, Receipt, UserPlus } from 'lucide-react';
 import {
-  Scissors,
-  Users,
-  Calendar,
-  Clock,
-  Sparkles,
-  TrendingUp,
-  CreditCard,
-  Building2,
-  ChevronLeft,
-  ChevronRight,
-  Receipt,
-  Plus,
-  RotateCcw,
-  Info,
-} from 'lucide-react';
+  CapacityWaffle,
+  DonutChart,
+  KpiMetricInverseCard,
+  KpiSparkCard,
+  RankedBarList,
+  ResourceTimeline,
+  StackedBarChart,
+} from '@/atrium';
 import { useAtriumStore } from '../../../services/store';
-import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonDashboardSalon } from '../../ui/skeleton/StructuralSkeletons';
-import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 import { AppointmentModal } from '../../modals/AppointmentModal';
 import { AtriumButton } from '../../ui/AtriumButton';
 import {
+  DashboardBentoFrame,
+  DashboardBentoGrid,
   DashboardHeader,
-  DashboardPod,
-  DashboardMetricCard,
-  DarkEspressoCard,
-  HourlyCurveChart,
-  PillBarHistogram,
-  MonthlyAreaChart,
-  DonutChart,
-  GuardianCard,
+  getSurfaceProps,
+  localizeText,
+  toChartLocale,
 } from '../../common/dashboard';
+import { resolveChartState, type DashboardPeriodKey } from '../../../utils/dashboardSelectors/common';
+import { selectAppointmentDashboard } from '../../../utils/dashboardSelectors/coreVerticals';
 
 export interface AppointmentDashboardViewProps {
   onAddMember?: () => void;
@@ -46,14 +37,16 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
 }) => {
   const { t, language, isRtl } = useTranslation();
   const {
+    theme,
     appointments,
     servicesCatalog,
     staff,
+    salonWorkstations,
+    sales,
     currentBranch,
     branches,
     switchBranch,
     resetSalonMockData,
-    setScreen,
     isSyncing,
     networkMode,
     retryCloudSync,
@@ -65,122 +58,28 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
     hasCachedData: appointments.length > 0 || servicesCatalog.length > 0,
   });
 
-  const [timeFilter, setTimeFilter] = useState<'today' | 'yesterday'>('today');
-  const [currentMonthIndex, setCurrentMonthIndex] = useState(10); // November
+  const [period, setPeriod] = useState<DashboardPeriodKey>('30d');
   const [isNewAptModalOpen, setIsNewAptModalOpen] = useState(false);
-  const months = ['JAN', 'FEV', 'MAR', 'AVR', 'MAI', 'JUIN', 'JUIL', 'AOU', 'SEP', 'OCT', 'NOV', 'DEC'];
 
-  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const locale = toChartLocale(language);
+  const featuredSurface = getSurfaceProps(theme, true);
+  const standardSurface = getSurfaceProps(theme, false);
 
-  // Today's appointments
-  const todayAppointments = useMemo(() => {
-    return (appointments || []).filter((apt) => apt.date === todayStr);
-  }, [appointments, todayStr]);
-
-  const activeInChair = useMemo(
-    () => todayAppointments.filter((a) => a.status === 'InChair').length,
-    [todayAppointments]
-  );
-  const pendingOrScheduled = useMemo(
-    () => todayAppointments.filter((a) => a.status === 'Booked' || a.status === 'Confirmed').length,
-    [todayAppointments]
-  );
-  const completedToday = useMemo(
-    () => todayAppointments.filter((a) => a.status === 'Completed').length,
-    [todayAppointments]
+  const data = useMemo(
+    () =>
+      selectAppointmentDashboard({
+        appointments,
+        services: servicesCatalog,
+        staff,
+        workstations: salonWorkstations,
+        sales,
+        period,
+        language,
+      }),
+    [appointments, servicesCatalog, staff, salonWorkstations, sales, period, language]
   );
 
-  // Revenue computations
-  const todayRevenue = useMemo(() => {
-    return todayAppointments
-      .filter((a) => a.status === 'Completed' || a.status === 'InChair')
-      .reduce((sum, a) => sum + (a.price || 0), 0);
-  }, [todayAppointments]);
-
-  const dailyTarget = 35000;
-  const targetPct = Math.min(100, Math.round((todayRevenue / dailyTarget) * 100));
-
-  // Hourly curve distribution
-  const hourlyData = useMemo(() => {
-    const counts = [0, 0, 0, 0, 0]; // 00:00, 05:00, 10:00, 15:00, 20:00
-    todayAppointments.forEach((apt) => {
-      const h = parseInt((apt.startTime || '').split(':')[0] || '12', 10);
-      if (h < 8) counts[0]++;
-      else if (h < 11) counts[1]++;
-      else if (h < 15) counts[2]++;
-      else if (h < 18) counts[3]++;
-      else counts[4]++;
-    });
-    // Ensure pleasant curve if empty
-    if (counts.every((v) => v === 0)) return [0, 1, 4, 3, 1];
-    return counts;
-  }, [todayAppointments]);
-
-  // Client asset counts
-  const totalClients = useMemo(() => {
-    const unique = new Set(appointments.map((a) => a.clientName || a.clientId));
-    return Math.max(unique.size, appointments.length > 0 ? 12 : 2);
-  }, [appointments]);
-
-  const vipClients = useMemo(() => Math.max(1, Math.floor(totalClients * 0.25)), [totalClients]);
-  const noShowOrLapsed = useMemo(
-    () => (appointments || []).filter((a) => a.status === 'NoShow' || a.status === 'Cancelled').length,
-    [appointments]
-  );
-
-  // 4-week trend
-  const weeklyTrend = useMemo(() => {
-    const base = appointments.length || 15;
-    return [
-      { week: language === 'ar' ? 'أسبوع 1' : 'week 1', value: Math.max(2, Math.round(base * 0.2)) },
-      { week: language === 'ar' ? 'أسبوع 2' : 'week 2', value: Math.max(3, Math.round(base * 0.28)) },
-      { week: language === 'ar' ? 'أسبوع 3' : 'week 3', value: Math.max(4, Math.round(base * 0.32)) },
-      { week: language === 'ar' ? 'أسبوع 4' : 'week 4', value: Math.max(3, Math.round(base * 0.2)) },
-    ];
-  }, [appointments.length, language]);
-
-  // 30-day cash curve
-  const monthlyRevenue = useMemo(() => {
-    return Array.from({ length: 30 }, (_, i) => {
-      const factor = Math.sin((i / 30) * Math.PI) * 0.6 + 0.4;
-      return Math.round((todayRevenue || 4500) * factor * (1 + (i % 5) * 0.1));
-    });
-  }, [todayRevenue]);
-
-  // Service Breakdown Donut
-  const serviceCategories = useMemo(() => {
-    const map = new Map<string, number>();
-    servicesCatalog.forEach((s) => {
-      const cat = s.category || (language === 'ar' ? 'العناية' : 'Coiffure');
-      map.set(cat, (map.get(cat) || 0) + 1);
-    });
-    if (map.size === 0) {
-      return [
-        { label: language === 'ar' ? 'قص وتسريح' : 'Coupe & Coiffage', value: 45, color: '#d4522f' },
-        { label: language === 'ar' ? 'صبغة ولون' : 'Coloration', value: 30, color: '#3B82F6' },
-        { label: language === 'ar' ? 'عناية وتدليك' : 'Soin & Spa', value: 25, color: '#10B981' },
-      ];
-    }
-    const colors = ['#d4522f', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'];
-    let idx = 0;
-    return Array.from(map.entries()).map(([label, value]) => ({
-      label,
-      value,
-      color: colors[idx++ % colors.length],
-    }));
-  }, [servicesCatalog, language]);
-
-  // Stylist productivity
-  const stylistProductivity = useMemo(() => {
-    return [
-      { label: staff[0]?.fullName || (language === 'ar' ? 'أمينة' : 'Amina'), value: 6 },
-      { label: staff[1]?.fullName || (language === 'ar' ? 'كريم' : 'Karim'), value: 5 },
-      { label: staff[2]?.fullName || (language === 'ar' ? 'سارة' : 'Sarah'), value: 4 },
-      { label: staff[3]?.fullName || (language === 'ar' ? 'يوسف' : 'Youssef'), value: 2 },
-    ];
-  }, [staff, language]);
-
-  if (showSkeleton) {
+  if (showSkeleton && appointments.length === 0) {
     return (
       <div className="p-6">
         <SkeletonDashboardSalon />
@@ -189,377 +88,257 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
   }
 
   return (
-    <div className="space-y-6 sm:space-y-7 animate-in fade-in duration-200">
-      <OfflineRetryBanner
-        isOffline={isOffline}
-        isTimedOut={isTimedOut}
-        isSyncing={isSyncing}
-        lastSyncedAt={lastSyncedAt}
-        onRetry={retryCloudSync}
-      />
-
-      {/* Standardized Dashboard Header */}
+    <DashboardBentoFrame
+      theme={theme}
+      isRtl={isRtl}
+      isOffline={isOffline}
+      isTimedOut={isTimedOut}
+      isSyncing={isSyncing}
+      lastSyncedAt={lastSyncedAt}
+      onRetry={retryCloudSync}
+      data-testid="appointment-dashboard"
+    >
       <DashboardHeader
         title={t('nav_dashboard', language)}
-        subtitle={
-          language === 'ar'
-            ? 'مؤشرات الأداء الحي، إدارة الكراسي ومتابعة إيرادات الصالون والجمال'
-            : language === 'fr'
-            ? 'Performance en direct, taux d’occupation des fauteuils et rentabilité salon.'
-            : 'Live chair occupancy, stylist performance, and salon revenue analytics.'
-        }
-        currentBranchName={currentBranch?.name || 'Salon Atrium'}
+        subtitle={localizeText(
+          language,
+          'Performance en direct, occupation des fauteuils et rentabilité salon.',
+          'Live chair occupancy, stylist performance, and salon revenue analytics.',
+          'مؤشرات الأداء الحي، إدارة الكراسي وإيرادات الصالون.'
+        )}
+        currentBranchName={currentBranch?.name}
         branches={branches}
         onSwitchBranch={switchBranch}
-        exportFileName="salon_dashboard_report"
+        onResetDemoData={resetSalonMockData}
+        period={period}
+        onPeriodChange={(next) => setPeriod(next as DashboardPeriodKey)}
+        extraActions={
+          <div className="flex items-center gap-2 flex-wrap">
+            {onOpenVoucherModal && (
+              <AtriumButton
+                variant="outline"
+                size="sm"
+                icon={<Receipt size={15} />}
+                onClick={onOpenVoucherModal}
+              >
+                {localizeText(language, 'Encaisser', 'Voucher', 'إيصال')}
+              </AtriumButton>
+            )}
+            {onAddMember && (
+              <AtriumButton
+                variant="outline"
+                size="sm"
+                icon={<UserPlus size={15} />}
+                onClick={onAddMember}
+              >
+                {localizeText(language, 'Nouveau client', 'New Client', 'عميل جديد')}
+              </AtriumButton>
+            )}
+            <AtriumButton
+              variant="primary"
+              size="sm"
+              icon={<CalendarPlus size={15} />}
+              onClick={() => setIsNewAptModalOpen(true)}
+            >
+              {localizeText(language, 'Nouveau RDV', 'New Booking', 'موعد جديد')}
+            </AtriumButton>
+          </div>
+        }
       />
 
-      {/* TOP ROW: Two Pods */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* POD 1: Chair Flow & Real-Time Velocity (42% width) */}
-        <div className="lg:col-span-5 flex flex-col">
-          <DashboardPod
-            title={language === 'ar' ? 'حركة الكراسي والمواعيد' : language === 'fr' ? 'Activité Fauteuils' : 'Chair & Client Flow'}
-            icon={<Scissors size={18} className="text-[#d4522f]" />}
-            badge={
-              <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                {activeInChair} {language === 'ar' ? 'في الكرسي' : 'En Fauteuil'}
-              </span>
-            }
-            rightControls={
-              <div className="flex items-center bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 p-0.5 rounded-xl text-xs font-semibold shadow-2xs">
-                <button
-                  type="button"
-                  onClick={() => setTimeFilter('today')}
-                  title={language === 'ar' ? 'عرض مؤشرات اليوم' : language === 'fr' ? "Activité d'aujourd'hui" : "Today's activity"}
-                  className={`px-3 py-1 rounded-md transition-all ${
-                    timeFilter === 'today' ? 'bg-[#d4522f] text-white shadow-xs' : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
-                  }`}
-                >
-                  {language === 'ar' ? 'اليوم' : language === 'fr' ? "Aujourd'hui" : 'Today'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTimeFilter('yesterday')}
-                  title={language === 'ar' ? 'عرض مؤشرات الأمس' : language === 'fr' ? "Activité d'hier" : "Yesterday's activity"}
-                  className={`px-3 py-1 rounded-md transition-all ${
-                    timeFilter === 'yesterday' ? 'bg-[#d4522f] text-white shadow-xs' : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
-                  }`}
-                >
-                  {language === 'ar' ? 'أمس' : language === 'fr' ? 'Hier' : 'Yesterday'}
-                </button>
-              </div>
-            }
-            className="flex-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">
-                      {language === 'ar' ? 'الكراسي المشغولة حالياً' : 'Fauteuils Occupés'}
-                    </span>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                        {activeInChair}
-                      </span>
-                      <span className="text-xs text-black/55 dark:text-white/55">/ 6 max</span>
-                    </div>
-                    <span className="inline-block mt-2 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[11px] font-medium rounded-full">
-                      ● {language === 'ar' ? 'نشط الآن' : 'En service'}
-                    </span>
-                  </div>
-                  <div className="w-px h-12 bg-[#E6DED6] dark:bg-neutral-700 mx-4" />
-                  <div className="flex-1">
-                    <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">
-                      {language === 'ar' ? 'المواعيد المنتظرة' : 'Rendez-vous à venir'}
-                    </span>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                        {pendingOrScheduled}
-                      </span>
-                      <span className="text-xs text-black/55 dark:text-white/55">{language === 'ar' ? 'اليوم' : 'prévus'}</span>
-                    </div>
-                    <span className="inline-block mt-2 px-2 py-0.5 bg-amber-50 text-amber-600 text-[11px] font-medium rounded-full">
-                      {completedToday} {language === 'ar' ? 'تم إنهاؤها' : 'terminés'}
-                    </span>
-                  </div>
-                </div>
+      <DashboardBentoGrid>
+        {/* Row 1: Revenue KPI + Inverse No-Show KPI (espresso) + Chair Occupancy */}
+        <KpiSparkCard
+          title={localizeText(language, 'Recette prestations & revente', 'Services & Retail Revenue', 'إيرادات الخدمات والمبيعات')}
+          subtitle={localizeText(
+            language,
+            'Services terminés et achats boutique sur la période',
+            'Completed appointments and retail checkout',
+            'الخدمات المنجزة ومبيعات التجزئة'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.hasData || sales.length > 0)}
+          value={data.totalRevenue}
+          deltaPercent={data.revenueDelta}
+          format="currency"
+          currency="DZD"
+          series={data.revenueSpark}
+          emptyMessage={localizeText(
+            language,
+            'Aucun rendez-vous ni vente enregistré.',
+            'No appointments or sales recorded.',
+            'لا توجد مواعيد أو مبيعات مسجلة.'
+          )}
+        />
 
-                <div className="mt-4 pt-3 border-t border-[#E6DED6] dark:border-neutral-700/60">
-                  <span className="text-[11px] text-black/55 dark:text-white/55 block mb-2">
-                    {language === 'ar' ? 'كثافة المواعيد على مدار 24 ساعة' : 'Flux horaire des créneaux (24h)'}
-                  </span>
-                  <HourlyCurveChart data={hourlyData} color="#d4522f" />
-                </div>
-              </div>
+        <KpiMetricInverseCard
+          title={localizeText(language, 'Taux de no-show & annulations', 'No-Show & Cancellations', 'نسبة الغياب والإلغاء')}
+          subtitle={localizeText(
+            language,
+            `${data.noShowCount} créneaux perdus sur la période`,
+            `${data.noShowCount} missed or cancelled bookings`,
+            `${data.noShowCount} مواعيد ملغاة أو غياب`
+          )}
+          locale={locale}
+          {...featuredSurface}
+          state={resolveChartState(appointments.length > 0)}
+          value={data.noShowRate}
+          deltaPercent={data.noShowDelta}
+          format="percent"
+          series={data.noShowSpark}
+          emptyMessage={localizeText(
+            language,
+            'Aucun historique de rendez-vous.',
+            'No appointment history available.',
+            'لا يوجد سجل للمواعيد.'
+          )}
+        />
 
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-xs font-medium text-black/70 dark:text-white/75">
-                    {language === 'ar' ? 'إيراد الخدمات اليوم' : 'Recette Services Aujourd’hui'}
-                  </span>
-                  <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
-                    {formatMoney(todayRevenue)}
-                  </span>
-                </div>
-                <div className="w-full bg-[#E6DED6]/70 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
-                  <div
-                    className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
-                    style={{ width: `${targetPct}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-[11px] text-black/55 dark:text-white/55">
-                  <span>{targetPct}% {language === 'ar' ? 'من الهدف اليومي' : 'de l’objectif'}</span>
-                  <span>{formatMoney(dailyTarget)}</span>
-                </div>
-              </div>
-            </div>
-          </DashboardPod>
-        </div>
+        <CapacityWaffle
+          title={localizeText(language, 'Occupation fauteuils', 'Chair Occupancy', 'إشغال الكراسي')}
+          subtitle={localizeText(
+            language,
+            `${data.occupiedChairs} en fauteuil sur ${data.totalChairs} postes`,
+            `${data.occupiedChairs} in chair of ${data.totalChairs} stations`,
+            `${data.occupiedChairs} مشغول من أصل ${data.totalChairs}`
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.totalChairs > 0)}
+          occupied={data.occupiedChairs}
+          capacity={data.totalChairs}
+          occupiedLabel={localizeText(language, 'Occupés', 'In Chair', 'مشغول')}
+          availableLabel={localizeText(language, 'Libres', 'Open', 'متاح')}
+          emptyMessage={localizeText(
+            language,
+            'Aucun poste de travail configuré.',
+            'No workstations configured.',
+            'لا توجد محطات عمل مهيأة.'
+          )}
+        />
 
-        {/* POD 2: Client Asset Development (58% width) */}
-        <div className="lg:col-span-7 flex flex-col">
-          <DashboardPod
-            title={language === 'ar' ? 'قاعدة العملاء والحجوزات' : language === 'fr' ? 'Clientèle & Réservations' : 'Client Growth'}
-            icon={<Users size={18} className="text-[#d4522f]" />}
-            rightControls={
-              <div className="flex items-center gap-1 text-xs font-semibold text-black/70 dark:text-white/75">
-                <button
-                  type="button"
-                  onClick={() => setCurrentMonthIndex((prev) => (prev > 0 ? prev - 1 : 11))}
-                  className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"
-                >
-                  <ChevronLeft size={14} />
-                </button>
-                <span className="px-1 text-black dark:text-white">{months[currentMonthIndex]} 2026</span>
-                <button
-                  type="button"
-                  onClick={() => setCurrentMonthIndex((prev) => (prev < 11 ? prev + 1 : 0))}
-                  className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"
-                >
-                  <ChevronRight size={14} />
-                </button>
-              </div>
-            }
-            className="flex-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <DashboardMetricCard
-                  label={language === 'ar' ? 'إجمالي العملاء' : 'Total Clients'}
-                  value={totalClients}
-                  badgeText={language === 'ar' ? 'نشطون' : 'Fidélisés'}
-                  badgeVariant="success"
-                  tooltip={language === 'ar' ? 'عملاء قاموا بزيارة خلال 60 يوماً' : 'Clients ayant réservé sous 60 jours'}
-                />
+        {/* Row 2: Stylist Resource Timeline (wide) + Service Mix Donut */}
+        <ResourceTimeline
+          className="md:col-span-2 xl:col-span-2"
+          title={localizeText(language, 'Planning fauteuils & praticiens', 'Stylist Schedule', 'جدول الكراسي والمصففين')}
+          subtitle={localizeText(
+            language,
+            'Occupation horaire par membre d’équipe',
+            'Time-slotted bookings across active stylists',
+            'توزيع الحجوزات حسب الفريق والساعة'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.resources.length > 0 && data.blocks.length > 0)}
+          resources={data.resources}
+          blocks={data.blocks}
+          startHour={8}
+          endHour={21}
+          nowHour={new Date().getHours() + new Date().getMinutes() / 60}
+          toneLabels={{
+            primary: localizeText(language, 'En cours', 'In Chair', 'جاري'),
+            secondary: localizeText(language, 'Terminé', 'Completed', 'مكتمل'),
+            neutral: localizeText(language, 'Planifié', 'Booked', 'مجدول'),
+          }}
+          emptyMessage={localizeText(
+            language,
+            'Aucun créneau actif à afficher.',
+            'No scheduled appointments to display.',
+            'لا توجد مواعيد مجدولة للعرض.'
+          )}
+        />
 
-                <DashboardMetricCard
-                  label={language === 'ar' ? 'عملاء VIP ومشتكون' : 'Clients VIP'}
-                  value={vipClients}
-                  badgeText="VIP"
-                  badgeVariant="neutral"
-                  tooltip={language === 'ar' ? 'عملاء بباقات متكررة' : 'Clients réguliers haute fréquence'}
-                />
+        <DonutChart
+          title={localizeText(language, 'Mix catégories', 'Service Category Mix', 'توزيع فئات الخدمات')}
+          subtitle={localizeText(
+            language,
+            'Part du chiffre d’affaires par type de soin',
+            'Revenue share across service types',
+            'حصة الإيرادات حسب نوع الخدمة'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.donutSegments.length > 0)}
+          segments={data.donutSegments}
+          format="currency"
+          currency="DZD"
+          emptyMessage={localizeText(
+            language,
+            'Aucune prestation facturée sur la période.',
+            'No services billed in this period.',
+            'لا توجد خدمات مفوترة في هذه الفترة.'
+          )}
+        />
 
-                <DarkEspressoCard
-                  label={language === 'ar' ? 'إلغاءات وغياب' : 'No-Show & Annulations'}
-                  value={noShowOrLapsed}
-                  sublabel={language === 'ar' ? 'تتطلب إعادة تأكيد' : 'Alertes relance'}
-                  badgeText={noShowOrLapsed > 2 ? 'Attention' : 'Normal'}
-                  badgeVariant={noShowOrLapsed > 2 ? 'warning' : 'neutral'}
-                />
-              </div>
+        {/* Row 3: Stylist Leaderboard + Services vs Retail Stacked Bars (wide) */}
+        <RankedBarList
+          title={localizeText(language, 'Performance équipe', 'Stylist Leaderboard', 'ترتيب المصففين')}
+          subtitle={localizeText(
+            language,
+            'Classement par chiffre d’affaires, rendez-vous ou pourboires',
+            'Ranked by revenue, bookings, or tips',
+            'الترتيب حسب الإيرادات والمواعيد والإكراميات'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.rankedStylists.length > 0)}
+          criteria={[
+            { id: 'revenue', label: localizeText(language, 'CA', 'Revenue', 'الإيرادات'), format: 'currency', currency: 'DZD' },
+            { id: 'bookings', label: localizeText(language, 'RDV', 'Bookings', 'المواعيد'), format: 'number' },
+            { id: 'tips', label: localizeText(language, 'Pourboires', 'Tips', 'إكراميات'), format: 'currency', currency: 'DZD' },
+          ]}
+          items={data.rankedStylists}
+          emptyMessage={localizeText(
+            language,
+            'Aucune prestation attribuée sur la période.',
+            'No stylist activity recorded.',
+            'لا يوجد نشاط مسجل للمصففين.'
+          )}
+        />
 
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-semibold text-black dark:text-white">
-                    {language === 'ar' ? 'تطور المواعيد خلال الأسابيع الـ 4 الماضية' : 'Volume hebdomadaire des prestations'}
-                  </span>
-                  <span className="text-[11px] text-black/55 dark:text-white/55">
-                    {language === 'ar' ? 'مقارنة شهرية' : '4 dernières semaines'}
-                  </span>
-                </div>
-                <PillBarHistogram data={weeklyTrend} maxScale={Math.max(10, appointments.length)} barColor="#d4522f" />
-              </div>
-            </div>
-          </DashboardPod>
-        </div>
-      </div>
+        <StackedBarChart
+          className="md:col-span-2 xl:col-span-2"
+          title={localizeText(language, 'Prestations vs Revente boutique', 'Services vs Retail', 'الخدمات مقابل البيع بالتجزئة')}
+          subtitle={localizeText(
+            language,
+            'Contribution quotidienne au chiffre d’affaires global',
+            'Daily split between chair services and retail checkout',
+            'التوزيع اليومي بين الخدمات ومبيعات التجزئة'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.hasData || sales.length > 0)}
+          series={[
+            {
+              id: 'services',
+              label: localizeText(language, 'Prestations', 'Services', 'الخدمات'),
+              color: '#d4522f',
+            },
+            {
+              id: 'retail',
+              label: localizeText(language, 'Boutique', 'Retail', 'المبيعات'),
+              color: '#3b82f6',
+            },
+          ]}
+          buckets={data.stackedBuckets}
+          format="currency"
+          currency="DZD"
+          emptyMessage={localizeText(
+            language,
+            'Aucun encaissement salon enregistré.',
+            'No salon receipts recorded yet.',
+            'لا توجد مداخيل مسجلة للصالون بعد.'
+          )}
+        />
+      </DashboardBentoGrid>
 
-      {/* BOTTOM ROW: Two Pods */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* POD 3: Financial Trajectory (42% width) */}
-        <div className="lg:col-span-5 flex flex-col">
-          <DashboardPod
-            title={language === 'ar' ? 'الإيرادات والأرباح' : language === 'fr' ? 'Revenus & Marges' : 'Revenue & Profit'}
-            icon={<TrendingUp size={18} className="text-[#d4522f]" />}
-            rightControls={
-              <span className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase rtl:normal-case">
-                {months[currentMonthIndex]} 2026
-              </span>
-            }
-            className="flex-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="grid grid-cols-3 gap-2 pb-3 border-b border-[#E6DED6] dark:border-neutral-700/60">
-                  <div>
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'صافي اليوم' : 'Bénéfice Net'}</span>
-                    <span className="text-lg font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
-                      {formatMoney(Math.round(todayRevenue * 0.72))}
-                    </span>
-                    <span className="text-[10px] text-emerald-600 block">+4.2%</span>
-                  </div>
-                  <div>
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'الإيراد الإجمالي' : 'Chiffre d’Affaires'}</span>
-                    <span className="text-lg font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
-                      {formatMoney(todayRevenue)}
-                    </span>
-                    <span className="text-[10px] text-emerald-600 block">+6.8%</span>
-                  </div>
-                  <div>
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'تكاليف ومواد' : 'Consommables'}</span>
-                    <span className="text-lg font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
-                      {formatMoney(Math.round(todayRevenue * 0.28))}
-                    </span>
-                    <span className="text-[10px] text-rose-500 block">28% CA</span>
-                  </div>
-                </div>
-
-                <div className="pt-3">
-                  <span className="text-[11px] text-black/55 dark:text-white/55 block mb-1">
-                    {language === 'ar' ? 'منحنى التدفق النقدي على مدار 30 يوماً' : 'Tendance des encaissements sur 30 jours'}
-                  </span>
-                  <MonthlyAreaChart data={monthlyRevenue} color="#8B5CF6" />
-                </div>
-              </div>
-
-              {/* 4 KPIs Inset Grid */}
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-semibold text-black dark:text-white">
-                    {language === 'ar' ? 'مؤشرات الكفاءة التشغيلية' : 'Indicateurs Métier'}
-                  </span>
-                  <Info size={13} className="text-black/55 dark:text-white/55" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
-                      {language === 'ar' ? 'متوسط السلة' : 'Panier Moyen'}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
-                        {formatMoney(todayRevenue > 0 && completedToday > 0 ? Math.round(todayRevenue / completedToday) : 2400)}
-                      </span>
-                      <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
-                        Prestation
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
-                      {language === 'ar' ? 'نسبة إعادة الحجز' : 'Taux Rebooking'}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">74%</span>
-                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                        Optimal
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
-                      {language === 'ar' ? 'دوران الكرسي' : 'Rotation / Fauteuil'}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">3.8 /j</span>
-                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                        +0.4
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
-                      {language === 'ar' ? 'نسبة الغياب' : 'Taux de No-Show'}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">3.2%</span>
-                      <span className="text-[10px] font-semibold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">
-                        Maitrisé
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </DashboardPod>
-        </div>
-
-        {/* POD 4: Intelligence & Guardian (58% width) */}
-        <div className="lg:col-span-7 flex flex-col">
-          <DashboardPod
-            title={language === 'ar' ? 'المؤشرات والتنبيهات' : language === 'fr' ? 'Analyses & Alertes' : 'Insights & Alerts'}
-            icon={<Sparkles size={18} className="text-[#d4522f]" />}
-            className="flex-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-black dark:text-white">
-                      {language === 'ar' ? 'توزيع الخدمات' : 'Mix Prestations'}
-                    </span>
-                    <Info size={13} className="text-black/55 dark:text-white/55" />
-                  </div>
-                  <DonutChart segments={serviceCategories} centerLabel={servicesCatalog.length > 0 ? `${servicesCatalog.length} services` : 'Coiffure'} />
-                </div>
-
-                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-black dark:text-white">
-                      {language === 'ar' ? 'إنتاجية مصففي الشعر' : 'Rendez-vous par Coiffeur'}
-                    </span>
-                    <Info size={13} className="text-black/55 dark:text-white/55" />
-                  </div>
-                  <PillBarHistogram
-                    data={stylistProductivity.map((s) => ({ week: s.label, value: s.value }))}
-                    maxScale={8}
-                    barColor="#3B82F6"
-                  />
-                </div>
-              </div>
-
-              {/* Salon Guardian Card */}
-              <GuardianCard
-                title={language === 'ar' ? 'إشغال الكراسي والحجوزات' : 'Salon Occupancy'}
-                subtitle={
-                  language === 'ar'
-                    ? 'نظام التنبيه الذكي للكراسي الشاغرة وإرسال تذكيرات المواعيد عبر SMS'
-                    : 'Surveillance proactive des fauteuils inoccupés et relance automatique SMS.'
-                }
-                score={89}
-                statusText={language === 'ar' ? 'معدل الحجز والالتزام ممتاز!' : 'Planning fluide et fidélisation optimale !'}
-                metricLabel={language === 'ar' ? 'نسبة الامتلاء' : 'Occupation'}
-                metricValue="89%"
-                trendText={language === 'ar' ? '+5% هذا الأسبوع' : '+5% cette semaine'}
-                defaultEnabled={true}
-              />
-            </div>
-          </DashboardPod>
-        </div>
-      </div>
-
-      {/* Appointment Modal */}
       {isNewAptModalOpen && (
         <AppointmentModal
           isOpen={isNewAptModalOpen}
           onClose={() => setIsNewAptModalOpen(false)}
         />
       )}
-    </div>
+    </DashboardBentoFrame>
   );
 };

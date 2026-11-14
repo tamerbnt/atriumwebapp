@@ -1999,7 +1999,7 @@ export interface MedicalConsultation {
   status: 'InWaitingQueue' | 'TriageNurse' | 'InConsultation' | 'Completed' | 'Cancelled';
   urgencyLevel?: 'Normal' | 'Prioritaire' | 'Urgence';
   ticketNumber?: string; // e.g. T-104
-  ngapCode?: 'C' | 'CS' | 'K' | 'KE' | 'AMI';
+  ngapCode?: 'C' | 'CS' | 'K' | 'KE' | 'AMI' | 'ECG';
   consultationFeeDzd: number;
   copayAmountDzd: number;
   insuranceShareDzd: number;
@@ -2120,7 +2120,7 @@ export interface ChifaClaimRecord {
   patientName: string;
   chifaNumber: string;
   socialSecurityNumber?: string;
-  ngapCode: 'C' | 'CS' | 'K' | 'KE' | string;
+  ngapCode: 'C' | 'CS' | 'K' | 'KE' | 'ECG' | string;
   totalAmountDzd: number;
   chifaCoveragePercent?: number; // 80 or 100
   coverageRate?: number; // alias

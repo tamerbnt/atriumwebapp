@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAtriumStore } from '../../../services/store';
 
 export interface DamageMarker {
   id: string;
@@ -871,6 +872,16 @@ export const calculateEstimatedMileage = (
 // ----------------------------------------------------------------------
 
 export const useGarageData = () => {
+  const { currentBranchId } = useAtriumStore();
+  const activeBranchId = currentBranchId || 'branch_garage_main';
+  const belongsToActiveBranch = (item: { branchId?: string; facilityId?: string }) =>
+    (item.branchId || item.facilityId || 'branch_garage_main') === activeBranchId;
+  const withBranch = <T extends object>(item: T): T =>
+    ({
+      ...item,
+      branchId: (item as { branchId?: string }).branchId || activeBranchId,
+    }) as T;
+
   const [orders, setOrders] = useState<RepairOrder[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_garage_orders_v2');
@@ -964,12 +975,13 @@ export const useGarageData = () => {
 
   // Order Mutations
   const addOrder = (order: RepairOrder) => {
-    setOrders((prev) => [order, ...prev]);
+    const scopedOrder = withBranch(order);
+    setOrders((prev) => [scopedOrder, ...prev]);
     // If assigned to a bay, lock that bay
-    if (order.assignedBayId) {
+    if (scopedOrder.assignedBayId) {
       setBays((prevBays) =>
         prevBays.map((b) =>
-          b.id === order.assignedBayId ? { ...b, isOccupied: true, activeOrderId: order.id } : b
+          b.id === scopedOrder.assignedBayId ? { ...b, isOccupied: true, activeOrderId: scopedOrder.id } : b
         )
       );
     }
@@ -1028,7 +1040,7 @@ export const useGarageData = () => {
 
   // Vehicle Mutations
   const addVehicle = (vehicle: VehicleAsset) => {
-    setVehicles((prev) => [vehicle, ...prev]);
+    setVehicles((prev) => [withBranch(vehicle), ...prev]);
   };
 
   const updateVehicle = (vehicle: VehicleAsset) => {
@@ -1041,7 +1053,7 @@ export const useGarageData = () => {
 
   // Spare Part Mutations & Requisition
   const addPart = (part: SparePart) => {
-    setParts((prev) => [part, ...prev]);
+    setParts((prev) => [withBranch(part), ...prev]);
   };
 
   const updatePart = (part: SparePart) => {
@@ -1112,7 +1124,7 @@ export const useGarageData = () => {
 
   // Fleet Mutations
   const addFleet = (fleet: CorporateFleetAccount) => {
-    setFleets((prev) => [fleet, ...prev]);
+    setFleets((prev) => [withBranch(fleet), ...prev]);
   };
 
   const updateFleet = (fleet: CorporateFleetAccount) => {
@@ -1125,16 +1137,17 @@ export const useGarageData = () => {
 
   // Invoicing Mutations
   const createInvoice = (inv: GarageInvoice) => {
-    setInvoices((prev) => [inv, ...prev]);
+    const scopedInv = withBranch(inv);
+    setInvoices((prev) => [scopedInv, ...prev]);
     // Mark order as paid or invoiced
     setOrders((prev) =>
       prev.map((o) =>
-        o.id === inv.orderId
+        o.id === scopedInv.orderId
           ? {
               ...o,
-              isPaid: inv.isPaid,
-              billingType: inv.billingType,
-              invoiceId: inv.id,
+              isPaid: scopedInv.isPaid,
+              billingType: scopedInv.billingType,
+              invoiceId: scopedInv.id,
             }
           : o
       )
@@ -1145,27 +1158,25 @@ export const useGarageData = () => {
     setInvoices((prev) => prev.map((i) => (i.id === id ? { ...i, isPaid: true } : i)));
   };
 
-  // Reset data to empty state
+  // Reset active branch data to empty state
   const resetGarageDemoData = () => {
-    setOrders([]);
-    setVehicles([]);
-    setParts([]);
-    setInvoices([]);
-    localStorage.removeItem('atrium_garage_orders_v2');
-    localStorage.removeItem('atrium_garage_vehicles_v2');
-    localStorage.removeItem('atrium_garage_parts_v2');
-    localStorage.removeItem('atrium_garage_bays_v2');
-    localStorage.removeItem('atrium_garage_fleets_v2');
-    localStorage.removeItem('atrium_garage_invoices_v2');
+    setOrders((prev) => prev.filter((o) => !belongsToActiveBranch(o)));
+    setVehicles((prev) => prev.filter((v) => !belongsToActiveBranch(v)));
+    setParts((prev) => prev.filter((p) => !belongsToActiveBranch(p)));
+    setInvoices((prev) => prev.filter((i) => !belongsToActiveBranch(i)));
+    if (activeBranchId === 'branch_garage_main') {
+      setBays(INITIAL_BAYS);
+      setFleets(INITIAL_FLEETS);
+    }
   };
 
   return {
-    orders,
-    vehicles,
-    parts,
-    bays,
-    fleets,
-    invoices,
+    orders: orders.filter(belongsToActiveBranch),
+    vehicles: vehicles.filter(belongsToActiveBranch),
+    parts: parts.filter(belongsToActiveBranch),
+    bays: bays.filter(belongsToActiveBranch),
+    fleets: fleets.filter(belongsToActiveBranch),
+    invoices: invoices.filter(belongsToActiveBranch),
     addOrder,
     updateOrder,
     deleteOrder,

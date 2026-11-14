@@ -8,6 +8,7 @@ import {
   MerchantRemittanceBatch,
 } from '../../../types';
 import { computeAlgerianFiscalStamp, calculateCcpKey } from '../../../utils/logisticsRules';
+import { useAtriumStore } from '../../../services/store';
 
 const INITIAL_SHIPMENTS: LogisticsShipment[] = [
   {
@@ -519,6 +520,16 @@ const INITIAL_REMITTANCES: MerchantRemittanceBatch[] = [
 ];
 
 export const useLogisticsData = () => {
+  const { currentBranchId } = useAtriumStore();
+  const activeBranchId = currentBranchId || 'branch_logistics_main';
+  const belongsToActiveBranch = (item: { branchId?: string; facilityId?: string }) =>
+    (item.branchId || item.facilityId || 'branch_logistics_main') === activeBranchId;
+  const withBranch = <T extends object>(item: T): T =>
+    ({
+      ...item,
+      branchId: (item as { branchId?: string }).branchId || activeBranchId,
+    }) as T;
+
   const [shipments, setShipments] = useState<LogisticsShipment[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_logistics_shipments_v2');
@@ -595,7 +606,7 @@ export const useLogisticsData = () => {
   }, [remittances]);
 
   const addShipment = (shipment: LogisticsShipment) => {
-    setShipments((prev) => [shipment, ...prev]);
+    setShipments((prev) => [withBranch(shipment), ...prev]);
   };
 
   const updateShipment = (shipment: LogisticsShipment) => {
@@ -611,7 +622,7 @@ export const useLogisticsData = () => {
   };
 
   const addBag = (bag: TransportBag) => {
-    setBags((prev) => [bag, ...prev]);
+    setBags((prev) => [withBranch(bag), ...prev]);
   };
 
   const sealBag = (bagId: string, securitySealNumber: string) => {
@@ -630,7 +641,7 @@ export const useLogisticsData = () => {
   };
 
   const addManifest = (manifest: LogisticsManifest) => {
-    setManifests((prev) => [manifest, ...prev]);
+    setManifests((prev) => [withBranch(manifest), ...prev]);
   };
 
   const updateManifest = (manifest: LogisticsManifest) => {
@@ -642,11 +653,11 @@ export const useLogisticsData = () => {
   };
 
   const addDischarge = (discharge: CourierCashDischarge) => {
-    setDischarges((prev) => [discharge, ...prev]);
+    setDischarges((prev) => [withBranch(discharge), ...prev]);
   };
 
   const addRemittance = (remittance: MerchantRemittanceBatch) => {
-    setRemittances((prev) => [remittance, ...prev]);
+    setRemittances((prev) => [withBranch(remittance), ...prev]);
   };
 
   const executeRemittance = (batchId: string) => {
@@ -660,26 +671,19 @@ export const useLogisticsData = () => {
   };
 
   const resetLogisticsDemoData = () => {
-    setShipments([]);
-    setBags([]);
-    setManifests([]);
-    setDischarges([]);
-    setRemittances([]);
-    try {
-      localStorage.setItem('atrium_logistics_shipments_v2', JSON.stringify([]));
-      localStorage.setItem('atrium_logistics_bags_v2', JSON.stringify([]));
-      localStorage.setItem('atrium_logistics_manifests_v2', JSON.stringify([]));
-      localStorage.setItem('atrium_logistics_discharges_v2', JSON.stringify([]));
-      localStorage.setItem('atrium_logistics_remittances_v2', JSON.stringify([]));
-    } catch {}
+    setShipments((prev) => prev.filter((s) => !belongsToActiveBranch(s)));
+    setBags((prev) => prev.filter((b) => !belongsToActiveBranch(b)));
+    setManifests((prev) => prev.filter((m) => !belongsToActiveBranch(m)));
+    setDischarges((prev) => prev.filter((d) => !belongsToActiveBranch(d)));
+    setRemittances((prev) => prev.filter((r) => !belongsToActiveBranch(r)));
   };
 
   return {
-    shipments,
-    bags,
-    manifests,
-    discharges,
-    remittances,
+    shipments: shipments.filter(belongsToActiveBranch),
+    bags: bags.filter(belongsToActiveBranch),
+    manifests: manifests.filter(belongsToActiveBranch),
+    discharges: discharges.filter(belongsToActiveBranch),
+    remittances: remittances.filter(belongsToActiveBranch),
     addShipment,
     updateShipment,
     deleteShipment,

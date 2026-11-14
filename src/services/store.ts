@@ -1923,6 +1923,14 @@ export function useAtriumStore() {
   const currentEduCertificates = (state.eduCertificates || []).filter((ce) => ce.facilityId === state.currentBranchId);
   const currentEduAdmissions = (state.eduAdmissions || []).filter((ad) => ad.facilityId === state.currentBranchId);
 
+  const scopePmByBranch = <T extends { facilityId?: string; branchId?: string }>(items: T[]) =>
+    (items || []).filter((item) => (item.facilityId || item.branchId || 'branch_agency_main') === state.currentBranchId);
+  const currentPmProjects = scopePmByBranch(state.pmProjects || []);
+  const currentPmProjectIds = new Set(currentPmProjects.map((p) => p.id));
+  const currentPmMilestones = (state.pmMilestones || []).filter((m) =>
+    m.branchId ? m.branchId === state.currentBranchId : currentPmProjectIds.has(m.projectId)
+  );
+
   const selectedMember = state.selectedMemberId
     ? state.members.find((m) => m.id === state.selectedMemberId) || null
     : null;
@@ -2129,7 +2137,8 @@ export function useAtriumStore() {
   };
 
   const switchBranch = (branchId: string) => {
-    switchFacility(state.currentBusinessId, branchId);
+    const targetBranch = state.branches.find((b) => b.id === branchId);
+    switchFacility(targetBranch?.businessId || state.currentBusinessId, branchId);
   };
 
   const selectMember = (memberId: string | null) => {
@@ -8492,6 +8501,9 @@ export function useAtriumStore() {
     const id = `depot_${Date.now()}`;
     const newDepot: WarehouseDepot = {
       ...depot,
+      businessId: depot.businessId || globalState.currentBusinessId,
+      branchId: depot.branchId || globalState.currentBranchId,
+      facilityId: depot.facilityId || globalState.currentBranchId,
       id,
       createdAt: new Date().toISOString(),
     };
@@ -8879,18 +8891,18 @@ export function useAtriumStore() {
     activePmSubScreen: state.activePmSubScreen || 'dashboard',
     setActivePmSubScreen,
     pmClients: state.pmClients || [],
-    pmProjects: state.pmProjects || [],
-    pmMilestones: state.pmMilestones || [],
+    pmProjects: currentPmProjects,
+    pmMilestones: currentPmMilestones,
     pmCollateralCatalog: state.pmCollateralCatalog || [],
-    pmPrintOrders: state.pmPrintOrders || [],
-    pmBatDeliverables: state.pmBatDeliverables || [],
-    pmTalents: state.pmTalents || [],
-    pmMissions: state.pmMissions || [],
-    pmAttendances: state.pmAttendances || [],
-    pmExpenses: state.pmExpenses || [],
-    pmPayrollBatches: state.pmPayrollBatches || [],
-    pmCcpSlips: state.pmCcpSlips || [],
-    pmEquipmentStock: state.pmEquipmentStock || [],
+    pmPrintOrders: scopePmByBranch(state.pmPrintOrders || []),
+    pmBatDeliverables: scopePmByBranch(state.pmBatDeliverables || []),
+    pmTalents: scopePmByBranch(state.pmTalents || []),
+    pmMissions: scopePmByBranch(state.pmMissions || []),
+    pmAttendances: scopePmByBranch(state.pmAttendances || []),
+    pmExpenses: scopePmByBranch(state.pmExpenses || []),
+    pmPayrollBatches: scopePmByBranch(state.pmPayrollBatches || []),
+    pmCcpSlips: scopePmByBranch(state.pmCcpSlips || []),
+    pmEquipmentStock: scopePmByBranch(state.pmEquipmentStock || []),
     addPmProject,
     updatePmProjectStatus,
     addPmPrintOrder,
@@ -8947,8 +8959,10 @@ export function useAtriumStore() {
     ),
     allB2bClients: state.b2bClients || [],
     b2bSuppliers: state.b2bSuppliers || [],
-    warehouses: (state.warehouses || []).filter(
-      (w) => w.businessId === state.currentBusinessId
+    warehouses: (state.warehouses || []).filter((w) =>
+      w.branchId || w.facilityId
+        ? w.branchId === state.currentBranchId || w.facilityId === state.currentBranchId
+        : w.businessId === state.currentBusinessId
     ),
     allWarehouses: state.warehouses || [],
     commercialDocs: (state.commercialDocs || []).filter(
@@ -9073,11 +9087,18 @@ export function useAtriumStore() {
       };
       notify();
     },
-    memberCheckIns: state.memberCheckIns || [],
+    memberCheckIns: (state.memberCheckIns || []).filter(
+      (c) => (c.branchId || 'branch_gym_hydra') === state.currentBranchId
+    ),
     addMemberCheckIn: (checkIn: MemberCheckInLog) => {
+      const scopedCheckIn: MemberCheckInLog = {
+        ...checkIn,
+        businessId: checkIn.businessId || globalState.currentBusinessId,
+        branchId: checkIn.branchId || globalState.currentBranchId,
+      };
       globalState = {
         ...globalState,
-        memberCheckIns: [checkIn, ...(globalState.memberCheckIns || [])],
+        memberCheckIns: [scopedCheckIn, ...(globalState.memberCheckIns || [])],
       };
       notify();
     },

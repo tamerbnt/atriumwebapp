@@ -6,6 +6,7 @@ import {
   MaterialTransferVoucher,
   QualityInspectionRecord,
 } from '../../../types';
+import { useAtriumStore } from '../../../services/store';
 
 export const INITIAL_BOMS: ManufacturingBom[] = [
   {
@@ -579,6 +580,16 @@ export const INITIAL_QC_RECORDS: QualityInspectionRecord[] = [
 ];
 
 export const useManufacturingData = () => {
+  const { currentBranchId } = useAtriumStore();
+  const activeBranchId = currentBranchId || 'branch_manufacturing_main';
+  const belongsToActiveBranch = (item: { branchId?: string; facilityId?: string }) =>
+    (item.branchId || item.facilityId || 'branch_manufacturing_main') === activeBranchId;
+  const withBranch = <T extends object>(item: T): T =>
+    ({
+      ...item,
+      branchId: (item as { branchId?: string }).branchId || activeBranchId,
+    }) as T;
+
   const [boms, setBoms] = useState<ManufacturingBom[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_mfg_boms');
@@ -657,7 +668,7 @@ export const useManufacturingData = () => {
 
   // Order CRUD
   const addOrder = (order: ManufacturingOrder) => {
-    setOrders((prev) => [order, ...prev]);
+    setOrders((prev) => [withBranch(order), ...prev]);
   };
 
   const updateOrder = (order: ManufacturingOrder) => {
@@ -674,7 +685,7 @@ export const useManufacturingData = () => {
 
   // BOM CRUD
   const addBom = (bom: ManufacturingBom) => {
-    setBoms((prev) => [bom, ...prev]);
+    setBoms((prev) => [withBranch(bom), ...prev]);
   };
 
   const updateBom = (bom: ManufacturingBom) => {
@@ -687,7 +698,7 @@ export const useManufacturingData = () => {
 
   // Raw Materials CRUD
   const addMaterial = (mat: RawMaterialStockItem) => {
-    setMaterials((prev) => [mat, ...prev]);
+    setMaterials((prev) => [withBranch(mat), ...prev]);
   };
 
   const updateMaterial = (mat: RawMaterialStockItem) => {
@@ -696,24 +707,32 @@ export const useManufacturingData = () => {
 
   // Transfer Vouchers CRUD
   const addVoucher = (voucher: MaterialTransferVoucher) => {
-    setVouchers((prev) => [voucher, ...prev]);
+    setVouchers((prev) => [withBranch(voucher), ...prev]);
   };
 
   // Quality Inspections CRUD
   const addQcRecord = (record: QualityInspectionRecord) => {
-    setQcRecords((prev) => [record, ...prev]);
+    setQcRecords((prev) => [withBranch(record), ...prev]);
   };
 
   const updateQcRecord = (record: QualityInspectionRecord) => {
     setQcRecords((prev) => prev.map((q) => (q.id === record.id ? record : q)));
   };
 
+  const resetManufacturingDemoData = () => {
+    setBoms((prev) => prev.filter((b) => !belongsToActiveBranch(b)));
+    setOrders((prev) => prev.filter((o) => !belongsToActiveBranch(o)));
+    setMaterials((prev) => prev.filter((m) => !belongsToActiveBranch(m)));
+    setVouchers((prev) => prev.filter((v) => !belongsToActiveBranch(v)));
+    setQcRecords((prev) => prev.filter((q) => !belongsToActiveBranch(q)));
+  };
+
   return {
-    boms,
-    orders,
-    materials,
-    vouchers,
-    qcRecords,
+    boms: boms.filter(belongsToActiveBranch),
+    orders: orders.filter(belongsToActiveBranch),
+    materials: materials.filter(belongsToActiveBranch),
+    vouchers: vouchers.filter(belongsToActiveBranch),
+    qcRecords: qcRecords.filter(belongsToActiveBranch),
     addOrder,
     updateOrder,
     deleteOrder,
@@ -726,5 +745,6 @@ export const useManufacturingData = () => {
     addVoucher,
     addQcRecord,
     updateQcRecord,
+    resetManufacturingDemoData,
   };
 };

@@ -9,6 +9,7 @@ import {
   AgriMilkingRecord,
   AgriWeighbridgeTicket,
 } from '../../../types/index';
+import { useAtriumStore } from '../../../services/store';
 
 export const INITIAL_PARCELS: AgriParcel[] = [
   {
@@ -539,6 +540,16 @@ export const INITIAL_WEIGHBRIDGE_TICKETS: AgriWeighbridgeTicket[] = [
 ];
 
 export const useAgricultureData = () => {
+  const { currentBranchId } = useAtriumStore();
+  const activeBranchId = currentBranchId || 'branch_agri_main';
+  const belongsToActiveBranch = (item: { branchId?: string; facilityId?: string }) =>
+    (item.branchId || item.facilityId || 'branch_agri_main') === activeBranchId;
+  const withBranch = <T extends object>(item: T): T =>
+    ({
+      ...item,
+      branchId: (item as { branchId?: string }).branchId || activeBranchId,
+    }) as T;
+
   const [parcels, setParcels] = useState<AgriParcel[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_agri_parcels_v2');
@@ -664,7 +675,7 @@ export const useAgricultureData = () => {
 
   // Parcel handlers
   const addParcel = (parcel: AgriParcel) => {
-    setParcels((prev) => [parcel, ...prev]);
+    setParcels((prev) => [withBranch(parcel), ...prev]);
   };
   const updateParcel = (parcel: AgriParcel) => {
     setParcels((prev) => prev.map((p) => (p.id === parcel.id ? parcel : p)));
@@ -675,7 +686,7 @@ export const useAgricultureData = () => {
 
   // Crop cycle handlers
   const addCropCycle = (cycle: AgriCropCycle) => {
-    setCropCycles((prev) => [cycle, ...prev]);
+    setCropCycles((prev) => [withBranch(cycle), ...prev]);
   };
   const updateCropCycle = (cycle: AgriCropCycle) => {
     setCropCycles((prev) => prev.map((c) => (c.id === cycle.id ? cycle : c)));
@@ -686,17 +697,18 @@ export const useAgricultureData = () => {
 
   // Treatment handlers
   const addTreatmentLog = (treatment: AgriTreatmentLog) => {
-    setTreatmentLogs((prev) => [treatment, ...prev]);
+    const scopedTreatment = withBranch(treatment);
+    setTreatmentLogs((prev) => [scopedTreatment, ...prev]);
     // If treatment has active DAR, update linked crop cycle
-    if (treatment.cropCycleId && treatment.darDays > 0) {
+    if (scopedTreatment.cropCycleId && scopedTreatment.darDays > 0) {
       setCropCycles((prev) =>
         prev.map((c) => {
-          if (c.id === treatment.cropCycleId) {
+          if (c.id === scopedTreatment.cropCycleId) {
             return {
               ...c,
               currentPhase: 'treatment_locked',
-              activeDarLockoutUntil: treatment.harvestAllowedDate,
-              activePestWarning: `DAR Actif: ${treatment.commercialProductName} (${treatment.darDays}j)`,
+              activeDarLockoutUntil: scopedTreatment.harvestAllowedDate,
+              activePestWarning: `DAR Actif: ${scopedTreatment.commercialProductName} (${scopedTreatment.darDays}j)`,
             };
           }
           return c;
@@ -713,7 +725,7 @@ export const useAgricultureData = () => {
 
   // Worker handlers
   const addWorker = (worker: AgriWorker) => {
-    setWorkers((prev) => [worker, ...prev]);
+    setWorkers((prev) => [withBranch(worker), ...prev]);
   };
   const updateWorker = (worker: AgriWorker) => {
     setWorkers((prev) => prev.map((w) => (w.id === worker.id ? worker : w)));
@@ -724,7 +736,7 @@ export const useAgricultureData = () => {
 
   // Pointage handlers
   const addPointage = (pointage: AgriDailyPointage) => {
-    setPointages((prev) => [pointage, ...prev]);
+    setPointages((prev) => [withBranch(pointage), ...prev]);
   };
   const updatePointage = (pointage: AgriDailyPointage) => {
     setPointages((prev) => prev.map((p) => (p.id === pointage.id ? pointage : p)));
@@ -735,7 +747,7 @@ export const useAgricultureData = () => {
 
   // Dairy herd handlers
   const addDairyCow = (cow: AgriDairyCow) => {
-    setDairyCows((prev) => [cow, ...prev]);
+    setDairyCows((prev) => [withBranch(cow), ...prev]);
   };
   const updateDairyCow = (cow: AgriDairyCow) => {
     setDairyCows((prev) => prev.map((c) => (c.id === cow.id ? cow : c)));
@@ -746,7 +758,7 @@ export const useAgricultureData = () => {
 
   // Milking record handlers
   const addMilkingRecord = (record: AgriMilkingRecord) => {
-    setMilkingRecords((prev) => [record, ...prev]);
+    setMilkingRecords((prev) => [withBranch(record), ...prev]);
   };
   const deleteMilkingRecord = (id: string) => {
     setMilkingRecords((prev) => prev.filter((m) => m.id !== id));
@@ -754,7 +766,7 @@ export const useAgricultureData = () => {
 
   // Weighbridge ticket handlers
   const addWeighbridgeTicket = (ticket: AgriWeighbridgeTicket) => {
-    setWeighbridgeTickets((prev) => [ticket, ...prev]);
+    setWeighbridgeTickets((prev) => [withBranch(ticket), ...prev]);
   };
   const updateWeighbridgeTicket = (ticket: AgriWeighbridgeTicket) => {
     setWeighbridgeTickets((prev) => prev.map((t) => (t.id === ticket.id ? ticket : t)));
@@ -763,27 +775,36 @@ export const useAgricultureData = () => {
     setWeighbridgeTickets((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Reset data to empty state
+  // Reset active branch data to empty state
   const resetToSeed = () => {
-    setParcels([]);
-    setCropCycles([]);
-    setTreatmentLogs([]);
-    setWorkers([]);
-    setPointages([]);
-    setDairyCows([]);
-    setMilkingRecords([]);
-    setWeighbridgeTickets([]);
+    setParcels((prev) => prev.filter((p) => !belongsToActiveBranch(p)));
+    setCropCycles((prev) => prev.filter((c) => !belongsToActiveBranch(c)));
+    setTreatmentLogs((prev) => prev.filter((t) => !belongsToActiveBranch(t)));
+    setWorkers((prev) => prev.filter((w) => !belongsToActiveBranch(w)));
+    setPointages((prev) => prev.filter((p) => !belongsToActiveBranch(p)));
+    setDairyCows((prev) => prev.filter((c) => !belongsToActiveBranch(c)));
+    setMilkingRecords((prev) => prev.filter((m) => !belongsToActiveBranch(m)));
+    setWeighbridgeTickets((prev) => prev.filter((t) => !belongsToActiveBranch(t)));
   };
 
+  const scopedParcels = parcels.filter(belongsToActiveBranch);
+  const scopedCropCycles = cropCycles.filter(belongsToActiveBranch);
+  const scopedTreatmentLogs = treatmentLogs.filter(belongsToActiveBranch);
+  const scopedWorkers = workers.filter(belongsToActiveBranch);
+  const scopedPointages = pointages.filter(belongsToActiveBranch);
+  const scopedDairyCows = dairyCows.filter(belongsToActiveBranch);
+  const scopedMilkingRecords = milkingRecords.filter(belongsToActiveBranch);
+  const scopedWeighbridgeTickets = weighbridgeTickets.filter(belongsToActiveBranch);
+
   return {
-    parcels,
-    cropCycles,
-    treatmentLogs,
-    workers,
-    pointages,
-    dairyCows,
-    milkingRecords,
-    weighbridgeTickets,
+    parcels: scopedParcels,
+    cropCycles: scopedCropCycles,
+    treatmentLogs: scopedTreatmentLogs,
+    workers: scopedWorkers,
+    pointages: scopedPointages,
+    dairyCows: scopedDairyCows,
+    milkingRecords: scopedMilkingRecords,
+    weighbridgeTickets: scopedWeighbridgeTickets,
     selectedParcelId,
     setSelectedParcelId,
     addParcel,
@@ -811,8 +832,8 @@ export const useAgricultureData = () => {
     deleteWeighbridgeTicket,
     resetToSeed,
     // Backwards-compatibility aliases
-    harvestTickets: weighbridgeTickets,
-    livestock: dairyCows,
+    harvestTickets: scopedWeighbridgeTickets,
+    livestock: scopedDairyCows,
     addHarvestTicket: addWeighbridgeTicket,
     updateHarvestTicket: updateWeighbridgeTicket,
     deleteHarvestTicket: deleteWeighbridgeTicket,

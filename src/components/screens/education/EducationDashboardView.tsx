@@ -1,41 +1,35 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import { ClipboardCheck, UserPlus } from 'lucide-react';
 import {
-  GraduationCap,
-  Users,
-  Calendar,
-  Clock,
-  BookOpen,
-  TrendingUp,
-  Receipt,
-  Award,
-  Building2,
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  Info,
-} from 'lucide-react';
+  BulletChart,
+  CohortHeatmap,
+  ConversionFunnel,
+  HistogramChart,
+  KpiMetricInverseCard,
+  KpiSparkCard,
+  StackedBarChart,
+} from '@/atrium';
 import { useAtriumStore } from '../../../services/store';
-import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonDashboardEducation } from '../../ui/skeleton/StructuralSkeletons';
-import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { RollCallModal } from './RollCallModal';
 import {
+  DashboardBentoFrame,
+  DashboardBentoGrid,
   DashboardHeader,
-  DashboardPod,
-  DashboardMetricCard,
-  DarkEspressoCard,
-  HourlyCurveChart,
-  PillBarHistogram,
-  MonthlyAreaChart,
-  DonutChart,
-  GuardianCard,
+  getSurfaceProps,
+  localizeText,
+  toChartLocale,
 } from '../../common/dashboard';
+import { resolveChartState, type DashboardPeriodKey } from '../../../utils/dashboardSelectors/common';
+import { selectEducationDashboard } from '../../../utils/dashboardSelectors/coreVerticals';
 
 export const EducationDashboardView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
   const {
+    theme,
     currentBranch,
     branches,
     switchBranch,
@@ -44,6 +38,9 @@ export const EducationDashboardView: React.FC = () => {
     eduSessions,
     eduEnrollments,
     eduAttendance,
+    eduGrades,
+    eduAdmissions,
+    eduCertificates,
     setScreen,
     resetEduMockData,
     isSyncing,
@@ -57,90 +54,30 @@ export const EducationDashboardView: React.FC = () => {
     hasCachedData: (eduStudents || []).length > 0 || (eduCohorts || []).length > 0,
   });
 
-  const [timeFilter, setTimeFilter] = useState<'today' | 'yesterday'>('today');
-  const [currentMonthIndex, setCurrentMonthIndex] = useState(10); // November
+  const [period, setPeriod] = useState<DashboardPeriodKey>('30d');
   const [selectedSessionForRollCall, setSelectedSessionForRollCall] = useState<string | null>(null);
-  const months = ['JAN', 'FEV', 'MAR', 'AVR', 'MAI', 'JUIN', 'JUIL', 'AOU', 'SEP', 'OCT', 'NOV', 'DEC'];
 
-  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const locale = toChartLocale(language);
+  const featuredSurface = getSurfaceProps(theme, true);
+  const standardSurface = getSurfaceProps(theme, false);
 
-  // Today's sessions & attendance
-  const todaySessions = useMemo(() => {
-    return (eduSessions || []).filter((s) => s.date === todayStr);
-  }, [eduSessions, todayStr]);
+  const data = useMemo(
+    () =>
+      selectEducationDashboard({
+        students: eduStudents,
+        cohorts: eduCohorts,
+        attendance: eduAttendance,
+        grades: eduGrades,
+        admissions: eduAdmissions,
+        certificates: eduCertificates,
+        enrollments: eduEnrollments,
+        period,
+        language,
+      }),
+    [eduStudents, eduCohorts, eduAttendance, eduGrades, eduAdmissions, eduCertificates, eduEnrollments, period, language]
+  );
 
-  const totalStudentsCount = (eduStudents || []).length || 64;
-  const activeCohortsCount = (eduCohorts || []).length || 6;
-
-  const presentToday = useMemo(() => {
-    const presentRecords = (eduAttendance || []).filter((a) => {
-      const recDate = a.recordedAt ? a.recordedAt.split('T')[0] : '';
-      return recDate === todayStr && a.status === 'Present';
-    });
-    return presentRecords.length > 0 ? presentRecords.length : Math.round(totalStudentsCount * 0.88);
-  }, [eduAttendance, todayStr, totalStudentsCount]);
-
-  const targetAttendance = Math.round(totalStudentsCount * 0.95);
-  const targetPct = Math.min(100, Math.round((presentToday / Math.max(1, targetAttendance)) * 100));
-
-  // Hourly arrival curve
-  const hourlyData = useMemo(() => {
-    return [0, 3, 8, 6, 2];
-  }, []);
-
-  // 4-week attendance trend
-  const weeklyAttendanceTrend = useMemo(() => {
-    return [
-      { week: language === 'ar' ? 'أسبوع 1' : 'week 1', value: 92 },
-      { week: language === 'ar' ? 'أسبوع 2' : 'week 2', value: 89 },
-      { week: language === 'ar' ? 'أسبوع 3' : 'week 3', value: 94 },
-      { week: language === 'ar' ? 'أسبوع 4' : 'week 4', value: 91 },
-    ];
-  }, [language]);
-
-  // Tuition trajectory
-  const monthlyTuition = useMemo(() => {
-    const base = 280000;
-    return Array.from({ length: 30 }, (_, i) => {
-      const factor = Math.sin((i / 30) * Math.PI) * 0.5 + 0.5;
-      return Math.round(base * factor * (1 + (i % 6) * 0.1));
-    });
-  }, []);
-
-  // Cohort Subject Donut
-  const cohortMix = useMemo(() => {
-    const map = new Map<string, number>();
-    (eduCohorts || []).forEach((c) => {
-      const cat = c.courseTitle || (language === 'ar' ? 'لغات' : 'Langues');
-      map.set(cat, (map.get(cat) || 0) + 1);
-    });
-    if (map.size === 0) {
-      return [
-        { label: language === 'ar' ? 'لغات حية' : 'Langues Vivantes', value: 40, color: '#d4522f' },
-        { label: language === 'ar' ? 'علوم وتكنولوجيا' : 'Sciences & IT', value: 35, color: '#3B82F6' },
-        { label: language === 'ar' ? 'دعم مدرسي' : 'Soutien Scolaire', value: 25, color: '#10B981' },
-      ];
-    }
-    const colors = ['#d4522f', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'];
-    let idx = 0;
-    return Array.from(map.entries()).map(([label, value]) => ({
-      label,
-      value,
-      color: colors[idx++ % colors.length],
-    }));
-  }, [eduCohorts, language]);
-
-  // Grade / Attendance Distribution
-  const gradeDistribution = useMemo(() => {
-    return [
-      { week: '16-20/20', value: 24 },
-      { week: '14-16/20', value: 38 },
-      { week: '10-14/20', value: 28 },
-      { week: '<10/20', value: 6 },
-    ];
-  }, []);
-
-  if (showSkeleton) {
+  if (showSkeleton && eduStudents.length === 0 && eduCohorts.length === 0) {
     return (
       <div className="p-6">
         <SkeletonDashboardEducation />
@@ -148,381 +85,227 @@ export const EducationDashboardView: React.FC = () => {
     );
   }
 
-  return (
-    <div className="space-y-6 sm:space-y-7 animate-in fade-in duration-200">
-      <OfflineRetryBanner
-        isOffline={isOffline}
-        isTimedOut={isTimedOut}
-        isSyncing={isSyncing}
-        lastSyncedAt={lastSyncedAt}
-        onRetry={retryCloudSync}
-      />
+  const nextSessionId = eduSessions?.[0]?.id || null;
 
-      {/* Header */}
+  return (
+    <DashboardBentoFrame
+      theme={theme}
+      isRtl={isRtl}
+      isOffline={isOffline}
+      isTimedOut={isTimedOut}
+      isSyncing={isSyncing}
+      lastSyncedAt={lastSyncedAt}
+      onRetry={retryCloudSync}
+      data-testid="education-dashboard"
+    >
       <DashboardHeader
         title={t('nav_dashboard', language)}
-        subtitle={
-          language === 'ar'
-            ? 'مؤشرات الحضور الصفي، انضباط الأفواج والتحصيل المالي للأكاديمية'
-            : language === 'fr'
-            ? 'Présences en direct, progression pédagogique et recouvrement des scolarités.'
-            : 'Live attendance flow, cohort progression, and academy tuition analytics.'
-        }
-        currentBranchName={currentBranch?.name || 'Académie Atrium Alger'}
+        subtitle={localizeText(
+          language,
+          'Présences en direct, progression pédagogique et recouvrement des scolarités.',
+          'Live attendance flow, cohort progression, and academy tuition analytics.',
+          'مؤشرات الحضور الصفي، انضباط الأفواج والتحصيل المالي للأكاديمية.'
+        )}
+        currentBranchName={currentBranch?.name}
         branches={branches}
         onSwitchBranch={switchBranch}
         onResetDemoData={resetEduMockData}
-        exportFileName="education_dashboard_report"
+        period={period}
+        onPeriodChange={(next) => setPeriod(next as DashboardPeriodKey)}
+        extraActions={
+          <div className="flex items-center gap-2 flex-wrap max-w-full">
+            <AtriumButton
+              variant="outline"
+              size="sm"
+              icon={<UserPlus size={15} />}
+              onClick={() => setScreen('members')}
+            >
+              {localizeText(language, 'Étudiants', 'Students', 'الطلاب')}
+            </AtriumButton>
+            {nextSessionId && (
+              <AtriumButton
+                variant="primary"
+                size="sm"
+                icon={<ClipboardCheck size={15} />}
+                onClick={() => setSelectedSessionForRollCall(nextSessionId)}
+              >
+                {localizeText(language, 'Appel séance', 'Roll Call', 'تحضير الحصة')}
+              </AtriumButton>
+            )}
+          </div>
+        }
       />
 
-      {/* TOP ROW: Two Pods */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* POD 1: Attendance Flow & Classroom Velocity (42% width) */}
-        <div className="lg:col-span-5 flex flex-col">
-          <DashboardPod
-            title={language === 'ar' ? 'حركة الحضور وحصص اليوم' : language === 'fr' ? 'Présences & Séances du Jour' : 'Classroom Attendance & Flow'}
-            icon={<GraduationCap size={18} className="text-[#d4522f]" />}
-            badge={
-              <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                {presentToday} {language === 'ar' ? 'طالب حاضر' : 'Présents'}
-              </span>
-            }
-            rightControls={
-              <div className="flex items-center bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 p-0.5 rounded-xl text-xs font-semibold shadow-2xs">
-                <button
-                  type="button"
-                  onClick={() => setTimeFilter('today')}
-                  title={language === 'ar' ? 'عرض مؤشرات اليوم' : language === 'fr' ? "Activité d'aujourd'hui" : "Today's activity"}
-                  className={`px-3 py-1 rounded-md transition-all ${
-                    timeFilter === 'today' ? 'bg-[#d4522f] text-white shadow-xs' : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
-                  }`}
-                >
-                  {language === 'ar' ? 'اليوم' : language === 'fr' ? "Aujourd'hui" : 'Today'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTimeFilter('yesterday')}
-                  title={language === 'ar' ? 'عرض مؤشرات الأمس' : language === 'fr' ? "Activité d'hier" : "Yesterday's activity"}
-                  className={`px-3 py-1 rounded-md transition-all ${
-                    timeFilter === 'yesterday' ? 'bg-[#d4522f] text-white shadow-xs' : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
-                  }`}
-                >
-                  {language === 'ar' ? 'أمس' : language === 'fr' ? 'Hier' : 'Yesterday'}
-                </button>
-              </div>
-            }
-            className="flex-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">
-                      {language === 'ar' ? 'حضور الطلاب اليوم' : 'Étudiants Présents'}
-                    </span>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                        {presentToday}
-                      </span>
-                      <span className="text-xs text-black/55 dark:text-white/55">/ {totalStudentsCount}</span>
-                    </div>
-                    <span className="inline-block mt-2 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[11px] font-medium rounded-full">
-                      ● 91% {language === 'ar' ? 'معدل الحضور' : 'Taux d’assiduité'}
-                    </span>
-                  </div>
-                  <div className="w-px h-12 bg-[#E6DED6] dark:bg-neutral-700 mx-4" />
-                  <div className="flex-1">
-                    <span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">
-                      {language === 'ar' ? 'الحصص المبرمجة اليوم' : 'Séances Prévues'}
-                    </span>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                        {Math.max(todaySessions.length, 4)}
-                      </span>
-                      <span className="text-xs text-black/55 dark:text-white/55">{language === 'ar' ? 'حصص' : 'cours'}</span>
-                    </div>
-                    <span className="inline-block mt-2 px-2 py-0.5 bg-amber-50 text-amber-600 text-[11px] font-medium rounded-full">
-                      {language === 'ar' ? 'قاعات شاغرة: 2' : '2 Salles Libres'}
-                    </span>
-                  </div>
-                </div>
+      <DashboardBentoGrid>
+        {/* Row 1: Tuition Collected + Inverse Absence Rate (espresso) + Cohort Capacity Bullets */}
+        <KpiSparkCard
+          title={localizeText(language, 'Frais de scolarité encaissés', 'Tuition Collected', 'الرسوم المحصلة')}
+          subtitle={localizeText(
+            language,
+            `${data.activeStudents} étudiants actifs · reste dû ${data.overdueBalance.toLocaleString()} DZD`,
+            `${data.activeStudents} active students · due ${data.overdueBalance.toLocaleString()} DZD`,
+            `${data.activeStudents} طالب نشط · متبقي ${data.overdueBalance.toLocaleString()} دج`
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(eduEnrollments.length > 0 || eduStudents.length > 0)}
+          value={data.tuitionCollected}
+          deltaPercent={data.tuitionDelta}
+          format="currency"
+          currency="DZD"
+          series={data.tuitionSpark}
+          emptyMessage={localizeText(
+            language,
+            'Aucune inscription encaissée.',
+            'No tuition enrollments recorded.',
+            'لا توجد تسجيلات رسوم مسجلة.'
+          )}
+        />
 
-                <div className="mt-4 pt-3 border-t border-[#E6DED6] dark:border-neutral-700/60">
-                  <span className="text-[11px] text-black/55 dark:text-white/55 block mb-2">
-                    {language === 'ar' ? 'كثافة الدخول الصفي على مدار 24 ساعة' : 'Arrivées horaires des élèves (24h)'}
-                  </span>
-                  <HourlyCurveChart data={hourlyData} color="#d4522f" />
-                </div>
-              </div>
+        <KpiMetricInverseCard
+          title={localizeText(language, 'Taux d’absence', 'Absence Rate', 'معدل الغياب')}
+          subtitle={localizeText(
+            language,
+            `${eduAttendance.length} pointages enregistrés sur les cohortes`,
+            `${eduAttendance.length} recorded attendance marks across cohorts`,
+            `${eduAttendance.length} تسجيل حضور عبر الأفواج`
+          )}
+          locale={locale}
+          {...featuredSurface}
+          state={resolveChartState(eduAttendance.length > 0)}
+          value={data.absenceRate}
+          format="percent"
+          series={data.absenceSpark}
+          emptyMessage={localizeText(
+            language,
+            'Effectuez un appel de séance pour suivre l’absentéisme.',
+            'Record session roll call to monitor absence rate.',
+            'قم بتسجيل الحضور لمتابعة نسبة الغياب.'
+          )}
+        />
 
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-xs font-medium text-black/70 dark:text-white/75">
-                    {language === 'ar' ? 'انضباط الحضور اليومي' : 'Objectif de Présence'}
-                  </span>
-                  <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
-                    {presentToday} / {targetAttendance}
-                  </span>
-                </div>
-                <div className="w-full bg-[#E6DED6]/70 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
-                  <div
-                    className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
-                    style={{ width: `${targetPct}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-[11px] text-black/55 dark:text-white/55">
-                  <span>{targetPct}% {language === 'ar' ? 'حضور محقق' : 'd’assiduité'}</span>
-                  <span>95% {language === 'ar' ? 'الهدف' : 'Cible'}</span>
-                </div>
-              </div>
-            </div>
-          </DashboardPod>
-        </div>
+        <BulletChart
+          title={localizeText(language, 'Remplissage des cohortes', 'Cohort Capacity Fill', 'امتلاء الأفواج')}
+          subtitle={localizeText(
+            language,
+            'Effectif inscrit face à la capacité maximale',
+            'Enrolled students vs max seats per cohort',
+            'الطلاب المسجلون مقابل السعة القصوى'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.cohortFillBullets.length > 0)}
+          items={data.cohortFillBullets}
+          format="number"
+          unit={localizeText(language, 'élèves', 'seats', 'طالب')}
+          emptyMessage={localizeText(
+            language,
+            'Aucune cohorte configurée.',
+            'No cohorts configured.',
+            'لا توجد أفواج مكونة.'
+          )}
+        />
 
-        {/* POD 2: Student Cohort Development (58% width) */}
-        <div className="lg:col-span-7 flex flex-col">
-          <DashboardPod
-            title={language === 'ar' ? 'الأفواج والطلاب المسجلين' : language === 'fr' ? 'Étudiants & Promotions' : 'Students & Cohorts'}
-            icon={<Users size={18} className="text-[#d4522f]" />}
-            rightControls={
-              <div className="flex items-center gap-1 text-xs font-semibold text-black/70 dark:text-white/75">
-                <button
-                  type="button"
-                  onClick={() => setCurrentMonthIndex((prev) => (prev > 0 ? prev - 1 : 11))}
-                  className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"
-                >
-                  <ChevronLeft size={14} />
-                </button>
-                <span className="px-1 text-black dark:text-white">{months[currentMonthIndex]} 2026</span>
-                <button
-                  type="button"
-                  onClick={() => setCurrentMonthIndex((prev) => (prev < 11 ? prev + 1 : 0))}
-                  className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"
-                >
-                  <ChevronRight size={14} />
-                </button>
-              </div>
-            }
-            className="flex-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <DashboardMetricCard
-                  label={language === 'ar' ? 'إجمالي الطلاب النشطين' : 'Étudiants Inscrits'}
-                  value={totalStudentsCount}
-                  badgeText={language === 'ar' ? 'منتظمون' : 'Actifs'}
-                  badgeVariant="success"
-                  tooltip={language === 'ar' ? 'طلاب مسجلون بأفواج حالية' : 'Élèves inscrits aux cohortes'}
-                />
+        {/* Row 2: Attendance Breakdown by Cohort (wide) + Admissions Funnel */}
+        <StackedBarChart
+          className="md:col-span-2 xl:col-span-2"
+          title={localizeText(language, 'Assiduité par promotion', 'Attendance by Cohort', 'الحضور حسب الفوج')}
+          subtitle={localizeText(
+            language,
+            'Répartition Présent / Retard / Absent sur les séances appelées',
+            'Present, Late, and Absent breakdown per cohort',
+            'توزيع الحضور والتأخر والغياب حسب الفوج'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.attBuckets.length > 0)}
+          series={[
+            { id: 'present', label: localizeText(language, 'Présents', 'Present', 'حاضر'), color: '#10b981' },
+            { id: 'late', label: localizeText(language, 'Retards', 'Late', 'متأخر'), color: '#f59e0b' },
+            { id: 'absent', label: localizeText(language, 'Absents', 'Absent', 'غائب'), color: '#d4522f' },
+          ]}
+          buckets={data.attBuckets}
+          format="number"
+          emptyMessage={localizeText(
+            language,
+            'Aucun pointage d’appel enregistré.',
+            'No attendance records captured.',
+            'لا توجد سجلات حضور مسجلة.'
+          )}
+        />
 
-                <DashboardMetricCard
-                  label={language === 'ar' ? 'الأفواج التدريبية' : 'Promotions & Cohortes'}
-                  value={activeCohortsCount}
-                  badgeText={language === 'ar' ? 'جارية' : 'En cours'}
-                  badgeVariant="neutral"
-                  tooltip={language === 'ar' ? 'أفواج دراسية مفتوحة' : 'Groupes pédagogiques actifs'}
-                />
+        <ConversionFunnel
+          title={localizeText(language, 'Tunnel admissions & diplômes', 'Admissions to Certification', 'مسار القبول والتخرج')}
+          subtitle={localizeText(
+            language,
+            'Demandes → Admis → Inscrits → Certifiés',
+            'Inquiries → Admitted → Enrolled → Certified',
+            'الطلبات ← القبول ← التسجيل ← التخرج'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.funnelStages.length > 0)}
+          stages={data.funnelStages}
+          emptyMessage={localizeText(
+            language,
+            'Aucun prospect ni étudiant.',
+            'No admission leads or students.',
+            'لا توجد طلبات قبول أو طلاب.'
+          )}
+        />
 
-                <DarkEspressoCard
-                  label={language === 'ar' ? 'تنبيه الغياب المتكرر' : 'Alerte Décrochage'}
-                  value={3}
-                  sublabel={language === 'ar' ? 'طلاب بغياب > 3 حصص' : 'Élèves à risque d’abandon'}
-                  badgeText={language === 'ar' ? 'متابعة' : 'Vigilance'}
-                  badgeVariant="warning"
-                />
-              </div>
+        {/* Row 3: Cohort Retention Heatmap + Grade Distribution Histogram (wide) */}
+        <CohortHeatmap
+          title={localizeText(language, 'Taux de présence par cohorte', 'Cohort Attendance Rate', 'نسبة المواظبة لكل فوج')}
+          subtitle={localizeText(
+            language,
+            'Pourcentage de présences enregistrées',
+            'Share of present & late attendance records',
+            'نسبة الالتزام بالحصص المسجلة'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.cohortRows.length > 0)}
+          cohorts={data.cohortRows}
+          columnPrefix="%"
+          emptyMessage={localizeText(
+            language,
+            'Aucune cohorte avec appel enregistré.',
+            'No cohorts with attendance logs.',
+            'لا توجد أفواج مسجلة بسجل الحضور.'
+          )}
+        />
 
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-semibold text-black dark:text-white">
-                    {language === 'ar' ? 'معدل الحضور الأسبوعي (%)' : 'Taux d’assiduité moyen hebdomadaire'}
-                  </span>
-                  <span className="text-[11px] text-black/55 dark:text-white/55">
-                    {language === 'ar' ? 'مقارنة شهرية' : '4 dernières semaines'}
-                  </span>
-                </div>
-                <PillBarHistogram
-                  data={weeklyAttendanceTrend}
-                  maxScale={100}
-                  barColor="#d4522f"
-                />
-              </div>
-            </div>
-          </DashboardPod>
-        </div>
-      </div>
+        <HistogramChart
+          className="md:col-span-2 xl:col-span-2"
+          title={localizeText(language, 'Distribution des notes (/20)', 'Grade Distribution (/20)', 'توزيع النقاط والنتائج (/20)')}
+          subtitle={localizeText(
+            language,
+            'Évaluations normalisées sur 20 points',
+            'Normalized assessment scores out of 20',
+            'نتائج التقييمات مصنفة على 20'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.gradeBins.length > 0)}
+          bins={data.gradeBins}
+          format="number"
+          unit={localizeText(language, 'notes', 'grades', 'نتيجة')}
+          emptyMessage={localizeText(
+            language,
+            'Aucune note enregistrée sur la période.',
+            'No assessment grades recorded yet.',
+            'لا توجد نقاط مسجلة بعد.'
+          )}
+        />
+      </DashboardBentoGrid>
 
-      {/* BOTTOM ROW: Two Pods */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* POD 3: Financial Trajectory (42% width) */}
-        <div className="lg:col-span-5 flex flex-col">
-          <DashboardPod
-            title={language === 'ar' ? 'تحصيل الرسوم والأرباح' : language === 'fr' ? 'Revenus & Recouvrement' : 'Revenue & Profit'}
-            icon={<TrendingUp size={18} className="text-[#d4522f]" />}
-            rightControls={
-              <span className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase rtl:normal-case">
-                {months[currentMonthIndex]} 2026
-              </span>
-            }
-            className="flex-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="grid grid-cols-3 gap-2 pb-3 border-b border-[#E6DED6] dark:border-neutral-700/60">
-                  <div>
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'صافي العائد' : 'Net Académie'}</span>
-                    <span className="text-lg font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
-                      {formatMoney(210000)}
-                    </span>
-                    <span className="text-[10px] text-emerald-600 block">+6.4%</span>
-                  </div>
-                  <div>
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'رسوم محصلة' : 'Scolarités CA'}</span>
-                    <span className="text-lg font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
-                      {formatMoney(320000)}
-                    </span>
-                    <span className="text-[10px] text-emerald-600 block">+8.9%</span>
-                  </div>
-                  <div>
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">{language === 'ar' ? 'أتعاب الأساتذة' : 'Honoraires Form.'}</span>
-                    <span className="text-lg font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">
-                      {formatMoney(110000)}
-                    </span>
-                    <span className="text-[10px] text-black/55 dark:text-white/55 block">34% CA</span>
-                  </div>
-                </div>
-
-                <div className="pt-3">
-                  <span className="text-[11px] text-black/55 dark:text-white/55 block mb-1">
-                    {language === 'ar' ? 'منحنى التدفق المالي على مدار 30 يوماً' : 'Tendance des encaissements sur 30 jours'}
-                  </span>
-                  <MonthlyAreaChart data={monthlyTuition} color="#8B5CF6" />
-                </div>
-              </div>
-
-              {/* 4 KPIs Inset Grid */}
-              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-semibold text-black dark:text-white">
-                    {language === 'ar' ? 'مؤشرات الأداء الأكاديمي' : 'Indicateurs Pédagogiques'}
-                  </span>
-                  <Info size={13} className="text-black/55 dark:text-white/55" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
-                      {language === 'ar' ? 'نسبة الاستبقاء' : 'Taux de Rétention'}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">94%</span>
-                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                        Élevé
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
-                      {language === 'ar' ? 'امتلاء الأفواج' : 'Remplissage Cohortes'}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">86%</span>
-                      <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
-                        Optimal
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
-                      {language === 'ar' ? 'نسبة التحصيل' : 'Taux Recouvrement'}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">92%</span>
-                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                        Acomptes OK
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#F3EDE7] dark:bg-neutral-700/50 p-3 rounded-xl">
-                    <span className="text-[11px] text-black/70 dark:text-white/75 block">
-                      {language === 'ar' ? 'نسبة النجاح' : 'Taux Réussite'}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white tabular-nums">96%</span>
-                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                        Examens
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </DashboardPod>
-        </div>
-
-        {/* POD 4: Academic Intelligence & Drop-Out Guardian (58% width) */}
-        <div className="lg:col-span-7 flex flex-col">
-          <DashboardPod
-            title={language === 'ar' ? 'المؤشرات والتنبيهات' : language === 'fr' ? 'Analyses & Alertes' : 'Insights & Alerts'}
-            icon={<Award size={18} className="text-[#d4522f]" />}
-            className="flex-1 flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-black dark:text-white">
-                      {language === 'ar' ? 'توزيع التخصصات' : 'Filières & Matières'}
-                    </span>
-                    <Info size={13} className="text-black/55 dark:text-white/55" />
-                  </div>
-                  <DonutChart segments={cohortMix} centerLabel={`${activeCohortsCount} Groupes`} />
-                </div>
-
-                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-semibold text-black dark:text-white">
-                      {language === 'ar' ? 'توزيع التقييمات والنتائج' : 'Distribution des Notes'}
-                    </span>
-                    <Info size={13} className="text-black/55 dark:text-white/55" />
-                  </div>
-                  <PillBarHistogram
-                    data={gradeDistribution}
-                    maxScale={45}
-                    barColor="#3B82F6"
-                  />
-                </div>
-              </div>
-
-              {/* Drop-Out Guardian Card */}
-              <GuardianCard
-                title={language === 'ar' ? 'متابعة الحضور والغياب' : 'Student Retention'}
-                subtitle={
-                  language === 'ar'
-                    ? 'رصد آلي للغيابات غير المبررة وتوجيه إشعارات فورية لأولياء الأمور لضمان الاستمرارية'
-                    : 'Surveillance proactive des absences consécutives et alerte SMS aux parents.'
-                }
-                score={93}
-                statusText={language === 'ar' ? 'مستوى الانضباط العام ممتاز!' : 'Assiduité exemplaire sur toutes les promotions !'}
-                metricLabel={language === 'ar' ? 'معدل الالتزام' : 'Assiduité'}
-                metricValue="93%"
-                trendText={language === 'ar' ? 'مستقر' : 'Cohortes stables'}
-                defaultEnabled={true}
-              />
-            </div>
-          </DashboardPod>
-        </div>
-      </div>
-
-      {/* Roll Call Modal */}
       {selectedSessionForRollCall && (
         <RollCallModal
           session={(eduSessions || []).find((s) => s.id === selectedSessionForRollCall) || null}
           onClose={() => setSelectedSessionForRollCall(null)}
         />
       )}
-    </div>
+    </DashboardBentoFrame>
   );
 };

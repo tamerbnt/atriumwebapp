@@ -46,15 +46,25 @@ import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 import { SkeletonDashboardProject } from '../../ui/skeleton/StructuralSkeletons';
 import {
-  DashboardPod,
-  DashboardMetricCard,
-  DarkEspressoCard,
-  HourlyCurveChart,
-  PillBarHistogram,
-  MonthlyAreaChart,
-  DonutChart,
-  GuardianCard,
+  BulletChart,
+  ChartSegmented,
+  ConversionFunnel,
+  KpiMetricInverseCard,
+  KpiSparkCard,
+  RadialGauge,
+  RankedBarList,
+  WaterfallChart,
+} from '@/atrium';
+import {
+  DashboardBentoFrame,
+  DashboardBentoGrid,
+  DashboardHeader,
+  getSurfaceProps,
+  localizeText,
+  toChartLocale,
 } from '../../common/dashboard';
+import { resolveChartState, type DashboardPeriodKey } from '../../../utils/dashboardSelectors/common';
+import { selectProjectDashboard } from '../../../utils/dashboardSelectors/coreVerticals';
 
 interface ProjectDirectionViewProps {
   initialTab?: 'dashboard' | 'projects' | 'new_project' | 'approvals' | 'reports';
@@ -64,7 +74,7 @@ interface ProjectDirectionViewProps {
 
 export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ initialTab = "dashboard" }) => {
 	const { t, language, isRtl } = useTranslation();
-	const { currentBranch, branches, switchBranch, pmProjects, pmMissions, pmTalents, pmPayrollBatches, pmExpenses, pmClients, staff, addPmProject, deletePmProject, batchDeletePmProjects, batchUpdatePmProjectStatus, approvePmExpense, rejectPmExpense, batchApprovePmExpenses, batchRejectPmExpenses, batchDeletePmExpenses, approvePmPayrollBatch, batchApprovePmPayrollBatches, resetPmMockData, activePmSubScreen, setActivePmSubScreen, showToast, isSyncing, networkMode, isSyncTimeout, lastSyncedAt, retryCloudSync } = useAtriumStore();
+	const { theme, currentBranch, currentBranchId, branches, switchBranch, pmProjects, pmMilestones, pmMissions, pmTalents, pmPayrollBatches, pmExpenses, pmClients, staff, addPmProject, deletePmProject, batchDeletePmProjects, batchUpdatePmProjectStatus, approvePmExpense, rejectPmExpense, batchApprovePmExpenses, batchRejectPmExpenses, batchDeletePmExpenses, approvePmPayrollBatch, batchApprovePmPayrollBatches, resetPmMockData, activePmSubScreen, setActivePmSubScreen, showToast, isSyncing, networkMode, isSyncTimeout, lastSyncedAt, retryCloudSync } = useAtriumStore();
 	const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
 		isLoading: isSyncing || networkMode === "force_skeleton",
 		hasCachedData: pmProjects.length > 0
@@ -74,7 +84,19 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 	const [rejectionModalId, setRejectionModalId] = React.useState<any>(null);
 	const [rejectionReason, setRejectionReason] = React.useState("");
 	const currentScreen = activePmSubScreen === "new_project" || initialTab === "new_project" ? "new_project" : activePmSubScreen === "approvals" || initialTab === "approvals" ? "approvals" : activePmSubScreen === "reports" || initialTab === "reports" ? "reports" : activePmSubScreen === "projects" || initialTab === "projects" ? "projects" : "dashboard";
-	const [directionPeriod, setDirectionPeriod] = React.useState("today");
+	const [directionPeriod, setDirectionPeriod] = React.useState<DashboardPeriodKey>("30d");
+	const projectDashData = React.useMemo(
+		() =>
+			selectProjectDashboard({
+				projects: pmProjects,
+				milestones: pmMilestones,
+				payrollBatches: pmPayrollBatches,
+				expenses: pmExpenses,
+				period: directionPeriod,
+				language,
+			}),
+		[pmProjects, pmMilestones, pmPayrollBatches, pmExpenses, directionPeriod, language]
+	);
 	const [projectSearch, setProjectSearch] = React.useState("");
 	const [projectStatusFilter, setProjectStatusFilter] = React.useState("all");
 	const [selectedProjectIds, setSelectedProjectIds] = React.useState(/* @__PURE__ */ new Set());
@@ -295,7 +317,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 		const creaMember = staff.find((s) => s.id === newProjectCreaId) || { fullName: "Lina Hadj-Ali (Créa)" };
 		addPmProject({
 			tenantId: "acc_01",
-			facilityId: "branch_agency_main",
+			facilityId: currentBranchId || "branch_agency_main",
 			clientId: client?.id || "pm_cli_01",
 			clientName: client?.name || "Client National",
 			title: newProjectTitle || "Nouvelle Campagne Terrain",
@@ -389,19 +411,12 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 </div>;
 	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
 <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={retryCloudSync} />
+{currentScreen !== "dashboard" && (
 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1">
 <div>
 <div className="flex items-center gap-3.5">
-{currentScreen === "dashboard" && /* @__PURE__ */ <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 flex items-center justify-center text-black dark:text-white">
-<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-<rect x="3" y="3" width="7" height="7" rx="1.5" />
-<rect x="14" y="3" width="7" height="7" rx="1.5" />
-<rect x="14" y="14" width="7" height="7" rx="1.5" />
-<rect x="3" y="14" width="7" height="7" rx="1.5" />
-</svg>
-</div>}
 <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-{currentScreen === "dashboard" ? (language === "ar" ? "الرئيسية" : language === "en" ? "Home" : "Tableau") : currentScreen === "projects" ? (language === "ar" ? "المشاريع" : language === "en" ? "Projects" : "Projets") : currentScreen === "new_project" ? (language === "ar" ? "مشروع جديد" : language === "en" ? "New Brief" : "Nouveau Brief") : currentScreen === "approvals" ? (language === "ar" ? "الموافقات" : language === "en" ? "Approvals" : "Validations") : (language === "ar" ? "التقارير" : language === "en" ? "Reports" : "Rapports")}
+{currentScreen === "projects" ? (language === "ar" ? "المشاريع" : language === "en" ? "Projects" : "Projets") : currentScreen === "new_project" ? (language === "ar" ? "مشروع جديد" : language === "en" ? "New Brief" : "Nouveau Brief") : currentScreen === "approvals" ? (language === "ar" ? "الموافقات" : language === "en" ? "Approvals" : "Validations") : (language === "ar" ? "التقارير" : language === "en" ? "Reports" : "Rapports")}
 </h1>
 </div>
 </div>
@@ -409,6 +424,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 <LiquidExportButton size="sm" onExport={currentScreen === "projects" ? handleExportProjectsCsv : handleExportAuditCsv} idleLabel={language === "ar" ? "تصدير CSV" : language === "fr" ? "EXPORTER CSV" : "EXPORT CSV"} id="pm-dir-export-btn" />
 </div>
 </div>
+)}
 <div className="flex border-b border-[#E6DED6] dark:border-neutral-800 gap-1 overflow-x-auto">
 {[
 					{
@@ -418,24 +434,24 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 					},
 					{
 						id: "projects",
-						label: "Portefeuille Projets",
+						label: localizeText(language, "Portefeuille Projets", "Projects Portfolio", "محفظة المشاريع"),
 						icon: FolderKanban,
 						count: pmProjects.length
 					},
 					{
 						id: "approvals",
-						label: "Approbations & Décaissements",
+						label: localizeText(language, "Approbations & Décaissements", "Approvals & Payouts", "الموافقات والصرف"),
 						icon: ShieldCheck,
 						count: totalPendingApprovals
 					},
 					{
 						id: "reports",
-						label: "Rapports & Marges",
+						label: localizeText(language, "Rapports & Marges", "Reports & Margins", "التقارير والهوامش"),
 						icon: Layers
 					},
 					{
 						id: "new_project",
-						label: "+ Nouveau Projet",
+						label: localizeText(language, "+ Nouveau Projet", "+ New Project", "+ مشروع جديد"),
 						icon: Plus
 					}
 				].map((tab) => {
@@ -448,258 +464,212 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 </button>;
 				})}
 </div>
-{currentScreen === "dashboard" && /* @__PURE__ */ <div className="space-y-6">
-<div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-<div className="lg:col-span-5 flex flex-col">
-<DashboardPod title={language === "ar" ? "حركة تسليم المشاريع والمهام" : language === "fr" ? "Projets & Livrables" : "Active Projects"} icon={<TrendingUp size={18} className="text-[#d4522f]" />} badge={<span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-{pmProjects.length}
-{" "}
-{language === "ar" ? "مشاريع نشطة" : "Campagnes Actives"}
-</span>} rightControls={<span className="text-xs font-semibold text-black/70 dark:text-white/75">
-{pmTalents.length}
-{" "}
-{language === "ar" ? "فريق معتمد" : "Talents Mobilisés"}
-</span>} className="flex-1 flex flex-col justify-between">
-<div className="space-y-4">
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
-<div className="flex items-center justify-between">
-<div className="flex-1">
-<span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">{language === "ar" ? "الحملات قيد التنفيذ" : "Campagnes Terrain"}</span>
-<div className="flex items-baseline gap-2">
-<span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{pmProjects.length}</span>
-<span className="text-xs text-black/55 dark:text-white/55">/ 12 obj</span>
-</div>
-<span className="inline-block mt-2 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[11px] font-medium rounded-full">
-{"● "}
-{language === "ar" ? "تسليم في الموعد" : "Dans les délais"}
-</span>
-</div>
-<div className="w-px h-12 bg-neutral-200 dark:bg-neutral-700 mx-4" />
-<div className="flex-1">
-<span className="text-xs font-medium text-black/70 dark:text-white/75 block mb-1">{language === "ar" ? "تأشيرات معلقة" : "Approbations Requises"}</span>
-<div className="flex items-baseline gap-2">
-<span className="text-3xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{totalPendingApprovals}</span>
-<span className="text-xs text-black/55 dark:text-white/55">{language === "ar" ? "ملفات" : "décaissements"}</span>
-</div>
-<span className="inline-block mt-2 px-2 py-0.5 bg-amber-50 text-amber-600 text-[11px] font-medium rounded-full">{language === "ar" ? "بانتظار الإدارة" : "En attente DG"}</span>
-</div>
-</div>
-<div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-700">
-<span className="text-[11px] text-black/55 dark:text-white/55 block mb-2">
-{language === "ar" ? "كثافة نشاط الفريق على مدار 24 ساعة" : "Courbe horaire de cadence agence (24h)"}
-</span>
-<HourlyCurveChart data={[
-												0,
-												2,
-												8,
-												6,
-												2
-											]} color="#d4522f" />
-</div>
-</div>
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
-<div className="flex justify-between items-center mb-1.5">
-<span className="text-xs font-medium text-black/70 dark:text-white/75">
-{language === "ar" ? "نسبة إنجاز مراحل المشاريع" : "Burn-Down & Avancement Lots"}
-</span>
-<span className="text-base font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">88%</span>
-</div>
-<div className="w-full bg-neutral-100 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
-<div className="bg-[#d4522f] h-full rounded-full transition-all duration-500" style={{ width: "88%" }} />
-</div>
-<div className="flex justify-between text-[11px] text-black/55 dark:text-white/55">
-<span>
-{"88% "}
-{language === "ar" ? "منجز" : "réalisé"}
-</span>
-<span>Target 95%</span>
-</div>
-</div>
-</div>
-</DashboardPod>
-</div>
-<div className="lg:col-span-7 flex flex-col">
-<DashboardPod title={language === "ar" ? "محفظة المشاريع والعملاء" : language === "fr" ? "Portefeuille & Contrats" : "Portfolio & Contracts"} icon={<FolderKanban size={18} className="text-[#d4522f]" />} rightControls={<span className="text-xs font-semibold text-black/70 dark:text-white/75">58 Wilayas Coverage</span>} className="flex-1 flex flex-col justify-between">
-<div className="space-y-4">
-<div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-<DashboardMetricCard label={language === "ar" ? "حملات نشطة" : "Campagnes Actives"} value={pmProjects.length} badgeText={language === "ar" ? "سارية" : "En cours"} badgeVariant="success" tooltip={language === "ar" ? "مشاريع قيد التنفيذ" : "Projets déployés"} />
-<DashboardMetricCard label={language === "ar" ? "طاقم العمل الميداني" : "Talents Mobilisés"} value={pmTalents.length} badgeText="Terrain" badgeVariant="neutral" tooltip={language === "ar" ? "مشرفين ومنشطين معتمدين" : "Superviseurs qualifiés"} />
-<DarkEspressoCard label={language === "ar" ? "حجم التعاقدات المعتمدة" : "Budget Engagé Validé"} value={formatMoney(totalTurnoverDzd)} sublabel={language === "ar" ? "عقود مؤشرة" : "Volume d’affaires"} badgeText="Contrats" badgeVariant="neutral" />
-</div>
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
-<div className="flex justify-between items-center mb-3">
-<span className="text-xs font-semibold text-black/70 dark:text-white">
-{language === "ar" ? "إنجاز المراحل أسبوعياً" : "Jalons & Livrables clôturés (4 semaines)"}
-</span>
-<span className="text-[11px] text-black/55 dark:text-white/55">{language === "ar" ? "مقارنة شهرية" : "4 dernières semaines"}</span>
-</div>
-<PillBarHistogram data={[
-											{
-												week: "Semaine 1",
-												value: 8
-											},
-											{
-												week: "Semaine 2",
-												value: 14
-											},
-											{
-												week: "Semaine 3",
-												value: 11
-											},
-											{
-												week: "Semaine 4",
-												value: 16
-											}
-										]} maxScale={20} barColor="#d4522f" />
-</div>
-</div>
-</DashboardPod>
-</div>
-</div>
-<div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-<div className="lg:col-span-5 flex flex-col">
-<DashboardPod title={language === "ar" ? "الإيرادات والأرباح" : language === "fr" ? "Revenus & Marges" : "Revenue & Profit"} subtitle={language === "ar" ? "تتبع الإيرادات المفوترة، تكاليف المواهب وهامش الربحية" : language === "fr" ? "Suivi de la facturation client, coûts talents et marge nette" : "Billing milestones, talent fees and gross margins"} icon={<DollarSign size={18} className="text-[#d4522f]" />} rightControls={<span className="text-xs font-semibold text-black/70 dark:text-white/75 font-mono">{language === "ar" ? "نوفمبر 2026" : "NOVEMBRE 2026"}</span>}>
-<div className="space-y-4">
-<div className="grid grid-cols-3 gap-2">
-<DashboardMetricCard label={language === "ar" ? "صافي الهامش" : language === "fr" ? "Marge Nette" : "Net Margin"} value={`${Math.round(totalTurnoverDzd * .42).toLocaleString()} DA`} subtext={language === "ar" ? "42% نسبة الهامش" : "42.0% ratio"} trend="+8.4%" trendDirection="up" />
-<DashboardMetricCard label={language === "ar" ? "المفوتر" : language === "fr" ? "Facturé" : "Invoiced"} value={`${totalTurnoverDzd.toLocaleString()} DA`} subtext={language === "ar" ? "ميزانيات العقود" : "Engagé client"} />
-<DashboardMetricCard label={language === "ar" ? "تكاليف الإنتاج" : language === "fr" ? "Coûts Engagés" : "Talent & Ops"} value={`${Math.round(totalTurnoverDzd * .58).toLocaleString()} DA`} subtext={language === "ar" ? "رواتب ونفقات" : "Paies & frais"} trendDirection="neutral" />
-</div>
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
-<div className="flex items-center justify-between mb-2">
-<span className="text-xs font-semibold text-black/70 dark:text-white/75">
-{language === "ar" ? "الفوترة والتحصيل (30 يوماً)" : language === "fr" ? "Facturation & Recouvrement (30j)" : "Billing & Collections (30d)"}
-</span>
-<span className="text-[11px] font-mono text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full font-semibold">+12.6% M/M</span>
-</div>
-<MonthlyAreaChart data={[
-												8e4,
-												12e4,
-												15e4,
-												19e4,
-												24e4,
-												28e4,
-												31e4,
-												36e4,
-												42e4,
-												48e4,
-												51e4,
-												56e4,
-												62e4,
-												68e4,
-												71e4,
-												75e4,
-												82e4,
-												89e4,
-												94e4,
-												99e4,
-												105e4,
-												112e4,
-												118e4,
-												124e4,
-												131e4,
-												138e4,
-												142e4,
-												149e4,
-												156e4,
-												totalTurnoverDzd || 165e4
-											]} currency="DA" color="#d4522f" />
-</div>
-<div className="grid grid-cols-2 gap-2 pt-1">
-<div className="bg-white dark:bg-neutral-800 p-3 rounded-[16px] border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
-<span className="text-[11px] text-black/70 dark:text-white/75 block">
-{language === "ar" ? "نسبة التحصيل" : language === "fr" ? "Taux de Recouvrement" : "Collection Rate"}
-</span>
-<span className="text-base font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">92.4%</span>
-<span className="text-[10px] text-emerald-600 font-semibold block mt-0.5">{language === "ar" ? "ممتاز" : "Optimal"}</span>
-</div>
-<div className="bg-white dark:bg-neutral-800 p-3 rounded-[16px] border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
-<span className="text-[11px] text-black/70 dark:text-white/75 block">
-{language === "ar" ? "متوسط السداد (DSO)" : language === "fr" ? "Délai Paiement Client" : "Average DSO"}
-</span>
-<span className="text-base font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">28j</span>
-<span className="text-[10px] text-blue-600 font-semibold block mt-0.5">{language === "ar" ? "تحت الهدف" : "< 30 jours"}</span>
-</div>
-<div className="bg-white dark:bg-neutral-800 p-3 rounded-[16px] border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
-<span className="text-[11px] text-black/70 dark:text-white/75 block">
-{language === "ar" ? "انحراف الميزانية" : language === "fr" ? "Dérapage Budgétaire" : "Budget Variance"}
-</span>
-<span className="text-base font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">0.0%</span>
-<span className="text-[10px] text-emerald-600 font-semibold block mt-0.5">{language === "ar" ? "مضبوط" : "Sous contrôle"}</span>
-</div>
-<div className="bg-white dark:bg-neutral-800 p-3 rounded-[16px] border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
-<span className="text-[11px] text-black/70 dark:text-white/75 block">
-{language === "ar" ? "المشاريع الرابحة" : language === "fr" ? "Projets Rentables" : "Profitable Projects"}
-</span>
-<span className="text-base font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">94%</span>
-<span className="text-[10px] text-emerald-600 font-semibold block mt-0.5">↗ +4.0%</span>
-</div>
-</div>
-</div>
-</DashboardPod>
-</div>
-<div className="lg:col-span-7 flex flex-col">
-<DashboardPod title={language === "ar" ? "الفريق والميزانية" : language === "fr" ? "Équipe & Budget" : "Insights & Budget"} subtitle={language === "ar" ? "توزيع الموارد حسب التخصص وحماية هوامش المشاريع" : language === "fr" ? "Répartition par pôle, cadence créative et prévention des dépassements" : "Workload distribution, creative cadence and runaway guard"} icon={<ShieldCheck size={18} className="text-[#d4522f]" />}>
-<div className="space-y-4">
-<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-3.5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm">
-<span className="text-xs font-semibold text-black/70 dark:text-white/75 block mb-2">
-{language === "ar" ? "توزيع ساعات العمل" : language === "fr" ? "Répartition Heures / Pôle" : "Hours by Discipline"}
-</span>
-<DonutChart segments={[
-												{
-													label: language === "ar" ? "تصميم وهوية" : "Key Visual / UI",
-													value: 45,
-													color: "#d4522f"
-												},
-												{
-													label: language === "ar" ? "تطوير وإنتاج" : "Dev / Motion",
-													value: 30,
-													color: "#6366F1"
-												},
-												{
-													label: language === "ar" ? "استراتيجية وإدارة" : "Stratégie & PM",
-													value: 15,
-													color: "#10B981"
-												},
-												{
-													label: language === "ar" ? "مراجعة وتدقيق" : "QA & Recette",
-													value: 10,
-													color: "#F59E0B"
-												}
-											]} size={110} />
-</div>
-<div className="bg-white dark:bg-neutral-800 rounded-[18px] p-3.5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-sm flex flex-col justify-between">
-<span className="text-xs font-semibold text-black/70 dark:text-white/75 block mb-2">
-{language === "ar" ? "وتيرة إنجاز المهام (أسبوعياً)" : language === "fr" ? "Cadence Livrables / Semaine" : "Weekly Deliverable Cadence"}
-</span>
-<PillBarHistogram bars={[
-												{
-													label: language === "ar" ? "أسبوع 1" : "Sem 1",
-													value: 14
-												},
-												{
-													label: language === "ar" ? "أسبوع 2" : "Sem 2",
-													value: 18
-												},
-												{
-													label: language === "ar" ? "أسبوع 3" : "Sem 3",
-													value: 16
-												},
-												{
-													label: language === "ar" ? "أسبوع 4" : "Sem 4",
-													value: 20,
-													highlight: true
-												}
-											]} activeColor="#d4522f" />
-</div>
-</div>
-<GuardianCard title={language === "ar" ? "مراقبة الميزانية" : language === "fr" ? "Suivi Budget" : "Budget Watch"} subtitle={pendingPayrollBatches.length > 0 ? language === "ar" ? `تنبيه: يوجد ${pendingPayrollBatches.length} دفعة رواتب معلقة تتطلب مصادقة الإدارة العامة.` : `${pendingPayrollBatches.length} lot(s) de paie en attente de visa direction.` : language === "ar" ? "ممتاز! جميع الميزانيات ونفقات المواهب مطابقة لسقوف العقود." : "Excellente gestion: tous les jalons livrables sont dans l'enveloppe budgétaire."} score={pendingPayrollBatches.length > 0 ? 88 : 96} scoreLabel={language === "ar" ? "معدل الحماية" : "Conformité"} gaugeColor={pendingPayrollBatches.length > 0 ? "#F59E0B" : "#10B981"} onToggle={() => showToast(language === "ar" ? "تم تحديث مراقبة الميزانية" : "Suivi budgétaire actif", "info")} />
-</div>
-</DashboardPod>
-</div>
-</div>
-</div>}
+{currentScreen === "dashboard" && (
+  <DashboardBentoFrame theme={theme} isRtl={isRtl} data-testid="project-dashboard">
+    <DashboardHeader
+      title={t("nav_dashboard", language)}
+      subtitle={localizeText(
+        language,
+        "Gouvernance portefeuille, engagements paie et marges projets.",
+        "Portfolio governance, payroll approvals, and project margins.",
+        "حوكمة المشاريع، الموافقات المالية وهوامش الربح."
+      )}
+      currentBranchName={currentBranch?.name}
+      branches={branches}
+      onSwitchBranch={switchBranch}
+      onResetDemoData={resetPmMockData}
+      onExportReport={handleExportAuditCsv}
+      period={directionPeriod}
+      onPeriodChange={(next) => setDirectionPeriod(next as DashboardPeriodKey)}
+      extraActions={
+        <div className="flex items-center gap-2 flex-wrap">
+          {totalPendingApprovals > 0 && (
+            <AtriumButton
+              variant="outline"
+              size="sm"
+              icon={<ShieldCheck size={15} />}
+              onClick={() => setActivePmSubScreen('approvals')}
+            >
+              {localizeText(
+                language,
+                `Valider (${totalPendingApprovals})`,
+                `Approvals (${totalPendingApprovals})`,
+                `موافقات (${totalPendingApprovals})`
+              )}
+            </AtriumButton>
+          )}
+          <AtriumButton
+            variant="primary"
+            size="sm"
+            icon={<Plus size={15} />}
+            onClick={() => setActivePmSubScreen('new_project')}
+          >
+            {localizeText(language, 'Nouveau Projet', 'New Project', 'مشروع جديد')}
+          </AtriumButton>
+        </div>
+      }
+    />
+
+    <DashboardBentoGrid>
+      <KpiSparkCard
+        title={localizeText(language, 'Portefeuille engagé', 'Committed Portfolio', 'محفظة العقود')}
+        subtitle={localizeText(
+          language,
+          `${pmProjects.length} campagnes · ${pmTalents.length} talents`,
+          `${pmProjects.length} active projects · ${pmTalents.length} crew`,
+          `${pmProjects.length} مشاريع · ${pmTalents.length} كوادر`
+        )}
+        locale={toChartLocale(language)}
+        {...getSurfaceProps(theme, false)}
+        state={resolveChartState(projectDashData.hasProjects)}
+        value={projectDashData.totalBudget}
+        deltaPercent={projectDashData.budgetDelta}
+        format="currency"
+        currency="DZD"
+        series={projectDashData.budgetSpark}
+        emptyMessage={localizeText(
+          language,
+          'Aucun contrat projet engagé.',
+          'No project contracts committed.',
+          'لا توجد عقود مشاريع مسجلة.'
+        )}
+      />
+
+      <KpiMetricInverseCard
+        title={localizeText(language, 'Approbations en attente', 'Pending Approvals', 'موافقات قيد الانتظار')}
+        subtitle={localizeText(
+          language,
+          `${pendingPayrollBatches.length} paies · ${pendingExpenses.length} frais terrain`,
+          `${pendingPayrollBatches.length} payroll batches · ${pendingExpenses.length} expenses`,
+          `${pendingPayrollBatches.length} دفعات أجور · ${pendingExpenses.length} مصاريف`
+        )}
+        locale={toChartLocale(language)}
+        {...getSurfaceProps(theme, false)}
+        state={resolveChartState(projectDashData.hasProjects || totalPendingApprovals > 0)}
+        value={projectDashData.pendingApprovals}
+        format="number"
+        unit={localizeText(language, 'dossiers', 'items', 'ملفات')}
+        series={[]}
+        emptyMessage={localizeText(
+          language,
+          'Aucun dossier à valider.',
+          'No pending approvals.',
+          'لا توجد ملفات بانتظار الموافقة.'
+        )}
+      />
+
+      <RadialGauge
+        title={localizeText(language, 'Santé exécution & marge', 'SLA & Margin Gauge', 'مؤشر الإنجاز والهامش')}
+        subtitle={localizeText(
+          language,
+          'Jalons livrés et marge nette portefeuille',
+          'Milestone SLA and net portfolio margin',
+          'إنجاز المراحل وصافي الهامش'
+        )}
+        locale={toChartLocale(language)}
+        {...getSurfaceProps(theme, true)}
+        state={resolveChartState(projectDashData.hasProjects)}
+        metrics={projectDashData.gauges}
+        emptyMessage={localizeText(
+          language,
+          'Ajoutez des projets et jalons pour suivre la performance.',
+          'Add projects and milestones to track SLA.',
+          'أضف مشاريع ومراحل لمتابعة الأداء.'
+        )}
+      />
+
+      <WaterfallChart
+        className="md:col-span-2 xl:col-span-2"
+        title={localizeText(language, 'Pont financier portefeuille', 'Portfolio Margin Bridge', 'جسر صافي هوامش المشاريع')}
+        subtitle={localizeText(
+          language,
+          'Contrats engagés → Paies talents → Frais terrain → Marge nette',
+          'Contract Cap → Talent Payroll → Field Ops → Net Margin',
+          'العقود ← الأجور ← المصاريف ← الصافي'
+        )}
+        locale={toChartLocale(language)}
+        {...getSurfaceProps(theme, false)}
+        state={resolveChartState(projectDashData.waterfallSteps.length > 0)}
+        steps={projectDashData.waterfallSteps}
+        format="currency"
+        currency="DZD"
+        emptyMessage={localizeText(
+          language,
+          'Aucune donnée financière projet.',
+          'No project financials available.',
+          'لا توجد بيانات مالية للمشاريع.'
+        )}
+      />
+
+      <ConversionFunnel
+        title={localizeText(language, 'Pipeline de livraison', 'Delivery Pipeline', 'مسار تسليم المشاريع')}
+        subtitle={localizeText(
+          language,
+          'Cadrage → Créa & BAT → Terrain → Clôture',
+          'Scoping → Creative → Field Ops → Completed',
+          'التأطير ← التصميم ← الميدان ← الإغلاق'
+        )}
+        locale={toChartLocale(language)}
+        {...getSurfaceProps(theme, false)}
+        state={resolveChartState(projectDashData.pipelineStages.length > 0)}
+        stages={projectDashData.pipelineStages}
+        emptyMessage={localizeText(
+          language,
+          'Aucun projet dans le pipeline.',
+          'No projects in pipeline.',
+          'لا توجد مشاريع في المسار.'
+        )}
+      />
+
+      <BulletChart
+        title={localizeText(language, 'Consommation vs Plafond budget', 'Spend vs Budget Cap', 'الإنفاق مقابل السقف المالي')}
+        subtitle={localizeText(
+          language,
+          'Engagements paie + terrain face au budget contrat',
+          'Payroll and field spend compared to contract caps',
+          'النفقات الفعلية مقارنة بسقف العقد'
+        )}
+        locale={toChartLocale(language)}
+        {...getSurfaceProps(theme, false)}
+        state={resolveChartState(projectDashData.bulletItems.length > 0)}
+        items={projectDashData.bulletItems}
+        format="currency"
+        currency="DZD"
+        emptyMessage={localizeText(
+          language,
+          'Aucun budget projet configuré.',
+          'No project budgets configured.',
+          'لا توجد ميزانيات مشاريع مهيأة.'
+        )}
+      />
+
+      <RankedBarList
+        className="md:col-span-2 xl:col-span-2"
+        title={localizeText(language, 'Classement marges projets', 'Project Margin Leaderboard', 'ترتيب المشاريع حسب الهامش')}
+        subtitle={localizeText(
+          language,
+          'Trié par marge cible ou plafond contrat',
+          'Ranked by target margin or contract cap',
+          'الترتيب حسب الهامش المستهدف أو الميزانية'
+        )}
+        locale={toChartLocale(language)}
+        {...getSurfaceProps(theme, false)}
+        state={resolveChartState(projectDashData.rankedProjects.length > 0)}
+        criteria={[
+          { id: 'margin', label: localizeText(language, 'Marge %', 'Margin %', 'الهامش %'), format: 'percent' },
+          { id: 'budget', label: localizeText(language, 'Plafond', 'Cap', 'السقف'), format: 'currency', currency: 'DZD' },
+        ]}
+        items={projectDashData.rankedProjects}
+        emptyMessage={localizeText(
+          language,
+          'Aucun projet actif à classer.',
+          'No active projects to rank.',
+          'لا توجد مشاريع نشطة للترتيب.'
+        )}
+      />
+    </DashboardBentoGrid>
+  </DashboardBentoFrame>
+)}
 {currentScreen === "projects" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 <div>

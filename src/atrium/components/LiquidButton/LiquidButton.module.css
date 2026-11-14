@@ -40,6 +40,7 @@
 .t1 { fill: var(--lb-t1); stroke: var(--lb-t1); }
 .t2 { fill: var(--lb-t2); stroke: var(--lb-t2); }
 .txt { stroke: none; font-weight: 600; letter-spacing: 0.064em; }
+:global([dir='rtl']) .txt { letter-spacing: 0; }
 .stroke { fill: none; stroke-width: 5.4; stroke-linecap: round; stroke-linejoin: round; }
 .mark { stroke: none; fill-rule: evenodd; }
 
