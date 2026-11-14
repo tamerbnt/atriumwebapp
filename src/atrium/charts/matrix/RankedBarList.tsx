@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ChartCard } from '../primitives/ChartCard';
 import { ChartSegmented } from '../primitives/ChartSegmented';
 import { useIsRtl } from '../hooks';
@@ -40,10 +40,18 @@ export const RankedBarList: React.FC<RankedBarListProps> = React.memo(
       return criteria.find((c) => c.id === resolvedCritId) || criteria[0];
     }, [criteria, resolvedCritId]);
 
-    const handleCritChange = (id: string) => {
-      setInternalCritId(id);
-      onCriterionChange?.(id);
-    };
+    const criteriaOptions = useMemo(
+      () => (criteria.length > 1 ? criteria.map((c) => ({ id: c.id, label: c.label })) : undefined),
+      [criteria]
+    );
+
+    const handleCritChange = useCallback(
+      (id: string) => {
+        setInternalCritId(id);
+        onCriterionChange?.(id);
+      },
+      [onCriterionChange]
+    );
 
     const ranked = useMemo(() => {
       if (!activeCriterion || !items?.length) {
@@ -86,9 +94,9 @@ export const RankedBarList: React.FC<RankedBarListProps> = React.memo(
         className={className}
         data-testid={testId}
         headerRight={
-          criteria.length > 1 ? (
+          criteriaOptions ? (
             <ChartSegmented
-              options={criteria.map((c) => ({ id: c.id, label: c.label }))}
+              options={criteriaOptions}
               value={activeCriterion?.id || ''}
               onChange={handleCritChange}
               isRtl={isRtl}
@@ -129,7 +137,6 @@ export const RankedBarList: React.FC<RankedBarListProps> = React.memo(
                   opacity: isDim ? 0.34 : 1,
                   transition:
                     'transform 0.6s var(--ax-sp), opacity 0.18s ease, background-color 0.16s ease',
-                  willChange: 'transform',
                 }}
               >
                 <div className="flex items-center justify-between gap-2 text-[12px]">

@@ -149,7 +149,7 @@ export const DumbbellChart: React.FC<DumbbellChartProps> = React.memo(
                 onPointerEnter={() => setHoveredIdx(idx)}
                 onFocus={() => setHoveredIdx(idx)}
                 onBlur={() => setHoveredIdx(null)}
-                className={`ax-plot-focus ax-row-stack grid grid-cols-[minmax(76px,98px)_minmax(0,1fr)_auto] items-center gap-2.5 px-1.5 py-1 rounded-[10px] cursor-pointer transition-all duration-150 ${
+                className={`ax-plot-focus ax-row-stack grid grid-cols-[minmax(76px,98px)_minmax(0,1fr)_auto] items-center gap-2.5 px-1.5 py-1 rounded-[10px] cursor-pointer transition-[background-color,opacity] duration-150 ${
                   isHovered ? 'bg-[var(--ax-soft)]' : ''
                 }`}
                 style={{ opacity: isDim ? 0.4 : 1 }}

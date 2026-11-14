@@ -1,4 +1,4 @@
-import React, { useId, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useId, useMemo, useRef, useState } from 'react';
 import { ChartCard } from '../primitives/ChartCard';
 import { ChartSegmented } from '../primitives/ChartSegmented';
 import { RollingDigits } from '../primitives/RollingDigits';
@@ -52,7 +52,14 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
     );
     const resolvedRangeId = activeRangeId ?? internalRangeId;
     const [activeIdx, setActiveIdx] = useState<number | null>(null);
+    const activeIdxRef = useRef<number | null>(null);
+    activeIdxRef.current = activeIdx;
     const [lastIdx, setLastIdx] = useState<number>(0);
+
+    const rangeOptions = useMemo(
+      () => (ranges && ranges.length > 1 ? ranges.map((r) => ({ id: r.id, label: r.label })) : undefined),
+      [ranges]
+    );
 
     const currentRange = useMemo(() => {
       if (!ranges || ranges.length === 0) return null;
@@ -164,16 +171,22 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
       };
     }, [activePoints]);
 
-    const handleRangeChange = (id: string) => {
-      setInternalRangeId(id);
-      setActiveIdx(null);
-      onRangeChange?.(id);
-    };
+    const handleRangeChange = useCallback(
+      (id: string) => {
+        setInternalRangeId(id);
+        activeIdxRef.current = null;
+        setActiveIdx(null);
+        onRangeChange?.(id);
+      },
+      [onRangeChange]
+    );
 
-    const setScrubIdx = (idx: number | null) => {
+    const setScrubIdx = useCallback((idx: number | null) => {
+      if (idx === activeIdxRef.current) return;
+      activeIdxRef.current = idx;
       setActiveIdx(idx);
       if (idx !== null) setLastIdx(idx);
-    };
+    }, []);
 
     const onKeyDown = useChartKeyboardScrub(
       geom.pts.length,
@@ -246,9 +259,9 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
         className={className}
         data-testid={testId}
         headerRight={
-          ranges && ranges.length > 1 ? (
+          rangeOptions ? (
             <ChartSegmented
-              options={ranges.map((r) => ({ id: r.id, label: r.label }))}
+              options={rangeOptions}
               value={currentRange?.id || ''}
               onChange={handleRangeChange}
               isRtl={isRtl}
@@ -407,7 +420,7 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
             onPointerMove={handlePointerMove}
             onPointerLeave={() => {
               rectRef.current = null;
-              setActiveIdx(null);
+              setScrubIdx(null);
             }}
             onKeyDown={onKeyDown}
           >

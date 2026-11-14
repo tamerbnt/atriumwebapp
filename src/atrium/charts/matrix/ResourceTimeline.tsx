@@ -46,19 +46,28 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
       [resources, maxVisibleResources]
     );
 
-    const clippedBlocks = useMemo(() => {
+    const { clippedBlocks, blocksByResource } = useMemo(() => {
       const ids = new Set(visibleResources.map((r) => r.id));
-      return (blocks || [])
-        .filter((b) => ids.has(b.resourceId) && b.endHour > startHour && b.startHour < endHour)
-        .map((b) => {
-          const s = Math.max(startHour, Math.min(endHour, b.startHour));
-          const e = Math.max(s + 0.15, Math.min(endHour, b.endHour));
-          return {
-            ...b,
-            leftPct: ((s - startHour) / spanHours) * 100,
-            widthPct: ((e - s) / spanHours) * 100,
-          };
-        });
+      const clipped: Array<NonNullable<typeof blocks>[number] & { leftPct: number; widthPct: number }> = [];
+      const byResource = new Map<string, Array<NonNullable<typeof blocks>[number] & { leftPct: number; widthPct: number }>>();
+      for (const b of blocks || []) {
+        if (!ids.has(b.resourceId) || b.endHour <= startHour || b.startHour >= endHour) continue;
+        const s = Math.max(startHour, Math.min(endHour, b.startHour));
+        const e = Math.max(s + 0.15, Math.min(endHour, b.endHour));
+        const item = {
+          ...b,
+          leftPct: ((s - startHour) / spanHours) * 100,
+          widthPct: ((e - s) / spanHours) * 100,
+        };
+        clipped.push(item);
+        const bucket = byResource.get(b.resourceId);
+        if (bucket) {
+          bucket.push(item);
+        } else {
+          byResource.set(b.resourceId, [item]);
+        }
+      }
+      return { clippedBlocks: clipped, blocksByResource: byResource };
     }, [blocks, visibleResources, startHour, endHour, spanHours]);
 
     const hourTicks = useMemo(() => {
@@ -212,7 +221,7 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
           {/* Resource Lanes */}
           <div className="relative flex flex-col gap-2">
             {visibleResources.map((res) => {
-              const rowBlocks = clippedBlocks.filter((b) => b.resourceId === res.id);
+              const rowBlocks = blocksByResource.get(res.id) || [];
               return (
                 <div
                   key={res.id}

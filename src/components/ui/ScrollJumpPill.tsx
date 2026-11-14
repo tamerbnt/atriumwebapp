@@ -45,6 +45,10 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
   const [isVisible, setIsVisible] = useState(false);
   const rafIdRef = useRef<number | null>(null);
 
+  const hasOverflowRef = useRef(false);
+  const isVisibleRef = useRef(false);
+  const directionRef = useRef<'down' | 'up'>('down');
+
   // Resolve target DOM element
   const getContainer = useCallback((): HTMLElement | null => {
     if (containerRef?.current) return containerRef.current;
@@ -58,6 +62,7 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
 
   // Update scroll metrics with stable hysteresis
   const updateMetrics = useCallback(() => {
+    rafIdRef.current = null;
     const container = getContainer();
     if (!container) return;
 
@@ -69,46 +74,53 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
     const overflowExists = maxScroll > overflowThreshold;
 
     if (!overflowExists) {
-      setHasOverflow(false);
-      setIsVisible(false);
+      if (hasOverflowRef.current) {
+        hasOverflowRef.current = false;
+        setHasOverflow(false);
+      }
+      if (isVisibleRef.current) {
+        isVisibleRef.current = false;
+        setIsVisible(false);
+      }
       return;
     }
 
-    setHasOverflow(true);
-    setIsVisible(true);
+    if (!hasOverflowRef.current) {
+      hasOverflowRef.current = true;
+      setHasOverflow(true);
+    }
+    if (!isVisibleRef.current) {
+      isVisibleRef.current = true;
+      setIsVisible(true);
+    }
 
     const distanceToBottom = maxScroll - scrollTop;
+    const prevDirection = directionRef.current;
+    let nextDirection = prevDirection;
 
-    // Stable hysteresis direction calculation:
-    // If near the top (scrollTop < 80) -> definitely DOWN
-    // If near the bottom (distanceToBottom < 80) -> definitely UP
-    // In between, use hysteresis to prevent rapid flapping or jumping
-    setDirection(prevDirection => {
-      if (scrollTop < 80) {
-        return 'down';
-      }
-      if (distanceToBottom < 80) {
-        return 'up';
-      }
-      if (prevDirection === 'down' && distanceToBottom <= bottomThreshold) {
-        return 'up';
-      }
-      if (prevDirection === 'up' && scrollTop <= bottomThreshold) {
-        return 'down';
-      }
-      return prevDirection;
-    });
+    if (scrollTop < 80) {
+      nextDirection = 'down';
+    } else if (distanceToBottom < 80) {
+      nextDirection = 'up';
+    } else if (prevDirection === 'down' && distanceToBottom <= bottomThreshold) {
+      nextDirection = 'up';
+    } else if (prevDirection === 'up' && scrollTop <= bottomThreshold) {
+      nextDirection = 'down';
+    }
+
+    if (nextDirection !== prevDirection) {
+      directionRef.current = nextDirection;
+      setDirection(nextDirection);
+    }
   }, [getContainer, overflowThreshold, bottomThreshold]);
 
-  // Scroll listener throttled via requestAnimationFrame + ResizeObserver
+  // Scroll listener coalesced via requestAnimationFrame + ResizeObserver
   useEffect(() => {
     const container = getContainer();
     if (!container) return;
 
     const onScrollOrResize = () => {
-      if (rafIdRef.current !== null) {
-        cancelAnimationFrame(rafIdRef.current);
-      }
+      if (rafIdRef.current !== null) return;
       rafIdRef.current = requestAnimationFrame(updateMetrics);
     };
 
@@ -120,44 +132,23 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
     targetEventElement.addEventListener('scroll', onScrollOrResize, { passive: true });
     window.addEventListener('resize', onScrollOrResize, { passive: true });
 
-    // ResizeObserver tracks dynamic content height changes
+    // ResizeObserver tracks dynamic content height changes without subtree DOM mutation overhead
     let ro: ResizeObserver | undefined;
     if (typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(() => onScrollOrResize());
+      ro = new ResizeObserver(onScrollOrResize);
       ro.observe(container);
       if (container.firstElementChild) {
         ro.observe(container.firstElementChild);
       }
     }
 
-    // MutationObserver watches only childList additions/removals outside .rows (e.g. bulk toolbar open/close)
-    const observer = new MutationObserver((mutations) => {
-      let shouldUpdate = false;
-      for (const m of mutations) {
-        if (m.type === 'childList') {
-          const targetEl = m.target as HTMLElement | null;
-          if (targetEl?.closest?.('.rows')) continue;
-          shouldUpdate = true;
-          break;
-        }
-      }
-      if (shouldUpdate) {
-        onScrollOrResize();
-      }
-    });
-
-    observer.observe(container, {
-      childList: true,
-      subtree: true,
-    });
-
     return () => {
       targetEventElement.removeEventListener('scroll', onScrollOrResize);
       window.removeEventListener('resize', onScrollOrResize);
       ro?.disconnect();
-      observer.disconnect();
       if (rafIdRef.current !== null) {
         cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
       }
     };
   }, [getContainer, updateMetrics]);

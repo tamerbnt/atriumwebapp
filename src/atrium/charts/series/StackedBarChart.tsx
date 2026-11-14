@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { ChartCard } from '../primitives/ChartCard';
 import { ChartSegmented } from '../primitives/ChartSegmented';
 import { RollingDigits } from '../primitives/RollingDigits';
@@ -54,13 +54,24 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
     const resolvedPeriodId = activePeriodId ?? internalPeriodId;
     const [hiddenIds, setHiddenIds] = useState<Record<string, boolean>>({});
     const [activeIdx, setActiveIdx] = useState<number | null>(null);
+    const activeIdxRef = useRef<number | null>(null);
+    activeIdxRef.current = activeIdx;
     const [lastIdx, setLastIdx] = useState<number>(0);
 
-    const handlePeriodChange = (id: string) => {
-      setInternalPeriodId(id);
-      setActiveIdx(null);
-      onPeriodChange?.(id);
-    };
+    const periodOptions = useMemo(
+      () => (periods && periods.length > 1 ? periods.map((p) => ({ id: p.id, label: p.label })) : undefined),
+      [periods]
+    );
+
+    const handlePeriodChange = useCallback(
+      (id: string) => {
+        setInternalPeriodId(id);
+        activeIdxRef.current = null;
+        setActiveIdx(null);
+        onPeriodChange?.(id);
+      },
+      [onPeriodChange]
+    );
 
     const currentPeriod = useMemo(() => {
       if (!periods || periods.length === 0) return null;
@@ -78,7 +89,7 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
       [series, hiddenIds]
     );
 
-    const visibleSeries = activeSeries.filter((s) => !s.hidden);
+    const visibleSeries = useMemo(() => activeSeries.filter((s) => !s.hidden), [activeSeries]);
     const hasAnyCancelled = useMemo(
       () => activeBuckets.some((b) => typeof b.cancelled === 'number' && b.cancelled > 0),
       [activeBuckets]
@@ -103,15 +114,22 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
       return { totals, maxCancel, scale, sumTotal, avg };
     }, [activeBuckets, visibleSeries, hasAnyCancelled]);
 
+    const reversedTicks = useMemo(
+      () => [...metrics.scale.ticks].reverse(),
+      [metrics.scale.ticks]
+    );
+
     const headline =
       currentPeriod?.headlineValue !== undefined
         ? currentPeriod.headlineValue
         : metrics.sumTotal;
 
-    const setScrubIdx = (idx: number | null) => {
+    const setScrubIdx = useCallback((idx: number | null) => {
+      if (idx === activeIdxRef.current) return;
+      activeIdxRef.current = idx;
       setActiveIdx(idx);
       if (idx !== null) setLastIdx(idx);
-    };
+    }, []);
 
     const onKeyDown = useChartKeyboardScrub(
       activeBuckets.length,
@@ -208,9 +226,9 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
         className={className}
         data-testid={testId}
         headerRight={
-          periods && periods.length > 1 ? (
+          periodOptions ? (
             <ChartSegmented
-              options={periods.map((p) => ({ id: p.id, label: p.label }))}
+              options={periodOptions}
               value={currentPeriod?.id || ''}
               onChange={handlePeriodChange}
               isRtl={isRtl}
@@ -308,7 +326,7 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
             style={{ height: POS_H }}
             aria-hidden="true"
           >
-            {[...metrics.scale.ticks].reverse().map((tick, idx) => (
+            {reversedTicks.map((tick, idx) => (
               <span key={idx} className="leading-none -translate-y-0.5">
                 {formatCompactTick(tick, locale)}
               </span>
@@ -324,7 +342,7 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
             onPointerMove={handlePlotPointer}
             onPointerLeave={() => {
               rectRef.current = null;
-              setActiveIdx(null);
+              setScrubIdx(null);
             }}
             onKeyDown={onKeyDown}
             className="relative flex-1 min-w-0 ax-plot-focus select-none cursor-pointer"

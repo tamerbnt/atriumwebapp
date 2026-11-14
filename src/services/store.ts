@@ -960,6 +960,293 @@ export function selectTerminologyFromState(state: AppState) {
   return cachedTermResult;
 }
 
+function createBranchSelector<T>(
+  getList: (state: AppState) => T[] | undefined,
+  predicate: (item: T, branchId: string, state: AppState) => boolean,
+  fallbackBranchId?: string
+): (state: AppState) => T[] {
+  let cachedList: T[] | undefined;
+  let cachedBranch = '';
+  let cachedResult: T[] = [];
+
+  return (state: AppState): T[] => {
+    const list = getList(state) || [];
+    const branchId = state.currentBranchId;
+    if (list === cachedList && branchId === cachedBranch) {
+      return cachedResult;
+    }
+    cachedList = list;
+    cachedBranch = branchId;
+    const direct = list.filter((item) => predicate(item, branchId, state));
+    if (direct.length > 0 || !fallbackBranchId) {
+      cachedResult = direct;
+      return cachedResult;
+    }
+    const fallback = list.filter((item) => predicate(item, fallbackBranchId, state));
+    cachedResult = fallback.length > 0 ? fallback : list;
+    return cachedResult;
+  };
+}
+
+export const selectCurrentLeadsFromState = createBranchSelector<RegistrationLead>(
+  (s) => s.leads,
+  (l, b) => l.facilityId === b
+);
+export const selectCurrentProductsFromState = createBranchSelector<Product>(
+  (s) => s.products,
+  (p, b) => p.facilityId === b
+);
+export const selectCurrentStaffFromState = createBranchSelector<StaffMember>(
+  (s) => s.staff,
+  (st, b) => st.facilityId === b
+);
+export const selectCurrentSalesFromState = createBranchSelector<Sale>(
+  (s) => s.sales,
+  (sa, b) => sa.facilityId === b
+);
+export const selectCurrentScheduleFromState = createBranchSelector<ScheduleEvent>(
+  (s) => s.schedule,
+  (sc, b) => sc.facilityId === b
+);
+export const selectCurrentAppointmentsFromState = createBranchSelector<Appointment>(
+  (s) => s.appointments,
+  (a, b) => a.facilityId === b
+);
+export const selectCurrentServicesFromState = createBranchSelector<ServiceItem>(
+  (s) => s.servicesCatalog,
+  (sv, b) => sv.facilityId === b
+);
+export const selectCurrentParkedOrdersFromState = createBranchSelector<ParkedOrder>(
+  (s) => s.parkedOrders,
+  (po, b) => po.facilityId === b
+);
+export const selectCurrentStockMovementsFromState = createBranchSelector<StockMovement>(
+  (s) => s.stockMovements,
+  (sm, b) => sm.facilityId === b
+);
+export const selectCurrentDevicesFromState = createBranchSelector<Device>(
+  (s) => s.devices,
+  (d, b) => d.branchId === b
+);
+export const selectCurrentMemberCheckInsFromState = createBranchSelector<MemberCheckInLog>(
+  (s) => s.memberCheckIns,
+  (c, b) => (c.branchId || 'branch_gym_hydra') === b
+);
+
+export const selectCurrentFreelanceClientsFromState = createBranchSelector<FreelanceClient>(
+  (s) => s.freelanceClients,
+  (c, b) => c.facilityId === b,
+  'branch_freelance_main'
+);
+export const selectCurrentFreelanceProjectsFromState = createBranchSelector<FreelanceProject>(
+  (s) => s.freelanceProjects,
+  (p, b) => p.facilityId === b,
+  'branch_freelance_main'
+);
+export const selectCurrentTimeLogsFromState = createBranchSelector<TimeLogEntry>(
+  (s) => s.timeLogs,
+  (t, b) => t.facilityId === b,
+  'branch_freelance_main'
+);
+export const selectCurrentFreelanceInvoicesFromState = createBranchSelector<FreelanceInvoice>(
+  (s) => s.freelanceInvoices,
+  (i, b) => i.facilityId === b,
+  'branch_freelance_main'
+);
+export const selectCurrentFreelanceProposalsFromState = createBranchSelector<FreelanceProposal>(
+  (s) => s.freelanceProposals,
+  (pr, b) => pr.facilityId === b,
+  'branch_freelance_main'
+);
+export const selectCurrentFreelanceExpensesFromState = createBranchSelector<FreelanceExpense>(
+  (s) => s.freelanceExpenses,
+  (e, b) => e.facilityId === b,
+  'branch_freelance_main'
+);
+
+export const selectCurrentRentableUnitsFromState = createBranchSelector<RentableUnit>(
+  (s) => s.rentableUnits,
+  (u, b) => u.facilityId === b || u.branchId === b,
+  'branch_venue_main'
+);
+export const selectCurrentRentalBookingsFromState = createBranchSelector<RentalBooking>(
+  (s) => s.rentalBookings,
+  (bk, b) => bk.facilityId === b || bk.branchId === b,
+  'branch_venue_main'
+);
+export const selectCurrentRentalRentersFromState = createBranchSelector<RentalRenter>(
+  (s) => s.rentalRenters,
+  (r, b) => r.facilityId === b || r.branchId === b,
+  'branch_venue_main'
+);
+export const selectCurrentSecurityDepositsFromState = createBranchSelector<SecurityDepositRecord>(
+  (s) => s.securityDeposits,
+  (d, b) => d.facilityId === b || d.branchId === b,
+  'branch_venue_main'
+);
+
+export const selectCurrentEduCoursesFromState = createBranchSelector<EduCourse>(
+  (s) => s.eduCourses,
+  (c, b) => c.facilityId === b
+);
+export const selectCurrentEduClassroomsFromState = createBranchSelector<EduClassroom>(
+  (s) => s.eduClassrooms,
+  (cr, b) => cr.facilityId === b
+);
+export const selectCurrentEduCohortsFromState = createBranchSelector<EduCohort>(
+  (s) => s.eduCohorts,
+  (ch, b) => ch.facilityId === b
+);
+export const selectCurrentEduStudentsFromState = createBranchSelector<EduStudent>(
+  (s) => s.eduStudents,
+  (st, b) => st.facilityId === b
+);
+export const selectCurrentEduEnrollmentsFromState = createBranchSelector<EduEnrollment>(
+  (s) => s.eduEnrollments,
+  (e, b) => e.facilityId === b
+);
+export const selectCurrentEduSessionsFromState = createBranchSelector<EduSession>(
+  (s) => s.eduSessions,
+  (se, b) => se.facilityId === b
+);
+export const selectCurrentEduAttendanceFromState = createBranchSelector<EduAttendance>(
+  (s) => s.eduAttendance,
+  (at, b) => at.facilityId === b
+);
+export const selectCurrentEduGradesFromState = createBranchSelector<EduGrade>(
+  (s) => s.eduGrades,
+  (g, b) => g.facilityId === b
+);
+export const selectCurrentEduCertificatesFromState = createBranchSelector<EduCertificate>(
+  (s) => s.eduCertificates,
+  (ce, b) => ce.facilityId === b
+);
+export const selectCurrentEduAdmissionsFromState = createBranchSelector<EduAdmissionLead>(
+  (s) => s.eduAdmissions,
+  (ad, b) => ad.facilityId === b
+);
+
+const pmBranchMatch = (item: { facilityId?: string; branchId?: string }, b: string) =>
+  (item.facilityId || item.branchId || 'branch_agency_main') === b;
+
+export const selectCurrentPmProjectsFromState = createBranchSelector<PMProject>(
+  (s) => s.pmProjects,
+  pmBranchMatch
+);
+let cachedPmMilestonesSrc: PMMilestone[] | undefined;
+let cachedPmMilestonesProjects: PMProject[] | undefined;
+let cachedPmMilestonesBranch = '';
+let cachedPmMilestonesResult: PMMilestone[] = [];
+export function selectCurrentPmMilestonesFromState(state: AppState): PMMilestone[] {
+  const milestones = state.pmMilestones || [];
+  const projects = selectCurrentPmProjectsFromState(state);
+  if (
+    milestones === cachedPmMilestonesSrc &&
+    projects === cachedPmMilestonesProjects &&
+    state.currentBranchId === cachedPmMilestonesBranch
+  ) {
+    return cachedPmMilestonesResult;
+  }
+  cachedPmMilestonesSrc = milestones;
+  cachedPmMilestonesProjects = projects;
+  cachedPmMilestonesBranch = state.currentBranchId;
+  const projectIds = new Set(projects.map((p) => p.id));
+  cachedPmMilestonesResult = milestones.filter((m) =>
+    m.branchId ? m.branchId === state.currentBranchId : projectIds.has(m.projectId)
+  );
+  return cachedPmMilestonesResult;
+}
+export const selectCurrentPmPrintOrdersFromState = createBranchSelector<PMPrintOrder>(
+  (s) => s.pmPrintOrders,
+  pmBranchMatch
+);
+export const selectCurrentPmBatDeliverablesFromState = createBranchSelector<PMBatDeliverable>(
+  (s) => s.pmBatDeliverables,
+  pmBranchMatch
+);
+export const selectCurrentPmTalentsFromState = createBranchSelector<PMTalent>(
+  (s) => s.pmTalents,
+  pmBranchMatch
+);
+export const selectCurrentPmMissionsFromState = createBranchSelector<PMMission>(
+  (s) => s.pmMissions,
+  pmBranchMatch
+);
+export const selectCurrentPmAttendancesFromState = createBranchSelector<PMAttendance>(
+  (s) => s.pmAttendances,
+  pmBranchMatch
+);
+export const selectCurrentPmExpensesFromState = createBranchSelector<PMExpense>(
+  (s) => s.pmExpenses,
+  pmBranchMatch
+);
+export const selectCurrentPmPayrollBatchesFromState = createBranchSelector<PMPayrollBatch>(
+  (s) => s.pmPayrollBatches,
+  pmBranchMatch
+);
+export const selectCurrentPmCcpSlipsFromState = createBranchSelector<PMCcpSlip>(
+  (s) => s.pmCcpSlips,
+  pmBranchMatch
+);
+export const selectCurrentPmEquipmentStockFromState = createBranchSelector<PMEquipmentStock>(
+  (s) => s.pmEquipmentStock,
+  pmBranchMatch
+);
+
+export const selectCurrentB2bClientsFromState = createBranchSelector<B2bClient>(
+  (s) => s.b2bClients,
+  (c, b) => c.facilityId === b || c.branchId === b
+);
+let cachedWarehousesSrc: WarehouseDepot[] | undefined;
+let cachedWarehousesBranch = '';
+let cachedWarehousesBiz = '';
+let cachedWarehousesResult: WarehouseDepot[] = [];
+export function selectCurrentWarehousesFromState(state: AppState): WarehouseDepot[] {
+  const list = state.warehouses || [];
+  if (
+    list === cachedWarehousesSrc &&
+    state.currentBranchId === cachedWarehousesBranch &&
+    state.currentBusinessId === cachedWarehousesBiz
+  ) {
+    return cachedWarehousesResult;
+  }
+  cachedWarehousesSrc = list;
+  cachedWarehousesBranch = state.currentBranchId;
+  cachedWarehousesBiz = state.currentBusinessId;
+  cachedWarehousesResult = list.filter((w) =>
+    w.branchId || w.facilityId
+      ? w.branchId === state.currentBranchId || w.facilityId === state.currentBranchId
+      : w.businessId === state.currentBusinessId
+  );
+  return cachedWarehousesResult;
+}
+export const selectCurrentCommercialDocsFromState = createBranchSelector<CommercialDocument>(
+  (s) => s.commercialDocs,
+  (d, b) => d.facilityId === b || d.branchId === b
+);
+export const selectCurrentPurchaseDocsFromState = createBranchSelector<PurchaseDocument>(
+  (s) => s.purchaseDocs,
+  (p, b) => p.facilityId === b || p.branchId === b
+);
+export const selectCurrentStockVouchersFromState = createBranchSelector<StockMovementVoucher>(
+  (s) => s.stockVouchers,
+  (v, b) => v.facilityId === b || v.branchId === b
+);
+
+let cachedNotifSrc: AppNotification[] | undefined;
+let cachedNotifCount = 0;
+export function selectUnreadNotificationCountFromState(state: AppState): number {
+  const list = state.notifications || [];
+  if (list === cachedNotifSrc) return cachedNotifCount;
+  cachedNotifSrc = list;
+  let count = 0;
+  for (let i = 0; i < list.length; i++) {
+    if (!list[i].read) count++;
+  }
+  cachedNotifCount = count;
+  return count;
+}
+
 export function setSystemDefaultLanguageAction() {
   const sysLang = getSystemDefaultLanguage();
   try {
@@ -976,6 +1263,148 @@ export function setSystemDefaultLanguageAction() {
   notify();
 }
 
+export function setLanguageAction(language: SupportedLanguage, isAuto = false) {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('atrium_language', language);
+      localStorage.setItem('atrium_language_mode', isAuto ? 'auto' : 'manual');
+    }
+  } catch {}
+  globalState = { ...globalState, language, isLanguageAuto: isAuto };
+  if (typeof document !== 'undefined') {
+    document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr');
+    document.documentElement.setAttribute('lang', language);
+  }
+  notify();
+}
+
+export function setThemeAction(theme: AppTheme) {
+  globalState = { ...globalState, theme };
+  if (typeof document !== 'undefined') {
+    document.documentElement.setAttribute('data-theme', theme);
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }
+  notify();
+}
+
+export function setScreenAction(activeScreen: ActiveScreen) {
+  const currentBusiness = selectCurrentBusinessFromState(globalState);
+  let nextRole = globalState.activePmRole;
+  let nextSubScreen = globalState.activePmSubScreen;
+
+  if (activeScreen === 'pm_dir_dashboard') {
+    nextRole = 'direction';
+    nextSubScreen = 'dashboard';
+  } else if (activeScreen === 'pm_dir_new_project') {
+    nextRole = 'direction';
+    nextSubScreen = 'new_project';
+  } else if (activeScreen === 'pm_dir_projects') {
+    nextRole = 'direction';
+    nextSubScreen = 'dashboard';
+  } else if (activeScreen === 'pm_dir_approvals') {
+    nextRole = 'direction';
+    nextSubScreen = 'approvals';
+  } else if (activeScreen === 'pm_dir_reports') {
+    nextRole = 'direction';
+    nextSubScreen = 'reports';
+  } else if (activeScreen === 'pm_cp_projects') {
+    nextRole = 'chef_projet';
+    nextSubScreen = 'portfolio';
+  } else if (activeScreen === 'pm_cp_catalog') {
+    nextRole = 'chef_projet';
+    nextSubScreen = 'catalog';
+  } else if (activeScreen === 'pm_cp_orders') {
+    nextRole = 'chef_projet';
+    nextSubScreen = 'orders';
+  } else if (activeScreen === 'pm_cp_deliverables' || activeScreen === 'pm_cp_files') {
+    nextRole = 'chef_projet';
+    nextSubScreen = 'bat';
+  } else if (activeScreen === 'pm_cp_expenses') {
+    nextRole = 'chef_projet';
+    nextSubScreen = 'expenses';
+  } else if (activeScreen === 'pm_crea_kanban') {
+    nextRole = 'crea';
+    nextSubScreen = 'demandes';
+  } else if (activeScreen === 'pm_crea_production') {
+    nextRole = 'crea';
+    nextSubScreen = 'production';
+  } else if (activeScreen === 'pm_crea_upload') {
+    nextRole = 'crea';
+    nextSubScreen = 'upload';
+  } else if (activeScreen === 'pm_crea_briefs') {
+    nextRole = 'crea';
+    nextSubScreen = 'briefs';
+  } else if (activeScreen === 'pm_sup_missions') {
+    nextRole = 'superviseur';
+    nextSubScreen = 'missions';
+  } else if (activeScreen === 'pm_sup_attendance') {
+    nextRole = 'superviseur';
+    nextSubScreen = 'attendance';
+  } else if (activeScreen === 'pm_sup_staffing') {
+    nextRole = 'superviseur';
+    nextSubScreen = 'staffing';
+  } else if (activeScreen === 'pm_sup_expenses') {
+    nextRole = 'superviseur';
+    nextSubScreen = 'expense';
+  } else if (activeScreen === 'pm_rh_talents') {
+    nextRole = 'rh';
+    nextSubScreen = 'talents';
+  } else if (activeScreen === 'pm_rh_dossier') {
+    nextRole = 'rh';
+    nextSubScreen = 'dossier';
+  } else if (activeScreen === 'pm_rh_portal') {
+    nextRole = 'rh';
+    nextSubScreen = 'portal';
+  } else if (activeScreen === 'pm_rh_walkin') {
+    nextRole = 'rh';
+    nextSubScreen = 'walkin';
+  } else if (activeScreen === 'pm_compta_payroll') {
+    nextRole = 'compta';
+    nextSubScreen = 'payroll';
+  } else if (activeScreen === 'pm_compta_ccp') {
+    nextRole = 'compta';
+    nextSubScreen = 'ccp';
+  } else if (activeScreen === 'pm_compta_expenses') {
+    nextRole = 'compta';
+    nextSubScreen = 'expenses';
+  } else if (activeScreen === 'pm_compta_stock') {
+    nextRole = 'compta';
+    nextSubScreen = 'stock';
+  } else if (currentBusiness?.category === 'project_milestone') {
+    if (activeScreen === 'dashboard') {
+      nextRole = 'direction';
+      nextSubScreen = 'dashboard';
+    } else if (activeScreen === 'scheduler') {
+      nextRole = 'chef_projet';
+      nextSubScreen = 'portfolio';
+    } else if (activeScreen === 'registrations') {
+      nextRole = 'crea';
+      nextSubScreen = 'demandes';
+    } else if (activeScreen === 'analytics') {
+      nextRole = 'superviseur';
+      nextSubScreen = 'missions';
+    } else if (activeScreen === 'members') {
+      nextRole = 'rh';
+      nextSubScreen = 'talents';
+    } else if (activeScreen === 'finance' || activeScreen === 'shop') {
+      nextRole = 'compta';
+      nextSubScreen = 'payroll';
+    }
+  }
+
+  globalState = {
+    ...globalState,
+    activeScreen,
+    activePmRole: nextRole,
+    activePmSubScreen: nextSubScreen,
+  };
+  notify();
+}
+
 export function openOnboardingAction() {
   globalState = { ...globalState, isOnboardingOpen: true };
   notify();
@@ -986,13 +1415,36 @@ export function closeOnboardingAction() {
   notify();
 }
 
+export function openFastSwitchAction() {
+  globalState = { ...globalState, isFastSwitchOpen: true };
+  notify();
+}
+
 export function closeFastSwitchAction() {
   globalState = { ...globalState, isFastSwitchOpen: false };
   notify();
 }
 
+export function openDesktopUpgradeModalAction(reason: 'branch_limit' | 'business_limit' | 'general' = 'general') {
+  globalState = {
+    ...globalState,
+    isDesktopUpgradeModalOpen: true,
+    desktopUpgradeReason: reason,
+  };
+  notify();
+}
+
 export function closeDesktopUpgradeModalAction() {
   globalState = { ...globalState, isDesktopUpgradeModalOpen: false };
+  notify();
+}
+
+export function logoutAction() {
+  globalState = {
+    ...globalState,
+    isAuthenticated: false,
+    isFastSwitchOpen: false,
+  };
   notify();
 }
 
@@ -1003,6 +1455,11 @@ export function toggleTopBarCollapsedAction() {
 
 export function setTopBarCollapsedAction(collapsed: boolean) {
   globalState = { ...globalState, isTopBarCollapsed: collapsed };
+  notify();
+}
+
+export function toggleTopBarAutoHideAction() {
+  globalState = { ...globalState, isTopBarAutoHide: !globalState.isTopBarAutoHide };
   notify();
 }
 
@@ -1128,6 +1585,7 @@ export function switchFacilityAction(businessId: string, branchId?: string) {
     selectedMemberId: null,
     isDetailOpen: false,
   };
+  ensureBranchSubscription(targetBranchId);
   notify();
 
   showToast({
@@ -1149,7 +1607,731 @@ export function switchBusinessAction(businessId: string) {
 }
 
 export function switchBranchAction(branchId: string) {
-  switchFacilityAction(globalState.currentBusinessId, branchId);
+  const targetBranch = globalState.branches.find((b) => b.id === branchId);
+  switchFacilityAction(targetBranch?.businessId || globalState.currentBusinessId, branchId);
+}
+
+export function startTimerAction(
+  clientId: string,
+  clientName: string,
+  projectId: string,
+  projectTitle: string,
+  taskDescription: string,
+  deliverableId?: string,
+  deliverableTitle?: string,
+  isBillable = true,
+  isPomodoro = false
+) {
+  globalState = {
+    ...globalState,
+    activeTimer: {
+      isRunning: true,
+      isPaused: false,
+      clientId,
+      clientName,
+      projectId,
+      projectTitle,
+      deliverableId,
+      deliverableTitle,
+      taskDescription,
+      elapsedSeconds: 0,
+      isBillable,
+      isPomodoro,
+      pomodoroRemainingSeconds: 1500,
+      pomodoroMode: 'work',
+      startedAt: new Date().toISOString(),
+    },
+  };
+  ensureTimerTick(true, false);
+  notify();
+}
+
+export function pauseTimerAction() {
+  globalState = {
+    ...globalState,
+    activeTimer: { ...globalState.activeTimer, isPaused: true },
+  };
+  ensureTimerTick(globalState.activeTimer.isRunning, true);
+  notify();
+}
+
+export function resumeTimerAction() {
+  globalState = {
+    ...globalState,
+    activeTimer: { ...globalState.activeTimer, isPaused: false },
+  };
+  ensureTimerTick(globalState.activeTimer.isRunning, false);
+  notify();
+}
+
+export function stopTimerAction() {
+  const timer = globalState.activeTimer;
+  if (timer.elapsedSeconds >= 10) {
+    const client = globalState.freelanceClients.find((c) => c.id === timer.clientId);
+    const rate = client?.hourlyRate || 85;
+    const currency = client?.currency || 'EUR';
+
+    const newEntry: TimeLogEntry = {
+      id: `time_${Date.now()}`,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
+      clientId: timer.clientId,
+      clientName: timer.clientName,
+      projectId: timer.projectId,
+      projectTitle: timer.projectTitle,
+      deliverableId: timer.deliverableId,
+      deliverableTitle: timer.deliverableTitle,
+      taskDescription: timer.taskDescription || 'Focus sprint session',
+      durationSeconds: timer.elapsedSeconds,
+      isBillable: timer.isBillable,
+      isInvoiced: false,
+      rateAtMoment: rate,
+      currency,
+      date: new Date().toISOString().split('T')[0],
+      createdAt: new Date().toISOString(),
+    };
+
+    const additionalHours = Number((timer.elapsedSeconds / 3600).toFixed(2));
+    const updatedProjects = globalState.freelanceProjects.map((p) => {
+      if (p.id === timer.projectId) {
+        const updatedDeliverables = p.deliverables.map((d) => {
+          if (d.id === timer.deliverableId) {
+            return { ...d, loggedHours: Number((d.loggedHours + additionalHours).toFixed(2)) };
+          }
+          return d;
+        });
+        return {
+          ...p,
+          loggedHours: Number((p.loggedHours + additionalHours).toFixed(2)),
+          deliverables: updatedDeliverables,
+        };
+      }
+      return p;
+    });
+
+    globalState = {
+      ...globalState,
+      timeLogs: [newEntry, ...globalState.timeLogs],
+      freelanceProjects: updatedProjects,
+      activeTimer: {
+        ...timer,
+        isRunning: false,
+        isPaused: false,
+        elapsedSeconds: 0,
+        startedAt: null,
+      },
+    };
+    ensureTimerTick(false, false);
+    notify();
+
+    const hours = Math.floor(newEntry.durationSeconds / 3600);
+    const mins = Math.floor((newEntry.durationSeconds % 3600) / 60);
+    const timeStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}m ${newEntry.durationSeconds % 60}s`;
+    showToast({
+      type: 'success',
+      title: 'Time Logged',
+      message: `${timeStr} recorded for "${newEntry.projectTitle || 'Project'}".`,
+      category: 'freelance_solo',
+      action: {
+        label: 'Invoice',
+        onClick: () => {
+          globalState = { ...globalState, activeScreen: 'shop' };
+          notify();
+        },
+      },
+    });
+
+    return newEntry;
+  } else {
+    globalState = {
+      ...globalState,
+      activeTimer: {
+        ...timer,
+        isRunning: false,
+        isPaused: false,
+        elapsedSeconds: 0,
+        startedAt: null,
+      },
+    };
+    ensureTimerTick(false, false);
+    notify();
+    return null;
+  }
+}
+
+export function resetTimerAction() {
+  globalState = {
+    ...globalState,
+    activeTimer: {
+      ...globalState.activeTimer,
+      isRunning: false,
+      isPaused: false,
+      elapsedSeconds: 0,
+      startedAt: null,
+    },
+  };
+  ensureTimerTick(false, false);
+  notify();
+}
+
+export function setActivePmRoleAction(role: PMRole) {
+  let defaultSubScreen = 'dashboard';
+  let defaultScreen: ActiveScreen = 'pm_dir_dashboard';
+
+  if (role === 'direction') {
+    defaultSubScreen = 'dashboard';
+    defaultScreen = 'pm_dir_dashboard';
+  } else if (role === 'chef_projet') {
+    defaultSubScreen = 'portfolio';
+    defaultScreen = 'pm_cp_projects';
+  } else if (role === 'crea') {
+    defaultSubScreen = 'kanban';
+    defaultScreen = 'pm_crea_kanban';
+  } else if (role === 'superviseur') {
+    defaultSubScreen = 'missions';
+    defaultScreen = 'pm_sup_missions';
+  } else if (role === 'rh') {
+    defaultSubScreen = 'talents';
+    defaultScreen = 'pm_rh_talents';
+  } else if (role === 'compta') {
+    defaultSubScreen = 'payroll';
+    defaultScreen = 'pm_compta_payroll';
+  }
+
+  globalState = {
+    ...globalState,
+    activePmRole: role,
+    activePmSubScreen: defaultSubScreen,
+    activeScreen: defaultScreen,
+  };
+  notify();
+}
+
+export function setActivePmSubScreenAction(subScreen: string) {
+  let nextScreen = globalState.activeScreen;
+  const role = globalState.activePmRole;
+
+  if (role === 'direction') {
+    if (subScreen === 'dashboard') nextScreen = 'pm_dir_dashboard';
+    else if (subScreen === 'new_project') nextScreen = 'pm_dir_new_project';
+    else if (subScreen === 'approvals') nextScreen = 'pm_dir_approvals';
+    else if (subScreen === 'reports') nextScreen = 'pm_dir_reports';
+  } else if (role === 'chef_projet') {
+    if (subScreen === 'portfolio') nextScreen = 'pm_cp_projects';
+    else if (subScreen === 'catalog') nextScreen = 'pm_cp_catalog';
+    else if (subScreen === 'orders') nextScreen = 'pm_cp_orders';
+    else if (subScreen === 'files' || subScreen === 'bat') nextScreen = 'pm_cp_files';
+    else if (subScreen === 'expenses') nextScreen = 'pm_cp_expenses';
+  } else if (role === 'crea') {
+    if (subScreen === 'demandes' || subScreen === 'kanban') nextScreen = 'pm_crea_kanban';
+    else if (subScreen === 'production') nextScreen = 'pm_crea_production';
+    else if (subScreen === 'upload' || subScreen === 'livrables') nextScreen = 'pm_crea_upload';
+    else if (subScreen === 'briefs') nextScreen = 'pm_crea_briefs';
+  } else if (role === 'superviseur') {
+    if (subScreen === 'missions') nextScreen = 'pm_sup_missions';
+    else if (subScreen === 'attendance') nextScreen = 'pm_sup_attendance';
+    else if (subScreen === 'staffing') nextScreen = 'pm_sup_staffing';
+    else if (subScreen === 'expense' || subScreen === 'expenses') nextScreen = 'pm_sup_expenses';
+  } else if (role === 'rh') {
+    if (subScreen === 'talents') nextScreen = 'pm_rh_talents';
+    else if (subScreen === 'dossier') nextScreen = 'pm_rh_dossier';
+    else if (subScreen === 'portal') nextScreen = 'pm_rh_portal';
+    else if (subScreen === 'walkin') nextScreen = 'pm_rh_walkin';
+  } else if (role === 'compta') {
+    if (subScreen === 'payroll') nextScreen = 'pm_compta_payroll';
+    else if (subScreen === 'ccp') nextScreen = 'pm_compta_ccp';
+    else if (subScreen === 'expenses') nextScreen = 'pm_compta_expenses';
+    else if (subScreen === 'stock') nextScreen = 'pm_compta_stock';
+  }
+
+  globalState = {
+    ...globalState,
+    activePmSubScreen: subScreen,
+    activeScreen: nextScreen,
+  };
+  notify();
+}
+
+export function addPmProjectAction(projectData: Omit<PMProject, 'id' | 'createdAt' | 'updatedAt'>) {
+  const newProj: PMProject = {
+    ...getTraceContextFromGlobal(),
+    ...projectData,
+    id: `proj_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  globalState = {
+    ...globalState,
+    pmProjects: [newProj, ...(globalState.pmProjects || [])],
+  };
+  notify();
+  projectMilestoneService.upsertProject(newProj).catch(() => {});
+  showToast({
+    type: 'success',
+    title: 'Projet Initié',
+    message: `${newProj.title} créé avec un plafond budgétaire de ${newProj.budgetCapDzd.toLocaleString()} DA.`,
+    syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+    category: 'project_milestone',
+  });
+  return newProj;
+}
+
+export function approvePmExpenseAction(expenseId: string, notes?: string) {
+  globalState = {
+    ...globalState,
+    pmExpenses: (globalState.pmExpenses || []).map((e) =>
+      e.id === expenseId
+        ? {
+            ...e,
+            status: 'approved_by_direction',
+            directionApprovedAt: new Date().toISOString(),
+            directionNotes: notes || e.directionNotes,
+          }
+        : e
+    ),
+  };
+  notify();
+  projectMilestoneService.approveDisbursement('expense', expenseId, globalState.currentUser.id, notes).catch(() => {});
+  showToast({
+    type: 'success',
+    title: 'Frais Validé par la Direction',
+    message: 'Autorisation de décaissement transmise à la Comptabilité.',
+    category: 'project_milestone',
+  });
+}
+
+export function rejectPmExpenseAction(expenseId: string, notes?: string) {
+  globalState = {
+    ...globalState,
+    pmExpenses: (globalState.pmExpenses || []).map((e) =>
+      e.id === expenseId
+        ? {
+            ...e,
+            status: 'rejected',
+            directionNotes: notes || 'Rejeté par la Direction.',
+          }
+        : e
+    ),
+  };
+  notify();
+  showToast({
+    type: 'error',
+    title: 'Frais Rejeté',
+    message: notes || 'Le remboursement a été refusé.',
+    category: 'project_milestone',
+  });
+}
+
+export function approvePmPayrollBatchAction(batchId: string) {
+  globalState = {
+    ...globalState,
+    pmPayrollBatches: (globalState.pmPayrollBatches || []).map((b) =>
+      b.id === batchId
+        ? {
+            ...b,
+            status: 'approved_by_direction',
+            directionApprovedAt: new Date().toISOString(),
+          }
+        : b
+    ),
+  };
+  notify();
+  projectMilestoneService.approveDisbursement('payroll_batch', batchId, globalState.currentUser.id).catch(() => {});
+  showToast({
+    type: 'success',
+    title: 'Lot de Paie Validé (Double-Clé)',
+    message: 'Déblocage accordé pour l\'émission des bordereaux CCP SFP 01 en Comptabilité.',
+    category: 'project_milestone',
+  });
+}
+
+export function deletePmProjectAction(projectId: string) {
+  globalState = {
+    ...globalState,
+    pmProjects: (globalState.pmProjects || []).filter((p) => p.id !== projectId),
+  };
+  notify();
+}
+
+export function batchDeletePmProjectsAction(projectIds: string[]) {
+  const idSet = new Set(projectIds);
+  globalState = {
+    ...globalState,
+    pmProjects: (globalState.pmProjects || []).filter((p) => !idSet.has(p.id)),
+  };
+  notify();
+  showToast({
+    type: 'info',
+    title: 'Projets Supprimés',
+    message: `${projectIds.length} projet(s) supprimé(s).`,
+    category: 'project_milestone',
+  });
+}
+
+export function batchUpdatePmProjectStatusAction(projectIds: string[], status: PMProject['status']) {
+  const idSet = new Set(projectIds);
+  globalState = {
+    ...globalState,
+    pmProjects: (globalState.pmProjects || []).map((p) =>
+      idSet.has(p.id) ? { ...p, status, updatedAt: new Date().toISOString() } : p
+    ),
+  };
+  notify();
+  showToast({
+    type: 'success',
+    title: 'Statuts Projets Mis à Jour',
+    message: `${projectIds.length} projet(s) passés en statut '${status}'.`,
+    category: 'project_milestone',
+  });
+}
+
+export function batchApprovePmExpensesAction(expenseIds: string[], notes?: string) {
+  const idSet = new Set(expenseIds);
+  globalState = {
+    ...globalState,
+    pmExpenses: (globalState.pmExpenses || []).map((e) =>
+      idSet.has(e.id)
+        ? {
+            ...e,
+            status: 'approved_by_direction',
+            directionApprovedAt: new Date().toISOString(),
+            directionNotes: notes || e.directionNotes,
+          }
+        : e
+    ),
+  };
+  notify();
+  showToast({
+    type: 'success',
+    title: 'Frais Validés en Lot',
+    message: `${expenseIds.length} demande(s) de frais validée(s) par la Direction.`,
+    category: 'project_milestone',
+  });
+}
+
+export function batchRejectPmExpensesAction(expenseIds: string[], notes?: string) {
+  const idSet = new Set(expenseIds);
+  globalState = {
+    ...globalState,
+    pmExpenses: (globalState.pmExpenses || []).map((e) =>
+      idSet.has(e.id)
+        ? {
+            ...e,
+            status: 'rejected',
+            directionNotes: notes || 'Rejeté en lot par la Direction.',
+          }
+        : e
+    ),
+  };
+  notify();
+  showToast({
+    type: 'error',
+    title: 'Frais Rejetés en Lot',
+    message: `${expenseIds.length} demande(s) de frais rejetée(s).`,
+    category: 'project_milestone',
+  });
+}
+
+export function batchDeletePmExpensesAction(expenseIds: string[]) {
+  const idSet = new Set(expenseIds);
+  globalState = {
+    ...globalState,
+    pmExpenses: (globalState.pmExpenses || []).filter((e) => !idSet.has(e.id)),
+  };
+  notify();
+  showToast({
+    type: 'info',
+    title: 'Frais Supprimés',
+    message: `${expenseIds.length} entrée(s) de frais supprimée(s).`,
+    category: 'project_milestone',
+  });
+}
+
+export function batchApprovePmPayrollBatchesAction(batchIds: string[]) {
+  const idSet = new Set(batchIds);
+  globalState = {
+    ...globalState,
+    pmPayrollBatches: (globalState.pmPayrollBatches || []).map((b) =>
+      idSet.has(b.id)
+        ? {
+            ...b,
+            status: 'approved_by_direction',
+            directionApprovedAt: new Date().toISOString(),
+          }
+        : b
+    ),
+  };
+  notify();
+  showToast({
+    type: 'success',
+    title: 'Lots de Paie Validés (Double-Clé)',
+    message: `${batchIds.length} lot(s) de paie validé(s) pour virement CCP.`,
+    category: 'project_milestone',
+  });
+}
+
+export async function syncWithSupabaseAction() {
+  if (!isSupabaseConfigured()) {
+    globalState = {
+      ...globalState,
+      supabaseStatus: 'unconfigured',
+      isSyncing: false,
+    };
+    notify();
+    return;
+  }
+
+  globalState = {
+    ...globalState,
+    isSyncing: true,
+    syncErrorMessage: null,
+  };
+  notify();
+
+  try {
+    const session = await authService.getSession();
+    const accountId = session?.user?.id || globalState.account.id;
+
+    const [
+      businesses,
+      branches,
+      members,
+      leads,
+      staff,
+      appointments,
+      products,
+      sales,
+      freelanceClients,
+      freelanceProjects,
+      freelanceTimeLogs,
+      freelanceInvoices,
+      freelanceProposals,
+      freelanceExpenses,
+      rentableUnits,
+      rentalBookings,
+      rentalRenters,
+      securityDeposits,
+    ] = await Promise.all([
+      tenantService.fetchBusinesses(accountId),
+      tenantService.fetchBranches(accountId),
+      memberService.fetchMembers(globalState.currentBranchId),
+      memberService.fetchRegistrationRequests(globalState.currentBranchId),
+      staffService.fetchStaffForSync(accountId, globalState.currentBranchId),
+      appointmentService.fetchAppointments(globalState.currentBranchId),
+      posService.fetchProducts(globalState.currentBranchId),
+      posService.fetchSales(globalState.currentBranchId),
+      freelanceService.fetchClients(globalState.currentBranchId),
+      freelanceService.fetchProjects(globalState.currentBranchId),
+      freelanceService.fetchTimeLogs(globalState.currentBranchId),
+      freelanceService.fetchInvoices(globalState.currentBranchId),
+      freelanceService.fetchProposals(globalState.currentBranchId),
+      freelanceService.fetchExpenses(globalState.currentBranchId),
+      rentalService.fetchUnits(globalState.currentBranchId),
+      rentalService.fetchBookings(globalState.currentBranchId),
+      rentalService.fetchRenters(globalState.currentBranchId),
+      rentalService.fetchDeposits(globalState.currentBranchId),
+    ]);
+
+    const updates: Partial<AppState> = {
+      supabaseStatus: 'connected',
+      isSyncing: false,
+      lastSyncedAt: new Date().toISOString(),
+      syncErrorMessage: null,
+    };
+
+    if (businesses.length > 0) updates.businesses = businesses;
+    if (branches.length > 0) updates.branches = branches;
+    if (members.length > 0) {
+      const otherMembers = globalState.members.filter((m) => m.facilityId !== globalState.currentBranchId);
+      updates.members = [...members, ...otherMembers];
+    }
+    if (leads.length > 0) {
+      const otherLeads = globalState.leads.filter((l) => l.facilityId !== globalState.currentBranchId);
+      updates.leads = [...leads, ...otherLeads];
+    }
+    if (staff.length > 0) updates.staff = staff;
+    if (appointments.length > 0) updates.appointments = appointments;
+    if (products.length > 0) updates.products = products;
+    if (sales.length > 0) updates.sales = sales;
+    if (freelanceClients.length > 0) updates.freelanceClients = freelanceClients;
+    if (freelanceProjects.length > 0) updates.freelanceProjects = freelanceProjects;
+    if (freelanceTimeLogs.length > 0) updates.timeLogs = freelanceTimeLogs;
+    if (freelanceInvoices.length > 0) updates.freelanceInvoices = freelanceInvoices;
+    if (freelanceProposals.length > 0) updates.freelanceProposals = freelanceProposals;
+    if (freelanceExpenses.length > 0) updates.freelanceExpenses = freelanceExpenses;
+    if (rentableUnits.length > 0) {
+      const otherUnits = globalState.rentableUnits.filter((u) => u.facilityId !== globalState.currentBranchId);
+      updates.rentableUnits = [...rentableUnits, ...otherUnits];
+    }
+    if (rentalBookings.length > 0) {
+      const otherBookings = globalState.rentalBookings.filter((b) => b.facilityId !== globalState.currentBranchId);
+      updates.rentalBookings = [...rentalBookings, ...otherBookings];
+    }
+    if (rentalRenters.length > 0) {
+      const otherRenters = globalState.rentalRenters.filter((r) => r.facilityId !== globalState.currentBranchId);
+      updates.rentalRenters = [...rentalRenters, ...otherRenters];
+    }
+    if (securityDeposits.length > 0) {
+      const otherDeposits = globalState.securityDeposits.filter((d) => d.facilityId !== globalState.currentBranchId);
+      updates.securityDeposits = [...securityDeposits, ...otherDeposits];
+    }
+
+    globalState = { ...globalState, ...updates };
+    notify();
+  } catch (err: any) {
+    console.warn('[store] syncWithSupabase failed:', err);
+    globalState = {
+      ...globalState,
+      supabaseStatus: 'offline',
+      isSyncing: false,
+      syncErrorMessage: err.message || 'Network error syncing with Supabase',
+    };
+    notify();
+  }
+}
+
+export function setNetworkModeAction(mode: 'online' | 'slow_3g' | 'offline' | 'force_skeleton') {
+  let syncState = globalState.isSyncing;
+  let errorMsg = globalState.syncErrorMessage;
+  let status = globalState.supabaseStatus;
+  let isTimedOut = false;
+
+  if (mode === 'force_skeleton') {
+    syncState = true;
+    isTimedOut = false;
+  } else if (mode === 'offline') {
+    syncState = false;
+    status = 'offline';
+    errorMsg = 'Network connection offline (simulation mode)';
+    isTimedOut = true;
+  } else if (mode === 'online') {
+    syncState = false;
+    errorMsg = null;
+    status = isSupabaseConfigured() ? 'connected' : 'unconfigured';
+    isTimedOut = false;
+  } else if (mode === 'slow_3g') {
+    syncState = true;
+    isTimedOut = false;
+    setTimeout(() => {
+      globalState = {
+        ...globalState,
+        isSyncing: false,
+        isSyncTimeout: true,
+        lastSyncedAt: new Date().toISOString(),
+      };
+      notify();
+    }, 3000);
+  }
+
+  globalState = {
+    ...globalState,
+    networkMode: mode,
+    isSyncing: syncState,
+    supabaseStatus: status,
+    syncErrorMessage: errorMsg,
+    isSyncTimeout: isTimedOut,
+  };
+  notify();
+}
+
+export async function retryCloudSyncAction() {
+  globalState = {
+    ...globalState,
+    isSyncing: true,
+    syncErrorMessage: null,
+    isSyncTimeout: false,
+  };
+  notify();
+
+  try {
+    if (globalState.networkMode === 'offline') {
+      await new Promise((r) => setTimeout(r, 1200));
+      globalState = {
+        ...globalState,
+        isSyncing: false,
+        isSyncTimeout: true,
+        syncErrorMessage: 'Simulated connection failed: device is offline.',
+      };
+      notify();
+      return;
+    }
+    await syncWithSupabaseAction();
+  } finally {
+    globalState = {
+      ...globalState,
+      isSyncing: false,
+      isSyncTimeout: false,
+      lastSyncedAt: new Date().toISOString(),
+    };
+    notify();
+  }
+}
+
+export function useDashboardShellState() {
+  const shell = useAtriumSelector(
+    (s) => ({
+      theme: s.theme,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      isSyncTimeout: s.isSyncTimeout || false,
+      lastSyncedAt: s.lastSyncedAt,
+    }),
+    shallowEqualObjects
+  );
+  return {
+    ...shell,
+    retryCloudSync: retryCloudSyncAction,
+  };
+}
+
+export function useAtriumStoreLifecycle() {
+  const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
+  const timerRunning = useAtriumSelector((s) => s.activeTimer.isRunning);
+  const timerPaused = useAtriumSelector((s) => s.activeTimer.isPaused);
+
+  useEffect(() => {
+    if (isSupabaseConfigured() && !hasInitialSynced) {
+      hasInitialSynced = true;
+      syncWithSupabaseAction();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    const unsubscribe = authService.onAuthStateChange(async (session) => {
+      if (session?.user) {
+        await authService.ensureUserAccount(session.user);
+        const fullName =
+          session.user.user_metadata?.full_name ||
+          session.user.user_metadata?.name ||
+          session.user.email?.split('@')[0] ||
+          'Atrium Owner';
+        globalState = {
+          ...globalState,
+          currentUser: {
+            ...globalState.currentUser,
+            id: session.user.id,
+            email: session.user.email || globalState.currentUser.email,
+            fullName,
+          },
+          isAuthenticated: true,
+        };
+        notify();
+        syncWithSupabaseAction();
+      }
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    ensureBranchSubscription(currentBranchId);
+  }, [currentBranchId]);
+
+  useEffect(() => {
+    ensureTimerTick(timerRunning, timerPaused);
+  }, [timerRunning, timerPaused]);
 }
 
 export function selectMemberAction(memberId: string | null) {
@@ -1600,154 +2782,13 @@ export function useAtriumStore() {
     };
   }, []);
 
-  const syncWithSupabase = async () => {
-    if (!isSupabaseConfigured()) {
-      globalState = {
-        ...globalState,
-        supabaseStatus: 'unconfigured',
-        isSyncing: false,
-      };
-      notify();
-      return;
-    }
-
-    globalState = {
-      ...globalState,
-      isSyncing: true,
-      syncErrorMessage: null,
-    };
-    notify();
-
-    try {
-      const session = await authService.getSession();
-      const accountId = session?.user?.id || globalState.account.id;
-
-      const [
-        businesses,
-        branches,
-        members,
-        leads,
-        staff,
-        appointments,
-        products,
-        sales,
-        freelanceClients,
-        freelanceProjects,
-        freelanceTimeLogs,
-        freelanceInvoices,
-        freelanceProposals,
-        freelanceExpenses,
-        rentableUnits,
-        rentalBookings,
-        rentalRenters,
-        securityDeposits,
-      ] = await Promise.all([
-        tenantService.fetchBusinesses(accountId),
-        tenantService.fetchBranches(accountId),
-        memberService.fetchMembers(globalState.currentBranchId),
-        memberService.fetchRegistrationRequests(globalState.currentBranchId),
-        staffService.fetchStaffForSync(accountId, globalState.currentBranchId),
-        appointmentService.fetchAppointments(globalState.currentBranchId),
-        posService.fetchProducts(globalState.currentBranchId),
-        posService.fetchSales(globalState.currentBranchId),
-        freelanceService.fetchClients(globalState.currentBranchId),
-        freelanceService.fetchProjects(globalState.currentBranchId),
-        freelanceService.fetchTimeLogs(globalState.currentBranchId),
-        freelanceService.fetchInvoices(globalState.currentBranchId),
-        freelanceService.fetchProposals(globalState.currentBranchId),
-        freelanceService.fetchExpenses(globalState.currentBranchId),
-        rentalService.fetchUnits(globalState.currentBranchId),
-        rentalService.fetchBookings(globalState.currentBranchId),
-        rentalService.fetchRenters(globalState.currentBranchId),
-        rentalService.fetchDeposits(globalState.currentBranchId),
-      ]);
-
-      const updates: Partial<AppState> = {
-        supabaseStatus: 'connected',
-        isSyncing: false,
-        lastSyncedAt: new Date().toISOString(),
-        syncErrorMessage: null,
-      };
-
-      if (businesses.length > 0) updates.businesses = businesses;
-      if (branches.length > 0) updates.branches = branches;
-      if (members.length > 0) {
-        const otherMembers = globalState.members.filter((m) => m.facilityId !== globalState.currentBranchId);
-        updates.members = [...members, ...otherMembers];
-      }
-      if (leads.length > 0) {
-        const otherLeads = globalState.leads.filter((l) => l.facilityId !== globalState.currentBranchId);
-        updates.leads = [...leads, ...otherLeads];
-      }
-      if (staff.length > 0) {
-        updates.staff = staff;
-      }
-      if (appointments.length > 0) {
-        updates.appointments = appointments;
-      }
-      if (products.length > 0) {
-        updates.products = products;
-      }
-      if (sales.length > 0) {
-        updates.sales = sales;
-      }
-      if (freelanceClients.length > 0) {
-        updates.freelanceClients = freelanceClients;
-      }
-      if (freelanceProjects.length > 0) {
-        updates.freelanceProjects = freelanceProjects;
-      }
-      if (freelanceTimeLogs.length > 0) {
-        updates.timeLogs = freelanceTimeLogs;
-      }
-      if (freelanceInvoices.length > 0) {
-        updates.freelanceInvoices = freelanceInvoices;
-      }
-      if (freelanceProposals.length > 0) {
-        updates.freelanceProposals = freelanceProposals;
-      }
-      if (freelanceExpenses.length > 0) {
-        updates.freelanceExpenses = freelanceExpenses;
-      }
-      if (rentableUnits.length > 0) {
-        const otherUnits = globalState.rentableUnits.filter((u) => u.facilityId !== globalState.currentBranchId);
-        updates.rentableUnits = [...rentableUnits, ...otherUnits];
-      }
-      if (rentalBookings.length > 0) {
-        const otherBookings = globalState.rentalBookings.filter((b) => b.facilityId !== globalState.currentBranchId);
-        updates.rentalBookings = [...rentalBookings, ...otherBookings];
-      }
-      if (rentalRenters.length > 0) {
-        const otherRenters = globalState.rentalRenters.filter((r) => r.facilityId !== globalState.currentBranchId);
-        updates.rentalRenters = [...rentalRenters, ...otherRenters];
-      }
-      if (securityDeposits.length > 0) {
-        const otherDeposits = globalState.securityDeposits.filter((d) => d.facilityId !== globalState.currentBranchId);
-        updates.securityDeposits = [...securityDeposits, ...otherDeposits];
-      }
-
-      globalState = {
-        ...globalState,
-        ...updates,
-      };
-      notify();
-    } catch (err: any) {
-      console.warn('[store] syncWithSupabase failed:', err);
-      globalState = {
-        ...globalState,
-        supabaseStatus: 'offline',
-        isSyncing: false,
-        syncErrorMessage: err.message || 'Network error syncing with Supabase',
-      };
-      notify();
-    }
-  };
+  const syncWithSupabase = syncWithSupabaseAction;
 
   // Synchronize on mount if configured (once across the application)
   useEffect(() => {
     if (isSupabaseConfigured() && !hasInitialSynced) {
       hasInitialSynced = true;
-      syncWithSupabase();
+      syncWithSupabaseAction();
     }
   }, []);
 
@@ -1773,7 +2814,7 @@ export function useAtriumStore() {
           isAuthenticated: true,
         };
         notify();
-        syncWithSupabase();
+        syncWithSupabaseAction();
       }
     });
     return () => {
@@ -1791,16 +2832,10 @@ export function useAtriumStore() {
     ensureTimerTick(state.activeTimer.isRunning, state.activeTimer.isPaused);
   }, [state.activeTimer.isRunning, state.activeTimer.isPaused]);
 
-  // Helpers
-  const currentBusiness =
-    (state.businesses && state.businesses.find((b) => b.id === state.currentBusinessId)) ||
-    (state.businesses && state.businesses[0]) ||
-    INITIAL_BUSINESSES[0];
-  const currentBranch =
-    (state.branches && state.branches.find((b) => b.id === state.currentBranchId)) ||
-    (state.branches && state.branches[0]) ||
-    INITIAL_BRANCHES[0];
-  const terminology = getCategoryTerminology(currentBusiness?.category || 'pos_inventory', state.language);
+  // Helpers (cached per state reference via module selectors)
+  const currentBusiness = selectCurrentBusinessFromState(state);
+  const currentBranch = selectCurrentBranchFromState(state);
+  const terminology = selectTerminologyFromState(state);
 
   // Quotas
   const plan = state.subscription?.plan || INITIAL_PLANS[0];
@@ -1809,442 +2844,67 @@ export function useAtriumStore() {
   const deviceQuota = checkQuota((state.devices || []).length, plan?.maxDevices || 1);
   const staffQuota = checkQuota((state.staff || []).length, plan?.maxStaff || 1);
 
-  // Scoped lists (memoized per branch + slice reference to keep consumers render-stable)
-  const currentMembers = useMemo(
-    () => (state.members || []).filter((m) => m.facilityId === state.currentBranchId),
-    [state.members, state.currentBranchId]
-  );
-  const currentLeads = useMemo(
-    () => (state.leads || []).filter((l) => l.facilityId === state.currentBranchId),
-    [state.leads, state.currentBranchId]
-  );
-  const currentProducts = useMemo(
-    () => (state.products || []).filter((p) => p.facilityId === state.currentBranchId),
-    [state.products, state.currentBranchId]
-  );
-  const currentStaff = useMemo(
-    () => (state.staff || []).filter((s) => s.facilityId === state.currentBranchId),
-    [state.staff, state.currentBranchId]
-  );
-  const currentSales = useMemo(
-    () => (state.sales || []).filter((s) => s.facilityId === state.currentBranchId),
-    [state.sales, state.currentBranchId]
-  );
-  const currentSchedule = useMemo(
-    () => (state.schedule || []).filter((sc) => sc.facilityId === state.currentBranchId),
-    [state.schedule, state.currentBranchId]
-  );
-  const currentPlans = useMemo(
-    () => (state.plansByBranch && state.plansByBranch[state.currentBranchId]) || EMPTY_PLANS,
-    [state.plansByBranch, state.currentBranchId]
-  );
-  const currentAppointments = useMemo(
-    () => (state.appointments || []).filter((a) => a.facilityId === state.currentBranchId),
-    [state.appointments, state.currentBranchId]
-  );
-  const currentServices = useMemo(
-    () => (state.servicesCatalog || []).filter((s) => s.facilityId === state.currentBranchId),
-    [state.servicesCatalog, state.currentBranchId]
-  );
-  const currentParkedOrders = useMemo(
-    () => (state.parkedOrders || []).filter((p) => p.facilityId === state.currentBranchId),
-    [state.parkedOrders, state.currentBranchId]
-  );
-  const currentStockMovements = useMemo(
-    () => (state.stockMovements || []).filter((sm) => sm.facilityId === state.currentBranchId),
-    [state.stockMovements, state.currentBranchId]
-  );
-  const currentFreelanceClients = useMemo(() => {
-    const list = state.freelanceClients || [];
-    const direct = list.filter((c) => c.facilityId === state.currentBranchId);
-    if (direct.length > 0) return direct;
-    const defaultFreelance = list.filter((c) => c.facilityId === 'branch_freelance_main');
-    return defaultFreelance.length > 0 ? defaultFreelance : list;
-  }, [state.freelanceClients, state.currentBranchId]);
-
-  const currentFreelanceProjects = useMemo(() => {
-    const list = state.freelanceProjects || [];
-    const direct = list.filter((p) => p.facilityId === state.currentBranchId);
-    if (direct.length > 0) return direct;
-    const defaultFreelance = list.filter((p) => p.facilityId === 'branch_freelance_main');
-    return defaultFreelance.length > 0 ? defaultFreelance : list;
-  }, [state.freelanceProjects, state.currentBranchId]);
-
-  const currentTimeLogs = useMemo(() => {
-    const list = state.timeLogs || [];
-    const direct = list.filter((t) => t.facilityId === state.currentBranchId);
-    if (direct.length > 0) return direct;
-    const defaultFreelance = list.filter((t) => t.facilityId === 'branch_freelance_main');
-    return defaultFreelance.length > 0 ? defaultFreelance : list;
-  }, [state.timeLogs, state.currentBranchId]);
-
-  const currentFreelanceInvoices = useMemo(() => {
-    const list = state.freelanceInvoices || [];
-    const direct = list.filter((i) => i.facilityId === state.currentBranchId);
-    if (direct.length > 0) return direct;
-    const defaultFreelance = list.filter((i) => i.facilityId === 'branch_freelance_main');
-    return defaultFreelance.length > 0 ? defaultFreelance : list;
-  }, [state.freelanceInvoices, state.currentBranchId]);
-
-  const currentFreelanceProposals = useMemo(() => {
-    const list = state.freelanceProposals || [];
-    const direct = list.filter((pr) => pr.facilityId === state.currentBranchId);
-    if (direct.length > 0) return direct;
-    const defaultFreelance = list.filter((pr) => pr.facilityId === 'branch_freelance_main');
-    return defaultFreelance.length > 0 ? defaultFreelance : list;
-  }, [state.freelanceProposals, state.currentBranchId]);
-
-  const currentFreelanceExpenses = useMemo(() => {
-    const list = state.freelanceExpenses || [];
-    const direct = list.filter((e) => e.facilityId === state.currentBranchId);
-    if (direct.length > 0) return direct;
-    const defaultFreelance = list.filter((e) => e.facilityId === 'branch_freelance_main');
-    return defaultFreelance.length > 0 ? defaultFreelance : list;
-  }, [state.freelanceExpenses, state.currentBranchId]);
-
-  const currentRentableUnits = useMemo(() => {
-    const list = state.rentableUnits || [];
-    const direct = list.filter((u) => u.facilityId === state.currentBranchId || u.branchId === state.currentBranchId);
-    if (direct.length > 0) return direct;
-    const defaultVenue = list.filter((u) => u.facilityId === 'branch_venue_main' || u.branchId === 'branch_venue_main');
-    return defaultVenue.length > 0 ? defaultVenue : list;
-  }, [state.rentableUnits, state.currentBranchId]);
-
-  const currentRentalBookings = useMemo(() => {
-    const list = state.rentalBookings || [];
-    const direct = list.filter((b) => b.facilityId === state.currentBranchId || b.branchId === state.currentBranchId);
-    if (direct.length > 0) return direct;
-    const defaultVenue = list.filter((b) => b.facilityId === 'branch_venue_main' || b.branchId === 'branch_venue_main');
-    return defaultVenue.length > 0 ? defaultVenue : list;
-  }, [state.rentalBookings, state.currentBranchId]);
-
-  const currentRentalRenters = useMemo(() => {
-    const list = state.rentalRenters || [];
-    const direct = list.filter((r) => r.facilityId === state.currentBranchId || r.branchId === state.currentBranchId);
-    if (direct.length > 0) return direct;
-    const defaultVenue = list.filter((r) => r.facilityId === 'branch_venue_main' || r.branchId === 'branch_venue_main');
-    return defaultVenue.length > 0 ? defaultVenue : list;
-  }, [state.rentalRenters, state.currentBranchId]);
-
-  const currentSecurityDeposits = useMemo(() => {
-    const list = state.securityDeposits || [];
-    const direct = list.filter((d) => d.facilityId === state.currentBranchId || d.branchId === state.currentBranchId);
-    if (direct.length > 0) return direct;
-    const defaultVenue = list.filter((d) => d.facilityId === 'branch_venue_main' || d.branchId === 'branch_venue_main');
-    return defaultVenue.length > 0 ? defaultVenue : list;
-  }, [state.securityDeposits, state.currentBranchId]);
-
-  const currentEduCourses = useMemo(
-    () => (state.eduCourses || []).filter((c) => c.facilityId === state.currentBranchId),
-    [state.eduCourses, state.currentBranchId]
-  );
-  const currentEduClassrooms = useMemo(
-    () => (state.eduClassrooms || []).filter((cr) => cr.facilityId === state.currentBranchId),
-    [state.eduClassrooms, state.currentBranchId]
-  );
-  const currentEduCohorts = useMemo(
-    () => (state.eduCohorts || []).filter((ch) => ch.facilityId === state.currentBranchId),
-    [state.eduCohorts, state.currentBranchId]
-  );
-  const currentEduStudents = useMemo(
-    () => (state.eduStudents || []).filter((s) => s.facilityId === state.currentBranchId),
-    [state.eduStudents, state.currentBranchId]
-  );
-  const currentEduEnrollments = useMemo(
-    () => (state.eduEnrollments || []).filter((e) => e.facilityId === state.currentBranchId),
-    [state.eduEnrollments, state.currentBranchId]
-  );
-  const currentEduSessions = useMemo(
-    () => (state.eduSessions || []).filter((se) => se.facilityId === state.currentBranchId),
-    [state.eduSessions, state.currentBranchId]
-  );
-  const currentEduAttendance = useMemo(
-    () => (state.eduAttendance || []).filter((at) => at.facilityId === state.currentBranchId),
-    [state.eduAttendance, state.currentBranchId]
-  );
-  const currentEduGrades = useMemo(
-    () => (state.eduGrades || []).filter((g) => g.facilityId === state.currentBranchId),
-    [state.eduGrades, state.currentBranchId]
-  );
-  const currentEduCertificates = useMemo(
-    () => (state.eduCertificates || []).filter((ce) => ce.facilityId === state.currentBranchId),
-    [state.eduCertificates, state.currentBranchId]
-  );
-  const currentEduAdmissions = useMemo(
-    () => (state.eduAdmissions || []).filter((ad) => ad.facilityId === state.currentBranchId),
-    [state.eduAdmissions, state.currentBranchId]
-  );
-
-  const scopePmByBranch = <T extends { facilityId?: string; branchId?: string }>(items: T[]) =>
-    (items || []).filter((item) => (item.facilityId || item.branchId || 'branch_agency_main') === state.currentBranchId);
-
-  const currentPmProjects = useMemo(
-    () => scopePmByBranch(state.pmProjects || []),
-    [state.pmProjects, state.currentBranchId]
-  );
-  const currentPmMilestones = useMemo(() => {
-    const projectIds = new Set(currentPmProjects.map((p) => p.id));
-    return (state.pmMilestones || []).filter((m) =>
-      m.branchId ? m.branchId === state.currentBranchId : projectIds.has(m.projectId)
-    );
-  }, [state.pmMilestones, currentPmProjects, state.currentBranchId]);
-  const currentPmPrintOrders = useMemo(() => scopePmByBranch(state.pmPrintOrders || []), [state.pmPrintOrders, state.currentBranchId]);
-  const currentPmBatDeliverables = useMemo(() => scopePmByBranch(state.pmBatDeliverables || []), [state.pmBatDeliverables, state.currentBranchId]);
-  const currentPmTalents = useMemo(() => scopePmByBranch(state.pmTalents || []), [state.pmTalents, state.currentBranchId]);
-  const currentPmMissions = useMemo(() => scopePmByBranch(state.pmMissions || []), [state.pmMissions, state.currentBranchId]);
-  const currentPmAttendances = useMemo(() => scopePmByBranch(state.pmAttendances || []), [state.pmAttendances, state.currentBranchId]);
-  const currentPmExpenses = useMemo(() => scopePmByBranch(state.pmExpenses || []), [state.pmExpenses, state.currentBranchId]);
-  const currentPmPayrollBatches = useMemo(() => scopePmByBranch(state.pmPayrollBatches || []), [state.pmPayrollBatches, state.currentBranchId]);
-  const currentPmCcpSlips = useMemo(() => scopePmByBranch(state.pmCcpSlips || []), [state.pmCcpSlips, state.currentBranchId]);
-  const currentPmEquipmentStock = useMemo(() => scopePmByBranch(state.pmEquipmentStock || []), [state.pmEquipmentStock, state.currentBranchId]);
-
-  const currentDevices = useMemo(
-    () => state.devices.filter((d) => d.branchId === state.currentBranchId),
-    [state.devices, state.currentBranchId]
-  );
-  const currentB2bClients = useMemo(
-    () => (state.b2bClients || []).filter((c) => c.facilityId === state.currentBranchId || c.branchId === state.currentBranchId),
-    [state.b2bClients, state.currentBranchId]
-  );
-  const currentWarehouses = useMemo(
-    () => (state.warehouses || []).filter((w) =>
-      w.branchId || w.facilityId
-        ? w.branchId === state.currentBranchId || w.facilityId === state.currentBranchId
-        : w.businessId === state.currentBusinessId
-    ),
-    [state.warehouses, state.currentBranchId, state.currentBusinessId]
-  );
-  const currentCommercialDocs = useMemo(
-    () => (state.commercialDocs || []).filter((d) => d.facilityId === state.currentBranchId || d.branchId === state.currentBranchId),
-    [state.commercialDocs, state.currentBranchId]
-  );
-  const currentPurchaseDocs = useMemo(
-    () => (state.purchaseDocs || []).filter((p) => p.facilityId === state.currentBranchId || p.branchId === state.currentBranchId),
-    [state.purchaseDocs, state.currentBranchId]
-  );
-  const currentStockVouchers = useMemo(
-    () => (state.stockVouchers || []).filter((v) => v.facilityId === state.currentBranchId || v.branchId === state.currentBranchId),
-    [state.stockVouchers, state.currentBranchId]
-  );
-  const currentMemberCheckIns = useMemo(
-    () => (state.memberCheckIns || []).filter((c) => (c.branchId || 'branch_gym_hydra') === state.currentBranchId),
-    [state.memberCheckIns, state.currentBranchId]
-  );
-  const unreadNotificationCount = useMemo(
-    () => (state.notifications || []).filter((n) => !n.read).length,
-    [state.notifications]
-  );
-
-  const selectedMember = useMemo(
-    () => (state.selectedMemberId ? state.members.find((m) => m.id === state.selectedMemberId) || null : null),
-    [state.selectedMemberId, state.members]
-  );
+  // Scoped lists (cached at module level per slice + branchId so consumers stay render-stable)
+  const currentMembers = selectCurrentMembersFromState(state);
+  const currentLeads = selectCurrentLeadsFromState(state);
+  const currentProducts = selectCurrentProductsFromState(state);
+  const currentStaff = selectCurrentStaffFromState(state);
+  const currentSales = selectCurrentSalesFromState(state);
+  const currentSchedule = selectCurrentScheduleFromState(state);
+  const currentPlans = selectCurrentPlansFromState(state);
+  const currentAppointments = selectCurrentAppointmentsFromState(state);
+  const currentServices = selectCurrentServicesFromState(state);
+  const currentParkedOrders = selectCurrentParkedOrdersFromState(state);
+  const currentStockMovements = selectCurrentStockMovementsFromState(state);
+  const currentFreelanceClients = selectCurrentFreelanceClientsFromState(state);
+  const currentFreelanceProjects = selectCurrentFreelanceProjectsFromState(state);
+  const currentTimeLogs = selectCurrentTimeLogsFromState(state);
+  const currentFreelanceInvoices = selectCurrentFreelanceInvoicesFromState(state);
+  const currentFreelanceProposals = selectCurrentFreelanceProposalsFromState(state);
+  const currentFreelanceExpenses = selectCurrentFreelanceExpensesFromState(state);
+  const currentRentableUnits = selectCurrentRentableUnitsFromState(state);
+  const currentRentalBookings = selectCurrentRentalBookingsFromState(state);
+  const currentRentalRenters = selectCurrentRentalRentersFromState(state);
+  const currentSecurityDeposits = selectCurrentSecurityDepositsFromState(state);
+  const currentEduCourses = selectCurrentEduCoursesFromState(state);
+  const currentEduClassrooms = selectCurrentEduClassroomsFromState(state);
+  const currentEduCohorts = selectCurrentEduCohortsFromState(state);
+  const currentEduStudents = selectCurrentEduStudentsFromState(state);
+  const currentEduEnrollments = selectCurrentEduEnrollmentsFromState(state);
+  const currentEduSessions = selectCurrentEduSessionsFromState(state);
+  const currentEduAttendance = selectCurrentEduAttendanceFromState(state);
+  const currentEduGrades = selectCurrentEduGradesFromState(state);
+  const currentEduCertificates = selectCurrentEduCertificatesFromState(state);
+  const currentEduAdmissions = selectCurrentEduAdmissionsFromState(state);
+  const currentPmProjects = selectCurrentPmProjectsFromState(state);
+  const currentPmMilestones = selectCurrentPmMilestonesFromState(state);
+  const currentPmPrintOrders = selectCurrentPmPrintOrdersFromState(state);
+  const currentPmBatDeliverables = selectCurrentPmBatDeliverablesFromState(state);
+  const currentPmTalents = selectCurrentPmTalentsFromState(state);
+  const currentPmMissions = selectCurrentPmMissionsFromState(state);
+  const currentPmAttendances = selectCurrentPmAttendancesFromState(state);
+  const currentPmExpenses = selectCurrentPmExpensesFromState(state);
+  const currentPmPayrollBatches = selectCurrentPmPayrollBatchesFromState(state);
+  const currentPmCcpSlips = selectCurrentPmCcpSlipsFromState(state);
+  const currentPmEquipmentStock = selectCurrentPmEquipmentStockFromState(state);
+  const currentDevices = selectCurrentDevicesFromState(state);
+  const currentB2bClients = selectCurrentB2bClientsFromState(state);
+  const currentWarehouses = selectCurrentWarehousesFromState(state);
+  const currentCommercialDocs = selectCurrentCommercialDocsFromState(state);
+  const currentPurchaseDocs = selectCurrentPurchaseDocsFromState(state);
+  const currentStockVouchers = selectCurrentStockVouchersFromState(state);
+  const currentMemberCheckIns = selectCurrentMemberCheckInsFromState(state);
+  const unreadNotificationCount = selectUnreadNotificationCountFromState(state);
+  const selectedMember = selectSelectedMemberFromState(state);
 
   // Actions
-  const setScreen = (activeScreen: ActiveScreen) => {
-    let nextRole = globalState.activePmRole;
-    let nextSubScreen = globalState.activePmSubScreen;
-
-    // Role 1: Direction
-    if (activeScreen === 'pm_dir_dashboard') {
-      nextRole = 'direction';
-      nextSubScreen = 'dashboard';
-    } else if (activeScreen === 'pm_dir_new_project') {
-      nextRole = 'direction';
-      nextSubScreen = 'new_project';
-    } else if (activeScreen === 'pm_dir_projects') {
-      nextRole = 'direction';
-      nextSubScreen = 'dashboard';
-    } else if (activeScreen === 'pm_dir_approvals') {
-      nextRole = 'direction';
-      nextSubScreen = 'approvals';
-    } else if (activeScreen === 'pm_dir_reports') {
-      nextRole = 'direction';
-      nextSubScreen = 'reports';
-    // Role 2: Chef de Projet
-    } else if (activeScreen === 'pm_cp_projects') {
-      nextRole = 'chef_projet';
-      nextSubScreen = 'portfolio';
-    } else if (activeScreen === 'pm_cp_catalog') {
-      nextRole = 'chef_projet';
-      nextSubScreen = 'catalog';
-    } else if (activeScreen === 'pm_cp_orders') {
-      nextRole = 'chef_projet';
-      nextSubScreen = 'orders';
-    } else if (activeScreen === 'pm_cp_deliverables' || activeScreen === 'pm_cp_files') {
-      nextRole = 'chef_projet';
-      nextSubScreen = 'bat';
-    } else if (activeScreen === 'pm_cp_expenses') {
-      nextRole = 'chef_projet';
-      nextSubScreen = 'expenses';
-    // Role 3: Créa Studio
-    } else if (activeScreen === 'pm_crea_kanban') {
-      nextRole = 'crea';
-      nextSubScreen = 'demandes';
-    } else if (activeScreen === 'pm_crea_production') {
-      nextRole = 'crea';
-      nextSubScreen = 'production';
-    } else if (activeScreen === 'pm_crea_upload') {
-      nextRole = 'crea';
-      nextSubScreen = 'upload';
-    } else if (activeScreen === 'pm_crea_briefs') {
-      nextRole = 'crea';
-      nextSubScreen = 'briefs';
-    // Role 4: Superviseur Terrain
-    } else if (activeScreen === 'pm_sup_missions') {
-      nextRole = 'superviseur';
-      nextSubScreen = 'missions';
-    } else if (activeScreen === 'pm_sup_attendance') {
-      nextRole = 'superviseur';
-      nextSubScreen = 'attendance';
-    } else if (activeScreen === 'pm_sup_staffing') {
-      nextRole = 'superviseur';
-      nextSubScreen = 'staffing';
-    } else if (activeScreen === 'pm_sup_expenses') {
-      nextRole = 'superviseur';
-      nextSubScreen = 'expense';
-    // Role 5: Ressources Humaines
-    } else if (activeScreen === 'pm_rh_talents') {
-      nextRole = 'rh';
-      nextSubScreen = 'talents';
-    } else if (activeScreen === 'pm_rh_dossier') {
-      nextRole = 'rh';
-      nextSubScreen = 'dossier';
-    } else if (activeScreen === 'pm_rh_portal') {
-      nextRole = 'rh';
-      nextSubScreen = 'portal';
-    } else if (activeScreen === 'pm_rh_walkin') {
-      nextRole = 'rh';
-      nextSubScreen = 'walkin';
-    // Role 6: Comptabilité & Finance
-    } else if (activeScreen === 'pm_compta_payroll') {
-      nextRole = 'compta';
-      nextSubScreen = 'payroll';
-    } else if (activeScreen === 'pm_compta_ccp') {
-      nextRole = 'compta';
-      nextSubScreen = 'ccp';
-    } else if (activeScreen === 'pm_compta_expenses') {
-      nextRole = 'compta';
-      nextSubScreen = 'expenses';
-    } else if (activeScreen === 'pm_compta_stock') {
-      nextRole = 'compta';
-      nextSubScreen = 'stock';
-    // Category mapping when in Agency mode
-    } else if (currentBusiness?.category === 'project_milestone') {
-      if (activeScreen === 'dashboard') {
-        nextRole = 'direction';
-        nextSubScreen = 'dashboard';
-      } else if (activeScreen === 'scheduler') {
-        nextRole = 'chef_projet';
-        nextSubScreen = 'portfolio';
-      } else if (activeScreen === 'registrations') {
-        nextRole = 'crea';
-        nextSubScreen = 'demandes';
-      } else if (activeScreen === 'analytics') {
-        nextRole = 'superviseur';
-        nextSubScreen = 'missions';
-      } else if (activeScreen === 'members') {
-        nextRole = 'rh';
-        nextSubScreen = 'talents';
-      } else if (activeScreen === 'finance' || activeScreen === 'shop') {
-        nextRole = 'compta';
-        nextSubScreen = 'payroll';
-      }
-    }
-
-    globalState = {
-      ...globalState,
-      activeScreen,
-      activePmRole: nextRole,
-      activePmSubScreen: nextSubScreen,
-    };
-    notify();
-  };
-
-  const setTheme = (theme: AppTheme) => {
-    globalState = { ...globalState, theme };
-    document.documentElement.setAttribute('data-theme', theme);
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    notify();
-  };
-
-  const setLanguage = (language: SupportedLanguage, isAuto = false) => {
-    try {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem('atrium_language', language);
-        localStorage.setItem('atrium_language_mode', isAuto ? 'auto' : 'manual');
-      }
-    } catch {}
-    globalState = { ...globalState, language, isLanguageAuto: isAuto };
-    document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr');
-    document.documentElement.setAttribute('lang', language);
-    notify();
-  };
-
-  const setSystemDefaultLanguage = () => {
-    const sysLang = getSystemDefaultLanguage();
-    setLanguage(sysLang, true);
-  };
-
-  const switchFacility = (businessId: string, branchId?: string) => {
-    const targetBranches = state.branches.filter((b) => b.businessId === businessId);
-    const targetBranchId = branchId || (targetBranches[0]?.id ?? state.branches[0].id);
-    const targetBusiness = state.businesses.find((b) => b.id === businessId);
-
-    let nextScreen = globalState.activeScreen;
-    if (targetBusiness?.category === 'pos_inventory') {
-      if (nextScreen === 'scheduler' || nextScreen === 'registrations') {
-        nextScreen = 'shop';
-      }
-    } else if (targetBusiness?.category === 'freelance_solo') {
-      if (nextScreen === 'history') {
-        nextScreen = 'dashboard';
-      }
-    } else if (targetBusiness?.category === 'appointment_service') {
-      if (nextScreen === 'registrations') {
-        nextScreen = 'scheduler';
-      }
-    }
-
-    const prevBusinessId = state.currentBusinessId;
-    const prevBranchId = state.currentBranchId;
-
-    globalState = {
-      ...globalState,
-      currentBusinessId: businessId,
-      currentBranchId: targetBranchId,
-      activeScreen: nextScreen,
-      selectedMemberId: null,
-      isDetailOpen: false,
-    };
-    notify();
-
-    showToast({
-      type: 'info',
-      title: 'Facility Switched',
-      message: `Active workspace changed to ${targetBusiness?.name || 'facility'}.`,
-      category: targetBusiness?.category,
-      action: {
-        label: 'Undo Switch',
-        onClick: () => {
-          switchFacility(prevBusinessId, prevBranchId);
-        },
-      },
-    });
-  };
-
-  const switchBusiness = (businessId: string) => {
-    switchFacility(businessId);
-  };
-
-  const switchBranch = (branchId: string) => {
-    const targetBranch = state.branches.find((b) => b.id === branchId);
-    switchFacility(targetBranch?.businessId || state.currentBusinessId, branchId);
-  };
+  const setScreen = setScreenAction;
+  const setTheme = setThemeAction;
+  const setLanguage = setLanguageAction;
+  const setSystemDefaultLanguage = setSystemDefaultLanguageAction;
+  const switchFacility = switchFacilityAction;
+  const switchBusiness = switchBusinessAction;
+  const switchBranch = switchBranchAction;
 
   const selectMember = (memberId: string | null) => {
     globalState = {
@@ -4354,51 +5014,13 @@ export function useAtriumStore() {
     }
   };
 
-  const logout = () => {
-    globalState = {
-      ...globalState,
-      isAuthenticated: false,
-      isFastSwitchOpen: false,
-    };
-    notify();
-  };
-
-  const openOnboarding = () => {
-    globalState = { ...globalState, isOnboardingOpen: true };
-    notify();
-  };
-
-  const closeOnboarding = () => {
-    globalState = { ...globalState, isOnboardingOpen: false };
-    notify();
-  };
-
-  const openFastSwitch = () => {
-    globalState = { ...globalState, isFastSwitchOpen: true };
-    notify();
-  };
-
-  const closeFastSwitch = () => {
-    globalState = { ...globalState, isFastSwitchOpen: false };
-    notify();
-  };
-
-  const openDesktopUpgradeModal = (reason: 'branch_limit' | 'business_limit' | 'general' = 'general') => {
-    globalState = {
-      ...globalState,
-      isDesktopUpgradeModalOpen: true,
-      desktopUpgradeReason: reason,
-    };
-    notify();
-  };
-
-  const closeDesktopUpgradeModal = () => {
-    globalState = {
-      ...globalState,
-      isDesktopUpgradeModalOpen: false,
-    };
-    notify();
-  };
+  const logout = logoutAction;
+  const openOnboarding = openOnboardingAction;
+  const closeOnboarding = closeOnboardingAction;
+  const openFastSwitch = openFastSwitchAction;
+  const closeFastSwitch = closeFastSwitchAction;
+  const openDesktopUpgradeModal = openDesktopUpgradeModalAction;
+  const closeDesktopUpgradeModal = closeDesktopUpgradeModalAction;
 
   const completeOnboarding = (params: OnboardingParams) => {
     const accountId = `acc_${Date.now()}`;
@@ -4740,162 +5362,11 @@ export function useAtriumStore() {
   // Freelancer & Solo Actions
   // ==========================================
 
-  const startTimer = (
-    clientId: string,
-    clientName: string,
-    projectId: string,
-    projectTitle: string,
-    taskDescription: string,
-    deliverableId?: string,
-    deliverableTitle?: string,
-    isBillable = true,
-    isPomodoro = false
-  ) => {
-    globalState = {
-      ...globalState,
-      activeTimer: {
-        isRunning: true,
-        isPaused: false,
-        clientId,
-        clientName,
-        projectId,
-        projectTitle,
-        deliverableId,
-        deliverableTitle,
-        taskDescription,
-        elapsedSeconds: 0,
-        isBillable,
-        isPomodoro,
-        pomodoroRemainingSeconds: 1500,
-        pomodoroMode: 'work',
-        startedAt: new Date().toISOString(),
-      },
-    };
-    notify();
-  };
-
-  const pauseTimer = () => {
-    globalState = {
-      ...globalState,
-      activeTimer: { ...globalState.activeTimer, isPaused: true },
-    };
-    notify();
-  };
-
-  const resumeTimer = () => {
-    globalState = {
-      ...globalState,
-      activeTimer: { ...globalState.activeTimer, isPaused: false },
-    };
-    notify();
-  };
-
-  const stopTimer = () => {
-    const timer = globalState.activeTimer;
-    if (timer.elapsedSeconds >= 10) {
-      const client = globalState.freelanceClients.find((c) => c.id === timer.clientId);
-      const rate = client?.hourlyRate || 85;
-      const currency = client?.currency || 'EUR';
-
-      const newEntry: TimeLogEntry = {
-        id: `time_${Date.now()}`,
-        tenantId: state.account.id,
-        facilityId: state.currentBranchId,
-        clientId: timer.clientId,
-        clientName: timer.clientName,
-        projectId: timer.projectId,
-        projectTitle: timer.projectTitle,
-        deliverableId: timer.deliverableId,
-        deliverableTitle: timer.deliverableTitle,
-        taskDescription: timer.taskDescription || 'Focus sprint session',
-        durationSeconds: timer.elapsedSeconds,
-        isBillable: timer.isBillable,
-        isInvoiced: false,
-        rateAtMoment: rate,
-        currency,
-        date: new Date().toISOString().split('T')[0],
-        createdAt: new Date().toISOString(),
-      };
-
-      const additionalHours = Number((timer.elapsedSeconds / 3600).toFixed(2));
-      const updatedProjects = globalState.freelanceProjects.map((p) => {
-        if (p.id === timer.projectId) {
-          const updatedDeliverables = p.deliverables.map((d) => {
-            if (d.id === timer.deliverableId) {
-              return { ...d, loggedHours: Number((d.loggedHours + additionalHours).toFixed(2)) };
-            }
-            return d;
-          });
-          return {
-            ...p,
-            loggedHours: Number((p.loggedHours + additionalHours).toFixed(2)),
-            deliverables: updatedDeliverables,
-          };
-        }
-        return p;
-      });
-
-      globalState = {
-        ...globalState,
-        timeLogs: [newEntry, ...globalState.timeLogs],
-        freelanceProjects: updatedProjects,
-        activeTimer: {
-          ...timer,
-          isRunning: false,
-          isPaused: false,
-          elapsedSeconds: 0,
-          startedAt: null,
-        },
-      };
-      notify();
-
-      const hours = Math.floor(newEntry.durationSeconds / 3600);
-      const mins = Math.floor((newEntry.durationSeconds % 3600) / 60);
-      const timeStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}m ${newEntry.durationSeconds % 60}s`;
-      showToast({
-        type: 'success',
-        title: 'Time Logged',
-        message: `${timeStr} recorded for "${newEntry.projectTitle || 'Project'}".`,
-        category: 'freelance_solo',
-        action: {
-          label: 'Invoice',
-          onClick: () => {
-            globalState = { ...globalState, activeScreen: 'shop' };
-            notify();
-          },
-        },
-      });
-
-      return newEntry;
-    } else {
-      globalState = {
-        ...globalState,
-        activeTimer: {
-          ...timer,
-          isRunning: false,
-          isPaused: false,
-          elapsedSeconds: 0,
-          startedAt: null,
-        },
-      };
-      notify();
-      return null;
-    }
-  };
-
-  const resetTimer = () => {
-    globalState = {
-      ...globalState,
-      activeTimer: {
-        ...globalState.activeTimer,
-        isRunning: false,
-        isPaused: false,
-        elapsedSeconds: 0,
-        startedAt: null,
-      },
-    };
-    notify();
-  };
+  const startTimer = startTimerAction;
+  const pauseTimer = pauseTimerAction;
+  const resumeTimer = resumeTimerAction;
+  const stopTimer = stopTimerAction;
+  const resetTimer = resetTimerAction;
 
   const addFreelanceClient = (clientData: Omit<FreelanceClient, 'id' | 'tenantId' | 'facilityId' | 'lifetimeBilled' | 'createdAt'>) => {
     const newClient: FreelanceClient = {
@@ -6985,38 +7456,7 @@ export function useAtriumStore() {
   // ============================================================
   // Project & Milestone Actions (ProjectMilestone)
   // ============================================================
-  const setActivePmRole = (role: PMRole) => {
-    let defaultSubScreen = 'dashboard';
-    let defaultScreen: ActiveScreen = 'pm_dir_dashboard';
-
-    if (role === 'direction') {
-      defaultSubScreen = 'dashboard';
-      defaultScreen = 'pm_dir_dashboard';
-    } else if (role === 'chef_projet') {
-      defaultSubScreen = 'portfolio';
-      defaultScreen = 'pm_cp_projects';
-    } else if (role === 'crea') {
-      defaultSubScreen = 'kanban';
-      defaultScreen = 'pm_crea_kanban';
-    } else if (role === 'superviseur') {
-      defaultSubScreen = 'missions';
-      defaultScreen = 'pm_sup_missions';
-    } else if (role === 'rh') {
-      defaultSubScreen = 'talents';
-      defaultScreen = 'pm_rh_talents';
-    } else if (role === 'compta') {
-      defaultSubScreen = 'payroll';
-      defaultScreen = 'pm_compta_payroll';
-    }
-
-    globalState = {
-      ...globalState,
-      activePmRole: role,
-      activePmSubScreen: defaultSubScreen,
-      activeScreen: defaultScreen,
-    };
-    notify();
-  };
+  const setActivePmRole = setActivePmRoleAction;
 
   const setActiveGarageRole = (role: GarageRole) => {
     let defaultScreen: ActiveScreen = 'dashboard';
@@ -7122,74 +7562,9 @@ export function useAtriumStore() {
     notify();
   };
 
-  const setActivePmSubScreen = (subScreen: string) => {
-    let nextScreen = globalState.activeScreen;
-    const role = globalState.activePmRole;
+  const setActivePmSubScreen = setActivePmSubScreenAction;
 
-    if (role === 'direction') {
-      if (subScreen === 'dashboard') nextScreen = 'pm_dir_dashboard';
-      else if (subScreen === 'new_project') nextScreen = 'pm_dir_new_project';
-      else if (subScreen === 'approvals') nextScreen = 'pm_dir_approvals';
-      else if (subScreen === 'reports') nextScreen = 'pm_dir_reports';
-    } else if (role === 'chef_projet') {
-      if (subScreen === 'portfolio') nextScreen = 'pm_cp_projects';
-      else if (subScreen === 'catalog') nextScreen = 'pm_cp_catalog';
-      else if (subScreen === 'orders') nextScreen = 'pm_cp_orders';
-      else if (subScreen === 'files' || subScreen === 'bat') nextScreen = 'pm_cp_files';
-      else if (subScreen === 'expenses') nextScreen = 'pm_cp_expenses';
-    } else if (role === 'crea') {
-      if (subScreen === 'demandes' || subScreen === 'kanban') nextScreen = 'pm_crea_kanban';
-      else if (subScreen === 'production') nextScreen = 'pm_crea_production';
-      else if (subScreen === 'upload' || subScreen === 'livrables') nextScreen = 'pm_crea_upload';
-      else if (subScreen === 'briefs') nextScreen = 'pm_crea_briefs';
-    } else if (role === 'superviseur') {
-      if (subScreen === 'missions') nextScreen = 'pm_sup_missions';
-      else if (subScreen === 'attendance') nextScreen = 'pm_sup_attendance';
-      else if (subScreen === 'staffing') nextScreen = 'pm_sup_staffing';
-      else if (subScreen === 'expense' || subScreen === 'expenses') nextScreen = 'pm_sup_expenses';
-    } else if (role === 'rh') {
-      if (subScreen === 'talents') nextScreen = 'pm_rh_talents';
-      else if (subScreen === 'dossier') nextScreen = 'pm_rh_dossier';
-      else if (subScreen === 'portal') nextScreen = 'pm_rh_portal';
-      else if (subScreen === 'walkin') nextScreen = 'pm_rh_walkin';
-    } else if (role === 'compta') {
-      if (subScreen === 'payroll') nextScreen = 'pm_compta_payroll';
-      else if (subScreen === 'ccp') nextScreen = 'pm_compta_ccp';
-      else if (subScreen === 'expenses') nextScreen = 'pm_compta_expenses';
-      else if (subScreen === 'stock') nextScreen = 'pm_compta_stock';
-    }
-
-    globalState = {
-      ...globalState,
-      activePmSubScreen: subScreen,
-      activeScreen: nextScreen,
-    };
-    notify();
-  };
-
-  const addPmProject = (projectData: Omit<PMProject, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const newProj: PMProject = {
-      ...getTraceContext(),
-      ...projectData,
-      id: `proj_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    globalState = {
-      ...globalState,
-      pmProjects: [newProj, ...(globalState.pmProjects || [])],
-    };
-    notify();
-    projectMilestoneService.upsertProject(newProj).catch(() => {});
-    showToast({
-      type: 'success',
-      title: 'Projet Initié',
-      message: `${newProj.title} créé avec un plafond budgétaire de ${newProj.budgetCapDzd.toLocaleString()} DA.`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      category: 'project_milestone',
-    });
-    return newProj;
-  };
+  const addPmProject = addPmProjectAction;
 
   const updatePmProjectStatus = (projectId: string, status: PMProject['status']) => {
     globalState = {
@@ -7483,74 +7858,9 @@ export function useAtriumStore() {
     return newExp;
   };
 
-  const approvePmExpense = (expenseId: string, notes?: string) => {
-    globalState = {
-      ...globalState,
-      pmExpenses: (globalState.pmExpenses || []).map((e) =>
-        e.id === expenseId
-          ? {
-              ...e,
-              status: 'approved_by_direction',
-              directionApprovedAt: new Date().toISOString(),
-              directionNotes: notes || e.directionNotes,
-            }
-          : e
-      ),
-    };
-    notify();
-    projectMilestoneService.approveDisbursement('expense', expenseId, state.currentUser.id, notes).catch(() => {});
-    showToast({
-      type: 'success',
-      title: 'Frais Validé par la Direction',
-      message: 'Autorisation de décaissement transmise à la Comptabilité.',
-      category: 'project_milestone',
-    });
-  };
-
-  const rejectPmExpense = (expenseId: string, notes?: string) => {
-    globalState = {
-      ...globalState,
-      pmExpenses: (globalState.pmExpenses || []).map((e) =>
-        e.id === expenseId
-          ? {
-              ...e,
-              status: 'rejected',
-              directionNotes: notes || 'Rejeté par la Direction.',
-            }
-          : e
-      ),
-    };
-    notify();
-    showToast({
-      type: 'error',
-      title: 'Frais Rejeté',
-      message: notes || 'Le remboursement a été refusé.',
-      category: 'project_milestone',
-    });
-  };
-
-  const approvePmPayrollBatch = (batchId: string) => {
-    globalState = {
-      ...globalState,
-      pmPayrollBatches: (globalState.pmPayrollBatches || []).map((b) =>
-        b.id === batchId
-          ? {
-              ...b,
-              status: 'approved_by_direction',
-              directionApprovedAt: new Date().toISOString(),
-            }
-          : b
-      ),
-    };
-    notify();
-    projectMilestoneService.approveDisbursement('payroll_batch', batchId, state.currentUser.id).catch(() => {});
-    showToast({
-      type: 'success',
-      title: 'Lot de Paie Validé (Double-Clé)',
-      message: 'Déblocage accordé pour l\'émission des bordereaux CCP SFP 01 en Comptabilité.',
-      category: 'project_milestone',
-    });
-  };
+  const approvePmExpense = approvePmExpenseAction;
+  const rejectPmExpense = rejectPmExpenseAction;
+  const approvePmPayrollBatch = approvePmPayrollBatchAction;
 
   const generatePmCcpSlipsForBatch = (batchId: string) => {
     const batch = (globalState.pmPayrollBatches || []).find((b) => b.id === batchId);
@@ -7799,130 +8109,13 @@ export function useAtriumStore() {
     });
   };
 
-  const deletePmProject = (projectId: string) => {
-    globalState = {
-      ...globalState,
-      pmProjects: (globalState.pmProjects || []).filter((p) => p.id !== projectId),
-    };
-    notify();
-  };
-
-  const batchDeletePmProjects = (projectIds: string[]) => {
-    const idSet = new Set(projectIds);
-    globalState = {
-      ...globalState,
-      pmProjects: (globalState.pmProjects || []).filter((p) => !idSet.has(p.id)),
-    };
-    notify();
-    showToast({
-      type: 'info',
-      title: 'Projets Supprimés',
-      message: `${projectIds.length} projet(s) supprimé(s).`,
-      category: 'project_milestone',
-    });
-  };
-
-  const batchUpdatePmProjectStatus = (projectIds: string[], status: PMProject['status']) => {
-    const idSet = new Set(projectIds);
-    globalState = {
-      ...globalState,
-      pmProjects: (globalState.pmProjects || []).map((p) =>
-        idSet.has(p.id) ? { ...p, status, updatedAt: new Date().toISOString() } : p
-      ),
-    };
-    notify();
-    showToast({
-      type: 'success',
-      title: 'Statuts Projets Mis à Jour',
-      message: `${projectIds.length} projet(s) passés en statut '${status}'.`,
-      category: 'project_milestone',
-    });
-  };
-
-  const batchApprovePmExpenses = (expenseIds: string[], notes?: string) => {
-    const idSet = new Set(expenseIds);
-    globalState = {
-      ...globalState,
-      pmExpenses: (globalState.pmExpenses || []).map((e) =>
-        idSet.has(e.id)
-          ? {
-              ...e,
-              status: 'approved_by_direction',
-              directionApprovedAt: new Date().toISOString(),
-              directionNotes: notes || e.directionNotes,
-            }
-          : e
-      ),
-    };
-    notify();
-    showToast({
-      type: 'success',
-      title: 'Frais Validés en Lot',
-      message: `${expenseIds.length} demande(s) de frais validée(s) par la Direction.`,
-      category: 'project_milestone',
-    });
-  };
-
-  const batchRejectPmExpenses = (expenseIds: string[], notes?: string) => {
-    const idSet = new Set(expenseIds);
-    globalState = {
-      ...globalState,
-      pmExpenses: (globalState.pmExpenses || []).map((e) =>
-        idSet.has(e.id)
-          ? {
-              ...e,
-              status: 'rejected',
-              directionNotes: notes || 'Rejeté en lot par la Direction.',
-            }
-          : e
-      ),
-    };
-    notify();
-    showToast({
-      type: 'error',
-      title: 'Frais Rejetés en Lot',
-      message: `${expenseIds.length} demande(s) de frais rejetée(s).`,
-      category: 'project_milestone',
-    });
-  };
-
-  const batchDeletePmExpenses = (expenseIds: string[]) => {
-    const idSet = new Set(expenseIds);
-    globalState = {
-      ...globalState,
-      pmExpenses: (globalState.pmExpenses || []).filter((e) => !idSet.has(e.id)),
-    };
-    notify();
-    showToast({
-      type: 'info',
-      title: 'Frais Supprimés',
-      message: `${expenseIds.length} entrée(s) de frais supprimée(s).`,
-      category: 'project_milestone',
-    });
-  };
-
-  const batchApprovePmPayrollBatches = (batchIds: string[]) => {
-    const idSet = new Set(batchIds);
-    globalState = {
-      ...globalState,
-      pmPayrollBatches: (globalState.pmPayrollBatches || []).map((b) =>
-        idSet.has(b.id)
-          ? {
-              ...b,
-              status: 'approved_by_direction',
-              directionApprovedAt: new Date().toISOString(),
-            }
-          : b
-      ),
-    };
-    notify();
-    showToast({
-      type: 'success',
-      title: 'Lots de Paie Validés (Double-Clé)',
-      message: `${batchIds.length} lot(s) de paie validé(s) pour virement CCP.`,
-      category: 'project_milestone',
-    });
-  };
+  const deletePmProject = deletePmProjectAction;
+  const batchDeletePmProjects = batchDeletePmProjectsAction;
+  const batchUpdatePmProjectStatus = batchUpdatePmProjectStatusAction;
+  const batchApprovePmExpenses = batchApprovePmExpensesAction;
+  const batchRejectPmExpenses = batchRejectPmExpensesAction;
+  const batchDeletePmExpenses = batchDeletePmExpensesAction;
+  const batchApprovePmPayrollBatches = batchApprovePmPayrollBatchesAction;
 
   const batchUpdatePmPrintOrderStatus = (orderIds: string[], status: PMPrintOrder['status']) => {
     const idSet = new Set(orderIds);
@@ -8699,82 +8892,8 @@ export function useAtriumStore() {
     }
   };
 
-  const setNetworkMode = (mode: 'online' | 'slow_3g' | 'offline' | 'force_skeleton') => {
-    let syncState = globalState.isSyncing;
-    let errorMsg = globalState.syncErrorMessage;
-    let status = globalState.supabaseStatus;
-    let isTimedOut = false;
-
-    if (mode === 'force_skeleton') {
-      syncState = true;
-      isTimedOut = false;
-    } else if (mode === 'offline') {
-      syncState = false;
-      status = 'offline';
-      errorMsg = 'Network connection offline (simulation mode)';
-      isTimedOut = true;
-    } else if (mode === 'online') {
-      syncState = false;
-      errorMsg = null;
-      status = isSupabaseConfigured() ? 'connected' : 'unconfigured';
-      isTimedOut = false;
-    } else if (mode === 'slow_3g') {
-      syncState = true;
-      isTimedOut = false;
-      setTimeout(() => {
-        globalState = {
-          ...globalState,
-          isSyncing: false,
-          isSyncTimeout: true,
-          lastSyncedAt: new Date().toISOString(),
-        };
-        notify();
-      }, 3000);
-    }
-
-    globalState = {
-      ...globalState,
-      networkMode: mode,
-      isSyncing: syncState,
-      supabaseStatus: status,
-      syncErrorMessage: errorMsg,
-      isSyncTimeout: isTimedOut,
-    };
-    notify();
-  };
-
-  const retryCloudSync = async () => {
-    globalState = {
-      ...globalState,
-      isSyncing: true,
-      syncErrorMessage: null,
-      isSyncTimeout: false,
-    };
-    notify();
-
-    try {
-      if (globalState.networkMode === 'offline') {
-        await new Promise((r) => setTimeout(r, 1200));
-        globalState = {
-          ...globalState,
-          isSyncing: false,
-          isSyncTimeout: true,
-          syncErrorMessage: 'Simulated connection failed: device is offline.',
-        };
-        notify();
-        return;
-      }
-      await syncWithSupabase();
-    } finally {
-      globalState = {
-        ...globalState,
-        isSyncing: false,
-        isSyncTimeout: false,
-        lastSyncedAt: new Date().toISOString(),
-      };
-      notify();
-    }
-  };
+  const setNetworkMode = setNetworkModeAction;
+  const retryCloudSync = retryCloudSyncAction;
 
   return {
     account: state.account,
@@ -9246,20 +9365,8 @@ export function useAtriumStore() {
     clearAllNotifications,
     removeNotification,
     addNotification,
-    toggleTopBarCollapsed: () => {
-      globalState = {
-        ...globalState,
-        isTopBarCollapsed: !globalState.isTopBarCollapsed,
-      };
-      notify();
-    },
-    toggleTopBarAutoHide: () => {
-      globalState = {
-        ...globalState,
-        isTopBarAutoHide: !globalState.isTopBarAutoHide,
-      };
-      notify();
-    },
+    toggleTopBarCollapsed: toggleTopBarCollapsedAction,
+    toggleTopBarAutoHide: toggleTopBarAutoHideAction,
     setTopBarAutoHide: (autoHide: boolean) => {
       globalState = {
         ...globalState,

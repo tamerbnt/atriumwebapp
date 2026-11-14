@@ -64,6 +64,7 @@ import {
   getPeriodBuckets,
   getPeriodRange,
   parseIsoDay,
+  parseIsoDayMs,
   pickText,
   resolvePeriodKey,
   type DashboardPeriodKey,
@@ -108,9 +109,9 @@ export function selectMembershipDashboard(input: MembershipDashboardInput) {
   const cohortsScope = cardFilters.cohorts || 'all';
 
   const expiringMembers = activeMembers.filter((m) => {
-    const exp = parseIsoDay(m.expirationDate);
-    if (!exp) return false;
-    const days = Math.ceil((exp.getTime() - nowMs) / DAY_MS);
+    const expMs = parseIsoDayMs(m.expirationDate);
+    if (expMs === null) return false;
+    const days = Math.ceil((expMs - nowMs) / DAY_MS);
     return days >= 0 && days <= 14;
   });
 
@@ -135,10 +136,11 @@ export function selectMembershipDashboard(input: MembershipDashboardInput) {
     totalCapacity = activeMembers.length > 0 ? Math.max(40, todayCheckIns) : 0;
   } else {
     const recentWindowMs = nowMs - 2 * 3600 * 1000;
-    const recentCheckIns = checkIns.filter((c) => {
-      const d = parseIsoDay(c.timestamp);
-      return d ? d.getTime() >= recentWindowMs && d.getTime() <= nowMs : false;
-    }).length;
+    let recentCheckIns = 0;
+    for (const c of checkIns) {
+      const ms = parseIsoDayMs(c.timestamp);
+      if (ms !== null && ms >= recentWindowMs && ms <= nowMs) recentCheckIns += 1;
+    }
     floorOccupied = recentCheckIns;
     totalCapacity = activeMembers.length > 0 ? Math.max(40, recentCheckIns) : 0;
   }
@@ -185,8 +187,8 @@ export function selectMembershipDashboard(input: MembershipDashboardInput) {
       retainedByMonth: [0, 0, 0, 0],
     };
     entry.total += 1;
-    const exp = parseIsoDay(m.expirationDate);
-    const activeMonths = exp ? Math.max(0, Math.floor((exp.getTime() - start.getTime()) / (30 * DAY_MS))) : 0;
+    const expMs = parseIsoDayMs(m.expirationDate);
+    const activeMonths = expMs !== null ? Math.max(0, Math.floor((expMs - start.getTime()) / (30 * DAY_MS))) : 0;
     for (let k = 0; k < 4; k++) {
       if (m.status === 'Active' || activeMonths >= k) {
         entry.retainedByMonth[k] += 1;
@@ -216,10 +218,8 @@ export function selectMembershipDashboard(input: MembershipDashboardInput) {
   const plansBuckets = new Array<number>(bucketCount).fill(0);
   const coachingBuckets = new Array<number>(bucketCount).fill(0);
   for (const sale of validSales) {
-    const d = parseIsoDay(sale.createdAt);
-    if (!d) continue;
-    const ms = d.getTime();
-    if (ms < effectiveStart || ms > bucketRange.endMs) continue;
+    const ms = parseIsoDayMs(sale.createdAt);
+    if (ms === null || ms < effectiveStart || ms > bucketRange.endMs) continue;
     const idx = Math.min(bucketCount - 1, Math.max(0, Math.floor((ms - effectiveStart) / bucketMs)));
     const items = sale.items || [];
     if (items.length === 0) {
@@ -301,8 +301,8 @@ export function selectAppointmentDashboard(input: AppointmentDashboardInput) {
 
   const revRange = getPeriodRange(revPeriod, anchorDate);
   const revApts = appointments.filter((a) => {
-    const d = parseIsoDay(a.date || a.createdAt);
-    return d ? d.getTime() >= revRange.startMs && d.getTime() <= revRange.endMs : false;
+    const ms = parseIsoDayMs(a.date || a.createdAt);
+    return ms !== null && ms >= revRange.startMs && ms <= revRange.endMs;
   });
 
   const revenueOfApts = (list: Appointment[]) =>
@@ -321,19 +321,25 @@ export function selectAppointmentDashboard(input: AppointmentDashboardInput) {
   );
 
   const nsRange = getPeriodRange(noShowPeriod, anchorDate);
-  const nsWindowApts = appointments.filter((a) => {
-    const d = parseIsoDay(a.date || a.createdAt);
-    return d ? d.getTime() >= nsRange.startMs && d.getTime() <= nsRange.endMs : false;
-  });
-  const nsPrevApts = appointments.filter((a) => {
-    const d = parseIsoDay(a.date || a.createdAt);
-    return d ? d.getTime() >= nsRange.prevStartMs && d.getTime() <= nsRange.prevEndMs : false;
-  });
-
-  const noShowList = nsWindowApts.filter((a) => a.status === 'NoShow' || a.status === 'Cancelled');
-  const prevNoShow = nsPrevApts.filter((a) => a.status === 'NoShow' || a.status === 'Cancelled');
-  const noShowRate = nsWindowApts.length > 0 ? Math.round((noShowList.length / nsWindowApts.length) * 1000) / 10 : 0;
-  const prevNoShowRate = nsPrevApts.length > 0 ? Math.round((prevNoShow.length / nsPrevApts.length) * 1000) / 10 : 0;
+  let nsWinTotal = 0;
+  let nsWinBad = 0;
+  let nsPrevTotal = 0;
+  let nsPrevBad = 0;
+  for (const a of appointments) {
+    const ms = parseIsoDayMs(a.date || a.createdAt);
+    if (ms === null) continue;
+    const isBad = a.status === 'NoShow' || a.status === 'Cancelled';
+    if (ms >= nsRange.startMs && ms <= nsRange.endMs) {
+      nsWinTotal += 1;
+      if (isBad) nsWinBad += 1;
+    } else if (ms >= nsRange.prevStartMs && ms <= nsRange.prevEndMs) {
+      nsPrevTotal += 1;
+      if (isBad) nsPrevBad += 1;
+    }
+  }
+  const noShowListCount = nsWinBad;
+  const noShowRate = nsWinTotal > 0 ? Math.round((nsWinBad / nsWinTotal) * 1000) / 10 : 0;
+  const prevNoShowRate = nsPrevTotal > 0 ? Math.round((nsPrevBad / nsPrevTotal) * 1000) / 10 : 0;
   const noShowSpark = buildPeriodRateSeries(
     appointments,
     (a) => a.date || a.createdAt,
@@ -457,7 +463,7 @@ export function selectAppointmentDashboard(input: AppointmentDashboardInput) {
     revenueSpark: combinedRevenueSpark,
     noShowRate,
     noShowDelta: computeDeltaPercent(noShowRate, prevNoShowRate),
-    noShowCount: noShowList.length,
+    noShowCount: noShowListCount,
     noShowSpark,
     occupiedChairs,
     totalChairs,
@@ -497,8 +503,8 @@ export function selectPosDashboard(input: PosDashboardInput) {
   const validSales = sales.filter((s) => s.status !== 'Voided' && s.status !== 'Refunded');
   const revRange = getPeriodRange(revPeriod, anchorDate);
   const revWindowSales = validSales.filter((s) => {
-    const d = parseIsoDay(s.createdAt);
-    return d ? d.getTime() >= revRange.startMs && d.getTime() <= revRange.endMs : false;
+    const ms = parseIsoDayMs(s.createdAt);
+    return ms !== null && ms >= revRange.startMs && ms <= revRange.endMs;
   });
 
   const salesSeries = buildDailySparkSeries(validSales, (s) => s.createdAt, (s) => s.totalAmount || 0, revPeriod, language, anchorDate);
@@ -686,13 +692,14 @@ export function selectProjectDashboard(input: ProjectDashboardInput) {
       : [];
 
   const funnelProjects = filterByScope(projects, (p) => p.createdAt || p.startDate, funnelScope, period, anchorDate);
-  const stageCounts = {
-    framing: funnelProjects.filter((p) => p.status === 'framing').length,
-    crea: funnelProjects.filter((p) => ['crea_active', 'creative_kv', 'client_validated'].includes(p.status)).length,
-    prod: funnelProjects.filter((p) => ['print_ready', 'production'].includes(p.status)).length,
-    field: funnelProjects.filter((p) => ['field_execution', 'field_active'].includes(p.status)).length,
-    done: funnelProjects.filter((p) => ['completed', 'closed', 'archived'].includes(p.status)).length,
-  };
+  const stageCounts = { framing: 0, crea: 0, prod: 0, field: 0, done: 0 };
+  for (const p of funnelProjects) {
+    if (p.status === 'framing') stageCounts.framing += 1;
+    else if (p.status === 'crea_active' || p.status === 'creative_kv' || p.status === 'client_validated') stageCounts.crea += 1;
+    else if (p.status === 'print_ready' || p.status === 'production') stageCounts.prod += 1;
+    else if (p.status === 'field_execution' || p.status === 'field_active') stageCounts.field += 1;
+    else if (p.status === 'completed' || p.status === 'closed' || p.status === 'archived') stageCounts.done += 1;
+  }
   const pipelineStages: FunnelStage[] =
     funnelProjects.length > 0
       ? [
@@ -793,7 +800,7 @@ export function selectVenueDashboard(input: VenueDashboardInput) {
   const outstandingBalance =
     balanceScope === 'overdue'
       ? windowBookings
-          .filter((b) => (b.balanceDue || 0) > 0 && ((parseIsoDay(b.endDateTime || b.startDateTime)?.getTime() ?? nowMs) < nowMs))
+          .filter((b) => (b.balanceDue || 0) > 0 && ((parseIsoDayMs(b.endDateTime || b.startDateTime) ?? nowMs) < nowMs))
           .reduce((sum, b) => sum + (b.balanceDue || 0), 0)
       : windowBookings.reduce((sum, b) => sum + (b.balanceDue || 0), 0);
 
@@ -966,21 +973,27 @@ export function selectEducationDashboard(input: EducationDashboardInput) {
 
   // Real grade distribution histogram from eduGrades
   const windowGrades = filterByScope(grades, (g) => g.gradedAt, gradesScope, period, anchorDate);
+  const gradeBinCounts = [0, 0, 0, 0, 0];
+  for (const g of windowGrades) {
+    const norm20 = g.maxScore > 0 ? (g.score / g.maxScore) * 20 : 0;
+    if (norm20 < 10) gradeBinCounts[0] += 1;
+    else if (norm20 < 13) gradeBinCounts[1] += 1;
+    else if (norm20 < 16) gradeBinCounts[2] += 1;
+    else if (norm20 < 18.5) gradeBinCounts[3] += 1;
+    else if (norm20 <= 20) gradeBinCounts[4] += 1;
+  }
   const binsDef = [
-    { id: 'b1', label: '0–9', min: 0, max: 9.99 },
-    { id: 'b2', label: '10–12', min: 10, max: 12.99 },
-    { id: 'b3', label: '13–15', min: 13, max: 15.99 },
-    { id: 'b4', label: '16–18', min: 16, max: 18.49 },
-    { id: 'b5', label: '18.5–20', min: 18.5, max: 20 },
+    { id: 'b1', label: '0–9' },
+    { id: 'b2', label: '10–12' },
+    { id: 'b3', label: '13–15' },
+    { id: 'b4', label: '16–18' },
+    { id: 'b5', label: '18.5–20' },
   ];
   const gradeBins: HistogramBin[] = windowGrades.length > 0
-    ? binsDef.map((b) => ({
+    ? binsDef.map((b, idx) => ({
         id: b.id,
         label: b.label,
-        value: windowGrades.filter((g) => {
-          const norm20 = g.maxScore > 0 ? (g.score / g.maxScore) * 20 : 0;
-          return norm20 >= b.min && norm20 <= b.max;
-        }).length,
+        value: gradeBinCounts[idx],
       }))
     : [];
 
@@ -988,17 +1001,27 @@ export function selectEducationDashboard(input: EducationDashboardInput) {
     attendancePeriod === absencePeriod
       ? absAttendance
       : filterByPeriod(attendance, (a) => a.recordedAt, attendancePeriod, anchorDate);
-  const attBuckets: StackedBucket[] = cohorts.slice(0, 6).map((c) => {
-    const list = stackedAtt.filter((a) => a.cohortId === c.id);
-    return {
-      label: c.cohortCode || c.name.slice(0, 12),
-      values: {
-        present: list.filter((a) => a.status === 'Present').length,
-        late: list.filter((a) => a.status === 'Late').length,
-        absent: list.filter((a) => a.status === 'Absent').length,
-      },
-    };
-  }).filter((b) => b.values.present + b.values.late + b.values.absent > 0);
+  const attByCohort = new Map<string, { present: number; late: number; absent: number }>();
+  for (const a of stackedAtt) {
+    let counts = attByCohort.get(a.cohortId);
+    if (!counts) {
+      counts = { present: 0, late: 0, absent: 0 };
+      attByCohort.set(a.cohortId, counts);
+    }
+    if (a.status === 'Present') counts.present += 1;
+    else if (a.status === 'Late') counts.late += 1;
+    else if (a.status === 'Absent') counts.absent += 1;
+  }
+  const attBuckets: StackedBucket[] = cohorts
+    .slice(0, 6)
+    .map((c) => {
+      const counts = attByCohort.get(c.id) || { present: 0, late: 0, absent: 0 };
+      return {
+        label: c.cohortCode || c.name.slice(0, 12),
+        values: counts,
+      };
+    })
+    .filter((b) => b.values.present + b.values.late + b.values.absent > 0);
 
   const scopedCohorts =
     bulletsScope === 'active'
@@ -1067,8 +1090,19 @@ export function selectFreelanceDashboard(input: FreelanceDashboardInput) {
   );
   const windowExpenses = filterByPeriod(expenses, (e) => e.date || e.createdAt, period, anchorDate);
 
-  const totalLoggedHours = Math.round((windowLogs.reduce((s, l) => s + (l.durationSeconds || 0), 0) / 3600) * 10) / 10;
-  const billableHours = Math.round((windowLogs.filter((l) => l.isBillable).reduce((s, l) => s + (l.durationSeconds || 0), 0) / 3600) * 10) / 10;
+  let totalLogSec = 0;
+  let billableLogSec = 0;
+  const projectLogSec = new Map<string, number>();
+  for (const l of windowLogs) {
+    const dur = l.durationSeconds || 0;
+    totalLogSec += dur;
+    if (l.isBillable) billableLogSec += dur;
+    if (l.projectId) {
+      projectLogSec.set(l.projectId, (projectLogSec.get(l.projectId) || 0) + dur);
+    }
+  }
+  const totalLoggedHours = Math.round((totalLogSec / 3600) * 10) / 10;
+  const billableHours = Math.round((billableLogSec / 3600) * 10) / 10;
   const utilizationPct = totalLoggedHours > 0 ? Math.round((billableHours / totalLoggedHours) * 100) : 0;
 
   const unpaidAmount = windowUnpaidInvoices.reduce((s, i) => s + (i.totalAmount || 0), 0);
@@ -1107,8 +1141,7 @@ export function selectFreelanceDashboard(input: FreelanceDashboardInput) {
       : [];
 
   const rawDumbbell: DumbbellItem[] = projects.slice(0, 6).map((p) => {
-    const projectHours =
-      windowLogs.filter((l) => l.projectId === p.id).reduce((s, l) => s + (l.durationSeconds || 0), 0) / 3600;
+    const projectHours = (projectLogSec.get(p.id) || 0) / 3600;
     return {
       id: p.id,
       label: p.title,

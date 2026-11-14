@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Banknote, MapPin, Plus, Route, Truck } from 'lucide-react';
+import { MapPin, Plus } from 'lucide-react';
 import {
   ConversionFunnel,
   HistogramChart,
@@ -9,7 +9,7 @@ import {
   StackedBarChart,
   WaterfallChart,
 } from '@/atrium';
-import { useAtriumStore } from '../../../services/store';
+import { useDashboardShellState } from '../../../services/store';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useLogisticsData } from './logisticsData';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -19,10 +19,10 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { LogisticsShipmentModal } from './LogisticsShipmentModal';
 import { WilayaTariffModal } from './WilayaTariffModal';
 import {
+  BENTO_SPAN,
   DashboardBentoFrame,
+  DashboardBentoGrid,
   DashboardHeader,
-  DashboardPod,
-  DashboardPodGrid,
   getSurfaceProps,
   localizeText,
   toChartLocale,
@@ -38,14 +38,11 @@ export const LogisticsDashboardView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
   const {
     theme,
-    currentBranch,
-    branches,
-    switchBranch,
     isSyncing,
     networkMode,
     retryCloudSync,
     lastSyncedAt,
-  } = useAtriumStore();
+  } = useDashboardShellState();
 
   const { shipments, discharges, remittances, addShipment, resetLogisticsDemoData } =
     useLogisticsData();
@@ -124,22 +121,11 @@ export const LogisticsDashboardView: React.FC = () => {
       data-testid="logistics-dashboard"
     >
       <DashboardHeader
-        title={t('nav_dashboard', language)}
-        subtitle={localizeText(
-          language,
-          'Suivi de flotte en direct, taux de livraison premier passage et reversement des fonds COD.',
-          'Live deliveries, first-attempt success rate, and COD cash reconciliation.',
-          'تتبع الأسطول، نسبة نجاح التوصيل وتسوية أموال الدفع عند الاستلام.'
-        )}
-        currentBranchName={currentBranch?.name || 'Hub Logistique Central Alger'}
-        branches={branches}
-        onSwitchBranch={switchBranch}
-        onResetDemoData={resetLogisticsDemoData}
         extraActions={
           <div className="flex items-center gap-2 flex-wrap max-w-full">
             <AtriumButton
               variant="outline"
-              size="sm"
+              size="md"
               icon={<MapPin size={15} />}
               onClick={() => setIsTariffModalOpen(true)}
             >
@@ -147,7 +133,7 @@ export const LogisticsDashboardView: React.FC = () => {
             </AtriumButton>
             <AtriumButton
               variant="primary"
-              size="sm"
+              size="md"
               icon={<Plus size={15} />}
               onClick={() => setIsShipModalOpen(true)}
             >
@@ -157,192 +143,174 @@ export const LogisticsDashboardView: React.FC = () => {
         }
       />
 
-      <DashboardPodGrid>
-        <DashboardPod
-          title={localizeText(language, 'Encaissements & Reversements COD', 'COD Collection & Payout', 'التحصيل وتسوية COD')}
-          subtitle={localizeText(language, 'Flux COD encaissés et net à reverser aux marchands', 'Collected COD cash and net merchant remittance', 'أموال الدفع عند الاستلام وصافي التجار')}
-          icon={<Banknote size={16} />}
-        >
-          <KpiSparkCard
-            title={localizeText(language, 'COD encaissé', 'COD Collected', 'أموال COD المحصلة')}
-            subtitle={localizeText(
-              language,
-              `${shipments.length} expéditions suivies`,
-              `${shipments.length} tracked shipments`,
-              `${shipments.length} شحنة متتبعة`
-            )}
-            locale={locale}
-            {...standardSurface}
-            state={resolveChartState(shipments.length > 0)}
-            value={data.codCollected}
-            deltaPercent={data.codDelta}
-            format="currency"
-            currency="DZD"
-            series={data.codSpark}
-            filter={makeFilter('cod', fullTf)}
-            emptyMessage={localizeText(
-              language,
-              'Aucune expédition COD enregistrée.',
-              'No COD shipments recorded yet.',
-              'لا توجد شحنات COD مسجلة بعد.'
-            )}
-          />
+      <DashboardBentoGrid>
+        <KpiSparkCard
+          className={BENTO_SPAN.kpiHalf}
+          title={localizeText(language, 'COD encaissé', 'COD Collected', 'أموال COD المحصلة')}
+          subtitle={localizeText(
+            language,
+            `${shipments.length} expéditions suivies`,
+            `${shipments.length} tracked shipments`,
+            `${shipments.length} شحنة متتبعة`
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(shipments.length > 0)}
+          value={data.codCollected}
+          deltaPercent={data.codDelta}
+          format="currency"
+          currency="DZD"
+          series={data.codSpark}
+          filter={makeFilter('cod', fullTf)}
+          emptyMessage={localizeText(
+            language,
+            'Aucune expédition COD enregistrée.',
+            'No COD shipments recorded yet.',
+            'لا توجد شحنات COD مسجلة بعد.'
+          )}
+        />
 
-          <WaterfallChart
-            title={localizeText(language, 'Réconciliation COD marchands', 'COD Remittance Waterfall', 'تسوية أموال COD')}
-            subtitle={localizeText(
-              language,
-              'COD brut, frais de port, timbre/écarts et net marchands',
-              'Gross COD, shipping fees, stamp/diff, and net payout',
-              'إجمالي COD ورسوم الشحن والطابع وصافي التجار'
-            )}
-            locale={locale}
-            {...standardSurface}
-            state={resolveChartState(data.waterfallSteps.length > 0)}
-            steps={data.waterfallSteps}
-            format="currency"
-            currency="DZD"
-            filter={makeFilter('waterfall', compactTf)}
-            emptyMessage={localizeText(
-              language,
-              'Enregistrez des colis pour calculer le reversement.',
-              'Record shipments to inspect COD settlement.',
-              'أضف طروداً لعرض تسوية COD.'
-            )}
-          />
-        </DashboardPod>
+        <KpiMetricInverseCard
+          className={BENTO_SPAN.kpiHalf}
+          title={localizeText(language, 'Taux de retour', 'Return Rate', 'نسبة الإرجاع')}
+          subtitle={localizeText(
+            language,
+            `${data.returnedCount} colis retournés ou reportés`,
+            `${data.returnedCount} returned or postponed parcels`,
+            `${data.returnedCount} طرود مرتجعة أو مؤجلة`
+          )}
+          locale={locale}
+          {...featuredSurface}
+          state={resolveChartState(shipments.length > 0)}
+          value={data.returnRate}
+          format="percent"
+          series={data.returnSpark}
+          filter={makeFilter('returns', compactTf)}
+          emptyMessage={localizeText(
+            language,
+            'Aucune livraison analysée.',
+            'No parcels analyzed yet.',
+            'لا توجد شحنات للتحليل بعد.'
+          )}
+        />
 
-        <DashboardPod
-          title={localizeText(language, 'Retours & Cadence Journalière', 'Returns & Delivery Cadence', 'المرتجعات ووتيرة التسليم')}
-          subtitle={localizeText(language, 'Taux d’échec et volume quotidien livré vs retourné', 'Return ratio and daily delivered vs failed drops', 'نسبة الإرجاع ومعدل التوزيع اليومي')}
-          icon={<Truck size={16} />}
-        >
-          <KpiMetricInverseCard
-            title={localizeText(language, 'Taux de retour', 'Return Rate', 'نسبة الإرجاع')}
-            subtitle={localizeText(
-              language,
-              `${data.returnedCount} colis retournés ou reportés`,
-              `${data.returnedCount} returned or postponed parcels`,
-              `${data.returnedCount} طرود مرتجعة أو مؤجلة`
-            )}
-            locale={locale}
-            {...featuredSurface}
-            state={resolveChartState(shipments.length > 0)}
-            value={data.returnRate}
-            format="percent"
-            series={data.returnSpark}
-            filter={makeFilter('returns', compactTf)}
-            emptyMessage={localizeText(
-              language,
-              'Aucune livraison analysée.',
-              'No parcels analyzed yet.',
-              'لا توجد شحنات للتحليل بعد.'
-            )}
-          />
+        <StackedBarChart
+          className={BENTO_SPAN.wide7}
+          title={localizeText(language, 'Livrés vs Retours', 'Delivered vs Returns', 'المسلمة مقابل المرتجعة')}
+          subtitle={localizeText(
+            language,
+            'Cadence des livraisons sur la fenêtre active',
+            'Daily parcel delivery mix over timeframe',
+            'نسبة التسليم مقابل الإرجاع خلال الفترة'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(shipments.length > 0)}
+          series={stackedSeries}
+          buckets={data.stackedBuckets}
+          format="number"
+          filter={makeFilter('stacked', compactTf)}
+          emptyMessage={localizeText(
+            language,
+            'Aucune tournée enregistrée.',
+            'No delivery runs logged yet.',
+            'لا توجد جولات توزيع مسجلة.'
+          )}
+        />
 
-          <StackedBarChart
-            title={localizeText(language, 'Livrés vs Retours', 'Delivered vs Returns', 'المسلمة مقابل المرتجعة')}
-            subtitle={localizeText(
-              language,
-              'Cadence des livraisons sur la fenêtre active',
-              'Daily parcel delivery mix over timeframe',
-              'نسبة التسليم مقابل الإرجاع خلال الفترة'
-            )}
-            locale={locale}
-            {...standardSurface}
-            state={resolveChartState(shipments.length > 0)}
-            series={stackedSeries}
-            buckets={data.stackedBuckets}
-            format="number"
-            filter={makeFilter('stacked', compactTf)}
-            emptyMessage={localizeText(
-              language,
-              'Aucune tournée enregistrée.',
-              'No delivery runs logged yet.',
-              'لا توجد جولات توزيع مسجلة.'
-            )}
-          />
-        </DashboardPod>
+        <WaterfallChart
+          className={BENTO_SPAN.medium5}
+          title={localizeText(language, 'Réconciliation COD marchands', 'COD Remittance Waterfall', 'تسوية أموال COD')}
+          subtitle={localizeText(
+            language,
+            'COD brut, frais de port, timbre/écarts et net marchands',
+            'Gross COD, shipping fees, stamp/diff, and net payout',
+            'إجمالي COD ورسوم الشحن والطابع وصافي التجار'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.waterfallSteps.length > 0)}
+          steps={data.waterfallSteps}
+          format="currency"
+          currency="DZD"
+          filter={makeFilter('waterfall', compactTf)}
+          emptyMessage={localizeText(
+            language,
+            'Enregistrez des colis pour calculer le reversement.',
+            'Record shipments to inspect COD settlement.',
+            'أضف طروداً لعرض تسوية COD.'
+          )}
+        />
 
-        <DashboardPod
-          title={localizeText(language, 'Acheminement & Tranches Poids', 'Hub Flow & Weight Tiers', 'مسار المحطة وفئات الوزن')}
-          subtitle={localizeText(language, 'Entonnoir hub-client et paliers tarifaires kg', 'Sorting pipeline and parcel weight brackets', 'مراحل الفرز والتوزيع حسب الوزن')}
-          icon={<Route size={16} />}
-        >
-          <ConversionFunnel
-            title={localizeText(language, 'Acheminement hub', 'Hub-to-Door Funnel', 'مسار الطرود')}
-            subtitle={localizeText(
-              language,
-              'Du quai d’entrée à la remise au destinataire',
-              'From hub intake and sorting to delivered COD',
-              'من استلام المحطة إلى التسليم النهائي'
-            )}
-            locale={locale}
-            {...standardSurface}
-            state={resolveChartState(data.funnelStages.length > 0)}
-            stages={data.funnelStages}
-            filter={makeFilter('funnel', compactTf)}
-            emptyMessage={localizeText(
-              language,
-              'Aucun colis scanné au hub.',
-              'No parcels scanned at hub.',
-              'لم يُمسح أي طرد في المحطة.'
-            )}
-          />
+        <HistogramChart
+          className={BENTO_SPAN.thirdWideTablet}
+          title={localizeText(language, 'Tranches de poids colis', 'Parcel Weight Distribution', 'توزيع أوزان الطرود')}
+          subtitle={localizeText(
+            language,
+            'Répartition des expéditions par palier tarifaire (kg)',
+            'Shipment count grouped by weight tier',
+            'توزيع الشحنات حسب شرائح الوزن'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.weightBins.length > 0)}
+          bins={data.weightBins}
+          unit={localizeText(language, 'colis', 'parcels', 'طرد')}
+          filter={makeFilter('weight', compactTf)}
+          emptyMessage={localizeText(
+            language,
+            'Ajoutez des colis pour afficher la distribution.',
+            'Add parcels to view weight tiers.',
+            'أضف طروداً لعرض توزيع الأوزان.'
+          )}
+        />
 
-          <HistogramChart
-            title={localizeText(language, 'Tranches de poids colis', 'Parcel Weight Distribution', 'توزيع أوزان الطرود')}
-            subtitle={localizeText(
-              language,
-              'Répartition des expéditions par palier tarifaire (kg)',
-              'Shipment count grouped by weight tier',
-              'توزيع الشحنات حسب شرائح الوزن'
-            )}
-            locale={locale}
-            {...standardSurface}
-            state={resolveChartState(data.weightBins.length > 0)}
-            bins={data.weightBins}
-            unit={localizeText(language, 'colis', 'parcels', 'طرد')}
-            filter={makeFilter('weight', compactTf)}
-            emptyMessage={localizeText(
-              language,
-              'Ajoutez des colis pour afficher la distribution.',
-              'Add parcels to view weight tiers.',
-              'أضف طروداً لعرض توزيع الأوزان.'
-            )}
-          />
-        </DashboardPod>
+        <ConversionFunnel
+          className={BENTO_SPAN.thirdCompact}
+          title={localizeText(language, 'Acheminement hub', 'Hub-to-Door Funnel', 'مسار الطرود')}
+          subtitle={localizeText(
+            language,
+            'Du quai d’entrée à la remise au destinataire',
+            'From hub intake and sorting to delivered COD',
+            'من استلام المحطة إلى التسليم النهائي'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.funnelStages.length > 0)}
+          stages={data.funnelStages}
+          filter={makeFilter('funnel', compactTf)}
+          emptyMessage={localizeText(
+            language,
+            'Aucun colis scanné au hub.',
+            'No parcels scanned at hub.',
+            'لم يُمسح أي طرد في المحطة.'
+          )}
+        />
 
-        <DashboardPod
-          title={localizeText(language, 'Palmarès Wilayas Livrées', 'Top Destination Wilayas', 'أعلى الولايات استلاماً')}
-          subtitle={localizeText(language, 'Classement par montant COD ou volume de colis', 'Ranked by delivered COD or parcel count', 'الترتيب حسب قيمة COD أو عدد الطرود')}
-          icon={<MapPin size={16} />}
-        >
-          <RankedBarList
-            className="flex-1"
-            title={localizeText(language, 'Top wilayas livrées', 'Top Destination Wilayas', 'أعلى الولايات استلاماً')}
-            subtitle={localizeText(
-              language,
-              'Classement par volume COD ou nombre de colis',
-              'Ranked by delivered COD value or parcel count',
-              'الترتيب حسب قيمة COD أو عدد الطرود'
-            )}
-            locale={locale}
-            {...standardSurface}
-            state={resolveChartState(data.rankedWilayas.length > 0)}
-            criteria={wilayaCriteria}
-            activeCriterionId={wilayaCriterion}
-            onCriterionChange={(id) => setWilayaCriterion(id as 'cod' | 'parcels')}
-            items={data.rankedWilayas}
-            emptyMessage={localizeText(
-              language,
-              'Aucune destination livrée.',
-              'No delivered destinations recorded.',
-              'لا توجد وجهات توصيل مسجلة.'
-            )}
-          />
-        </DashboardPod>
-      </DashboardPodGrid>
+        <RankedBarList
+          className={BENTO_SPAN.thirdCompact}
+          title={localizeText(language, 'Top wilayas livrées', 'Top Destination Wilayas', 'أعلى الولايات استلاماً')}
+          subtitle={localizeText(
+            language,
+            'Classement par volume COD ou nombre de colis',
+            'Ranked by delivered COD value or parcel count',
+            'الترتيب حسب قيمة COD أو عدد الطرود'
+          )}
+          locale={locale}
+          {...standardSurface}
+          state={resolveChartState(data.rankedWilayas.length > 0)}
+          criteria={wilayaCriteria}
+          activeCriterionId={wilayaCriterion}
+          onCriterionChange={(id) => setWilayaCriterion(id as 'cod' | 'parcels')}
+          items={data.rankedWilayas}
+          emptyMessage={localizeText(
+            language,
+            'Aucune destination livrée.',
+            'No delivered destinations recorded.',
+            'لا توجد وجهات توصيل مسجلة.'
+          )}
+        />
+      </DashboardBentoGrid>
 
       {isShipModalOpen && (
         <LogisticsShipmentModal

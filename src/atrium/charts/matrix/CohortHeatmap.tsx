@@ -37,14 +37,43 @@ export const CohortHeatmap: React.FC<CohortHeatmapProps> = React.memo(
     const isEmpty = state === 'ready' && (!cohorts?.length || maxCols === 0);
     const effectiveState = isEmpty ? 'empty' : state;
 
-    const latestAvg = useMemo(() => {
-      if (!cohorts?.length) return 0;
-      const vals = cohorts
-        .flatMap((row) => row.values.slice(1))
-        .filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
-      if (vals.length === 0) return 0;
-      return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
-    }, [cohorts]);
+    const { colIndices, cellMatrix, latestAvg } = useMemo(() => {
+      const cols = Array.from({ length: maxCols }, (_, c) => c);
+      if (!cohorts?.length || maxCols === 0) {
+        return {
+          colIndices: cols,
+          cellMatrix: [] as Array<Array<{ pct: number; rounded: number; bg: string; color: string; delay: string } | null>>,
+          latestAvg: 0,
+        };
+      }
+      let sum = 0;
+      let count = 0;
+      const matrix = cohorts.map((row, r) => {
+        const vals = row.values || [];
+        return cols.map((c) => {
+          const raw = vals[c];
+          if (typeof raw !== 'number' || !Number.isFinite(raw)) return null;
+          if (c >= 1) {
+            sum += raw;
+            count += 1;
+          }
+          const pct = Math.max(0, Math.min(100, raw));
+          const mixPct = Math.round(14 + (pct / 100) * 86);
+          return {
+            pct,
+            rounded: Math.round(pct),
+            bg: `color-mix(in srgb, var(--ax-c1) ${mixPct}%, var(--ax-slab))`,
+            color: pct >= 58 ? 'var(--ax-tc1)' : 'var(--ax-on)',
+            delay: `${Math.min((r * maxCols + c) * 9, 280)}ms`,
+          };
+        });
+      });
+      return {
+        colIndices: cols,
+        cellMatrix: matrix,
+        latestAvg: count > 0 ? Math.round(sum / count) : 0,
+      };
+    }, [cohorts, maxCols]);
 
     const activeVal =
       active !== null ? cohorts[active.r]?.values?.[active.c] ?? null : null;
@@ -151,7 +180,7 @@ export const CohortHeatmap: React.FC<CohortHeatmapProps> = React.memo(
             }}
           >
             <span />
-            {Array.from({ length: maxCols }).map((_, c) => (
+            {colIndices.map((c) => (
               <span
                 key={c}
                 className={`ax-tk text-center ${
@@ -181,17 +210,13 @@ export const CohortHeatmap: React.FC<CohortHeatmapProps> = React.memo(
                 {row.label}
               </span>
 
-              {Array.from({ length: maxCols }).map((_, c) => {
-                const raw = row.values[c];
-                if (typeof raw !== 'number' || !Number.isFinite(raw)) {
+              {colIndices.map((c) => {
+                const cell = cellMatrix[r]?.[c];
+                if (!cell) {
                   return <div key={c} className="h-[26px]" />;
                 }
-                const pct = Math.max(0, Math.min(100, raw));
                 const isSelected = active?.r === r && active?.c === c;
                 const isCross = active ? active.r === r || active.c === c : true;
-                const mixPct = Math.round(14 + (pct / 100) * 86);
-                const textColor =
-                  pct >= 58 ? 'var(--ax-tc1)' : 'var(--ax-on)';
 
                 return (
                   <div
@@ -205,16 +230,16 @@ export const CohortHeatmap: React.FC<CohortHeatmapProps> = React.memo(
                       isSelected ? 'relative z-10' : ''
                     }`}
                     style={{
-                      background: `color-mix(in srgb, var(--ax-c1) ${mixPct}%, var(--ax-slab))`,
-                      color: textColor,
+                      background: cell.bg,
+                      color: cell.color,
                       opacity: isCross ? 1 : 0.3,
                       transform: isSelected ? 'scale(1.1)' : 'scale(1)',
                       outline: isSelected ? '2px solid var(--ax-on)' : undefined,
-                      '--ax-delay': `${Math.min((r * maxCols + c) * 9, 280)}ms`,
+                      '--ax-delay': cell.delay,
                       transition: 'transform 0.24s var(--ax-sp2), opacity 0.16s ease',
                     } as React.CSSProperties}
                   >
-                    {Math.round(pct)}
+                    {cell.rounded}
                   </div>
                 );
               })}

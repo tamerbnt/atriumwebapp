@@ -1,4 +1,5 @@
-import { useAtriumStore } from '../services/store';
+import { useMemo } from 'react';
+import { useAtriumSelector } from '../services/store';
 import { t, TranslationKey } from './i18n';
 import { SupportedLanguage } from '../types/index';
 
@@ -6,9 +7,9 @@ import { SupportedLanguage } from '../types/index';
  * Convenient React hook for components to subscribe to current language and direction
  */
 export function useTranslation() {
-  const { language } = useAtriumStore();
-  return {
-    t: (
+  const language = useAtriumSelector((s) => s.language);
+  return useMemo(() => {
+    const translate = (
       key: TranslationKey | string,
       arg2?: string | SupportedLanguage | Record<string, any>,
       arg3?: string | Record<string, any>
@@ -27,9 +28,13 @@ export function useTranslation() {
       const fallback = typeof arg2 === 'string' ? arg2 : undefined;
       const params = typeof arg3 === 'object' && arg3 !== null ? (arg3 as Record<string, any>) : undefined;
       return t(key, language, fallback, params);
-    },
-    language,
-    isRtl: language === 'ar',
-    dir: (language === 'ar' ? 'rtl' : 'ltr') as 'rtl' | 'ltr',
-  };
+    };
+
+    return {
+      t: translate,
+      language,
+      isRtl: language === 'ar',
+      dir: (language === 'ar' ? 'rtl' : 'ltr') as 'rtl' | 'ltr',
+    };
+  }, [language]);
 }

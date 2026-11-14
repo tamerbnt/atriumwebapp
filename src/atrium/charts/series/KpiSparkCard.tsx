@@ -40,6 +40,8 @@ export const KpiSparkCard: React.FC<KpiSparkCardProps> = React.memo(
     const svgRef = useRef<SVGSVGElement>(null);
     const rectRef = useRef<DOMRect | null>(null);
     const [activeIdx, setActiveIdx] = useState<number | null>(null);
+    const activeIdxRef = useRef<number | null>(null);
+    activeIdxRef.current = activeIdx;
 
     const safeSeries = useMemo(
       () =>
@@ -159,10 +161,16 @@ export const KpiSparkCard: React.FC<KpiSparkCardProps> = React.memo(
           ? 'ax-chip-ok'
           : 'ax-chip-bad';
 
+    const setScrubIdx = (idx: number | null) => {
+      if (idx === activeIdxRef.current) return;
+      activeIdxRef.current = idx;
+      setActiveIdx(idx);
+    };
+
     const onKeyDown = useChartKeyboardScrub(
       geom.pts.length,
       clampedIdx,
-      setActiveIdx,
+      setScrubIdx,
       isRtl
     );
 
@@ -179,7 +187,7 @@ export const KpiSparkCard: React.FC<KpiSparkCardProps> = React.memo(
       if (rect.width <= 0) return;
       const relX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
       const idx = Math.round(relX * (geom.pts.length - 1));
-      setActiveIdx(idx);
+      setScrubIdx(idx);
     };
 
     const ariaSummary = `${title}: ${formatChartValue(value, { locale, format, currency, unit })}${
@@ -261,7 +269,7 @@ export const KpiSparkCard: React.FC<KpiSparkCardProps> = React.memo(
               onPointerMove={handlePointerMove}
               onPointerLeave={() => {
                 rectRef.current = null;
-                setActiveIdx(null);
+                setScrubIdx(null);
               }}
               onKeyDown={onKeyDown}
             >

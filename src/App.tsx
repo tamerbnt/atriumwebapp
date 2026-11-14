@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   useAtriumSelector,
+  useAtriumStoreLifecycle,
   selectCurrentBusinessFromState,
   setSystemDefaultLanguageAction,
   openOnboardingAction,
@@ -168,6 +169,7 @@ import { ChevronDown } from 'lucide-react';
 import { useTranslation } from './utils/useTranslation';
 
 export default function App() {
+  useAtriumStoreLifecycle();
   const currentBusiness = useAtriumSelector(selectCurrentBusinessFromState);
   const activeScreen = useAtriumSelector((s) => s.activeScreen);
   const theme = useAtriumSelector((s) => s.theme);

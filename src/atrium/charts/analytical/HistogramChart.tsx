@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { ChartCard } from '../primitives/ChartCard';
 import { RollingDigits } from '../primitives/RollingDigits';
 import { useChartKeyboardScrub, useIsRtl } from '../hooks';
@@ -41,6 +41,8 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
     const plotRef = useRef<HTMLDivElement>(null);
     const rectRef = useRef<DOMRect | null>(null);
     const [activeIdx, setActiveIdx] = useState<number | null>(null);
+    const activeIdxRef = useRef<number | null>(null);
+    activeIdxRef.current = activeIdx;
 
     const safeBins = useMemo(
       () =>
@@ -67,6 +69,17 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
       return { total, maxVal, scale, resolvedHighlight };
     }, [safeBins, showMedian, highlightIndex]);
 
+    const reversedTicks = useMemo(
+      () => [...metrics.scale.ticks].reverse(),
+      [metrics.scale.ticks]
+    );
+
+    const setScrubIdx = useCallback((idx: number | null) => {
+      if (idx === activeIdxRef.current) return;
+      activeIdxRef.current = idx;
+      setActiveIdx(idx);
+    }, []);
+
     const isEmpty =
       state === 'ready' && (safeBins.length === 0 || metrics.total <= 0);
     const effectiveState = isEmpty ? 'empty' : state;
@@ -74,7 +87,7 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
     const onKeyDown = useChartKeyboardScrub(
       safeBins.length,
       activeIdx,
-      setActiveIdx,
+      setScrubIdx,
       isRtl
     );
 
@@ -91,7 +104,7 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
       if (rect.width <= 0) return;
       const rawFrac = (e.clientX - rect.left) / rect.width;
       const frac = Math.max(0, Math.min(0.9999, isRtl ? 1 - rawFrac : rawFrac));
-      setActiveIdx(Math.floor(frac * safeBins.length));
+      setScrubIdx(Math.floor(frac * safeBins.length));
     };
 
     const activeBin =
@@ -177,7 +190,7 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
             style={{ height: 226 }}
             aria-hidden="true"
           >
-            {[...metrics.scale.ticks].reverse().map((tick, idx) => (
+            {reversedTicks.map((tick, idx) => (
               <span key={idx} className="leading-none">
                 {formatCompactTick(tick, locale)}
               </span>
@@ -193,7 +206,7 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
             onPointerMove={handlePointerMove}
             onPointerLeave={() => {
               rectRef.current = null;
-              setActiveIdx(null);
+              setScrubIdx(null);
             }}
             onKeyDown={onKeyDown}
             className="relative flex-1 min-w-0 ax-plot-focus select-none cursor-pointer"
@@ -282,7 +295,6 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
                           className="ax-bar-y w-full h-full rounded-t-[9px] rounded-b-[4px]"
                           style={{
                             background: isMedian ? 'var(--ax-c1)' : 'var(--ax-c3)',
-                            filter: isActive ? 'brightness(1.07)' : undefined,
                             boxShadow: isActive
                               ? `0 0 0 3px color-mix(in srgb, ${isMedian ? 'var(--ax-c1)' : 'var(--ax-on)'} 28%, transparent)`
                               : undefined,

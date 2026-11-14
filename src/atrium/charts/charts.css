@@ -147,9 +147,9 @@
   container-type: inline-size;
   contain: layout style;
   transition:
-    border-color 0.28s ease,
-    box-shadow 0.45s var(--ax-sp),
-    transform 0.5s var(--ax-sp-kpi);
+    border-color 0.22s ease,
+    box-shadow 0.28s ease,
+    transform 0.36s var(--ax-sp-kpi);
 }
 
 .ax-card:hover {
@@ -331,13 +331,11 @@
   font-weight: 400;
   opacity: 0;
   transform: translate3d(0, 5px, 0) scale(0.95);
-  filter: blur(2px);
   pointer-events: none;
   transform-origin: top center;
   transition:
     opacity 0.16s ease,
-    transform 0.57s var(--ax-sp),
-    filter 0.57s var(--ax-sp);
+    transform 0.36s var(--ax-sp2);
 }
 
 .ax-pop::before {
@@ -356,7 +354,6 @@
 .ax-pop[data-open='true'] {
   opacity: 1;
   transform: translate3d(0, 0, 0) scale(1);
-  filter: blur(0px);
   pointer-events: auto;
 }
 
@@ -492,7 +489,6 @@
   box-shadow: 0 1px 3px rgba(10, 10, 10, 0.12);
   pointer-events: none;
   transition: transform 0.36s var(--ax-sp-seg);
-  will-change: transform;
 }
 
 .ax-seg-btn {
@@ -539,7 +535,6 @@
 
 .ax-roll-in {
   display: inline-block;
-  will-change: transform, opacity;
 }
 
 @keyframes ax-roll-pa {
@@ -836,13 +831,11 @@
 .ax-bar-y {
   transform-origin: bottom center;
   transition: transform 0.56s var(--ax-sp2), opacity 0.2s ease, box-shadow 0.2s ease;
-  will-change: transform;
 }
 
 .ax-bar-x {
   transform-origin: left center;
   transition: transform 0.58s var(--ax-sp2), opacity 0.2s ease, background-color 0.2s ease;
-  will-change: transform;
 }
 
 [dir='rtl'] .ax-bar-x {
@@ -869,13 +862,11 @@
 .ax-card[data-visible='true'] .ax-col-enter {
   transform-origin: bottom center;
   animation: ax-grow-y 0.66s var(--ax-sp2) var(--ax-delay, 0ms) both;
-  will-change: transform, opacity;
 }
 
 .ax-card[data-visible='true'] .ax-col-neg-enter {
   transform-origin: top center;
   animation: ax-grow-y 0.56s var(--ax-sp2) var(--ax-delay, 0ms) both;
-  will-change: transform, opacity;
 }
 
 .ax-card[data-visible='true'] .ax-line-draw {
@@ -890,7 +881,6 @@
 
 .ax-card[data-visible='true'] .ax-pop-item {
   animation: ax-pop-in 0.54s var(--ax-sp2) var(--ax-delay, 0ms) both;
-  will-change: transform, opacity;
 }
 
 .ax-card[data-visible='true'] .ax-donut-arc {
@@ -906,7 +896,7 @@
 .ax-tmw .ax-tm-tile[data-active='true'] {
   opacity: 1 !important;
   transform: scale(0.985) !important;
-  filter: brightness(1.06);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.48);
 }
 
 /* Crisp column ring indicator for histogram bins */

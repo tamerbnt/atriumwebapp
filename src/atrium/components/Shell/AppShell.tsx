@@ -74,7 +74,28 @@ export function AppShell({
   const hiddenRef = useRef(hidden);
   const sidebarOpenRef = useRef(sidebarOpen);
   const queued = useRef<boolean | null>(null);
+  const queueTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const lastMove = useRef(0);
+  const rootTopRef = useRef(0);
+
+  const scheduleQueueFlush = useCallback(() => {
+    if (queueTimer.current !== undefined) return;
+    queueTimer.current = setTimeout(() => {
+      queueTimer.current = undefined;
+      if (queued.current === null) return;
+      const b = body.current;
+      if (b && b.moving) {
+        scheduleQueueFlush();
+        return;
+      }
+      const v = queued.current;
+      queued.current = null;
+      if (v !== hiddenRef.current) {
+        lastMove.current = performance.now();
+        setHidden(v);
+      }
+    }, 90);
+  }, [setHidden]);
 
   // request a change; if the bar is still travelling, apply it when it lands
   const request = useCallback(
@@ -86,14 +107,24 @@ export function AppShell({
       const b = body.current;
       if (b && b.moving) {
         queued.current = v;
+        scheduleQueueFlush();
         return;
       }
       queued.current = null;
       lastMove.current = performance.now();
       setHidden(v);
     },
-    [setHidden],
+    [setHidden, scheduleQueueFlush],
   );
+
+  useEffect(() => {
+    return () => {
+      if (queueTimer.current !== undefined) {
+        clearTimeout(queueTimer.current);
+        queueTimer.current = undefined;
+      }
+    };
+  }, []);
 
   useIsoLayoutEffect(() => {
     if (!root.current || !bar.current || !main.current || !content.current) return;
@@ -106,6 +137,7 @@ export function AppShell({
 
     const measure = (forceSnap = false) => {
       if (!root.current || !bar.current || !content.current) return;
+      rootTopRef.current = root.current.getBoundingClientRect().top;
       const gap = parseFloat(getComputedStyle(root.current as Element).columnGap) || 12;
       b.H = (bar.current as HTMLElement).offsetHeight + gap;
       pb.measure();
@@ -159,21 +191,6 @@ export function AppShell({
     pb.render();
   }, [sidebarOpen]);
 
-  // a queued request goes out as soon as the bar has landed
-  useEffect(() => {
-    const t = setInterval(() => {
-      if (queued.current !== null && body.current && !body.current.moving) {
-        const v = queued.current;
-        queued.current = null;
-        if (v !== hiddenRef.current) {
-          lastMove.current = performance.now();
-          setHidden(v);
-        }
-      }
-    }, 120);
-    return () => clearInterval(t);
-  }, [setHidden]);
-
   // scroll direction → hide / show
   useEffect(() => {
     const el = main.current;
@@ -206,20 +223,20 @@ export function AppShell({
     return () => el.removeEventListener('scroll', onScroll);
   }, [autoHide, request]);
 
-  // a mouse resting on the top edge brings the bar back
+  // a mouse resting on the top edge brings the bar back (only listening while hidden)
   useEffect(() => {
     const el = root.current;
-    if (!el) return;
+    if (!el || !hidden) return;
     let t: ReturnType<typeof setTimeout> | undefined;
     const move = (e: PointerEvent) => {
       if (e.pointerType === 'touch' || !hiddenRef.current) return;
-      const edge = e.clientY - el.getBoundingClientRect().top < 6;
+      const edge = e.clientY - rootTopRef.current < 6;
       if (edge && !t) t = setTimeout(() => { t = undefined; request(false); }, 140);
       else if (!edge && t) { clearTimeout(t); t = undefined; }
     };
     el.addEventListener('pointermove', move, { passive: true });
     return () => { el.removeEventListener('pointermove', move); clearTimeout(t); };
-  }, [request]);
+  }, [hidden, request]);
 
   // keyboard focus inside the bar always shows it
   const onBarFocus = () => request(false);

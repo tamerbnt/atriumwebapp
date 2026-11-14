@@ -47,7 +47,16 @@ import {
   Cloud,
   Building,
 } from 'lucide-react';
-import { useAtriumStore, ActiveScreen } from '../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBusinessFromState,
+  selectTerminologyFromState,
+  setScreenAction as setScreen,
+  setActivePmRoleAction as setActivePmRole,
+  setActivePmSubScreenAction as setActivePmSubScreen,
+  ActiveScreen,
+} from '../../services/store';
 import { FiveCubesLogo } from '../auth/AtriumMonolith';
 import { useTranslation } from '../../utils/useTranslation';
 import { canAccessStaffScreen, getEffectiveUserRole } from '../../utils/staffRules';
@@ -70,12 +79,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { t } = useTranslation();
   const {
     activeScreen,
-    setScreen,
     terminology,
     currentBusiness,
     activePmRole,
-    setActivePmRole,
-    setActivePmSubScreen,
     activeGarageRole,
     activeRealEstateRole,
     activeManufacturingRole,
@@ -89,7 +95,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
     activeEducationRole,
     currentUser,
     language,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      activeScreen: s.activeScreen,
+      terminology: selectTerminologyFromState(s),
+      currentBusiness: selectCurrentBusinessFromState(s),
+      activePmRole: s.activePmRole || 'direction',
+      activeGarageRole: s.activeGarageRole || 'gerant',
+      activeRealEstateRole: s.activeRealEstateRole || 'direction',
+      activeManufacturingRole: s.activeManufacturingRole || 'gerant',
+      activeLegalRole: s.activeLegalRole || 'avocat_associe',
+      activeLogisticsRole: s.activeLogisticsRole || 'gerant',
+      activeContractorRole: s.activeContractorRole || 'gerant',
+      activeAgriRole: s.activeAgriRole || 'gerant',
+      activeMembershipRole: s.activeMembershipRole || 'owner',
+      activeAppointmentRole: s.activeAppointmentRole || 'owner',
+      activePosRole: s.activePosRole || 'owner',
+      activeEducationRole: s.activeEducationRole || 'owner',
+      currentUser: s.currentUser,
+      language: s.language,
+    }),
+    shallowEqualObjects
+  );
   const [internalExpanded, setInternalExpanded] = useState(false);
   const isExpanded = openProp !== undefined ? openProp : internalExpanded;
   const setIsExpanded = onOpenChangeProp || setInternalExpanded;

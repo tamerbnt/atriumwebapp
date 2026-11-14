@@ -49,10 +49,24 @@ export const DashboardBentoGrid: React.FC<{
   children: React.ReactNode;
   className?: string;
 }> = ({ children, className = '' }) => (
-  <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 items-stretch ${className}`}>
+  <div className={`grid grid-cols-1 md:grid-cols-6 xl:grid-cols-12 gap-4 sm:gap-5 items-stretch ${className}`}>
     {children}
   </div>
 );
+
+export const BENTO_SPAN = {
+  kpiHalf: 'col-span-1 md:col-span-3 xl:col-span-6',
+  full: 'col-span-1 md:col-span-6 xl:col-span-12',
+  hero8: 'col-span-1 md:col-span-6 xl:col-span-8',
+  side4: 'col-span-1 md:col-span-6 xl:col-span-4',
+  wide7: 'col-span-1 md:col-span-6 xl:col-span-7',
+  medium5: 'col-span-1 md:col-span-6 xl:col-span-5',
+  pair5Compact: 'col-span-1 md:col-span-3 xl:col-span-5',
+  pair7Compact: 'col-span-1 md:col-span-3 xl:col-span-7',
+  halfCompact: 'col-span-1 md:col-span-3 xl:col-span-6',
+  thirdCompact: 'col-span-1 md:col-span-3 xl:col-span-4',
+  thirdWideTablet: 'col-span-1 md:col-span-6 xl:col-span-4',
+} as const;
 
 export const DashboardPodGrid: React.FC<{
   children: React.ReactNode;

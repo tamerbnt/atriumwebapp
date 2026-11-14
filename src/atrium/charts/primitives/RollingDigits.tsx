@@ -16,10 +16,18 @@ export const RollingDigits: React.FC<RollingDigitsProps> = React.memo(
     const prevRef = useRef<string>(str);
     const phaseRef = useRef<'a' | 'b'>('a');
     const hasChangedRef = useRef<boolean>(false);
+    const lastChangeMsRef = useRef<number>(0);
+    const rapidScrubRef = useRef<boolean>(false);
 
     if (prevRef.current !== str) {
+      const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      const isRapid = hasChangedRef.current && now - lastChangeMsRef.current < 120;
+      lastChangeMsRef.current = now;
+      rapidScrubRef.current = isRapid;
       hasChangedRef.current = true;
-      phaseRef.current = phaseRef.current === 'a' ? 'b' : 'a';
+      if (!isRapid) {
+        phaseRef.current = phaseRef.current === 'a' ? 'b' : 'a';
+      }
       prevRef.current = str;
     }
 
@@ -29,7 +37,7 @@ export const RollingDigits: React.FC<RollingDigitsProps> = React.memo(
 
     const chars = str.split('');
     const phase = phaseRef.current;
-    const animate = hasChangedRef.current;
+    const animate = hasChangedRef.current && !rapidScrubRef.current;
 
     return (
       <span dir="ltr" className={`ax-roll ${className}`} aria-live="off">

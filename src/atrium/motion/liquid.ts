@@ -37,6 +37,10 @@ class LiquidBody implements Body {
   private all = [this.x, this.y, this.r, this.sx, this.sy, this.bx, this.by];
   private lastClip = '';
   private lastTf = '';
+  rectLeft = 0;
+  rectTop = 0;
+  rectW = 1;
+  rectH = 1;
 
   constructor(
     readonly el: HTMLElement,
@@ -44,8 +48,13 @@ class LiquidBody implements Body {
   ) {}
 
   measure(): void {
-    this.H = this.el.offsetHeight || 1;
-    this.w = this.el.offsetWidth || 1;
+    const r = this.el.getBoundingClientRect();
+    this.rectLeft = r.left;
+    this.rectTop = r.top;
+    this.rectW = Math.max(1, r.width);
+    this.rectH = Math.max(1, r.height);
+    this.H = this.el.offsetHeight || this.rectH;
+    this.w = this.el.offsetWidth || this.rectW;
     this.cov = Math.hypot(this.w, this.H) / this.H + 0.2;
   }
 
@@ -143,10 +152,15 @@ function isDisabled(el: HTMLElement): boolean {
   return (el as HTMLButtonElement).disabled === true || el.getAttribute('aria-disabled') === 'true';
 }
 
-function aim(e: PointerEvent, b: LiquidBody): void {
-  const r = b.el.getBoundingClientRect();
-  b.px = (e.clientX - r.left) / Math.max(1, r.width);
-  b.py = (e.clientY - r.top) / Math.max(1, r.height);
+function aim(e: PointerEvent, b: LiquidBody): boolean {
+  const nx = (e.clientX - b.rectLeft) / b.rectW;
+  const ny = (e.clientY - b.rectTop) / b.rectH;
+  if (Math.abs(nx - b.px) < 0.01 && Math.abs(ny - b.py) < 0.01) {
+    return false;
+  }
+  b.px = nx;
+  b.py = ny;
+  return true;
 }
 
 let installed = false;
@@ -195,8 +209,9 @@ export function installLiquid(): void {
   const onMove = (e: PointerEvent) => {
     if (!hovered) return;
     const b = bodyFor(hovered);
-    aim(e, b);
-    wake(b);
+    if (aim(e, b)) {
+      wake(b);
+    }
   };
   const onDown = (e: PointerEvent) => {
     if (e.button !== 0) return;

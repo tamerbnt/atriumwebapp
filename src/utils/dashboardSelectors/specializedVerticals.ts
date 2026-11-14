@@ -76,6 +76,7 @@ import {
   filterByScope,
   getPeriodBuckets,
   parseIsoDay,
+  parseIsoDayMs,
   pickText,
   resolvePeriodKey,
   type DashboardPeriodKey,
@@ -132,13 +133,21 @@ export function selectMedicalDashboard(input: MedicalDashboardInput) {
   const lowConsumables = consumables.filter((c) => (c.currentStock ?? c.currentStockUnits ?? 0) <= (c.minStockAlert ?? c.reorderThresholdUnits ?? 5)).length;
 
   const funnelConsultations = filterByPeriod(consultations, (c) => c.consultationDate || c.createdAt, funnelPeriod, anchorDate);
+  let funnelExamCount = 0;
+  let funnelDoneCount = 0;
+  let funnelPaidCount = 0;
+  for (const c of funnelConsultations) {
+    if (c.status === 'InConsultation' || c.status === 'Completed') funnelExamCount += 1;
+    if (c.status === 'Completed') funnelDoneCount += 1;
+    if (c.isPaid) funnelPaidCount += 1;
+  }
   const funnelStages: FunnelStage[] =
     funnelConsultations.length > 0
       ? [
           { id: 'queue', label: pickText(language, 'Accueil / Attente', 'Waiting Queue', 'الانتظار'), value: funnelConsultations.length },
-          { id: 'exam', label: pickText(language, 'En consultation', 'In Exam', 'قيد الفحص'), value: funnelConsultations.filter((c) => ['InConsultation', 'Completed'].includes(c.status)).length },
-          { id: 'done', label: pickText(language, 'Terminées', 'Completed', 'المكتملة'), value: funnelConsultations.filter((c) => c.status === 'Completed').length },
-          { id: 'paid', label: pickText(language, 'Encaissées', 'Paid', 'المدفوعة'), value: funnelConsultations.filter((c) => c.isPaid).length },
+          { id: 'exam', label: pickText(language, 'En consultation', 'In Exam', 'قيد الفحص'), value: funnelExamCount },
+          { id: 'done', label: pickText(language, 'Terminées', 'Completed', 'المكتملة'), value: funnelDoneCount },
+          { id: 'paid', label: pickText(language, 'Encaissées', 'Paid', 'المدفوعة'), value: funnelPaidCount },
         ]
       : [];
 
@@ -298,37 +307,51 @@ export function selectGarageDashboard(input: GarageDashboardInput) {
     .filter((b) => b.endHour > timelineStartHour && b.startHour < timelineEndHour);
 
   const funnelOrders = filterByPeriod(orders, (o) => o.intakeDate, funnelPeriod, anchorDate);
-  const stageCounts = [
-    { id: 'intake', label: pickText(language, 'Réception', 'Intake', 'الاستقبال'), statuses: ['Intake', 'Diagnostic', 'WaitingApproval', 'WaitingParts', 'InRepair', 'Testing', 'ReadyForPickup', 'Delivered'] },
-    { id: 'diag', label: pickText(language, 'Diagnostic', 'Diagnostic', 'التشخيص'), statuses: ['Diagnostic', 'WaitingApproval', 'WaitingParts', 'InRepair', 'Testing', 'ReadyForPickup', 'Delivered'] },
-    { id: 'repair', label: pickText(language, 'En atelier', 'In Repair', 'قيد الإصلاح'), statuses: ['InRepair', 'Testing', 'ReadyForPickup', 'Delivered'] },
-    { id: 'ready', label: pickText(language, 'Prêt / Livré', 'Ready / Delivered', 'جاهز / مسلم'), statuses: ['ReadyForPickup', 'Delivered'] },
-  ];
+  let intakeCount = 0;
+  let diagCount = 0;
+  let repairCount = 0;
+  let readyCount = 0;
+  for (const o of funnelOrders) {
+    const st = o.status;
+    if (st === 'Intake' || st === 'Diagnostic' || st === 'WaitingApproval' || st === 'WaitingParts' || st === 'InRepair' || st === 'Testing' || st === 'ReadyForPickup' || st === 'Delivered') {
+      intakeCount += 1;
+    }
+    if (st === 'Diagnostic' || st === 'WaitingApproval' || st === 'WaitingParts' || st === 'InRepair' || st === 'Testing' || st === 'ReadyForPickup' || st === 'Delivered') {
+      diagCount += 1;
+    }
+    if (st === 'InRepair' || st === 'Testing' || st === 'ReadyForPickup' || st === 'Delivered') {
+      repairCount += 1;
+    }
+    if (st === 'ReadyForPickup' || st === 'Delivered') {
+      readyCount += 1;
+    }
+  }
   const funnelStages: FunnelStage[] =
     funnelOrders.length > 0
-      ? stageCounts.map((s) => ({
-          id: s.id,
-          label: s.label,
-          value: funnelOrders.filter((o) => s.statuses.includes(o.status)).length,
-        }))
+      ? [
+          { id: 'intake', label: pickText(language, 'Réception', 'Intake', 'الاستقبال'), value: intakeCount },
+          { id: 'diag', label: pickText(language, 'Diagnostic', 'Diagnostic', 'التشخيص'), value: diagCount },
+          { id: 'repair', label: pickText(language, 'En atelier', 'In Repair', 'قيد الإصلاح'), value: repairCount },
+          { id: 'ready', label: pickText(language, 'Prêt / Livré', 'Ready / Delivered', 'جاهز / مسلم'), value: readyCount },
+        ]
       : [];
 
   const wfOrders = filterByPeriod(orders, (o) => o.intakeDate, waterfallPeriod, anchorDate);
   const wfInvoices = filterByPeriod(invoices, (i) => i.issuedAt, waterfallPeriod, anchorDate);
   const partBuyById = new Map(parts.map((p) => [p.id, p.buyingPriceDzd || 0]));
   const partBuyBySku = new Map(parts.map((p) => [p.sku, p.buyingPriceDzd || 0]));
-  const laborTotal = wfOrders.reduce((s, o) => s + (o.laborCostDzd || 0), 0);
-  const partsRevTotal = wfOrders.reduce((s, o) => s + (o.partsCostDzd || 0), 0);
+  let laborTotal = 0;
+  let partsRevTotal = 0;
+  let partsCogs = 0;
+  for (const o of wfOrders) {
+    laborTotal += o.laborCostDzd || 0;
+    partsRevTotal += o.partsCostDzd || 0;
+    for (const line of o.partsUsed || []) {
+      const unitBuy = partBuyById.get(line.partId) ?? partBuyBySku.get(line.sku) ?? 0;
+      partsCogs += unitBuy * (line.quantity || 1);
+    }
+  }
   const discountTotal = wfInvoices.reduce((s, i) => s + (i.discountHt || 0), 0);
-  const partsCogs = wfOrders.reduce(
-    (s, o) =>
-      s +
-      (o.partsUsed || []).reduce((ps, line) => {
-        const unitBuy = partBuyById.get(line.partId) ?? partBuyBySku.get(line.sku) ?? 0;
-        return ps + unitBuy * (line.quantity || 1);
-      }, 0),
-    0
-  );
   const waterfallSteps: WaterfallStep[] =
     wfOrders.length > 0
       ? [
@@ -676,13 +699,29 @@ export function selectLegalDashboard(input: LegalDashboardInput) {
 
   const funnelMatters = filterByPeriod(matters, (m) => m.createdAt, funnelPeriod, anchorDate);
   const funnelDeeds = filterByPeriod(notaryDeeds, (n) => n.signedAt || n.createdAt, funnelPeriod, anchorDate);
+  let activeMatters = 0;
+  let delibMatters = 0;
+  let closedMatters = 0;
+  for (const m of funnelMatters) {
+    if (m.status === 'Active' || m.status === 'PendingHearing') activeMatters += 1;
+    else if (m.status === 'UnderDeliberation') delibMatters += 1;
+    else if (m.status === 'Closed' || m.status === 'Archived') closedMatters += 1;
+  }
+  let draftDeeds = 0;
+  let minuteDeeds = 0;
+  let sealedDeeds = 0;
+  for (const n of funnelDeeds) {
+    if (n.status === 'draft') draftDeeds += 1;
+    else if (n.status === 'minute_signed') minuteDeeds += 1;
+    else if (n.status === 'enregistre_impots' || n.status === 'publie_conservation') sealedDeeds += 1;
+  }
   const funnelStages: FunnelStage[] =
     funnelMatters.length > 0 || funnelDeeds.length > 0
       ? [
           { id: 'total', label: pickText(language, 'Dossiers & Actes', 'Matters & Deeds', 'الملفات والعقود'), value: funnelMatters.length + funnelDeeds.length },
-          { id: 'active', label: pickText(language, 'En instruction', 'Active Docket', 'قيد الدراسة'), value: funnelMatters.filter((m) => m.status === 'Active' || m.status === 'PendingHearing').length + funnelDeeds.filter((n) => n.status === 'draft').length },
-          { id: 'delib', label: pickText(language, 'Délibéré / Minute', 'Hearing / Minute', 'المداولة / التوقيع'), value: funnelMatters.filter((m) => m.status === 'UnderDeliberation').length + funnelDeeds.filter((n) => n.status === 'minute_signed').length },
-          { id: 'closed', label: pickText(language, 'Clôturés / Publiés', 'Closed / Sealed', 'المغلقة / المشهرة'), value: funnelMatters.filter((m) => m.status === 'Closed' || m.status === 'Archived').length + funnelDeeds.filter((n) => n.status === 'enregistre_impots' || n.status === 'publie_conservation').length },
+          { id: 'active', label: pickText(language, 'En instruction', 'Active Docket', 'قيد الدراسة'), value: activeMatters + draftDeeds },
+          { id: 'delib', label: pickText(language, 'Délibéré / Minute', 'Hearing / Minute', 'المداولة / التوقيع'), value: delibMatters + minuteDeeds },
+          { id: 'closed', label: pickText(language, 'Clôturés / Publiés', 'Closed / Sealed', 'المغلقة / المشهرة'), value: closedMatters + sealedDeeds },
         ]
       : [];
 
@@ -718,11 +757,19 @@ export function selectLegalDashboard(input: LegalDashboardInput) {
   for (const m of windowMatters) {
     clientMatterCount.set(m.clientName, (clientMatterCount.get(m.clientName) || 0) + 1);
   }
+  const paidByMatterTitle = new Map<string, number>();
+  const paidByClientUntitled = new Map<string, number>();
+  for (const r of windowReceipts) {
+    const amt = r.netCollectedDzd || 0;
+    if (r.matterTitle) {
+      paidByMatterTitle.set(r.matterTitle, (paidByMatterTitle.get(r.matterTitle) || 0) + amt);
+    } else if (r.clientName) {
+      paidByClientUntitled.set(r.clientName, (paidByClientUntitled.get(r.clientName) || 0) + amt);
+    }
+  }
   const allFeeDumbbell: DumbbellItem[] = windowMatters.slice(0, 6).map((m) => {
     const singleMatterClient = (clientMatterCount.get(m.clientName) || 0) === 1;
-    const paidForMatter = windowReceipts
-      .filter((r) => (r.matterTitle ? r.matterTitle === m.title : singleMatterClient && r.clientName === m.clientName))
-      .reduce((s, r) => s + (r.netCollectedDzd || 0), 0);
+    const paidForMatter = (paidByMatterTitle.get(m.title) || 0) + (singleMatterClient ? paidByClientUntitled.get(m.clientName) || 0 : 0);
     return {
       id: m.id,
       label: m.matterNumber,
@@ -791,24 +838,42 @@ export function selectLogisticsDashboard(input: LogisticsDashboardInput) {
   );
 
   const funnelShipments = filterByPeriod(shipments, (s) => s.createdAt, funnelPeriod, anchorDate);
-  const funnelDelivered = funnelShipments.filter((s) => s.status === 'Delivered');
+  let sortedCount = 0;
+  let outCount = 0;
+  let deliveredCount = 0;
+  for (const s of funnelShipments) {
+    if (s.status === 'Delivered') {
+      sortedCount += 1;
+      outCount += 1;
+      deliveredCount += 1;
+    } else if (s.status === 'OutForDelivery') {
+      sortedCount += 1;
+      outCount += 1;
+    } else if (s.status === 'Sorted') {
+      sortedCount += 1;
+    }
+  }
   const funnelStages: FunnelStage[] =
     funnelShipments.length > 0
       ? [
           { id: 'hub', label: pickText(language, 'Colis reçus Hub', 'Hub Intake', 'استلام المركز'), value: funnelShipments.length },
-          { id: 'sorted', label: pickText(language, 'Triés / Ensachés', 'Sorted', 'الفرز'), value: funnelShipments.filter((s) => ['Sorted', 'OutForDelivery', 'Delivered'].includes(s.status)).length },
-          { id: 'out', label: pickText(language, 'En tournée', 'Out for Delivery', 'قيد التوصيل'), value: funnelShipments.filter((s) => ['OutForDelivery', 'Delivered'].includes(s.status)).length },
-          { id: 'del', label: pickText(language, 'Livrés COD', 'Delivered', 'تم التسليم'), value: funnelDelivered.length },
+          { id: 'sorted', label: pickText(language, 'Triés / Ensachés', 'Sorted', 'الفرز'), value: sortedCount },
+          { id: 'out', label: pickText(language, 'En tournée', 'Out for Delivery', 'قيد التوصيل'), value: outCount },
+          { id: 'del', label: pickText(language, 'Livrés COD', 'Delivered', 'تم التسليم'), value: deliveredCount },
         ]
       : [];
 
   const wfShipments = filterByPeriod(shipments, (s) => s.createdAt, waterfallPeriod, anchorDate);
   const wfDischarges = filterByPeriod(discharges, (d) => d.timestamp, waterfallPeriod, anchorDate);
   const wfRemittances = filterByPeriod(remittances, (r) => r.executedAt, waterfallPeriod, anchorDate);
-  const wfDelivered = wfShipments.filter((s) => s.status === 'Delivered');
-  const grossCod = wfDelivered.reduce((s, x) => s + (x.codAmountDzd || 0), 0);
-  const shipFees = wfShipments.reduce((s, x) => s + (x.shippingFeeDzd || 0), 0);
-  const stampFees = wfShipments.reduce((s, x) => s + (x.stampDutyDzd || 0), 0);
+  let grossCod = 0;
+  let shipFees = 0;
+  let stampFees = 0;
+  for (const x of wfShipments) {
+    if (x.status === 'Delivered') grossCod += x.codAmountDzd || 0;
+    shipFees += x.shippingFeeDzd || 0;
+    stampFees += x.stampDutyDzd || 0;
+  }
   const discrepancy = wfDischarges.reduce((s, d) => s + Math.abs(d.discrepancyDzd || 0), 0);
   const netRemittance = wfRemittances.length > 0
     ? wfRemittances.reduce((s, r) => s + (r.netPayoutDzd || 0), 0)
@@ -849,10 +914,8 @@ export function selectLogisticsDashboard(input: LogisticsDashboardInput) {
   const deliveredCounts = new Array<number>(bucketCount).fill(0);
   const returnedCounts = new Array<number>(bucketCount).fill(0);
   for (const s of shipments) {
-    const d = parseIsoDay(s.createdAt);
-    if (!d) continue;
-    const ms = d.getTime();
-    if (ms < effectiveStart || ms > bucketRange.endMs) continue;
+    const ms = parseIsoDayMs(s.createdAt);
+    if (ms === null || ms < effectiveStart || ms > bucketRange.endMs) continue;
     const idx = Math.min(bucketCount - 1, Math.max(0, Math.floor((ms - effectiveStart) / bucketMs)));
     if (s.status === 'Delivered') deliveredCounts[idx] += 1;
     else if (s.status === 'Returned' || s.status === 'Postponed') returnedCounts[idx] += 1;
@@ -867,19 +930,28 @@ export function selectLogisticsDashboard(input: LogisticsDashboardInput) {
   }));
 
   const weightShipments = filterByPeriod(shipments, (s) => s.createdAt, weightPeriod, anchorDate);
+  const weightCounts = [0, 0, 0, 0, 0];
+  for (const s of weightShipments) {
+    const w = s.weightKg || 0;
+    if (w <= 1) weightCounts[0] += 1;
+    else if (w <= 3) weightCounts[1] += 1;
+    else if (w <= 5) weightCounts[2] += 1;
+    else if (w <= 10) weightCounts[3] += 1;
+    else weightCounts[4] += 1;
+  }
   const weightBinsDef = [
-    { id: 'w1', label: '0–1kg', min: 0, max: 1 },
-    { id: 'w2', label: '1–3kg', min: 1.001, max: 3 },
-    { id: 'w3', label: '3–5kg', min: 3.001, max: 5 },
-    { id: 'w4', label: '5–10kg', min: 5.001, max: 10 },
-    { id: 'w5', label: '>10kg', min: 10.001, max: Infinity },
+    { id: 'w1', label: '0–1kg' },
+    { id: 'w2', label: '1–3kg' },
+    { id: 'w3', label: '3–5kg' },
+    { id: 'w4', label: '5–10kg' },
+    { id: 'w5', label: '>10kg' },
   ];
   const weightBins: HistogramBin[] =
     weightShipments.length > 0
-      ? weightBinsDef.map((b) => ({
+      ? weightBinsDef.map((b, idx) => ({
           id: b.id,
           label: b.label,
-          value: weightShipments.filter((s) => (s.weightKg || 0) >= b.min && (s.weightKg || 0) <= b.max).length,
+          value: weightCounts[idx],
         }))
       : [];
 
@@ -975,10 +1047,16 @@ export function selectContractorDashboard(input: ContractorDashboardInput) {
 
   const wfDgps = filterByScope(dgps, (d) => d.issuedDate || d.createdAt, waterfallScope, period, anchorDate);
   const wfSubs = filterByScope(subcontractors, (s) => s.createdAt, waterfallScope, period, anchorDate);
-  const grossCert = wfDgps.reduce((s, d) => s + (d.periodGrossDzd || d.grossCompletedDzd || 0), 0);
-  const retHold = wfDgps.reduce((s, d) => s + (d.retentionGuaranteeDzd || 0), 0);
+  let grossCert = 0;
+  let retHold = 0;
+  let netPayableSum = 0;
+  for (const d of wfDgps) {
+    grossCert += d.periodGrossDzd || d.grossCompletedDzd || 0;
+    retHold += d.retentionGuaranteeDzd || 0;
+    netPayableSum += d.netPayableDzd || 0;
+  }
   const subPaid = wfSubs.reduce((s, x) => s + (x.paidAmountDzd || 0), 0);
-  const netPayable = wfDgps.reduce((s, d) => s + (d.netPayableDzd || 0), 0) || Math.max(0, grossCert - retHold - subPaid);
+  const netPayable = netPayableSum || Math.max(0, grossCert - retHold - subPaid);
   const waterfallSteps: WaterfallStep[] =
     wfDgps.length > 0 || projects.length > 0
       ? [
@@ -989,10 +1067,11 @@ export function selectContractorDashboard(input: ContractorDashboardInput) {
         ]
       : [];
 
+  const anchorMs = anchorDate.getTime();
   const allProgressDumbbell: DumbbellItem[] = projects.slice(0, 6).map((p) => {
-    const start = parseIsoDay(p.startDate)?.getTime() ?? anchorDate.getTime();
-    const end = parseIsoDay(p.targetEndDate)?.getTime() ?? anchorDate.getTime();
-    const elapsedPct = end > start ? Math.min(100, Math.max(0, Math.round(((anchorDate.getTime() - start) / (end - start)) * 100))) : 0;
+    const start = parseIsoDayMs(p.startDate) ?? anchorMs;
+    const end = parseIsoDayMs(p.targetEndDate) ?? anchorMs;
+    const elapsedPct = end > start ? Math.min(100, Math.max(0, Math.round(((anchorMs - start) / (end - start)) * 100))) : 0;
     return {
       id: p.id,
       label: p.projectName,
@@ -1057,14 +1136,23 @@ export function selectAgricultureDashboard(input: AgricultureDashboardInput) {
   );
 
   const nowMs = anchorDate.getTime();
-  const lockedParcels = parcels.filter((p) =>
-    cropCycles.some((c) => c.parcelId === p.id && c.currentPhase === 'treatment_locked') ||
-    treatmentLogs.some((t) => {
-      if (t.parcelId !== p.id) return false;
-      const allow = parseIsoDay(t.harvestAllowedDate);
-      return allow ? allow.getTime() > nowMs : false;
-    })
-  ).length;
+  const lockedParcelIds = new Set<string>();
+  for (const c of cropCycles) {
+    if (c.currentPhase === 'treatment_locked') lockedParcelIds.add(c.parcelId);
+  }
+  for (const t of treatmentLogs) {
+    if (lockedParcelIds.has(t.parcelId)) continue;
+    const allowMs = parseIsoDayMs(t.harvestAllowedDate);
+    if (allowMs !== null && allowMs > nowMs) lockedParcelIds.add(t.parcelId);
+  }
+  let lockedParcels = 0;
+  let totalQuotaM3 = 0;
+  let totalConsumedM3 = 0;
+  for (const p of parcels) {
+    if (lockedParcelIds.has(p.id)) lockedParcels += 1;
+    totalQuotaM3 += p.anrhAnnualQuotaM3 || 0;
+    totalConsumedM3 += p.anrhConsumedM3 || 0;
+  }
   const quarantinedCows = dairyCows.filter((c) => c.isInWithholdingLockout || c.reproStatus === 'Quarantaine').length;
 
   const allWaterBullets: BulletItem[] = parcels
@@ -1114,19 +1202,8 @@ export function selectAgricultureDashboard(input: AgricultureDashboardInput) {
   const windowPointages = filterByPeriod(pointages, (p) => p.date || p.createdAt, radarPeriod, anchorDate);
 
   const waterMarginPct =
-    parcels.reduce((s, p) => s + (p.anrhAnnualQuotaM3 || 0), 0) > 0
-      ? Math.max(
-          0,
-          Math.min(
-            100,
-            Math.round(
-              (1 -
-                parcels.reduce((s, p) => s + (p.anrhConsumedM3 || 0), 0) /
-                  parcels.reduce((s, p) => s + (p.anrhAnnualQuotaM3 || 0), 0)) *
-                100
-            )
-          )
-        )
+    totalQuotaM3 > 0
+      ? Math.max(0, Math.min(100, Math.round((1 - totalConsumedM3 / totalQuotaM3) * 100)))
       : 0;
   const darCompliancePct = parcels.length > 0 ? Math.round(((parcels.length - lockedParcels) / parcels.length) * 100) : 0;
   const herdHealthyPct = dairyCows.length > 0 ? Math.round(((dairyCows.length - quarantinedCows) / dairyCows.length) * 100) : 0;

@@ -64,19 +64,114 @@ import {
   Building,
   User,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBusinessFromState,
+  selectSelectedMemberFromState,
+  selectTerminologyFromState,
+  selectUnreadNotificationCountFromState,
+  setScreenAction as setScreen,
+  selectMemberAction as selectMember,
+  setActivePmRoleAction as setActivePmRole,
+  setActivePmSubScreenAction as setActivePmSubScreen,
+  toggleTopBarCollapsedAction as toggleTopBarCollapsed,
+  toggleTopBarAutoHideAction as toggleTopBarAutoHide,
+  syncWithSupabaseAction as syncWithSupabase,
+  openFastSwitchAction as openFastSwitch,
+  openOnboardingAction as openOnboarding,
+  logoutAction as logout,
+  pauseTimerAction as pauseTimer,
+  resumeTimerAction as resumeTimer,
+  stopTimerAction as stopTimer,
+  setLanguageAction as setLanguage,
+  setSystemDefaultLanguageAction as setSystemDefaultLanguage,
+  switchBusinessAction as switchBusiness,
+  switchBranchAction as switchBranch,
+  setNetworkModeAction as setNetworkMode,
+} from '../../services/store';
 import { formatDuration } from '../../utils/rules';
 import { Seek } from '../ui/Seek';
 import { useTranslation } from '../../utils/useTranslation';
 import { NotificationDropdown } from './NotificationDropdown';
 import { Menu, MenuTriggerProps } from '@/atrium';
-import { LiveButton, LiveIconButton, LivePopoverPanel, popoverClasses } from '../ui/live';
+import { isSupabaseConfigured as checkSupabaseConfigured } from '../../lib/supabase/client';
+import { LiveButton, LiveIconButton } from '../ui/live';
 
 interface TopBarProps {
   onOpenVoucherModal: () => void;
   onToggleMobileMenu?: () => void;
   onOpenCommandPalette?: () => void;
 }
+
+const TopBarTimerWidget: React.FC<{ isFreelance: boolean; language: string }> = React.memo(
+  ({ isFreelance, language }) => {
+    const { t } = useTranslation();
+    const activeTimer = useAtriumSelector((s) => s.activeTimer);
+    if (!activeTimer.isRunning && !isFreelance) return null;
+
+    return (
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#F3EDE7]/90 dark:bg-neutral-800/90 border border-[#E6DED6] dark:border-neutral-700/70 text-xs shadow-2xs">
+        {activeTimer.isRunning ? (
+          <>
+            <span className={`w-2 h-2 rounded-full ${activeTimer.isPaused ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`} />
+            <button
+              type="button"
+              onClick={() => setScreen(isFreelance ? 'analytics' : 'scheduler')}
+              className="font-bold text-black dark:text-white font-mono tabular-nums hover:text-[#d4522f] transition-colors cursor-pointer"
+              title={t('topbar_tt_view_timer', language)}
+            >
+              {formatDuration(activeTimer.elapsedSeconds)}
+            </button>
+            <span className="text-[11px] text-black/70 dark:text-white/75 max-w-[120px] truncate hidden sm:inline">
+              {activeTimer.clientName}
+            </span>
+            <div className="flex items-center gap-1 pl-1 border-l border-neutral-300 dark:border-neutral-700">
+              {activeTimer.isPaused ? (
+                <button
+                  type="button"
+                  onClick={resumeTimer}
+                  className="p-1 rounded-full text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-950 cursor-pointer"
+                  title={t('topbar_tt_resume_timer', language)}
+                >
+                  <Play size={12} className="fill-current" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={pauseTimer}
+                  className="p-1 rounded-full text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-950 cursor-pointer"
+                  title={t('topbar_tt_pause_timer', language)}
+                >
+                  <Pause size={12} />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={stopTimer}
+                className="p-1 rounded-full text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-950 cursor-pointer"
+                title={t('topbar_tt_stop_timer', language)}
+              >
+                <Square size={11} className="fill-current" />
+              </button>
+            </div>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setScreen(isFreelance ? 'analytics' : 'scheduler')}
+            className="flex items-center gap-1.5 text-[11px] font-semibold text-black/80 dark:text-white/85 hover:text-[#d4522f] transition-colors cursor-pointer"
+            title={t('topbar_tt_open_timer', language)}
+          >
+            <Clock size={13} className="text-[#d4522f]" />
+            <span>{t('topbar_btn_start_timer', language)}</span>
+          </button>
+        )}
+      </div>
+    );
+  }
+);
+TopBarTimerWidget.displayName = 'TopBarTimerWidget';
 
 export const TopBar: React.FC<TopBarProps> = ({
   onOpenVoucherModal,
@@ -86,37 +181,14 @@ export const TopBar: React.FC<TopBarProps> = ({
   const { t } = useTranslation();
   const {
     activeScreen,
-    setScreen,
     selectedMember,
-    selectMember,
     language,
-    isLanguageAuto,
-    setLanguage,
-    setSystemDefaultLanguage,
     currentUser,
     terminology,
-    openFastSwitch,
-    openOnboarding,
-    logout,
-    supabaseStatus,
     isSyncing,
-    syncWithSupabase,
-    isSupabaseConfigured,
-    lastSyncedAt,
     currentBusiness,
-    businesses,
-    branches,
-    currentBusinessId,
-    switchBusiness,
-    switchBranch,
-    activeTimer,
-    pauseTimer,
-    resumeTimer,
-    stopTimer,
-    openDesktopUpgradeModal,
     activePmRole,
-    setActivePmRole,
-    setActivePmSubScreen,
+    activePosRole,
     activeGarageRole,
     activeRealEstateRole,
     activeManufacturingRole,
@@ -124,15 +196,32 @@ export const TopBar: React.FC<TopBarProps> = ({
     activeLogisticsRole,
     activeContractorRole,
     activeAgriRole,
-    activePosRole,
     unreadNotificationCount,
-    networkMode,
-    setNetworkMode,
-    toggleTopBarCollapsed,
-    isTopBarCollapsed,
     isTopBarAutoHide,
-    toggleTopBarAutoHide,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      activeScreen: s.activeScreen,
+      selectedMember: selectSelectedMemberFromState(s),
+      language: s.language,
+      currentUser: s.currentUser,
+      terminology: selectTerminologyFromState(s),
+      isSyncing: s.isSyncing,
+      currentBusiness: selectCurrentBusinessFromState(s),
+      activePmRole: s.activePmRole || 'direction',
+      activePosRole: s.activePosRole || 'owner',
+      activeGarageRole: s.activeGarageRole || 'gerant',
+      activeRealEstateRole: s.activeRealEstateRole || 'direction',
+      activeManufacturingRole: s.activeManufacturingRole || 'gerant',
+      activeLegalRole: s.activeLegalRole || 'avocat_associe',
+      activeLogisticsRole: s.activeLogisticsRole || 'gerant',
+      activeContractorRole: s.activeContractorRole || 'gerant',
+      activeAgriRole: s.activeAgriRole || 'gerant',
+      unreadNotificationCount: selectUnreadNotificationCountFromState(s),
+      isTopBarAutoHide: s.isTopBarAutoHide ?? false,
+    }),
+    shallowEqualObjects
+  );
+  const isSupabaseConfigured = checkSupabaseConfigured();
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -868,65 +957,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
 
       {/* Center: Live Floating Stopwatch Pill */}
-      {!isProjectMilestone && (activeTimer.isRunning || currentBusiness.category === 'freelance_solo') && (
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#F3EDE7]/90 dark:bg-neutral-800/90 border border-[#E6DED6] dark:border-neutral-700/70 text-xs shadow-2xs">
-          {activeTimer.isRunning ? (
-            <>
-              <span className={`w-2 h-2 rounded-full ${activeTimer.isPaused ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`} />
-              <button
-                type="button"
-                onClick={() => setScreen(isFreelance ? 'analytics' : 'scheduler')}
-                className="font-bold text-black dark:text-white font-mono tabular-nums hover:text-[#d4522f] transition-colors cursor-pointer"
-                title={t('topbar_tt_view_timer', language)}
-              >
-                {formatDuration(activeTimer.elapsedSeconds)}
-              </button>
-              <span className="text-[11px] text-black/70 dark:text-white/75 max-w-[120px] truncate hidden sm:inline">
-                {activeTimer.clientName}
-              </span>
-              <div className="flex items-center gap-1 pl-1 border-l border-neutral-300 dark:border-neutral-700">
-                {activeTimer.isPaused ? (
-                  <button
-                    type="button"
-                    onClick={resumeTimer}
-                    className="p-1 rounded-full text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-950 cursor-pointer"
-                    title={t('topbar_tt_resume_timer', language)}
-                  >
-                    <Play size={12} className="fill-current" />
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={pauseTimer}
-                    className="p-1 rounded-full text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-950 cursor-pointer"
-                    title={t('topbar_tt_pause_timer', language)}
-                  >
-                    <Pause size={12} />
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={stopTimer}
-                  className="p-1 rounded-full text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-950 cursor-pointer"
-                  title={t('topbar_tt_stop_timer', language)}
-                >
-                  <Square size={11} className="fill-current" />
-                </button>
-              </div>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setScreen(isFreelance ? 'analytics' : 'scheduler')}
-              className="flex items-center gap-1.5 text-[11px] font-semibold text-black/80 dark:text-white/85 hover:text-[#d4522f] transition-colors cursor-pointer"
-              title={t('topbar_tt_open_timer', language)}
-            >
-              <Clock size={13} className="text-[#d4522f]" />
-              <span>{t('topbar_btn_start_timer', language)}</span>
-            </button>
-          )}
-        </div>
-      )}
+      {!isProjectMilestone && <TopBarTimerWidget isFreelance={isFreelance} language={language} />}
 
       {/* Right Controls */}
       <div className="flex items-center gap-2.5 shrink-0">

@@ -95,7 +95,7 @@ const ChartSkeleton: React.FC<{ kind: ChartSkeletonKind }> = ({ kind }) => {
  * Shared Atrium Dashboard card shell (.ax-card parity) with container queries,
  * optional per-card filter control, ? help popover, and loading/empty/error states.
  */
-export const ChartCard: React.FC<ChartCardProps> = ({
+export const ChartCard: React.FC<ChartCardProps> = React.memo(({
   title,
   subtitle,
   helpText,
@@ -185,4 +185,6 @@ export const ChartCard: React.FC<ChartCardProps> = ({
       {footer && state === 'ready' && <footer className="pt-0.5">{footer}</footer>}
     </section>
   );
-};
+});
+
+ChartCard.displayName = 'ChartCard';

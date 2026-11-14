@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ChartCard } from '../primitives/ChartCard';
 import { ChartSegmented } from '../primitives/ChartSegmented';
 import { RollingDigits } from '../primitives/RollingDigits';
@@ -49,10 +49,18 @@ export const RadialGauge: React.FC<RadialGaugeProps> = React.memo(
       return Math.max(0, Math.min(100, activeMetric.value));
     }, [activeMetric]);
 
-    const handleMetricChange = (id: string) => {
-      setInternalMetricId(id);
-      onMetricChange?.(id);
-    };
+    const metricOptions = useMemo(
+      () => (metrics.length > 1 ? metrics.map((m) => ({ id: m.id, label: m.label })) : undefined),
+      [metrics]
+    );
+
+    const handleMetricChange = useCallback(
+      (id: string) => {
+        setInternalMetricId(id);
+        onMetricChange?.(id);
+      },
+      [onMetricChange]
+    );
 
     const tickList = useMemo(() => {
       const items = [];
@@ -108,9 +116,9 @@ export const RadialGauge: React.FC<RadialGaugeProps> = React.memo(
         className={className}
         data-testid={testId}
         headerRight={
-          metrics.length > 1 ? (
+          metricOptions ? (
             <ChartSegmented
-              options={metrics.map((m) => ({ id: m.id, label: m.label }))}
+              options={metricOptions}
               value={activeMetric?.id || ''}
               onChange={handleMetricChange}
               isRtl={isRtl}

@@ -26,6 +26,7 @@ export { GuardianCard } from './GuardianCard';
 export type { GuardianCardProps } from './GuardianCard';
 
 export {
+  BENTO_SPAN,
   DashboardBentoFrame,
   DashboardBentoGrid,
   DashboardPodGrid,

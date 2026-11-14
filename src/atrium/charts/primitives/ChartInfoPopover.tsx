@@ -30,17 +30,21 @@ export const ChartInfoPopover: React.FC<ChartInfoPopoverProps> = React.memo(
         const wRect = wrap.getBoundingClientRect();
         const cRect = card.getBoundingClientRect();
         const popW = Math.min(232, cRect.width * 0.7);
-        const isRtl = getComputedStyle(card).direction === 'rtl';
+        const dirAttr = (card as HTMLElement).dir || card.closest('[dir]')?.getAttribute('dir');
+        const isRtl = dirAttr ? dirAttr === 'rtl' : getComputedStyle(card).direction === 'rtl';
         const btnCenterX = wRect.left + wRect.width / 2;
         const idealLeft = isRtl ? wRect.right - popW : wRect.left - 8;
         const minLeft = cRect.left + 12;
         const maxLeft = Math.max(minLeft, cRect.right - 12 - popW);
         const clampedLeft = Math.max(minLeft, Math.min(maxLeft, idealLeft));
         const arrowPx = Math.max(12, Math.min(popW - 12, btnCenterX - clampedLeft));
-        setLayout({
-          shiftPx: Math.round(clampedLeft - wRect.left),
-          arrowPx: Math.round(arrowPx),
-        });
+        const nextShift = Math.round(clampedLeft - wRect.left);
+        const nextArrow = Math.round(arrowPx);
+        setLayout((prev) =>
+          prev.shiftPx === nextShift && prev.arrowPx === nextArrow
+            ? prev
+            : { shiftPx: nextShift, arrowPx: nextArrow }
+        );
       }
 
       const onPointerDown = (e: PointerEvent) => {

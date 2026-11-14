@@ -8,21 +8,25 @@ export const DAY_MS = 86_400_000;
 
 const ISO_MS_CACHE = new Map<string, number>();
 
-export function parseIsoDay(raw?: string | null): Date | null {
+export function parseIsoDayMs(raw?: string | null): number | null {
   if (!raw || typeof raw !== 'string') return null;
   const trimmed = raw.trim();
   if (!trimmed) return null;
   const cached = ISO_MS_CACHE.get(trimmed);
   if (cached !== undefined) {
-    return Number.isNaN(cached) ? null : new Date(cached);
+    return Number.isNaN(cached) ? null : cached;
   }
-  const parsed = new Date(trimmed.length === 10 ? `${trimmed}T12:00:00` : trimmed);
-  const ms = parsed.getTime();
+  const ms = Date.parse(trimmed.length === 10 ? `${trimmed}T12:00:00` : trimmed);
   if (ISO_MS_CACHE.size > 4000) {
     ISO_MS_CACHE.clear();
   }
   ISO_MS_CACHE.set(trimmed, ms);
-  return Number.isNaN(ms) ? null : parsed;
+  return Number.isNaN(ms) ? null : ms;
+}
+
+export function parseIsoDay(raw?: string | null): Date | null {
+  const ms = parseIsoDayMs(raw);
+  return ms === null ? null : new Date(ms);
 }
 
 export function resolvePeriodKey(
@@ -123,10 +127,26 @@ export function pickText(lang: SupportedLanguage, fr: string, en: string, ar: st
   return lang === 'ar' ? ar : lang === 'fr' ? fr : en;
 }
 
+const SHORT_DATE_FORMATTERS = new Map<string, Intl.DateTimeFormat>();
+const SHORT_DATE_LABEL_CACHE = new Map<string, string>();
+
 export function formatShortDateLabel(ms: number, lang: SupportedLanguage): string {
-  const d = new Date(ms);
+  const bucketKey = `${lang}:${Math.trunc(ms / 60_000)}`;
+  const cached = SHORT_DATE_LABEL_CACHE.get(bucketKey);
+  if (cached !== undefined) return cached;
+
   const locale = lang === 'ar' ? 'ar-DZ' : lang === 'fr' ? 'fr-FR' : 'en-US';
-  return new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }).format(d);
+  let fmt = SHORT_DATE_FORMATTERS.get(locale);
+  if (!fmt) {
+    fmt = new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' });
+    SHORT_DATE_FORMATTERS.set(locale, fmt);
+  }
+  const formatted = fmt.format(ms);
+  if (SHORT_DATE_LABEL_CACHE.size > 2000) {
+    SHORT_DATE_LABEL_CACHE.clear();
+  }
+  SHORT_DATE_LABEL_CACHE.set(bucketKey, formatted);
+  return formatted;
 }
 
 export function getWeekdayLabels(lang: SupportedLanguage): string[] {
@@ -162,9 +182,8 @@ export function buildDailySparkSeries<T>(
   let previousTotal = 0;
 
   for (const item of items) {
-    const parsed = parseIsoDay(getDate(item));
-    if (!parsed) continue;
-    const ms = parsed.getTime();
+    const ms = parseIsoDayMs(getDate(item));
+    if (ms === null) continue;
     const val = getValue(item);
     if (!Number.isFinite(val)) continue;
 
@@ -211,9 +230,8 @@ export function isWithinPeriod(
   period: DashboardPeriodKey = '30d',
   anchorDate: Date = new Date()
 ): boolean {
-  const parsed = parseIsoDay(rawDate);
-  if (!parsed) return false;
-  const ms = parsed.getTime();
+  const ms = parseIsoDayMs(rawDate);
+  if (ms === null) return false;
   const range = getPeriodRange(period, anchorDate);
   return ms >= range.startMs && ms <= range.endMs;
 }
@@ -226,9 +244,8 @@ export function filterByPeriod<T>(
 ): T[] {
   const range = getPeriodRange(period, anchorDate);
   return items.filter((item) => {
-    const parsed = parseIsoDay(getDate(item));
-    if (!parsed) return false;
-    const ms = parsed.getTime();
+    const ms = parseIsoDayMs(getDate(item));
+    if (ms === null) return false;
     return ms >= range.startMs && ms <= range.endMs;
   });
 }
@@ -269,9 +286,8 @@ export function buildPeriodRateSeries<T>(
   let hasAnyInSpan = false;
 
   for (const item of items) {
-    const parsed = parseIsoDay(getDate(item));
-    if (!parsed) continue;
-    const ms = parsed.getTime();
+    const ms = parseIsoDayMs(getDate(item));
+    if (ms === null) continue;
     const matched = isEvent(item) ? 1 : 0;
     if (ms >= effectiveStart && ms <= range.endMs) {
       hasAnyInSpan = true;
@@ -316,9 +332,8 @@ export function buildBucketWeightedRateSeries<T>(
   let hasAnyInSpan = false;
 
   for (const item of items) {
-    const parsed = parseIsoDay(getDate(item));
-    if (!parsed) continue;
-    const ms = parsed.getTime();
+    const ms = parseIsoDayMs(getDate(item));
+    if (ms === null) continue;
     const num = Math.max(0, getNumerator(item) || 0);
     const den = Math.max(0, getDenominator(item) || 0);
     if (den <= 0) continue;

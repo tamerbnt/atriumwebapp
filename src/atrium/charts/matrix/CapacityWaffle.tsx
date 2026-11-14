@@ -4,6 +4,20 @@ import { RollingDigits } from '../primitives/RollingDigits';
 import { getDefaultChartStrings } from '../math';
 import { CapacityWaffleProps } from '../types';
 
+const WAFFLE_DOTS = Array.from({ length: 100 }, (_, idx) => {
+  const row = Math.floor(idx / 10);
+  const col = idx % 10;
+  const cx = 13 + col * 21;
+  const cy = 13 + row * 21;
+  return {
+    idx,
+    cx,
+    cy,
+    origin: `${cx}px ${cy}px`,
+    delay: `${Math.min(idx * 3, 280)}ms`,
+  };
+});
+
 export const CapacityWaffle: React.FC<CapacityWaffleProps> = React.memo(
   ({
     title,
@@ -46,7 +60,9 @@ export const CapacityWaffle: React.FC<CapacityWaffleProps> = React.memo(
       const dot = (e.target as HTMLElement).closest<HTMLElement>('[data-dot]');
       if (!dot) return;
       const idx = Number(dot.getAttribute('data-dot'));
-      if (Number.isInteger(idx)) setHoverIndex(idx);
+      if (Number.isInteger(idx)) {
+        setHoverIndex((prev) => (prev === idx ? prev : idx));
+      }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<SVGSVGElement>) => {
@@ -124,11 +140,8 @@ export const CapacityWaffle: React.FC<CapacityWaffleProps> = React.memo(
             onPointerLeave={() => setHoverIndex(null)}
             onKeyDown={handleKeyDown}
           >
-            {Array.from({ length: 100 }).map((_, idx) => {
-              const row = Math.floor(idx / 10);
-              const col = idx % 10;
-              const cx = 13 + col * 21;
-              const cy = 13 + row * 21;
+            {WAFFLE_DOTS.map((dot) => {
+              const { idx, cx, cy, origin, delay } = dot;
               const isFilled = idx < metrics.filledDots;
               const isPreview =
                 hoverIndex !== null &&
@@ -156,9 +169,9 @@ export const CapacityWaffle: React.FC<CapacityWaffleProps> = React.memo(
                   strokeWidth={isCursor ? 1.8 : isHoverRange ? 0.9 : 0}
                   className="ax-pop-item"
                   style={{
-                    transformOrigin: `${cx}px ${cy}px`,
+                    transformOrigin: origin,
                     transform: isCursor ? 'scale(1.22)' : 'scale(1)',
-                    '--ax-delay': `${Math.min(idx * 3, 280)}ms`,
+                    '--ax-delay': delay,
                     transition: 'fill 0.16s ease, transform 0.24s var(--ax-sp2)',
                   } as React.CSSProperties}
                 />

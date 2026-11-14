@@ -18,7 +18,11 @@ import { KebabMenuItem } from './CollectionKebabMenu';
 import { SkeletonTable, SkeletonCardGrid } from '../skeleton/StructuralSkeletons';
 import { SkeletonText, SkeletonBox } from '../skeleton/SkeletonPrimitives';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
-import { useAtriumSelector } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  retryCloudSyncAction,
+} from '../../../services/store';
 import { LiveSegmentedControl, LiveButton } from '../live';
 import { LiquidExportButton } from '../liquid/LiquidExportButton';
 
@@ -354,18 +358,28 @@ export function UniversalDataCollection<T>({
     }
   };
 
-  const storeIsSyncing = useAtriumSelector((s) => s.isSyncing);
-  const storeNetworkMode = useAtriumSelector((s) => s.networkMode);
-  const storeIsSyncTimeout = useAtriumSelector((s) => s.isSyncTimeout);
-  const storeLastSyncedAt = useAtriumSelector((s) => s.lastSyncedAt);
-  const storeRetryCloudSync = useAtriumSelector((s) => s.retryCloudSync);
-  const storeLanguage = useAtriumSelector((s) => s.language);
+  const {
+    isSyncing: storeIsSyncing,
+    networkMode: storeNetworkMode,
+    isSyncTimeout: storeIsSyncTimeout,
+    lastSyncedAt: storeLastSyncedAt,
+    language: storeLanguage,
+  } = useAtriumSelector(
+    (s) => ({
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode,
+      isSyncTimeout: s.isSyncTimeout,
+      lastSyncedAt: s.lastSyncedAt,
+      language: s.language,
+    }),
+    shallowEqualObjects
+  );
 
   const effectiveIsLoading = isLoading !== undefined ? isLoading : (storeIsSyncing || storeNetworkMode === 'force_skeleton');
   const effectiveIsOffline = isOffline !== undefined ? isOffline : (storeNetworkMode === 'offline');
   const effectiveIsTimedOut = isTimedOut !== undefined ? isTimedOut : storeIsSyncTimeout;
   const effectiveLastSyncedAt = lastSyncedAt !== undefined ? lastSyncedAt : storeLastSyncedAt;
-  const effectiveOnRetrySync = onRetrySync !== undefined ? onRetrySync : storeRetryCloudSync;
+  const effectiveOnRetrySync = onRetrySync !== undefined ? onRetrySync : retryCloudSyncAction;
 
   const shouldRenderSkeleton = (effectiveIsLoading && actualItems.length === 0) || storeNetworkMode === 'force_skeleton';
 

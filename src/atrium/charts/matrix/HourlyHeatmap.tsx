@@ -36,7 +36,12 @@ export const HourlyHeatmap: React.FC<HourlyHeatmapProps> = React.memo(
 
     const metrics = useMemo(() => {
       if (!rows?.length || !cols?.length || !cells?.length) {
-        return { max: 0, peak: { r: 0, c: 0, val: 0 }, total: 0 };
+        return {
+          max: 0,
+          peak: { r: 0, c: 0, val: 0 },
+          total: 0,
+          matrix: [] as Array<Array<{ bg: string; delay: string }>>,
+        };
       }
       let max = 0;
       let peakR = 0;
@@ -54,7 +59,24 @@ export const HourlyHeatmap: React.FC<HourlyHeatmapProps> = React.memo(
           }
         }
       }
-      return { max, peak: { r: peakR, c: peakC, val: max }, total };
+      const matrix = rows.map((_, r) => {
+        const rowVals = cells[r] || [];
+        return cols.map((__, c) => {
+          const raw = Math.max(0, Number.isFinite(rowVals[c]) ? rowVals[c] : 0);
+          const intensity = max > 0 ? raw / max : 0;
+          const bg =
+            raw <= 0
+              ? 'var(--ax-soft)'
+              : `color-mix(in srgb, var(--ax-c1) ${Math.round(
+                  (0.14 + intensity * 0.86) * 100
+                )}%, var(--ax-slab))`;
+          return {
+            bg,
+            delay: `${Math.min((r * cols.length + c) * 7, 280)}ms`,
+          };
+        });
+      });
+      return { max, peak: { r: peakR, c: peakC, val: max }, total, matrix };
     }, [rows, cols, cells]);
 
     const isEmpty =
@@ -211,17 +233,10 @@ export const HourlyHeatmap: React.FC<HourlyHeatmapProps> = React.memo(
                 {row}
               </span>
               {cols.map((_, c) => {
-                const raw = Math.max(0, cells[r]?.[c] ?? 0);
-                const intensity = metrics.max > 0 ? raw / metrics.max : 0;
+                const cellMeta = metrics.matrix[r]?.[c];
                 const isSelected = active?.r === r && active?.c === c;
                 const isCross = active ? active.r === r || active.c === c : true;
                 const isPeak = !active && r === metrics.peak.r && c === metrics.peak.c;
-                const bg =
-                  raw <= 0
-                    ? 'var(--ax-soft)'
-                    : `color-mix(in srgb, var(--ax-c1) ${Math.round(
-                        (0.14 + intensity * 0.86) * 100
-                      )}%, var(--ax-slab))`;
 
                 return (
                   <div
@@ -235,7 +250,7 @@ export const HourlyHeatmap: React.FC<HourlyHeatmapProps> = React.memo(
                       isSelected ? 'relative z-10' : ''
                     }`}
                     style={{
-                      background: bg,
+                      background: cellMeta?.bg || 'var(--ax-soft)',
                       opacity: isCross ? 1 : 0.3,
                       transform: isSelected ? 'scale(1.12)' : 'scale(1)',
                       outline:
@@ -243,7 +258,7 @@ export const HourlyHeatmap: React.FC<HourlyHeatmapProps> = React.memo(
                           ? '2px solid var(--ax-on)'
                           : '1px solid transparent',
                       outlineOffset: '-1px',
-                      '--ax-delay': `${Math.min((r * cols.length + c) * 7, 280)}ms`,
+                      '--ax-delay': cellMeta?.delay || '0ms',
                       transition: 'transform 0.24s var(--ax-sp2), opacity 0.16s ease',
                     } as React.CSSProperties}
                   />

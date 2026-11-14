@@ -13,7 +13,16 @@ import {
   CheckCircle2,
   type LucideIcon,
 } from 'lucide-react';
-import { useAtriumStore } from '../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectUnreadNotificationCountFromState,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  clearAllNotifications,
+  removeNotification,
+  setScreenAction as setScreen,
+} from '../../services/store';
 import { AppNotification, SupportedLanguage } from '../../types/index';
 
 interface NotificationDropdownProps {
@@ -32,16 +41,22 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   isOpen,
   onClose,
 }) => {
-  const {
-    notifications,
-    unreadNotificationCount,
-    markNotificationAsRead,
-    markAllNotificationsAsRead,
-    clearAllNotifications,
-    removeNotification,
-    setScreen,
-    language,
-  } = useAtriumStore();
+  if (!isOpen) return null;
+  return <NotificationDropdownBody isOpen={isOpen} onClose={onClose} />;
+};
+
+const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
+  isOpen,
+  onClose,
+}) => {
+  const { notifications, unreadNotificationCount, language } = useAtriumSelector(
+    (s) => ({
+      notifications: s.notifications || [],
+      unreadNotificationCount: selectUnreadNotificationCountFromState(s),
+      language: s.language,
+    }),
+    shallowEqualObjects
+  );
 
   const containerRef = useRef<HTMLDivElement>(null);
   const isRtl = language === 'ar';

@@ -11,6 +11,7 @@ export function useCardFilters<T extends Record<string, string>>(initial: T) {
   }, []);
 
   const filterCacheRef = useRef<Record<string, ChartCardFilter>>({});
+  const handlersRef = useRef<Record<string, (nextId: string) => void>>({});
 
   const makeFilter = useCallback(
     <K extends keyof T & string>(
@@ -29,10 +30,15 @@ export function useCardFilters<T extends Record<string, string>>(initial: T) {
       ) {
         return cached;
       }
+      let onChange = handlersRef.current[key];
+      if (!onChange) {
+        onChange = (nextId: string) => setFilter(key, nextId);
+        handlersRef.current[key] = onChange;
+      }
       const next: ChartCardFilter = {
         options,
         value,
-        onChange: (nextId: string) => setFilter(key, nextId),
+        onChange,
         ariaLabel,
       };
       filterCacheRef.current[key] = next;
