@@ -24,6 +24,7 @@ export const ConversionFunnel: React.FC<ConversionFunnelProps> = React.memo(
     emptyMessage,
     errorMessage,
     onRetry,
+    filter,
     className = '',
     'data-testid': testId,
     stages,
@@ -111,6 +112,7 @@ export const ConversionFunnel: React.FC<ConversionFunnelProps> = React.memo(
         emptyMessage={emptyMessage}
         errorMessage={errorMessage}
         onRetry={onRetry}
+        filter={filter}
         ariaSummary={ariaSummary}
         className={className}
         data-testid={testId}

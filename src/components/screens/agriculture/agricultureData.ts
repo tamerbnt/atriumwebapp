@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   AgriParcel,
   AgriCropCycle,
@@ -9,7 +9,8 @@ import {
   AgriMilkingRecord,
   AgriWeighbridgeTicket,
 } from '../../../types/index';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumSelector } from '../../../services/store';
+import { useIdlePersist } from '../../../hooks/useIdlePersist';
 
 export const INITIAL_PARCELS: AgriParcel[] = [
   {
@@ -540,10 +541,13 @@ export const INITIAL_WEIGHBRIDGE_TICKETS: AgriWeighbridgeTicket[] = [
 ];
 
 export const useAgricultureData = () => {
-  const { currentBranchId } = useAtriumStore();
+  const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
   const activeBranchId = currentBranchId || 'branch_agri_main';
-  const belongsToActiveBranch = (item: { branchId?: string; facilityId?: string }) =>
-    (item.branchId || item.facilityId || 'branch_agri_main') === activeBranchId;
+  const belongsToActiveBranch = useCallback(
+    (item: { branchId?: string; facilityId?: string }) =>
+      (item.branchId || item.facilityId || 'branch_agri_main') === activeBranchId,
+    [activeBranchId]
+  );
   const withBranch = <T extends object>(item: T): T =>
     ({
       ...item,
@@ -624,54 +628,15 @@ export const useAgricultureData = () => {
 
   const [selectedParcelId, setSelectedParcelId] = useState<string>('parc_01');
 
-  // Persistence hooks
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_agri_parcels_v2', JSON.stringify(parcels));
-    } catch {}
-  }, [parcels]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_agri_cycles_v2', JSON.stringify(cropCycles));
-    } catch {}
-  }, [cropCycles]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_agri_treatments_v2', JSON.stringify(treatmentLogs));
-    } catch {}
-  }, [treatmentLogs]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_agri_workers_v2', JSON.stringify(workers));
-    } catch {}
-  }, [workers]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_agri_pointages_v2', JSON.stringify(pointages));
-    } catch {}
-  }, [pointages]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_agri_dairy_cows_v2', JSON.stringify(dairyCows));
-    } catch {}
-  }, [dairyCows]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_agri_milking_v2', JSON.stringify(milkingRecords));
-    } catch {}
-  }, [milkingRecords]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_agri_weighbridge_v2', JSON.stringify(weighbridgeTickets));
-    } catch {}
-  }, [weighbridgeTickets]);
+  // Persistence hooks (idle-deferred)
+  useIdlePersist('atrium_agri_parcels_v2', parcels);
+  useIdlePersist('atrium_agri_cycles_v2', cropCycles);
+  useIdlePersist('atrium_agri_treatments_v2', treatmentLogs);
+  useIdlePersist('atrium_agri_workers_v2', workers);
+  useIdlePersist('atrium_agri_pointages_v2', pointages);
+  useIdlePersist('atrium_agri_dairy_cows_v2', dairyCows);
+  useIdlePersist('atrium_agri_milking_v2', milkingRecords);
+  useIdlePersist('atrium_agri_weighbridge_v2', weighbridgeTickets);
 
   // Parcel handlers
   const addParcel = (parcel: AgriParcel) => {
@@ -787,14 +752,14 @@ export const useAgricultureData = () => {
     setWeighbridgeTickets((prev) => prev.filter((t) => !belongsToActiveBranch(t)));
   };
 
-  const scopedParcels = parcels.filter(belongsToActiveBranch);
-  const scopedCropCycles = cropCycles.filter(belongsToActiveBranch);
-  const scopedTreatmentLogs = treatmentLogs.filter(belongsToActiveBranch);
-  const scopedWorkers = workers.filter(belongsToActiveBranch);
-  const scopedPointages = pointages.filter(belongsToActiveBranch);
-  const scopedDairyCows = dairyCows.filter(belongsToActiveBranch);
-  const scopedMilkingRecords = milkingRecords.filter(belongsToActiveBranch);
-  const scopedWeighbridgeTickets = weighbridgeTickets.filter(belongsToActiveBranch);
+  const scopedParcels = useMemo(() => parcels.filter(belongsToActiveBranch), [parcels, belongsToActiveBranch]);
+  const scopedCropCycles = useMemo(() => cropCycles.filter(belongsToActiveBranch), [cropCycles, belongsToActiveBranch]);
+  const scopedTreatmentLogs = useMemo(() => treatmentLogs.filter(belongsToActiveBranch), [treatmentLogs, belongsToActiveBranch]);
+  const scopedWorkers = useMemo(() => workers.filter(belongsToActiveBranch), [workers, belongsToActiveBranch]);
+  const scopedPointages = useMemo(() => pointages.filter(belongsToActiveBranch), [pointages, belongsToActiveBranch]);
+  const scopedDairyCows = useMemo(() => dairyCows.filter(belongsToActiveBranch), [dairyCows, belongsToActiveBranch]);
+  const scopedMilkingRecords = useMemo(() => milkingRecords.filter(belongsToActiveBranch), [milkingRecords, belongsToActiveBranch]);
+  const scopedWeighbridgeTickets = useMemo(() => weighbridgeTickets.filter(belongsToActiveBranch), [weighbridgeTickets, belongsToActiveBranch]);
 
   return {
     parcels: scopedParcels,

@@ -16,6 +16,7 @@ export const CapacityWaffle: React.FC<CapacityWaffleProps> = React.memo(
     emptyMessage,
     errorMessage,
     onRetry,
+    filter,
     className = '',
     'data-testid': testId,
     occupied,
@@ -79,6 +80,7 @@ export const CapacityWaffle: React.FC<CapacityWaffleProps> = React.memo(
         emptyMessage={emptyMessage}
         errorMessage={errorMessage}
         onRetry={onRetry}
+        filter={filter}
         ariaSummary={ariaSummary}
         className={className}
         data-testid={testId}

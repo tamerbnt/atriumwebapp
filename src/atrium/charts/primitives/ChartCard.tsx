@@ -1,8 +1,9 @@
 import React from 'react';
 import { ChartInfoPopover } from './ChartInfoPopover';
-import { useInViewReveal } from '../hooks';
+import { ChartSegmented } from './ChartSegmented';
+import { useInViewReveal, useIsRtl } from '../hooks';
 import { getDefaultChartStrings } from '../math';
-import { ChartLocale, ChartSkeletonKind, ChartState, ChartSurface } from '../types';
+import { ChartCardFilter, ChartLocale, ChartSkeletonKind, ChartState, ChartSurface } from '../types';
 
 export interface ChartCardProps {
   title: string;
@@ -17,6 +18,7 @@ export interface ChartCardProps {
   emptyMessage?: string;
   errorMessage?: string;
   onRetry?: () => void;
+  filter?: ChartCardFilter;
   headerRight?: React.ReactNode;
   footer?: React.ReactNode;
   ariaSummary?: string;
@@ -91,7 +93,7 @@ const ChartSkeleton: React.FC<{ kind: ChartSkeletonKind }> = ({ kind }) => {
 
 /**
  * Shared Atrium Dashboard card shell (.ax-card parity) with container queries,
- * IntersectionObserver scroll reveal, ? help popover, and loading/empty/error states.
+ * optional per-card filter control, ? help popover, and loading/empty/error states.
  */
 export const ChartCard: React.FC<ChartCardProps> = ({
   title,
@@ -106,6 +108,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
   emptyMessage,
   errorMessage,
   onRetry,
+  filter,
   headerRight,
   footer,
   ariaSummary,
@@ -114,8 +117,10 @@ export const ChartCard: React.FC<ChartCardProps> = ({
   children,
 }) => {
   const [cardRef, isRevealed] = useInViewReveal();
+  const isRtl = useIsRtl(locale);
   const strings = getDefaultChartStrings(locale);
   const resolvedDir = locale === 'ar' ? 'rtl' : undefined;
+  const hasFilter = Boolean(filter && filter.options.length > 0);
 
   return (
     <section
@@ -140,7 +145,20 @@ export const ChartCard: React.FC<ChartCardProps> = ({
           </div>
           {subtitle && <p className="ax-sub">{subtitle}</p>}
         </div>
-        {headerRight && <div className="min-w-0 max-w-full shrink-0">{headerRight}</div>}
+        {(hasFilter || headerRight) && (
+          <div className="ax-head-actions flex flex-col items-end gap-1.5 min-w-0 max-w-full">
+            {hasFilter && filter && (
+              <ChartSegmented
+                options={filter.options}
+                value={filter.value}
+                onChange={filter.onChange}
+                isRtl={isRtl}
+                ariaLabel={filter.ariaLabel || title}
+              />
+            )}
+            {headerRight && <div className="min-w-0 max-w-full">{headerRight}</div>}
+          </div>
+        )}
       </header>
 
       {state === 'loading' ? (

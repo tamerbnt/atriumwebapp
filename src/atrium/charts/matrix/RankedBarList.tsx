@@ -19,6 +19,7 @@ export const RankedBarList: React.FC<RankedBarListProps> = React.memo(
     emptyMessage,
     errorMessage,
     onRetry,
+    filter,
     className = '',
     'data-testid': testId,
     criteria,
@@ -80,6 +81,7 @@ export const RankedBarList: React.FC<RankedBarListProps> = React.memo(
         emptyMessage={emptyMessage}
         errorMessage={errorMessage}
         onRetry={onRetry}
+        filter={criteria.length <= 1 ? filter : undefined}
         ariaSummary={ariaSummary}
         className={className}
         data-testid={testId}

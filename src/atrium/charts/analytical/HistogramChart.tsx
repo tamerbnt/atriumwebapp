@@ -23,6 +23,7 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
     emptyMessage,
     errorMessage,
     onRetry,
+    filter,
     className = '',
     'data-testid': testId,
     bins,
@@ -38,6 +39,7 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
     const isRtl = useIsRtl(locale);
     const strings = getDefaultChartStrings(locale);
     const plotRef = useRef<HTMLDivElement>(null);
+    const rectRef = useRef<DOMRect | null>(null);
     const [activeIdx, setActiveIdx] = useState<number | null>(null);
 
     const safeBins = useMemo(
@@ -76,9 +78,16 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
       isRtl
     );
 
+    const handlePointerEnter = () => {
+      if (plotRef.current) {
+        rectRef.current = plotRef.current.getBoundingClientRect();
+      }
+    };
+
     const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
       if (!plotRef.current || safeBins.length === 0) return;
-      const rect = plotRef.current.getBoundingClientRect();
+      const rect = rectRef.current || plotRef.current.getBoundingClientRect();
+      rectRef.current = rect;
       if (rect.width <= 0) return;
       const rawFrac = (e.clientX - rect.left) / rect.width;
       const frac = Math.max(0, Math.min(0.9999, isRtl ? 1 - rawFrac : rawFrac));
@@ -107,6 +116,7 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
         emptyMessage={emptyMessage}
         errorMessage={errorMessage}
         onRetry={onRetry}
+        filter={filter}
         ariaSummary={ariaSummary}
         className={className}
         data-testid={testId}
@@ -179,8 +189,12 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
             tabIndex={0}
             role="img"
             aria-label={ariaSummary}
+            onPointerEnter={handlePointerEnter}
             onPointerMove={handlePointerMove}
-            onPointerLeave={() => setActiveIdx(null)}
+            onPointerLeave={() => {
+              rectRef.current = null;
+              setActiveIdx(null);
+            }}
             onKeyDown={onKeyDown}
             className="relative flex-1 min-w-0 ax-plot-focus select-none cursor-pointer"
           >

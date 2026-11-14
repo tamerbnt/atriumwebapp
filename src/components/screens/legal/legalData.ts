@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   LegalMatter,
   LegalHearing,
@@ -11,7 +11,8 @@ import {
   LegalClientEntity,
 } from '../../../types';
 import { calculateCPCADeadline, calculateNotaryDecret08243, calculateArticle317Stamp } from '../../../utils/legalRules';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumSelector } from '../../../services/store';
+import { useIdlePersist } from '../../../hooks/useIdlePersist';
 
 export const INITIAL_LEGAL_ENTITIES: LegalClientEntity[] = [
   {
@@ -505,10 +506,13 @@ export const INITIAL_DAILY_CLOSURE: DailyCashClosure = {
  * Universal React Hook managing persistent state across the 4 Legal/Notary/Accounting personas.
  */
 export const useLegalData = () => {
-  const { currentBranchId } = useAtriumStore();
+  const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
   const activeBranchId = currentBranchId || 'branch_legal_main';
-  const belongsToActiveBranch = (item: { branchId?: string; facilityId?: string }) =>
-    (item.branchId || item.facilityId || 'branch_legal_main') === activeBranchId;
+  const belongsToActiveBranch = useCallback(
+    (item: { branchId?: string; facilityId?: string }) =>
+      (item.branchId || item.facilityId || 'branch_legal_main') === activeBranchId,
+    [activeBranchId]
+  );
   const withBranch = <T extends object>(item: T): T =>
     ({
       ...item,
@@ -596,20 +600,16 @@ export const useLegalData = () => {
     }
   });
 
-  // Local storage auto-sync
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_legal_entities', JSON.stringify(entities));
-      localStorage.setItem('atrium_legal_matters', JSON.stringify(matters));
-      localStorage.setItem('atrium_legal_hearings', JSON.stringify(hearings));
-      localStorage.setItem('atrium_legal_cpca_deadlines', JSON.stringify(deadlines));
-      localStorage.setItem('atrium_legal_notary_deeds', JSON.stringify(notaryDeeds));
-      localStorage.setItem('atrium_legal_escrow_accounts', JSON.stringify(escrowAccounts));
-      localStorage.setItem('atrium_legal_scf_entries', JSON.stringify(scfEntries));
-      localStorage.setItem('atrium_legal_cash_receipts', JSON.stringify(cashReceipts));
-      localStorage.setItem('atrium_legal_daily_closure', JSON.stringify(dailyClosure));
-    } catch {}
-  }, [entities, matters, hearings, deadlines, notaryDeeds, escrowAccounts, scfEntries, cashReceipts, dailyClosure]);
+  // Local storage auto-sync (idle-deferred)
+  useIdlePersist('atrium_legal_entities', entities);
+  useIdlePersist('atrium_legal_matters', matters);
+  useIdlePersist('atrium_legal_hearings', hearings);
+  useIdlePersist('atrium_legal_cpca_deadlines', deadlines);
+  useIdlePersist('atrium_legal_notary_deeds', notaryDeeds);
+  useIdlePersist('atrium_legal_escrow_accounts', escrowAccounts);
+  useIdlePersist('atrium_legal_scf_entries', scfEntries);
+  useIdlePersist('atrium_legal_cash_receipts', cashReceipts);
+  useIdlePersist('atrium_legal_daily_closure', dailyClosure);
 
   // Operational action handlers
   const addEntity = (entity: LegalClientEntity) => setEntities((prev) => [withBranch(entity), ...prev]);
@@ -660,15 +660,24 @@ export const useLegalData = () => {
     }
   };
 
+  const scopedEntities = useMemo(() => entities.filter(belongsToActiveBranch), [entities, belongsToActiveBranch]);
+  const scopedMatters = useMemo(() => matters.filter(belongsToActiveBranch), [matters, belongsToActiveBranch]);
+  const scopedHearings = useMemo(() => hearings.filter(belongsToActiveBranch), [hearings, belongsToActiveBranch]);
+  const scopedDeadlines = useMemo(() => deadlines.filter(belongsToActiveBranch), [deadlines, belongsToActiveBranch]);
+  const scopedNotaryDeeds = useMemo(() => notaryDeeds.filter(belongsToActiveBranch), [notaryDeeds, belongsToActiveBranch]);
+  const scopedEscrowAccounts = useMemo(() => escrowAccounts.filter(belongsToActiveBranch), [escrowAccounts, belongsToActiveBranch]);
+  const scopedScfEntries = useMemo(() => scfEntries.filter(belongsToActiveBranch), [scfEntries, belongsToActiveBranch]);
+  const scopedCashReceipts = useMemo(() => cashReceipts.filter(belongsToActiveBranch), [cashReceipts, belongsToActiveBranch]);
+
   return {
-    entities: entities.filter(belongsToActiveBranch),
-    matters: matters.filter(belongsToActiveBranch),
-    hearings: hearings.filter(belongsToActiveBranch),
-    deadlines: deadlines.filter(belongsToActiveBranch),
-    notaryDeeds: notaryDeeds.filter(belongsToActiveBranch),
-    escrowAccounts: escrowAccounts.filter(belongsToActiveBranch),
-    scfEntries: scfEntries.filter(belongsToActiveBranch),
-    cashReceipts: cashReceipts.filter(belongsToActiveBranch),
+    entities: scopedEntities,
+    matters: scopedMatters,
+    hearings: scopedHearings,
+    deadlines: scopedDeadlines,
+    notaryDeeds: scopedNotaryDeeds,
+    escrowAccounts: scopedEscrowAccounts,
+    scfEntries: scopedScfEntries,
+    cashReceipts: scopedCashReceipts,
     dailyClosure,
     addEntity,
     addMatter,

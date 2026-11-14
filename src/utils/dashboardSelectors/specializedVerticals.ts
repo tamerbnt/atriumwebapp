@@ -73,9 +73,11 @@ import {
   buildHourlyWeekdayMatrix,
   buildPeriodRateSeries,
   filterByPeriod,
+  filterByScope,
   getPeriodBuckets,
   parseIsoDay,
   pickText,
+  resolvePeriodKey,
   type DashboardPeriodKey,
 } from './common';
 
@@ -103,34 +105,40 @@ export interface MedicalDashboardInput {
   period: DashboardPeriodKey;
   language: SupportedLanguage;
   anchorDate?: Date;
+  cardFilters?: Record<string, string>;
 }
 
 export function selectMedicalDashboard(input: MedicalDashboardInput) {
-  const { practitioners, consultations, appointments, chifaClaims, consumables, labRecords, period, language, anchorDate = new Date() } = input;
+  const { practitioners, consultations, appointments, chifaClaims, consumables, labRecords, period, language, anchorDate = new Date(), cardFilters = {} } = input;
+  const revPeriod = resolvePeriodKey(cardFilters.revenue, period);
+  const queueMode = cardFilters.queue || 'queue';
+  const radarPeriod = resolvePeriodKey(cardFilters.radar, period);
+  const timelineShift = cardFilters.timeline || 'all';
+  const funnelPeriod = resolvePeriodKey(cardFilters.funnel, period);
+  const donutPeriod = resolvePeriodKey(cardFilters.donut, period);
+  const heatmapPeriod = resolvePeriodKey(cardFilters.heatmap, period);
+
   const revSeries = buildDailySparkSeries(
     consultations.filter((c) => c.status !== 'Cancelled'),
     (c) => c.consultationDate || c.createdAt,
     (c) => c.consultationFeeDzd || 0,
-    period,
+    revPeriod,
     language,
     anchorDate
   );
 
-  const windowConsultations = filterByPeriod(consultations, (c) => c.consultationDate || c.createdAt, period, anchorDate);
-  const windowAppointments = filterByPeriod(appointments, (a) => a.date, period, anchorDate);
-  const windowClaims = filterByPeriod(chifaClaims, (c) => c.submissionDate || c.claimDate, period, anchorDate);
-  const windowLabs = filterByPeriod(labRecords, (l) => l.testDate || l.date, period, anchorDate);
-
+  const revConsultations = filterByPeriod(consultations, (c) => c.consultationDate || c.createdAt, revPeriod, anchorDate);
   const waitingQueue = consultations.filter((c) => c.status === 'InWaitingQueue' || c.status === 'TriageNurse').length;
   const lowConsumables = consumables.filter((c) => (c.currentStock ?? c.currentStockUnits ?? 0) <= (c.minStockAlert ?? c.reorderThresholdUnits ?? 5)).length;
 
+  const funnelConsultations = filterByPeriod(consultations, (c) => c.consultationDate || c.createdAt, funnelPeriod, anchorDate);
   const funnelStages: FunnelStage[] =
-    windowConsultations.length > 0
+    funnelConsultations.length > 0
       ? [
-          { id: 'queue', label: pickText(language, 'Accueil / Attente', 'Waiting Queue', 'الانتظار'), value: windowConsultations.length },
-          { id: 'exam', label: pickText(language, 'En consultation', 'In Exam', 'قيد الفحص'), value: windowConsultations.filter((c) => ['InConsultation', 'Completed'].includes(c.status)).length },
-          { id: 'done', label: pickText(language, 'Terminées', 'Completed', 'المكتملة'), value: windowConsultations.filter((c) => c.status === 'Completed').length },
-          { id: 'paid', label: pickText(language, 'Encaissées', 'Paid', 'المدفوعة'), value: windowConsultations.filter((c) => c.isPaid).length },
+          { id: 'queue', label: pickText(language, 'Accueil / Attente', 'Waiting Queue', 'الانتظار'), value: funnelConsultations.length },
+          { id: 'exam', label: pickText(language, 'En consultation', 'In Exam', 'قيد الفحص'), value: funnelConsultations.filter((c) => ['InConsultation', 'Completed'].includes(c.status)).length },
+          { id: 'done', label: pickText(language, 'Terminées', 'Completed', 'المكتملة'), value: funnelConsultations.filter((c) => c.status === 'Completed').length },
+          { id: 'paid', label: pickText(language, 'Encaissées', 'Paid', 'المدفوعة'), value: funnelConsultations.filter((c) => c.isPaid).length },
         ]
       : [];
 
@@ -140,6 +148,9 @@ export function selectMedicalDashboard(input: MedicalDashboardInput) {
     meta: p.roomNumber || p.specialty,
   }));
 
+  const timelineStartHour = timelineShift === 'pm' ? 13 : 8;
+  const timelineEndHour = timelineShift === 'am' ? 14 : 20;
+  const windowAppointments = filterByPeriod(appointments, (a) => a.date, period, anchorDate);
   const blocks: TimelineBlock[] = windowAppointments
     .filter((a) => a.status !== 'Cancelled')
     .map((a) => {
@@ -151,13 +162,15 @@ export function selectMedicalDashboard(input: MedicalDashboardInput) {
         label: `${a.patientName} · ${a.reason}`,
         startHour,
         endHour: Math.min(21, startHour + dur),
-        tone: a.status === 'InRoom' ? 'primary' : a.status === 'Completed' ? 'secondary' : 'neutral',
+        tone: (a.status === 'InRoom' ? 'primary' : a.status === 'Completed' ? 'secondary' : 'neutral') as TimelineBlock['tone'],
         statusLabel: a.status,
       };
-    });
+    })
+    .filter((b) => b.endHour > timelineStartHour && b.startHour < timelineEndHour);
 
+  const donutConsultations = filterByPeriod(consultations, (c) => c.consultationDate || c.createdAt, donutPeriod, anchorDate);
   const specTotals = new Map<string, number>();
-  for (const c of windowConsultations) {
+  for (const c of donutConsultations) {
     const key = c.ngapCode || c.doctorSpecialty || 'C';
     specTotals.set(key, (specTotals.get(key) || 0) + 1);
   }
@@ -168,15 +181,20 @@ export function selectMedicalDashboard(input: MedicalDashboardInput) {
     color: PALETTE[i % PALETTE.length],
   }));
 
+  const radarConsultations = filterByPeriod(consultations, (c) => c.consultationDate || c.createdAt, radarPeriod, anchorDate);
+  const radarAppointments = filterByPeriod(appointments, (a) => a.date, radarPeriod, anchorDate);
+  const windowClaims = filterByPeriod(chifaClaims, (c) => c.submissionDate || c.claimDate, radarPeriod, anchorDate);
+  const windowLabs = filterByPeriod(labRecords, (l) => l.testDate || l.date, radarPeriod, anchorDate);
+
   const chifaApprovalPct = windowClaims.length > 0
     ? Math.round((windowClaims.filter((c) => c.status === 'Reimbursed' || c.status === 'Approved').length / windowClaims.length) * 100)
     : 0;
   const labValidPct = windowLabs.length > 0 ? Math.round((windowLabs.filter((l) => l.status === 'Validé').length / windowLabs.length) * 100) : 0;
   const stockReadinessPct = consumables.length > 0 ? Math.round(((consumables.length - lowConsumables) / consumables.length) * 100) : 0;
-  const completionPct = windowConsultations.length > 0 ? Math.round((windowConsultations.filter((c) => c.status === 'Completed').length / windowConsultations.length) * 100) : 0;
-  const attendancePct = windowAppointments.length > 0 ? Math.round((windowAppointments.filter((a) => a.status !== 'NoShow').length / windowAppointments.length) * 100) : 0;
+  const completionPct = radarConsultations.length > 0 ? Math.round((radarConsultations.filter((c) => c.status === 'Completed').length / radarConsultations.length) * 100) : 0;
+  const attendancePct = radarAppointments.length > 0 ? Math.round((radarAppointments.filter((a) => a.status !== 'NoShow').length / radarAppointments.length) * 100) : 0;
 
-  const hasOpsData = windowConsultations.length > 0 || windowClaims.length > 0 || windowLabs.length > 0 || consumables.length > 0;
+  const hasOpsData = radarConsultations.length > 0 || windowClaims.length > 0 || windowLabs.length > 0 || consumables.length > 0;
   const radarAxes: RadarAxis[] = hasOpsData
     ? [
         { id: 'exam', label: pickText(language, 'Clôture actes', 'Exam Completion', 'إتمام الفحوص'), value: completionPct, benchmark: 85 },
@@ -187,18 +205,22 @@ export function selectMedicalDashboard(input: MedicalDashboardInput) {
       ]
     : [];
 
-  const heatmap = buildHourlyWeekdayMatrix(windowConsultations, (c) => c.consultationDate || c.createdAt, language);
+  const heatConsultations = filterByPeriod(consultations, (c) => c.consultationDate || c.createdAt, heatmapPeriod, anchorDate);
+  const heatmap = buildHourlyWeekdayMatrix(heatConsultations, (c) => c.consultationDate || c.createdAt, language);
 
   return {
     consultationRevenue: revSeries.currentTotal,
     revenueDelta: revSeries.deltaPercent,
     revenueSpark: revSeries.series,
-    consultationsCount: windowConsultations.length,
+    consultationsCount: revConsultations.length,
     waitingQueue,
     lowConsumables,
+    queueMetricValue: queueMode === 'low' ? lowConsumables : waitingQueue,
     funnelStages,
     resources,
     blocks,
+    timelineStartHour,
+    timelineEndHour,
     donutSegments,
     radarAxes,
     heatmap,
@@ -217,18 +239,29 @@ export interface GarageDashboardInput {
   period: DashboardPeriodKey;
   language: SupportedLanguage;
   anchorDate?: Date;
+  cardFilters?: Record<string, string>;
 }
 
 export function selectGarageDashboard(input: GarageDashboardInput) {
-  const { orders, bays, parts, fleets, invoices, period, language, anchorDate = new Date() } = input;
-  const revSeries = buildDailySparkSeries(invoices, (i) => i.issuedAt || '', (i) => i.totalTtc || 0, period, language, anchorDate);
+  const { orders, bays, parts, fleets, invoices, period, language, anchorDate = new Date(), cardFilters = {} } = input;
+  const revPeriod = resolvePeriodKey(cardFilters.revenue, period);
+  const capacityScope = cardFilters.capacity || 'all';
+  const timelineShift = cardFilters.timeline || 'all';
+  const funnelPeriod = resolvePeriodKey(cardFilters.funnel, period);
+  const waterfallPeriod = resolvePeriodKey(cardFilters.waterfall, period);
+  const rankedPeriod = resolvePeriodKey(cardFilters.ranked, period);
 
-  const windowOrders = filterByPeriod(orders, (o) => o.intakeDate, period, anchorDate);
-  const windowInvoices = filterByPeriod(invoices, (i) => i.issuedAt, period, anchorDate);
+  const revSeries = buildDailySparkSeries(invoices, (i) => i.issuedAt || '', (i) => i.totalTtc || 0, revPeriod, language, anchorDate);
 
   const blockedOrders = orders.filter((o) => o.status === 'WaitingParts').length;
   const lowParts = parts.filter((p) => (p.stockQuantity || 0) <= (p.minThreshold || 3)).length;
-  const occupiedBays = bays.filter((b) => b.isOccupied).length;
+
+  const scopedBays =
+    capacityScope === 'lift'
+      ? bays.filter((b) => /pont|lift/i.test(b.bayType || b.name || ''))
+      : bays;
+  const effectiveBays = scopedBays.length > 0 || capacityScope === 'all' ? scopedBays : bays;
+  const occupiedBays = effectiveBays.filter((b) => b.isOccupied).length;
 
   const resources: TimelineResource[] = bays.slice(0, 6).map((b) => ({
     id: b.id,
@@ -236,6 +269,9 @@ export function selectGarageDashboard(input: GarageDashboardInput) {
     meta: b.bayType,
   }));
 
+  const timelineStartHour = timelineShift === 'pm' ? 13 : 8;
+  const timelineEndHour = timelineShift === 'am' ? 14 : 20;
+  const windowOrders = filterByPeriod(orders, (o) => o.intakeDate, period, anchorDate);
   const bayCursor = new Map<string, number>();
   const blocks: TimelineBlock[] = windowOrders
     .filter((o) => o.status !== 'Delivered')
@@ -255,11 +291,13 @@ export function selectGarageDashboard(input: GarageDashboardInput) {
         label: `${o.vehiclePlate} · ${o.vehicleModel}`,
         startHour,
         endHour: Math.min(20, Math.max(startHour + 1, startHour + dur)),
-        tone: o.status === 'InRepair' ? 'primary' : o.status === 'WaitingParts' ? 'secondary' : 'neutral',
+        tone: (o.status === 'InRepair' ? 'primary' : o.status === 'WaitingParts' ? 'secondary' : 'neutral') as TimelineBlock['tone'],
         statusLabel: o.status,
       };
-    });
+    })
+    .filter((b) => b.endHour > timelineStartHour && b.startHour < timelineEndHour);
 
+  const funnelOrders = filterByPeriod(orders, (o) => o.intakeDate, funnelPeriod, anchorDate);
   const stageCounts = [
     { id: 'intake', label: pickText(language, 'Réception', 'Intake', 'الاستقبال'), statuses: ['Intake', 'Diagnostic', 'WaitingApproval', 'WaitingParts', 'InRepair', 'Testing', 'ReadyForPickup', 'Delivered'] },
     { id: 'diag', label: pickText(language, 'Diagnostic', 'Diagnostic', 'التشخيص'), statuses: ['Diagnostic', 'WaitingApproval', 'WaitingParts', 'InRepair', 'Testing', 'ReadyForPickup', 'Delivered'] },
@@ -267,20 +305,22 @@ export function selectGarageDashboard(input: GarageDashboardInput) {
     { id: 'ready', label: pickText(language, 'Prêt / Livré', 'Ready / Delivered', 'جاهز / مسلم'), statuses: ['ReadyForPickup', 'Delivered'] },
   ];
   const funnelStages: FunnelStage[] =
-    windowOrders.length > 0
+    funnelOrders.length > 0
       ? stageCounts.map((s) => ({
           id: s.id,
           label: s.label,
-          value: windowOrders.filter((o) => s.statuses.includes(o.status)).length,
+          value: funnelOrders.filter((o) => s.statuses.includes(o.status)).length,
         }))
       : [];
 
+  const wfOrders = filterByPeriod(orders, (o) => o.intakeDate, waterfallPeriod, anchorDate);
+  const wfInvoices = filterByPeriod(invoices, (i) => i.issuedAt, waterfallPeriod, anchorDate);
   const partBuyById = new Map(parts.map((p) => [p.id, p.buyingPriceDzd || 0]));
   const partBuyBySku = new Map(parts.map((p) => [p.sku, p.buyingPriceDzd || 0]));
-  const laborTotal = windowOrders.reduce((s, o) => s + (o.laborCostDzd || 0), 0);
-  const partsRevTotal = windowOrders.reduce((s, o) => s + (o.partsCostDzd || 0), 0);
-  const discountTotal = windowInvoices.reduce((s, i) => s + (i.discountHt || 0), 0);
-  const partsCogs = windowOrders.reduce(
+  const laborTotal = wfOrders.reduce((s, o) => s + (o.laborCostDzd || 0), 0);
+  const partsRevTotal = wfOrders.reduce((s, o) => s + (o.partsCostDzd || 0), 0);
+  const discountTotal = wfInvoices.reduce((s, i) => s + (i.discountHt || 0), 0);
+  const partsCogs = wfOrders.reduce(
     (s, o) =>
       s +
       (o.partsUsed || []).reduce((ps, line) => {
@@ -290,7 +330,7 @@ export function selectGarageDashboard(input: GarageDashboardInput) {
     0
   );
   const waterfallSteps: WaterfallStep[] =
-    windowOrders.length > 0
+    wfOrders.length > 0
       ? [
           { id: 'labor', label: pickText(language, 'Main-d’œuvre', 'Labor', 'اليد العاملة'), value: Math.round(laborTotal), kind: 'total' },
           { id: 'parts', label: pickText(language, 'Pièces HT', 'Parts Revenue', 'قطع الغيار'), value: Math.round(partsRevTotal), kind: 'delta' },
@@ -300,8 +340,9 @@ export function selectGarageDashboard(input: GarageDashboardInput) {
         ]
       : [];
 
+  const rankedOrders = filterByPeriod(orders, (o) => o.intakeDate, rankedPeriod, anchorDate);
   const techAgg = new Map<string, { orders: number; total: number }>();
-  for (const o of windowOrders) {
+  for (const o of rankedOrders) {
     const key = o.technicianName || 'Atelier';
     const cur = techAgg.get(key) || { orders: 0, total: 0 };
     cur.orders += 1;
@@ -321,10 +362,12 @@ export function selectGarageDashboard(input: GarageDashboardInput) {
     blockedOrders,
     lowParts,
     occupiedBays,
-    totalBays: bays.length,
+    totalBays: effectiveBays.length,
     fleetsCount: fleets.length,
     resources,
     blocks,
+    timelineStartHour,
+    timelineEndHour,
     funnelStages,
     waterfallSteps,
     rankedMechanics,
@@ -345,40 +388,49 @@ export interface RealEstateDashboardInput {
   period: DashboardPeriodKey;
   language: SupportedLanguage;
   anchorDate?: Date;
+  cardFilters?: Record<string, string>;
 }
 
 export function selectRealEstateDashboard(input: RealEstateDashboardInput) {
-  const { properties, mandates, leases, quittances, visits, buyers, listingScope = 'All', period, language, anchorDate = new Date() } = input;
-  const quittanceSeries = buildDailySparkSeries(quittances, (q) => q.paymentDate || q.createdAt, (q) => q.totalCollectedDzd || 0, period, language, anchorDate);
+  const { properties, mandates, leases, quittances, visits, buyers, listingScope = 'All', period, language, anchorDate = new Date(), cardFilters = {} } = input;
+  const collectedPeriod = resolvePeriodKey(cardFilters.collected, period);
+  const bulletsPeriod = resolvePeriodKey(cardFilters.bullets, period);
+  const dumbbellScope = cardFilters.dumbbell || listingScope;
+  const bubbleScope = cardFilters.bubble || listingScope;
+  const funnelPeriod = resolvePeriodKey(cardFilters.funnel, period);
+  const donutScope = cardFilters.donut || listingScope;
 
-  const windowQuittances = filterByPeriod(quittances, (q) => q.paymentDate || q.createdAt, period, anchorDate);
-  const windowVisits = filterByPeriod(visits, (v) => v.visitTimestamp || v.createdAt, period, anchorDate);
-  const windowMandates = filterByPeriod(mandates, (m) => m.startDate, period, anchorDate);
+  const quittanceSeries = buildDailySparkSeries(quittances, (q) => q.paymentDate || q.createdAt, (q) => q.totalCollectedDzd || 0, collectedPeriod, language, anchorDate);
 
-  const scopedProperties = listingScope === 'All'
-    ? properties
-    : properties.filter((p) => (listingScope === 'Sale' ? p.listingType === 'Sale' : p.listingType !== 'Sale'));
+  const filterPropsByScope = (scope: string) =>
+    scope === 'All'
+      ? properties
+      : properties.filter((p) => (scope === 'Sale' ? p.listingType === 'Sale' : p.listingType !== 'Sale'));
+
   const propMap = new Map(properties.map((p) => [p.id, p]));
-  const scopedMandates = listingScope === 'All'
-    ? windowMandates
-    : windowMandates.filter((m) => {
-        const prop = propMap.get(m.propertyId);
-        if (!prop) return true;
-        return listingScope === 'Sale' ? prop.listingType === 'Sale' : prop.listingType !== 'Sale';
-      });
+  const filterMandatesByScope = (list: RealEstateMandate[], scope: string) =>
+    scope === 'All'
+      ? list
+      : list.filter((m) => {
+          const prop = propMap.get(m.propertyId);
+          if (!prop) return true;
+          return scope === 'Sale' ? prop.listingType === 'Sale' : prop.listingType !== 'Sale';
+        });
 
   const activeLeases = leases.filter((l) => l.status === 'Active');
   const expectedMonthlyRent = activeLeases.reduce((s, l) => s + (l.monthlyRentDzd || 0), 0);
-  const expectedTarget = period === 'year' ? expectedMonthlyRent * 12 : expectedMonthlyRent;
-  const collectedWindowRent = windowQuittances.reduce((s, q) => s + (q.rentAmountDzd || 0), 0);
+  const expectedTarget = bulletsPeriod === 'year' ? expectedMonthlyRent * 12 : expectedMonthlyRent;
+  const bulletsQuittances = filterByPeriod(quittances, (q) => q.paymentDate || q.createdAt, bulletsPeriod, anchorDate);
+  const collectedWindowRent = bulletsQuittances.reduce((s, q) => s + (q.rentAmountDzd || 0), 0);
   const arrearsTotal = activeLeases.reduce((s, l) => s + (l.arrearsDzd || 0), 0);
   const expiringMandates = mandates.filter((m) => m.status === 'Expiring' || m.status === 'Expired').length;
 
+  const bubbleProps = filterPropsByScope(bubbleScope);
   const bubbleGroups: BubbleGroup[] = [
     { id: 'Sale', label: pickText(language, 'Vente', 'Sale', 'بيع'), color: '#d4522f' },
     { id: 'Rental', label: pickText(language, 'Location', 'Rental', 'كراء'), color: '#3b82f6' },
   ];
-  const bubblePoints: BubblePoint[] = scopedProperties.map((p) => ({
+  const bubblePoints: BubblePoint[] = bubbleProps.map((p) => ({
     id: p.id,
     label: p.title,
     groupId: p.listingType === 'Sale' ? 'Sale' : 'Rental',
@@ -387,17 +439,21 @@ export function selectRealEstateDashboard(input: RealEstateDashboardInput) {
     size: Math.max(1, p.roomsCount || 1),
   }));
 
+  const windowVisits = filterByPeriod(visits, (v) => v.visitTimestamp || v.createdAt, funnelPeriod, anchorDate);
+  const funnelMandates = filterMandatesByScope(filterByPeriod(mandates, (m) => m.startDate, funnelPeriod, anchorDate), listingScope);
+  const funnelProps = filterPropsByScope(listingScope);
   const funnelStages: FunnelStage[] =
-    buyers.length > 0 || windowVisits.length > 0 || scopedMandates.length > 0 || leases.length > 0
+    buyers.length > 0 || windowVisits.length > 0 || funnelMandates.length > 0 || leases.length > 0
       ? [
           { id: 'buyers', label: pickText(language, 'Demandes acquéreurs', 'Buyer Leads', 'الطلبات'), value: buyers.length + windowVisits.length },
           { id: 'visits', label: pickText(language, 'Bons de visite', 'Site Visits', 'الزيارات'), value: windowVisits.length },
-          { id: 'mandates', label: pickText(language, 'Mandats actifs', 'Mandates', 'التفويضات'), value: scopedMandates.filter((m) => m.status === 'Active' || m.status === 'Executed').length },
-          { id: 'closed', label: pickText(language, 'Baux / Actes', 'Signed Leases', 'العقود المبرمة'), value: activeLeases.length + scopedProperties.filter((p) => p.status === 'Sold').length },
+          { id: 'mandates', label: pickText(language, 'Mandats actifs', 'Mandates', 'التفويضات'), value: funnelMandates.filter((m) => m.status === 'Active' || m.status === 'Executed').length },
+          { id: 'closed', label: pickText(language, 'Baux / Actes', 'Signed Leases', 'العقود المبرمة'), value: activeLeases.length + funnelProps.filter((p) => p.status === 'Sold').length },
         ]
       : [];
 
-  const priceDumbbell: DumbbellItem[] = scopedMandates.slice(0, 6).map((m) => ({
+  const dumbbellMandates = filterMandatesByScope(filterByPeriod(mandates, (m) => m.startDate, period, anchorDate), dumbbellScope);
+  const priceDumbbell: DumbbellItem[] = dumbbellMandates.slice(0, 6).map((m) => ({
     id: m.id,
     label: m.propertyTitle,
     prev: m.minimumAcceptablePriceDzd || 0,
@@ -416,8 +472,9 @@ export function selectRealEstateDashboard(input: RealEstateDashboardInput) {
         ]
       : [];
 
+  const donutProps = filterPropsByScope(donutScope);
   const typeCounts = new Map<string, number>();
-  for (const p of scopedProperties) typeCounts.set(p.propertyType, (typeCounts.get(p.propertyType) || 0) + 1);
+  for (const p of donutProps) typeCounts.set(p.propertyType, (typeCounts.get(p.propertyType) || 0) + 1);
   const donutSegments: DonutSegment[] = Array.from(typeCounts.entries()).map(([label, value], i) => ({
     id: `re-t-${i}`,
     label,
@@ -451,28 +508,38 @@ export interface ManufacturingDashboardInput {
   period: DashboardPeriodKey;
   language: SupportedLanguage;
   anchorDate?: Date;
+  cardFilters?: Record<string, string>;
 }
 
 export function selectManufacturingDashboard(input: ManufacturingDashboardInput) {
-  const { orders, boms, materials, qcRecords, period, language, anchorDate = new Date() } = input;
-  const prodSeries = buildDailySparkSeries(orders, (o) => o.startDate || o.createdAt, (o) => o.quantityProduced || o.actualQuantityProduced || 0, period, language, anchorDate);
+  const { orders, boms, materials, qcRecords, period, language, anchorDate = new Date(), cardFilters = {} } = input;
+  const producedPeriod = resolvePeriodKey(cardFilters.produced, period);
+  const scrapPeriod = resolvePeriodKey(cardFilters.scrap, period);
+  const radarPeriod = resolvePeriodKey(cardFilters.radar, period);
+  const waterfallPeriod = resolvePeriodKey(cardFilters.waterfall, period);
+  const bulletsScope = cardFilters.bullets || 'all';
+  const stackedPeriod = resolvePeriodKey(cardFilters.stacked, period);
 
-  const windowOrders = filterByPeriod(orders, (o) => o.startDate || o.createdAt, period, anchorDate);
-  const windowQc = filterByPeriod(qcRecords, (q) => q.inspectionDate, period, anchorDate);
+  const prodSeries = buildDailySparkSeries(orders, (o) => o.startDate || o.createdAt, (o) => o.quantityProduced || o.actualQuantityProduced || 0, producedPeriod, language, anchorDate);
 
-  const totalGood = windowOrders.reduce((s, o) => s + (o.quantityProduced ?? o.actualQuantityProduced ?? 0), 0);
-  const totalScrap = windowOrders.reduce((s, o) => s + (o.scrapQuantity ?? o.quantityScrapped ?? 0), 0);
-  const scrapRate = totalGood + totalScrap > 0 ? Math.round((totalScrap / (totalGood + totalScrap)) * 1000) / 10 : 0;
+  const scrapOrders = filterByPeriod(orders, (o) => o.startDate || o.createdAt, scrapPeriod, anchorDate);
+  const scrapGood = scrapOrders.reduce((s, o) => s + (o.quantityProduced ?? o.actualQuantityProduced ?? 0), 0);
+  const scrapBad = scrapOrders.reduce((s, o) => s + (o.scrapQuantity ?? o.quantityScrapped ?? 0), 0);
+  const scrapRate = scrapGood + scrapBad > 0 ? Math.round((scrapBad / (scrapGood + scrapBad)) * 1000) / 10 : 0;
   const scrapSpark = buildBucketWeightedRateSeries(
     orders,
     (o) => o.startDate || o.createdAt,
     (o) => o.scrapQuantity ?? o.quantityScrapped ?? 0,
     (o) => (o.quantityProduced ?? o.actualQuantityProduced ?? 0) + (o.scrapQuantity ?? o.quantityScrapped ?? 0),
-    period,
+    scrapPeriod,
     language,
     anchorDate
   );
 
+  const windowOrders = filterByPeriod(orders, (o) => o.startDate || o.createdAt, period, anchorDate);
+  const windowQc = filterByPeriod(qcRecords, (q) => q.inspectionDate, period, anchorDate);
+  const totalGood = windowOrders.reduce((s, o) => s + (o.quantityProduced ?? o.actualQuantityProduced ?? 0), 0);
+  const totalScrap = windowOrders.reduce((s, o) => s + (o.scrapQuantity ?? o.quantityScrapped ?? 0), 0);
   const qcPassPct = windowQc.length > 0
     ? Math.round((windowQc.filter((q) => q.verdict === 'Accepted' || q.verdict === 'AcceptedWithDerogation').length / windowQc.length) * 100)
     : 0;
@@ -484,19 +551,24 @@ export function selectManufacturingDashboard(input: ManufacturingDashboardInput)
     { id: 'yield', label: pickText(language, 'Rendement net', 'First-Pass Yield', 'المردودية'), value: yieldPct, target: 92, targetLabel: '92%', unit: '%' },
   ];
 
-  const orderBullets: BulletItem[] = windowOrders.slice(0, 6).map((o) => ({
+  const scopedBulletOrders =
+    bulletsScope === 'active'
+      ? windowOrders.filter((o) => o.status === 'InProduction' || o.status === 'MaterialsIssued' || o.status === 'Scheduled')
+      : windowOrders;
+  const orderBullets: BulletItem[] = scopedBulletOrders.slice(0, 6).map((o) => ({
     id: o.id,
     label: `${o.orderNumber} · ${o.productName}`,
     value: o.quantityProduced ?? o.actualQuantityProduced ?? 0,
     target: o.targetQuantity || 0,
   }));
 
-  const matCost = windowOrders.reduce((s, o) => s + (o.totalMaterialCostDzd || 0), 0);
-  const labCost = windowOrders.reduce((s, o) => s + (o.totalLaborCostDzd || 0), 0);
-  const totalCost = windowOrders.reduce((s, o) => s + (o.totalCostDzd || 0), 0);
+  const wfOrders = filterByPeriod(orders, (o) => o.startDate || o.createdAt, waterfallPeriod, anchorDate);
+  const matCost = wfOrders.reduce((s, o) => s + (o.totalMaterialCostDzd || 0), 0);
+  const labCost = wfOrders.reduce((s, o) => s + (o.totalLaborCostDzd || 0), 0);
+  const totalCost = wfOrders.reduce((s, o) => s + (o.totalCostDzd || 0), 0);
   const overhead = Math.max(0, totalCost - matCost - labCost);
   const waterfallSteps: WaterfallStep[] =
-    windowOrders.length > 0
+    wfOrders.length > 0
       ? [
           { id: 'mat', label: pickText(language, 'Matières 1ères', 'Materials', 'المواد الأولية'), value: Math.round(matCost), kind: 'total' },
           { id: 'labor', label: pickText(language, 'Main-d’œuvre', 'Direct Labor', 'اليد العاملة'), value: Math.round(labCost), kind: 'delta' },
@@ -505,7 +577,8 @@ export function selectManufacturingDashboard(input: ManufacturingDashboardInput)
         ]
       : [];
 
-  const stackedBuckets: StackedBucket[] = windowOrders.slice(0, 6).map((o) => ({
+  const stackedOrders = filterByPeriod(orders, (o) => o.startDate || o.createdAt, stackedPeriod, anchorDate);
+  const stackedBuckets: StackedBucket[] = stackedOrders.slice(0, 6).map((o) => ({
     label: o.orderNumber,
     values: {
       good: o.quantityProduced ?? o.actualQuantityProduced ?? 0,
@@ -513,20 +586,28 @@ export function selectManufacturingDashboard(input: ManufacturingDashboardInput)
     },
   }));
 
-  const onTimePct = windowOrders.length > 0 ? Math.round((windowOrders.filter((o) => o.status === 'Completed').length / windowOrders.length) * 100) : 0;
+  const radarOrders = filterByPeriod(orders, (o) => o.startDate || o.createdAt, radarPeriod, anchorDate);
+  const radarQc = filterByPeriod(qcRecords, (q) => q.inspectionDate, radarPeriod, anchorDate);
+  const rGood = radarOrders.reduce((s, o) => s + (o.quantityProduced ?? o.actualQuantityProduced ?? 0), 0);
+  const rScrap = radarOrders.reduce((s, o) => s + (o.scrapQuantity ?? o.quantityScrapped ?? 0), 0);
+  const rYieldPct = rGood + rScrap > 0 ? Math.round((rGood / (rGood + rScrap)) * 100) : 0;
+  const rQcPassPct = radarQc.length > 0
+    ? Math.round((radarQc.filter((q) => q.verdict === 'Accepted' || q.verdict === 'AcceptedWithDerogation').length / radarQc.length) * 100)
+    : 0;
+  const onTimePct = radarOrders.length > 0 ? Math.round((radarOrders.filter((o) => o.status === 'Completed').length / radarOrders.length) * 100) : 0;
   const matReadyPct = materials.length > 0 ? Math.round(((materials.length - lowMaterials) / materials.length) * 100) : 0;
   const activeBomIds = new Set(boms.filter((b) => b.isActive).map((b) => b.id));
-  const bomCoveragePct = windowOrders.length > 0
-    ? Math.round((windowOrders.filter((o) => activeBomIds.has(o.bomId)).length / windowOrders.length) * 100)
+  const bomCoveragePct = radarOrders.length > 0
+    ? Math.round((radarOrders.filter((o) => activeBomIds.has(o.bomId)).length / radarOrders.length) * 100)
     : boms.length > 0
       ? Math.round((activeBomIds.size / boms.length) * 100)
       : 0;
 
   const radarAxes: RadarAxis[] =
-    windowOrders.length > 0 || materials.length > 0 || windowQc.length > 0
+    radarOrders.length > 0 || materials.length > 0 || radarQc.length > 0
       ? [
-          { id: 'yield', label: pickText(language, 'Rendement', 'Yield', 'المردود'), value: yieldPct, benchmark: 92 },
-          { id: 'qc', label: 'QC', value: qcPassPct, benchmark: 95 },
+          { id: 'yield', label: pickText(language, 'Rendement', 'Yield', 'المردود'), value: rYieldPct, benchmark: 92 },
+          { id: 'qc', label: 'QC', value: rQcPassPct, benchmark: 95 },
           { id: 'of', label: pickText(language, 'OF clôturés', 'OF Done', 'الأوامر المنجزة'), value: onTimePct, benchmark: 85 },
           { id: 'mat', label: pickText(language, 'Stock MP', 'Materials', 'المخزون'), value: matReadyPct, benchmark: 90 },
           { id: 'bom', label: 'BOM', value: bomCoveragePct, benchmark: 80 },
@@ -562,44 +643,63 @@ export interface LegalDashboardInput {
   period: DashboardPeriodKey;
   language: SupportedLanguage;
   anchorDate?: Date;
+  cardFilters?: Record<string, string>;
 }
 
 export function selectLegalDashboard(input: LegalDashboardInput) {
-  const { matters, deadlines, notaryDeeds, escrowAccounts, cashReceipts, scfEntries, period, language, anchorDate = new Date() } = input;
-  const receiptSeries = buildDailySparkSeries(cashReceipts, (r) => r.createdAt, (r) => r.netCollectedDzd || 0, period, language, anchorDate);
+  const { matters, deadlines, notaryDeeds, escrowAccounts, cashReceipts, scfEntries, period, language, anchorDate = new Date(), cardFilters = {} } = input;
+  const honorairesPeriod = resolvePeriodKey(cardFilters.honoraires, period);
+  const trendPeriod = resolvePeriodKey(cardFilters.trend, period);
+  const deadlinesScope = cardFilters.deadlines || 'critical';
+  const bulletsScope = cardFilters.bullets || 'all';
+  const funnelPeriod = resolvePeriodKey(cardFilters.funnel, period);
+  const dumbbellScope = cardFilters.dumbbell || 'all';
+  const rankedPeriod = resolvePeriodKey(cardFilters.ranked, period);
 
-  const windowReceipts = filterByPeriod(cashReceipts, (r) => r.createdAt, period, anchorDate);
-  const windowMatters = filterByPeriod(matters, (m) => m.createdAt, period, anchorDate);
-  const windowDeeds = filterByPeriod(notaryDeeds, (n) => n.signedAt || n.createdAt, period, anchorDate);
+  const receiptSeries = buildDailySparkSeries(cashReceipts, (r) => r.createdAt, (r) => r.netCollectedDzd || 0, honorairesPeriod, language, anchorDate);
+  const trendSeries =
+    trendPeriod === honorairesPeriod
+      ? receiptSeries
+      : buildDailySparkSeries(cashReceipts, (r) => r.createdAt, (r) => r.netCollectedDzd || 0, trendPeriod, language, anchorDate);
+
   const windowDeadlines = filterByPeriod(deadlines, (d) => d.terminalExpiryDate || d.notificationDate, period, anchorDate);
-  const windowScfEntries = filterByPeriod(scfEntries, (e) => e.date, period, anchorDate);
-
-  const criticalDeadlines = windowDeadlines.filter((d) => d.status === 'critical' || d.status === 'approaching' || d.status === 'forfeited').length;
+  const criticalDeadlines =
+    deadlinesScope === 'all'
+      ? windowDeadlines.length
+      : windowDeadlines.filter((d) => d.status === 'critical' || d.status === 'approaching' || d.status === 'forfeited').length;
   const escrowTotal = escrowAccounts.reduce((s, e) => s + (e.currentBalanceDzd || 0), 0);
 
+  const windowScfEntries = filterByPeriod(scfEntries, (e) => e.date, period, anchorDate);
   const scfEntriesCount = windowScfEntries.length;
   const scfBalancedCount = windowScfEntries.filter((e) => e.isBalanced).length;
   const scfBalancedPct = scfEntriesCount > 0 ? Math.round((scfBalancedCount / scfEntriesCount) * 100) : 0;
 
+  const funnelMatters = filterByPeriod(matters, (m) => m.createdAt, funnelPeriod, anchorDate);
+  const funnelDeeds = filterByPeriod(notaryDeeds, (n) => n.signedAt || n.createdAt, funnelPeriod, anchorDate);
   const funnelStages: FunnelStage[] =
-    windowMatters.length > 0 || windowDeeds.length > 0
+    funnelMatters.length > 0 || funnelDeeds.length > 0
       ? [
-          { id: 'total', label: pickText(language, 'Dossiers & Actes', 'Matters & Deeds', 'الملفات والعقود'), value: windowMatters.length + windowDeeds.length },
-          { id: 'active', label: pickText(language, 'En instruction', 'Active Docket', 'قيد الدراسة'), value: windowMatters.filter((m) => m.status === 'Active' || m.status === 'PendingHearing').length + windowDeeds.filter((n) => n.status === 'draft').length },
-          { id: 'delib', label: pickText(language, 'Délibéré / Minute', 'Hearing / Minute', 'المداولة / التوقيع'), value: windowMatters.filter((m) => m.status === 'UnderDeliberation').length + windowDeeds.filter((n) => n.status === 'minute_signed').length },
-          { id: 'closed', label: pickText(language, 'Clôturés / Publiés', 'Closed / Sealed', 'المغلقة / المشهرة'), value: windowMatters.filter((m) => m.status === 'Closed' || m.status === 'Archived').length + windowDeeds.filter((n) => n.status === 'enregistre_impots' || n.status === 'publie_conservation').length },
+          { id: 'total', label: pickText(language, 'Dossiers & Actes', 'Matters & Deeds', 'الملفات والعقود'), value: funnelMatters.length + funnelDeeds.length },
+          { id: 'active', label: pickText(language, 'En instruction', 'Active Docket', 'قيد الدراسة'), value: funnelMatters.filter((m) => m.status === 'Active' || m.status === 'PendingHearing').length + funnelDeeds.filter((n) => n.status === 'draft').length },
+          { id: 'delib', label: pickText(language, 'Délibéré / Minute', 'Hearing / Minute', 'المداولة / التوقيع'), value: funnelMatters.filter((m) => m.status === 'UnderDeliberation').length + funnelDeeds.filter((n) => n.status === 'minute_signed').length },
+          { id: 'closed', label: pickText(language, 'Clôturés / Publiés', 'Closed / Sealed', 'المغلقة / المشهرة'), value: funnelMatters.filter((m) => m.status === 'Closed' || m.status === 'Archived').length + funnelDeeds.filter((n) => n.status === 'enregistre_impots' || n.status === 'publie_conservation').length },
         ]
       : [];
 
-  const escrowBullets: BulletItem[] = escrowAccounts.slice(0, 5).map((e) => ({
+  const filteredEscrow =
+    bulletsScope === 'locked'
+      ? escrowAccounts.filter((e) => (e.currentBalanceDzd || 0) > 0)
+      : escrowAccounts;
+  const escrowBullets: BulletItem[] = filteredEscrow.slice(0, 5).map((e) => ({
     id: e.id,
     label: `${e.matterReference} · ${e.clientName}`,
     value: Math.round(e.currentBalanceDzd || 0),
     target: Math.round(e.totalDepositedDzd || 0),
   }));
 
+  const rankedMatters = filterByPeriod(matters, (m) => m.createdAt, rankedPeriod, anchorDate);
   const lawyerAgg = new Map<string, { count: number; retainer: number }>();
-  for (const m of windowMatters) {
+  for (const m of rankedMatters) {
     const key = m.assignedLawyer || 'Cabinet';
     const cur = lawyerAgg.get(key) || { count: 0, retainer: 0 };
     cur.count += 1;
@@ -612,11 +712,13 @@ export function selectLegalDashboard(input: LegalDashboardInput) {
     values: { matters: v.count, retainer: Math.round(v.retainer) },
   }));
 
+  const windowMatters = filterByPeriod(matters, (m) => m.createdAt, period, anchorDate);
+  const windowReceipts = filterByPeriod(cashReceipts, (r) => r.createdAt, period, anchorDate);
   const clientMatterCount = new Map<string, number>();
   for (const m of windowMatters) {
     clientMatterCount.set(m.clientName, (clientMatterCount.get(m.clientName) || 0) + 1);
   }
-  const feeDumbbell: DumbbellItem[] = windowMatters.slice(0, 6).map((m) => {
+  const allFeeDumbbell: DumbbellItem[] = windowMatters.slice(0, 6).map((m) => {
     const singleMatterClient = (clientMatterCount.get(m.clientName) || 0) === 1;
     const paidForMatter = windowReceipts
       .filter((r) => (r.matterTitle ? r.matterTitle === m.title : singleMatterClient && r.clientName === m.clientName))
@@ -628,12 +730,16 @@ export function selectLegalDashboard(input: LegalDashboardInput) {
       value: paidForMatter,
     };
   });
+  const feeDumbbell: DumbbellItem[] =
+    dumbbellScope === 'unpaid'
+      ? allFeeDumbbell.filter((d) => d.value < d.prev)
+      : allFeeDumbbell;
 
   return {
     collectedHonoraires: receiptSeries.currentTotal,
     receiptDelta: receiptSeries.deltaPercent,
     receiptSpark: receiptSeries.series,
-    areaPoints: receiptSeries.areaPoints as AreaPoint[],
+    areaPoints: trendSeries.areaPoints as AreaPoint[],
     criticalDeadlines,
     escrowTotal,
     scfEntriesCount,
@@ -656,49 +762,60 @@ export interface LogisticsDashboardInput {
   period: DashboardPeriodKey;
   language: SupportedLanguage;
   anchorDate?: Date;
+  cardFilters?: Record<string, string>;
 }
 
 export function selectLogisticsDashboard(input: LogisticsDashboardInput) {
-  const { shipments, discharges, remittances, period, language, anchorDate = new Date() } = input;
+  const { shipments, discharges, remittances, period, language, anchorDate = new Date(), cardFilters = {} } = input;
+  const codPeriod = resolvePeriodKey(cardFilters.cod, period);
+  const returnsPeriod = resolvePeriodKey(cardFilters.returns, period);
+  const funnelPeriod = resolvePeriodKey(cardFilters.funnel, period);
+  const stackedPeriod = resolvePeriodKey(cardFilters.stacked, period);
+  const waterfallPeriod = resolvePeriodKey(cardFilters.waterfall, period);
+  const weightPeriod = resolvePeriodKey(cardFilters.weight, period);
+  const rankedPeriod = resolvePeriodKey(cardFilters.ranked, period);
+
   const allDelivered = shipments.filter((s) => s.status === 'Delivered');
-  const codSeries = buildDailySparkSeries(allDelivered, (s) => s.createdAt, (s) => s.codAmountDzd || 0, period, language, anchorDate);
+  const codSeries = buildDailySparkSeries(allDelivered, (s) => s.createdAt, (s) => s.codAmountDzd || 0, codPeriod, language, anchorDate);
 
-  const windowShipments = filterByPeriod(shipments, (s) => s.createdAt, period, anchorDate);
-  const windowDischarges = filterByPeriod(discharges, (d) => d.timestamp, period, anchorDate);
-  const windowRemittances = filterByPeriod(remittances, (r) => r.executedAt, period, anchorDate);
-
-  const delivered = windowShipments.filter((s) => s.status === 'Delivered');
-  const returnedCount = windowShipments.filter((s) => s.status === 'Returned' || s.status === 'Postponed').length;
-  const returnRate = windowShipments.length > 0 ? Math.round((returnedCount / windowShipments.length) * 1000) / 10 : 0;
+  const retShipments = filterByPeriod(shipments, (s) => s.createdAt, returnsPeriod, anchorDate);
+  const returnedCount = retShipments.filter((s) => s.status === 'Returned' || s.status === 'Postponed').length;
+  const returnRate = retShipments.length > 0 ? Math.round((returnedCount / retShipments.length) * 1000) / 10 : 0;
   const returnSpark = buildPeriodRateSeries(
     shipments,
     (s) => s.createdAt,
     (s) => s.status === 'Returned' || s.status === 'Postponed',
-    period,
+    returnsPeriod,
     language,
     anchorDate
   );
 
+  const funnelShipments = filterByPeriod(shipments, (s) => s.createdAt, funnelPeriod, anchorDate);
+  const funnelDelivered = funnelShipments.filter((s) => s.status === 'Delivered');
   const funnelStages: FunnelStage[] =
-    windowShipments.length > 0
+    funnelShipments.length > 0
       ? [
-          { id: 'hub', label: pickText(language, 'Colis reçus Hub', 'Hub Intake', 'استلام المركز'), value: windowShipments.length },
-          { id: 'sorted', label: pickText(language, 'Triés / Ensachés', 'Sorted', 'الفرز'), value: windowShipments.filter((s) => ['Sorted', 'OutForDelivery', 'Delivered'].includes(s.status)).length },
-          { id: 'out', label: pickText(language, 'En tournée', 'Out for Delivery', 'قيد التوصيل'), value: windowShipments.filter((s) => ['OutForDelivery', 'Delivered'].includes(s.status)).length },
-          { id: 'del', label: pickText(language, 'Livrés COD', 'Delivered', 'تم التسليم'), value: delivered.length },
+          { id: 'hub', label: pickText(language, 'Colis reçus Hub', 'Hub Intake', 'استلام المركز'), value: funnelShipments.length },
+          { id: 'sorted', label: pickText(language, 'Triés / Ensachés', 'Sorted', 'الفرز'), value: funnelShipments.filter((s) => ['Sorted', 'OutForDelivery', 'Delivered'].includes(s.status)).length },
+          { id: 'out', label: pickText(language, 'En tournée', 'Out for Delivery', 'قيد التوصيل'), value: funnelShipments.filter((s) => ['OutForDelivery', 'Delivered'].includes(s.status)).length },
+          { id: 'del', label: pickText(language, 'Livrés COD', 'Delivered', 'تم التسليم'), value: funnelDelivered.length },
         ]
       : [];
 
-  const grossCod = delivered.reduce((s, x) => s + (x.codAmountDzd || 0), 0);
-  const shipFees = windowShipments.reduce((s, x) => s + (x.shippingFeeDzd || 0), 0);
-  const stampFees = windowShipments.reduce((s, x) => s + (x.stampDutyDzd || 0), 0);
-  const discrepancy = windowDischarges.reduce((s, d) => s + Math.abs(d.discrepancyDzd || 0), 0);
-  const netRemittance = windowRemittances.length > 0
-    ? windowRemittances.reduce((s, r) => s + (r.netPayoutDzd || 0), 0)
+  const wfShipments = filterByPeriod(shipments, (s) => s.createdAt, waterfallPeriod, anchorDate);
+  const wfDischarges = filterByPeriod(discharges, (d) => d.timestamp, waterfallPeriod, anchorDate);
+  const wfRemittances = filterByPeriod(remittances, (r) => r.executedAt, waterfallPeriod, anchorDate);
+  const wfDelivered = wfShipments.filter((s) => s.status === 'Delivered');
+  const grossCod = wfDelivered.reduce((s, x) => s + (x.codAmountDzd || 0), 0);
+  const shipFees = wfShipments.reduce((s, x) => s + (x.shippingFeeDzd || 0), 0);
+  const stampFees = wfShipments.reduce((s, x) => s + (x.stampDutyDzd || 0), 0);
+  const discrepancy = wfDischarges.reduce((s, d) => s + Math.abs(d.discrepancyDzd || 0), 0);
+  const netRemittance = wfRemittances.length > 0
+    ? wfRemittances.reduce((s, r) => s + (r.netPayoutDzd || 0), 0)
     : Math.max(0, grossCod - shipFees - stampFees - discrepancy);
 
   const waterfallSteps: WaterfallStep[] =
-    windowShipments.length > 0
+    wfShipments.length > 0
       ? [
           { id: 'cod', label: pickText(language, 'COD encaissé', 'Gross COD', 'تحصيل الدفع عند الاستلام'), value: Math.round(grossCod), kind: 'total' },
           { id: 'fees', label: pickText(language, 'Frais livraison', 'Shipping Fees', 'رسوم الشحن'), value: -Math.round(shipFees), kind: 'delta' },
@@ -707,8 +824,9 @@ export function selectLogisticsDashboard(input: LogisticsDashboardInput) {
         ]
       : [];
 
+  const rankedShipments = filterByPeriod(shipments, (s) => s.createdAt, rankedPeriod, anchorDate);
   const wilayaAgg = new Map<string, { delivered: number; cod: number }>();
-  for (const s of windowShipments) {
+  for (const s of rankedShipments) {
     const key = s.destinationWilaya || 'Alger';
     const cur = wilayaAgg.get(key) || { delivered: 0, cod: 0 };
     if (s.status === 'Delivered') {
@@ -723,7 +841,11 @@ export function selectLogisticsDashboard(input: LogisticsDashboardInput) {
     values: { parcels: v.delivered, cod: Math.round(v.cod) },
   }));
 
-  const { range: bucketRange, bucketCount, effectiveStart, bucketMs } = getPeriodBuckets(period, anchorDate);
+  const stackedCodSeries =
+    stackedPeriod === codPeriod
+      ? codSeries
+      : buildDailySparkSeries(allDelivered, (s) => s.createdAt, (s) => s.codAmountDzd || 0, stackedPeriod, language, anchorDate);
+  const { range: bucketRange, bucketCount, effectiveStart, bucketMs } = getPeriodBuckets(stackedPeriod, anchorDate);
   const deliveredCounts = new Array<number>(bucketCount).fill(0);
   const returnedCounts = new Array<number>(bucketCount).fill(0);
   for (const s of shipments) {
@@ -736,7 +858,7 @@ export function selectLogisticsDashboard(input: LogisticsDashboardInput) {
     else if (s.status === 'Returned' || s.status === 'Postponed') returnedCounts[idx] += 1;
   }
 
-  const stackedBuckets: StackedBucket[] = codSeries.series.map((pt, idx) => ({
+  const stackedBuckets: StackedBucket[] = stackedCodSeries.series.map((pt, idx) => ({
     label: pt.label,
     values: {
       delivered: deliveredCounts[idx] || 0,
@@ -744,6 +866,7 @@ export function selectLogisticsDashboard(input: LogisticsDashboardInput) {
     },
   }));
 
+  const weightShipments = filterByPeriod(shipments, (s) => s.createdAt, weightPeriod, anchorDate);
   const weightBinsDef = [
     { id: 'w1', label: '0–1kg', min: 0, max: 1 },
     { id: 'w2', label: '1–3kg', min: 1.001, max: 3 },
@@ -752,11 +875,11 @@ export function selectLogisticsDashboard(input: LogisticsDashboardInput) {
     { id: 'w5', label: '>10kg', min: 10.001, max: Infinity },
   ];
   const weightBins: HistogramBin[] =
-    windowShipments.length > 0
+    weightShipments.length > 0
       ? weightBinsDef.map((b) => ({
           id: b.id,
           label: b.label,
-          value: windowShipments.filter((s) => (s.weightKg || 0) >= b.min && (s.weightKg || 0) <= b.max).length,
+          value: weightShipments.filter((s) => (s.weightKg || 0) >= b.min && (s.weightKg || 0) <= b.max).length,
         }))
       : [];
 
@@ -790,16 +913,22 @@ export interface ContractorDashboardInput {
   period: DashboardPeriodKey;
   language: SupportedLanguage;
   anchorDate?: Date;
+  cardFilters?: Record<string, string>;
 }
 
 export function selectContractorDashboard(input: ContractorDashboardInput) {
-  const { projects, boqItems, dailyLogs, dgps, serviceOrders, concretePours, subcontractors, equipmentLogs, period, language, anchorDate = new Date() } = input;
-  const dgpSeries = buildDailySparkSeries(dgps, (d) => d.issuedDate || d.createdAt, (d) => d.netPayableDzd || d.periodGrossDzd || 0, period, language, anchorDate);
+  const { projects, boqItems, dailyLogs, dgps, serviceOrders, concretePours, subcontractors, equipmentLogs, period, language, anchorDate = new Date(), cardFilters = {} } = input;
+  const dgpPeriod = resolvePeriodKey(cardFilters.dgp, period);
+  const bulletsScope = cardFilters.bullets || 'all';
+  const waterfallScope = cardFilters.waterfall || period;
+  const treemapScope = cardFilters.treemap || 'all';
+  const dumbbellScope = cardFilters.dumbbell || 'all';
+
+  const dgpSeries = buildDailySparkSeries(dgps, (d) => d.issuedDate || d.createdAt, (d) => d.netPayableDzd || d.periodGrossDzd || 0, dgpPeriod, language, anchorDate);
 
   const windowDgps = filterByPeriod(dgps, (d) => d.issuedDate || d.createdAt, period, anchorDate);
   const windowDailyLogs = filterByPeriod(dailyLogs, (l) => l.logDate, period, anchorDate);
   const windowPours = filterByPeriod(concretePours, (c) => c.pourDate, period, anchorDate);
-  const windowSubs = filterByPeriod(subcontractors, (s) => s.createdAt, period, anchorDate);
   const windowEquipLogs = filterByPeriod(equipmentLogs, (e) => e.date || e.createdAt, period, anchorDate);
 
   const totalRetention = windowDgps.length > 0
@@ -822,26 +951,36 @@ export function selectContractorDashboard(input: ContractorDashboardInput) {
     { id: 'hse', label: pickText(language, 'Jours sans arrêt HSE', 'Safe Workdays', 'سلامة الورشة'), value: safeLogsPct, target: 95, targetLabel: '95%', unit: '%' },
   ];
 
-  const boqBullets: BulletItem[] = boqItems.slice(0, 6).map((b) => ({
+  const scopedBoq =
+    bulletsScope === 'inprogress'
+      ? boqItems.filter((b) => (b.totalPlannedDzd || 0) > (b.totalExecutedDzd || 0))
+      : boqItems;
+  const boqBullets: BulletItem[] = scopedBoq.slice(0, 6).map((b) => ({
     id: b.id,
     label: b.lotTitle || b.designation,
     value: Math.round(b.totalExecutedDzd || 0),
     target: Math.round(b.totalPlannedDzd || 0),
   }));
 
-  const treemapItems: TreemapItem[] = projects.map((p, i) => ({
+  const treemapProjects =
+    treemapScope === 'active'
+      ? projects.filter((p) => p.status === 'InProgress' || p.status === 'SitePreparation')
+      : projects;
+  const treemapItems: TreemapItem[] = treemapProjects.map((p, i) => ({
     id: p.id,
     label: p.projectName,
     value: Math.round(p.contractAmountDzd || 0),
     color: PALETTE[i % PALETTE.length],
   }));
 
-  const grossCert = windowDgps.reduce((s, d) => s + (d.periodGrossDzd || d.grossCompletedDzd || 0), 0);
-  const retHold = windowDgps.reduce((s, d) => s + (d.retentionGuaranteeDzd || 0), 0);
-  const subPaid = windowSubs.reduce((s, x) => s + (x.paidAmountDzd || 0), 0);
-  const netPayable = windowDgps.reduce((s, d) => s + (d.netPayableDzd || 0), 0) || Math.max(0, grossCert - retHold - subPaid);
+  const wfDgps = filterByScope(dgps, (d) => d.issuedDate || d.createdAt, waterfallScope, period, anchorDate);
+  const wfSubs = filterByScope(subcontractors, (s) => s.createdAt, waterfallScope, period, anchorDate);
+  const grossCert = wfDgps.reduce((s, d) => s + (d.periodGrossDzd || d.grossCompletedDzd || 0), 0);
+  const retHold = wfDgps.reduce((s, d) => s + (d.retentionGuaranteeDzd || 0), 0);
+  const subPaid = wfSubs.reduce((s, x) => s + (x.paidAmountDzd || 0), 0);
+  const netPayable = wfDgps.reduce((s, d) => s + (d.netPayableDzd || 0), 0) || Math.max(0, grossCert - retHold - subPaid);
   const waterfallSteps: WaterfallStep[] =
-    windowDgps.length > 0 || projects.length > 0
+    wfDgps.length > 0 || projects.length > 0
       ? [
           { id: 'gross', label: pickText(language, 'DGP brut certifié', 'Certified DGP', 'الوضع المعتمد'), value: Math.round(grossCert), kind: 'total' },
           { id: 'ret', label: pickText(language, 'Retenue garantie 5%', 'Retention 5%', 'اقتطاع الضمان'), value: -Math.round(retHold), kind: 'delta' },
@@ -850,7 +989,7 @@ export function selectContractorDashboard(input: ContractorDashboardInput) {
         ]
       : [];
 
-  const progressDumbbell: DumbbellItem[] = projects.slice(0, 6).map((p) => {
+  const allProgressDumbbell: DumbbellItem[] = projects.slice(0, 6).map((p) => {
     const start = parseIsoDay(p.startDate)?.getTime() ?? anchorDate.getTime();
     const end = parseIsoDay(p.targetEndDate)?.getTime() ?? anchorDate.getTime();
     const elapsedPct = end > start ? Math.min(100, Math.max(0, Math.round(((anchorDate.getTime() - start) / (end - start)) * 100))) : 0;
@@ -861,6 +1000,10 @@ export function selectContractorDashboard(input: ContractorDashboardInput) {
       value: Math.round(p.progressPercent || 0),
     };
   });
+  const progressDumbbell: DumbbellItem[] =
+    dumbbellScope === 'delayed'
+      ? allProgressDumbbell.filter((d) => d.value < d.prev)
+      : allProgressDumbbell;
 
   return {
     dgpCertifiedTotal: dgpSeries.currentTotal,
@@ -892,15 +1035,23 @@ export interface AgricultureDashboardInput {
   period: DashboardPeriodKey;
   language: SupportedLanguage;
   anchorDate?: Date;
+  cardFilters?: Record<string, string>;
 }
 
 export function selectAgricultureDashboard(input: AgricultureDashboardInput) {
-  const { parcels, cropCycles, treatmentLogs, pointages, dairyCows, milkingRecords, weighbridgeTickets, period, language, anchorDate = new Date() } = input;
+  const { parcels, cropCycles, treatmentLogs, pointages, dairyCows, milkingRecords, weighbridgeTickets, period, language, anchorDate = new Date(), cardFilters = {} } = input;
+  const harvestPeriod = resolvePeriodKey(cardFilters.harvest, period);
+  const trendScope = cardFilters.trend || 'compare';
+  const bulletsScope = cardFilters.bullets || 'all';
+  const radarPeriod = resolvePeriodKey(cardFilters.radar, period);
+  const treemapScope = cardFilters.treemap || 'surface';
+  const dumbbellScope = cardFilters.dumbbell || 'all';
+
   const harvestSeries = buildDailySparkSeries(
     weighbridgeTickets,
     (t) => t.date || t.harvestDate || t.createdAt,
     (t) => t.netWeightKg || 0,
-    period,
+    harvestPeriod,
     language,
     anchorDate
   );
@@ -914,8 +1065,9 @@ export function selectAgricultureDashboard(input: AgricultureDashboardInput) {
       return allow ? allow.getTime() > nowMs : false;
     })
   ).length;
+  const quarantinedCows = dairyCows.filter((c) => c.isInWithholdingLockout || c.reproStatus === 'Quarantaine').length;
 
-  const waterBullets: BulletItem[] = parcels
+  const allWaterBullets: BulletItem[] = parcels
     .filter((p) => (p.anrhAnnualQuotaM3 || 0) > 0)
     .slice(0, 6)
     .map((p) => ({
@@ -924,11 +1076,18 @@ export function selectAgricultureDashboard(input: AgricultureDashboardInput) {
       value: Math.round(p.anrhConsumedM3 || 0),
       target: Math.round(p.anrhAnnualQuotaM3 || 0),
     }));
+  const waterBullets: BulletItem[] =
+    bulletsScope === 'high'
+      ? allWaterBullets.filter((b) => (b.target || 0) > 0 && b.value >= (b.target || 0) * 0.75)
+      : allWaterBullets;
 
   const treemapItems: TreemapItem[] = parcels.map((p, i) => ({
     id: p.id,
     label: `${p.name}${p.currentCrop ? ` · ${p.currentCrop}` : ''}`,
-    value: Math.round((p.surfaceHectares || 0) * 10) / 10,
+    value:
+      treemapScope === 'water'
+        ? Math.round(p.anrhConsumedM3 || 0)
+        : Math.round((p.surfaceHectares || 0) * 10) / 10,
     color: PALETTE[i % PALETTE.length],
   }));
 
@@ -941,7 +1100,18 @@ export function selectAgricultureDashboard(input: AgricultureDashboardInput) {
     anchorDate
   );
 
-  const windowPointages = filterByPeriod(pointages, (p) => p.date || p.createdAt, period, anchorDate);
+  const combinedAreaPoints: AreaPoint[] =
+    trendScope === 'milk'
+      ? (milkSeries.areaPoints as AreaPoint[])
+      : trendScope === 'harvest'
+      ? (harvestSeries.areaPoints as AreaPoint[])
+      : harvestSeries.areaPoints.map((pt, idx) => ({
+          label: pt.label,
+          value: pt.value,
+          previous: milkSeries.areaPoints[idx]?.value ?? pt.previous,
+        }));
+
+  const windowPointages = filterByPeriod(pointages, (p) => p.date || p.createdAt, radarPeriod, anchorDate);
 
   const waterMarginPct =
     parcels.reduce((s, p) => s + (p.anrhAnnualQuotaM3 || 0), 0) > 0
@@ -959,7 +1129,7 @@ export function selectAgricultureDashboard(input: AgricultureDashboardInput) {
         )
       : 0;
   const darCompliancePct = parcels.length > 0 ? Math.round(((parcels.length - lockedParcels) / parcels.length) * 100) : 0;
-  const herdHealthyPct = dairyCows.length > 0 ? Math.round((dairyCows.filter((c) => !c.isInWithholdingLockout && c.reproStatus !== 'Quarantaine').length / dairyCows.length) * 100) : 0;
+  const herdHealthyPct = dairyCows.length > 0 ? Math.round(((dairyCows.length - quarantinedCows) / dairyCows.length) * 100) : 0;
   const cropReadyPct = cropCycles.length > 0 ? Math.round((cropCycles.filter((c) => c.currentPhase === 'ready_harvest' || c.currentPhase === 'closed').length / cropCycles.length) * 100) : 0;
   const pointagePaidPct = windowPointages.length > 0 ? Math.round((windowPointages.filter((p) => p.isPaid).length / windowPointages.length) * 100) : 0;
 
@@ -974,7 +1144,11 @@ export function selectAgricultureDashboard(input: AgricultureDashboardInput) {
       ]
     : [];
 
-  const yieldDumbbell: DumbbellItem[] = cropCycles.slice(0, 6).map((c) => ({
+  const scopedCycles =
+    dumbbellScope === 'harvested'
+      ? cropCycles.filter((c) => (c.actualYieldQtx || 0) > 0)
+      : cropCycles;
+  const yieldDumbbell: DumbbellItem[] = scopedCycles.slice(0, 6).map((c) => ({
     id: c.id,
     label: `${c.cropName} (${c.variety})`,
     prev: c.projectedYieldQtx || 0,
@@ -986,9 +1160,11 @@ export function selectAgricultureDashboard(input: AgricultureDashboardInput) {
     harvestDelta: harvestSeries.deltaPercent,
     harvestSpark: harvestSeries.series,
     lockedParcels,
+    quarantinedCows,
     totalMilkLiters: milkSeries.currentTotal,
     waterBullets,
     treemapItems: treemapItems.filter((t) => t.value > 0),
+    areaPoints: combinedAreaPoints,
     harvestAreaPoints: harvestSeries.areaPoints as AreaPoint[],
     milkAreaPoints: milkSeries.areaPoints as AreaPoint[],
     radarAxes,

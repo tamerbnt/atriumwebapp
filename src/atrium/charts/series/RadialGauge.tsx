@@ -22,6 +22,7 @@ export const RadialGauge: React.FC<RadialGaugeProps> = React.memo(
     emptyMessage,
     errorMessage,
     onRetry,
+    filter,
     className = '',
     'data-testid': testId,
     metrics,
@@ -102,6 +103,7 @@ export const RadialGauge: React.FC<RadialGaugeProps> = React.memo(
         emptyMessage={emptyMessage}
         errorMessage={errorMessage}
         onRetry={onRetry}
+        filter={metrics.length <= 1 ? filter : undefined}
         ariaSummary={ariaSummary}
         className={className}
         data-testid={testId}

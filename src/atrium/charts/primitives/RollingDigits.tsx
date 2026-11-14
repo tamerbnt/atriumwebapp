@@ -15,8 +15,10 @@ export const RollingDigits: React.FC<RollingDigitsProps> = React.memo(
     const str = String(value);
     const prevRef = useRef<string>(str);
     const phaseRef = useRef<'a' | 'b'>('a');
+    const hasChangedRef = useRef<boolean>(false);
 
     if (prevRef.current !== str) {
+      hasChangedRef.current = true;
       phaseRef.current = phaseRef.current === 'a' ? 'b' : 'a';
       prevRef.current = str;
     }
@@ -27,6 +29,7 @@ export const RollingDigits: React.FC<RollingDigitsProps> = React.memo(
 
     const chars = str.split('');
     const phase = phaseRef.current;
+    const animate = hasChangedRef.current;
 
     return (
       <span dir="ltr" className={`ax-roll ${className}`} aria-live="off">
@@ -39,17 +42,21 @@ export const RollingDigits: React.FC<RollingDigitsProps> = React.memo(
               </span>
             );
           }
-          const delay = Math.min(idx * staggerMs, 180);
+          const delay = animate ? Math.min(idx * staggerMs, 180) : 0;
           return (
             <span key={`d-${idx}-${chars.length}`} className="ax-roll-ch">
-              <span
-                key={`${phase}-${ch}`}
-                className="ax-roll-in"
-                data-phase={phase}
-                style={{ animationDelay: `${delay}ms` }}
-              >
-                {ch}
-              </span>
+              {animate ? (
+                <span
+                  key={`${phase}-${ch}`}
+                  className="ax-roll-in"
+                  data-phase={phase}
+                  style={{ animationDelay: `${delay}ms` }}
+                >
+                  {ch}
+                </span>
+              ) : (
+                <span>{ch}</span>
+              )}
             </span>
           );
         })}

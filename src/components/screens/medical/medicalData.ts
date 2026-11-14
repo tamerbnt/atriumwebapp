@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   MedicalPatient,
   MedicalConsultation,
@@ -12,7 +12,8 @@ import {
   ClinicConsumableItem,
   DailyCashClosure,
 } from '../../../types';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumSelector } from '../../../services/store';
+import { useIdlePersist } from '../../../hooks/useIdlePersist';
 
 export const INITIAL_PRACTITIONERS: MedicalPractitioner[] = [
   {
@@ -772,10 +773,13 @@ export const INITIAL_CASH_CLOSURES: DailyCashClosure[] = [
 ];
 
 export const useMedicalData = () => {
-  const { currentBranchId } = useAtriumStore();
+  const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
   const activeBranchId = currentBranchId || 'branch_medical_main';
-  const belongsToActiveBranch = (item: { branchId?: string; facilityId?: string }) =>
-    (item.branchId || item.facilityId || 'branch_medical_main') === activeBranchId;
+  const belongsToActiveBranch = useCallback(
+    (item: { branchId?: string; facilityId?: string }) =>
+      (item.branchId || item.facilityId || 'branch_medical_main') === activeBranchId,
+    [activeBranchId]
+  );
   const withBranch = <T extends object>(item: T): T =>
     ({
       ...item,
@@ -883,72 +887,18 @@ export const useMedicalData = () => {
     }
   });
 
-  // Persistent storage effects
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_medical_practitioners_v2', JSON.stringify(practitioners));
-    } catch {}
-  }, [practitioners]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_medical_doctor_configs_v2', JSON.stringify(doctorConfigs));
-    } catch {}
-  }, [doctorConfigs]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_medical_patients_v2', JSON.stringify(patients));
-    } catch {}
-  }, [patients]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_medical_consultations_v2', JSON.stringify(consultations));
-    } catch {}
-  }, [consultations]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_medical_appointments_v2', JSON.stringify(appointments));
-    } catch {}
-  }, [appointments]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_medical_prescriptions_v2', JSON.stringify(prescriptions));
-    } catch {}
-  }, [prescriptions]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_medical_labs_v2', JSON.stringify(labRecords));
-    } catch {}
-  }, [labRecords]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_medical_certificates_v2', JSON.stringify(certificates));
-    } catch {}
-  }, [certificates]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_medical_chifa_v2', JSON.stringify(chifaClaims));
-    } catch {}
-  }, [chifaClaims]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_medical_consumables_v2', JSON.stringify(consumables));
-    } catch {}
-  }, [consumables]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_medical_cash_closures_v2', JSON.stringify(cashClosures));
-    } catch {}
-  }, [cashClosures]);
+  // Persistent storage effects (idle-deferred, skip initial mount)
+  useIdlePersist('atrium_medical_practitioners_v2', practitioners);
+  useIdlePersist('atrium_medical_doctor_configs_v2', doctorConfigs);
+  useIdlePersist('atrium_medical_patients_v2', patients);
+  useIdlePersist('atrium_medical_consultations_v2', consultations);
+  useIdlePersist('atrium_medical_appointments_v2', appointments);
+  useIdlePersist('atrium_medical_prescriptions_v2', prescriptions);
+  useIdlePersist('atrium_medical_labs_v2', labRecords);
+  useIdlePersist('atrium_medical_certificates_v2', certificates);
+  useIdlePersist('atrium_medical_chifa_v2', chifaClaims);
+  useIdlePersist('atrium_medical_consumables_v2', consumables);
+  useIdlePersist('atrium_medical_cash_closures_v2', cashClosures);
 
   // Actions
   const addPatient = (patient: MedicalPatient) => {
@@ -1024,11 +974,7 @@ export const useMedicalData = () => {
     }
   });
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_medical_emergency_v2', String(isEmergencyAlarmActive));
-    } catch {}
-  }, [isEmergencyAlarmActive]);
+  useIdlePersist('atrium_medical_emergency_v2', isEmergencyAlarmActive);
 
   const toggleEmergencyAlarm = (overrideState?: boolean) => {
     setIsEmergencyAlarmActive((prev) => (typeof overrideState === 'boolean' ? overrideState : !prev));
@@ -1074,16 +1020,16 @@ export const useMedicalData = () => {
     }
   };
 
-  const scopedPractitioners = practitioners.filter(belongsToActiveBranch);
-  const scopedPatients = patients.filter(belongsToActiveBranch);
-  const scopedConsultations = consultations.filter(belongsToActiveBranch);
-  const scopedAppointments = appointments.filter(belongsToActiveBranch);
-  const scopedPrescriptions = prescriptions.filter(belongsToActiveBranch);
-  const scopedLabRecords = labRecords.filter(belongsToActiveBranch);
-  const scopedCertificates = certificates.filter(belongsToActiveBranch);
-  const scopedChifaClaims = chifaClaims.filter(belongsToActiveBranch);
-  const scopedConsumables = consumables.filter(belongsToActiveBranch);
-  const scopedCashClosures = cashClosures.filter(belongsToActiveBranch);
+  const scopedPractitioners = useMemo(() => practitioners.filter(belongsToActiveBranch), [practitioners, belongsToActiveBranch]);
+  const scopedPatients = useMemo(() => patients.filter(belongsToActiveBranch), [patients, belongsToActiveBranch]);
+  const scopedConsultations = useMemo(() => consultations.filter(belongsToActiveBranch), [consultations, belongsToActiveBranch]);
+  const scopedAppointments = useMemo(() => appointments.filter(belongsToActiveBranch), [appointments, belongsToActiveBranch]);
+  const scopedPrescriptions = useMemo(() => prescriptions.filter(belongsToActiveBranch), [prescriptions, belongsToActiveBranch]);
+  const scopedLabRecords = useMemo(() => labRecords.filter(belongsToActiveBranch), [labRecords, belongsToActiveBranch]);
+  const scopedCertificates = useMemo(() => certificates.filter(belongsToActiveBranch), [certificates, belongsToActiveBranch]);
+  const scopedChifaClaims = useMemo(() => chifaClaims.filter(belongsToActiveBranch), [chifaClaims, belongsToActiveBranch]);
+  const scopedConsumables = useMemo(() => consumables.filter(belongsToActiveBranch), [consumables, belongsToActiveBranch]);
+  const scopedCashClosures = useMemo(() => cashClosures.filter(belongsToActiveBranch), [cashClosures, belongsToActiveBranch]);
 
   const getNextAvailableGeneralist = (): MedicalPractitioner | null => {
     const generalists = scopedPractitioners.filter(

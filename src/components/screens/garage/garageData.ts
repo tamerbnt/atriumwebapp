@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useAtriumStore } from '../../../services/store';
+import { useState, useMemo, useCallback } from 'react';
+import { useAtriumSelector } from '../../../services/store';
+import { useIdlePersist } from '../../../hooks/useIdlePersist';
 
 export interface DamageMarker {
   id: string;
@@ -872,10 +873,13 @@ export const calculateEstimatedMileage = (
 // ----------------------------------------------------------------------
 
 export const useGarageData = () => {
-  const { currentBranchId } = useAtriumStore();
+  const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
   const activeBranchId = currentBranchId || 'branch_garage_main';
-  const belongsToActiveBranch = (item: { branchId?: string; facilityId?: string }) =>
-    (item.branchId || item.facilityId || 'branch_garage_main') === activeBranchId;
+  const belongsToActiveBranch = useCallback(
+    (item: { branchId?: string; facilityId?: string }) =>
+      (item.branchId || item.facilityId || 'branch_garage_main') === activeBranchId,
+    [activeBranchId]
+  );
   const withBranch = <T extends object>(item: T): T =>
     ({
       ...item,
@@ -936,42 +940,13 @@ export const useGarageData = () => {
     }
   });
 
-  // LocalStorage synchronizations
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_garage_orders_v2', JSON.stringify(orders));
-    } catch {}
-  }, [orders]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_garage_vehicles_v2', JSON.stringify(vehicles));
-    } catch {}
-  }, [vehicles]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_garage_parts_v2', JSON.stringify(parts));
-    } catch {}
-  }, [parts]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_garage_bays_v2', JSON.stringify(bays));
-    } catch {}
-  }, [bays]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_garage_fleets_v2', JSON.stringify(fleets));
-    } catch {}
-  }, [fleets]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_garage_invoices_v2', JSON.stringify(invoices));
-    } catch {}
-  }, [invoices]);
+  // LocalStorage synchronizations (idle-deferred)
+  useIdlePersist('atrium_garage_orders_v2', orders);
+  useIdlePersist('atrium_garage_vehicles_v2', vehicles);
+  useIdlePersist('atrium_garage_parts_v2', parts);
+  useIdlePersist('atrium_garage_bays_v2', bays);
+  useIdlePersist('atrium_garage_fleets_v2', fleets);
+  useIdlePersist('atrium_garage_invoices_v2', invoices);
 
   // Order Mutations
   const addOrder = (order: RepairOrder) => {
@@ -1170,13 +1145,20 @@ export const useGarageData = () => {
     }
   };
 
+  const scopedOrders = useMemo(() => orders.filter(belongsToActiveBranch), [orders, belongsToActiveBranch]);
+  const scopedVehicles = useMemo(() => vehicles.filter(belongsToActiveBranch), [vehicles, belongsToActiveBranch]);
+  const scopedParts = useMemo(() => parts.filter(belongsToActiveBranch), [parts, belongsToActiveBranch]);
+  const scopedBays = useMemo(() => bays.filter(belongsToActiveBranch), [bays, belongsToActiveBranch]);
+  const scopedFleets = useMemo(() => fleets.filter(belongsToActiveBranch), [fleets, belongsToActiveBranch]);
+  const scopedInvoices = useMemo(() => invoices.filter(belongsToActiveBranch), [invoices, belongsToActiveBranch]);
+
   return {
-    orders: orders.filter(belongsToActiveBranch),
-    vehicles: vehicles.filter(belongsToActiveBranch),
-    parts: parts.filter(belongsToActiveBranch),
-    bays: bays.filter(belongsToActiveBranch),
-    fleets: fleets.filter(belongsToActiveBranch),
-    invoices: invoices.filter(belongsToActiveBranch),
+    orders: scopedOrders,
+    vehicles: scopedVehicles,
+    parts: scopedParts,
+    bays: scopedBays,
+    fleets: scopedFleets,
+    invoices: scopedInvoices,
     addOrder,
     updateOrder,
     deleteOrder,

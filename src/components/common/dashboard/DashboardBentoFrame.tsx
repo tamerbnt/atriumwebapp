@@ -54,6 +54,15 @@ export const DashboardBentoGrid: React.FC<{
   </div>
 );
 
+export const DashboardPodGrid: React.FC<{
+  children: React.ReactNode;
+  className?: string;
+}> = ({ children, className = '' }) => (
+  <div className={`grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch ${className}`}>
+    {children}
+  </div>
+);
+
 export function getInlineDarkSurface(theme: AppTheme): ChartSurface {
   return theme === 'light' ? 'dark' : 'auto';
 }

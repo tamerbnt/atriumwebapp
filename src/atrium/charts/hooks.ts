@@ -40,35 +40,7 @@ export function prefersReducedMotion(): boolean {
  */
 export function useInViewReveal(): [React.RefObject<HTMLDivElement | null>, boolean] {
   const ref = useRef<HTMLDivElement | null>(null);
-  const [visible, setVisible] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return true;
-    return prefersReducedMotion() || typeof IntersectionObserver === 'undefined';
-  });
-
-  useEffect(() => {
-    if (visible) return;
-    const node = ref.current;
-    if (!node) {
-      setVisible(true);
-      return;
-    }
-
-    const observer = getSharedObserver();
-    if (!observer) {
-      setVisible(true);
-      return;
-    }
-
-    observerRegistry.set(node, () => setVisible(true));
-    observer.observe(node);
-
-    return () => {
-      observerRegistry.delete(node);
-      observer.unobserve(node);
-    };
-  }, [visible]);
-
-  return [ref, visible];
+  return [ref, true];
 }
 
 /**

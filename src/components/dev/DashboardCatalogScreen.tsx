@@ -44,6 +44,7 @@ export const DashboardCatalogScreen: React.FC = () => {
 
   const fixtures = useMemo(() => buildCatalogFixtures(preset, locale), [preset, locale]);
   const lastReportRef = useRef(0);
+  const commitsRef = useRef(0);
 
   const handleProfile: React.ProfilerOnRenderCallback = (
     _id,
@@ -51,8 +52,9 @@ export const DashboardCatalogScreen: React.FC = () => {
     actualDuration
   ) => {
     const now = performance.now();
-    if (now - lastReportRef.current < 120 && perfStats.commits > 0) return;
+    if (now - lastReportRef.current < 350 && commitsRef.current > 0) return;
     lastReportRef.current = now;
+    commitsRef.current += 1;
     setPerfStats((prev) => ({
       lastMs: Number(actualDuration.toFixed(2)),
       maxMs: Number(Math.max(prev.maxMs, actualDuration).toFixed(2)),

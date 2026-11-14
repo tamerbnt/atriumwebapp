@@ -17,6 +17,7 @@ export const KpiSparkCard: React.FC<KpiSparkCardProps> = React.memo(
     emptyMessage,
     errorMessage,
     onRetry,
+    filter,
     className = '',
     'data-testid': testId,
     value,
@@ -37,6 +38,7 @@ export const KpiSparkCard: React.FC<KpiSparkCardProps> = React.memo(
     const strings = getDefaultChartStrings(locale);
     const uid = useId();
     const svgRef = useRef<SVGSVGElement>(null);
+    const rectRef = useRef<DOMRect | null>(null);
     const [activeIdx, setActiveIdx] = useState<number | null>(null);
 
     const safeSeries = useMemo(
@@ -164,9 +166,16 @@ export const KpiSparkCard: React.FC<KpiSparkCardProps> = React.memo(
       isRtl
     );
 
+    const handlePointerEnter = () => {
+      if (svgRef.current) {
+        rectRef.current = svgRef.current.getBoundingClientRect();
+      }
+    };
+
     const handlePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
       if (geom.pts.length === 0 || !svgRef.current) return;
-      const rect = svgRef.current.getBoundingClientRect();
+      const rect = rectRef.current || svgRef.current.getBoundingClientRect();
+      rectRef.current = rect;
       if (rect.width <= 0) return;
       const relX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
       const idx = Math.round(relX * (geom.pts.length - 1));
@@ -185,6 +194,26 @@ export const KpiSparkCard: React.FC<KpiSparkCardProps> = React.memo(
         ? geom.prevPts[clampedIdx]
         : null;
 
+    const deltaBadge =
+      computedDelta !== undefined ? (
+        <span className={`ax-chip ${chipClass}`}>
+          <span aria-hidden="true">
+            {computedDelta > 0 ? '▲' : computedDelta < 0 ? '▼' : '•'}
+          </span>
+          <span dir="ltr">
+            {formatChartValue(computedDelta, {
+              locale,
+              format: 'percent',
+              signed: true,
+              maximumFractionDigits: 1,
+            })}
+          </span>
+          {deltaLabel && <span className="opacity-80">{deltaLabel}</span>}
+        </span>
+      ) : null;
+
+    const hasHeaderFilter = Boolean(filter && filter.options.length > 0);
+
     return (
       <ChartCard
         title={title}
@@ -199,34 +228,21 @@ export const KpiSparkCard: React.FC<KpiSparkCardProps> = React.memo(
         emptyMessage={emptyMessage}
         errorMessage={errorMessage}
         onRetry={onRetry}
+        filter={filter}
         ariaSummary={ariaSummary}
         className={className}
         data-testid={testId}
-        headerRight={
-          computedDelta !== undefined && (
-            <span className={`ax-chip ${chipClass}`}>
-              <span aria-hidden="true">
-                {computedDelta > 0 ? '▲' : computedDelta < 0 ? '▼' : '•'}
-              </span>
-              <span dir="ltr">
-                {formatChartValue(computedDelta, {
-                  locale,
-                  format: 'percent',
-                  signed: true,
-                  maximumFractionDigits: 1,
-                })}
-              </span>
-              {deltaLabel && <span className="opacity-80">{deltaLabel}</span>}
-            </span>
-          )
-        }
+        headerRight={!hasHeaderFilter ? deltaBadge : undefined}
       >
-        <div className="flex items-baseline justify-between gap-2 min-w-0">
-          <div className="ax-disp ax-big text-[var(--ax-on)]">
-            <RollingDigits value={formattedHeadline} />
+        <div className="flex items-baseline justify-between gap-2 flex-wrap min-w-0">
+          <div className="flex items-baseline gap-2.5 flex-wrap min-w-0">
+            <div className="ax-disp ax-big text-[var(--ax-on)]">
+              <RollingDigits value={formattedHeadline} />
+            </div>
+            {hasHeaderFilter && deltaBadge}
           </div>
           {displayedLabel && (
-            <span className="ax-tk truncate max-w-[120px]" title={displayedLabel}>
+            <span className="ax-tk truncate max-w-[140px]" title={displayedLabel}>
               {displayedLabel}
             </span>
           )}
@@ -241,8 +257,12 @@ export const KpiSparkCard: React.FC<KpiSparkCardProps> = React.memo(
               tabIndex={0}
               role="img"
               aria-label={ariaSummary}
+              onPointerEnter={handlePointerEnter}
               onPointerMove={handlePointerMove}
-              onPointerLeave={() => setActiveIdx(null)}
+              onPointerLeave={() => {
+                rectRef.current = null;
+                setActiveIdx(null);
+              }}
               onKeyDown={onKeyDown}
             >
               <defs>

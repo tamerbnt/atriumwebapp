@@ -70,7 +70,7 @@ export class SegBody implements Body {
   }
 
   render(): void {
-    if (!this.geo.length) return;
+    if (!this.geo.length || this.W <= 0) return;
     const clip = `inset(0 ${f(Math.max(0, this.R.x))}px 0 ${f(Math.max(0, this.L.x))}px round ${f(this.rad)}px)`;
     if (clip !== this.lastClip) {
       this.blob.style.clipPath = clip;
@@ -108,4 +108,53 @@ export class SegBody implements Body {
   dispose(): void {
     unschedule(this);
   }
+}
+
+export interface SegSyncTask {
+  read: () => void;
+  write: () => void;
+}
+
+const pendingSegTasks = new Set<SegSyncTask>();
+let segBatchRaf: number | null = null;
+let fontsHooked = false;
+const activeSegTasks = new Set<SegSyncTask>();
+
+function flushSegBatch(): void {
+  segBatchRaf = null;
+  if (pendingSegTasks.size === 0) return;
+  const tasks = Array.from(pendingSegTasks);
+  pendingSegTasks.clear();
+  for (let i = 0; i < tasks.length; i++) {
+    tasks[i].read();
+  }
+  for (let i = 0; i < tasks.length; i++) {
+    tasks[i].write();
+  }
+}
+
+export function scheduleSegSync(task: SegSyncTask): void {
+  pendingSegTasks.add(task);
+  if (typeof requestAnimationFrame === 'undefined') {
+    flushSegBatch();
+    return;
+  }
+  if (segBatchRaf === null) {
+    segBatchRaf = requestAnimationFrame(flushSegBatch);
+  }
+}
+
+export function registerSegTask(task: SegSyncTask): void {
+  activeSegTasks.add(task);
+  if (!fontsHooked && typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
+    fontsHooked = true;
+    document.fonts.ready.then(() => {
+      activeSegTasks.forEach((t) => scheduleSegSync(t));
+    });
+  }
+}
+
+export function unregisterSegTask(task: SegSyncTask): void {
+  pendingSegTasks.delete(task);
+  activeSegTasks.delete(task);
 }

@@ -23,6 +23,7 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
     emptyMessage,
     errorMessage,
     onRetry,
+    filter,
     className = '',
     'data-testid': testId,
     resources,
@@ -128,6 +129,7 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
         emptyMessage={emptyMessage}
         errorMessage={errorMessage}
         onRetry={onRetry}
+        filter={filter}
         ariaSummary={ariaSummary}
         className={className}
         data-testid={testId}

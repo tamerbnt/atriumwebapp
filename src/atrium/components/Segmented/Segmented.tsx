@@ -4,7 +4,7 @@ import { forwardRef, useEffect, useRef } from 'react';
 import type { KeyboardEvent, ReactElement, ReactNode, Ref, CSSProperties } from 'react';
 import { cx, sizeProps, useControllable, useIsoLayoutEffect, useMergedRef } from '../../hooks';
 import type { Size } from '../../hooks';
-import { SegBody } from './segBody';
+import { SegBody, registerSegTask, scheduleSegSync, unregisterSegTask, type SegSyncTask } from './segBody';
 import s from './Segmented.module.css';
 
 export interface SegmentedOption<T extends string = string> {
@@ -52,7 +52,7 @@ function SegmentedInner<T extends string>(props: SegmentedProps<T>, ref: Ref<HTM
 
   const layoutKey = options.map((o) => `${o.value}:${String(o.label ?? '')}`).join('|');
 
-  // build the blob once the DOM exists; re-measure when the group resizes, labels change, or fonts arrive
+  // build the blob once the DOM exists; batch reads then writes across all mounted controls
   useIsoLayoutEffect(() => {
     const group = groupRef.current;
     const blob = blobRef.current;
@@ -60,23 +60,39 @@ function SegmentedInner<T extends string>(props: SegmentedProps<T>, ref: Ref<HTM
     const opts = optRefs.current.slice(0, options.length).filter(Boolean) as HTMLButtonElement[];
     const body = new SegBody(group, blob, opts);
     bodyRef.current = body;
-    const sync = () => {
-      body.measure();
-      body.setIndex(idxRef.current, false);
+    let alive = true;
+    let lastWidth = -1;
+    const task: SegSyncTask = {
+      read: () => {
+        if (!alive || !group.isConnected) return;
+        body.measure();
+        lastWidth = body.W;
+      },
+      write: () => {
+        if (!alive || !group.isConnected) return;
+        body.setIndex(idxRef.current, false);
+        if (body.W > 0 && !group.hasAttribute('data-live')) {
+          group.setAttribute('data-live', 'true');
+        }
+      },
     };
-    sync();
-    group.setAttribute('data-live', 'true');
+    registerSegTask(task);
+    scheduleSegSync(task);
     let ro: ResizeObserver | undefined;
     if (typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(sync);
+      ro = new ResizeObserver((entries) => {
+        const entry = entries[0];
+        const nextW = entry ? Math.round(entry.contentRect.width) : -1;
+        if (lastWidth > 0 && nextW > 0 && Math.abs(nextW - Math.round(lastWidth)) < 2) {
+          return;
+        }
+        scheduleSegSync(task);
+      });
       ro.observe(group);
-    }
-    let alive = true;
-    if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(() => alive && sync());
     }
     return () => {
       alive = false;
+      unregisterSegTask(task);
       ro?.disconnect();
       body.dispose();
       bodyRef.current = null;

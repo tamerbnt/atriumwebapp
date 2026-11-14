@@ -165,8 +165,8 @@ test('selectProjectDashboard ranks projects strictly by descending targetGrossMa
       { id: 'm1', isCompleted: true },
       { id: 'm2', isCompleted: false },
     ] as any,
-    payrollBatches: [{ id: 'b1', projectId: 'p2', totalAmountDzd: 50000, status: 'pending_direction_approval' }] as any,
-    expenses: [{ id: 'e1', projectId: 'p1', amountDzd: 25000, status: 'approved' }] as any,
+    payrollBatches: [{ id: 'b1', projectId: 'p2', totalAmountDzd: 50000, status: 'pending_direction_approval', createdAt: '2026-11-12' }] as any,
+    expenses: [{ id: 'e1', projectId: 'p1', amountDzd: 25000, status: 'approved', createdAt: '2026-11-12' }] as any,
     period: '30d',
     language: 'en',
     anchorDate: ANCHOR,
@@ -181,3 +181,141 @@ test('selectProjectDashboard ranks projects strictly by descending targetGrossMa
   assert.equal(res.waterfallSteps[0].value, 450000);
   assert.equal(res.waterfallSteps[3].value, 375000);
 });
+
+test('per-card cardFilters act independently across core vertical selectors', () => {
+  const mem = selectMembershipDashboard({
+    members: [
+      { id: 'm1', status: 'Active', startDate: '2026-10-01', expirationDate: '2026-11-20' },
+      { id: 'm2', status: 'Expired', startDate: '2026-08-01', expirationDate: '2026-09-01' },
+      { id: 'm3', status: 'Frozen', startDate: '2026-09-01', expirationDate: '2026-12-15' },
+    ] as any,
+    checkIns: [{ id: 'c1', timestamp: '2026-11-14T13:30:00' }] as any,
+    sales: [
+      { id: 's1', totalAmount: 5000, createdAt: '2026-11-14', status: 'Paid', items: [] },
+      { id: 's2', totalAmount: 12000, createdAt: '2026-10-25', status: 'Paid', items: [] },
+    ] as any,
+    leads: [{ id: 'l1', status: 'Pending', createdAt: '2026-11-10' }] as any,
+    period: '30d',
+    language: 'fr',
+    anchorDate: ANCHOR,
+    cardFilters: { revenue: 'today', risk: 'expiring' },
+  });
+  assert.equal(mem.revenueTotal, 5000);
+  assert.equal(mem.churnRiskCount, 1);
+  assert.equal(mem.funnelStages[0].value, 1);
+
+  const memAll = selectMembershipDashboard({
+    members: [
+      { id: 'm1', status: 'Active', startDate: '2026-10-01', expirationDate: '2026-11-20' },
+      { id: 'm2', status: 'Expired', startDate: '2026-08-01', expirationDate: '2026-09-01' },
+      { id: 'm3', status: 'Frozen', startDate: '2026-09-01', expirationDate: '2026-12-15' },
+    ] as any,
+    checkIns: [],
+    sales: [
+      { id: 's1', totalAmount: 5000, createdAt: '2026-11-14', status: 'Paid', items: [] },
+      { id: 's2', totalAmount: 12000, createdAt: '2026-10-25', status: 'Paid', items: [] },
+    ] as any,
+    leads: [],
+    period: '30d',
+    language: 'fr',
+    anchorDate: ANCHOR,
+    cardFilters: { revenue: '30d', risk: 'inactive' },
+  });
+  assert.equal(memAll.revenueTotal, 17000);
+  assert.equal(memAll.churnRiskCount, 2);
+
+  const posCost = selectPosDashboard({
+    sales: [],
+    products: [{ id: 'p1', category: 'Boissons', stockQuantity: 10, costPrice: 100, price: { amount: 180 } }] as any,
+    period: '30d',
+    language: 'fr',
+    anchorDate: ANCHOR,
+    cardFilters: { treemap: 'cost' },
+  });
+  const posRetail = selectPosDashboard({
+    sales: [],
+    products: [{ id: 'p1', category: 'Boissons', stockQuantity: 10, costPrice: 100, price: { amount: 180 } }] as any,
+    period: '30d',
+    language: 'fr',
+    anchorDate: ANCHOR,
+    cardFilters: { treemap: 'retail' },
+  });
+  assert.equal(posCost.treemapItems[0].value, 1000);
+  assert.equal(posRetail.treemapItems[0].value, 1800);
+
+  const tradingWatch = selectTradingDashboard({
+    commercialDocs: [],
+    purchaseDocs: [],
+    b2bClients: [
+      { id: 'c1', companyName: 'Healthy Co', creditLimit: 100000, outstandingBalance: 20000 },
+      { id: 'c2', companyName: 'Watch Co', creditLimit: 100000, outstandingBalance: 90000 },
+    ] as any,
+    warehouses: [],
+    products: [],
+    period: '30d',
+    language: 'en',
+    anchorDate: ANCHOR,
+    cardFilters: { bubble: 'watch' },
+  });
+  assert.deepEqual(tradingWatch.bubblePoints.map((p) => p.id), ['c2']);
+});
+
+test('per-card cardFilters and real spark/area series work accurately across specialized vertical selectors', () => {
+  const reSale = selectRealEstateDashboard({
+    properties: [
+      { id: 'pr1', title: 'Villa', listingType: 'Sale', propertyType: 'Villa', surfaceM2: 300, priceDzd: 50000000, roomsCount: 6 },
+      { id: 'pr2', title: 'Studio', listingType: 'Rental', propertyType: 'Appartement', surfaceM2: 45, priceDzd: 45000, roomsCount: 1 },
+    ] as any,
+    mandates: [],
+    leases: [],
+    quittances: [],
+    visits: [],
+    buyers: [],
+    period: '30d',
+    language: 'fr',
+    anchorDate: ANCHOR,
+    cardFilters: { bubble: 'Sale', donut: 'Rental' },
+  });
+  assert.deepEqual(reSale.bubblePoints.map((b) => b.id), ['pr1']);
+  assert.deepEqual(reSale.donutSegments.map((d) => d.label), ['Appartement']);
+
+  const logRes = selectLogisticsDashboard({
+    shipments: [
+      { id: 's1', createdAt: '2026-11-14', status: 'Delivered', codAmountDzd: 4500, destinationWilaya: 'Alger', weightKg: 1.5 },
+      { id: 's2', createdAt: '2026-11-14', status: 'Returned', codAmountDzd: 0, destinationWilaya: 'Oran', weightKg: 2.0 },
+    ] as any,
+    discharges: [],
+    remittances: [],
+    period: '7d',
+    language: 'fr',
+    anchorDate: ANCHOR,
+    cardFilters: { returns: '7d' },
+  });
+  assert.equal(logRes.returnedCount, 1);
+  assert.equal(logRes.returnRate, 50);
+  assert.ok(logRes.returnSpark.length > 0);
+
+  const agri = selectAgricultureDashboard({
+    parcels: [{ id: 'p1', name: 'Nord', surfaceHectares: 12, anrhAnnualQuotaM3: 1000, anrhConsumedM3: 850 }] as any,
+    cropCycles: [{ id: 'c1', parcelId: 'p1', cropName: 'Blé', variety: 'Dur', currentPhase: 'treatment_locked', projectedYieldQtx: 50, actualYieldQtx: 40 }] as any,
+    treatmentLogs: [],
+    pointages: [],
+    dairyCows: [
+      { id: 'cow1', isInWithholdingLockout: true, reproStatus: 'Active' },
+      { id: 'cow2', isInWithholdingLockout: false, reproStatus: 'Active' },
+    ] as any,
+    milkingRecords: [{ id: 'mk1', sessionDate: '2026-11-14', conformingLiters: 180 }] as any,
+    weighbridgeTickets: [{ id: 'wb1', date: '2026-11-14', netWeightKg: 2400 }] as any,
+    period: '7d',
+    language: 'fr',
+    anchorDate: ANCHOR,
+    cardFilters: { trend: 'milk', treemap: 'water', bullets: 'high' },
+  });
+  assert.equal(agri.lockedParcels, 1);
+  assert.equal(agri.quarantinedCows, 1);
+  assert.equal(agri.totalMilkLiters, 180);
+  assert.equal(agri.treemapItems[0].value, 850);
+  assert.equal(agri.waterBullets.length, 1);
+  assert.ok(agri.areaPoints.some((pt) => pt.value === 180));
+});
+

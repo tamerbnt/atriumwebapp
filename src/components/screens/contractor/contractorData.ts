@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   ContractorProject,
   ContractorBoqItem,
@@ -9,7 +9,8 @@ import {
   SubcontractorAgreement,
   EquipmentLogRecord,
 } from '../../../types/index';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumSelector } from '../../../services/store';
+import { useIdlePersist } from '../../../hooks/useIdlePersist';
 
 export const INITIAL_CONTRACTOR_PROJECTS: ContractorProject[] = [
   {
@@ -641,10 +642,13 @@ export const INITIAL_EQUIPMENT_LOGS: EquipmentLogRecord[] = [
 ];
 
 export const useContractorData = () => {
-  const { currentBranchId } = useAtriumStore();
+  const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
   const activeBranchId = currentBranchId || 'branch_contractor_main';
-  const belongsToActiveBranch = (item: { branchId?: string; facilityId?: string }) =>
-    (item.branchId || item.facilityId || 'branch_contractor_main') === activeBranchId;
+  const belongsToActiveBranch = useCallback(
+    (item: { branchId?: string; facilityId?: string }) =>
+      (item.branchId || item.facilityId || 'branch_contractor_main') === activeBranchId,
+    [activeBranchId]
+  );
   const withBranch = <T extends object>(item: T): T =>
     ({
       ...item,
@@ -725,47 +729,13 @@ export const useContractorData = () => {
 
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_contractor_projects', JSON.stringify(projects));
-    } catch {}
-  }, [projects]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_contractor_boq', JSON.stringify(boqItems));
-    } catch {}
-  }, [boqItems]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_contractor_logs', JSON.stringify(dailyLogs));
-    } catch {}
-  }, [dailyLogs]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_contractor_dgps', JSON.stringify(dgps));
-    } catch {}
-  }, [dgps]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_contractor_os', JSON.stringify(serviceOrders));
-    } catch {}
-  }, [serviceOrders]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_contractor_concrete', JSON.stringify(concretePours));
-    } catch {}
-  }, [concretePours]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_contractor_subcontractors', JSON.stringify(subcontractors));
-    } catch {}
-  }, [subcontractors]);
+  useIdlePersist('atrium_contractor_projects', projects);
+  useIdlePersist('atrium_contractor_boq', boqItems);
+  useIdlePersist('atrium_contractor_logs', dailyLogs);
+  useIdlePersist('atrium_contractor_dgps', dgps);
+  useIdlePersist('atrium_contractor_os', serviceOrders);
+  useIdlePersist('atrium_contractor_concrete', concretePours);
+  useIdlePersist('atrium_contractor_subcontractors', subcontractors);
 
   const addProject = (project: ContractorProject) => {
     setProjects((prev) => [withBranch(project), ...prev]);
@@ -819,11 +789,7 @@ export const useContractorData = () => {
     setEquipmentLogs((prev) => [withBranch(log), ...prev]);
   };
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_contractor_equipment', JSON.stringify(equipmentLogs));
-    } catch {}
-  }, [equipmentLogs]);
+  useIdlePersist('atrium_contractor_equipment', equipmentLogs);
 
   const resetContractorDemoData = () => {
     setProjects((prev) => prev.filter((p) => !belongsToActiveBranch(p)));
@@ -836,15 +802,24 @@ export const useContractorData = () => {
     setEquipmentLogs((prev) => prev.filter((e) => !belongsToActiveBranch(e)));
   };
 
+  const scopedProjects = useMemo(() => projects.filter(belongsToActiveBranch), [projects, belongsToActiveBranch]);
+  const scopedBoqItems = useMemo(() => boqItems.filter(belongsToActiveBranch), [boqItems, belongsToActiveBranch]);
+  const scopedDailyLogs = useMemo(() => dailyLogs.filter(belongsToActiveBranch), [dailyLogs, belongsToActiveBranch]);
+  const scopedDgps = useMemo(() => dgps.filter(belongsToActiveBranch), [dgps, belongsToActiveBranch]);
+  const scopedServiceOrders = useMemo(() => serviceOrders.filter(belongsToActiveBranch), [serviceOrders, belongsToActiveBranch]);
+  const scopedConcretePours = useMemo(() => concretePours.filter(belongsToActiveBranch), [concretePours, belongsToActiveBranch]);
+  const scopedSubcontractors = useMemo(() => subcontractors.filter(belongsToActiveBranch), [subcontractors, belongsToActiveBranch]);
+  const scopedEquipmentLogs = useMemo(() => equipmentLogs.filter(belongsToActiveBranch), [equipmentLogs, belongsToActiveBranch]);
+
   return {
-    projects: projects.filter(belongsToActiveBranch),
-    boqItems: boqItems.filter(belongsToActiveBranch),
-    dailyLogs: dailyLogs.filter(belongsToActiveBranch),
-    dgps: dgps.filter(belongsToActiveBranch),
-    serviceOrders: serviceOrders.filter(belongsToActiveBranch),
-    concretePours: concretePours.filter(belongsToActiveBranch),
-    subcontractors: subcontractors.filter(belongsToActiveBranch),
-    equipmentLogs: equipmentLogs.filter(belongsToActiveBranch),
+    projects: scopedProjects,
+    boqItems: scopedBoqItems,
+    dailyLogs: scopedDailyLogs,
+    dgps: scopedDgps,
+    serviceOrders: scopedServiceOrders,
+    concretePours: scopedConcretePours,
+    subcontractors: scopedSubcontractors,
+    equipmentLogs: scopedEquipmentLogs,
     selectedProjectId,
     setSelectedProjectId,
     addProject,

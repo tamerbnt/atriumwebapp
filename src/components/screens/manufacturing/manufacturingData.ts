@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   ManufacturingBom,
   ManufacturingOrder,
@@ -6,7 +6,8 @@ import {
   MaterialTransferVoucher,
   QualityInspectionRecord,
 } from '../../../types';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumSelector } from '../../../services/store';
+import { useIdlePersist } from '../../../hooks/useIdlePersist';
 
 export const INITIAL_BOMS: ManufacturingBom[] = [
   {
@@ -580,10 +581,13 @@ export const INITIAL_QC_RECORDS: QualityInspectionRecord[] = [
 ];
 
 export const useManufacturingData = () => {
-  const { currentBranchId } = useAtriumStore();
+  const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
   const activeBranchId = currentBranchId || 'branch_manufacturing_main';
-  const belongsToActiveBranch = (item: { branchId?: string; facilityId?: string }) =>
-    (item.branchId || item.facilityId || 'branch_manufacturing_main') === activeBranchId;
+  const belongsToActiveBranch = useCallback(
+    (item: { branchId?: string; facilityId?: string }) =>
+      (item.branchId || item.facilityId || 'branch_manufacturing_main') === activeBranchId,
+    [activeBranchId]
+  );
   const withBranch = <T extends object>(item: T): T =>
     ({
       ...item,
@@ -635,36 +639,12 @@ export const useManufacturingData = () => {
     }
   });
 
-  // LocalStorage synchronizers
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_mfg_boms', JSON.stringify(boms));
-    } catch {}
-  }, [boms]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_mfg_orders', JSON.stringify(orders));
-    } catch {}
-  }, [orders]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_mfg_raw_materials_v2', JSON.stringify(materials));
-    } catch {}
-  }, [materials]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_mfg_vouchers', JSON.stringify(vouchers));
-    } catch {}
-  }, [vouchers]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_mfg_qc_records', JSON.stringify(qcRecords));
-    } catch {}
-  }, [qcRecords]);
+  // LocalStorage synchronizers (idle-deferred)
+  useIdlePersist('atrium_mfg_boms', boms);
+  useIdlePersist('atrium_mfg_orders', orders);
+  useIdlePersist('atrium_mfg_raw_materials_v2', materials);
+  useIdlePersist('atrium_mfg_vouchers', vouchers);
+  useIdlePersist('atrium_mfg_qc_records', qcRecords);
 
   // Order CRUD
   const addOrder = (order: ManufacturingOrder) => {
@@ -727,12 +707,18 @@ export const useManufacturingData = () => {
     setQcRecords((prev) => prev.filter((q) => !belongsToActiveBranch(q)));
   };
 
+  const scopedBoms = useMemo(() => boms.filter(belongsToActiveBranch), [boms, belongsToActiveBranch]);
+  const scopedOrders = useMemo(() => orders.filter(belongsToActiveBranch), [orders, belongsToActiveBranch]);
+  const scopedMaterials = useMemo(() => materials.filter(belongsToActiveBranch), [materials, belongsToActiveBranch]);
+  const scopedVouchers = useMemo(() => vouchers.filter(belongsToActiveBranch), [vouchers, belongsToActiveBranch]);
+  const scopedQcRecords = useMemo(() => qcRecords.filter(belongsToActiveBranch), [qcRecords, belongsToActiveBranch]);
+
   return {
-    boms: boms.filter(belongsToActiveBranch),
-    orders: orders.filter(belongsToActiveBranch),
-    materials: materials.filter(belongsToActiveBranch),
-    vouchers: vouchers.filter(belongsToActiveBranch),
-    qcRecords: qcRecords.filter(belongsToActiveBranch),
+    boms: scopedBoms,
+    orders: scopedOrders,
+    materials: scopedMaterials,
+    vouchers: scopedVouchers,
+    qcRecords: scopedQcRecords,
     addOrder,
     updateOrder,
     deleteOrder,

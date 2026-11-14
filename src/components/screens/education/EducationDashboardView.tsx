@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ClipboardCheck, UserPlus } from 'lucide-react';
+import { BarChart3, ClipboardCheck, GraduationCap, UserCheck, UserPlus, Wallet } from 'lucide-react';
 import {
   BulletChart,
   CohortHeatmap,
@@ -12,18 +12,24 @@ import {
 import { useAtriumStore } from '../../../services/store';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { useCardFilters } from '../../../hooks/useCardFilters';
 import { SkeletonDashboardEducation } from '../../ui/skeleton/StructuralSkeletons';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { RollCallModal } from './RollCallModal';
 import {
   DashboardBentoFrame,
-  DashboardBentoGrid,
   DashboardHeader,
+  DashboardPod,
+  DashboardPodGrid,
   getSurfaceProps,
   localizeText,
   toChartLocale,
 } from '../../common/dashboard';
-import { resolveChartState, type DashboardPeriodKey } from '../../../utils/dashboardSelectors/common';
+import {
+  getCompactTimeframeOptions,
+  getPortfolioTimeframeOptions,
+  resolveChartState,
+} from '../../../utils/dashboardSelectors/common';
 import { selectEducationDashboard } from '../../../utils/dashboardSelectors/coreVerticals';
 
 export const EducationDashboardView: React.FC = () => {
@@ -54,12 +60,38 @@ export const EducationDashboardView: React.FC = () => {
     hasCachedData: (eduStudents || []).length > 0 || (eduCohorts || []).length > 0,
   });
 
-  const [period, setPeriod] = useState<DashboardPeriodKey>('30d');
+  const { filters, makeFilter } = useCardFilters({
+    tuition: '30d',
+    bullets: 'all',
+    absence: '30d',
+    attendance: '30d',
+    funnel: '30d',
+    cohorts: '30d',
+    grades: '30d',
+  });
   const [selectedSessionForRollCall, setSelectedSessionForRollCall] = useState<string | null>(null);
 
   const locale = toChartLocale(language);
   const featuredSurface = getSurfaceProps(theme, true);
   const standardSurface = getSurfaceProps(theme, false);
+
+  const compactTf = useMemo(() => getCompactTimeframeOptions(language), [language]);
+  const portfolioTf = useMemo(() => getPortfolioTimeframeOptions(language), [language]);
+  const bulletScopeOptions = useMemo(
+    () => [
+      { id: 'all', label: localizeText(language, 'Toutes', 'All', 'الكل') },
+      { id: 'active', label: localizeText(language, 'Actives', 'Active', 'نشطة') },
+    ],
+    [language]
+  );
+  const attendanceSeries = useMemo(
+    () => [
+      { id: 'present', label: localizeText(language, 'Présents', 'Present', 'حاضر'), color: '#10b981' },
+      { id: 'late', label: localizeText(language, 'Retards', 'Late', 'متأخر'), color: '#f59e0b' },
+      { id: 'absent', label: localizeText(language, 'Absents', 'Absent', 'غائب'), color: '#d4522f' },
+    ],
+    [language]
+  );
 
   const data = useMemo(
     () =>
@@ -71,10 +103,11 @@ export const EducationDashboardView: React.FC = () => {
         admissions: eduAdmissions,
         certificates: eduCertificates,
         enrollments: eduEnrollments,
-        period,
+        period: '30d',
+        cardFilters: filters,
         language,
       }),
-    [eduStudents, eduCohorts, eduAttendance, eduGrades, eduAdmissions, eduCertificates, eduEnrollments, period, language]
+    [eduStudents, eduCohorts, eduAttendance, eduGrades, eduAdmissions, eduCertificates, eduEnrollments, filters, language]
   );
 
   if (showSkeleton && eduStudents.length === 0 && eduCohorts.length === 0) {
@@ -110,8 +143,6 @@ export const EducationDashboardView: React.FC = () => {
         branches={branches}
         onSwitchBranch={switchBranch}
         onResetDemoData={resetEduMockData}
-        period={period}
-        onPeriodChange={(next) => setPeriod(next as DashboardPeriodKey)}
         extraActions={
           <div className="flex items-center gap-2 flex-wrap max-w-full">
             <AtriumButton
@@ -136,169 +167,192 @@ export const EducationDashboardView: React.FC = () => {
         }
       />
 
-      <DashboardBentoGrid>
-        {/* Row 1: Tuition Collected + Inverse Absence Rate (espresso) + Cohort Capacity Bullets */}
-        <KpiSparkCard
-          title={localizeText(language, 'Frais de scolarité encaissés', 'Tuition Collected', 'الرسوم المحصلة')}
-          subtitle={localizeText(
-            language,
-            `${data.activeStudents} étudiants actifs · reste dû ${data.overdueBalance.toLocaleString()} DZD`,
-            `${data.activeStudents} active students · due ${data.overdueBalance.toLocaleString()} DZD`,
-            `${data.activeStudents} طالب نشط · متبقي ${data.overdueBalance.toLocaleString()} دج`
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(eduEnrollments.length > 0 || eduStudents.length > 0)}
-          value={data.tuitionCollected}
-          deltaPercent={data.tuitionDelta}
-          format="currency"
-          currency="DZD"
-          series={data.tuitionSpark}
-          emptyMessage={localizeText(
-            language,
-            'Aucune inscription encaissée.',
-            'No tuition enrollments recorded.',
-            'لا توجد تسجيلات رسوم مسجلة.'
-          )}
-        />
+      <DashboardPodGrid>
+        <DashboardPod
+          title={localizeText(language, 'Scolarités & Remplissage', 'Tuition & Cohort Capacity', 'الرسوم وسعة الأفواج')}
+          subtitle={localizeText(language, 'Frais encaissés et places occupées', 'Tuition receipts and enrolled headcount', 'الرسوم المحصلة وامتلاء الأفواج')}
+          icon={<Wallet size={16} />}
+        >
+          <KpiSparkCard
+            title={localizeText(language, 'Frais de scolarité encaissés', 'Tuition Collected', 'الرسوم المحصلة')}
+            subtitle={localizeText(
+              language,
+              `${data.activeStudents} étudiants actifs · reste dû ${data.overdueBalance.toLocaleString()} DZD`,
+              `${data.activeStudents} active students · due ${data.overdueBalance.toLocaleString()} DZD`,
+              `${data.activeStudents} طالب نشط · متبقي ${data.overdueBalance.toLocaleString()} دج`
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(eduEnrollments.length > 0 || eduStudents.length > 0)}
+            value={data.tuitionCollected}
+            deltaPercent={data.tuitionDelta}
+            format="currency"
+            currency="DZD"
+            series={data.tuitionSpark}
+            filter={makeFilter('tuition', compactTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune inscription encaissée.',
+              'No tuition enrollments recorded.',
+              'لا توجد تسجيلات رسوم مسجلة.'
+            )}
+          />
 
-        <KpiMetricInverseCard
-          title={localizeText(language, 'Taux d’absence', 'Absence Rate', 'معدل الغياب')}
-          subtitle={localizeText(
-            language,
-            `${eduAttendance.length} pointages enregistrés sur les cohortes`,
-            `${eduAttendance.length} recorded attendance marks across cohorts`,
-            `${eduAttendance.length} تسجيل حضور عبر الأفواج`
-          )}
-          locale={locale}
-          {...featuredSurface}
-          state={resolveChartState(eduAttendance.length > 0)}
-          value={data.absenceRate}
-          format="percent"
-          series={data.absenceSpark}
-          emptyMessage={localizeText(
-            language,
-            'Effectuez un appel de séance pour suivre l’absentéisme.',
-            'Record session roll call to monitor absence rate.',
-            'قم بتسجيل الحضور لمتابعة نسبة الغياب.'
-          )}
-        />
+          <BulletChart
+            title={localizeText(language, 'Remplissage des cohortes', 'Cohort Capacity Fill', 'امتلاء الأفواج')}
+            subtitle={localizeText(
+              language,
+              'Effectif inscrit face à la capacité maximale',
+              'Enrolled students vs max seats per cohort',
+              'الطلاب المسجلون مقابل السعة القصوى'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.cohortFillBullets.length > 0)}
+            items={data.cohortFillBullets}
+            format="number"
+            unit={localizeText(language, 'élèves', 'seats', 'طالب')}
+            filter={makeFilter('bullets', bulletScopeOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune cohorte configurée.',
+              'No cohorts configured.',
+              'لا توجد أفواج مكونة.'
+            )}
+          />
+        </DashboardPod>
 
-        <BulletChart
-          title={localizeText(language, 'Remplissage des cohortes', 'Cohort Capacity Fill', 'امتلاء الأفواج')}
-          subtitle={localizeText(
-            language,
-            'Effectif inscrit face à la capacité maximale',
-            'Enrolled students vs max seats per cohort',
-            'الطلاب المسجلون مقابل السعة القصوى'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.cohortFillBullets.length > 0)}
-          items={data.cohortFillBullets}
-          format="number"
-          unit={localizeText(language, 'élèves', 'seats', 'طالب')}
-          emptyMessage={localizeText(
-            language,
-            'Aucune cohorte configurée.',
-            'No cohorts configured.',
-            'لا توجد أفواج مكونة.'
-          )}
-        />
+        <DashboardPod
+          title={localizeText(language, 'Assiduité & Absentéisme', 'Attendance & Absence Risk', 'الحضور ومعدل الغياب')}
+          subtitle={localizeText(language, 'Taux d’absence et appels par promotion', 'Absence trend and per-cohort roll call', 'متابعة الغياب وسجل الأفواج')}
+          icon={<UserCheck size={16} />}
+        >
+          <KpiMetricInverseCard
+            title={localizeText(language, 'Taux d’absence', 'Absence Rate', 'معدل الغياب')}
+            subtitle={localizeText(
+              language,
+              `${eduAttendance.length} pointages enregistrés sur les cohortes`,
+              `${eduAttendance.length} recorded attendance marks across cohorts`,
+              `${eduAttendance.length} تسجيل حضور عبر الأفواج`
+            )}
+            locale={locale}
+            {...featuredSurface}
+            state={resolveChartState(eduAttendance.length > 0)}
+            value={data.absenceRate}
+            format="percent"
+            series={data.absenceSpark}
+            filter={makeFilter('absence', compactTf)}
+            emptyMessage={localizeText(
+              language,
+              'Effectuez un appel de séance pour suivre l’absentéisme.',
+              'Record session roll call to monitor absence rate.',
+              'قم بتسجيل الحضور لمتابعة نسبة الغياب.'
+            )}
+          />
 
-        {/* Row 2: Attendance Breakdown by Cohort (wide) + Admissions Funnel */}
-        <StackedBarChart
-          className="md:col-span-2 xl:col-span-2"
-          title={localizeText(language, 'Assiduité par promotion', 'Attendance by Cohort', 'الحضور حسب الفوج')}
-          subtitle={localizeText(
-            language,
-            'Répartition Présent / Retard / Absent sur les séances appelées',
-            'Present, Late, and Absent breakdown per cohort',
-            'توزيع الحضور والتأخر والغياب حسب الفوج'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.attBuckets.length > 0)}
-          series={[
-            { id: 'present', label: localizeText(language, 'Présents', 'Present', 'حاضر'), color: '#10b981' },
-            { id: 'late', label: localizeText(language, 'Retards', 'Late', 'متأخر'), color: '#f59e0b' },
-            { id: 'absent', label: localizeText(language, 'Absents', 'Absent', 'غائب'), color: '#d4522f' },
-          ]}
-          buckets={data.attBuckets}
-          format="number"
-          emptyMessage={localizeText(
-            language,
-            'Aucun pointage d’appel enregistré.',
-            'No attendance records captured.',
-            'لا توجد سجلات حضور مسجلة.'
-          )}
-        />
+          <StackedBarChart
+            title={localizeText(language, 'Assiduité par promotion', 'Attendance by Cohort', 'الحضور حسب الفوج')}
+            subtitle={localizeText(
+              language,
+              'Répartition Présent / Retard / Absent sur les séances appelées',
+              'Present, Late, and Absent breakdown per cohort',
+              'توزيع الحضور والتأخر والغياب حسب الفوج'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.attBuckets.length > 0)}
+            series={attendanceSeries}
+            buckets={data.attBuckets}
+            format="number"
+            filter={makeFilter('attendance', compactTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun pointage d’appel enregistré.',
+              'No attendance records captured.',
+              'لا توجد سجلات حضور مسجلة.'
+            )}
+          />
+        </DashboardPod>
 
-        <ConversionFunnel
-          title={localizeText(language, 'Tunnel admissions & diplômes', 'Admissions to Certification', 'مسار القبول والتخرج')}
-          subtitle={localizeText(
-            language,
-            'Demandes → Admis → Inscrits → Certifiés',
-            'Inquiries → Admitted → Enrolled → Certified',
-            'الطلبات ← القبول ← التسجيل ← التخرج'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.funnelStages.length > 0)}
-          stages={data.funnelStages}
-          emptyMessage={localizeText(
-            language,
-            'Aucun prospect ni étudiant.',
-            'No admission leads or students.',
-            'لا توجد طلبات قبول أو طلاب.'
-          )}
-        />
+        <DashboardPod
+          title={localizeText(language, 'Admissions & Présence Cohortes', 'Admissions & Cohort Retention', 'القبول ومواظبة الأفواج')}
+          subtitle={localizeText(language, 'Entonnoir d’inscription et présence hebdomadaire', 'Admissions to diplomas and cohort consistency', 'مسار التسجيل ونسبة الالتزام')}
+          icon={<GraduationCap size={16} />}
+        >
+          <ConversionFunnel
+            title={localizeText(language, 'Tunnel admissions & diplômes', 'Admissions to Certification', 'مسار القبول والتخرج')}
+            subtitle={localizeText(
+              language,
+              'Demandes → Admis → Inscrits → Certifiés',
+              'Inquiries → Admitted → Enrolled → Certified',
+              'الطلبات ← القبول ← التسجيل ← التخرج'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.funnelStages.length > 0)}
+            stages={data.funnelStages}
+            filter={makeFilter('funnel', portfolioTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun prospect ni étudiant.',
+              'No admission leads or students.',
+              'لا توجد طلبات قبول أو طلاب.'
+            )}
+          />
 
-        {/* Row 3: Cohort Retention Heatmap + Grade Distribution Histogram (wide) */}
-        <CohortHeatmap
-          title={localizeText(language, 'Taux de présence par cohorte', 'Cohort Attendance Rate', 'نسبة المواظبة لكل فوج')}
-          subtitle={localizeText(
-            language,
-            'Pourcentage de présences enregistrées',
-            'Share of present & late attendance records',
-            'نسبة الالتزام بالحصص المسجلة'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.cohortRows.length > 0)}
-          cohorts={data.cohortRows}
-          columnPrefix="%"
-          emptyMessage={localizeText(
-            language,
-            'Aucune cohorte avec appel enregistré.',
-            'No cohorts with attendance logs.',
-            'لا توجد أفواج مسجلة بسجل الحضور.'
-          )}
-        />
+          <CohortHeatmap
+            title={localizeText(language, 'Taux de présence par cohorte', 'Cohort Attendance Rate', 'نسبة المواظبة لكل فوج')}
+            subtitle={localizeText(
+              language,
+              'Pourcentage de présences enregistrées',
+              'Share of present & late attendance records',
+              'نسبة الالتزام بالحصص المسجلة'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.cohortRows.length > 0)}
+            cohorts={data.cohortRows}
+            columnPrefix="%"
+            filter={makeFilter('cohorts', compactTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune cohorte avec appel enregistré.',
+              'No cohorts with attendance logs.',
+              'لا توجد أفواج مسجلة بسجل الحضور.'
+            )}
+          />
+        </DashboardPod>
 
-        <HistogramChart
-          className="md:col-span-2 xl:col-span-2"
-          title={localizeText(language, 'Distribution des notes (/20)', 'Grade Distribution (/20)', 'توزيع النقاط والنتائج (/20)')}
-          subtitle={localizeText(
-            language,
-            'Évaluations normalisées sur 20 points',
-            'Normalized assessment scores out of 20',
-            'نتائج التقييمات مصنفة على 20'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.gradeBins.length > 0)}
-          bins={data.gradeBins}
-          format="number"
-          unit={localizeText(language, 'notes', 'grades', 'نتيجة')}
-          emptyMessage={localizeText(
-            language,
-            'Aucune note enregistrée sur la période.',
-            'No assessment grades recorded yet.',
-            'لا توجد نقاط مسجلة بعد.'
-          )}
-        />
-      </DashboardBentoGrid>
+        <DashboardPod
+          title={localizeText(language, 'Performance Pédagogique', 'Grade Distribution', 'توزيع النقاط والنتائج')}
+          subtitle={localizeText(language, 'Histogramme des évaluations sur 20', 'Assessment score spread out of 20', 'توزيع علامات التقييم')}
+          icon={<BarChart3 size={16} />}
+        >
+          <HistogramChart
+            className="flex-1"
+            title={localizeText(language, 'Distribution des notes (/20)', 'Grade Distribution (/20)', 'توزيع النقاط والنتائج (/20)')}
+            subtitle={localizeText(
+              language,
+              'Évaluations normalisées sur 20 points',
+              'Normalized assessment scores out of 20',
+              'نتائج التقييمات مصنفة على 20'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.gradeBins.length > 0)}
+            bins={data.gradeBins}
+            format="number"
+            unit={localizeText(language, 'notes', 'grades', 'نتيجة')}
+            filter={makeFilter('grades', portfolioTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune note enregistrée sur la période.',
+              'No assessment grades recorded yet.',
+              'لا توجد نقاط مسجلة بعد.'
+            )}
+          />
+        </DashboardPod>
+      </DashboardPodGrid>
 
       {selectedSessionForRollCall && (
         <RollCallModal

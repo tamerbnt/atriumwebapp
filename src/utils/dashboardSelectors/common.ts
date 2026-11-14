@@ -2,15 +2,71 @@ import { SupportedLanguage } from '../../types/index';
 import type { AreaPoint, ChartState, SparkPoint } from '@/atrium';
 
 export type DashboardPeriodKey = 'today' | '7d' | '30d' | 'year';
+export type DashboardScopeKey = DashboardPeriodKey | 'all';
 
 export const DAY_MS = 86_400_000;
+
+const ISO_MS_CACHE = new Map<string, number>();
 
 export function parseIsoDay(raw?: string | null): Date | null {
   if (!raw || typeof raw !== 'string') return null;
   const trimmed = raw.trim();
   if (!trimmed) return null;
+  const cached = ISO_MS_CACHE.get(trimmed);
+  if (cached !== undefined) {
+    return Number.isNaN(cached) ? null : new Date(cached);
+  }
   const parsed = new Date(trimmed.length === 10 ? `${trimmed}T12:00:00` : trimmed);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
+  const ms = parsed.getTime();
+  if (ISO_MS_CACHE.size > 4000) {
+    ISO_MS_CACHE.clear();
+  }
+  ISO_MS_CACHE.set(trimmed, ms);
+  return Number.isNaN(ms) ? null : parsed;
+}
+
+export function resolvePeriodKey(
+  raw: string | undefined,
+  fallback: DashboardPeriodKey = '30d'
+): DashboardPeriodKey {
+  if (raw === 'today' || raw === '7d' || raw === '30d' || raw === 'year') {
+    return raw;
+  }
+  if (raw === 'all') return 'year';
+  return fallback;
+}
+
+export function getCompactTimeframeOptions(lang: SupportedLanguage) {
+  return [
+    { id: '7d', label: pickText(lang, '7J', '7D', '7ي') },
+    { id: '30d', label: pickText(lang, '30J', '30D', '30ي') },
+    { id: 'year', label: pickText(lang, 'Année', 'Year', 'سنة') },
+  ];
+}
+
+export function getFullTimeframeOptions(lang: SupportedLanguage) {
+  return [
+    { id: 'today', label: pickText(lang, 'Auj.', 'Today', 'اليوم') },
+    { id: '7d', label: pickText(lang, '7J', '7D', '7ي') },
+    { id: '30d', label: pickText(lang, '30J', '30D', '30ي') },
+    { id: 'year', label: pickText(lang, 'Année', 'Year', 'سنة') },
+  ];
+}
+
+export function getPortfolioTimeframeOptions(lang: SupportedLanguage) {
+  return [
+    { id: '30d', label: pickText(lang, '30J', '30D', '30ي') },
+    { id: 'year', label: pickText(lang, 'Année', 'Year', 'سنة') },
+    { id: 'all', label: pickText(lang, 'Tout', 'All', 'الكل') },
+  ];
+}
+
+export function getShiftWindowOptions(lang: SupportedLanguage) {
+  return [
+    { id: 'all', label: pickText(lang, 'Journée', 'Day', 'اليوم') },
+    { id: 'am', label: pickText(lang, 'Matin', 'AM', 'صباح') },
+    { id: 'pm', label: pickText(lang, 'Après-m.', 'PM', 'مساء') },
+  ];
 }
 
 export function startOfDayMs(date: Date): number {
@@ -175,6 +231,17 @@ export function filterByPeriod<T>(
     const ms = parsed.getTime();
     return ms >= range.startMs && ms <= range.endMs;
   });
+}
+
+export function filterByScope<T>(
+  items: T[],
+  getDate: (item: T) => string | undefined,
+  scope: string | undefined,
+  fallback: DashboardPeriodKey = '30d',
+  anchorDate: Date = new Date()
+): T[] {
+  if (scope === 'all') return items;
+  return filterByPeriod(items, getDate, resolvePeriodKey(scope, fallback), anchorDate);
 }
 
 export function getPeriodBuckets(period: DashboardPeriodKey, anchorDate: Date = new Date()) {

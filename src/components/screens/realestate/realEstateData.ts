@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   RealEstateProperty,
   RealEstateLease,
@@ -9,7 +9,8 @@ import {
   BuyerDemandProfile,
 } from '../../../types';
 import { computeRentalTimbreFiscal, calculateMandateCommission } from '../../../utils/realEstateRules';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumSelector } from '../../../services/store';
+import { useIdlePersist } from '../../../hooks/useIdlePersist';
 
 export const INITIAL_PROPERTIES: RealEstateProperty[] = [
   {
@@ -699,10 +700,13 @@ export const INITIAL_BUYERS: BuyerDemandProfile[] = [
 ];
 
 export const useRealEstateData = () => {
-  const { currentBranchId } = useAtriumStore();
+  const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
   const activeBranchId = currentBranchId || 'branch_realestate_main';
-  const belongsToActiveBranch = (item: { branchId?: string; facilityId?: string }) =>
-    (item.branchId || item.facilityId || 'branch_realestate_main') === activeBranchId;
+  const belongsToActiveBranch = useCallback(
+    (item: { branchId?: string; facilityId?: string }) =>
+      (item.branchId || item.facilityId || 'branch_realestate_main') === activeBranchId,
+    [activeBranchId]
+  );
   const withBranch = <T extends object>(item: T): T =>
     ({
       ...item,
@@ -772,47 +776,13 @@ export const useRealEstateData = () => {
     }
   });
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_realestate_props_v2', JSON.stringify(properties));
-    } catch {}
-  }, [properties]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_realestate_mandates_v2', JSON.stringify(mandates));
-    } catch {}
-  }, [mandates]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_realestate_leases_v2', JSON.stringify(leases));
-    } catch {}
-  }, [leases]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_realestate_quittances_v2', JSON.stringify(quittances));
-    } catch {}
-  }, [quittances]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_realestate_visits_v2', JSON.stringify(visits));
-    } catch {}
-  }, [visits]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_realestate_inspections_v2', JSON.stringify(inspections));
-    } catch {}
-  }, [inspections]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_realestate_buyers_v2', JSON.stringify(buyers));
-    } catch {}
-  }, [buyers]);
+  useIdlePersist('atrium_realestate_props_v2', properties);
+  useIdlePersist('atrium_realestate_mandates_v2', mandates);
+  useIdlePersist('atrium_realestate_leases_v2', leases);
+  useIdlePersist('atrium_realestate_quittances_v2', quittances);
+  useIdlePersist('atrium_realestate_visits_v2', visits);
+  useIdlePersist('atrium_realestate_inspections_v2', inspections);
+  useIdlePersist('atrium_realestate_buyers_v2', buyers);
 
   // Operations
   const addProperty = (prop: RealEstateProperty) => {
@@ -878,14 +848,22 @@ export const useRealEstateData = () => {
     setBuyers((prev) => prev.filter((b) => !belongsToActiveBranch(b)));
   };
 
+  const scopedProperties = useMemo(() => properties.filter(belongsToActiveBranch), [properties, belongsToActiveBranch]);
+  const scopedMandates = useMemo(() => mandates.filter(belongsToActiveBranch), [mandates, belongsToActiveBranch]);
+  const scopedLeases = useMemo(() => leases.filter(belongsToActiveBranch), [leases, belongsToActiveBranch]);
+  const scopedQuittances = useMemo(() => quittances.filter(belongsToActiveBranch), [quittances, belongsToActiveBranch]);
+  const scopedVisits = useMemo(() => visits.filter(belongsToActiveBranch), [visits, belongsToActiveBranch]);
+  const scopedInspections = useMemo(() => inspections.filter(belongsToActiveBranch), [inspections, belongsToActiveBranch]);
+  const scopedBuyers = useMemo(() => buyers.filter(belongsToActiveBranch), [buyers, belongsToActiveBranch]);
+
   return {
-    properties: properties.filter(belongsToActiveBranch),
-    mandates: mandates.filter(belongsToActiveBranch),
-    leases: leases.filter(belongsToActiveBranch),
-    quittances: quittances.filter(belongsToActiveBranch),
-    visits: visits.filter(belongsToActiveBranch),
-    inspections: inspections.filter(belongsToActiveBranch),
-    buyers: buyers.filter(belongsToActiveBranch),
+    properties: scopedProperties,
+    mandates: scopedMandates,
+    leases: scopedLeases,
+    quittances: scopedQuittances,
+    visits: scopedVisits,
+    inspections: scopedInspections,
+    buyers: scopedBuyers,
     addProperty,
     updateProperty,
     deleteProperty,

@@ -24,6 +24,7 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
     emptyMessage,
     errorMessage,
     onRetry,
+    filter,
     className = '',
     'data-testid': testId,
     points,
@@ -44,6 +45,7 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
     const strings = getDefaultChartStrings(locale);
     const uid = useId();
     const svgRef = useRef<SVGSVGElement>(null);
+    const rectRef = useRef<DOMRect | null>(null);
 
     const [internalRangeId, setInternalRangeId] = useState<string>(
       () => activeRangeId || ranges?.[0]?.id || ''
@@ -180,9 +182,16 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
       isRtl
     );
 
+    const handlePointerEnter = () => {
+      if (svgRef.current) {
+        rectRef.current = svgRef.current.getBoundingClientRect();
+      }
+    };
+
     const handlePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
       if (!svgRef.current || geom.pts.length === 0) return;
-      const rect = svgRef.current.getBoundingClientRect();
+      const rect = rectRef.current || svgRef.current.getBoundingClientRect();
+      rectRef.current = rect;
       if (rect.width <= 0) return;
       const svgX = ((e.clientX - rect.left) / rect.width) * geom.W;
       const usableW = geom.W - geom.PAD_L - geom.PAD_R;
@@ -232,6 +241,7 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
         emptyMessage={emptyMessage}
         errorMessage={errorMessage}
         onRetry={onRetry}
+        filter={!(ranges && ranges.length > 1) ? filter : undefined}
         ariaSummary={ariaSummary}
         className={className}
         data-testid={testId}
@@ -393,8 +403,12 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
             tabIndex={0}
             role="img"
             aria-label={ariaSummary}
+            onPointerEnter={handlePointerEnter}
             onPointerMove={handlePointerMove}
-            onPointerLeave={() => setActiveIdx(null)}
+            onPointerLeave={() => {
+              rectRef.current = null;
+              setActiveIdx(null);
+            }}
             onKeyDown={onKeyDown}
           >
             <defs>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   LogisticsShipment,
   LogisticsManifest,
@@ -8,7 +8,8 @@ import {
   MerchantRemittanceBatch,
 } from '../../../types';
 import { computeAlgerianFiscalStamp, calculateCcpKey } from '../../../utils/logisticsRules';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumSelector } from '../../../services/store';
+import { useIdlePersist } from '../../../hooks/useIdlePersist';
 
 const INITIAL_SHIPMENTS: LogisticsShipment[] = [
   {
@@ -520,10 +521,13 @@ const INITIAL_REMITTANCES: MerchantRemittanceBatch[] = [
 ];
 
 export const useLogisticsData = () => {
-  const { currentBranchId } = useAtriumStore();
+  const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
   const activeBranchId = currentBranchId || 'branch_logistics_main';
-  const belongsToActiveBranch = (item: { branchId?: string; facilityId?: string }) =>
-    (item.branchId || item.facilityId || 'branch_logistics_main') === activeBranchId;
+  const belongsToActiveBranch = useCallback(
+    (item: { branchId?: string; facilityId?: string }) =>
+      (item.branchId || item.facilityId || 'branch_logistics_main') === activeBranchId,
+    [activeBranchId]
+  );
   const withBranch = <T extends object>(item: T): T =>
     ({
       ...item,
@@ -575,35 +579,11 @@ export const useLogisticsData = () => {
     }
   });
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_logistics_shipments_v2', JSON.stringify(shipments));
-    } catch {}
-  }, [shipments]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_logistics_bags_v2', JSON.stringify(bags));
-    } catch {}
-  }, [bags]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_logistics_manifests_v2', JSON.stringify(manifests));
-    } catch {}
-  }, [manifests]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_logistics_discharges_v2', JSON.stringify(discharges));
-    } catch {}
-  }, [discharges]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('atrium_logistics_remittances_v2', JSON.stringify(remittances));
-    } catch {}
-  }, [remittances]);
+  useIdlePersist('atrium_logistics_shipments_v2', shipments);
+  useIdlePersist('atrium_logistics_bags_v2', bags);
+  useIdlePersist('atrium_logistics_manifests_v2', manifests);
+  useIdlePersist('atrium_logistics_discharges_v2', discharges);
+  useIdlePersist('atrium_logistics_remittances_v2', remittances);
 
   const addShipment = (shipment: LogisticsShipment) => {
     setShipments((prev) => [withBranch(shipment), ...prev]);
@@ -678,12 +658,18 @@ export const useLogisticsData = () => {
     setRemittances((prev) => prev.filter((r) => !belongsToActiveBranch(r)));
   };
 
+  const scopedShipments = useMemo(() => shipments.filter(belongsToActiveBranch), [shipments, belongsToActiveBranch]);
+  const scopedBags = useMemo(() => bags.filter(belongsToActiveBranch), [bags, belongsToActiveBranch]);
+  const scopedManifests = useMemo(() => manifests.filter(belongsToActiveBranch), [manifests, belongsToActiveBranch]);
+  const scopedDischarges = useMemo(() => discharges.filter(belongsToActiveBranch), [discharges, belongsToActiveBranch]);
+  const scopedRemittances = useMemo(() => remittances.filter(belongsToActiveBranch), [remittances, belongsToActiveBranch]);
+
   return {
-    shipments: shipments.filter(belongsToActiveBranch),
-    bags: bags.filter(belongsToActiveBranch),
-    manifests: manifests.filter(belongsToActiveBranch),
-    discharges: discharges.filter(belongsToActiveBranch),
-    remittances: remittances.filter(belongsToActiveBranch),
+    shipments: scopedShipments,
+    bags: scopedBags,
+    manifests: scopedManifests,
+    discharges: scopedDischarges,
+    remittances: scopedRemittances,
     addShipment,
     updateShipment,
     deleteShipment,

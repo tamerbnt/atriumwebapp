@@ -786,6 +786,7 @@ let globalState: AppState = backfillTraceability((() => {
 const listeners = new Set<Listener>();
 
 let persistTimer: ReturnType<typeof setTimeout> | null = null;
+let persistIdleId: number | null = null;
 let lastPersistedSnapshot: AppState = globalState;
 let hasPendingPersist = false;
 
@@ -793,6 +794,10 @@ export function flushAtriumPersist(): void {
   if (persistTimer !== null) {
     clearTimeout(persistTimer);
     persistTimer = null;
+  }
+  if (persistIdleId !== null && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+    (window as any).cancelIdleCallback(persistIdleId);
+    persistIdleId = null;
   }
   if (!hasPendingPersist) return;
   hasPendingPersist = false;
@@ -827,16 +832,26 @@ if (typeof window !== 'undefined') {
   });
 }
 
-function notify(immediatePersist = false) {
-  if (!isOnlyToastsChanged(lastPersistedSnapshot, globalState)) {
+function notify(immediatePersist = false, uiOnly = false) {
+  if (!uiOnly && !isOnlyToastsChanged(lastPersistedSnapshot, globalState)) {
     hasPendingPersist = true;
     if (immediatePersist) {
       flushAtriumPersist();
-    } else if (persistTimer === null && typeof window !== 'undefined') {
+    } else if (persistTimer === null && persistIdleId === null && typeof window !== 'undefined') {
       persistTimer = setTimeout(() => {
         persistTimer = null;
-        flushAtriumPersist();
-      }, 160);
+        if ('requestIdleCallback' in window) {
+          persistIdleId = (window as any).requestIdleCallback(
+            () => {
+              persistIdleId = null;
+              flushAtriumPersist();
+            },
+            { timeout: 1200 }
+          );
+        } else {
+          flushAtriumPersist();
+        }
+      }, 450);
     }
   }
   listeners.forEach((l) => l());
@@ -1417,7 +1432,7 @@ function ensureTimerTick(isRunning: boolean, isPaused: boolean) {
             pomodoroMode: newPomodoroMode,
           },
         };
-        notify();
+        notify(false, true);
       }, 1000);
     }
   } else {
@@ -1433,7 +1448,7 @@ export function dismissToast(id: string) {
     ...globalState,
     toasts: (globalState.toasts || []).filter((t) => t.id !== id),
   };
-  notify();
+  notify(false, true);
 }
 
 export function markNotificationAsRead(id: string) {
@@ -1578,7 +1593,7 @@ export function useAtriumStore() {
   const [state, setState] = useState<AppState>(globalState);
 
   useEffect(() => {
-    const listener = () => setState({ ...globalState });
+    const listener = () => setState(globalState);
     listeners.add(listener);
     return () => {
       listeners.delete(listener);
@@ -1839,101 +1854,191 @@ export function useAtriumStore() {
     () => (state.stockMovements || []).filter((sm) => sm.facilityId === state.currentBranchId),
     [state.stockMovements, state.currentBranchId]
   );
-  const currentFreelanceClients = (() => {
+  const currentFreelanceClients = useMemo(() => {
     const list = state.freelanceClients || [];
     const direct = list.filter((c) => c.facilityId === state.currentBranchId);
     if (direct.length > 0) return direct;
     const defaultFreelance = list.filter((c) => c.facilityId === 'branch_freelance_main');
     return defaultFreelance.length > 0 ? defaultFreelance : list;
-  })();
-  const currentFreelanceProjects = (() => {
+  }, [state.freelanceClients, state.currentBranchId]);
+
+  const currentFreelanceProjects = useMemo(() => {
     const list = state.freelanceProjects || [];
     const direct = list.filter((p) => p.facilityId === state.currentBranchId);
     if (direct.length > 0) return direct;
     const defaultFreelance = list.filter((p) => p.facilityId === 'branch_freelance_main');
     return defaultFreelance.length > 0 ? defaultFreelance : list;
-  })();
-  const currentTimeLogs = (() => {
+  }, [state.freelanceProjects, state.currentBranchId]);
+
+  const currentTimeLogs = useMemo(() => {
     const list = state.timeLogs || [];
     const direct = list.filter((t) => t.facilityId === state.currentBranchId);
     if (direct.length > 0) return direct;
     const defaultFreelance = list.filter((t) => t.facilityId === 'branch_freelance_main');
     return defaultFreelance.length > 0 ? defaultFreelance : list;
-  })();
-  const currentFreelanceInvoices = (() => {
+  }, [state.timeLogs, state.currentBranchId]);
+
+  const currentFreelanceInvoices = useMemo(() => {
     const list = state.freelanceInvoices || [];
     const direct = list.filter((i) => i.facilityId === state.currentBranchId);
     if (direct.length > 0) return direct;
     const defaultFreelance = list.filter((i) => i.facilityId === 'branch_freelance_main');
     return defaultFreelance.length > 0 ? defaultFreelance : list;
-  })();
-  const currentFreelanceProposals = (() => {
+  }, [state.freelanceInvoices, state.currentBranchId]);
+
+  const currentFreelanceProposals = useMemo(() => {
     const list = state.freelanceProposals || [];
     const direct = list.filter((pr) => pr.facilityId === state.currentBranchId);
     if (direct.length > 0) return direct;
     const defaultFreelance = list.filter((pr) => pr.facilityId === 'branch_freelance_main');
     return defaultFreelance.length > 0 ? defaultFreelance : list;
-  })();
-  const currentFreelanceExpenses = (() => {
+  }, [state.freelanceProposals, state.currentBranchId]);
+
+  const currentFreelanceExpenses = useMemo(() => {
     const list = state.freelanceExpenses || [];
     const direct = list.filter((e) => e.facilityId === state.currentBranchId);
     if (direct.length > 0) return direct;
     const defaultFreelance = list.filter((e) => e.facilityId === 'branch_freelance_main');
     return defaultFreelance.length > 0 ? defaultFreelance : list;
-  })();
-  const currentRentableUnits = (() => {
+  }, [state.freelanceExpenses, state.currentBranchId]);
+
+  const currentRentableUnits = useMemo(() => {
     const list = state.rentableUnits || [];
     const direct = list.filter((u) => u.facilityId === state.currentBranchId || u.branchId === state.currentBranchId);
     if (direct.length > 0) return direct;
     const defaultVenue = list.filter((u) => u.facilityId === 'branch_venue_main' || u.branchId === 'branch_venue_main');
     return defaultVenue.length > 0 ? defaultVenue : list;
-  })();
+  }, [state.rentableUnits, state.currentBranchId]);
 
-  const currentRentalBookings = (() => {
+  const currentRentalBookings = useMemo(() => {
     const list = state.rentalBookings || [];
     const direct = list.filter((b) => b.facilityId === state.currentBranchId || b.branchId === state.currentBranchId);
     if (direct.length > 0) return direct;
     const defaultVenue = list.filter((b) => b.facilityId === 'branch_venue_main' || b.branchId === 'branch_venue_main');
     return defaultVenue.length > 0 ? defaultVenue : list;
-  })();
+  }, [state.rentalBookings, state.currentBranchId]);
 
-  const currentRentalRenters = (() => {
+  const currentRentalRenters = useMemo(() => {
     const list = state.rentalRenters || [];
     const direct = list.filter((r) => r.facilityId === state.currentBranchId || r.branchId === state.currentBranchId);
     if (direct.length > 0) return direct;
     const defaultVenue = list.filter((r) => r.facilityId === 'branch_venue_main' || r.branchId === 'branch_venue_main');
     return defaultVenue.length > 0 ? defaultVenue : list;
-  })();
+  }, [state.rentalRenters, state.currentBranchId]);
 
-  const currentSecurityDeposits = (() => {
+  const currentSecurityDeposits = useMemo(() => {
     const list = state.securityDeposits || [];
     const direct = list.filter((d) => d.facilityId === state.currentBranchId || d.branchId === state.currentBranchId);
     if (direct.length > 0) return direct;
     const defaultVenue = list.filter((d) => d.facilityId === 'branch_venue_main' || d.branchId === 'branch_venue_main');
     return defaultVenue.length > 0 ? defaultVenue : list;
-  })();
-  const currentEduCourses = (state.eduCourses || []).filter((c) => c.facilityId === state.currentBranchId);
-  const currentEduClassrooms = (state.eduClassrooms || []).filter((cr) => cr.facilityId === state.currentBranchId);
-  const currentEduCohorts = (state.eduCohorts || []).filter((ch) => ch.facilityId === state.currentBranchId);
-  const currentEduStudents = (state.eduStudents || []).filter((s) => s.facilityId === state.currentBranchId);
-  const currentEduEnrollments = (state.eduEnrollments || []).filter((e) => e.facilityId === state.currentBranchId);
-  const currentEduSessions = (state.eduSessions || []).filter((se) => se.facilityId === state.currentBranchId);
-  const currentEduAttendance = (state.eduAttendance || []).filter((at) => at.facilityId === state.currentBranchId);
-  const currentEduGrades = (state.eduGrades || []).filter((g) => g.facilityId === state.currentBranchId);
-  const currentEduCertificates = (state.eduCertificates || []).filter((ce) => ce.facilityId === state.currentBranchId);
-  const currentEduAdmissions = (state.eduAdmissions || []).filter((ad) => ad.facilityId === state.currentBranchId);
+  }, [state.securityDeposits, state.currentBranchId]);
+
+  const currentEduCourses = useMemo(
+    () => (state.eduCourses || []).filter((c) => c.facilityId === state.currentBranchId),
+    [state.eduCourses, state.currentBranchId]
+  );
+  const currentEduClassrooms = useMemo(
+    () => (state.eduClassrooms || []).filter((cr) => cr.facilityId === state.currentBranchId),
+    [state.eduClassrooms, state.currentBranchId]
+  );
+  const currentEduCohorts = useMemo(
+    () => (state.eduCohorts || []).filter((ch) => ch.facilityId === state.currentBranchId),
+    [state.eduCohorts, state.currentBranchId]
+  );
+  const currentEduStudents = useMemo(
+    () => (state.eduStudents || []).filter((s) => s.facilityId === state.currentBranchId),
+    [state.eduStudents, state.currentBranchId]
+  );
+  const currentEduEnrollments = useMemo(
+    () => (state.eduEnrollments || []).filter((e) => e.facilityId === state.currentBranchId),
+    [state.eduEnrollments, state.currentBranchId]
+  );
+  const currentEduSessions = useMemo(
+    () => (state.eduSessions || []).filter((se) => se.facilityId === state.currentBranchId),
+    [state.eduSessions, state.currentBranchId]
+  );
+  const currentEduAttendance = useMemo(
+    () => (state.eduAttendance || []).filter((at) => at.facilityId === state.currentBranchId),
+    [state.eduAttendance, state.currentBranchId]
+  );
+  const currentEduGrades = useMemo(
+    () => (state.eduGrades || []).filter((g) => g.facilityId === state.currentBranchId),
+    [state.eduGrades, state.currentBranchId]
+  );
+  const currentEduCertificates = useMemo(
+    () => (state.eduCertificates || []).filter((ce) => ce.facilityId === state.currentBranchId),
+    [state.eduCertificates, state.currentBranchId]
+  );
+  const currentEduAdmissions = useMemo(
+    () => (state.eduAdmissions || []).filter((ad) => ad.facilityId === state.currentBranchId),
+    [state.eduAdmissions, state.currentBranchId]
+  );
 
   const scopePmByBranch = <T extends { facilityId?: string; branchId?: string }>(items: T[]) =>
     (items || []).filter((item) => (item.facilityId || item.branchId || 'branch_agency_main') === state.currentBranchId);
-  const currentPmProjects = scopePmByBranch(state.pmProjects || []);
-  const currentPmProjectIds = new Set(currentPmProjects.map((p) => p.id));
-  const currentPmMilestones = (state.pmMilestones || []).filter((m) =>
-    m.branchId ? m.branchId === state.currentBranchId : currentPmProjectIds.has(m.projectId)
+
+  const currentPmProjects = useMemo(
+    () => scopePmByBranch(state.pmProjects || []),
+    [state.pmProjects, state.currentBranchId]
+  );
+  const currentPmMilestones = useMemo(() => {
+    const projectIds = new Set(currentPmProjects.map((p) => p.id));
+    return (state.pmMilestones || []).filter((m) =>
+      m.branchId ? m.branchId === state.currentBranchId : projectIds.has(m.projectId)
+    );
+  }, [state.pmMilestones, currentPmProjects, state.currentBranchId]);
+  const currentPmPrintOrders = useMemo(() => scopePmByBranch(state.pmPrintOrders || []), [state.pmPrintOrders, state.currentBranchId]);
+  const currentPmBatDeliverables = useMemo(() => scopePmByBranch(state.pmBatDeliverables || []), [state.pmBatDeliverables, state.currentBranchId]);
+  const currentPmTalents = useMemo(() => scopePmByBranch(state.pmTalents || []), [state.pmTalents, state.currentBranchId]);
+  const currentPmMissions = useMemo(() => scopePmByBranch(state.pmMissions || []), [state.pmMissions, state.currentBranchId]);
+  const currentPmAttendances = useMemo(() => scopePmByBranch(state.pmAttendances || []), [state.pmAttendances, state.currentBranchId]);
+  const currentPmExpenses = useMemo(() => scopePmByBranch(state.pmExpenses || []), [state.pmExpenses, state.currentBranchId]);
+  const currentPmPayrollBatches = useMemo(() => scopePmByBranch(state.pmPayrollBatches || []), [state.pmPayrollBatches, state.currentBranchId]);
+  const currentPmCcpSlips = useMemo(() => scopePmByBranch(state.pmCcpSlips || []), [state.pmCcpSlips, state.currentBranchId]);
+  const currentPmEquipmentStock = useMemo(() => scopePmByBranch(state.pmEquipmentStock || []), [state.pmEquipmentStock, state.currentBranchId]);
+
+  const currentDevices = useMemo(
+    () => state.devices.filter((d) => d.branchId === state.currentBranchId),
+    [state.devices, state.currentBranchId]
+  );
+  const currentB2bClients = useMemo(
+    () => (state.b2bClients || []).filter((c) => c.facilityId === state.currentBranchId || c.branchId === state.currentBranchId),
+    [state.b2bClients, state.currentBranchId]
+  );
+  const currentWarehouses = useMemo(
+    () => (state.warehouses || []).filter((w) =>
+      w.branchId || w.facilityId
+        ? w.branchId === state.currentBranchId || w.facilityId === state.currentBranchId
+        : w.businessId === state.currentBusinessId
+    ),
+    [state.warehouses, state.currentBranchId, state.currentBusinessId]
+  );
+  const currentCommercialDocs = useMemo(
+    () => (state.commercialDocs || []).filter((d) => d.facilityId === state.currentBranchId || d.branchId === state.currentBranchId),
+    [state.commercialDocs, state.currentBranchId]
+  );
+  const currentPurchaseDocs = useMemo(
+    () => (state.purchaseDocs || []).filter((p) => p.facilityId === state.currentBranchId || p.branchId === state.currentBranchId),
+    [state.purchaseDocs, state.currentBranchId]
+  );
+  const currentStockVouchers = useMemo(
+    () => (state.stockVouchers || []).filter((v) => v.facilityId === state.currentBranchId || v.branchId === state.currentBranchId),
+    [state.stockVouchers, state.currentBranchId]
+  );
+  const currentMemberCheckIns = useMemo(
+    () => (state.memberCheckIns || []).filter((c) => (c.branchId || 'branch_gym_hydra') === state.currentBranchId),
+    [state.memberCheckIns, state.currentBranchId]
+  );
+  const unreadNotificationCount = useMemo(
+    () => (state.notifications || []).filter((n) => !n.read).length,
+    [state.notifications]
   );
 
-  const selectedMember = state.selectedMemberId
-    ? state.members.find((m) => m.id === state.selectedMemberId) || null
-    : null;
+  const selectedMember = useMemo(
+    () => (state.selectedMemberId ? state.members.find((m) => m.id === state.selectedMemberId) || null : null),
+    [state.selectedMemberId, state.members]
+  );
 
   // Actions
   const setScreen = (activeScreen: ActiveScreen) => {
@@ -8729,7 +8834,7 @@ export function useAtriumStore() {
     plans: currentPlans,
     appointments: currentAppointments,
     servicesCatalog: currentServices,
-    devices: state.devices.filter((d) => d.branchId === state.currentBranchId),
+    devices: currentDevices,
     parkedOrders: currentParkedOrders,
     stockMovements: currentStockMovements,
     receiptConfig: state.receiptConfig || DEFAULT_RECEIPT_CONFIG,
@@ -8894,15 +8999,15 @@ export function useAtriumStore() {
     pmProjects: currentPmProjects,
     pmMilestones: currentPmMilestones,
     pmCollateralCatalog: state.pmCollateralCatalog || [],
-    pmPrintOrders: scopePmByBranch(state.pmPrintOrders || []),
-    pmBatDeliverables: scopePmByBranch(state.pmBatDeliverables || []),
-    pmTalents: scopePmByBranch(state.pmTalents || []),
-    pmMissions: scopePmByBranch(state.pmMissions || []),
-    pmAttendances: scopePmByBranch(state.pmAttendances || []),
-    pmExpenses: scopePmByBranch(state.pmExpenses || []),
-    pmPayrollBatches: scopePmByBranch(state.pmPayrollBatches || []),
-    pmCcpSlips: scopePmByBranch(state.pmCcpSlips || []),
-    pmEquipmentStock: scopePmByBranch(state.pmEquipmentStock || []),
+    pmPrintOrders: currentPmPrintOrders,
+    pmBatDeliverables: currentPmBatDeliverables,
+    pmTalents: currentPmTalents,
+    pmMissions: currentPmMissions,
+    pmAttendances: currentPmAttendances,
+    pmExpenses: currentPmExpenses,
+    pmPayrollBatches: currentPmPayrollBatches,
+    pmCcpSlips: currentPmCcpSlips,
+    pmEquipmentStock: currentPmEquipmentStock,
     addPmProject,
     updatePmProjectStatus,
     addPmPrintOrder,
@@ -8954,28 +9059,16 @@ export function useAtriumStore() {
     openDesktopUpgradeModal,
     closeDesktopUpgradeModal,
     // B2B Trading & Commercial Collections & Actions
-    b2bClients: (state.b2bClients || []).filter(
-      (c) => c.facilityId === state.currentBranchId || c.branchId === state.currentBranchId
-    ),
+    b2bClients: currentB2bClients,
     allB2bClients: state.b2bClients || [],
     b2bSuppliers: state.b2bSuppliers || [],
-    warehouses: (state.warehouses || []).filter((w) =>
-      w.branchId || w.facilityId
-        ? w.branchId === state.currentBranchId || w.facilityId === state.currentBranchId
-        : w.businessId === state.currentBusinessId
-    ),
+    warehouses: currentWarehouses,
     allWarehouses: state.warehouses || [],
-    commercialDocs: (state.commercialDocs || []).filter(
-      (d) => d.facilityId === state.currentBranchId || d.branchId === state.currentBranchId
-    ),
+    commercialDocs: currentCommercialDocs,
     allCommercialDocs: state.commercialDocs || [],
-    purchaseDocs: (state.purchaseDocs || []).filter(
-      (p) => p.facilityId === state.currentBranchId || p.branchId === state.currentBranchId
-    ),
+    purchaseDocs: currentPurchaseDocs,
     allPurchaseDocs: state.purchaseDocs || [],
-    stockVouchers: (state.stockVouchers || []).filter(
-      (v) => v.facilityId === state.currentBranchId || v.branchId === state.currentBranchId
-    ),
+    stockVouchers: currentStockVouchers,
     allStockVouchers: state.stockVouchers || [],
     createCommercialDoc,
     updateCommercialDoc,
@@ -9087,9 +9180,7 @@ export function useAtriumStore() {
       };
       notify();
     },
-    memberCheckIns: (state.memberCheckIns || []).filter(
-      (c) => (c.branchId || 'branch_gym_hydra') === state.currentBranchId
-    ),
+    memberCheckIns: currentMemberCheckIns,
     addMemberCheckIn: (checkIn: MemberCheckInLog) => {
       const scopedCheckIn: MemberCheckInLog = {
         ...checkIn,
@@ -9147,7 +9238,7 @@ export function useAtriumStore() {
     // Toast Notifications & Notification Center
     toasts: state.toasts || [],
     notifications: state.notifications || [],
-    unreadNotificationCount: (state.notifications || []).filter((n) => !n.read).length,
+    unreadNotificationCount,
     showToast,
     dismissToast,
     markNotificationAsRead,

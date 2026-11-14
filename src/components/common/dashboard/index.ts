@@ -28,6 +28,7 @@ export type { GuardianCardProps } from './GuardianCard';
 export {
   DashboardBentoFrame,
   DashboardBentoGrid,
+  DashboardPodGrid,
   getInlineDarkSurface,
   getSurfaceProps,
   toChartLocale,

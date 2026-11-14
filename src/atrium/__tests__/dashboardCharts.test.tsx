@@ -476,5 +476,54 @@ describe('All 19 Atrium dashboard components — render states, edge cases, ARIA
     expect(html).toContain('Amélioration');
     expect(html).toContain('Dégradation');
   });
+
+  it('renders a single interactive filter radiogroup inside .ax-head for filtered cards and multi-metric controls', () => {
+    const sampleFilter = {
+      value: '30d',
+      onChange: () => {},
+      options: [
+        { id: 'today', label: 'Auj.' },
+        { id: '7d', label: '7j' },
+        { id: '30d', label: '30j' },
+      ],
+    };
+
+    const kpiHtml = renderToStaticMarkup(
+      <KpiSparkCard
+        title="CA"
+        value={15000}
+        series={[
+          { label: 'J1', value: 7000 },
+          { label: 'J2', value: 8000 },
+        ]}
+        filter={sampleFilter}
+      />
+    );
+    expect((kpiHtml.match(/role="radiogroup"/g) || []).length).toBe(1);
+    expect(kpiHtml).toContain('aria-checked="true"');
+
+    const gaugeHtml = renderToStaticMarkup(
+      <RadialGauge
+        title="Conformité"
+        metrics={[
+          { id: 'ctc', label: 'CTC', value: 92, target: 95 },
+          { id: 'hse', label: 'HSE', value: 96, target: 95 },
+        ]}
+      />
+    );
+    expect((gaugeHtml.match(/role="radiogroup"/g) || []).length).toBe(1);
+
+    const rankedHtml = renderToStaticMarkup(
+      <RankedBarList
+        title="Classement"
+        criteria={[
+          { id: 'cod', label: 'COD' },
+          { id: 'parcels', label: 'Colis' },
+        ]}
+        items={[{ id: '1', label: 'Alger', values: { cod: 4000, parcels: 12 } }]}
+      />
+    );
+    expect((rankedHtml.match(/role="radiogroup"/g) || []).length).toBe(1);
+  });
 });
 

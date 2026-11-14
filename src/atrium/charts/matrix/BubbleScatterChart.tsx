@@ -29,6 +29,7 @@ export const BubbleScatterChart: React.FC<BubbleScatterChartProps> = React.memo(
     emptyMessage,
     errorMessage,
     onRetry,
+    filter,
     className = '',
     'data-testid': testId,
     groups,
@@ -144,6 +145,7 @@ export const BubbleScatterChart: React.FC<BubbleScatterChartProps> = React.memo(
         emptyMessage={emptyMessage}
         errorMessage={errorMessage}
         onRetry={onRetry}
+        filter={filter}
         ariaSummary={ariaSummary}
         className={className}
         data-testid={testId}

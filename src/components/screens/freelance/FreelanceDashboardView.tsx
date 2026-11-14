@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { FileText, Pause, Play } from 'lucide-react';
+import { Briefcase, Clock, FileText, Gauge, Pause, Play, Wallet } from 'lucide-react';
 import {
   AreaTrendChart,
   ConversionFunnel,
@@ -12,18 +12,24 @@ import {
 import { useAtriumStore } from '../../../services/store';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { useCardFilters } from '../../../hooks/useCardFilters';
 import { SkeletonDashboardFreelance } from '../../ui/skeleton/StructuralSkeletons';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { InvoicePreviewModal } from './InvoicePreviewModal';
 import {
   DashboardBentoFrame,
-  DashboardBentoGrid,
   DashboardHeader,
+  DashboardPod,
+  DashboardPodGrid,
   getSurfaceProps,
   localizeText,
   toChartLocale,
 } from '../../common/dashboard';
-import { resolveChartState, type DashboardPeriodKey } from '../../../utils/dashboardSelectors/common';
+import {
+  getCompactTimeframeOptions,
+  getFullTimeframeOptions,
+  resolveChartState,
+} from '../../../utils/dashboardSelectors/common';
 import { selectFreelanceDashboard } from '../../../utils/dashboardSelectors/coreVerticals';
 
 export const FreelanceDashboardView: React.FC = () => {
@@ -56,12 +62,44 @@ export const FreelanceDashboardView: React.FC = () => {
     hasCachedData: (freelanceClients || []).length > 0 || (timeLogs || []).length > 0,
   });
 
-  const [period, setPeriod] = useState<DashboardPeriodKey>('30d');
+  const { filters, makeFilter } = useCardFilters({
+    revenue: '30d',
+    trend: '30d',
+    unpaid: 'all',
+    funnel: '30d',
+    donut: '30d',
+    dumbbell: 'all',
+  });
   const [selectedInvoice, setSelectedInvoice] = useState<any | null>(null);
 
   const locale = toChartLocale(language);
   const featuredSurface = getSurfaceProps(theme, true);
   const standardSurface = getSurfaceProps(theme, false);
+
+  const fullTf = useMemo(() => getFullTimeframeOptions(language), [language]);
+  const compactTf = useMemo(() => getCompactTimeframeOptions(language), [language]);
+  const unpaidOptions = useMemo(
+    () => [
+      { id: 'all', label: localizeText(language, 'Toutes', 'All', 'الكل') },
+      { id: 'overdue', label: localizeText(language, 'Échues', 'Overdue', 'متأخرة') },
+    ],
+    [language]
+  );
+  const funnelOptions = useMemo(
+    () => [
+      { id: '7d', label: localizeText(language, '7J', '7D', '7أ') },
+      { id: '30d', label: localizeText(language, '30J', '30D', '30ي') },
+      { id: 'all', label: localizeText(language, 'Tout', 'All', 'الكل') },
+    ],
+    [language]
+  );
+  const dumbbellOptions = useMemo(
+    () => [
+      { id: 'all', label: localizeText(language, 'Toutes', 'All', 'الكل') },
+      { id: 'over', label: localizeText(language, 'Dépassements', 'Over Budget', 'تجاوز') },
+    ],
+    [language]
+  );
 
   const data = useMemo(
     () =>
@@ -72,10 +110,11 @@ export const FreelanceDashboardView: React.FC = () => {
         invoices: freelanceInvoices,
         proposals: freelanceProposals,
         expenses: freelanceExpenses,
-        period,
+        period: '30d',
+        cardFilters: filters,
         language,
       }),
-    [freelanceClients, freelanceProjects, timeLogs, freelanceInvoices, freelanceProposals, freelanceExpenses, period, language]
+    [freelanceClients, freelanceProjects, timeLogs, freelanceInvoices, freelanceProposals, freelanceExpenses, filters, language]
   );
 
   if (showSkeleton && freelanceClients.length === 0 && freelanceInvoices.length === 0) {
@@ -128,8 +167,6 @@ export const FreelanceDashboardView: React.FC = () => {
         branches={branches}
         onSwitchBranch={switchBranch}
         onResetDemoData={resetFreelanceMockData}
-        period={period}
-        onPeriodChange={(next) => setPeriod(next as DashboardPeriodKey)}
         extraActions={
           <div className="flex items-center gap-2 flex-wrap max-w-full">
             {freelanceInvoices[0] && (
@@ -156,168 +193,194 @@ export const FreelanceDashboardView: React.FC = () => {
         }
       />
 
-      <DashboardBentoGrid>
-        {/* Row 1: Collected Revenue + Unpaid Invoices Inverse + Billable & Collection Gauge (espresso) */}
-        <KpiSparkCard
-          title={localizeText(language, 'Honoraires encaissés', 'Collected Revenue', 'الأتعاب المحصلة')}
-          subtitle={localizeText(
-            language,
-            `${data.totalClients} clients · frais ${data.expenseTotal.toLocaleString()} DZD`,
-            `${data.totalClients} clients · expenses ${data.expenseTotal.toLocaleString()} DZD`,
-            `${data.totalClients} عملاء · مصاريف ${data.expenseTotal.toLocaleString()} دج`
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(freelanceInvoices.length > 0)}
-          value={data.collectedRevenue}
-          deltaPercent={data.revenueDelta}
-          format="currency"
-          currency="DZD"
-          series={data.revenueSpark}
-          emptyMessage={localizeText(
-            language,
-            'Aucune facture encaissée sur la période.',
-            'No paid invoices in this period.',
-            'لا توجد فواتير مدفوعة في هذه الفترة.'
-          )}
-        />
+      <DashboardPodGrid>
+        <DashboardPod
+          title={localizeText(language, 'Honoraires & Flux Trésorerie', 'Revenue & Cash Flow', 'الأتعاب والتدفق النقدي')}
+          subtitle={localizeText(language, 'Encaissements nets et tendance', 'Collected invoices and collection trend', 'التحصيلات واتجاه التدفق')}
+          icon={<Wallet size={16} />}
+        >
+          <KpiSparkCard
+            title={localizeText(language, 'Honoraires encaissés', 'Collected Revenue', 'الأتعاب المحصلة')}
+            subtitle={localizeText(
+              language,
+              `${data.totalClients} clients · frais ${data.expenseTotal.toLocaleString()} DZD`,
+              `${data.totalClients} clients · expenses ${data.expenseTotal.toLocaleString()} DZD`,
+              `${data.totalClients} عملاء · مصاريف ${data.expenseTotal.toLocaleString()} دج`
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(freelanceInvoices.length > 0)}
+            value={data.collectedRevenue}
+            deltaPercent={data.revenueDelta}
+            format="currency"
+            currency="DZD"
+            series={data.revenueSpark}
+            filter={makeFilter('revenue', fullTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune facture encaissée sur la période.',
+              'No paid invoices in this period.',
+              'لا توجد فواتير مدفوعة في هذه الفترة.'
+            )}
+          />
 
-        <KpiMetricInverseCard
-          title={localizeText(language, 'Créances en attente', 'Unpaid Invoices', 'فواتير غير محصلة')}
-          subtitle={localizeText(
-            language,
-            'Factures envoyées ou échues en attente de règlement',
-            'Sent and overdue invoices awaiting settlement',
-            'فواتير مرسلة أو متأخرة بانتظار السداد'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(freelanceInvoices.length > 0)}
-          value={data.unpaidAmount}
-          format="currency"
-          currency="DZD"
-          series={[]}
-          emptyMessage={localizeText(
-            language,
-            'Aucune facture émise.',
-            'No invoices issued yet.',
-            'لم تصدر أي فواتير بعد.'
-          )}
-        />
+          <AreaTrendChart
+            title={localizeText(language, 'Tendance des encaissements', 'Cash Collection Trend', 'اتجاه التحصيل النقدي')}
+            subtitle={localizeText(
+              language,
+              'Flux d’honoraires encaissés sur la période',
+              'Paid freelance invoices vs prior window',
+              'الفواتير المحصلة مقارنة بالفترة السابقة'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(freelanceInvoices.length > 0)}
+            points={data.areaPoints}
+            format="currency"
+            currency="DZD"
+            filter={makeFilter('trend', compactTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune donnée d’encaissement disponible.',
+              'No cashflow trend available.',
+              'لا توجد بيانات تحصيل متاحة.'
+            )}
+          />
+        </DashboardPod>
 
-        <RadialGauge
-          title={localizeText(language, 'Ratio facturable & recouvrement', 'Utilization & Collection', 'نسبة الفوترة والتحصيل')}
-          subtitle={localizeText(
-            language,
-            'Temps facturable sur heures pointées et factures réglées',
-            'Billable share of logged hours and paid invoice ratio',
-            'نسبة الساعات المفوترة والفواتير المسددة'
-          )}
-          locale={locale}
-          {...featuredSurface}
-          state={resolveChartState(timeLogs.length > 0 || freelanceInvoices.length > 0)}
-          metrics={data.gauges}
-          emptyMessage={localizeText(
-            language,
-            'Enregistrez des pointages ou factures pour calculer le ratio.',
-            'Log time or issue invoices to track utilization.',
-            'سجل ساعات عمل أو فواتير لحساب النسبة.'
-          )}
-        />
+        <DashboardPod
+          title={localizeText(language, 'Créances & Taux Facturable', 'Receivables & Utilization', 'المستحقات وكفاءة الفوترة')}
+          subtitle={localizeText(language, 'Factures en attente et rendement temps', 'Open balances and billable utilization', 'الفواتير المفتوحة ونسبة الساعات')}
+          icon={<Gauge size={16} />}
+        >
+          <KpiMetricInverseCard
+            title={localizeText(language, 'Créances en attente', 'Unpaid Invoices', 'فواتير غير محصلة')}
+            subtitle={localizeText(
+              language,
+              'Factures envoyées ou échues en attente de règlement',
+              'Sent and overdue invoices awaiting settlement',
+              'فواتير مرسلة أو متأخرة بانتظار السداد'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(freelanceInvoices.length > 0)}
+            value={data.unpaidAmount}
+            format="currency"
+            currency="DZD"
+            series={[]}
+            filter={makeFilter('unpaid', unpaidOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune facture émise.',
+              'No invoices issued yet.',
+              'لم تصدر أي فواتير بعد.'
+            )}
+          />
 
-        {/* Row 2: Revenue Trend Area (wide) + Proposals-to-Paid Funnel */}
-        <AreaTrendChart
-          className="md:col-span-2 xl:col-span-2"
-          title={localizeText(language, 'Tendance des encaissements', 'Cash Collection Trend', 'اتجاه التحصيل النقدي')}
-          subtitle={localizeText(
-            language,
-            'Flux d’honoraires encaissés sur la période',
-            'Paid freelance invoices vs prior window',
-            'الفواتير المحصلة مقارنة بالفترة السابقة'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(freelanceInvoices.length > 0)}
-          points={data.areaPoints}
-          format="currency"
-          currency="DZD"
-          emptyMessage={localizeText(
-            language,
-            'Aucune donnée d’encaissement disponible.',
-            'No cashflow trend available.',
-            'لا توجد بيانات تحصيل متاحة.'
-          )}
-        />
+          <RadialGauge
+            title={localizeText(language, 'Ratio facturable & recouvrement', 'Utilization & Collection', 'نسبة الفوترة والتحصيل')}
+            subtitle={localizeText(
+              language,
+              'Temps facturable sur heures pointées et factures réglées',
+              'Billable share of logged hours and paid invoice ratio',
+              'نسبة الساعات المفوترة والفواتير المسددة'
+            )}
+            locale={locale}
+            {...featuredSurface}
+            state={resolveChartState(timeLogs.length > 0 || freelanceInvoices.length > 0)}
+            metrics={data.gauges}
+            emptyMessage={localizeText(
+              language,
+              'Enregistrez des pointages ou factures pour calculer le ratio.',
+              'Log time or issue invoices to track utilization.',
+              'سجل ساعات عمل أو فواتير لحساب النسبة.'
+            )}
+          />
+        </DashboardPod>
 
-        <ConversionFunnel
-          title={localizeText(language, 'Tunnel devis → paiement', 'Proposal to Cash Funnel', 'مسار العروض إلى الدفع')}
-          subtitle={localizeText(
-            language,
-            'Devis émis → Acceptés → Facturés → Encaissés',
-            'Proposals → Accepted → Invoiced → Paid',
-            'العروض ← المقبولة ← المفوترة ← المدفوعة'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.funnelStages.length > 0)}
-          stages={data.funnelStages}
-          emptyMessage={localizeText(
-            language,
-            'Aucun devis ni facture enregistré.',
-            'No proposals or invoices recorded.',
-            'لا توجد عروض أسعار أو فواتير مسجلة.'
-          )}
-        />
+        <DashboardPod
+          title={localizeText(language, 'Pipeline Devis & Clients', 'Commercial Funnel & Clients', 'مسار العروض والعملاء')}
+          subtitle={localizeText(language, 'Conversion propositions et part client', 'Proposal conversion and client share', 'تحويل العروض وحصة كل عميل')}
+          icon={<Briefcase size={16} />}
+        >
+          <ConversionFunnel
+            title={localizeText(language, 'Tunnel devis → paiement', 'Proposal to Cash Funnel', 'مسار العروض إلى الدفع')}
+            subtitle={localizeText(
+              language,
+              'Devis émis → Acceptés → Facturés → Encaissés',
+              'Proposals → Accepted → Invoiced → Paid',
+              'العروض ← المقبولة ← المفوترة ← المدفوعة'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.funnelStages.length > 0)}
+            stages={data.funnelStages}
+            filter={makeFilter('funnel', funnelOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun devis ni facture enregistré.',
+              'No proposals or invoices recorded.',
+              'لا توجد عروض أسعار أو فواتير مسجلة.'
+            )}
+          />
 
-        {/* Row 3: Client Share Donut + Estimated vs Logged Hours Dumbbell (wide) */}
-        <DonutChart
-          title={localizeText(language, 'Répartition par client', 'Revenue by Client', 'توزيع الإيرادات حسب العميل')}
-          subtitle={localizeText(
-            language,
-            'Part de facturation par compte client',
-            'Billed invoice share across clients',
-            'حصة كل عميل من إجمالي الفواتير'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.donutSegments.length > 0)}
-          segments={data.donutSegments}
-          format="currency"
-          currency="DZD"
-          emptyMessage={localizeText(
-            language,
-            'Aucune facture client émise.',
-            'No client invoices billed.',
-            'لا توجد فواتير عملاء صادرة.'
-          )}
-        />
+          <DonutChart
+            title={localizeText(language, 'Répartition par client', 'Revenue by Client', 'توزيع الإيرادات حسب العميل')}
+            subtitle={localizeText(
+              language,
+              'Part de facturation par compte client',
+              'Billed invoice share across clients',
+              'حصة كل عميل من إجمالي الفواتير'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.donutSegments.length > 0)}
+            segments={data.donutSegments}
+            format="currency"
+            currency="DZD"
+            filter={makeFilter('donut', compactTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune facture client émise.',
+              'No client invoices billed.',
+              'لا توجد فواتير عملاء صادرة.'
+            )}
+          />
+        </DashboardPod>
 
-        <DumbbellChart
-          className="md:col-span-2 xl:col-span-2"
-          title={localizeText(language, 'Heures estimées vs réalisées', 'Estimated vs Logged Hours', 'الساعات المقدرة مقابل الفعلية')}
-          subtitle={localizeText(
-            language,
-            'Écart de charge par mission active',
-            'Actual tracked hours against initial project estimates',
-            'مقارنة الساعات المسجلة بالتقديرات الأولية'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.hoursDumbbell.length > 0)}
-          items={data.hoursDumbbell}
-          prevLabel={localizeText(language, 'Estimé', 'Estimated', 'مقدر')}
-          currentLabel={localizeText(language, 'Réalisé', 'Logged', 'فعلي')}
-          higherIsBetter={false}
-          unit="h"
-          deltaUnit="h"
-          emptyMessage={localizeText(
-            language,
-            'Créez un projet freelance pour suivre les heures.',
-            'Create a project to compare estimated vs logged hours.',
-            'أضف مشروعاً لمقارنة الساعات المقدرة والفعلية.'
-          )}
-        />
-      </DashboardBentoGrid>
+        <DashboardPod
+          title={localizeText(language, 'Charge Horaire Missions', 'Estimated vs Logged Hours', 'الساعات المقدرة والفعلية')}
+          subtitle={localizeText(language, 'Suivi des dépassements de temps par projet', 'Compare logged hours against mission estimates', 'مراقبة تجاوزات الوقت لكل مشروع')}
+          icon={<Clock size={16} />}
+        >
+          <DumbbellChart
+            className="flex-1"
+            title={localizeText(language, 'Heures estimées vs réalisées', 'Estimated vs Logged Hours', 'الساعات المقدرة مقابل الفعلية')}
+            subtitle={localizeText(
+              language,
+              'Écart de charge par mission active',
+              'Actual tracked hours against initial project estimates',
+              'مقارنة الساعات المسجلة بالتقديرات الأولية'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.hoursDumbbell.length > 0)}
+            items={data.hoursDumbbell}
+            prevLabel={localizeText(language, 'Estimé', 'Estimated', 'مقدر')}
+            currentLabel={localizeText(language, 'Réalisé', 'Logged', 'فعلي')}
+            higherIsBetter={false}
+            unit="h"
+            deltaUnit="h"
+            filter={makeFilter('dumbbell', dumbbellOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Créez un projet freelance pour suivre les heures.',
+              'Create a project to compare estimated vs logged hours.',
+              'أضف مشروعاً لمقارنة الساعات المقدرة والفعلية.'
+            )}
+          />
+        </DashboardPod>
+      </DashboardPodGrid>
 
       {selectedInvoice && (
         <InvoicePreviewModal

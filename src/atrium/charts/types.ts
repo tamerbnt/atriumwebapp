@@ -18,6 +18,18 @@ export type ChartSkeletonKind =
   | 'treemap'
   | 'scatter';
 
+export interface ChartCardFilterOption {
+  id: string;
+  label: string;
+}
+
+export interface ChartCardFilter {
+  options: ChartCardFilterOption[];
+  value: string;
+  onChange: (id: string) => void;
+  ariaLabel?: string;
+}
+
 export interface ChartCommonProps {
   title: string;
   subtitle?: string;
@@ -30,6 +42,8 @@ export interface ChartCommonProps {
   errorMessage?: string;
   emptyMessage?: string;
   onRetry?: () => void;
+  /** Optional interactive per-card filter rendered inside the card header */
+  filter?: ChartCardFilter;
   className?: string;
   'data-testid'?: string;
 }

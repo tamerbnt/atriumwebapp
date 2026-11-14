@@ -28,6 +28,7 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
     emptyMessage,
     errorMessage,
     onRetry,
+    filter,
     className = '',
     'data-testid': testId,
     series,
@@ -45,6 +46,7 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
     const isRtl = useIsRtl(locale);
     const strings = getDefaultChartStrings(locale);
     const plotRef = useRef<HTMLDivElement>(null);
+    const rectRef = useRef<DOMRect | null>(null);
 
     const [internalPeriodId, setInternalPeriodId] = useState<string>(
       () => activePeriodId || periods?.[0]?.id || ''
@@ -122,9 +124,16 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
       setHiddenIds((prev) => ({ ...prev, [id]: !prev[id] }));
     };
 
+    const handlePlotEnter = () => {
+      if (plotRef.current) {
+        rectRef.current = plotRef.current.getBoundingClientRect();
+      }
+    };
+
     const handlePlotPointer = (e: React.PointerEvent<HTMLDivElement>) => {
       if (!plotRef.current || activeBuckets.length === 0) return;
-      const rect = plotRef.current.getBoundingClientRect();
+      const rect = rectRef.current || plotRef.current.getBoundingClientRect();
+      rectRef.current = rect;
       if (rect.width <= 0) return;
       const rawFrac = (e.clientX - rect.left) / rect.width;
       const frac = Math.max(0, Math.min(0.9999, isRtl ? 1 - rawFrac : rawFrac));
@@ -194,6 +203,7 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
         emptyMessage={emptyMessage}
         errorMessage={errorMessage}
         onRetry={onRetry}
+        filter={!(periods && periods.length > 1) ? filter : undefined}
         ariaSummary={ariaSummary}
         className={className}
         data-testid={testId}
@@ -310,8 +320,12 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
             tabIndex={0}
             role="img"
             aria-label={ariaSummary}
+            onPointerEnter={handlePlotEnter}
             onPointerMove={handlePlotPointer}
-            onPointerLeave={() => setActiveIdx(null)}
+            onPointerLeave={() => {
+              rectRef.current = null;
+              setActiveIdx(null);
+            }}
             onKeyDown={onKeyDown}
             className="relative flex-1 min-w-0 ax-plot-focus select-none cursor-pointer"
           >

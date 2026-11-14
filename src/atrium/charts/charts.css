@@ -186,10 +186,35 @@
 /* ---------- Card Header ---------- */
 .ax-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px 10px;
   min-width: 0;
+}
+
+.ax-head-actions {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.ax-head-actions::-webkit-scrollbar {
+  display: none;
+}
+
+@container (max-width: 340px) {
+  .ax-head-actions {
+    width: 100%;
+    align-items: flex-start;
+  }
+  .ax-head-actions [role='radiogroup'] {
+    --atr-h: 28px;
+  }
+  .ax-head-actions [role='radio'] {
+    padding-inline: 8px;
+    font-size: 11px;
+  }
 }
 
 /* Prevent global liquid button rules from overriding absolute chart elements */
@@ -209,7 +234,7 @@
   flex-direction: column;
   gap: 4px;
   min-width: 0;
-  flex: 1 1 auto;
+  flex: 1 1 160px;
 }
 
 .ax-title-row {
@@ -918,10 +943,13 @@
   }
 }
 
-@container (max-width: 280px) {
+@container (max-width: 340px) {
   .ax-head {
     flex-direction: column;
     align-items: stretch;
+  }
+  .ax-head-actions {
+    align-items: flex-start !important;
   }
   .ax-head [role='radiogroup'] {
     --atr-h: 26px !important;

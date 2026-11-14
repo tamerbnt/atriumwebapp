@@ -1,6 +1,6 @@
 import React from 'react';
 import { Building2, RotateCcw } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumSelector, showToast } from '../../../services/store';
 import { useTranslation } from '../../../utils/useTranslation';
 import { ChartSegmented, LiquidButton } from '@/atrium';
 
@@ -41,7 +41,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   extraActions,
 }) => {
   const { language } = useTranslation();
-  const { showToast, currentBranchId, currentBusinessId } = useAtriumStore();
+  const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
+  const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
 
   const [internalPeriod, setInternalPeriod] = React.useState('30d');
   const activePeriod = period !== undefined ? period : internalPeriod;
