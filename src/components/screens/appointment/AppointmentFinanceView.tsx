@@ -12,6 +12,7 @@ import {
   shallowEqualObjects,
   selectCurrentAppointmentsFromState,
   selectCurrentBranchFromState,
+  showToast,
 } from '../../../services/store';
 import { StylistPayout } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -59,7 +60,7 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
     shallowEqualObjects
   );
 
-  const { updateStylistPayoutStatus, showToast, retryCloudSync } = useAtriumActions();
+  const { updateStylistPayoutStatus, retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 

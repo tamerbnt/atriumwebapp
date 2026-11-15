@@ -581,7 +581,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                   </span>
                   {memberBranch && (
                     <span className="pill inline-flex items-center px-2.5 py-[3px] rounded-md text-[12px] font-medium bg-[#F3EDE7] dark:bg-white/[0.08] text-black dark:text-white border border-[#E6DED6] dark:border-[#3A3734] truncate max-w-full">
-                      {memberBranch.branchName}
+                      {memberBranch.name}
                     </span>
                   )}
                   <span className={`pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-md text-[12px] font-medium ${statusPillCls}`}>

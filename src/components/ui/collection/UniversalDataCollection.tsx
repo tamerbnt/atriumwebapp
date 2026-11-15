@@ -861,7 +861,7 @@ export function UniversalDataCollection<T>({
         const firstCustom = custom[0];
         acts.push({
           id: `custom_${id}`,
-          label: firstCustom.label,
+          label: firstCustom.label || firstCustom.tooltip || 'Action',
           icon: firstCustom.icon,
           onClick: () => firstCustom.onClick(),
         });
@@ -933,8 +933,8 @@ export function UniversalDataCollection<T>({
       if (custom) {
         custom.forEach((act, idx) => {
           actionsList.push({
-            id: `c_${idx}_${act.label}`,
-            label: act.label,
+            id: `c_${idx}_${act.label || idx}`,
+            label: act.label || act.tooltip || 'Action',
             icon: act.icon,
             onClick: act.onClick,
           });

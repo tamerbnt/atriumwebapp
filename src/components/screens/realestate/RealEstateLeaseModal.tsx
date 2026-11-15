@@ -15,6 +15,8 @@ interface RealEstateLeaseModalProps {
 
 
 
+const extractStr = (v: any): string => (typeof v === 'string' ? v : String(v?.target?.value ?? v?.value ?? v ?? ''));
+
 export const RealEstateLeaseModal: React.FC<RealEstateLeaseModalProps> = ({ isOpen, onClose, properties, onSave }) => {
 	const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
 	const [propertyId, setPropertyId] = React.useState(properties[0]?.id || "");
@@ -65,10 +67,10 @@ export const RealEstateLeaseModal: React.FC<RealEstateLeaseModalProps> = ({ isOp
 <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Key size={16} /></div>
 <h3 className="font-bold text-sm text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{language === "ar" ? "تحرير عقد كراء جديد" : "Nouveau Bail de Location"}</h3>
 </div>
-<button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"><X size={16} /></button>
+<button type="button" onClick={onClose} aria-label="Fermer" className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"><X size={16} /></button>
 </div>
 <form onSubmit={handleSubmit} className="space-y-4">
-<LabelSelect label={language === "ar" ? "العقار المؤجر" : "Bien loué"} value={propertyId} onChange={setPropertyId} options={propOptions} />
+<LabelSelect label={language === "ar" ? "العقار المؤجر" : "Bien loué"} value={propertyId} onChange={(val) => setPropertyId(extractStr(val))} options={propOptions} />
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 <LabelInput label={language === "ar" ? "اسم المستأجر" : "Locataire (Preneur)"} value={tenantName} onChange={(e) => setTenantName(e.target.value)} placeholder="Ex: Anis Belhadj" required />
 <LabelInput label={language === "ar" ? "هاتف المستأجر" : "Téléphone"} value={tenantPhone} onChange={(e) => setTenantPhone(e.target.value)} placeholder="0555..." />
@@ -80,7 +82,7 @@ export const RealEstateLeaseModal: React.FC<RealEstateLeaseModalProps> = ({ isOp
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
 <LabelInput label={language === "ar" ? "الكراء الشهري (د.ج)" : "Loyer / mois (DA)"} type="number" value={monthlyRent} onChange={(e) => setMonthlyRent(e.target.value)} />
 <LabelInput label={language === "ar" ? "مبلغ الضمان (Caution)" : "Dépôt de garantie"} type="number" value={deposit} onChange={(e) => setDeposit(e.target.value)} />
-<LabelSelect label={language === "ar" ? "دورية الدفع" : "Périodicité"} value={frequency} onChange={(val) => setFrequency(val)} options={[
+<LabelSelect label={language === "ar" ? "دورية الدفع" : "Périodicité"} value={frequency} onChange={(val) => setFrequency(extractStr(val))} options={[
 									{
 										value: "Monthly",
 										label: language === "ar" ? "شهري" : "Mensuel"
@@ -100,7 +102,7 @@ export const RealEstateLeaseModal: React.FC<RealEstateLeaseModalProps> = ({ isOp
 								]} />
 </div>
 <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
-<AtriumButton variant="secondary" onClick={onClose}>{language === "ar" ? "إلغاء" : "Annuler"}</AtriumButton>
+<AtriumButton type="button" variant="secondary" onClick={onClose}>{language === "ar" ? "إلغاء" : "Annuler"}</AtriumButton>
 <AtriumButton type="submit" variant="primary" icon={<Key size={14} />}>{language === "ar" ? "تحرير العقد" : "Établir le Contrat"}</AtriumButton>
 </div>
 </form>

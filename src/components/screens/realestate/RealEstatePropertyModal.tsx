@@ -16,12 +16,14 @@ interface RealEstatePropertyModalProps {
 
 
 
+const extractStr = (v: any): string => (typeof v === 'string' ? v : String(v?.target?.value ?? v?.value ?? v ?? ''));
+
 export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = ({ isOpen, onClose, onSave, propertyToEdit }) => {
 	const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
 	const [activeTab, setActiveTab] = React.useState("general");
 	const [title, setTitle] = React.useState(propertyToEdit?.title || "");
-	const [propertyType, setPropertyType] = React.useState(propertyToEdit?.propertyType || "Apartment");
-	const [listingType, setListingType] = React.useState(propertyToEdit?.listingType || "Rental");
+	const [propertyType, setPropertyType] = React.useState<RealEstateProperty['propertyType']>(propertyToEdit?.propertyType || "Apartment");
+	const [listingType, setListingType] = React.useState<RealEstateProperty['listingType']>(propertyToEdit?.listingType || "Rental");
 	const [surfaceM2, setSurfaceM2] = React.useState(propertyToEdit ? String(propertyToEdit.surfaceM2) : "120");
 	const [roomsCount, setRoomsCount] = React.useState(propertyToEdit ? String(propertyToEdit.roomsCount) : "3");
 	const [address, setAddress] = React.useState(propertyToEdit?.address || "");
@@ -133,7 +135,7 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 </h3>
 </div>
 </div>
-<button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"><X className="w-5 h-5" /></button>
+<button type="button" onClick={onClose} aria-label="Fermer" className="w-8 h-8 rounded-lg flex items-center justify-center text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white cursor-pointer"><X className="w-5 h-5" /></button>
 </div>
 <div className="flex items-center gap-2 border-b border-[#E6DED6] dark:border-[#27272A] pb-1">
 <button type="button" onClick={() => setActiveTab("general")} className={`px-4 py-2 text-xs font-semibold rounded-xl transition-colors ${activeTab === "general" ? "bg-[#d4522f] text-white shadow-xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>1. Descriptif & Mandant</button>
@@ -150,7 +152,7 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 {activeTab === "general" ? /* @__PURE__ */ <>
 <LabelInput label="Titre Commercial de l'Annonce" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex: Appartement F4 Haut Standing Hydra" required />
 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-<LabelSelect label="Type de Bien" value={propertyType} onChange={(val) => setPropertyType(val)} options={[
+<LabelSelect label="Type de Bien" value={propertyType} onChange={(val) => setPropertyType(extractStr(val) as RealEstateProperty['propertyType'])} options={[
 										{
 											value: "Apartment",
 											label: "Appartement"
@@ -176,7 +178,7 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 											label: "Terrain"
 										}
 									]} />
-<LabelSelect label="Opération" value={listingType} onChange={(val) => setListingType(val)} options={[{
+<LabelSelect label="Opération" value={listingType} onChange={(val) => setListingType(extractStr(val) as RealEstateProperty['listingType'])} options={[{
 										value: "Rental",
 										label: "Location"
 									}, {
@@ -222,7 +224,7 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 </div>
 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 <LabelSelect label="Nature Juridique du Titre" value={legalTitleType} onChange={(val) => {
-									const nextVal = val;
+									const nextVal = extractStr(val) as PropertyLegalTitleType;
 									setLegalTitleType(nextVal);
 									setIsIndivision(nextVal === "Bien_Dans_Indivision");
 								}} options={[

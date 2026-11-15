@@ -16,10 +16,12 @@ interface MandateModalProps {
 
 
 
+const extractStr = (v: any): string => (typeof v === 'string' ? v : String(v?.target?.value ?? v?.value ?? v ?? ''));
+
 export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onSave, properties, selectedProperty }) => {
 	const [propertyId, setPropertyId] = React.useState(selectedProperty?.id || (properties[0]?.id ?? ""));
 	const activeProp = properties.find((p: any) => p.id === propertyId) || selectedProperty || properties[0];
-	const [mandateType, setMandateType] = React.useState("Vente_Simple");
+	const [mandateType, setMandateType] = React.useState<MandateType>("Vente_Simple");
 	const [ownerFullName, setOwnerFullName] = React.useState(activeProp?.ownerName || "");
 	const [ownerPhone, setOwnerPhone] = React.useState(activeProp?.ownerPhone || "");
 	const [ownerNationalId, setOwnerNationalId] = React.useState(activeProp?.ownerNationalId || "109823487129837401");
@@ -27,9 +29,9 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 	const [ownerIdIssueDaira, setOwnerIdIssueDaira] = React.useState("Alger");
 	const [askingPriceDzd, setAskingPriceDzd] = React.useState(activeProp?.priceDzd || 15e6);
 	const [minimumAcceptablePriceDzd, setMinimumAcceptablePriceDzd] = React.useState(activeProp ? Math.round(activeProp.priceDzd * .95) : 1425e4);
-	const [commissionMode, setCommissionMode] = React.useState("DecreeTranches");
+	const [commissionMode, setCommissionMode] = React.useState<'DecreeTranches' | 'FlatPercent' | 'FixedAmount'>("DecreeTranches");
 	const [commissionRatePercent, setCommissionRatePercent] = React.useState(1);
-	const [commissionPayer, setCommissionPayer] = React.useState("Split50_50");
+	const [commissionPayer, setCommissionPayer] = React.useState<'Seller' | 'Buyer' | 'Split50_50'>("Split50_50");
 	const [startDate, setStartDate] = React.useState((/* @__PURE__ */ new Date()).toISOString().split("T")[0]);
 	const [durationMonths, setDurationMonths] = React.useState(3);
 	const [isExclusive, setIsExclusive] = React.useState(mandateType.includes("Exclusif"));
@@ -39,7 +41,8 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 	start.setMonth(start.getMonth() + Number(durationMonths));
 	const endDate = start.toISOString().split("T")[0];
 	const commissionCalc = calculateMandateCommission(askingPriceDzd, commissionMode as any, commissionRatePercent);
-	const handlePropertyChange = (newPropId: any) => {
+	const handlePropertyChange = (rawVal: any) => {
+		const newPropId = extractStr(rawVal);
 		setPropertyId(newPropId);
 		const chosen = properties.find((p: any) => p.id === newPropId);
 		if (chosen) {
@@ -99,7 +102,7 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 <h2 className="text-xl font-bold tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">Nouveau Mandat d'Agence (Décret 09-18)</h2>
 </div>
 </div>
-<button onClick={onClose} className="p-2 rounded-xl text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"><X className="w-5 h-5" /></button>
+<button type="button" onClick={onClose} aria-label="Fermer" className="p-2 rounded-xl text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"><X className="w-5 h-5" /></button>
 </div>
 <form onSubmit={handleSubmit} className="space-y-6">
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -108,8 +111,9 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 								label: `${p.title} (${p.cityWilaya})`
 							}))} />
 <LabelSelect label="Nature du Mandat" value={mandateType} onChange={(val) => {
-								setMandateType(val);
-								setIsExclusive(val.includes("Exclusif"));
+								const nextType = extractStr(val) as MandateType;
+								setMandateType(nextType);
+								setIsExclusive(nextType.includes("Exclusif"));
 							}} options={[
 								{
 									value: "Vente_Simple",
@@ -151,7 +155,7 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 <LabelInput type="number" label="Prix Demandé Mandant (DZD)" value={askingPriceDzd} onChange={(e) => setAskingPriceDzd(Number(e.target.value))} required />
 <LabelInput type="number" label="Prix Seuil Minimal Acceptable (DZD)" value={minimumAcceptablePriceDzd} onChange={(e) => setMinimumAcceptablePriceDzd(Number(e.target.value))} />
-<LabelSelect label="Mode Calcul Commission" value={commissionMode} onChange={(val) => setCommissionMode(val)} options={[
+<LabelSelect label="Mode Calcul Commission" value={commissionMode} onChange={(val) => setCommissionMode(extractStr(val) as 'DecreeTranches' | 'FlatPercent' | 'FixedAmount')} options={[
 									{
 										value: "DecreeTranches",
 										label: "Barème Décret 09-18 (3% / 2% / 1%)"
@@ -168,7 +172,7 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 </div>
 {commissionMode === "FlatPercent" && /* @__PURE__ */ <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 <LabelInput type="number" step="0.1" label="Taux de Commission (%)" value={commissionRatePercent} onChange={(e) => setCommissionRatePercent(Number(e.target.value))} />
-<LabelSelect label="Charge de la Commission" value={commissionPayer} onChange={(val) => setCommissionPayer(val)} options={[
+<LabelSelect label="Charge de la Commission" value={commissionPayer} onChange={(val) => setCommissionPayer(extractStr(val) as 'Seller' | 'Buyer' | 'Split50_50')} options={[
 								{
 									value: "Split50_50",
 									label: "Partage 50% Vendeur / 50% Acquéreur"
@@ -214,7 +218,7 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 </div>
 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 <LabelInput type="date" label="Date d'Effet du Mandat" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
-<LabelSelect label="Durée du Mandat" value={durationMonths.toString()} onChange={(val) => setDurationMonths(Number(val))} options={[
+<LabelSelect label="Durée du Mandat" value={durationMonths.toString()} onChange={(val) => setDurationMonths(Number(extractStr(val)))} options={[
 									{
 										value: "3",
 										label: "3 Mois (Standard Légal Vente)"

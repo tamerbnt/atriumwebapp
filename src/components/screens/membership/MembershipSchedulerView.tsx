@@ -16,6 +16,7 @@ import {
   selectCurrentStaffFromState,
   selectCurrentBranchFromState,
   selectTerminologyFromState,
+  showToast,
 } from '../../../services/store';
 import { ScheduleEvent } from '../../../types/index';
 import { Modal } from '../../ui/Modal';
@@ -65,7 +66,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
     shallowEqualObjects
   );
 
-  const { showToast, retryCloudSync, batchDeleteScheduleEvents } = useAtriumActions();
+  const { retryCloudSync, batchDeleteScheduleEvents } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -264,8 +265,8 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
   const handleSaveNewSession = useCallback(() => {
     const created: ScheduleEvent = {
       id: `sch_${Date.now()}`,
-      businessId: currentBranch?.businessId || 'biz_01',
-      branchId: currentBranch?.id || 'branch_gym_main',
+      tenantId: 'acc_01',
+      facilityId: currentBranch?.id || 'fac_01',
       title: newTitle.trim() || 'Session Fitness',
       category: newCategory.trim() || 'Fitness',
       dayOfWeek: selectedDay,

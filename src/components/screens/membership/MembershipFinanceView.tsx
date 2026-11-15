@@ -16,6 +16,7 @@ import {
   shallowEqualObjects,
   selectCurrentMembersFromState,
   selectCurrentBranchFromState,
+  showToast,
 } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -73,7 +74,7 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
     shallowEqualObjects
   );
 
-  const { showToast, retryCloudSync, updateMember } = useAtriumActions();
+  const { retryCloudSync, updateMember } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 

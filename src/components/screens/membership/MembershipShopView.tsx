@@ -18,6 +18,7 @@ import {
   shallowEqualObjects,
   selectCurrentProductsFromState,
   selectCurrentBranchFromState,
+  showToast,
 } from '../../../services/store';
 import { Product } from '../../../types/index';
 import { formatMoney } from '../../../utils/rules';
@@ -71,7 +72,7 @@ export const MembershipShopView: React.FC = React.memo(() => {
     shallowEqualObjects
   );
 
-  const { processSale, showToast, retryCloudSync } = useAtriumActions();
+  const { processSale, retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 

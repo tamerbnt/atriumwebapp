@@ -10,6 +10,7 @@ import {
   shallowEqualObjects,
   selectCurrentAppointmentsFromState,
   selectCurrentBranchFromState,
+  showToast,
 } from '../../../services/store';
 import { Appointment } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -55,7 +56,7 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
     shallowEqualObjects
   );
 
-  const { deleteAppointment, batchDeleteAppointments, showToast, retryCloudSync } = useAtriumActions();
+  const { deleteAppointment, batchDeleteAppointments, retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -511,12 +512,11 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
         }
         onClose={() => setReceiptAppointment(null)}
         onSelectItem={(a) => setReceiptAppointment(a)}
-        holdToDelete={{
-          label: isAr ? 'حذف' : 'Supprimer',
-          onDelete: (a) => {
-            deleteAppointment(a.id);
-            setReceiptAppointment(null);
-          },
+        holdToDelete
+        deleteLabel={isAr ? 'حذف' : 'Supprimer'}
+        onDelete={(a) => {
+          deleteAppointment(a.id);
+          setReceiptAppointment(null);
         }}
         renderBody={(apt) => (
           <div className="space-y-4 text-xs">

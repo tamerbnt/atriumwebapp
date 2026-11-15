@@ -37,12 +37,14 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 	const [startTime, setStartTime] = React.useState(initialTime || "09:00");
 	const [durationMinutes, setDurationMinutes] = React.useState(30);
 	const [reason, setReason] = React.useState("Consultation de suivi");
-	const [urgency, setUrgency] = React.useState("Normal");
+	const [urgency, setUrgency] = React.useState<'Normal' | 'Prioritaire'>("Normal");
 	const [isEmergencyBypass, setIsEmergencyBypass] = React.useState(false);
 	const [emergencyBypassReason, setEmergencyBypassReason] = React.useState("");
 	const [errorMsg, setErrorMsg] = React.useState("");
 	if (!isOpen) return null;
-	const handlePatientSelect = (pId: any) => {
+	const extractStr = (val: any): string => (typeof val === 'string' ? val : val?.target?.value ?? String(val ?? ''));
+	const handlePatientSelect = (val: any) => {
+		const pId = extractStr(val);
 		setSelectedPatientId(pId);
 		if (pId) {
 			const found = patients.find((p: any) => p.id === pId);
@@ -107,14 +109,14 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">Nouveau Rendez-vous Médical</h2>
 </div>
 </div>
-<button onClick={onClose} className="p-2 rounded-xl text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
+<button type="button" onClick={onClose} className="p-2 rounded-xl text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
 </div>
 <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto max-h-[75vh]">
 {errorMsg && /* @__PURE__ */ <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
 <AlertTriangle size={16} />
 <span>{errorMsg}</span>
 </div>}
-<LabelSelect label="Médecin / Spécialiste" value={doctorId} onChange={(val) => setDoctorId(val)} options={practitioners.map((p: any) => ({
+<LabelSelect label="Médecin / Spécialiste" value={doctorId} onChange={(val) => setDoctorId(extractStr(val))} options={practitioners.map((p: any) => ({
 							value: p.id,
 							label: `${p.fullName} (${p.specialty} · ${p.roomNumber})`
 						}))} />
@@ -132,7 +134,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 <div className="grid grid-cols-3 gap-3">
 <LabelInput label="Date du RDV" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
 <LabelInput label="Heure de Début" type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} required />
-<LabelSelect label="Durée du Créneau" value={String(durationMinutes)} onChange={(val) => setDurationMinutes(Number(val))} options={[
+<LabelSelect label="Durée du Créneau" value={String(durationMinutes)} onChange={(val) => setDurationMinutes(Number(extractStr(val)))} options={[
 									{
 										value: "15",
 										label: "15 min (Contrôle)"

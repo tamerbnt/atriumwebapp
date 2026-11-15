@@ -1,412 +1,724 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   Receipt,
   Printer,
   CheckCircle2,
-  ShieldCheck,
-  Download,
-  DollarSign,
-  Building2,
-  Key,
-  Calendar,
   Send,
-  Eye,
-  Check,
-  X,
   Share2,
   Clock,
   Calculator,
+  MapPin,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { useRealEstateData } from './realEstateData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { RealEstateLease } from '../../../types';
-import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
-import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { NotarySimulatorModal } from './NotarySimulatorModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
-
-
+import {
+  ScreenHeaderBar,
+  ScreenKpiBanner,
+  ScreenPod,
+  ScreenCollectionToolbar,
+  ActiveFilterChip,
+  KineticFilterModal,
+  KineticFilterSection,
+  KineticSlideOverInspector,
+  buildBranchesByIdMap,
+  resolveRecordBranch,
+  downloadCsvSafe,
+} from '../../ui/kinetic';
 
 export const RealEstateFinanceView: React.FC<any> = () => {
-	const { language, isSyncing, networkMode, isSyncTimeout, retryCloudSync } = useAtriumStore();
-	const isAr = language === "ar";
-	const { leases } = useRealEstateData();
-	const [isNotaryModalOpen, setIsNotaryModalOpen] = React.useState(false);
-	const [selectedLease, setSelectedLease] = React.useState<any>(null);
-	const [inspectorTab, setInspectorTab] = React.useState("quittance");
-	const [settledBailleurIds, setSettledBailleurIds] = React.useState(["lease_01"]);
-	const [settlementFilter, setSettlementFilter] = React.useState("all");
-	const filteredFinanceLeases = React.useMemo(() => {
-		return leases.filter((l) => {
-			if (settlementFilter === "reversements" && !settledBailleurIds.includes(l.id)) return false;
-			if (settlementFilter === "impayes" && l.status === "Active") return false;
-			if (settlementFilter === "loyers" && l.status !== "Active") return false;
-			return true;
-		});
-	}, [
-		leases,
-		settlementFilter,
-		settledBailleurIds
-	]);
-	const totalMonthlyRents = leases.reduce((acc, l) => acc + l.monthlyRentDzd, 0);
-	leases.reduce((acc, l) => acc + l.securityDepositDzd, 0);
-	const totalCommissions = leases.reduce((acc, l) => acc + l.monthlyRentDzd * .1, 0);
-	const netOwnerDisbursal = totalMonthlyRents - totalCommissions;
-	const handlePrintQuittance = (tenantName: any, propertyTitle: any) => {
-		showToast(isAr ? `جاري طباعة مخالصة الإيجار للمستأجر ${tenantName}...` : `Impression de la quittance de loyer pour ${tenantName} (${propertyTitle})...`, "info");
-	};
-	const handleDisburseToOwner = (lease: any) => {
-		if (!settledBailleurIds.includes(lease.id)) {
-			setSettledBailleurIds((prev) => [...prev, lease.id]);
-			const net = lease.monthlyRentDzd * .9;
-			showToast(isAr ? `تم تحويل صافي الإيجار (${formatMoney(net, language)}) للمالك بنجاح` : `Reversement du net bailleur (${formatMoney(net, language)}) confirmé`, "success");
-		}
-	};
-	const getLeaseActions = (l: any) => {
-		const isSettled = settledBailleurIds.includes(l.id);
-		return [
-			{
-				label: isAr ? "معاينة الوصل" : "Consulter Quittance",
-				icon: /* @__PURE__ */ <Eye size={14} />,
-				onClick: () => setSelectedLease(l)
-			},
-			...!isSettled ? [{
-				label: isAr ? "تحويل للمالك" : "Reverser Bailleur",
-				icon: /* @__PURE__ */ <Send size={14} />,
-				onClick: () => handleDisburseToOwner(l)
-			}] : [],
-			{
-				label: isAr ? "طباعة Quittance" : "Imprimer Quittance",
-				icon: /* @__PURE__ */ <Printer size={14} />,
-				onClick: () => handlePrintQuittance(l.tenantName, l.propertyTitle)
-			},
-			{
-				label: isAr ? "مشاركة الوصل" : "Partager Reçu",
-				icon: /* @__PURE__ */ <Share2 size={14} />,
-				onClick: () => {
-					showToast(isAr ? `تم نسخ رابط الوصل للمستأجر ${l.tenantName}` : `Quittance électronique transmise à ${l.tenantName}`, "success");
-				}
-			}
-		];
-	};
-	const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
-		isLoading: isSyncing || networkMode === "force_skeleton",
-		hasCachedData: leases.length > 0
-	});
-	if (showSkeleton && (leases.length === 0 || networkMode === "force_skeleton")) return /* @__PURE__ */ <SkeletonCollectionScreen kpiCount={3} columns={[
-			{
-				width: "2.5*",
-				minWidth: "180px"
-			},
-			{
-				width: "2*",
-				minWidth: "140px"
-			},
-			{
-				width: "1.5*",
-				minWidth: "120px"
-			},
-			{
-				width: "1.5*",
-				minWidth: "120px"
-			},
-			{
-				width: "100px",
-				minWidth: "80px"
-			}
-		]} hasIcon hasFacility hasActionBtn actionBtnWidth={140} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
-	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1">
-<div className="flex items-center gap-3">
-<div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Receipt size={22} /></div>
-<div>
-<div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
-{isAr ? "الوصولات" : language === "en" ? "Receipts" : "Quittances"}
-</h1>
-<span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Légal Foncier</span>
-</div>
-</div>
-</div>
-<div className="flex items-center gap-2">
-<AtriumButton variant="outline" onClick={() => setIsNotaryModalOpen(true)} icon={<Calculator size={14} />}>{isAr ? "حاسبة الموثق (08-243)" : "Simulateur Notaire (08-243)"}</AtriumButton>
-<AtriumButton variant="outline" onClick={() => window.print()} icon={<Printer size={14} />}>{isAr ? "طباعة كشف الحسابات" : "Bordereau Bailleurs"}</AtriumButton>
-</div>
-</div>
-<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-<div>
-<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
-{isAr ? "مؤشرات التحصيل وعمولات الوكالة" : "Encaissement des Loyers & Commissions"}
-</h2>
-</div>
-<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "إجمالي الإيجارات المحصلة" : "Masse des Loyers Appelée"}</span>
-<div>
-<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalMonthlyRents, language)}</div>
-<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">
-{leases.length}
-{" "}
-{isAr ? "وصل إيجار سارٍ" : "quittances émises"}
-</p>
-</div>
-</div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "عمولة التسيير العقاري (10%)" : "Honoraires Gestion Agence"}</span>
-<div>
-<div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalCommissions, language)}</div>
-<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">{isAr ? "إيرادات الوكالة الصافية" : "Revenu net agence mandatée"}</p>
-</div>
-</div>
-<div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-<div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-white/80">{isAr ? "صافي مستحقات الملاك" : "Reversements Bailleurs"}</span>
-<span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">{isAr ? "جاهز للتحويل" : "Net Propriétaire"}</span>
-</div>
-<div>
-<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(netOwnerDisbursal, language)}</div>
-<p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
-<CheckCircle2 size={11} />
-{settledBailleurIds.length}
-{" "}
-{isAr ? "حساب تم تسويته" : "bailleurs réglés"}
-</p>
-</div>
-</div>
-</div>
-</div>
-<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-<div>
-<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
-{isAr ? "سجل الوصولات ومستحقات الملاك العقاريين" : "Registre des Quittances & Règlements Bailleurs"}
-</h2>
-</div>
-<div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
-{[
-							{
-								id: "all",
-								label: isAr ? "الكل" : language === "fr" ? "Toutes" : "All",
-								tooltip: isAr ? "جميع المعاملات" : language === "fr" ? "Toutes opérations" : "All operations"
-							},
-							{
-								id: "loyers",
-								label: isAr ? "إيجارات" : language === "fr" ? "Loyers" : "Rents",
-								tooltip: isAr ? "إيجارات محصلة" : language === "fr" ? "Loyers encaissés" : "Collected rents"
-							},
-							{
-								id: "commissions",
-								label: isAr ? "أتعاب" : language === "fr" ? "Commissions" : "Fees",
-								tooltip: isAr ? "أتعاب الوكالة" : language === "fr" ? "Commissions agence" : "Agency commissions"
-							},
-							{
-								id: "reversements",
-								label: isAr ? "تحويلات" : language === "fr" ? "Reversements" : "Payouts",
-								tooltip: isAr ? "محول للملاك" : language === "fr" ? "Reversements bailleurs" : "Landlord payouts"
-							},
-							{
-								id: "impayes",
-								label: isAr ? "متأخرات" : language === "fr" ? "Impayés" : "Unpaid",
-								tooltip: isAr ? "إيجارات متأخرة" : language === "fr" ? "Impayés / Relances" : "Overdue & reminders"
-							}
-						].map((tab) => {
-							const isActive = settlementFilter === tab.id;
-							return /* @__PURE__ */ <button key={tab.id} type="button" onClick={() => setSettlementFilter(tab.id)} title={tab.tooltip} className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer" style={{
-									backgroundColor: isActive ? "#FCEEE8" : "transparent",
-									color: isActive ? "var(--color-accent)" : "#71717A"
-								}}>{tab.label}</button>;
-						})}
-</div>
-</div>
-<div className="flex flex-col lg:flex-row gap-6 items-start">
-<div className="flex-1 min-w-0 w-full">
-<UniversalDataCollection title={isAr ? "سجل الوصولات ومستحقات الملاك" : "Registre des Quittances & Règlements Bailleurs"} subtitle={isAr ? "إدارة الإيجارات وتصفية حسابات الملاك" : "Émission des quittances, prélèvement des honoraires et reversements"} items={filteredFinanceLeases} keyExtractor={(l) => l.id} searchPlaceholder={isAr ? "بحث بالعقار أو المستأجر..." : "Rechercher bien, locataire, bailleur, loyer..."} searchFilter={(l, query) => l.propertyTitle.toLowerCase().includes(query.toLowerCase()) || l.tenantName.toLowerCase().includes(query.toLowerCase()) || (l.tenantPhone || "").toLowerCase().includes(query.toLowerCase())} onSelectRow={(l) => setSelectedLease(l)} customActions={(l) => getLeaseActions(l)} columns={[
-								{
-									id: "property",
-									header: isAr ? "العقار" : "Bien Immobilier",
-									renderCell: (l: any) => /* @__PURE__ */ <div>
-<span className="font-bold text-xs text-black dark:text-white block">{l.propertyTitle}</span>
-<span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
-{"Bail du "}
-{l.startDate}
-{" au "}
-{l.endDate}
-</span>
-</div>
-								},
-								{
-									id: "tenant",
-									header: isAr ? "المستأجر" : "Locataire Titulaire",
-									width: "180px",
-									renderCell: (l: any) => /* @__PURE__ */ <div className="text-xs">
-<span className="font-semibold text-black dark:text-white block truncate">{l.tenantName}</span>
-<span className="text-[10px] text-black/55 dark:text-white/55 font-mono">{l.tenantPhone}</span>
-</div>
-								},
-								{
-									id: "rent",
-									header: isAr ? "مبلغ الإيجار" : "Loyer Quittancé",
-									width: "140px",
-									sortable: true,
-									renderCell: (l: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-black dark:text-white">{formatMoney(l.monthlyRentDzd, language)}</span>
-								},
-								{
-									id: "commission",
-									header: isAr ? "عمولة الوكالة" : "Commission (10%)",
-									width: "130px",
-									renderCell: (l: any) => /* @__PURE__ */ <span className="font-mono text-xs text-blue-600 dark:text-blue-400 font-semibold">{formatMoney(l.monthlyRentDzd * .1, language)}</span>
-								},
-								{
-									id: "netOwner",
-									header: isAr ? "صافي المالك" : "Net Bailleur",
-									width: "140px",
-									sortable: true,
-									renderCell: (l: any) => /* @__PURE__ */ <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">{formatMoney(l.monthlyRentDzd * .9, language)}</span>
-								},
-								{
-									id: "status",
-									header: isAr ? "التسوية" : "Statut Reversement",
-									width: "140px",
-									renderCell: (l: any) => {
-										const isSettled = settledBailleurIds.includes(l.id);
-										return /* @__PURE__ */ <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold inline-flex items-center gap-1 ${isSettled ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"}`}>
-{isSettled ? /* @__PURE__ */ <CheckCircle2 size={11} /> : /* @__PURE__ */ <Clock size={11} />}
-{isSettled ? isAr ? "تم التحويل" : "Reversé" : isAr ? "بانتظار التحويل" : "À reverser"}
-</span>;
-									}
-								}
-							]} renderCard={(l) => {
-								const isSettled = settledBailleurIds.includes(l.id);
-								return /* @__PURE__ */ <div className="p-4 flex flex-col justify-between h-full space-y-3">
-<div className="flex items-start justify-between gap-2">
-<span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded">
-{formatMoney(l.monthlyRentDzd, language)}
-/mois
-</span>
-<span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isSettled ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300" : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"}`}>{isSettled ? "Reversé" : "À reverser"}</span>
-</div>
-<div>
-<h4 className="font-bold text-xs text-black dark:text-white line-clamp-2">{l.propertyTitle}</h4>
-<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">
-{"Locataire: "}
-{l.tenantName}
-</p>
-</div>
-<div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-<div>
-<span className="text-[10px] text-black/55 dark:text-white/55 block">Com. Agence</span>
-<span className="font-mono text-blue-600 dark:text-blue-400 font-semibold">{formatMoney(l.monthlyRentDzd * .1, language)}</span>
-</div>
-<div className="text-right">
-<span className="text-[10px] text-black/55 dark:text-white/55 block">Net Bailleur</span>
-<span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">{formatMoney(l.monthlyRentDzd * .9, language)}</span>
-</div>
-</div>
-</div>;
-							}} />
-</div>
-{selectedLease && /* @__PURE__ */ <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
-<div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
-<div className="flex items-center gap-2.5">
-<div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Receipt size={16} /></div>
-<div>
-<h3 className="font-bold text-xs text-black dark:text-white flex items-center gap-1.5 font-mono">Quittance de Loyer</h3>
-<p className="text-[10px] text-black/55 dark:text-white/55 truncate max-w-[210px]">{selectedLease.tenantName}</p>
-</div>
-</div>
-<button onClick={() => setSelectedLease(null)} className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-black/55 dark:text-white/55 transition-colors"><X size={15} /></button>
-</div>
-<div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 pt-2 gap-2">
-<button onClick={() => setInspectorTab("quittance")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "quittance" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "الوصل والرسوم" : "Quittance"}</button>
-<button onClick={() => setInspectorTab("caution")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "caution" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "عقد الإيجار والضمان" : "Bail & Caution"}</button>
-<button onClick={() => setInspectorTab("reversement")} className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${inspectorTab === "reversement" ? "border-[#d4522f] text-[#d4522f]" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"}`}>{isAr ? "تحويل المالك" : "Reversement"}</button>
-</div>
-<div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
-{inspectorTab === "quittance" && /* @__PURE__ */ <div className="space-y-4">
-<div className="p-4 bg-[#1F1D1B] rounded-xl text-white space-y-2 shadow-sm">
-<div className="flex items-center justify-between text-white/80 text-[11px]">
-<span>Loyer Mensuel Net Quittancé</span>
-<span className="bg-[#3D2817] text-[#FB923C] text-[10px] font-bold px-2 py-0.5 rounded-full">Acquitté</span>
-</div>
-<div className="text-2xl font-black tracking-tight text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{formatMoney(selectedLease.monthlyRentDzd, language)}</div>
-<p className="text-[10px] text-white/75">
-Quittance de loyer délivrée au locataire valant décharge intégrale pour la période en cours.
-</p>
-</div>
-<div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Détails de la Quittance</span>
-<div className="flex items-center justify-between">
-<span className="text-black/55 dark:text-white/55">Bien loué:</span>
-<span className="font-bold text-black dark:text-white truncate max-w-[190px]">{selectedLease.propertyTitle}</span>
-</div>
-<div className="flex items-center justify-between">
-<span className="text-black/55 dark:text-white/55">Locataire:</span>
-<span className="font-medium text-black dark:text-white">{selectedLease.tenantName}</span>
-</div>
-<div className="flex items-center justify-between text-blue-600 dark:text-blue-400">
-<span>Honoraires Agence (10%):</span>
-<span className="font-mono font-semibold">
--
-{formatMoney(selectedLease.monthlyRentDzd * .1, language)}
-</span>
-</div>
-<div className="flex items-center justify-between pt-1 border-t border-neutral-200 dark:border-neutral-800">
-<span className="font-bold text-black dark:text-white">Solde Net Bailleur:</span>
-<span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{formatMoney(selectedLease.monthlyRentDzd * .9, language)}</span>
-</div>
-</div>
-</div>}
-{inspectorTab === "caution" && /* @__PURE__ */ <div className="space-y-4">
-<div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Dépôt de Garantie Séquestré</span>
-<div className="flex items-center justify-between">
-<span className="text-black/55 dark:text-white/55">Montant Caution:</span>
-<span className="font-mono font-bold text-base text-black dark:text-white">{formatMoney(selectedLease.securityDepositDzd, language)}</span>
-</div>
-<div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
-<span>Périodicité paiement:</span>
-<span className="font-semibold text-black dark:text-white">{selectedLease.paymentFrequency}</span>
-</div>
-<div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
-<span>Date d'échéance bail:</span>
-<span className="font-mono">{selectedLease.endDate}</span>
-</div>
-</div>
-</div>}
-{inspectorTab === "reversement" && /* @__PURE__ */ <div className="space-y-4">
-<div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-<span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">Ordre de Virement Propriétaire</span>
-<div className="space-y-1.5">
-<div className="flex justify-between">
-<span className="text-black/55 dark:text-white/55">Bénéficiaire:</span>
-<span className="font-bold text-black dark:text-white">Propriétaire du bien</span>
-</div>
-<div className="flex justify-between">
-<span className="text-black/55 dark:text-white/55">Montant Net:</span>
-<span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{formatMoney(selectedLease.monthlyRentDzd * .9, language)}</span>
-</div>
-</div>
-</div>
-<div className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-<div>
-<span className="font-semibold block text-black dark:text-white">Validation Virement</span>
-<span className="text-[10px] text-black/55 dark:text-white/55">
-{settledBailleurIds.includes(selectedLease.id) ? "Virement déjà exécuté" : "Transférer sur compte bancaire"}
-</span>
-</div>
-<button onClick={() => handleDisburseToOwner(selectedLease)} disabled={settledBailleurIds.includes(selectedLease.id)} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#d4522f] hover:bg-[#b06a4e] text-white disabled:opacity-50 transition-colors">{settledBailleurIds.includes(selectedLease.id) ? "Reversé ✓" : "Reverser Net"}</button>
-</div>
-</div>}
-</div>
-<div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 space-y-2">
-<AtriumButton variant="primary" className="w-full justify-center" icon={<Printer size={14} />} onClick={() => handlePrintQuittance(selectedLease.tenantName, selectedLease.propertyTitle)}>{isAr ? "طباعة مخالصة الإيجار" : "Imprimer Quittance de Loyer"}</AtriumButton>
-</div>
-</div>}
-</div>
-</div>
-<NotarySimulatorModal isOpen={isNotaryModalOpen} onClose={() => setIsNotaryModalOpen(false)} />
-</div>;
+  const {
+    language,
+    currentBranch,
+    branches,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+  } = useAtriumStore();
+  const isAr = language === 'ar';
+  const isEn = language === 'en';
+
+  const { leases } = useRealEstateData();
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [settlementFilter, setSettlementFilter] = useState<string>('all');
+  const [branchFilter, setBranchFilter] = useState<string>('All');
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
+
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const filterButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>());
+  const [sortBy, setSortBy] = useState<string>('rent');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+
+  const [isNotaryModalOpen, setIsNotaryModalOpen] = useState(false);
+  const [selectedLease, setSelectedLease] = useState<RealEstateLease | null>(null);
+  const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<string>('quittance');
+  const [settledBailleurIds, setSettledBailleurIds] = useState<string[]>(['lease_01']);
+
+  const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
+
+  const branchCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    leases.forEach((l) => {
+      const b = resolveRecordBranch(l, branchesById, currentBranch, language);
+      const key = b.id || b.name;
+      map.set(key, (map.get(key) || 0) + 1);
+    });
+    return map;
+  }, [leases, branchesById, currentBranch, language]);
+
+  const branchOptions = useMemo(() => {
+    const opts: Array<{ value: string; label: string; count: number }> = [
+      { value: 'All', label: isAr ? 'الكل' : isEn ? 'All' : 'Toutes', count: leases.length },
+    ];
+    const seen = new Set<string>();
+    branches.forEach((b) => {
+      if (!seen.has(b.id)) {
+        seen.add(b.id);
+        opts.push({ value: b.id, label: b.name, count: branchCounts.get(b.id) || 0 });
+      }
+    });
+    if (seen.size === 0 && currentBranch) {
+      opts.push({
+        value: currentBranch.id,
+        label: currentBranch.name,
+        count: branchCounts.get(currentBranch.id) || leases.length,
+      });
+    }
+    return opts;
+  }, [branches, currentBranch, branchCounts, leases.length, isAr, isEn]);
+
+  const filteredFinanceLeases = useMemo(() => {
+    return leases.filter((l) => {
+      if (settlementFilter === 'reversements' && !settledBailleurIds.includes(l.id)) return false;
+      if (settlementFilter === 'impayes' && l.status === 'Active') return false;
+      if (settlementFilter === 'loyers' && l.status !== 'Active') return false;
+      if (branchFilter !== 'All') {
+        const b = resolveRecordBranch(l, branchesById, currentBranch, language);
+        if ((b.id || b.name) !== branchFilter) return false;
+      }
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const b = resolveRecordBranch(l, branchesById, currentBranch, language);
+        const matches =
+          l.propertyTitle.toLowerCase().includes(q) ||
+          l.tenantName.toLowerCase().includes(q) ||
+          (l.tenantPhone || '').toLowerCase().includes(q) ||
+          b.name.toLowerCase().includes(q);
+        if (!matches) return false;
+      }
+      return true;
+    });
+  }, [leases, settlementFilter, settledBailleurIds, branchFilter, searchQuery, branchesById, currentBranch, language]);
+
+  const sortedFinanceLeases = useMemo(() => {
+    const list = [...filteredFinanceLeases];
+    list.sort((a, b) => {
+      let cmp = 0;
+      if (sortBy === 'rent') cmp = a.monthlyRentDzd - b.monthlyRentDzd;
+      else if (sortBy === 'netOwner') cmp = a.monthlyRentDzd * 0.9 - b.monthlyRentDzd * 0.9;
+      else if (sortBy === 'property') cmp = a.propertyTitle.localeCompare(b.propertyTitle);
+      else if (sortBy === 'branch') {
+        const ba = resolveRecordBranch(a, branchesById, currentBranch, language).name;
+        const bb = resolveRecordBranch(b, branchesById, currentBranch, language).name;
+        cmp = ba.localeCompare(bb);
+      }
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+    return list;
+  }, [filteredFinanceLeases, sortBy, sortDir, branchesById, currentBranch, language]);
+
+  const totalMonthlyRents = useMemo(() => leases.reduce((acc, l) => acc + l.monthlyRentDzd, 0), [leases]);
+  const totalCommissions = useMemo(() => leases.reduce((acc, l) => acc + l.monthlyRentDzd * 0.1, 0), [leases]);
+  const netOwnerDisbursal = totalMonthlyRents - totalCommissions;
+
+  const handlePrintQuittance = useCallback(
+    (tenantName: string, propertyTitle: string) => {
+      showToast(
+        isAr
+          ? `جاري طباعة مخالصة الإيجار للمستأجر ${tenantName}...`
+          : `Impression de la quittance de loyer pour ${tenantName} (${propertyTitle})...`,
+        'info'
+      );
+      if (typeof window !== 'undefined') window.print();
+    },
+    [isAr]
+  );
+
+  const handleDisburseToOwner = useCallback(
+    (lease: RealEstateLease) => {
+      if (!settledBailleurIds.includes(lease.id)) {
+        setSettledBailleurIds((prev) => [...prev, lease.id]);
+        const net = lease.monthlyRentDzd * 0.9;
+        showToast(
+          isAr
+            ? `تم تحويل صافي الإيجار (${formatMoney(net, language)}) للمالك بنجاح`
+            : `Reversement du net bailleur (${formatMoney(net, language)}) confirmé`,
+          'success'
+        );
+      }
+    },
+    [settledBailleurIds, isAr, language]
+  );
+
+  const handleTogglePin = useCallback((l: RealEstateLease) => {
+    setPinnedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(l.id)) next.delete(l.id);
+      else next.add(l.id);
+      return next;
+    });
+  }, []);
+
+  const handleExportCsv = useCallback(() => {
+    const headers = [
+      'ID Bail',
+      'Bien Immobilier',
+      'Locataire',
+      'Téléphone',
+      'Agence / Branche',
+      'Loyer Quittancé (DZD)',
+      'Commission Agence 10% (DZD)',
+      'Net Bailleur (DZD)',
+      'Statut Reversement',
+    ];
+    const rows = sortedFinanceLeases.map((l) => {
+      const b = resolveRecordBranch(l, branchesById, currentBranch, language);
+      const isSettled = settledBailleurIds.includes(l.id);
+      return [
+        l.id,
+        l.propertyTitle,
+        l.tenantName,
+        l.tenantPhone,
+        b.name,
+        l.monthlyRentDzd,
+        Math.round(l.monthlyRentDzd * 0.1),
+        Math.round(l.monthlyRentDzd * 0.9),
+        isSettled ? 'Reversé' : 'À reverser',
+      ];
+    });
+    downloadCsvSafe(`quittances_bailleurs_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
+    showToast(isAr ? 'تم تصدير كشف التحويلات' : 'Export CSV des règlements bailleurs généré', 'info');
+  }, [sortedFinanceLeases, branchesById, currentBranch, language, settledBailleurIds, isAr]);
+
+  const activeFiltersCount = branchFilter !== 'All' ? 1 : 0;
+  const hasAnyFilters = settlementFilter !== 'all' || branchFilter !== 'All' || searchQuery.trim().length > 0;
+
+  const resetAllFilters = useCallback(() => {
+    setSearchQuery('');
+    setSettlementFilter('all');
+    setBranchFilter('All');
+  }, []);
+
+  const activeChips: ActiveFilterChip[] = useMemo(() => {
+    const chips: ActiveFilterChip[] = [];
+    if (settlementFilter !== 'all') {
+      chips.push({ key: 'settlement', label: settlementFilter, onRemove: () => setSettlementFilter('all') });
+    }
+    if (branchFilter !== 'All') {
+      const bLabel = branchOptions.find((b) => b.value === branchFilter)?.label || branchFilter;
+      chips.push({ key: 'branch', label: bLabel, onRemove: () => setBranchFilter('All') });
+    }
+    return chips;
+  }, [settlementFilter, branchFilter, branchOptions]);
+
+  const filterSections: KineticFilterSection[] = useMemo(
+    () => [
+      {
+        id: 'branch',
+        label: isAr ? 'الفرع / الوكالة' : isEn ? 'Branch' : 'Agence / Branche',
+        value: branchFilter,
+        onChange: setBranchFilter,
+        kind: 'tiles',
+        columns: 2,
+        options: branchOptions,
+      },
+    ],
+    [branchFilter, branchOptions, isAr, isEn]
+  );
+
+  const columns: ColumnDefinition<RealEstateLease>[] = useMemo(
+    () => [
+      {
+        key: 'property',
+        header: isAr ? 'العقار' : 'Bien Immobilier',
+        width: '2.6*',
+        sortable: true,
+        renderCell: (l) => (
+          <div>
+            <span className="font-bold text-xs text-black dark:text-white block truncate">{l.propertyTitle}</span>
+            <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+              Bail du {l.startDate} au {l.endDate}
+            </span>
+          </div>
+        ),
+      },
+      {
+        key: 'tenant',
+        header: isAr ? 'المستأجر' : 'Locataire Titulaire',
+        width: '1.8*',
+        renderCell: (l) => (
+          <div className="text-xs">
+            <span className="font-semibold text-black dark:text-white block truncate">{l.tenantName}</span>
+            <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">{l.tenantPhone}</span>
+          </div>
+        ),
+      },
+      {
+        key: 'branch',
+        header: isAr ? 'الوكالة' : isEn ? 'Branch' : 'Agence',
+        width: '1.5*',
+        sortable: true,
+        renderCell: (l) => {
+          const b = resolveRecordBranch(l, branchesById, currentBranch, language);
+          return (
+            <div className="text-xs font-medium text-black/75 dark:text-white/75 truncate flex items-center gap-1.5">
+              <MapPin size={12} className="text-[#d4522f] shrink-0" />
+              <span className="truncate">{b.name}</span>
+            </div>
+          );
+        },
+      },
+      {
+        key: 'rent',
+        header: isAr ? 'مبلغ الإيجار' : 'Loyer Quittancé',
+        width: '1.5*',
+        sortable: true,
+        renderCell: (l) => <span className="font-mono text-xs font-bold text-black dark:text-white">{formatMoney(l.monthlyRentDzd, language)}</span>,
+      },
+      {
+        key: 'commission',
+        header: isAr ? 'عمولة الوكالة' : 'Com. (10%)',
+        width: '1.3*',
+        renderCell: (l) => (
+          <span className="font-mono text-xs text-blue-600 dark:text-blue-400 font-semibold">
+            {formatMoney(l.monthlyRentDzd * 0.1, language)}
+          </span>
+        ),
+      },
+      {
+        key: 'netOwner',
+        header: isAr ? 'صافي المالك' : 'Net Bailleur',
+        width: '1.5*',
+        sortable: true,
+        renderCell: (l) => (
+          <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+            {formatMoney(l.monthlyRentDzd * 0.9, language)}
+          </span>
+        ),
+      },
+      {
+        key: 'status',
+        header: isAr ? 'التسوية' : 'Reversement',
+        width: '1.3*',
+        renderCell: (l) => {
+          const isSettled = settledBailleurIds.includes(l.id);
+          return (
+            <span
+              className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold inline-flex items-center gap-1 ${
+                isSettled
+                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                  : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+              }`}
+            >
+              {isSettled ? <CheckCircle2 size={11} /> : <Clock size={11} />}
+              {isSettled ? (isAr ? 'تم التحويل' : 'Reversé') : isAr ? 'بانتظار التحويل' : 'À reverser'}
+            </span>
+          );
+        },
+      },
+    ],
+    [branchesById, currentBranch, language, settledBailleurIds, isAr, isEn]
+  );
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: leases.length > 0,
+  });
+
+  if (showSkeleton && (leases.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '2*', minWidth: '140px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn
+        actionBtnWidth={140}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
+
+  const activeBranchInfo = selectedLease ? resolveRecordBranch(selectedLease, branchesById, currentBranch, language) : null;
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200">
+      <ScreenHeaderBar
+        icon={<Receipt size={22} />}
+        title={isAr ? 'الوصولات' : isEn ? 'Receipts & Payouts' : 'Quittances & Bailleurs'}
+        subtitle={
+          isAr
+            ? `التحصيل الشهري والتسوية القانونية للرسوم (08-243)`
+            : `Gestion des encaissements, honoraires 10% & reversements bailleurs`
+        }
+        secondaryActions={
+          <AtriumButton
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (typeof window !== 'undefined') window.print();
+            }}
+            icon={<Printer size={14} />}
+          >
+            {isAr ? 'طباعة كشف الحسابات' : 'Bordereau Bailleurs'}
+          </AtriumButton>
+        }
+        primaryAction={{
+          label: isAr ? 'حاسبة الموثق (08-243)' : 'Simulateur Notaire (08-243)',
+          onClick: () => setIsNotaryModalOpen(true),
+          icon: <Calculator size={15} />,
+        }}
+      />
+
+      <ScreenKpiBanner
+        heading={isAr ? 'مؤشرات التحصيل وعمولات الوكالة' : 'Encaissement des Loyers & Reversements Bailleurs'}
+        language={language}
+        primaryCard={{
+          label: isAr ? 'إجمالي الإيجارات المحصلة' : 'Masse des Loyers Appelée',
+          badgeText: isAr ? `${leases.length} وصل سارٍ` : `${leases.length} baux quittancés`,
+          count: totalMonthlyRents,
+          formatValue: (v) => formatMoney(v, language),
+          tone: 'emerald',
+          isActive: settlementFilter === 'loyers',
+          onToggle: () => setSettlementFilter((prev) => (prev === 'loyers' ? 'all' : 'loyers')),
+        }}
+        secondaryCard={{
+          label: isAr ? 'عمولة التسيير (10%)' : 'Honoraires Gestion Agence',
+          badgeText: isAr ? 'إيراد الوكالة' : 'Revenu agence 10%',
+          count: totalCommissions,
+          formatValue: (v) => formatMoney(v, language),
+          tone: 'terracotta',
+          isActive: settlementFilter === 'commissions',
+          onToggle: () => setSettlementFilter((prev) => (prev === 'commissions' ? 'all' : 'commissions')),
+        }}
+        darkCard={{
+          label: isAr ? 'صافي مستحقات الملاك' : 'Reversements Net Bailleurs',
+          badgeCount: settledBailleurIds.length,
+          badgePrefix: '',
+          badgeSuffix: isAr ? ' مسوى' : ' réglés',
+          valueCount: netOwnerDisbursal,
+          valuePrefix: '',
+          formatValue: (v) => formatMoney(v, language),
+          caption: isAr ? 'صافي التحويل البنكي بعد خصم العمولة' : 'Net propriétaire après prélèvement 10%',
+        }}
+      />
+
+      <ScreenPod>
+        <ScreenCollectionToolbar
+          title={isAr ? 'سجل الوصولات ومستحقات الملاك' : 'Registre des Quittances & Règlements Bailleurs'}
+          liveRegionText={`${sortedFinanceLeases.length}`}
+          language={language}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder={isAr ? 'بحث بالعقار، المستأجر...' : 'Rechercher bien, locataire, téléphone...'}
+          statusOptions={[
+            { value: 'all', label: isAr ? 'الكل' : 'Toutes', count: leases.length },
+            { value: 'loyers', label: isAr ? 'إيجارات' : 'Loyers', count: leases.filter((l) => l.status === 'Active').length },
+            { value: 'reversements', label: isAr ? 'تحويلات' : 'Reversés', count: settledBailleurIds.length },
+            { value: 'impayes', label: isAr ? 'متأخرات' : 'Impayés', count: leases.filter((l) => l.status !== 'Active').length },
+          ]}
+          statusValue={settlementFilter}
+          onStatusChange={setSettlementFilter}
+          hasActiveAdvancedFilters={activeFiltersCount > 0}
+          activeFiltersCount={activeFiltersCount}
+          isFilterModalOpen={isFilterModalOpen}
+          filterButtonRef={filterButtonRef}
+          onToggleFilterModal={() => setIsFilterModalOpen((prev) => !prev)}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          onExport={handleExportCsv}
+          activeChips={activeChips}
+          onResetAllFilters={resetAllFilters}
+        />
+
+        <UniversalDataCollection
+          hideToolbar
+          data={sortedFinanceLeases}
+          keyExtractor={(l) => l.id}
+          defaultViewMode={viewMode}
+          columns={columns}
+          sortBy={sortBy}
+          sortDirection={sortDir}
+          onSortChange={(col, dir) => {
+            setSortBy(col);
+            setSortDir(dir);
+          }}
+          selectedIds={selectedIds}
+          onSelectionChange={setSelectedIds}
+          isPinned={(l) => pinnedIds.has(l.id)}
+          onTogglePin={handleTogglePin}
+          openItemId={selectedLease?.id}
+          onItemClick={(l, el) => {
+            setSelectedLease(l);
+            setDrawerOpenerEl(el || null);
+            setInspectorTab('quittance');
+          }}
+          onViewDetails={(l, el) => {
+            setSelectedLease(l);
+            setDrawerOpenerEl(el || null);
+          }}
+          customActions={(l) => {
+            const isSettled = settledBailleurIds.includes(l.id);
+            return [
+              ...(!isSettled
+                ? [
+                    {
+                      id: 'disburse',
+                      label: isAr ? 'تحويل للمالك' : 'Reverser Bailleur',
+                      icon: <Send size={14} />,
+                      variant: 'primary' as const,
+                      onClick: () => handleDisburseToOwner(l),
+                    },
+                  ]
+                : []),
+              {
+                id: 'print',
+                label: isAr ? 'طباعة Quittance' : 'Imprimer Quittance',
+                icon: <Printer size={14} />,
+                onClick: () => handlePrintQuittance(l.tenantName, l.propertyTitle),
+              },
+              {
+                id: 'share',
+                label: isAr ? 'مشاركة الوصل' : 'Partager Reçu',
+                icon: <Share2 size={14} />,
+                onClick: () =>
+                  showToast(
+                    isAr ? `تم نسخ رابط الوصل للمستأجر ${l.tenantName}` : `Quittance électronique transmise à ${l.tenantName}`,
+                    'success'
+                  ),
+              },
+            ];
+          }}
+          renderCard={(l) => {
+            const isSettled = settledBailleurIds.includes(l.id);
+            return (
+              <div className="p-1 flex flex-col justify-between h-full space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded">
+                    {formatMoney(l.monthlyRentDzd, language)}/mois
+                  </span>
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      isSettled
+                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                        : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                    }`}
+                  >
+                    {isSettled ? 'Reversé' : 'À reverser'}
+                  </span>
+                </div>
+                <div>
+                  <h4 className="font-bold text-xs text-black dark:text-white line-clamp-2">{l.propertyTitle}</h4>
+                  <p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">Locataire: {l.tenantName}</p>
+                </div>
+                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="text-[10px] text-black/55 dark:text-white/55 block">Com. Agence</span>
+                    <span className="font-mono text-blue-600 dark:text-blue-400 font-semibold">
+                      {formatMoney(l.monthlyRentDzd * 0.1, language)}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-black/55 dark:text-white/55 block">Net Bailleur</span>
+                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+                      {formatMoney(l.monthlyRentDzd * 0.9, language)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          }}
+          emptyTitle={isAr ? 'لا توجد تسويات مطابقة' : 'Aucun règlement trouvé'}
+          emptyDescription={isAr ? 'أعد ضبط المرشحات للعرض' : 'Réinitialisez les filtres pour afficher les quittances'}
+          onResetFilters={resetAllFilters}
+          hasActiveFilters={hasAnyFilters}
+        />
+      </ScreenPod>
+
+      <KineticFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        triggerRef={filterButtonRef}
+        language={language}
+        displayCount={sortedFinanceLeases.length}
+        entityPluralLabel={isAr ? 'وصل' : 'quittances'}
+        hasActiveFilters={activeFiltersCount > 0}
+        onResetFilters={() => setBranchFilter('All')}
+        sections={filterSections}
+      />
+
+      <KineticSlideOverInspector
+        isOpen={Boolean(selectedLease)}
+        item={selectedLease}
+        allItems={sortedFinanceLeases}
+        keyExtractor={(l) => l.id}
+        openerElement={drawerOpenerEl}
+        language={language}
+        title={selectedLease ? `Quittance · ${selectedLease.tenantName}` : ''}
+        subtitle={selectedLease?.propertyTitle}
+        avatarText="QT"
+        branchName={activeBranchInfo?.name}
+        statusLabel={
+          selectedLease && settledBailleurIds.includes(selectedLease.id)
+            ? isAr ? 'تم التحويل' : 'Reversé'
+            : isAr ? 'بانتظار التحويل' : 'À reverser'
+        }
+        tabs={[
+          { id: 'quittance', label: isAr ? 'الوصل والرسوم' : 'Quittance' },
+          { id: 'caution', label: isAr ? 'عقد الإيجار والضمان' : 'Bail & Caution' },
+          { id: 'reversement', label: isAr ? 'تحويل المالك' : 'Reversement' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={setInspectorTab}
+        onSelectItem={(l) => setSelectedLease(l)}
+        onClose={() => setSelectedLease(null)}
+        renderBody={(lease, tab) => (
+          <div className="space-y-4 text-xs">
+            <AtriumButton
+              type="button"
+              variant="primary"
+              size="sm"
+              className="w-full justify-center"
+              icon={<Printer size={14} />}
+              onClick={() => handlePrintQuittance(lease.tenantName, lease.propertyTitle)}
+            >
+              {isAr ? 'طباعة مخالصة الإيجار' : 'Imprimer Quittance de Loyer'}
+            </AtriumButton>
+
+            {tab === 'quittance' && (
+              <div className="space-y-4">
+                <div className="p-4 bg-[#1F1D1B] rounded-xl text-white space-y-2 shadow-sm">
+                  <div className="flex items-center justify-between text-white/80 text-[11px]">
+                    <span>Loyer Mensuel Net Quittancé</span>
+                    <span className="bg-[#3D2817] text-[#FB923C] text-[10px] font-bold px-2 py-0.5 rounded-full">Acquitté</span>
+                  </div>
+                  <div className="text-2xl font-black tracking-tight text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
+                    {formatMoney(lease.monthlyRentDzd, language)}
+                  </div>
+                  <p className="text-[10px] text-white/75">
+                    Quittance de loyer délivrée au locataire valant décharge intégrale pour la période en cours.
+                  </p>
+                </div>
+
+                <div className="p-3.5 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+                  <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
+                    Détails de la Quittance
+                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-black/55 dark:text-white/55">Bien loué:</span>
+                    <span className="font-bold text-black dark:text-white truncate max-w-[230px]">{lease.propertyTitle}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-black/55 dark:text-white/55">Locataire:</span>
+                    <span className="font-medium text-black dark:text-white">{lease.tenantName}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-blue-600 dark:text-blue-400">
+                    <span>Honoraires Agence (10%):</span>
+                    <span className="font-mono font-semibold">-{formatMoney(lease.monthlyRentDzd * 0.1, language)}</span>
+                  </div>
+                  <div className="flex items-center justify-between pt-1.5 border-t border-neutral-200 dark:border-neutral-800">
+                    <span className="font-bold text-black dark:text-white">Solde Net Bailleur:</span>
+                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                      {formatMoney(lease.monthlyRentDzd * 0.9, language)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {tab === 'caution' && (
+              <div className="p-3.5 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+                <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
+                  Dépôt de Garantie Séquestré
+                </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-black/55 dark:text-white/55">Montant Caution:</span>
+                  <span className="font-mono font-bold text-base text-black dark:text-white">
+                    {formatMoney(lease.securityDepositDzd, language)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
+                  <span>Périodicité paiement:</span>
+                  <span className="font-semibold text-black dark:text-white">{lease.paymentFrequency || lease.paymentCycle}</span>
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
+                  <span>Date d&apos;échéance bail:</span>
+                  <span className="font-mono">{lease.endDate}</span>
+                </div>
+              </div>
+            )}
+
+            {tab === 'reversement' && (
+              <div className="space-y-4">
+                <div className="p-3.5 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+                  <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
+                    Ordre de Virement Propriétaire
+                  </span>
+                  <div className="flex justify-between">
+                    <span className="text-black/55 dark:text-white/55">Bénéficiaire:</span>
+                    <span className="font-bold text-black dark:text-white">{lease.ownerName || 'Propriétaire du bien'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-black/55 dark:text-white/55">Montant Net:</span>
+                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                      {formatMoney(lease.monthlyRentDzd * 0.9, language)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
+                  <div>
+                    <span className="font-semibold block text-black dark:text-white">Validation Virement</span>
+                    <span className="text-[10px] text-black/55 dark:text-white/55">
+                      {settledBailleurIds.includes(lease.id) ? 'Virement déjà exécuté' : 'Transférer sur compte bancaire'}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleDisburseToOwner(lease)}
+                    disabled={settledBailleurIds.includes(lease.id)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#d4522f] hover:bg-[#b06a4e] text-white disabled:opacity-50 transition-colors cursor-pointer"
+                  >
+                    {settledBailleurIds.includes(lease.id) ? 'Reversé ✓' : 'Reverser Net'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      />
+
+      <NotarySimulatorModal isOpen={isNotaryModalOpen} onClose={() => setIsNotaryModalOpen(false)} />
+    </div>
+  );
 };

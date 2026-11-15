@@ -12,7 +12,7 @@ import {
   FileCheck,
   Check,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumStore, showToast } from '../../../services/store';
 import { RentableUnit, RentalBooking, BookingAddon, BookingStatus, DepositStatus } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
@@ -46,7 +46,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     createRentalBooking,
     updateRentalBooking,
     createRentalRenter,
-    showToast,
   } = useAtriumStore();
 
   const todayStr = initialDate || new Date().toISOString().split('T')[0];

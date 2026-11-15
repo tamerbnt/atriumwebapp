@@ -10,7 +10,7 @@ import {
   Calendar,
   Save,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumStore, showToast } from '../../../services/store';
 import { AttendanceStatus, EduSession } from '../../../types';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -35,7 +35,6 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
     eduEnrollments,
     eduAttendance,
     batchRecordAttendance,
-    showToast,
     setScreen,
   } = useAtriumStore();
 

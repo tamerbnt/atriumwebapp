@@ -35,7 +35,7 @@ export const ScreenHeaderBar: React.FC<ScreenHeaderBarProps> = React.memo(({
   actions,
   className = '',
 }) => {
-  const resolvedAction =
+  const resolvedAction: ScreenHeaderPrimaryAction | undefined =
     primaryAction ||
     (onAdd && addLabel
       ? {

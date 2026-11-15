@@ -13,7 +13,7 @@ import {
   FileText,
   PenTool,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumStore, showToast } from '../../../services/store';
 import { RepairOrder, VehicleAsset, WorkshopBay, DamageMarker } from './garageData';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -27,10 +27,11 @@ interface AutoOrderModalProps {
   onSave: (order: RepairOrder) => void;
 }
 
-
+const extractStr = (eOrVal: any): string =>
+  eOrVal?.target?.value !== undefined ? String(eOrVal.target.value) : String(eOrVal ?? '');
 
 export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
-	const { language, showToast } = useAtriumStore();
+	const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
 	const [activeTab, setActiveTab] = React.useState("intake");
 	const [selectedVehicleId, setSelectedVehicleId] = React.useState(vehicles[0]?.id || "");
 	const [currentMileage, setCurrentMileage] = React.useState("");
@@ -45,7 +46,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 		wheelLockKey: false
 	});
 	const [activeCarView, setActiveCarView] = React.useState("front");
-	const [damageMarkers, setDamageMarkers] = React.useState<any[]>([]);
+	const [damageMarkers, setDamageMarkers] = React.useState<DamageMarker[]>([]);
 	const [selectedDamageType, setSelectedDamageType] = React.useState("scratch");
 	const [selectedSeverity, setSelectedSeverity] = React.useState("minor");
 	const [markerNote, setMarkerNote] = React.useState("");
@@ -54,49 +55,65 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 	const [assignedBayId, setAssignedBayId] = React.useState(bays[0]?.id || "bay_01");
 	const [technician, setTechnician] = React.useState("Karim (Chef Atelier)");
 	const [isClientSigned, setIsClientSigned] = React.useState(false);
-	const activeVehicle = vehicles.find((v: any) => v.id === selectedVehicleId) || vehicles[0];
+	const activeVehicle = vehicles.find((v: VehicleAsset) => v.id === selectedVehicleId) || vehicles[0];
 	React.useEffect(() => {
 		if (activeVehicle) {
 			setCurrentMileage(String(activeVehicle.mileageKm || 5e4));
-			const freeBay = bays.find((b: any) => !b.isOccupied);
+			const freeBay = bays.find((b: WorkshopBay) => !b.isOccupied);
 			if (freeBay) setAssignedBayId(freeBay.id);
 		}
-	}, [selectedVehicleId]);
+	}, [selectedVehicleId, activeVehicle, bays]);
 	if (!isOpen) return null;
-	const handleCanvasClick = (e: any) => {
+	const handleCanvasClick = (e: React.MouseEvent<HTMLButtonElement>) => {
 		const rect = e.currentTarget.getBoundingClientRect();
 		const x = Math.round((e.clientX - rect.left) / rect.width * 100);
 		const y = Math.round((e.clientY - rect.top) / rect.height * 100);
-		const newMarker = {
+		const newMarker: DamageMarker = {
 			id: `dmg_${Date.now()}`,
-			view: activeCarView,
+			view: activeCarView as DamageMarker['view'],
 			xPercent: x,
 			yPercent: y,
-			damageType: selectedDamageType,
-			severity: selectedSeverity,
-			notes: markerNote.trim() || void 0
+			damageType: selectedDamageType as DamageMarker['damageType'],
+			severity: selectedSeverity as DamageMarker['severity'],
+			notes: markerNote.trim() || undefined
 		};
 		setDamageMarkers((prev) => [...prev, newMarker]);
 		setMarkerNote("");
-		showToast(language === "ar" ? "تم تحديد موضع الضرر بنجاح" : "Repère de dommage consigné", "info");
+		showToast({
+			type: "info",
+			title: language === "ar" ? "فحص الهيكل" : "Inspection",
+			message: language === "ar" ? "تم تحديد موضع الضرر بنجاح" : "Repère de dommage consigné",
+		});
 	};
-	const removeMarker = (id: any) => {
+	const removeMarker = (id: string) => {
 		setDamageMarkers((prev) => prev.filter((m) => m.id !== id));
 	};
-	const handleSubmit = (e: any) => {
+	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!activeVehicle) {
-			showToast(language === "ar" ? "يرجى اختيار مركبة" : "Veuillez sélectionner un véhicule", "error");
+			showToast({
+				type: "error",
+				title: language === "ar" ? "خطأ" : "Véhicule manquant",
+				message: language === "ar" ? "يرجى اختيار مركبة" : "Veuillez sélectionner un véhicule",
+			});
 			return;
 		}
 		const enteredKm = parseInt(currentMileage, 10);
 		if (!isOdometerReplaced && activeVehicle.lastServiceKm && enteredKm < activeVehicle.lastServiceKm) {
-			showToast(language === "ar" ? `العداد المدخل (${enteredKm} كم) أقل من المسجل سابقاً (${activeVehicle.lastServiceKm} كم)` : `Kilométrage saisi (${enteredKm} km) inférieur au dernier relevé (${activeVehicle.lastServiceKm} km)`, "error");
+			showToast({
+				type: "error",
+				title: language === "ar" ? "خطأ في العداد" : "Kilométrage incohérent",
+				message: language === "ar" ? `العداد المدخل (${enteredKm} كم) أقل من المسجل سابقاً (${activeVehicle.lastServiceKm} كم)` : `Kilométrage saisi (${enteredKm} km) inférieur au dernier relevé (${activeVehicle.lastServiceKm} km)`,
+			});
 			return;
 		}
-		const assignedBay = bays.find((b: any) => b.id === assignedBayId);
-		const newOrder = {
+		const assignedBay = bays.find((b: WorkshopBay) => b.id === assignedBayId);
+		const newOrder: RepairOrder = {
 			id: `ro_${Date.now()}`,
+			accountId: activeVehicle.accountId || 'acc_01',
+			businessId: currentBusiness?.id || activeVehicle.businessId || 'biz_garage',
+			branchId: currentBranch?.id || activeVehicle.branchId || 'branch_garage_main',
+			staffId: currentUser?.id || 'stf_01',
 			orderNumber: `OR-2026-${Math.floor(1e3 + Math.random() * 9e3)}`,
 			vehiclePlate: activeVehicle.plateNumber,
 			vehicleModel: `${activeVehicle.brand} ${activeVehicle.model}`,
@@ -105,7 +122,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 			clientType: activeVehicle.isFleet ? "corporate_fleet" : "individual",
 			fleetId: activeVehicle.fleetId,
 			fleetName: activeVehicle.fleetName,
-			intakeDate: (/* @__PURE__ */ new Date()).toISOString(),
+			intakeDate: new Date().toISOString(),
 			diagnosticNotes: diagnostic.trim() || "Diagnostic préliminaire & révision générale",
 			status: "Diagnostic",
 			estimatedCostDzd: parseFloat(estimatedCost) || 15e3,
@@ -114,7 +131,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 			technicianName: technician,
 			assignedBayId: assignedBay?.id,
 			bayName: assignedBay?.name || "Pont 1",
-			fuelLevel,
+			fuelLevel: fuelLevel as RepairOrder['fuelLevel'],
 			inOdometerKm: enteredKm || activeVehicle.mileageKm,
 			isVehicleDirty,
 			damageMarkers,
@@ -122,14 +139,18 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 			isPaid: false
 		};
 		onSave(newOrder);
-		showToast(language === "ar" ? `تم فتح أمر التصليح (${newOrder.orderNumber}) وفحص الاستلام` : `Ordre de réparation (${newOrder.orderNumber}) et fiche d'entrée créés`, "success");
+		showToast({
+			type: "success",
+			title: newOrder.orderNumber,
+			message: language === "ar" ? `تم فتح أمر التصليح (${newOrder.orderNumber}) وفحص الاستلام` : `Ordre de réparation (${newOrder.orderNumber}) et fiche d'entrée créés`,
+		});
 		onClose();
 	};
-	const vehicleOptions = vehicles.map((v: any) => ({
+	const vehicleOptions = vehicles.map((v: VehicleAsset) => ({
 		value: v.id,
 		label: `${v.plateNumber} — ${v.brand} ${v.model} (${v.ownerName}${v.fleetName ? ` · ${v.fleetName}` : ""})`
 	}));
-	const bayOptions = bays.map((b: any) => ({
+	const bayOptions = bays.map((b: WorkshopBay) => ({
 		value: b.id,
 		label: `${b.name} ${b.isOccupied ? "(Occupé)" : "(Libre)"}`
 	}));
@@ -144,7 +165,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 </h3>
 </div>
 </div>
-<button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
+<button type="button" onClick={onClose} aria-label={language === "ar" ? "إغلاق" : "Fermer"} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
 </div>
 <div className="flex items-center gap-1 px-6 pt-3 border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-x-auto">
 {[
@@ -177,7 +198,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 <div className="flex-1 overflow-y-auto p-6 space-y-6">
 {activeTab === "intake" && /* @__PURE__ */ <div className="space-y-5 animate-in fade-in">
 <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200/80 dark:border-neutral-700/80 space-y-4">
-<LabelSelect label={language === "ar" ? "المركبة والماتريكيل" : "Véhicule & Matricule"} value={selectedVehicleId} onChange={setSelectedVehicleId} options={vehicleOptions} />
+<LabelSelect label={language === "ar" ? "المركبة والماتريكيل" : "Véhicule & Matricule"} value={selectedVehicleId} onChange={(v) => setSelectedVehicleId(extractStr(v))} options={vehicleOptions} />
 {activeVehicle && /* @__PURE__ */ <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-white dark:bg-neutral-900 p-3 rounded-xl border border-neutral-200/60 dark:border-neutral-800">
 <div>
 <span className="text-black/55 dark:text-white/55 block">{language === "ar" ? "المالك" : "Propriétaire"}</span>
@@ -303,8 +324,8 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 </select>
 </div>
 </div>
-<div className="relative w-full h-64 sm:h-72 bg-neutral-900 rounded-3xl border border-neutral-800 flex items-center justify-center overflow-hidden cursor-crosshair group">
-<div onClick={handleCanvasClick} className="w-full h-full relative flex items-center justify-center p-4">
+<div className="relative w-full h-64 sm:h-72 bg-neutral-900 rounded-3xl border border-neutral-800 flex items-center justify-center overflow-hidden group">
+<button type="button" onClick={handleCanvasClick} aria-label={language === "ar" ? "انقر على المخطط لتسجيل الضرر" : "Cliquer sur le schéma pour consigner un dommage"} className="w-full h-full relative flex items-center justify-center p-4 cursor-crosshair bg-transparent border-0">
 <svg viewBox="0 0 400 200" className="w-full max-w-md h-full opacity-70 group-hover:opacity-90 transition-opacity">
 {activeCarView === "front" && /* @__PURE__ */ <g stroke="#d4522f" strokeWidth="2.5" fill="none">
 <rect x="70" y="60" width="260" height="90" rx="30" />
@@ -331,14 +352,14 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 <rect x="210" y="100" width="15" height="5" rx="2" />
 </g>}
 </svg>
-{damageMarkers.filter((m) => m.view === activeCarView).map((marker, idx) => /* @__PURE__ */ <div key={marker.id} style={{
+{damageMarkers.filter((m) => m.view === activeCarView).map((marker, idx) => /* @__PURE__ */ <span key={marker.id} style={{
 													left: `${marker.xPercent}%`,
 													top: `${marker.yPercent}%`
-												}} className="absolute -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#d4522f] text-white text-xs font-bold font-mono flex items-center justify-center border-2 border-white shadow-lg animate-in zoom-in" title={`${marker.damageType} (${marker.severity})`}>{idx + 1}</div>)}
-<div className="absolute bottom-3 left-4 text-[11px] text-white/75 bg-black/60 px-2.5 py-1 rounded-full backdrop-blur-xs">
+												}} className="absolute -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#d4522f] text-white text-xs font-bold font-mono flex items-center justify-center border-2 border-white shadow-lg animate-in zoom-in pointer-events-none" title={`${marker.damageType} (${marker.severity})`}>{idx + 1}</span>)}
+<span className="absolute bottom-3 left-4 text-[11px] text-white/75 bg-black/60 px-2.5 py-1 rounded-full backdrop-blur-xs pointer-events-none">
 {language === "ar" ? "انقر على الصورة لإضافة نقطة خدش/صدمة" : "Cliquez sur le schéma pour consigner un dommage"}
-</div>
-</div>
+</span>
+</button>
 </div>
 <div className="space-y-2">
 <span className="text-xs font-bold text-black/70 dark:text-white/75">
@@ -373,8 +394,8 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 <LabelInput label={language === "ar" ? "وصف العطل والشكوى الأولية" : "Symptômes & motif de dépose (Panne constatée)"} value={diagnostic} onChange={(e) => setDiagnostic(e.target.value)} placeholder="Ex: Bruit suspect au freinage, voyant moteur orange, révision vidange..." required />
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
 <LabelInput label={language === "ar" ? "التقدير المالي الأولي (د.ج)" : "Devis prévisionnel (DA HT)"} type="number" value={estimatedCost} onChange={(e) => setEstimatedCost(e.target.value)} />
-<LabelSelect label={language === "ar" ? "جسر الرفع / المنصة" : "Pont élévateur assigné"} value={assignedBayId} onChange={setAssignedBayId} options={bayOptions} />
-<LabelSelect label={language === "ar" ? "الميكانيكي المكلف" : "Technicien responsable"} value={technician} onChange={setTechnician} options={[
+<LabelSelect label={language === "ar" ? "جسر الرفع / المنصة" : "Pont élévateur assigné"} value={assignedBayId} onChange={(v) => setAssignedBayId(extractStr(v))} options={bayOptions} />
+<LabelSelect label={language === "ar" ? "الميكانيكي المكلف" : "Technicien responsable"} value={technician} onChange={(v) => setTechnician(extractStr(v))} options={[
 												{
 													value: "Karim (Chef Atelier)",
 													label: "Karim (Chef Atelier)"
@@ -433,20 +454,20 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 {language === "ar" ? "تم توثيق التوقيع" : "Signé & certifié"}
 </span>}
 </div>
-<div onClick={() => setIsClientSigned(true)} className={`w-full h-28 rounded-2xl border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors ${isClientSigned ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-400" : "bg-neutral-50 dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700 hover:border-[#d4522f]"}`}>
-{isClientSigned ? /* @__PURE__ */ <div className="text-center space-y-1">
-<span className="font-serif italic text-xl text-black dark:text-white font-bold">{activeVehicle.ownerName}</span>
-<p className="text-[10px] text-black/55 dark:text-white/55 font-mono">
-{(/* @__PURE__ */ new Date()).toLocaleString()}
+<button type="button" onClick={() => setIsClientSigned(true)} className={`w-full h-28 rounded-2xl border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors ${isClientSigned ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-400" : "bg-neutral-50 dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700 hover:border-[#d4522f]"}`}>
+{isClientSigned ? /* @__PURE__ */ <span className="text-center space-y-1 block">
+<span className="font-serif italic text-xl text-black dark:text-white font-bold block">{activeVehicle?.ownerName || 'Client'}</span>
+<span className="text-[10px] text-black/55 dark:text-white/55 font-mono block">
+{new Date().toLocaleString()}
 {" · Signature Numérique Reçue"}
-</p>
-</div> : /* @__PURE__ */ <div className="text-center text-xs text-black/55 dark:text-white/55 space-y-1">
+</span>
+</span> : /* @__PURE__ */ <span className="text-center text-xs text-black/55 dark:text-white/55 space-y-1 block">
 <PenTool size={20} className="mx-auto text-black/55 dark:text-white/55" />
-<span>
+<span className="block">
 {language === "ar" ? "انقر هنا لتسجيل توقيع الزبون الرقمي" : "Cliquez ici pour apposer la signature du client sur verre"}
 </span>
-</div>}
-</div>
+</span>}
+</button>
 </div>
 </div>}
 </div>

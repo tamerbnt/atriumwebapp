@@ -1,609 +1,1060 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   Users,
-  Search,
   Plus,
   Mail,
   Phone,
-  Building2,
   Calendar,
-  DollarSign,
-  FileText,
-  Trash2,
   Edit2,
   Check,
   X,
-  CreditCard,
-  Pin,
-  Eye,
-  Home,
-  ChevronDown,
-  Download,
-  Sparkles,
-  Maximize2,
-  LayoutGrid,
-  List,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumStore, showToast } from '../../../services/store';
 import { RentalRenter } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
-import { Seek } from '../../ui/Seek';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import {
+  ScreenHeaderBar,
+  ScreenKpiBanner,
+  ScreenPod,
+  ScreenCollectionToolbar,
+  ActiveFilterChip,
+  KineticFilterModal,
+  KineticFilterSection,
+  KineticSlideOverInspector,
+  buildBranchesByIdMap,
+  resolveRecordBranch,
+  downloadCsvSafe,
+} from '../../ui/kinetic';
 
+const extractStr = (val: any): string =>
+  typeof val === 'string' ? val : val?.target?.value ?? String(val ?? '');
 
+export const VenueRentersView: React.FC = () => {
+  const { t, language } = useTranslation();
+  const isAr = language === 'ar';
+  const isFr = language === 'fr';
 
-export const VenueRentersView: React.FC<any> = () => {
-	const { t, language } = useTranslation();
-	const { rentalRenters, rentalBookings, createRentalRenter, updateRentalRenter, deleteRentalRenter, currentBranch, businesses, branches, currentBusinessId, switchBusiness, switchBranch, resetVenueMockData, showToast, isSyncing, networkMode, isSyncTimeout, retryCloudSync } = useAtriumStore();
-	const [searchQuery, setSearchQuery] = React.useState("");
-	const [filterType, setFilterType] = React.useState("All");
-	const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
-	const [renterToEdit, setRenterToEdit] = React.useState<any>(null);
-	const [selectedIds, setSelectedIds] = React.useState(/* @__PURE__ */ new Set());
-	const [pinnedRenterIds, setPinnedRenterIds] = React.useState(/* @__PURE__ */ new Set());
-	const [renterSortBy, setRenterSortBy] = React.useState("renter");
-	const [renterSortDir, setRenterSortDir] = React.useState("asc");
-	const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = React.useState(false);
-	const [viewMode, setViewMode] = React.useState("list");
-	const [selectedRenter, setSelectedRenter] = React.useState<any>(null);
-	const [drawerTab, setDrawerTab] = React.useState("dossier");
-	const [renterNotes, setRenterNotes] = React.useState("");
-	const [isSavingNotes, setIsSavingNotes] = React.useState(false);
-	const [notesSavedNotice, setNotesSavedNotice] = React.useState(false);
-	const activeRenter = React.useMemo(() => {
-		if (!selectedRenter) return null;
-		return rentalRenters.find((r) => r.id === selectedRenter.id) || selectedRenter;
-	}, [selectedRenter, rentalRenters]);
-	React.useEffect(() => {
-		if (activeRenter) setRenterNotes(activeRenter.notes || "");
-	}, [activeRenter?.id]);
-	const handleNotesChange = (val: any) => {
-		setRenterNotes(val);
-		if (!activeRenter) return;
-		setIsSavingNotes(true);
-		updateRentalRenter(activeRenter.id, { notes: val });
-		setTimeout(() => {
-			setIsSavingNotes(false);
-			setNotesSavedNotice(true);
-			setTimeout(() => setNotesSavedNotice(false), 2e3);
-		}, 400);
-	};
-	const [isBookingModalOpen, setIsBookingModalOpen] = React.useState(false);
-	const [bookingRenterId, setBookingRenterId] = React.useState<any>(void 0);
-	const [fullName, setFullName] = React.useState("");
-	const [companyName, setCompanyName] = React.useState("");
-	const [email, setEmail] = React.useState("");
-	const [phone, setPhone] = React.useState("");
-	const [idDocNumber, setIdDocNumber] = React.useState("");
-	const [notes, setNotes] = React.useState("");
-	const filteredRenters = React.useMemo(() => {
-		return rentalRenters.filter((r) => {
-			if (filterType === "Corporate" && !r.companyName) return false;
-			if (filterType === "Individual" && r.companyName) return false;
-			if (searchQuery.trim()) {
-				const q = searchQuery.toLowerCase();
-				return r.fullName.toLowerCase().includes(q) || r.companyName && r.companyName.toLowerCase().includes(q) || r.phone.includes(q) || r.email.toLowerCase().includes(q) || r.idDocNumber && r.idDocNumber.toLowerCase().includes(q);
-			}
-			return true;
-		});
-	}, [
-		rentalRenters,
-		filterType,
-		searchQuery
-	]);
-	const totalRentersCount = rentalRenters.length;
-	const corporateCount = rentalRenters.filter((r) => Boolean(r.companyName)).length;
-	const individualCount = totalRentersCount - corporateCount;
-	const totalRevenue = rentalRenters.reduce((sum, r) => sum + r.totalSpent, 0);
-	const handleOpenAdd = () => {
-		setRenterToEdit(null);
-		setFullName("");
-		setCompanyName("");
-		setEmail("");
-		setPhone("+213 ");
-		setIdDocNumber("");
-		setNotes("");
-		setIsAddModalOpen(true);
-	};
-	const handleOpenEdit = (renter: any) => {
-		setRenterToEdit(renter);
-		setFullName(renter.fullName);
-		setCompanyName(renter.companyName || "");
-		setEmail(renter.email);
-		setPhone(renter.phone);
-		setIdDocNumber(renter.idDocNumber || "");
-		setNotes(renter.notes || "");
-		setIsAddModalOpen(true);
-	};
-	const handleSaveRenter = (e: any) => {
-		e.preventDefault();
-		if (!fullName.trim()) {
-			showToast({
-				type: "warning",
-				title: "Missing Full Name",
-				message: "Please enter the renter full name or organizer contact."
-			});
-			return;
-		}
-		if (!phone.trim()) {
-			showToast({
-				type: "warning",
-				title: "Missing Telephone",
-				message: "Please enter a telephone number for booking confirmations."
-			});
-			return;
-		}
-		if (renterToEdit) updateRentalRenter(renterToEdit.id, {
-			fullName: fullName.trim(),
-			companyName: companyName.trim() || void 0,
-			email: email.trim(),
-			phone: phone.trim(),
-			idDocNumber: idDocNumber.trim() || void 0,
-			notes: notes.trim() || void 0
-		});
-		else createRentalRenter({
-			fullName: fullName.trim(),
-			companyName: companyName.trim() || void 0,
-			email: email.trim() || `${fullName.toLowerCase().replace(/\s+/g, ".")}@client.local`,
-			phone: phone.trim(),
-			idDocNumber: idDocNumber.trim() || void 0,
-			currency: "DZD",
-			notes: notes.trim() || void 0
-		});
-		setIsAddModalOpen(false);
-	};
-	const sortedRenters = React.useMemo(() => {
-		return [...filteredRenters].sort((a, b) => {
-			const aPinned = pinnedRenterIds.has(a.id);
-			const bPinned = pinnedRenterIds.has(b.id);
-			if (aPinned && !bPinned) return -1;
-			if (!aPinned && bPinned) return 1;
-			if (renterSortBy === "renter") {
-				const cmp = a.fullName.localeCompare(b.fullName);
-				return renterSortDir === "asc" ? cmp : -cmp;
-			}
-			if (renterSortBy === "bookings") return renterSortDir === "asc" ? a.totalBookings - b.totalBookings : b.totalBookings - a.totalBookings;
-			if (renterSortBy === "spent") return renterSortDir === "asc" ? a.totalSpent - b.totalSpent : b.totalSpent - a.totalSpent;
-			return 0;
-		});
-	}, [
-		filteredRenters,
-		pinnedRenterIds,
-		renterSortBy,
-		renterSortDir
-	]);
-	const togglePinRenter = (id: any) => {
-		setPinnedRenterIds((prev) => {
-			const next = new Set(prev);
-			if (next.has(id)) next.delete(id);
-			else next.add(id);
-			return next;
-		});
-	};
-	const renterColumns = React.useMemo(() => [
-		{
-			key: "renter",
-			header: language === "ar" ? "المستأجر / المنظم" : language === "fr" ? "Locataire / Organisateur" : "Renter / Organizer",
-			width: "2.5*",
-			minWidth: "220px",
-			sortable: true,
-			renderCell: (renter: any) => /* @__PURE__ */ <div className="flex items-center gap-3">
-<div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700">{renter.fullName.charAt(0).toUpperCase()}</div>
-<div className="min-w-0">
-<div className="font-bold text-black dark:text-white truncate">{renter.fullName}</div>
-<div className="text-[11px] text-black/55 dark:text-white/55 truncate">
-{renter.companyName || (renter.idDocNumber ? `ID: ${renter.idDocNumber}` : language === "ar" ? "مستأجر خاص" : language === "fr" ? "Locataire Particulier" : "Private Renter")}
-</div>
-</div>
-</div>
-		},
-		{
-			key: "contact",
-			header: language === "ar" ? "بيانات الاتصال" : language === "fr" ? "Coordonnées" : "Contact",
-			width: "2*",
-			minWidth: "180px",
-			renderCell: (renter: any) => /* @__PURE__ */ <div className="space-y-0.5 text-xs">
-<div className="flex items-center gap-1.5 text-black/70 dark:text-white/75 font-mono text-[11px]">
-<Phone size={12} className="text-black/55 dark:text-white/55 shrink-0" />
-<span>{renter.phone}</span>
-</div>
-<div className="flex items-center gap-1.5 text-black/55 dark:text-white/75 truncate text-[11px]">
-<Mail size={12} className="text-black/55 dark:text-white/55 shrink-0" />
-<span className="truncate">{renter.email}</span>
-</div>
-</div>
-		},
-		{
-			key: "bookings",
-			header: language === "ar" ? "الحجوزات" : language === "fr" ? "Réservations" : "Bookings",
-			width: "1.2*",
-			minWidth: "110px",
-			sortable: true,
-			renderCell: (renter: any) => /* @__PURE__ */ <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 tabular-nums">
-{renter.totalBookings}
-{" "}
-{language === "ar" ? "حجز" : language === "fr" ? "réservations" : "bookings"}
-</span>
-		},
-		{
-			key: "spent",
-			header: t("venue_renters_kpi_revenue"),
-			width: "1.5*",
-			minWidth: "130px",
-			sortable: true,
-			renderCell: (renter: any) => /* @__PURE__ */ <span className="font-bold text-black dark:text-white tabular-nums font-mono">{formatCurrencyAmount(renter.totalSpent, renter.currency)}</span>
-		}
-	], [language, t]);
-	const handleExportCSV = () => {
-		const headers = [
-			language === "ar" ? "الاسم الكامل" : language === "fr" ? "Nom complet" : "Full Name",
-			language === "ar" ? "الشركة / المؤسسة" : language === "fr" ? "Entreprise" : "Company",
-			language === "ar" ? "الهاتف" : language === "fr" ? "Téléphone" : "Phone",
-			language === "ar" ? "البريد الإلكتروني" : language === "fr" ? "E-mail" : "Email",
-			language === "ar" ? "رقم وثيقة الهوية" : language === "fr" ? "N° Pièce Identité" : "ID Doc Number",
-			language === "ar" ? "عدد الحجوزات" : language === "fr" ? "Total Réservations" : "Total Bookings",
-			language === "ar" ? "إجمالي المداخيل" : language === "fr" ? "Total Dépensé" : "Total Spent",
-			language === "ar" ? "العملة" : language === "fr" ? "Devise" : "Currency",
-			language === "ar" ? "ملاحظات" : language === "fr" ? "Remarques" : "Notes"
-		];
-		const rows = filteredRenters.map((r) => [
-			`"${r.fullName}"`,
-			`"${r.companyName || ""}"`,
-			`"${r.phone}"`,
-			`"${r.email}"`,
-			`"${r.idDocNumber || ""}"`,
-			`"${r.totalBookings}"`,
-			`"${r.totalSpent}"`,
-			`"${r.currency || "DZD"}"`,
-			`"${r.notes || ""}"`
-		]);
-		const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-		const encodedUri = encodeURI(csvContent);
-		const link = document.createElement("a");
-		link.setAttribute("href", encodedUri);
-		link.setAttribute("download", `atrium-venue-renters-${(/* @__PURE__ */ new Date()).toISOString().split("T")[0]}.csv`);
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
-	};
-	const toggleFullscreen = () => {
-		if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
-		else document.exitFullscreen().catch(() => {});
-	};
-	const handleBatchDelete = () => {
-		if (selectedIds.size === 0) return;
-		if (window.confirm(`Delete ${selectedIds.size} selected renters?`)) {
-			selectedIds.forEach((id) => deleteRentalRenter(id));
-			setSelectedIds(/* @__PURE__ */ new Set());
-		}
-	};
-	const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
-		isLoading: isSyncing || networkMode === "force_skeleton",
-		hasCachedData: rentalRenters.length > 0
-	});
-	if (showSkeleton && (rentalRenters.length === 0 || networkMode === "force_skeleton")) return /* @__PURE__ */ <SkeletonCollectionScreen kpiCount={3} columns={[
-			{
-				width: "2.5*",
-				minWidth: "200px"
-			},
-			{
-				width: "2*",
-				minWidth: "160px"
-			},
-			{
-				width: "1.5*",
-				minWidth: "130px"
-			},
-			{
-				width: "1.5*",
-				minWidth: "130px"
-			},
-			{
-				width: "100px",
-				minWidth: "80px"
-			}
-		]} hasIcon hasFacility hasActionBtn actionBtnWidth={140} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
-	return /* @__PURE__ */ <div className="space-y-6">
-<div className="space-y-6">
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-<div className="flex items-center gap-3.5">
-<div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black dark:text-white"><Users size={22} /></div>
-<div>
-<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{t("venue_renters_page_title")}</h1>
-</div>
-</div>
-<div className="flex items-center gap-3 relative flex-wrap">
-<AtriumButton type="button" variant="primary" onClick={handleOpenAdd} icon={<Plus size={15} strokeWidth={2.5} />}><span>{t("venue_renters_btn_add")}</span></AtriumButton>
-</div>
-</div>
-<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
-<div>
-<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-{language === "ar" ? "دليل المستأجرين & مؤشرات النشاط" : language === "fr" ? "Dossiers Locataires & Indicateurs" : "Renters Directory & Portfolio Health"}
-</h2>
-</div>
-<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-<div>
-<span className="text-xs font-semibold text-black/70 dark:text-white/75">
-{language === "ar" ? "إجمالي المستأجرين" : language === "fr" ? "Base Totale Locataires" : "Total Renters"}
-</span>
-<div className="mt-1">
-<span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-{"↗ 100% "}
-{language === "ar" ? "نشط" : language === "fr" ? "Actifs" : "Active"}
-</span>
-</div>
-</div>
-<div className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{totalRentersCount}</div>
-</div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-<div>
-<span className="text-xs font-semibold text-black/70 dark:text-white/75">{t("venue_renters_kpi_corporate")}</span>
-<div className="mt-1">
-<span className="text-[10px] font-bold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded-full">
-{corporateCount}
-{" "}
-{language === "ar" ? "شركات وهيئات" : language === "fr" ? "entreprises" : "corporate"}
-</span>
-</div>
-</div>
-<div className="text-3xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-{totalRentersCount > 0 ? Math.round(corporateCount / totalRentersCount * 100) : 0}
-%
-</div>
-</div>
-<div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-<div>
-<span className="text-xs font-medium text-white/80">{t("venue_renters_kpi_revenue")}</span>
-<div className="text-[11px] text-[#FB923C] font-semibold mt-0.5">
-<span className="bg-[#3D2817] px-2 py-0.5 rounded-full inline-block">
-{language === "ar" ? "حجم التعاقدات التراكمي" : language === "fr" ? "Masse locative cumulée" : "Cumulative Bookings Turnover"}
-</span>
-</div>
-</div>
-<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatCurrencyAmount(totalRevenue, "DZD")}</div>
-</div>
-</div>
-</div>
-<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
-<div className="flex flex-wrap items-center justify-between gap-3">
-<div className="flex items-center gap-2">
-<Users size={16} className="text-black/55 dark:text-white/55" />
-<span className="text-sm font-bold text-black dark:text-white">
-{language === "ar" ? "دليل المستأجرين" : language === "fr" ? "Dossiers Locataires" : "Venue Renters"}
-</span>
-</div>
-<div className="flex flex-wrap items-center gap-2.5 ml-auto">
-<Seek value={searchQuery} onChange={setSearchQuery} placeholder={t("venue_renters_search_ph")} shutSize={36} openWidth={220} />
-<div className="flex items-center bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700 p-0.5 rounded-xl shadow-2xs">
-<button type="button" onClick={() => setFilterType("All")} title={language === "ar" ? `جميع المستأجرين (${totalRentersCount})` : language === "fr" ? `Tous les locataires (${totalRentersCount})` : `All renters (${totalRentersCount})`} className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${filterType === "All" ? "bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All"}</button>
-<button type="button" onClick={() => setFilterType("Corporate")} title={language === "ar" ? `الشركات والهيئات (${corporateCount})` : language === "fr" ? `Entreprises & Organismes (${corporateCount})` : `Corporate accounts (${corporateCount})`} className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${filterType === "Corporate" ? "bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "شركات" : language === "fr" ? "Entreprises" : "Corporate"}</button>
-<button type="button" onClick={() => setFilterType("Individual")} title={language === "ar" ? `الأفراد (${individualCount})` : language === "fr" ? `Particuliers (${individualCount})` : `Private individuals (${individualCount})`} className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${filterType === "Individual" ? "bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>{language === "ar" ? "أفراد" : language === "fr" ? "Particuliers" : "Private"}</button>
-</div>
-<button type="button" onClick={handleExportCSV} className="h-9 px-3 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs">
-<Download size={13} />
-<span>{language === "ar" ? "تصدير" : language === "fr" ? "Exporter" : "Export Data"}</span>
-</button>
-<button type="button" onClick={toggleFullscreen} className="h-9 w-9 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-center transition-colors cursor-pointer shadow-2xs" title="Fullscreen"><Maximize2 size={14} /></button>
-</div>
-</div>
-{selectedIds.size > 0 && /* @__PURE__ */ <div className="flex items-center justify-between p-3 px-4 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
-<div className="flex items-center gap-3">
-<span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
-<span className="text-xs font-bold text-black dark:text-white">
-{selectedIds.size}
-{" "}
-{language === "ar" ? "مستأجرين محددين" : language === "fr" ? "locataires sélectionnés" : "renters selected"}
-</span>
-</div>
-<div className="flex items-center gap-2">
-<button type="button" onClick={() => setSelectedIds(/* @__PURE__ */ new Set())} className="px-3 py-1 text-xs text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer">
-{language === "ar" ? "إلغاء التحديد" : language === "fr" ? "Désélectionner" : "Deselect"}
-</button>
-<button type="button" onClick={handleBatchDelete} className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs">
-<Trash2 size={13} />
-<span>
-{language === "ar" ? "حذف المحدد" : language === "fr" ? "Supprimer" : "Delete Selected"}
-</span>
-</button>
-</div>
-</div>}
-<div className="flex items-start gap-4">
-<div className="flex-1 min-w-0">
-<UniversalDataCollection items={sortedRenters} keyExtractor={(r) => r.id} defaultViewMode="list" columns={renterColumns} sortBy={renterSortBy} sortDirection={renterSortDir} onSortChange={(key) => {
-											if (renterSortBy === key) setRenterSortDir((prev) => prev === "asc" ? "desc" : "asc");
-											else {
-												setRenterSortBy(key);
-												setRenterSortDir("asc");
-											}
-										}} selectedIds={selectedIds} onSelectionChange={setSelectedIds} isPinned={(r) => pinnedRenterIds.has(r.id)} onTogglePin={(r) => togglePinRenter(r.id)} onItemClick={(r) => setSelectedRenter(r)} onViewDetails={(r) => setSelectedRenter(r)} onEdit={handleOpenEdit} onDelete={(r) => {
-											if (window.confirm(`Delete renter ${r.fullName}?`)) {
-												deleteRentalRenter(r.id);
-												if (selectedRenter?.id === r.id) setSelectedRenter(null);
-											}
-										}} customActions={(r) => [{
-											id: "book",
-											label: language === "ar" ? "حجز قاعة" : language === "fr" ? "Réserver" : "Book",
-											icon: /* @__PURE__ */ <Calendar size={13} />,
-											variant: "primary",
-											onClick: () => {
-												setBookingRenterId(r.id);
-												setIsBookingModalOpen(true);
-											}
-										}]} renderCard={(renter) => /* @__PURE__ */ <div className="flex flex-col items-center justify-center w-full">
-<div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">{renter.fullName.charAt(0).toUpperCase()}</div>
-<h3 className="text-base font-bold text-black dark:text-white truncate max-w-[210px] mb-0.5 tracking-tight">{renter.fullName}</h3>
-<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 mb-3 truncate max-w-[200px]">
-{renter.companyName || (language === "ar" ? "مستأجر خاص" : language === "fr" ? "Locataire Particulier" : "Private Renter")}
-</span>
-<div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1 text-center">
-<div className="font-mono text-black/70 dark:text-white/75 text-[11px]">{renter.phone}</div>
-<div className="truncate text-black/55 dark:text-white/55 text-[11px]">{renter.email}</div>
-<div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
-<span className="text-[11px] text-black/55 dark:text-white/55 uppercase font-medium">
-{renter.totalBookings}
-{" "}
-{language === "ar" ? "حجز" : "bookings"}
-</span>
-<span className="font-bold text-[#d4522f] tabular-nums font-mono">{formatCurrencyAmount(renter.totalSpent, renter.currency)}</span>
-</div>
-</div>
-</div>} />
-</div>
-{activeRenter && /* @__PURE__ */ <div className="w-[390px] shrink-0 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5 space-y-4 shadow-lg animate-in slide-in-from-right-4 duration-200">
-<div className="flex items-start justify-between">
-<div className="flex items-center gap-3 min-w-0">
-<div className="w-12 h-12 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-lg font-black shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">{activeRenter.fullName.charAt(0).toUpperCase()}</div>
-<div className="min-w-0">
-<h3 className="font-bold text-black dark:text-white truncate text-base">{activeRenter.fullName}</h3>
-<p className="text-xs text-black/55 dark:text-white/75 truncate">
-{activeRenter.companyName || (language === "ar" ? "مستأجر خاص" : language === "fr" ? "Particulier" : "Private Renter")}
-</p>
-</div>
-</div>
-<button type="button" onClick={() => setSelectedRenter(null)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={16} /></button>
-</div>
-<div className="flex items-center gap-2 pt-1 border-t border-neutral-100 dark:border-neutral-800">
-<button type="button" onClick={() => {
-													setBookingRenterId(activeRenter.id);
-													setIsBookingModalOpen(true);
-												}} className="flex-1 py-1.5 px-3 rounded-xl bg-[#d4522f] hover:bg-[#B3684A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs">
-<Calendar size={13} />
-<span>{language === "ar" ? "حجز قاعة" : language === "fr" ? "Réserver" : "Book"}</span>
-</button>
-<button type="button" onClick={() => handleOpenEdit(activeRenter)} className="py-1.5 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold flex items-center gap-1 transition-colors">
-<Edit2 size={13} />
-<span>{language === "ar" ? "تعديل" : language === "fr" ? "Modifier" : "Edit"}</span>
-</button>
-</div>
-<div className="flex items-center bg-neutral-100 dark:bg-neutral-800/80 p-0.5 rounded-xl text-xs font-semibold">
-<button type="button" onClick={() => setDrawerTab("dossier")} className={`flex-1 py-1 text-center rounded-lg transition-all ${drawerTab === "dossier" ? "bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>Dossier</button>
-<button type="button" onClick={() => setDrawerTab("bookings")} className={`flex-1 py-1 text-center rounded-lg transition-all ${drawerTab === "bookings" ? "bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>Réservations</button>
-<button type="button" onClick={() => setDrawerTab("finances")} className={`flex-1 py-1 text-center rounded-lg transition-all ${drawerTab === "finances" ? "bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>Finances</button>
-<button type="button" onClick={() => setDrawerTab("notes")} className={`flex-1 py-1 text-center rounded-lg transition-all ${drawerTab === "notes" ? "bg-white dark:bg-neutral-700 text-[#d4522f] font-bold shadow-2xs" : "text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>Notes</button>
-</div>
-{drawerTab === "dossier" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
-<div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl space-y-2 border border-neutral-100 dark:border-neutral-800">
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55 font-medium">Téléphone :</span>
-<a href={`tel:${activeRenter.phone}`} className="font-mono font-semibold text-black dark:text-white hover:underline">{activeRenter.phone}</a>
-</div>
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55 font-medium">E-mail :</span>
-<a href={`mailto:${activeRenter.email}`} className="text-black dark:text-white truncate max-w-[200px] hover:underline">{activeRenter.email}</a>
-</div>
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55 font-medium">Organisme / Entité :</span>
-<span className="font-semibold text-black dark:text-white">{activeRenter.companyName || "Particulier"}</span>
-</div>
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55 font-medium">N° Pièce / NIF :</span>
-<span className="font-mono text-black/70 dark:text-white/75">{activeRenter.idDocNumber || "Non renseigné"}</span>
-</div>
-</div>
-</div>}
-{drawerTab === "bookings" && /* @__PURE__ */ <div className="space-y-2.5 text-xs animate-in fade-in duration-150">
-<div className="flex items-center justify-between">
-<span className="text-black/55 dark:text-white/55 font-medium">Historique & Prévues</span>
-<span className="font-bold text-[#d4522f]">
-{rentalBookings.filter((b) => b.renterId === activeRenter.id).length}
-{" réservations"}
-</span>
-</div>
-<div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
-{rentalBookings.filter((b) => b.renterId === activeRenter.id).length === 0 ? /* @__PURE__ */ <div className="p-4 text-center text-black/55 dark:text-white/55 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl">Aucune réservation active pour le moment.</div> : rentalBookings.filter((b) => b.renterId === activeRenter.id).map((b) => /* @__PURE__ */ <div key={b.id} className="p-2.5 bg-neutral-50 dark:bg-neutral-800/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-1">
-<div className="flex items-center justify-between font-semibold">
-<span className="text-black dark:text-white truncate max-w-[170px]">{b.purpose || "Séance de réservation"}</span>
-<span className="font-mono text-[#d4522f]">{formatCurrencyAmount(b.totalAmount, b.currency)}</span>
-</div>
-<div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
-<span>{new Date(b.startDateTime).toLocaleDateString()}</span>
-<span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600">{b.status}</span>
-</div>
-</div>)}
-</div>
-</div>}
-{drawerTab === "finances" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
-<div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl space-y-3 border border-neutral-100 dark:border-neutral-800">
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55">Chiffre d'affaires cumulé :</span>
-<span className="font-mono font-bold text-base text-black dark:text-white">{formatCurrencyAmount(activeRenter.totalSpent, activeRenter.currency)}</span>
-</div>
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55">Volume total de contrats :</span>
-<span className="font-bold text-black dark:text-white">
-{activeRenter.totalBookings}
-{" créneaux"}
-</span>
-</div>
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55">Panier moyen :</span>
-<span className="font-mono font-semibold text-black dark:text-white">
-{activeRenter.totalBookings > 0 ? formatCurrencyAmount(Math.round(activeRenter.totalSpent / activeRenter.totalBookings), activeRenter.currency) : "--"}
-</span>
-</div>
-</div>
-</div>}
-{drawerTab === "notes" && /* @__PURE__ */ <div className="space-y-2 text-xs animate-in fade-in duration-150">
-<div className="flex items-center justify-between">
-<label className="text-black/55 dark:text-white/55 font-medium">Consignes & Exigences :</label>
-{isSavingNotes ? /* @__PURE__ */ <span className="text-[10px] text-black/55 dark:text-white/55 animate-pulse">Sauvegarde...</span> : notesSavedNotice ? /* @__PURE__ */ <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
-<Check size={11} />
-{" Sauvegardé"}
-</span> : null}
-</div>
-<textarea rows={6} value={renterNotes} onChange={(e) => handleNotesChange(e.target.value)} placeholder="Exigences techniques, sonorisation, badges sécurité, consignes traiteur..." className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/60 text-xs text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]" />
-</div>}
-</div>}
-</div>
-<div className="pt-2 text-center text-xs text-black/55 dark:text-white/55 font-medium">
-{sortedRenters.length}
-{" "}
-{language === "ar" ? "مستأجرين معروضين" : language === "fr" ? "membres affichés" : "renters displayed"}
-</div>
-</div>
-</div>
-{isAddModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-<div className="bg-white dark:bg-neutral-800 rounded-3xl border border-neutral-200 dark:border-neutral-700 shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
-<div className="p-6 border-b border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
-<div>
-<h3 className="text-lg font-bold text-black dark:text-white">{renterToEdit ? t("venue_renters_btn_edit") : t("venue_renters_btn_add")}</h3>
-<p className="text-xs text-black/55 dark:text-white/55 mt-0.5">
-{language === "ar" ? "تسجيل بيانات المنظم، وثائق الهوية والشركة" : language === "fr" ? "Enregistrer les coordonnées et documents de l'organisateur" : "Save organizer contact, ID document, and corporate details"}
-</p>
-</div>
-<button type="button" onClick={() => setIsAddModalOpen(false)} className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white transition-colors cursor-pointer"><X size={15} /></button>
-</div>
-<form onSubmit={handleSaveRenter} className="p-6 space-y-4">
-<LabelInput label={language === "ar" ? "الاسم الكامل *" : language === "fr" ? "Nom Complet *" : "Full Name *"} placeholder="e.g. Tarek Benaissa" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-<LabelInput label={language === "ar" ? "اسم المؤسسة / الشركة المنظمة" : language === "fr" ? "Nom de l'Entreprise / Organisation" : "Company or Organization Name"} placeholder="e.g. SARL Event Horizon" value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
-<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-<LabelInput label={language === "ar" ? "رقم الهاتف *" : language === "fr" ? "Numéro de Téléphone *" : "Telephone *"} placeholder="+213 550 12 34 56" value={phone} onChange={(e) => setPhone(e.target.value)} required />
-<LabelInput label={language === "ar" ? "البريد الإلكتروني" : language === "fr" ? "Adresse E-mail" : "Email Address"} type="email" placeholder="contact@organisation.dz" value={email} onChange={(e) => setEmail(e.target.value)} />
-</div>
-<LabelInput label={language === "ar" ? "رقم بطاقة الهوية / السجل التجاري" : language === "fr" ? "N° Pièce d'Identité / Registre du Commerce" : "National ID / RC / NIF"} placeholder="e.g. 16/00-1234567B19" value={idDocNumber} onChange={(e) => setIdDocNumber(e.target.value)} />
-<div>
-<label className="block text-xs font-semibold text-black/70 dark:text-white/75 mb-1">
-{language === "ar" ? "ملاحظات وتفضيلات الحجز" : language === "fr" ? "Remarques & Préférences" : "Notes & Preferences"}
-</label>
-<textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={language === "ar" ? "متطلبات تقنية، سجل المدفوعات..." : language === "fr" ? "Exigences techniques, historique..." : "Technical needs, catering..."} className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-xs text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]" />
-</div>
-<div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-700/60">
-<button type="button" onClick={() => setIsAddModalOpen(false)} className="px-4 py-2 rounded-xl text-xs font-semibold text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer">{language === "ar" ? "إلغاء" : language === "fr" ? "Annuler" : "Cancel"}</button>
-<AtriumButton type="submit" variant="primary" icon={<Check size={14} />}>
-{renterToEdit ? language === "ar" ? "تحديث البيانات" : language === "fr" ? "Mettre à jour" : "Update Renter" : language === "ar" ? "حفظ المستأجر" : language === "fr" ? "Enregistrer" : "Save Renter"}
-</AtriumButton>
-</div>
-</form>
-</div>
-</div>}
-<BookingModal isOpen={isBookingModalOpen} onClose={() => setIsBookingModalOpen(false)} initialRenterId={bookingRenterId} />
-</div>;
+  const {
+    rentalRenters,
+    rentalBookings,
+    createRentalRenter,
+    updateRentalRenter,
+    deleteRentalRenter,
+    currentBranch,
+    branches,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+  } = useAtriumStore();
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState<string>('All');
+  const [branchFilter, setBranchFilter] = useState<string>('All');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const filterButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [renterToEdit, setRenterToEdit] = useState<RentalRenter | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedRenterIds, setPinnedRenterIds] = useState<Set<string>>(() => new Set<string>());
+  const [renterSortBy, setRenterSortBy] = useState<string>('renter');
+  const [renterSortDir, setRenterSortDir] = useState<'asc' | 'desc'>('asc');
+
+  const [selectedRenter, setSelectedRenter] = useState<RentalRenter | null>(null);
+  const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [renterNotes, setRenterNotes] = useState('');
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [notesSavedNotice, setNotesSavedNotice] = useState(false);
+
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [bookingRenterId, setBookingRenterId] = useState<string | undefined>(undefined);
+
+  const [fullName, setFullName] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [idDocNumber, setIdDocNumber] = useState('');
+  const [notes, setNotes] = useState('');
+
+  const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
+
+  const branchCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    rentalRenters.forEach((r) => {
+      const bName = resolveRecordBranch(r, branchesById, currentBranch, language).name;
+      map.set(bName, (map.get(bName) || 0) + 1);
+    });
+    return map;
+  }, [rentalRenters, branchesById, currentBranch, language]);
+
+  const activeRenter = useMemo(() => {
+    if (!selectedRenter) return null;
+    return rentalRenters.find((r) => r.id === selectedRenter.id) || null;
+  }, [selectedRenter, rentalRenters]);
+
+  useEffect(() => {
+    if (activeRenter) {
+      setRenterNotes(activeRenter.notes || '');
+    }
+  }, [activeRenter?.id]);
+
+  const handleNotesChange = (val: string) => {
+    setRenterNotes(val);
+    if (!activeRenter) return;
+    setIsSavingNotes(true);
+    updateRentalRenter(activeRenter.id, { notes: val });
+    setTimeout(() => {
+      setIsSavingNotes(false);
+      setNotesSavedNotice(true);
+      setTimeout(() => setNotesSavedNotice(false), 2000);
+    }, 400);
+  };
+
+  const filteredRenters = useMemo(() => {
+    return rentalRenters.filter((r) => {
+      if (branchFilter !== 'All') {
+        const bName = resolveRecordBranch(r, branchesById, currentBranch, language).name;
+        if (bName !== branchFilter) return false;
+      }
+      if (filterType === 'Corporate' && !r.companyName) return false;
+      if (filterType === 'Individual' && r.companyName) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        return (
+          r.fullName.toLowerCase().includes(q) ||
+          (r.companyName && r.companyName.toLowerCase().includes(q)) ||
+          r.phone.includes(q) ||
+          r.email.toLowerCase().includes(q) ||
+          (r.idDocNumber && r.idDocNumber.toLowerCase().includes(q))
+        );
+      }
+      return true;
+    });
+  }, [rentalRenters, branchFilter, filterType, searchQuery, branchesById, currentBranch, language]);
+
+  const sortedRenters = useMemo(() => {
+    return [...filteredRenters].sort((a, b) => {
+      const aPinned = pinnedRenterIds.has(a.id);
+      const bPinned = pinnedRenterIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (renterSortBy === 'renter') {
+        const cmp = a.fullName.localeCompare(b.fullName);
+        return renterSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (renterSortBy === 'branch') {
+        const cmp = resolveRecordBranch(a, branchesById, currentBranch, language).name.localeCompare(
+          resolveRecordBranch(b, branchesById, currentBranch, language).name
+        );
+        return renterSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (renterSortBy === 'bookings') {
+        return renterSortDir === 'asc'
+          ? a.totalBookings - b.totalBookings
+          : b.totalBookings - a.totalBookings;
+      }
+      if (renterSortBy === 'spent') {
+        return renterSortDir === 'asc' ? a.totalSpent - b.totalSpent : b.totalSpent - a.totalSpent;
+      }
+      return 0;
+    });
+  }, [
+    filteredRenters,
+    pinnedRenterIds,
+    renterSortBy,
+    renterSortDir,
+    branchesById,
+    currentBranch,
+    language,
+  ]);
+
+  const totalRentersCount = rentalRenters.length;
+  const corporateCount = rentalRenters.filter((r) => Boolean(r.companyName)).length;
+  const individualCount = totalRentersCount - corporateCount;
+  const totalRevenue = rentalRenters.reduce((sum, r) => sum + r.totalSpent, 0);
+
+  const handleOpenAdd = useCallback(() => {
+    setRenterToEdit(null);
+    setFullName('');
+    setCompanyName('');
+    setEmail('');
+    setPhone('+213 ');
+    setIdDocNumber('');
+    setNotes('');
+    setIsAddModalOpen(true);
+  }, []);
+
+  const handleOpenEdit = useCallback((renter: RentalRenter) => {
+    setRenterToEdit(renter);
+    setFullName(renter.fullName);
+    setCompanyName(renter.companyName || '');
+    setEmail(renter.email);
+    setPhone(renter.phone);
+    setIdDocNumber(renter.idDocNumber || '');
+    setNotes(renter.notes || '');
+    setIsAddModalOpen(true);
+  }, []);
+
+  const handleSaveRenter = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fullName.trim()) {
+      showToast({
+        type: 'warning',
+        title: isFr ? 'Nom manquant' : 'Missing Full Name',
+        message: isFr
+          ? 'Veuillez saisir le nom du locataire.'
+          : 'Please enter the renter full name or organizer contact.',
+      });
+      return;
+    }
+    if (!phone.trim()) {
+      showToast({
+        type: 'warning',
+        title: isFr ? 'Téléphone manquant' : 'Missing Telephone',
+        message: isFr
+          ? 'Veuillez saisir un numéro de téléphone.'
+          : 'Please enter a telephone number for booking confirmations.',
+      });
+      return;
+    }
+
+    if (renterToEdit) {
+      updateRentalRenter(renterToEdit.id, {
+        fullName: fullName.trim(),
+        companyName: companyName.trim() || undefined,
+        email: email.trim(),
+        phone: phone.trim(),
+        idDocNumber: idDocNumber.trim() || undefined,
+        notes: notes.trim() || undefined,
+      });
+    } else {
+      createRentalRenter({
+        fullName: fullName.trim(),
+        companyName: companyName.trim() || undefined,
+        email: email.trim() || `${fullName.toLowerCase().replace(/\s+/g, '.')}@client.local`,
+        phone: phone.trim(),
+        idDocNumber: idDocNumber.trim() || undefined,
+        currency: 'DZD',
+        notes: notes.trim() || undefined,
+      });
+    }
+    setIsAddModalOpen(false);
+  };
+
+  const handleResetFilters = useCallback(() => {
+    setSearchQuery('');
+    setFilterType('All');
+    setBranchFilter('All');
+  }, []);
+
+  const activeFiltersCount = (branchFilter !== 'All' ? 1 : 0) + (filterType !== 'All' ? 1 : 0);
+
+  const activeChips: ActiveFilterChip[] = useMemo(() => {
+    const chips: ActiveFilterChip[] = [];
+    if (filterType !== 'All') {
+      chips.push({
+        key: 'type',
+        label: `${isAr ? 'الفئة' : isFr ? 'Catégorie' : 'Category'}: ${filterType}`,
+        onRemove: () => setFilterType('All'),
+      });
+    }
+    if (branchFilter !== 'All') {
+      chips.push({
+        key: 'branch',
+        label: `${isAr ? 'الفرع' : isFr ? 'Branche' : 'Branch'}: ${branchFilter}`,
+        onRemove: () => setBranchFilter('All'),
+      });
+    }
+    return chips;
+  }, [filterType, branchFilter, isAr, isFr]);
+
+  const filterSections: KineticFilterSection[] = useMemo(
+    () => [
+      {
+        id: 'branch',
+        label: isAr ? 'الفرع / المرفق' : isFr ? 'Branche / Complexe' : 'Branch / Facility',
+        value: branchFilter,
+        onChange: setBranchFilter,
+        kind: 'tiles',
+        columns: 2,
+        options: [
+          {
+            value: 'All',
+            label: isAr ? 'كل الفروع' : isFr ? 'Toutes les branches' : 'All Branches',
+            count: rentalRenters.length,
+          },
+          ...Array.from(branchCounts.entries()).map(([bName, count]) => ({
+            value: bName,
+            label: bName,
+            count,
+          })),
+        ],
+      },
+      {
+        id: 'type',
+        label: isAr ? 'نوع المستأجر' : isFr ? 'Type de Locataire' : 'Renter Segment',
+        value: filterType,
+        onChange: setFilterType,
+        kind: 'segmented',
+        options: [
+          {
+            value: 'All',
+            label: isAr ? 'الكل' : isFr ? 'Tous' : 'All',
+            count: totalRentersCount,
+          },
+          {
+            value: 'Corporate',
+            label: isAr ? 'شركات' : isFr ? 'Entreprises' : 'Corporate',
+            count: corporateCount,
+          },
+          {
+            value: 'Individual',
+            label: isAr ? 'أفراد' : isFr ? 'Particuliers' : 'Private',
+            count: individualCount,
+          },
+        ],
+      },
+    ],
+    [
+      isAr,
+      isFr,
+      branchFilter,
+      rentalRenters.length,
+      branchCounts,
+      filterType,
+      totalRentersCount,
+      corporateCount,
+      individualCount,
+    ]
+  );
+
+  const handleExportCSV = useCallback(() => {
+    const headers = [
+      isAr ? 'الاسم الكامل' : isFr ? 'Nom complet' : 'Full Name',
+      isAr ? 'الفرع' : isFr ? 'Branche' : 'Branch',
+      isAr ? 'الشركة / المؤسسة' : isFr ? 'Entreprise' : 'Company',
+      isAr ? 'الهاتف' : isFr ? 'Téléphone' : 'Phone',
+      isAr ? 'البريد الإلكتروني' : isFr ? 'E-mail' : 'Email',
+      isAr ? 'رقم وثيقة الهوية' : isFr ? "N° Pièce Identité" : 'ID Doc Number',
+      isAr ? 'عدد الحجوزات' : isFr ? 'Total Réservations' : 'Total Bookings',
+      isAr ? 'إجمالي المداخيل' : isFr ? 'Total Dépensé' : 'Total Spent',
+      isAr ? 'العملة' : isFr ? 'Devise' : 'Currency',
+      isAr ? 'ملاحظات' : isFr ? 'Remarques' : 'Notes',
+    ];
+    const rows = sortedRenters.map((r) => [
+      r.fullName,
+      resolveRecordBranch(r, branchesById, currentBranch, language).name,
+      r.companyName || '',
+      r.phone,
+      r.email,
+      r.idDocNumber || '',
+      r.totalBookings,
+      r.totalSpent,
+      r.currency || 'DZD',
+      r.notes || '',
+    ]);
+    downloadCsvSafe(
+      `atrium-venue-renters-${new Date().toISOString().split('T')[0]}.csv`,
+      headers,
+      rows
+    );
+    showToast({
+      type: 'success',
+      title: isAr ? 'تم التصدير' : isFr ? 'Export CSV réussi' : 'CSV Exported',
+      message: `${sortedRenters.length} ${isFr ? 'locataires exportés.' : 'renters exported.'}`,
+      category: 'rental_booking',
+    });
+  }, [sortedRenters, branchesById, currentBranch, language, isAr, isFr]);
+
+  const renterColumns: ColumnDefinition<RentalRenter>[] = useMemo(
+    () => [
+      {
+        key: 'renter',
+        header: isAr
+          ? 'المستأجر / المنظم'
+          : isFr
+          ? 'Locataire / Organisateur'
+          : 'Renter / Organizer',
+        width: '2.3*',
+        minWidth: '210px',
+        sortable: true,
+        renderCell: (renter) => (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700">
+              {renter.fullName.charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <div className="font-bold text-black dark:text-white truncate">{renter.fullName}</div>
+              <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
+                {renter.companyName ||
+                  (renter.idDocNumber
+                    ? `ID: ${renter.idDocNumber}`
+                    : isAr
+                    ? 'مستأجر خاص'
+                    : isFr
+                    ? 'Locataire Particulier'
+                    : 'Private Renter')}
+              </div>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'branch',
+        header: isAr ? 'الفرع' : isFr ? 'Branche' : 'Branch',
+        width: '1.3*',
+        minWidth: '125px',
+        sortable: true,
+        renderCell: (renter) => {
+          const bInfo = resolveRecordBranch(renter, branchesById, currentBranch, language);
+          return (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
+              {bInfo.name}
+            </span>
+          );
+        },
+      },
+      {
+        key: 'contact',
+        header: isAr ? 'بيانات الاتصال' : isFr ? 'Coordonnées' : 'Contact',
+        width: '2*',
+        minWidth: '180px',
+        renderCell: (renter) => (
+          <div className="space-y-0.5 text-xs">
+            <div className="flex items-center gap-1.5 text-black/70 dark:text-white/75 font-mono text-[11px]">
+              <Phone size={12} className="text-black/55 dark:text-white/55 shrink-0" />
+              <span>{renter.phone}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-black/55 dark:text-white/75 truncate text-[11px]">
+              <Mail size={12} className="text-black/55 dark:text-white/55 shrink-0" />
+              <span className="truncate">{renter.email}</span>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'bookings',
+        header: isAr ? 'الحجوزات' : isFr ? 'Réservations' : 'Bookings',
+        width: '1.2*',
+        minWidth: '110px',
+        sortable: true,
+        renderCell: (renter) => (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 tabular-nums">
+            {renter.totalBookings} {isAr ? 'حجز' : isFr ? 'réservations' : 'bookings'}
+          </span>
+        ),
+      },
+      {
+        key: 'spent',
+        header: t('venue_renters_kpi_revenue'),
+        width: '1.4*',
+        minWidth: '130px',
+        sortable: true,
+        renderCell: (renter) => (
+          <span className="font-bold text-black dark:text-white tabular-nums font-mono">
+            {formatCurrencyAmount(renter.totalSpent, renter.currency)}
+          </span>
+        ),
+      },
+    ],
+    [isAr, isFr, t, branchesById, currentBranch, language]
+  );
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: rentalRenters.length > 0,
+  });
+
+  if (showSkeleton && (rentalRenters.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.3*', minWidth: '200px' },
+          { width: '1.8*', minWidth: '150px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn
+        actionBtnWidth={140}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <ScreenHeaderBar
+        icon={<Users size={22} />}
+        title={t('venue_renters_page_title')}
+        subtitle={
+          isAr
+            ? 'دليل المنظمين والشركات والجهات المستأجرة'
+            : isFr
+            ? 'Répertoire des organisateurs, entreprises & particuliers'
+            : 'Directory of organizers, corporate clients & private renters'
+        }
+        primaryAction={{
+          label: t('venue_renters_btn_add'),
+          onClick: handleOpenAdd,
+          icon: <Plus size={15} strokeWidth={2.5} />,
+          dataAction: 'new-venue-renter',
+        }}
+      />
+
+      <ScreenKpiBanner
+        heading={
+          isAr
+            ? 'دليل المستأجرين & مؤشرات النشاط'
+            : isFr
+            ? 'Dossiers Locataires & Indicateurs'
+            : 'Renters Directory & Portfolio Health'
+        }
+        language={language}
+        primaryCard={{
+          label: isAr ? 'إجمالي المستأجرين' : isFr ? 'Base Totale Locataires' : 'Total Renters',
+          badgeText: isAr ? 'أفراد نشطون' : isFr ? 'Particuliers' : 'Private Active',
+          count: totalRentersCount,
+          tone: 'emerald',
+          isActive: filterType === 'Individual',
+          onToggle: () =>
+            setFilterType((prev) => (prev === 'Individual' ? 'All' : 'Individual')),
+        }}
+        secondaryCard={{
+          label: t('venue_renters_kpi_corporate'),
+          badgeText: isAr ? 'شركات وهيئات' : isFr ? 'entreprises' : 'corporate',
+          count: corporateCount,
+          tone: 'terracotta',
+          isActive: filterType === 'Corporate',
+          onToggle: () =>
+            setFilterType((prev) => (prev === 'Corporate' ? 'All' : 'Corporate')),
+        }}
+        darkCard={{
+          label: t('venue_renters_kpi_revenue'),
+          badgeCount: corporateCount,
+          badgePrefix: '',
+          badgeSuffix: isAr ? 'شركات' : isFr ? 'comptes pro' : 'corporate',
+          valueCount: totalRevenue,
+          valuePrefix: '',
+          formatValue: (v) => formatCurrencyAmount(v, 'DZD'),
+          caption: isAr
+            ? 'حجم التعاقدات التراكمي'
+            : isFr
+            ? 'Masse locative cumulée'
+            : 'Cumulative Bookings Turnover',
+        }}
+      />
+
+      <ScreenPod>
+        <ScreenCollectionToolbar
+          title={
+            isAr ? 'دليل المستأجرين' : isFr ? 'Dossiers Locataires' : 'Venue Renters'
+          }
+          liveRegionText={`${sortedRenters.length}`}
+          language={language}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder={t('venue_renters_search_ph')}
+          statusOptions={[
+            {
+              value: 'All',
+              label: isAr ? 'الكل' : isFr ? 'Tous' : 'All',
+              count: totalRentersCount,
+            },
+            {
+              value: 'Corporate',
+              label: isAr ? 'شركات' : isFr ? 'Entreprises' : 'Corporate',
+              count: corporateCount,
+            },
+            {
+              value: 'Individual',
+              label: isAr ? 'أفراد' : isFr ? 'Particuliers' : 'Private',
+              count: individualCount,
+            },
+          ]}
+          statusValue={filterType}
+          onStatusChange={setFilterType}
+          hasActiveAdvancedFilters={activeFiltersCount > 0}
+          activeFiltersCount={activeFiltersCount}
+          isFilterModalOpen={isFilterModalOpen}
+          filterButtonRef={filterButtonRef}
+          onToggleFilterModal={() => setIsFilterModalOpen((prev) => !prev)}
+          viewMode={viewMode}
+          onViewModeChange={(m: 'list' | 'grid' | 'calendar') => {
+            if (m === 'list' || m === 'grid') setViewMode(m);
+          }}
+          showViewToggle
+          onExport={handleExportCSV}
+          activeChips={activeChips}
+          onResetAllFilters={handleResetFilters}
+        />
+
+        <UniversalDataCollection
+          hideToolbar
+          data={sortedRenters}
+          keyExtractor={(r) => r.id}
+          viewMode={viewMode}
+          columns={renterColumns}
+          sortBy={renterSortBy}
+          sortDirection={renterSortDir}
+          onSortChange={(key, dir) => {
+            setRenterSortBy(key);
+            setRenterSortDir(dir);
+          }}
+          openItemId={activeRenter?.id || null}
+          onItemClick={(r, el) => {
+            setDrawerOpenerEl(el || null);
+            setSelectedRenter(r);
+          }}
+          onViewDetails={(r, el) => {
+            setDrawerOpenerEl(el || null);
+            setSelectedRenter(r);
+          }}
+          onEdit={handleOpenEdit}
+          isPinned={(r) => pinnedRenterIds.has(r.id)}
+          onPinToggle={(r) => {
+            setPinnedRenterIds((prev) => {
+              const next = new Set(prev);
+              if (next.has(r.id)) next.delete(r.id);
+              else next.add(r.id);
+              return next;
+            });
+          }}
+          onDelete={(r) => {
+            deleteRentalRenter(r.id);
+            if (selectedRenter?.id === r.id) setSelectedRenter(null);
+            showToast({
+              type: 'info',
+              title: isFr ? 'Locataire supprimé' : 'Renter Deleted',
+              message: r.fullName,
+            });
+          }}
+          selectedIds={selectedIds}
+          onSelectionChange={setSelectedIds}
+          onBulkDelete={(ids) => {
+            ids.forEach((id) => deleteRentalRenter(id));
+            setSelectedIds(new Set<string>());
+            showToast({
+              type: 'info',
+              title: isFr ? 'Locataires supprimés' : 'Renters Deleted',
+              message: `${ids.size} ${isFr ? 'locataires supprimés.' : 'renters deleted.'}`,
+            });
+          }}
+          customActions={(r) => [
+            {
+              id: 'book',
+              label: isAr ? 'حجز قاعة' : isFr ? 'Réserver' : 'Book',
+              icon: <Calendar size={13} />,
+              variant: 'primary',
+              onClick: () => {
+                setBookingRenterId(r.id);
+                setIsBookingModalOpen(true);
+              },
+            },
+          ]}
+          renderCard={(renter) => (
+            <div className="flex flex-col items-center justify-center w-full">
+              <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
+                {renter.fullName.charAt(0).toUpperCase()}
+              </div>
+              <h3 className="text-base font-bold text-black dark:text-white truncate max-w-[210px] mb-0.5 tracking-tight">
+                {renter.fullName}
+              </h3>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 mb-3 truncate max-w-[200px]">
+                {renter.companyName ||
+                  (isAr ? 'مستأجر خاص' : isFr ? 'Locataire Particulier' : 'Private Renter')}
+              </span>
+              <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1 text-center">
+                <div className="font-mono text-black/70 dark:text-white/75 text-[11px]">
+                  {renter.phone}
+                </div>
+                <div className="truncate text-black/55 dark:text-white/55 text-[11px]">
+                  {renter.email}
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                  <span className="text-[11px] text-black/55 dark:text-white/55 uppercase font-medium">
+                    {renter.totalBookings} {isAr ? 'حجز' : 'bookings'}
+                  </span>
+                  <span className="font-bold text-[#d4522f] tabular-nums font-mono">
+                    {formatCurrencyAmount(renter.totalSpent, renter.currency)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+          emptyTitle={isAr ? 'لا يوجد مستأجرون' : isFr ? 'Aucun locataire trouvé' : 'No renters found'}
+          primaryActionLabel={t('venue_renters_btn_add')}
+          onAddFirstItem={handleOpenAdd}
+          hasActiveFilters={activeFiltersCount > 0 || searchQuery.trim().length > 0}
+          onResetFilters={handleResetFilters}
+        />
+      </ScreenPod>
+
+      <KineticFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        triggerRef={filterButtonRef}
+        language={language}
+        displayCount={sortedRenters.length}
+        entityPluralLabel={isAr ? 'مستأجرين' : isFr ? 'locataires' : 'renters'}
+        hasActiveFilters={activeFiltersCount > 0}
+        onResetFilters={handleResetFilters}
+        sections={filterSections}
+      />
+
+      <KineticSlideOverInspector
+        isOpen={Boolean(activeRenter)}
+        item={activeRenter}
+        allItems={sortedRenters}
+        keyExtractor={(r) => r.id}
+        openerElement={drawerOpenerEl}
+        language={language}
+        title={activeRenter?.fullName || ''}
+        subtitle={
+          activeRenter?.companyName ||
+          (isAr ? 'مستأجر خاص' : isFr ? 'Particulier' : 'Private Renter')
+        }
+        avatarText={(activeRenter?.fullName || 'R').slice(0, 2).toUpperCase()}
+        avatarColor="#d4522f"
+        branchName={
+          activeRenter
+            ? resolveRecordBranch(activeRenter, branchesById, currentBranch, language).name
+            : undefined
+        }
+        statusLabel={
+          activeRenter?.companyName
+            ? isFr
+              ? 'Entreprise'
+              : 'Corporate'
+            : isFr
+            ? 'Particulier'
+            : 'Private'
+        }
+        tabs={[
+          { id: 'dossier', label: isFr ? 'Dossier' : 'Profile' },
+          { id: 'bookings', label: isFr ? 'Réservations' : 'Bookings' },
+          { id: 'finances', label: 'Finances' },
+          { id: 'notes', label: 'Notes' },
+        ]}
+        onSelectItem={(r) => setSelectedRenter(r)}
+        onClose={() => setSelectedRenter(null)}
+        onDelete={(r) => deleteRentalRenter(r.id)}
+        holdToDelete
+        renderBody={(renter, tab) => {
+          const renterBookings = rentalBookings.filter((b) => b.renterId === renter.id);
+          return (
+            <div className="space-y-4 text-xs">
+              <div className="flex flex-wrap gap-2">
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  icon={<Calendar size={13} />}
+                  onClick={() => {
+                    setBookingRenterId(renter.id);
+                    setIsBookingModalOpen(true);
+                  }}
+                >
+                  {isAr ? 'حجز قاعة' : isFr ? 'Réserver' : 'Book'}
+                </AtriumButton>
+                <AtriumButton
+                  variant="secondary"
+                  size="sm"
+                  icon={<Edit2 size={13} />}
+                  onClick={() => handleOpenEdit(renter)}
+                >
+                  {isAr ? 'تعديل' : isFr ? 'Modifier' : 'Edit'}
+                </AtriumButton>
+              </div>
+
+              {tab === 'dossier' && (
+                <div className="p-4 bg-[#F3EDE7]/60 dark:bg-neutral-800/50 rounded-2xl space-y-2.5 border border-[#E6DED6] dark:border-neutral-800">
+                  <div className="flex justify-between items-center">
+                    <span className="text-black/55 dark:text-white/55 font-medium">Téléphone :</span>
+                    <a
+                      href={`tel:${renter.phone}`}
+                      className="font-mono font-semibold text-black dark:text-white hover:underline"
+                    >
+                      {renter.phone}
+                    </a>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-black/55 dark:text-white/55 font-medium">E-mail :</span>
+                    <a
+                      href={`mailto:${renter.email}`}
+                      className="text-black dark:text-white truncate max-w-[200px] hover:underline"
+                    >
+                      {renter.email}
+                    </a>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-black/55 dark:text-white/55 font-medium">
+                      Organisme / Entité :
+                    </span>
+                    <span className="font-semibold text-black dark:text-white">
+                      {renter.companyName || 'Particulier'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-black/55 dark:text-white/55 font-medium">
+                      N° Pièce / NIF :
+                    </span>
+                    <span className="font-mono text-black/70 dark:text-white/75">
+                      {renter.idDocNumber || 'Non renseigné'}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {tab === 'bookings' && (
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-black/55 dark:text-white/55 font-medium">
+                      Historique & Prévues
+                    </span>
+                    <span className="font-bold text-[#d4522f]">
+                      {renterBookings.length} réservations
+                    </span>
+                  </div>
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                    {renterBookings.length === 0 ? (
+                      <div className="p-4 text-center text-black/55 dark:text-white/55 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl">
+                        Aucune réservation active pour le moment.
+                      </div>
+                    ) : (
+                      renterBookings.map((b) => (
+                        <div
+                          key={b.id}
+                          className="p-3 bg-neutral-50 dark:bg-neutral-800/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-1"
+                        >
+                          <div className="flex items-center justify-between font-semibold">
+                            <span className="text-black dark:text-white truncate max-w-[190px]">
+                              {b.purpose || 'Séance de réservation'}
+                            </span>
+                            <span className="font-mono text-[#d4522f]">
+                              {formatCurrencyAmount(b.totalAmount, b.currency)}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
+                            <span>{new Date(b.startDateTime).toLocaleDateString()}</span>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600">
+                              {b.status}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {tab === 'finances' && (
+                <div className="p-4 bg-[#F3EDE7]/60 dark:bg-neutral-800/50 rounded-2xl space-y-3 border border-[#E6DED6] dark:border-neutral-800">
+                  <div className="flex justify-between items-center">
+                    <span className="text-black/55 dark:text-white/55">
+                      Chiffre d'affaires cumulé :
+                    </span>
+                    <span className="font-mono font-bold text-base text-black dark:text-white">
+                      {formatCurrencyAmount(renter.totalSpent, renter.currency)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-black/55 dark:text-white/55">
+                      Volume total de contrats :
+                    </span>
+                    <span className="font-bold text-black dark:text-white">
+                      {renter.totalBookings} créneaux
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-black/55 dark:text-white/55">Panier moyen :</span>
+                    <span className="font-mono font-semibold text-black dark:text-white">
+                      {renter.totalBookings > 0
+                        ? formatCurrencyAmount(
+                            Math.round(renter.totalSpent / renter.totalBookings),
+                            renter.currency
+                          )
+                        : '--'}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {tab === 'notes' && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-black/55 dark:text-white/55 font-medium">
+                      Consignes & Exigences :
+                    </label>
+                    {isSavingNotes ? (
+                      <span className="text-[10px] text-black/55 dark:text-white/55 animate-pulse">
+                        Sauvegarde...
+                      </span>
+                    ) : notesSavedNotice ? (
+                      <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                        <Check size={11} /> Sauvegardé
+                      </span>
+                    ) : null}
+                  </div>
+                  <textarea
+                    rows={6}
+                    value={renterNotes}
+                    onChange={(e) => handleNotesChange(e.target.value)}
+                    placeholder="Exigences techniques, sonorisation, badges sécurité, consignes traiteur..."
+                    className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/60 text-xs text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
+                  />
+                </div>
+              )}
+            </div>
+          );
+        }}
+      />
+
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-neutral-800 rounded-3xl border border-neutral-200 dark:border-neutral-700 shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-black dark:text-white">
+                  {renterToEdit ? t('venue_renters_btn_edit') : t('venue_renters_btn_add')}
+                </h3>
+                <p className="text-xs text-black/55 dark:text-white/55 mt-0.5">
+                  {isAr
+                    ? 'تسجيل بيانات المنظم، وثائق الهوية والشركة'
+                    : isFr
+                    ? "Enregistrer les coordonnées et documents de l'organisateur"
+                    : 'Save organizer contact, ID document, and corporate details'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
+              >
+                <X size={15} />
+              </button>
+            </div>
+            <form onSubmit={handleSaveRenter} className="p-6 space-y-4">
+              <LabelInput
+                label={isAr ? 'الاسم الكامل *' : isFr ? 'Nom Complet *' : 'Full Name *'}
+                placeholder="e.g. Tarek Benaissa"
+                value={fullName}
+                onChange={(v) => setFullName(extractStr(v))}
+                required
+              />
+              <LabelInput
+                label={
+                  isAr
+                    ? 'اسم المؤسسة / الشركة المنظمة'
+                    : isFr
+                    ? "Nom de l'Entreprise / Organisation"
+                    : 'Company or Organization Name'
+                }
+                placeholder="e.g. SARL Event Horizon"
+                value={companyName}
+                onChange={(v) => setCompanyName(extractStr(v))}
+              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <LabelInput
+                  label={
+                    isAr ? 'رقم الهاتف *' : isFr ? 'Numéro de Téléphone *' : 'Telephone *'
+                  }
+                  placeholder="+213 550 12 34 56"
+                  value={phone}
+                  onChange={(v) => setPhone(extractStr(v))}
+                  required
+                />
+                <LabelInput
+                  label={
+                    isAr ? 'البريد الإلكتروني' : isFr ? 'Adresse E-mail' : 'Email Address'
+                  }
+                  type="email"
+                  placeholder="contact@organisation.dz"
+                  value={email}
+                  onChange={(v) => setEmail(extractStr(v))}
+                />
+              </div>
+              <LabelInput
+                label={
+                  isAr
+                    ? 'رقم بطاقة الهوية / السجل التجاري'
+                    : isFr
+                    ? "N° Pièce d'Identité / Registre du Commerce"
+                    : 'National ID / RC / NIF'
+                }
+                placeholder="e.g. 16/00-1234567B19"
+                value={idDocNumber}
+                onChange={(v) => setIdDocNumber(extractStr(v))}
+              />
+              <div>
+                <label className="block text-xs font-semibold text-black/70 dark:text-white/75 mb-1">
+                  {isAr
+                    ? 'ملاحظات وتفضيلات الحجز'
+                    : isFr
+                    ? 'Remarques & Préférences'
+                    : 'Notes & Preferences'}
+                </label>
+                <textarea
+                  rows={3}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder={
+                    isAr
+                      ? 'متطلبات تقنية، سجل المدفوعات...'
+                      : isFr
+                      ? 'Exigences techniques, historique...'
+                      : 'Technical needs, catering...'
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-xs text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
+                />
+              </div>
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-700/60">
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                >
+                  {isAr ? 'إلغاء' : isFr ? 'Annuler' : 'Cancel'}
+                </button>
+                <AtriumButton type="submit" variant="primary" icon={<Check size={14} />}>
+                  {renterToEdit
+                    ? isAr
+                      ? 'تحديث البيانات'
+                      : isFr
+                      ? 'Mettre à jour'
+                      : 'Update Renter'
+                    : isAr
+                    ? 'حفظ المستأجر'
+                    : isFr
+                    ? 'Enregistrer'
+                    : 'Save Renter'}
+                </AtriumButton>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <BookingModal
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+        initialRenterId={bookingRenterId}
+      />
+    </div>
+  );
 };

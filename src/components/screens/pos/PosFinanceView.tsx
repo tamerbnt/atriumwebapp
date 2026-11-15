@@ -1,38 +1,40 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   Wallet,
   Banknote,
   CreditCard,
   Coins,
-  FileText,
   Printer,
   Plus,
-  ArrowRight,
-  TrendingUp,
-  TrendingDown,
-  AlertCircle,
-  CheckCircle2,
-  Receipt,
-  Sparkles,
-  Building2,
   Trash2,
-  Download,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
-import { Seek } from '../../ui/Seek';
 import { Modal } from '../../ui/Modal';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
-import { FilterSelect } from '../../ui/FilterSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonFinanceAudit } from '../../ui/skeleton/StructuralSkeletons';
+import {
+  ScreenHeaderBar,
+  ScreenKpiBanner,
+  ScreenPod,
+  ScreenCollectionToolbar,
+  ActiveFilterChip,
+  KineticFilterModal,
+  KineticFilterSection,
+  KineticSlideOverInspector,
+  buildBranchesByIdMap,
+  resolveRecordBranch,
+  downloadCsvSafe,
+} from '../../ui/kinetic';
 
 interface PosExpense {
   id: string;
+  facilityId?: string;
   reference: string;
   payee: string;
   category: 'Supplies' | 'Supplier' | 'Maintenance' | 'Transport' | 'StaffMeal' | 'Other';
@@ -43,30 +45,36 @@ interface PosExpense {
   createdAt: string;
 }
 
-const INITIAL_POS_EXPENSES: PosExpense[] = [];
-
 export const PosFinanceView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
+  const isAr = language === 'ar';
+  const isEn = language === 'en';
   const {
     sales,
     currentBranch,
+    branches,
     currentUser,
-    resetPosMockData,
     isSyncing,
     networkMode,
     retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
 
   const [expenses, setExpenses] = useState<PosExpense[]>([]);
-  const [openingFloat, setOpeningFloat] = useState<number>(15000); // 15,000 DA cash drawer float
+  const [openingFloat, setOpeningFloat] = useState<number>(15000);
   const [actualCashInput, setActualCashInput] = useState<string>('');
   const [isZReportOpen, setIsZReportOpen] = useState(false);
 
-  // Search & Filters for Expenses
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
+  const [methodFilter, setMethodFilter] = useState<string>('all');
+  const [branchFilter, setBranchFilter] = useState<string>('All');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<string>('date');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
-  // Expense modal
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [expPayee, setExpPayee] = useState('');
   const [expCategory, setExpCategory] = useState<PosExpense['category']>('Supplies');
@@ -74,24 +82,27 @@ export const PosFinanceView: React.FC = () => {
   const [expMethod, setExpMethod] = useState<'Cash' | 'Card' | 'BaridiMob'>('Cash');
   const [expNotes, setExpNotes] = useState('');
 
-  // Selection & Pinning for expenses
-  const [selectedExpenseIds, setSelectedExpenseIds] = useState<Set<string>>(new Set());
-  const [pinnedExpenseIds, setPinnedExpenseIds] = useState<Set<string>>(new Set());
+  const [selectedExpenseIds, setSelectedExpenseIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedExpenseIds, setPinnedExpenseIds] = useState<Set<string>>(() => new Set<string>());
+  const [inspectingExpense, setInspectingExpense] = useState<PosExpense | null>(null);
+  const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const filterButtonRef = useRef<HTMLButtonElement | null>(null);
 
-  // Filter sales for branch
-  const branchSales = useMemo(() => {
-    return sales.filter(
-      (s) => s.facilityId === currentBranch.id || s.id.startsWith('sale_pos_')
-    );
-  }, [sales, currentBranch.id]);
+  const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
-  // Today's active sales
+  const branchSales = useMemo(
+    () =>
+      sales.filter(
+        (s) => s.facilityId === currentBranch.id || s.id.startsWith('sale_pos_')
+      ),
+    [sales, currentBranch.id]
+  );
+
   const todaySales = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
     return branchSales.filter((s) => s.createdAt.startsWith(today) && s.status !== 'Refunded');
   }, [branchSales]);
 
-  // Financial calculations
   const financeTotals = useMemo(() => {
     let cashSales = 0;
     let cardSales = 0;
@@ -121,6 +132,12 @@ export const PosFinanceView: React.FC = () => {
     const actualCounted = parseFloat(actualCashInput) || 0;
     const cashVariance = actualCashInput !== '' ? actualCounted - expectedCashInDrawer : 0;
 
+    const branchCounts = new Map<string, number>();
+    expenses.forEach((e) => {
+      const bName = resolveRecordBranch(e, branchesById, currentBranch, language).name;
+      branchCounts.set(bName, (branchCounts.get(bName) || 0) + 1);
+    });
+
     return {
       cashSales,
       cardSales,
@@ -132,25 +149,55 @@ export const PosFinanceView: React.FC = () => {
       actualCounted,
       cashVariance,
       hasCounted: actualCashInput !== '',
+      branchOptionsWithCounts: Array.from(branchCounts.entries()).map(([name, count]) => ({
+        value: name,
+        label: name,
+        count,
+      })),
     };
-  }, [todaySales, expenses, openingFloat, actualCashInput]);
+  }, [todaySales, expenses, openingFloat, actualCashInput, branchesById, currentBranch, language]);
 
-  // Filtered expenses
   const filteredExpenses = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
     return expenses.filter((e) => {
       if (categoryFilter !== 'All' && e.category !== categoryFilter) return false;
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
+      if (methodFilter !== 'all' && e.paymentMethod !== methodFilter) return false;
+      if (branchFilter !== 'All') {
+        const bName = resolveRecordBranch(e, branchesById, currentBranch, language).name;
+        if (bName !== branchFilter) return false;
+      }
+      if (q) {
+        const bName = resolveRecordBranch(e, branchesById, currentBranch, language).name.toLowerCase();
         return (
           e.reference.toLowerCase().includes(q) ||
           e.payee.toLowerCase().includes(q) ||
           (e.notes && e.notes.toLowerCase().includes(q)) ||
-          e.paidBy.toLowerCase().includes(q)
+          e.paidBy.toLowerCase().includes(q) ||
+          bName.includes(q)
         );
       }
       return true;
     });
-  }, [expenses, categoryFilter, searchQuery]);
+  }, [expenses, categoryFilter, methodFilter, branchFilter, searchQuery, branchesById, currentBranch, language]);
+
+  const sortedExpenses = useMemo(() => {
+    const sign = sortDir === 'asc' ? 1 : -1;
+    return [...filteredExpenses].sort((a, b) => {
+      const aPinned = pinnedExpenseIds.has(a.id) ? 0 : 1;
+      const bPinned = pinnedExpenseIds.has(b.id) ? 0 : 1;
+      if (aPinned !== bPinned) return aPinned - bPinned;
+      if (sortBy === 'ref') return a.reference.localeCompare(b.reference) * sign;
+      if (sortBy === 'payee') return a.payee.localeCompare(b.payee) * sign;
+      if (sortBy === 'category') return a.category.localeCompare(b.category) * sign;
+      if (sortBy === 'amount') return (a.amount - b.amount) * sign;
+      if (sortBy === 'branch') {
+        const ba = resolveRecordBranch(a, branchesById, currentBranch, language).name;
+        const bb = resolveRecordBranch(b, branchesById, currentBranch, language).name;
+        return ba.localeCompare(bb) * sign;
+      }
+      return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * sign;
+    });
+  }, [filteredExpenses, pinnedExpenseIds, sortBy, sortDir, branchesById, currentBranch, language]);
 
   const handleAddExpense = (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,6 +205,7 @@ export const PosFinanceView: React.FC = () => {
 
     const newExp: PosExpense = {
       id: `exp_pos_${Date.now()}`,
+      facilityId: currentBranch.id,
       reference: `DEC-${(expenses.length + 1).toString().padStart(3, '0')}`,
       payee: expPayee.trim(),
       category: expCategory,
@@ -176,138 +224,205 @@ export const PosFinanceView: React.FC = () => {
 
     showToast({
       type: 'info',
-      title: language === 'ar' ? 'تم تسجيل خروج نقدي من الصندوق' : 'Sortie de Caisse Enregistrée',
+      title: isAr ? 'تم تسجيل خروج نقدي من الصندوق' : 'Sortie de Caisse Enregistrée',
       message: `${newExp.payee} · ${formatMoney(newExp.amount)} (${newExp.category})`,
       category: 'pos_inventory',
     });
   };
 
   const handleDeleteExpense = (id: string) => {
-    setExpenses(expenses.filter((e) => e.id !== id));
+    setExpenses((prev) => prev.filter((e) => e.id !== id));
+    if (inspectingExpense?.id === id) setInspectingExpense(null);
   };
 
-  const handleExportExpensesCSV = () => {
-    const headers = ['Ref #', 'Date & Time', 'Payee / Supplier', 'Category', 'Payment Method', 'Handled By', 'Amount (DA)', 'Notes'];
-    const rows = filteredExpenses.map((e) => [
-      `"${e.reference}"`,
-      `"${new Date(e.createdAt).toLocaleString()}"`,
-      `"${e.payee}"`,
-      `"${e.category}"`,
-      `"${e.paymentMethod}"`,
-      `"${e.paidBy}"`,
+  const handleResetFilters = useCallback(() => {
+    setCategoryFilter('All');
+    setMethodFilter('all');
+    setBranchFilter('All');
+    setSearchQuery('');
+    setIsFilterModalOpen(false);
+  }, []);
+
+  const hasActiveAdvancedFilters = categoryFilter !== 'All' || branchFilter !== 'All';
+  const activeFiltersCount = (categoryFilter !== 'All' ? 1 : 0) + (branchFilter !== 'All' ? 1 : 0);
+
+  const handleExportExpensesCSV = useCallback(() => {
+    const headers = [
+      'Ref #',
+      'Date & Time',
+      'Payee / Supplier',
+      'Category',
+      'Payment Method',
+      'Handled By',
+      'Amount (DA)',
+      isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
+      'Notes',
+    ];
+    const rows = sortedExpenses.map((e) => [
+      e.reference,
+      new Date(e.createdAt).toLocaleString(),
+      e.payee,
+      e.category,
+      e.paymentMethod,
+      e.paidBy,
       e.amount,
-      `"${e.notes || ''}"`,
+      resolveRecordBranch(e, branchesById, currentBranch, language).name,
+      e.notes || '',
     ]);
-    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `Store_Expenses_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+    downloadCsvSafe(`atrium-pos-expenses-${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
+  }, [sortedExpenses, branchesById, currentBranch, language, isAr, isEn]);
 
-  // Columns for Expenses UniversalDataCollection
-  const expenseColumns: ColumnDefinition<PosExpense>[] = useMemo(() => [
-    {
-      key: 'ref',
-      header: language === 'ar' ? 'المرجع' : 'Réf',
-      width: '1.2*',
-      minWidth: '100px',
-      sortable: true,
-      renderCell: (e) => (
-        <span className="font-mono font-bold text-xs text-black dark:text-white">
-          {e.reference}
-        </span>
-      ),
-    },
-    {
-      key: 'payee',
-      header: language === 'ar' ? 'المستفيد / المورد' : 'Bénéficiaire / Motif',
-      width: '2.5*',
-      minWidth: '180px',
-      sortable: true,
-      renderCell: (e) => (
-        <div>
-          <div className="font-bold text-xs text-black dark:text-white truncate">
-            {e.payee}
+  const statusOptions = useMemo(
+    () => [
+      { value: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous', count: expenses.length },
+      { value: 'Cash', label: isAr ? 'نقداً' : 'Espèces' },
+      { value: 'Card', label: isAr ? 'بطاقة' : 'Carte' },
+      { value: 'BaridiMob', label: 'BaridiMob' },
+    ],
+    [isAr, isEn, expenses.length]
+  );
+
+  const filterSections = useMemo<KineticFilterSection[]>(
+    () => [
+      {
+        id: 'branch',
+        label: isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
+        value: branchFilter,
+        onChange: setBranchFilter,
+        kind: 'tiles',
+        columns: 2,
+        options: [
+          { value: 'All', label: isAr ? 'كل الفروع' : isEn ? 'All Branches' : 'Toutes les branches', count: expenses.length },
+          ...financeTotals.branchOptionsWithCounts,
+        ],
+      },
+      {
+        id: 'category',
+        label: isAr ? 'التصنيف' : isEn ? 'Category' : 'Catégorie de charge',
+        value: categoryFilter,
+        onChange: setCategoryFilter,
+        kind: 'tiles',
+        columns: 2,
+        options: [
+          { value: 'All', label: isAr ? 'الكل' : 'Toutes' },
+          { value: 'Supplies', label: 'Fournitures' },
+          { value: 'Supplier', label: 'Fournisseurs' },
+          { value: 'Maintenance', label: 'Maintenance' },
+          { value: 'Transport', label: 'Transport' },
+          { value: 'StaffMeal', label: 'Collation' },
+          { value: 'Other', label: 'Autre' },
+        ],
+      },
+      {
+        id: 'method',
+        label: isAr ? 'طريقة السحب' : isEn ? 'Payment Method' : 'Mode de règlement',
+        value: methodFilter,
+        onChange: setMethodFilter,
+        kind: 'segmented',
+        options: statusOptions,
+      },
+    ],
+    [isAr, isEn, branchFilter, expenses.length, financeTotals.branchOptionsWithCounts, categoryFilter, methodFilter, statusOptions]
+  );
+
+  const activeChips = useMemo<ActiveFilterChip[]>(() => {
+    const chips: ActiveFilterChip[] = [];
+    if (branchFilter !== 'All') chips.push({ key: 'branch', label: branchFilter, onRemove: () => setBranchFilter('All') });
+    if (categoryFilter !== 'All') chips.push({ key: 'category', label: categoryFilter, onRemove: () => setCategoryFilter('All') });
+    return chips;
+  }, [branchFilter, categoryFilter]);
+
+  const expenseColumns: ColumnDefinition<PosExpense>[] = useMemo(
+    () => [
+      {
+        key: 'ref',
+        header: isAr ? 'المرجع' : 'Réf',
+        width: '100px',
+        sortable: true,
+        renderCell: (e) => (
+          <span className="font-mono font-bold text-xs text-black dark:text-white">
+            {e.reference}
+          </span>
+        ),
+      },
+      {
+        key: 'payee',
+        header: isAr ? 'المستفيد / المورد' : 'Bénéficiaire / Motif',
+        minWidth: '170px',
+        sortable: true,
+        renderCell: (e) => (
+          <div>
+            <div className="font-bold text-xs text-black dark:text-white truncate">{e.payee}</div>
+            {e.notes && (
+              <div className="text-[10px] text-black/55 dark:text-white/55 truncate">{e.notes}</div>
+            )}
           </div>
-          {e.notes && (
-            <div className="text-[10px] text-black/55 dark:text-white/55 truncate">
-              {e.notes}
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: 'category',
-      header: language === 'ar' ? 'التصنيف' : 'Catégorie',
-      width: '1.4*',
-      minWidth: '120px',
-      sortable: true,
-      renderCell: (e) => (
-        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75">
-          {e.category}
-        </span>
-      ),
-    },
-    {
-      key: 'method',
-      header: language === 'ar' ? 'الوسيلة' : 'Mode',
-      width: '1.2*',
-      minWidth: '100px',
-      renderCell: (e) => (
-        <span className="text-xs text-black/70 dark:text-white/75">
-          {e.paymentMethod === 'Cash' ? 'Espèces' : e.paymentMethod}
-        </span>
-      ),
-    },
-    {
-      key: 'amount',
-      header: language === 'ar' ? 'المبلغ' : 'Montant',
-      width: '1.5*',
-      minWidth: '120px',
-      sortable: true,
-      renderCell: (e) => (
-        <span className="font-mono font-black text-sm text-red-600 dark:text-red-400 tabular-nums">
-          -{formatMoney(e.amount)}
-        </span>
-      ),
-    },
-    {
-      key: 'paidBy',
-      header: language === 'ar' ? 'المسؤول' : 'Caissier',
-      width: '1.5*',
-      minWidth: '120px',
-      renderCell: (e) => (
-        <span className="text-xs text-black/55 dark:text-white/55 truncate block">
-          {e.paidBy}
-        </span>
-      ),
-    },
-    {
-      key: 'actions',
-      header: '',
-      width: '1*',
-      minWidth: '60px',
-      renderCell: (e) => (
-        <button
-          type="button"
-          onClick={(ev) => {
-            ev.stopPropagation();
-            handleDeleteExpense(e.id);
-          }}
-          className="text-black/55 dark:text-white/55 hover:text-red-500 cursor-pointer p-1"
-          title="Delete entry"
-        >
-          <Trash2 size={14} />
-        </button>
-      ),
-    },
-  ], [language]);
+        ),
+      },
+      {
+        key: 'category',
+        header: isAr ? 'التصنيف' : 'Catégorie',
+        width: '120px',
+        sortable: true,
+        renderCell: (e) => (
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75">
+            {e.category}
+          </span>
+        ),
+      },
+      {
+        key: 'method',
+        header: isAr ? 'الوسيلة' : 'Mode',
+        width: '105px',
+        renderCell: (e) => (
+          <span className="text-xs text-black/70 dark:text-white/75">
+            {e.paymentMethod === 'Cash' ? 'Espèces' : e.paymentMethod}
+          </span>
+        ),
+      },
+      {
+        key: 'amount',
+        header: isAr ? 'المبلغ' : 'Montant',
+        width: '125px',
+        sortable: true,
+        renderCell: (e) => (
+          <span className="font-mono font-black text-sm text-red-600 dark:text-red-400 tabular-nums">
+            -{formatMoney(e.amount)}
+          </span>
+        ),
+      },
+      {
+        key: 'branch',
+        header: isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
+        width: '120px',
+        sortable: true,
+        renderCell: (e) => (
+          <span className="text-xs font-medium text-black/75 dark:text-white/80 truncate block">
+            {resolveRecordBranch(e, branchesById, currentBranch, language).name}
+          </span>
+        ),
+      },
+      {
+        key: 'actions',
+        header: '',
+        width: '60px',
+        renderCell: (e) => (
+          <button
+            type="button"
+            onClick={(ev) => {
+              ev.stopPropagation();
+              handleDeleteExpense(e.id);
+            }}
+            className="text-black/55 dark:text-white/55 hover:text-red-500 cursor-pointer p-1"
+            title="Delete entry"
+          >
+            <Trash2 size={14} />
+          </button>
+        ),
+      },
+    ],
+    [isAr, isEn, branchesById, currentBranch, language]
+  );
 
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
@@ -325,215 +440,111 @@ export const PosFinanceView: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200" dir={isRtl ? 'rtl' : 'ltr'}>
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
-              <Wallet className="text-[#d4522f]" size={32} />
-              <span>
-                {language === 'ar' ? 'المالية' : language === 'fr' ? 'Finances' : 'Finance'}
-              </span>
-            </h1>
-            <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
-              {currentBranch.name}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2.5 flex-wrap">
-
-
+    <div className="space-y-6 animate-in fade-in duration-200 relative" dir={isRtl ? 'rtl' : 'ltr'}>
+      <ScreenHeaderBar
+        icon={<Wallet size={22} />}
+        title={isAr ? 'المالية' : isEn ? 'Finance' : 'Finances'}
+        secondaryActions={
           <AtriumButton
             type="button"
             variant="secondary"
-            size="sm"
+            size="md"
             onClick={() => setIsZReportOpen(true)}
-            icon={<Printer size={14} className="text-[#d4522f]" />}
+            icon={<Printer size={15} className="text-[#d4522f]" />}
           >
-            {language === 'ar' ? 'إصدار تقرير Z اليومي' : 'Éditer Rapport Z'}
+            {isAr ? 'إصدار تقرير Z اليومي' : 'Éditer Rapport Z'}
           </AtriumButton>
+        }
+        primaryAction={{
+          label: isAr ? 'تسجيل مصاريف الصندوق' : isEn ? 'Cash Payout' : 'Sortie de Caisse',
+          icon: <Plus size={15} />,
+          onClick: () => setIsExpenseModalOpen(true),
+        }}
+      />
 
-          <AtriumButton
-            type="button"
-            variant="primary"
-            size="sm"
-            onClick={() => setIsExpenseModalOpen(true)}
-            icon={<Plus size={15} />}
-          >
-            {language === 'ar' ? 'تسجيل مصاريف الصندوق' : 'Sortie de Caisse'}
-          </AtriumButton>
-        </div>
-      </div>
+      <ScreenKpiBanner
+        heading={isAr ? 'لوحة مؤشرات الخزينة والتسوية النقدية' : isEn ? 'Cash Drawer & Variance' : 'Indicateurs de Caisse & Contrôle des Écarts'}
+        language={language}
+        primaryCard={{
+          label: isAr ? 'إجمالي المبيعات اليومية' : isEn ? 'Gross Sales Today' : 'Ventes Brutes Jour',
+          badgeText: `${todaySales.length} tickets`,
+          count: financeTotals.totalGrossSales,
+          formatValue: (n) => formatMoney(n),
+          tone: 'emerald',
+        }}
+        secondaryCard={{
+          label: isAr ? 'سحوبات ومصاريف' : isEn ? 'Cash Payouts' : 'Sorties de Caisse',
+          badgeText: 'dépenses',
+          count: financeTotals.totalCashPayouts,
+          formatValue: (n) => formatMoney(n),
+          tone: 'terracotta',
+          isActive: methodFilter === 'Cash',
+          onToggle: () => setMethodFilter((p) => (p === 'Cash' ? 'all' : 'Cash')),
+        }}
+        darkCard={{
+          label: isAr ? 'الرصيد النظري في الدرج' : isEn ? 'Expected Drawer Cash' : 'Solde Théorique Attendu',
+          badgePrefix: '',
+          badgeCount: Math.round(financeTotals.cashVariance),
+          badgeSuffix: financeTotals.hasCounted ? 'DA écart' : 'DA fond',
+          valuePrefix: '',
+          valueCount: financeTotals.expectedCashInDrawer,
+          formatValue: (n) => formatMoney(n),
+          caption: `${currentBranch?.name || 'Magasin'} · Fond ${formatMoney(openingFloat)}`,
+        }}
+      />
 
-      {/* TOP METRICS POD TRAY */}
-      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
-          <div className="flex items-center gap-2">
-            <Banknote size={18} className="text-[#d4522f]" />
-            <h2 className="text-xs font-black uppercase tracking-wider text-black dark:text-white">
-              {language === 'ar' ? 'لوحة مؤشرات الخزينة والتسوية النقدية' : 'Indicateurs de Caisse & Contrôle des Écarts'}
-            </h2>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] text-black/55 dark:text-white/55 font-bold">
-              {language === 'ar' ? 'الرصيد الافتتاحي :' : 'Fond de Caisse Initial :'}
+      {/* Drawer Equation + Live Cash Counting Bar */}
+      <ScreenPod>
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-[#E6DED6] dark:border-[#33302D]">
+          <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
+            <span className="text-black/60 dark:text-white/65">
+              Fond <strong className="text-black dark:text-white">{formatMoney(openingFloat)}</strong>
             </span>
-            <input
-              type="number"
-              value={openingFloat}
-              onChange={(e) => setOpeningFloat(parseFloat(e.target.value) || 0)}
-              className="w-24 h-7 px-2 text-xs font-mono font-bold rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-black dark:text-white"
-            />
-            <span className="text-[11px] text-black/55 dark:text-white/55 font-mono">DA</span>
-          </div>
-        </div>
-
-        {/* 3-Card Canonical Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Card 1: Ventes Brutes */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-            <div>
-              <div className="flex items-center justify-between text-black/55 dark:text-white/75">
-                <span className="text-xs font-semibold text-black/70 dark:text-white/75">
-                  {language === 'ar' ? 'إجمالي المبيعات' : 'Ventes Brutes Jour'}
-                </span>
-                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                  {todaySales.length} {language === 'ar' ? 'عملية' : 'tickets'}
-                </span>
-              </div>
-            </div>
-            <div className="text-2xl font-black text-black dark:text-white tracking-tight tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-              {formatMoney(financeTotals.totalGrossSales)}
-            </div>
+            <span>+</span>
+            <span className="text-emerald-600 dark:text-emerald-400">
+              Espèces <strong>+{formatMoney(financeTotals.cashSales)}</strong>
+            </span>
+            <span>-</span>
+            <span className="text-red-500">
+              Sorties <strong>-{formatMoney(financeTotals.totalCashPayouts)}</strong>
+            </span>
+            <span>=</span>
+            <span className="text-[#d4522f] font-black">
+              {formatMoney(financeTotals.expectedCashInDrawer)}
+            </span>
           </div>
 
-          {/* Card 2: Sorties de Caisse */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-            <div>
-              <div className="flex items-center justify-between text-black/55 dark:text-white/75">
-                <span className="text-xs font-semibold text-black/70 dark:text-white/75">
-                  {language === 'ar' ? 'سحوبات ومصاريف' : 'Sorties de Caisse'}
-                </span>
-                <span className="text-[10px] font-bold text-red-600 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded-full">
-                  {expenses.length} {language === 'ar' ? 'دفعات' : 'dépenses'}
-                </span>
-              </div>
-            </div>
-            <div className="text-2xl font-black text-red-600 dark:text-red-400 tracking-tight tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-              -{formatMoney(financeTotals.totalCashPayouts)}
-            </div>
-          </div>
-
-          {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
-          <div className="bg-[#1F1D1B] rounded-[20px] p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between h-[124px] relative overflow-hidden group">
-            {/* Glowing Sparkline Graphic */}
-            <div className="absolute -right-4 -bottom-6 opacity-20 group-hover:opacity-30 transition-opacity pointer-events-none">
-              <svg width="140" height="90" viewBox="0 0 140 90" fill="none">
-                <path
-                  d="M10 70 L35 55 L60 62 L85 30 L110 38 L135 15"
-                  stroke="#FB923C"
-                  strokeWidth="3.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <circle cx="135" cy="15" r="4" fill="#FB923C" />
-              </svg>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-white/80">
-                  {language === 'ar' ? 'الرصيد النظري & الفارق' : 'Solde Théorique & Écart'}
-                </span>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                  !financeTotals.hasCounted
-                    ? 'bg-[#3D2817] text-[#FB923C] border-[#FB923C]/30'
-                    : financeTotals.cashVariance === 0
-                    ? 'bg-emerald-950/80 text-emerald-400 border-emerald-700/40'
-                    : financeTotals.cashVariance > 0
-                    ? 'bg-blue-950/80 text-blue-300 border-blue-700/40'
-                    : 'bg-red-950/80 text-red-300 border-red-700/40'
-                }`}>
-                  {!financeTotals.hasCounted
-                    ? 'Pointage requis'
-                    : financeTotals.cashVariance === 0
-                    ? 'Écart : 0 DA'
-                    : financeTotals.cashVariance > 0
-                    ? `+${formatMoney(financeTotals.cashVariance)}`
-                    : formatMoney(financeTotals.cashVariance)}
-                </span>
-              </div>
-              <div className="text-2xl font-black text-white tracking-tight tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                {formatMoney(financeTotals.expectedCashInDrawer)}
-              </div>
-            </div>
-
-            {/* Quick Count Field in Espresso Card */}
-            <div className="flex items-center gap-2 pt-1.5 border-t border-neutral-800/80">
-              <span className="text-[10px] text-white/75 shrink-0 font-medium">{language === 'ar' ? 'المعدود :' : 'Compté :'}</span>
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-1.5 text-[11px] font-bold text-black/65 dark:text-white/70">
+              <span>{isAr ? 'الرصيد الافتتاحي:' : 'Fond initial:'}</span>
+              <input
+                type="number"
+                value={openingFloat}
+                onChange={(e) => setOpeningFloat(parseFloat(e.target.value) || 0)}
+                className="w-24 h-8 px-2 text-xs font-mono font-bold rounded-lg border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-900 text-black dark:text-white"
+              />
+            </label>
+            <label className="flex items-center gap-1.5 text-[11px] font-bold text-black/65 dark:text-white/70">
+              <span>{isAr ? 'المعدود فعلياً:' : 'Espèces comptées:'}</span>
               <input
                 type="number"
                 placeholder="DA réel"
                 value={actualCashInput}
                 onChange={(e) => setActualCashInput(e.target.value)}
-                className="w-full h-6 px-2 text-[11px] font-mono font-bold rounded-md bg-neutral-900 border border-neutral-700 text-white placeholder:text-white/55 focus:outline-hidden focus:border-[#FB923C]"
+                className="w-28 h-8 px-2 text-xs font-mono font-bold rounded-lg border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-900 text-black dark:text-white"
               />
-            </div>
-          </div>
-        </div>
-
-        {/* Linear Drawer Equation Bar */}
-        <div className="bg-white dark:bg-neutral-900 rounded-[16px] p-3 border border-[#E6DED6] dark:border-neutral-800 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 font-mono">
-            <span className="text-black/55 dark:text-white/55 uppercase font-bold text-[10px]">Fond</span>
-            <span className="font-bold text-black dark:text-white">{formatMoney(openingFloat)}</span>
-          </div>
-          <span className="text-black/55 dark:text-white/55 font-bold">+</span>
-          <div className="flex items-center gap-2 font-mono">
-            <span className="text-emerald-500 uppercase font-bold text-[10px]">Ventes Espèces</span>
-            <span className="font-bold text-emerald-600 dark:text-emerald-400">+{formatMoney(financeTotals.cashSales)}</span>
-          </div>
-          <span className="text-black/55 dark:text-white/55 font-bold">-</span>
-          <div className="flex items-center gap-2 font-mono">
-            <span className="text-red-400 uppercase font-bold text-[10px]">Sorties</span>
-            <span className="font-bold text-red-500">-{formatMoney(financeTotals.totalCashPayouts)}</span>
-          </div>
-          <span className="text-black/55 dark:text-white/55 font-bold">=</span>
-          <div className="flex items-center gap-2 font-mono">
-            <span className="text-[#d4522f] uppercase font-bold text-[10px]">Théorique</span>
-            <span className="font-bold text-[#d4522f]">{formatMoney(financeTotals.expectedCashInDrawer)}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* TENDER BREAKDOWN POD TRAY (SurfaceBgElevated: #F3EDE7, CornerRadius 24px) */}
-      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-3">
-        <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800/60">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
-              <CreditCard size={16} />
-            </div>
-            <div>
-              <span className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
-                {language === 'ar' ? 'توزيع طرق الدفع والتحصيل' : 'Ventilation par Mode de Règlement'}
-              </span>
-              <span className="text-[11px] text-black/55 dark:text-white/75 block">
-                {language === 'ar' ? 'المطابقة الحسابية بين السيولة النقدية والتحصيلات الإلكترونية' : 'Répartition des encaissements comptoir et flux monétiques'}
-              </span>
-            </div>
+            </label>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-2">
+          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-1.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Banknote size={17} className="text-emerald-500" />
-                <h3 className="text-xs font-black uppercase text-black/70 dark:text-white/75">
-                  {language === 'ar' ? 'الدفع نقداً' : 'Règlement Espèces'}
-                </h3>
+                <Banknote size={16} className="text-emerald-500" />
+                <span className="text-xs font-bold text-black/75 dark:text-white/80">
+                  {isAr ? 'الدفع نقداً' : 'Règlement Espèces'}
+                </span>
               </div>
               <span className="font-mono text-xs font-bold text-black/55 dark:text-white/55">
                 {financeTotals.totalGrossSales > 0 ? `${Math.round((financeTotals.cashSales / financeTotals.totalGrossSales) * 100)}%` : '0%'}
@@ -542,18 +553,15 @@ export const PosFinanceView: React.FC = () => {
             <div className="text-xl font-black font-mono text-black dark:text-white tabular-nums">
               {formatMoney(financeTotals.cashSales)}
             </div>
-            <div className="text-[11px] text-black/55 dark:text-white/55">
-              {language === 'ar' ? 'مدفوعات نقدية مسددة بالدينار الجزائري' : 'Total liquide perçu au comptoir'}
-            </div>
           </div>
 
-          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-2">
+          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-1.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <CreditCard size={17} className="text-blue-500" />
-                <h3 className="text-xs font-black uppercase text-black/70 dark:text-white/75">
+                <CreditCard size={16} className="text-blue-500" />
+                <span className="text-xs font-bold text-black/75 dark:text-white/80">
                   CIB & Carte Edahabia
-                </h3>
+                </span>
               </div>
               <span className="font-mono text-xs font-bold text-black/55 dark:text-white/55">
                 {financeTotals.totalGrossSales > 0 ? `${Math.round((financeTotals.cardSales / financeTotals.totalGrossSales) * 100)}%` : '0%'}
@@ -562,18 +570,15 @@ export const PosFinanceView: React.FC = () => {
             <div className="text-xl font-black font-mono text-black dark:text-white tabular-nums">
               {formatMoney(financeTotals.cardSales)}
             </div>
-            <div className="text-[11px] text-black/55 dark:text-white/55">
-              {language === 'ar' ? 'معاملات إلكترونية عبر أجهزة TPE SATIM' : 'Transactions TPE monétique bancaire'}
-            </div>
           </div>
 
-          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-2">
+          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-1.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Coins size={17} className="text-[#d4522f]" />
-                <h3 className="text-xs font-black uppercase text-black/70 dark:text-white/75">
+                <Coins size={16} className="text-[#d4522f]" />
+                <span className="text-xs font-bold text-black/75 dark:text-white/80">
                   BaridiMob & Virements
-                </h3>
+                </span>
               </div>
               <span className="font-mono text-xs font-bold text-black/55 dark:text-white/55">
                 {financeTotals.totalGrossSales > 0 ? `${Math.round((financeTotals.baridiMobSales / financeTotals.totalGrossSales) * 100)}%` : '0%'}
@@ -582,145 +587,176 @@ export const PosFinanceView: React.FC = () => {
             <div className="text-xl font-black font-mono text-black dark:text-white tabular-nums">
               {formatMoney(financeTotals.baridiMobSales)}
             </div>
-            <div className="text-[11px] text-black/55 dark:text-white/55">
-              {language === 'ar' ? 'تحويلات بريد الجزائر الفورية بريدي موب' : 'Virements RIP / CCP Algérie Poste'}
-            </div>
           </div>
         </div>
-      </div>
+      </ScreenPod>
 
-      {/* BOTTOM COLLECTION POD TRAY */}
-      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-        {/* Controls Bar: Title + Seek Search + Category Filter + Actions */}
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-          {/* Left Title / Icon / Count Anchor */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
-              <TrendingDown size={18} />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-black dark:text-white">
-                {language === 'ar' ? 'سجل مصاريف وسحوبات الصندوق' : 'Journal des Sorties de Caisse'}
-              </span>
-            </div>
-          </div>
+      <ScreenPod>
+        <ScreenCollectionToolbar
+          title={isAr ? 'سجل مصاريف وسحوبات الصندوق' : isEn ? 'Cash Payout Journal' : 'Journal des Sorties de Caisse'}
+          liveRegionText={`${sortedExpenses.length} dépenses`}
+          language={language}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder={isAr ? 'بحث في المصاريف أو الفرع...' : 'Rechercher bénéficiaire, réf, branche...'}
+          statusOptions={statusOptions}
+          statusValue={methodFilter}
+          onStatusChange={setMethodFilter}
+          hasActiveAdvancedFilters={hasActiveAdvancedFilters}
+          activeFiltersCount={activeFiltersCount}
+          isFilterModalOpen={isFilterModalOpen}
+          filterButtonRef={filterButtonRef}
+          onToggleFilterModal={() => setIsFilterModalOpen((p) => !p)}
+          viewMode={viewMode}
+          onViewModeChange={(m) => setViewMode(m === 'grid' ? 'grid' : 'list')}
+          onExport={handleExportExpensesCSV}
+          activeChips={activeChips}
+          onResetAllFilters={handleResetFilters}
+        />
 
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <div className="w-56">
-              <Seek
-                placeholder={language === 'ar' ? 'بحث في المصاريف...' : 'Rechercher une dépense...'}
-                value={searchQuery}
-                onChange={setSearchQuery}
-              />
-            </div>
-
-            <FilterSelect
-              value={categoryFilter}
-              onChange={setCategoryFilter}
-              options={[
-                {
-                  value: 'All',
-                  label: language === 'ar' ? 'الكل' : language === 'fr' ? 'Toutes' : 'All',
-                  tooltip: language === 'ar' ? 'كل المصاريف' : language === 'fr' ? 'Toutes catégories de dépenses' : 'All expense categories',
-                },
-                { value: 'Supplies', label: language === 'ar' ? 'لوازم' : language === 'fr' ? 'Fournitures' : 'Supplies', tooltip: 'Fournitures' },
-                { value: 'Supplier', label: language === 'ar' ? 'موردون' : language === 'fr' ? 'Fournisseurs' : 'Suppliers', tooltip: 'Fournisseurs' },
-                { value: 'Maintenance', label: language === 'ar' ? 'صيانة' : 'Maintenance', tooltip: 'Maintenance' },
-                { value: 'Transport', label: language === 'ar' ? 'نقل' : 'Transport', tooltip: 'Transport' },
-                { value: 'StaffMeal', label: language === 'ar' ? 'إطعام' : language === 'fr' ? 'Collation' : 'Meals', tooltip: 'Collation équipe' },
-                { value: 'Other', label: language === 'ar' ? 'أخرى' : language === 'fr' ? 'Autre' : 'Other', tooltip: 'Autre dépense' },
-              ]}
-              ariaLabel="Filtrer par catégorie de dépense"
-            />
-
-            <button
-              type="button"
-              onClick={handleExportExpensesCSV}
-              className="h-9 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-black/70 dark:text-white text-xs font-bold flex items-center gap-1.5 hover:bg-neutral-50 cursor-pointer shadow-2xs"
-            >
-              <Download size={13} />
-              <span>{language === 'ar' ? 'تصدير CSV' : 'Export CSV'}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setIsExpenseModalOpen(true)}
-              className="h-9 px-3.5 rounded-xl bg-[#d4522f] text-white text-xs font-bold flex items-center gap-1.5 hover:opacity-90 cursor-pointer shadow-xs"
-            >
-              <Plus size={14} />
-              <span>{language === 'ar' ? 'إضافة سحب' : 'Nouvelle Dépense'}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Collection Floating on Pod Tray */}
-        <div className="w-full">
-          <UniversalDataCollection<PosExpense>
-            items={filteredExpenses}
-            keyExtractor={(e) => e.id}
-            defaultViewMode="list"
-            columns={expenseColumns}
-            renderCard={(e) => (
-              <div className="flex flex-col justify-between h-full space-y-3">
-                <div>
-                  <div className="flex items-start justify-between gap-2 mb-1">
-                    <span className="font-mono font-bold text-xs text-black dark:text-white">
-                      {e.reference}
-                    </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75">
-                      {e.category}
-                    </span>
-                  </div>
-                  <div className="font-bold text-xs text-black dark:text-white">
-                    {e.payee}
-                  </div>
-                  {e.notes && (
-                    <p className="text-[11px] text-black/55 dark:text-white/55 mt-1 line-clamp-2">
-                      {e.notes}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                  <span className="font-mono font-black text-sm text-red-600 dark:text-red-400 tabular-nums">
-                    -{formatMoney(e.amount)}
+        <UniversalDataCollection<PosExpense>
+          data={sortedExpenses}
+          keyExtractor={(e) => e.id}
+          viewMode={viewMode}
+          hideToolbar
+          openItemId={inspectingExpense?.id ?? null}
+          isLoading={isSyncing || networkMode === 'force_skeleton'}
+          isOffline={networkMode === 'offline'}
+          isTimedOut={isSyncTimeout}
+          lastSyncedAt={lastSyncedAt}
+          onRetrySync={retryCloudSync}
+          columns={expenseColumns}
+          sortBy={sortBy}
+          sortDirection={sortDir}
+          onSortChange={(col, dir) => {
+            setSortBy(col);
+            setSortDir(dir);
+          }}
+          onItemClick={(e, opener) => {
+            setDrawerOpenerEl(opener || null);
+            setInspectingExpense(e);
+          }}
+          onViewDetails={(e, opener) => {
+            setDrawerOpenerEl(opener || null);
+            setInspectingExpense(e);
+          }}
+          onDelete={(e) => handleDeleteExpense(e.id)}
+          renderCard={(e) => (
+            <div className="flex flex-col justify-between h-full space-y-3">
+              <div>
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <span className="font-mono font-bold text-xs text-black dark:text-white">
+                    {e.reference}
                   </span>
-                  <span className="text-[10px] text-black/55 dark:text-white/55">
-                    {new Date(e.createdAt).toLocaleDateString()}
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75">
+                    {e.category}
                   </span>
                 </div>
+                <div className="font-bold text-xs text-black dark:text-white">{e.payee}</div>
+                {e.notes && (
+                  <p className="text-[11px] text-black/55 dark:text-white/55 mt-1 line-clamp-2">{e.notes}</p>
+                )}
+              </div>
+              <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                <span className="font-mono font-black text-sm text-red-600 dark:text-red-400 tabular-nums">
+                  -{formatMoney(e.amount)}
+                </span>
+                <span className="text-[10px] text-black/55 dark:text-white/55">
+                  {new Date(e.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+            </div>
+          )}
+          selectedIds={selectedExpenseIds}
+          onSelectionChange={setSelectedExpenseIds}
+          pinnedIds={pinnedExpenseIds}
+          onPinToggle={(idOrItem) => {
+            const id = typeof idOrItem === 'string' ? idOrItem : idOrItem.id;
+            setPinnedExpenseIds((prev) => {
+              const next = new Set(prev);
+              if (next.has(id)) next.delete(id);
+              else next.add(id);
+              return next;
+            });
+          }}
+          emptyTitle={isAr ? 'لا توجد مصاريف مطابقة' : 'Aucune dépense de caisse trouvée'}
+          emptyDescription={isAr ? 'انقر على إضافة سحب لتسجيل مصاريف جديدة' : 'Enregistrez vos achats de fournitures ou paiements fournisseurs.'}
+          primaryActionLabel={isAr ? 'إضافة سحب' : 'Nouvelle Dépense'}
+          onAddFirstItem={() => setIsExpenseModalOpen(true)}
+          onResetFilters={handleResetFilters}
+          hasActiveFilters={hasActiveAdvancedFilters || methodFilter !== 'all' || searchQuery.trim().length > 0}
+        />
+      </ScreenPod>
+
+      <KineticFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        triggerRef={filterButtonRef}
+        language={language}
+        displayCount={sortedExpenses.length}
+        entityPluralLabel={isAr ? 'مصاريف' : 'dépenses'}
+        hasActiveFilters={hasActiveAdvancedFilters || methodFilter !== 'all'}
+        onResetFilters={handleResetFilters}
+        sections={filterSections}
+      />
+
+      <KineticSlideOverInspector<PosExpense>
+        isOpen={inspectingExpense !== null}
+        item={inspectingExpense}
+        allItems={sortedExpenses}
+        keyExtractor={(e) => e.id}
+        openerElement={drawerOpenerEl}
+        language={language}
+        title={inspectingExpense?.payee || ''}
+        subtitle={inspectingExpense ? `${inspectingExpense.reference} · ${new Date(inspectingExpense.createdAt).toLocaleString()}` : undefined}
+        branchName={inspectingExpense ? resolveRecordBranch(inspectingExpense, branchesById, currentBranch, language).name : undefined}
+        statusLabel={inspectingExpense?.category}
+        statusClassName="bg-rose-50 text-rose-700 border border-rose-200"
+        onClose={() => setInspectingExpense(null)}
+        onSelectItem={(e) => setInspectingExpense(e)}
+        holdToDelete
+        deleteLabel={isAr ? 'حذف' : 'Supprimer'}
+        onDelete={(e) => handleDeleteExpense(e.id)}
+        renderBody={(exp) => (
+          <div className="space-y-4 text-xs">
+            <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] grid grid-cols-2 gap-3">
+              <div>
+                <span className="text-black/60 dark:text-white/65 block text-[11px]">Montant</span>
+                <span className="font-mono font-black text-base text-rose-600">-{formatMoney(exp.amount)}</span>
+              </div>
+              <div>
+                <span className="text-black/60 dark:text-white/65 block text-[11px]">Mode</span>
+                <span className="font-bold text-black dark:text-white">{exp.paymentMethod}</span>
+              </div>
+              <div>
+                <span className="text-black/60 dark:text-white/65 block text-[11px]">Caissier</span>
+                <span className="font-semibold text-black dark:text-white">{exp.paidBy}</span>
+              </div>
+              <div>
+                <span className="text-black/60 dark:text-white/65 block text-[11px]">Référence</span>
+                <span className="font-mono font-bold text-black dark:text-white">{exp.reference}</span>
+              </div>
+            </div>
+            {exp.notes && (
+              <div className="p-4 rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] bg-white dark:bg-[#1E1C1A]">
+                <span className="text-black/60 dark:text-white/65 block text-[11px] mb-1">Notes</span>
+                <p className="text-black dark:text-white">{exp.notes}</p>
               </div>
             )}
-            selectedIds={selectedExpenseIds}
-            onSelectionChange={setSelectedExpenseIds}
-            isPinned={(e) => pinnedExpenseIds.has(e.id)}
-            onTogglePin={(e) => {
-              setPinnedExpenseIds((prev) => {
-                const next = new Set(prev);
-                if (next.has(e.id)) next.delete(e.id);
-                else next.add(e.id);
-                return next;
-              });
-            }}
-            emptyTitle={language === 'ar' ? 'لا توجد مصاريف مطابقة' : 'Aucune dépense de caisse trouvée'}
-            emptyDescription={language === 'ar' ? 'انقر على إضافة سحب لتسجيل مصاريف جديدة' : 'Enregistrez vos achats de fournitures ou paiements fournisseurs.'}
-            primaryActionLabel={language === 'ar' ? 'إضافة سحب' : 'Nouvelle Dépense'}
-            onAddFirstItem={() => setIsExpenseModalOpen(true)}
-          />
-        </div>
-      </div>
+          </div>
+        )}
+      />
 
-      {/* MODAL: New Store Expense Payout */}
       <Modal
         isOpen={isExpenseModalOpen}
         onClose={() => setIsExpenseModalOpen(false)}
-        title={language === 'ar' ? 'تسجيل سحب نقدي من الصندوق' : 'Enregistrer une Sortie de Caisse'}
+        title={isAr ? 'تسجيل سحب نقدي من الصندوق' : 'Enregistrer une Sortie de Caisse'}
         subtitle={`Session ${currentBranch.name}`}
       >
         <form onSubmit={handleAddExpense} className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
           <LabelInput
             field="Payee"
-            label={language === 'ar' ? 'المستفيد / الجهة الموردة' : 'Bénéficiaire / Fournisseur'}
+            label={isAr ? 'المستفيد / الجهة الموردة' : 'Bénéficiaire / Fournisseur'}
             required
             value={expPayee}
             onChange={setExpPayee}
@@ -729,11 +765,10 @@ export const PosFinanceView: React.FC = () => {
             height={44}
             corner={12}
           />
-
           <div className="grid grid-cols-2 gap-3">
             <LabelInput
               field="Amount"
-              label={language === 'ar' ? 'المبلغ (د.ج)' : 'Montant (DZD)'}
+              label={isAr ? 'المبلغ (د.ج)' : 'Montant (DZD)'}
               type="number"
               required
               value={expAmount ? String(expAmount) : ''}
@@ -742,10 +777,9 @@ export const PosFinanceView: React.FC = () => {
               height={44}
               corner={12}
             />
-
             <LabelSelect
               field="Category"
-              label={language === 'ar' ? 'التصنيف' : 'Catégorie de charge'}
+              label={isAr ? 'التصنيف' : 'Catégorie de charge'}
               value={expCategory}
               onChange={(val) => setExpCategory(typeof val === 'string' ? (val as any) : (val.target?.value || val))}
               options={[
@@ -760,10 +794,9 @@ export const PosFinanceView: React.FC = () => {
               corner={12}
             />
           </div>
-
           <LabelSelect
             field="Method"
-            label={language === 'ar' ? 'طريقة السحب' : 'Mode de paiement'}
+            label={isAr ? 'طريقة السحب' : 'Mode de paiement'}
             value={expMethod}
             onChange={(val) => setExpMethod(typeof val === 'string' ? (val as any) : (val.target?.value || val))}
             options={[
@@ -774,10 +807,9 @@ export const PosFinanceView: React.FC = () => {
             height={44}
             corner={12}
           />
-
           <LabelInput
             field="Notes"
-            label={language === 'ar' ? 'ملاحظات أو رقم الفاتورة' : 'Notes / Réf reçu'}
+            label={isAr ? 'ملاحظات أو رقم الفاتورة' : 'Notes / Réf reçu'}
             value={expNotes}
             onChange={setExpNotes}
             placeholder="Facture #412..."
@@ -785,7 +817,6 @@ export const PosFinanceView: React.FC = () => {
             height={44}
             corner={12}
           />
-
           <div className="flex items-center justify-end gap-3 pt-3">
             <button
               type="button"
@@ -798,18 +829,17 @@ export const PosFinanceView: React.FC = () => {
               type="submit"
               className="h-10 px-5 text-xs font-bold text-white bg-[#d4522f] rounded-full hover:opacity-90 cursor-pointer shadow-xs"
             >
-              {language === 'ar' ? 'تأكيد السحب' : 'Valider la Dépense'}
+              {isAr ? 'تأكيد السحب' : 'Valider la Dépense'}
             </button>
           </div>
         </form>
       </Modal>
 
-      {/* MODAL: Z-Report Closeout Preview */}
       {isZReportOpen && (
         <Modal
           isOpen={true}
           onClose={() => setIsZReportOpen(false)}
-          title={language === 'ar' ? 'تقرير Z اليومي - إغلاق الصندوق' : 'Rapport Z · Clôture Journalière'}
+          title={isAr ? 'تقرير Z اليومي - إغلاق الصندوق' : 'Rapport Z · Clôture Journalière'}
           subtitle={`Session ${new Date().toISOString().split('T')[0]} · ${currentBranch.name}`}
         >
           <div className="space-y-4 font-mono text-xs leading-relaxed" dir="ltr">
@@ -820,7 +850,6 @@ export const PosFinanceView: React.FC = () => {
                 <div className="text-[10px] text-black/55">{new Date().toLocaleString()}</div>
                 <div className="text-[10px] text-black/55">CAISSIER : {currentUser?.fullName || 'Amine Bentouati'}</div>
               </div>
-
               <div className="space-y-1 py-1 border-b border-dashed border-neutral-400 text-[11px]">
                 <div className="flex justify-between">
                   <span>FOND DE CAISSE INITIAL :</span>
@@ -839,7 +868,6 @@ export const PosFinanceView: React.FC = () => {
                   <span>{formatMoney(financeTotals.expectedCashInDrawer)}</span>
                 </div>
               </div>
-
               <div className="space-y-1 py-1 border-b border-dashed border-neutral-400 text-[11px]">
                 <div className="font-bold text-[10px] text-black/55 uppercase">VENTILATION PAR MODE DE PAIEMENT :</div>
                 <div className="flex justify-between">
@@ -855,7 +883,6 @@ export const PosFinanceView: React.FC = () => {
                   <span className="font-bold">{formatMoney(financeTotals.baridiMobSales)}</span>
                 </div>
               </div>
-
               {financeTotals.hasCounted && (
                 <div className="space-y-1 py-1 border-b border-dashed border-neutral-400 text-[11px]">
                   <div className="flex justify-between font-bold">
@@ -870,12 +897,10 @@ export const PosFinanceView: React.FC = () => {
                   </div>
                 </div>
               )}
-
               <div className="pt-2 text-[10px] text-center text-black/75">
                 SIGNATURE ET VISA DU RESPONSABLE DU POINT DE VENTE
               </div>
             </div>
-
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 type="button"

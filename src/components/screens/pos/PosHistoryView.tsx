@@ -1,39 +1,33 @@
-import React, { useState, useMemo } from 'react';
-import {
-  History,
-  Boxes,
-  ArrowDownUp,
-  Receipt,
-  Download,
-  Filter,
-  CheckCircle2,
-  RotateCcw,
-  Plus,
-  Minus,
-  Sparkles,
-  Printer,
-  Calendar,
-  Activity,
-} from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
-import { StockMovement, Sale } from '../../../types/index';
-import { formatMoney } from '../../../utils/rules';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
+import { History, ArrowDownUp, Printer } from 'lucide-react';
+import { useAtriumStore } from '../../../services/store';
+import { StockMovement } from '../../../types/index';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
-import { Seek } from '../../ui/Seek';
-import { FilterSelect } from '../../ui/FilterSelect';
-import { Modal } from '../../ui/Modal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import {
+  ScreenHeaderBar,
+  ScreenKpiBanner,
+  ScreenPod,
+  ScreenCollectionToolbar,
+  ActiveFilterChip,
+  KineticFilterModal,
+  KineticFilterSection,
+  KineticSlideOverInspector,
+  buildBranchesByIdMap,
+  resolveRecordBranch,
+  downloadCsvSafe,
+} from '../../ui/kinetic';
 
 export const PosHistoryView: React.FC = () => {
-  const { t, language, isRtl } = useTranslation();
+  const { language, isRtl } = useTranslation();
+  const isAr = language === 'ar';
+  const isEn = language === 'en';
   const {
     stockMovements,
-    sales,
     currentBranch,
-    currentUser,
-    resetPosMockData,
+    branches,
     isSyncing,
     networkMode,
     retryCloudSync,
@@ -41,63 +35,34 @@ export const PosHistoryView: React.FC = () => {
     isSyncTimeout,
   } = useAtriumStore();
 
-  // Search & Filters
   const [searchQuery, setSearchQuery] = useState('');
   const [movementTypeFilter, setMovementTypeFilter] = useState<string>('all');
-  const [selectedMovementIds, setSelectedMovementIds] = useState<Set<string>>(new Set());
-  const [pinnedMovementIds, setPinnedMovementIds] = useState<Set<string>>(new Set());
+  const [directionFilter, setDirectionFilter] = useState<'all' | 'in' | 'out'>('all');
+  const [branchFilter, setBranchFilter] = useState<string>('All');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+  const [selectedMovementIds, setSelectedMovementIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedMovementIds, setPinnedMovementIds] = useState<Set<string>>(() => new Set<string>());
   const [movementSortBy, setMovementSortBy] = useState<string>('date');
   const [movementSortDir, setMovementSortDir] = useState<'asc' | 'desc'>('desc');
 
-  // Filtered stock movements
-  const filteredMovements = useMemo(() => {
-    return (stockMovements || []).filter((m) => {
-      if (movementTypeFilter !== 'all' && m.type !== movementTypeFilter) {
-        return false;
-      }
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        return (
-          m.productName.toLowerCase().includes(q) ||
-          (m.reason && m.reason.toLowerCase().includes(q)) ||
-          (m.createdBy && m.createdBy.toLowerCase().includes(q))
-        );
-      }
-      return true;
-    });
-  }, [stockMovements, movementTypeFilter, searchQuery]);
+  const [inspectingMovement, setInspectingMovement] = useState<StockMovement | null>(null);
+  const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const filterButtonRef = useRef<HTMLButtonElement | null>(null);
 
-  // Sorted stock movements
-  const sortedMovements = useMemo(() => {
-    return [...filteredMovements].sort((a, b) => {
-      const aPinned = pinnedMovementIds.has(a.id);
-      const bPinned = pinnedMovementIds.has(b.id);
-      if (aPinned && !bPinned) return -1;
-      if (!aPinned && bPinned) return 1;
+  const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
+  const allMovements = stockMovements || [];
 
-      if (movementSortBy === 'date') {
-        const cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-        return movementSortDir === 'asc' ? cmp : -cmp;
-      }
-      if (movementSortBy === 'product') {
-        const cmp = a.productName.localeCompare(b.productName);
-        return movementSortDir === 'asc' ? cmp : -cmp;
-      }
-      if (movementSortBy === 'qty') {
-        const cmp = a.quantity - b.quantity;
-        return movementSortDir === 'asc' ? cmp : -cmp;
-      }
-      return 0;
-    });
-  }, [filteredMovements, pinnedMovementIds, movementSortBy, movementSortDir]);
-
-  // Movement KPIs
   const movementStats = useMemo(() => {
     let unitsIn = 0;
     let unitsOut = 0;
     let adjustmentsCount = 0;
+    const branchCounts = new Map<string, number>();
 
-    (stockMovements || []).forEach((m) => {
+    allMovements.forEach((m) => {
+      const bName = resolveRecordBranch(m, branchesById, currentBranch, language).name;
+      branchCounts.set(bName, (branchCounts.get(bName) || 0) + 1);
       if (m.quantity > 0) unitsIn += m.quantity;
       else unitsOut += Math.abs(m.quantity);
       if (m.type === 'Adjustment') adjustmentsCount++;
@@ -106,153 +71,295 @@ export const PosHistoryView: React.FC = () => {
     const netUnitsDelta = unitsIn - unitsOut;
 
     return {
-      totalMovements: (stockMovements || []).length,
+      totalMovements: allMovements.length,
       unitsIn,
       unitsOut,
       netUnitsDelta,
       adjustmentsCount,
+      branchOptionsWithCounts: Array.from(branchCounts.entries()).map(([name, count]) => ({
+        value: name,
+        label: name,
+        count,
+      })),
     };
-  }, [stockMovements]);
+  }, [allMovements, branchesById, currentBranch, language]);
 
-  // Columns for Stock Movements UniversalDataCollection
-  const movementColumns: ColumnDefinition<StockMovement>[] = useMemo(() => [
-    {
-      key: 'product',
-      header: language === 'ar' ? 'المنتج / الصنف' : 'Article / Produit',
-      width: '2.5*',
-      minWidth: '180px',
-      sortable: true,
-      renderCell: (m) => (
-        <div className="min-w-0">
-          <div className="font-bold text-xs text-black dark:text-white truncate">
-            {m.productName}
-          </div>
-          <div className="text-[10px] text-black/55 dark:text-white/55 truncate">
-            {m.reason || 'Mouvement régulier'}
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'type',
-      header: language === 'ar' ? 'نوع الحركة' : 'Type Mouvement',
-      width: '1.4*',
-      minWidth: '120px',
-      sortable: true,
-      renderCell: (m) => {
-        const isRestock = m.type === 'Restock' || m.type === 'Initial';
-        const isSale = m.type === 'Sale';
-        const isReturn = m.type === 'Return';
-        const isDamage = m.type === 'Damage';
-
+  const filteredMovements = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return allMovements.filter((m) => {
+      if (movementTypeFilter !== 'all' && m.type !== movementTypeFilter) return false;
+      if (directionFilter === 'in' && m.quantity <= 0) return false;
+      if (directionFilter === 'out' && m.quantity >= 0) return false;
+      if (branchFilter !== 'All') {
+        const bName = resolveRecordBranch(m, branchesById, currentBranch, language).name;
+        if (bName !== branchFilter) return false;
+      }
+      if (q) {
+        const bName = resolveRecordBranch(m, branchesById, currentBranch, language).name.toLowerCase();
         return (
-          <span
-            className={`text-[10px] font-bold uppercase tracking-wider ${
-              isRestock
-                ? 'text-emerald-600 dark:text-emerald-400'
-                : isSale
-                ? 'text-black/70 dark:text-white/75'
-                : isReturn
-                ? 'text-blue-600 dark:text-blue-400'
-                : isDamage
-                ? 'text-red-600 dark:text-red-400'
-                : 'text-amber-600 dark:text-amber-400'
-            }`}
-          >
-            {m.type === 'Sale'
-              ? language === 'ar' ? 'بيع كاشير' : 'Vente POS'
-              : isRestock
-              ? language === 'ar' ? 'تموين / رصيد' : 'Réassort Stock'
-              : m.type === 'Return'
-              ? language === 'ar' ? 'إرجاع زبون' : 'Retour Client'
-              : m.type === 'Damage'
-              ? language === 'ar' ? 'تالف / خردة' : 'Perte / Casse'
-              : m.type}
-          </span>
+          m.productName.toLowerCase().includes(q) ||
+          (m.reason && m.reason.toLowerCase().includes(q)) ||
+          (m.createdBy && m.createdBy.toLowerCase().includes(q)) ||
+          bName.includes(q)
         );
-      },
-    },
-    {
-      key: 'qty',
-      header: language === 'ar' ? 'الكمية' : 'Quantité',
-      width: '1.2*',
-      minWidth: '110px',
-      sortable: true,
-      renderCell: (m) => (
-        <span
-          className={`font-mono font-black text-xs tabular-nums ${
-            m.quantity > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
-          }`}
-        >
-          {m.quantity > 0 ? `+${m.quantity}` : m.quantity}
-        </span>
-      ),
-    },
-    {
-      key: 'transition',
-      header: language === 'ar' ? 'الرصيد (قبل ← بعد)' : 'Évolution (Avant → Après)',
-      width: '1.8*',
-      minWidth: '140px',
-      renderCell: (m) => (
-        <span className="font-mono text-xs text-black/55 dark:text-white/55 tabular-nums">
-          {m.previousStock} → <span className="font-bold text-black dark:text-white">{m.newStock}</span>
-        </span>
-      ),
-    },
-    {
-      key: 'user',
-      header: language === 'ar' ? 'المسؤول' : 'Opérateur',
-      width: '1.5*',
-      minWidth: '130px',
-      renderCell: (m) => (
-        <span className="text-xs text-black/70 dark:text-white/75 truncate block">
-          {m.createdBy || 'Staff'}
-        </span>
-      ),
-    },
-    {
-      key: 'date',
-      header: language === 'ar' ? 'الوقت والتاريخ' : 'Horodatage',
-      width: '1.5*',
-      minWidth: '140px',
-      sortable: true,
-      renderCell: (m) => (
-        <span className="text-xs text-black/55 dark:text-white/55 font-mono">
-          {new Date(m.createdAt).toLocaleString()}
-        </span>
-      ),
-    },
-  ], [language]);
+      }
+      return true;
+    });
+  }, [allMovements, movementTypeFilter, directionFilter, branchFilter, searchQuery, branchesById, currentBranch, language]);
 
-  const handleExportMovementsCSV = () => {
-    const headers = ['Product', 'Type', 'Quantity Change', 'Previous Stock', 'New Stock', 'Reason', 'Operator', 'Timestamp'];
-    const rows = filteredMovements.map((m) => [
-      `"${m.productName}"`,
-      `"${m.type}"`,
+  const sortedMovements = useMemo(() => {
+    const sign = movementSortDir === 'asc' ? 1 : -1;
+    return [...filteredMovements].sort((a, b) => {
+      const aPinned = pinnedMovementIds.has(a.id) ? 0 : 1;
+      const bPinned = pinnedMovementIds.has(b.id) ? 0 : 1;
+      if (aPinned !== bPinned) return aPinned - bPinned;
+      if (movementSortBy === 'date') {
+        return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * sign;
+      }
+      if (movementSortBy === 'product') {
+        return a.productName.localeCompare(b.productName) * sign;
+      }
+      if (movementSortBy === 'type') {
+        return a.type.localeCompare(b.type) * sign;
+      }
+      if (movementSortBy === 'qty') {
+        return (a.quantity - b.quantity) * sign;
+      }
+      if (movementSortBy === 'branch') {
+        const ba = resolveRecordBranch(a, branchesById, currentBranch, language).name;
+        const bb = resolveRecordBranch(b, branchesById, currentBranch, language).name;
+        return ba.localeCompare(bb) * sign;
+      }
+      return 0;
+    });
+  }, [filteredMovements, pinnedMovementIds, movementSortBy, movementSortDir, branchesById, currentBranch, language]);
+
+  const handleResetFilters = useCallback(() => {
+    setMovementTypeFilter('all');
+    setDirectionFilter('all');
+    setBranchFilter('All');
+    setSearchQuery('');
+    setIsFilterModalOpen(false);
+  }, []);
+
+  const hasActiveAdvancedFilters =
+    branchFilter !== 'All' || (movementTypeFilter !== 'all' && !['Sale', 'Restock'].includes(movementTypeFilter));
+  const activeFiltersCount =
+    (branchFilter !== 'All' ? 1 : 0) +
+    (movementTypeFilter !== 'all' ? 1 : 0);
+
+  const handleExportMovementsCSV = useCallback(() => {
+    const headers = [
+      'Product',
+      'Type',
+      'Quantity Change',
+      'Previous Stock',
+      'New Stock',
+      'Reason',
+      'Operator',
+      isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
+      'Timestamp',
+    ];
+    const rows = sortedMovements.map((m) => [
+      m.productName,
+      m.type,
       m.quantity,
       m.previousStock,
       m.newStock,
-      `"${m.reason || ''}"`,
-      `"${m.createdBy || ''}"`,
-      `"${new Date(m.createdAt).toLocaleString()}"`,
+      m.reason || '',
+      m.createdBy || 'Staff',
+      resolveRecordBranch(m, branchesById, currentBranch, language).name,
+      new Date(m.createdAt).toLocaleString(),
     ]);
-    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `Stock_Movements_Audit_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+    downloadCsvSafe(
+      `atrium-stock-movements-${new Date().toISOString().slice(0, 10)}.csv`,
+      headers,
+      rows
+    );
+  }, [sortedMovements, branchesById, currentBranch, language, isAr, isEn]);
+
+  const statusOptions = useMemo(
+    () => [
+      { value: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous', count: allMovements.length },
+      { value: 'Sale', label: isAr ? 'مبيعات' : isEn ? 'Sales' : 'Ventes' },
+      { value: 'Restock', label: isAr ? 'تموين' : isEn ? 'Restock' : 'Réassort' },
+      { value: 'Adjustment', label: isAr ? 'تعديل' : isEn ? 'Adjust' : 'Ajustement' },
+    ],
+    [isAr, isEn, allMovements.length]
+  );
+
+  const filterSections = useMemo<KineticFilterSection[]>(
+    () => [
+      {
+        id: 'branch',
+        label: isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
+        value: branchFilter,
+        onChange: setBranchFilter,
+        kind: 'tiles',
+        columns: 2,
+        options: [
+          { value: 'All', label: isAr ? 'كل الفروع' : isEn ? 'All Branches' : 'Toutes les branches', count: allMovements.length },
+          ...movementStats.branchOptionsWithCounts,
+        ],
+      },
+      {
+        id: 'type',
+        label: isAr ? 'نوع الحركة' : isEn ? 'Movement Type' : 'Type de mouvement',
+        value: movementTypeFilter,
+        onChange: setMovementTypeFilter,
+        kind: 'tiles',
+        columns: 2,
+        options: [
+          { value: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous' },
+          { value: 'Sale', label: isAr ? 'بيع كاشير' : 'Vente POS' },
+          { value: 'Restock', label: isAr ? 'تموين واستلام' : 'Réassort Stock' },
+          { value: 'Return', label: isAr ? 'إرجاع زبون' : 'Retour Client' },
+          { value: 'Damage', label: isAr ? 'تالف' : 'Perte / Casse' },
+          { value: 'Adjustment', label: isAr ? 'تعديل جرد' : 'Ajustement' },
+        ],
+      },
+      {
+        id: 'direction',
+        label: isAr ? 'اتجاه التدفق' : isEn ? 'Direction' : 'Sens du flux',
+        value: directionFilter,
+        onChange: (val) => setDirectionFilter(val as 'all' | 'in' | 'out'),
+        kind: 'segmented',
+        options: [
+          { value: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous' },
+          { value: 'in', label: isAr ? 'دخول (+)' : 'Entrées (+)' },
+          { value: 'out', label: isAr ? 'خروج (-)' : 'Sorties (-)' },
+        ],
+      },
+    ],
+    [isAr, isEn, branchFilter, allMovements.length, movementStats.branchOptionsWithCounts, movementTypeFilter, directionFilter]
+  );
+
+  const activeChips = useMemo<ActiveFilterChip[]>(() => {
+    const chips: ActiveFilterChip[] = [];
+    if (branchFilter !== 'All') chips.push({ key: 'branch', label: branchFilter, onRemove: () => setBranchFilter('All') });
+    if (movementTypeFilter !== 'all') chips.push({ key: 'type', label: movementTypeFilter, onRemove: () => setMovementTypeFilter('all') });
+    if (directionFilter !== 'all') chips.push({ key: 'dir', label: directionFilter === 'in' ? 'Entrées (+)' : 'Sorties (-)', onRemove: () => setDirectionFilter('all') });
+    return chips;
+  }, [branchFilter, movementTypeFilter, directionFilter]);
+
+  const movementColumns: ColumnDefinition<StockMovement>[] = useMemo(
+    () => [
+      {
+        key: 'product',
+        header: isAr ? 'المنتج / الصنف' : 'Article / Produit',
+        width: '2.3*',
+        minWidth: '170px',
+        sortable: true,
+        renderCell: (m) => (
+          <div className="min-w-0">
+            <div className="font-bold text-xs text-black dark:text-white truncate">
+              {m.productName}
+            </div>
+            <div className="text-[10px] text-black/55 dark:text-white/55 truncate">
+              {m.reason || 'Mouvement régulier'}
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'type',
+        header: isAr ? 'نوع الحركة' : 'Type Mouvement',
+        width: '1.2*',
+        minWidth: '110px',
+        sortable: true,
+        renderCell: (m) => {
+          const isRestock = m.type === 'Restock' || m.type === 'Initial';
+          const isSale = m.type === 'Sale';
+          const isReturn = m.type === 'Return';
+          const isDamage = m.type === 'Damage';
+          return (
+            <span
+              className={`text-[10px] font-bold uppercase tracking-wider ${
+                isRestock
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : isSale
+                  ? 'text-black/70 dark:text-white/75'
+                  : isReturn
+                  ? 'text-blue-600 dark:text-blue-400'
+                  : isDamage
+                  ? 'text-red-600 dark:text-red-400'
+                  : 'text-amber-600 dark:text-amber-400'
+              }`}
+            >
+              {m.type === 'Sale'
+                ? isAr ? 'بيع كاشير' : 'Vente POS'
+                : isRestock
+                ? isAr ? 'تموين' : 'Réassort'
+                : m.type === 'Return'
+                ? isAr ? 'إرجاع' : 'Retour Client'
+                : m.type === 'Damage'
+                ? isAr ? 'تالف' : 'Casse'
+                : m.type}
+            </span>
+          );
+        },
+      },
+      {
+        key: 'qty',
+        header: isAr ? 'الكمية' : 'Quantité',
+        width: '1*',
+        minWidth: '90px',
+        sortable: true,
+        renderCell: (m) => (
+          <span
+            className={`font-mono font-black text-xs tabular-nums ${
+              m.quantity > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+            }`}
+          >
+            {m.quantity > 0 ? `+${m.quantity}` : m.quantity}
+          </span>
+        ),
+      },
+      {
+        key: 'transition',
+        header: isAr ? 'الرصيد (قبل ← بعد)' : 'Évolution',
+        width: '1.5*',
+        minWidth: '120px',
+        renderCell: (m) => (
+          <span className="font-mono text-xs text-black/55 dark:text-white/55 tabular-nums">
+            {m.previousStock} → <span className="font-bold text-black dark:text-white">{m.newStock}</span>
+          </span>
+        ),
+      },
+      {
+        key: 'branch',
+        header: isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
+        width: '1.2*',
+        minWidth: '110px',
+        sortable: true,
+        renderCell: (m) => (
+          <span className="text-xs font-medium text-black/75 dark:text-white/80 truncate block">
+            {resolveRecordBranch(m, branchesById, currentBranch, language).name}
+          </span>
+        ),
+      },
+      {
+        key: 'date',
+        header: isAr ? 'التاريخ' : 'Horodatage',
+        width: '1.4*',
+        minWidth: '130px',
+        sortable: true,
+        renderCell: (m) => (
+          <span className="text-xs text-black/55 dark:text-white/55 font-mono">
+            {new Date(m.createdAt).toLocaleString()}
+          </span>
+        ),
+      },
+    ],
+    [isAr, isEn, branchesById, currentBranch, language]
+  );
 
   const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
-    hasCachedData: (stockMovements || []).length > 0,
+    hasCachedData: allMovements.length > 0,
   });
 
-  if (showSkeleton && ((stockMovements || []).length === 0 || networkMode === 'force_skeleton')) {
+  if (showSkeleton && (allMovements.length === 0 || networkMode === 'force_skeleton')) {
     return (
       <SkeletonCollectionScreen
         kpiCount={3}
@@ -264,10 +371,7 @@ export const PosHistoryView: React.FC = () => {
           { width: '1.2*', minWidth: '100px' },
           { width: '1.5*', minWidth: '140px' },
         ]}
-        hasIcon
-        hasFacility={false}
-        hasActionBtn
-        actionBtnWidth={130}
+        viewMode={viewMode}
         isOffline={isOffline}
         isTimedOut={isTimedOut}
         onRetry={retryCloudSync}
@@ -276,254 +380,206 @@ export const PosHistoryView: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200" dir={isRtl ? 'rtl' : 'ltr'}>
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
-              <History className="text-[#d4522f]" size={32} />
-              <span>
-                {language === 'ar' ? 'السجل' : language === 'fr' ? 'Historique' : 'History'}
-              </span>
-            </h1>
-            <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
-              {movementStats.totalMovements} {language === 'ar' ? 'حركة مسجلة' : 'événements'}
-            </span>
-          </div>
-        </div>
+    <div className="space-y-6 animate-in fade-in duration-200 relative" dir={isRtl ? 'rtl' : 'ltr'}>
+      <ScreenHeaderBar
+        icon={<History size={22} />}
+        title={isAr ? 'السجل' : isEn ? 'History' : 'Historique'}
+        primaryAction={{
+          label: isAr ? 'طباعة السجل' : isEn ? 'Print Audit' : 'Imprimer Journal',
+          icon: <Printer size={15} />,
+          onClick: () => window.print(),
+        }}
+      />
 
-        <div className="flex items-center gap-2.5 flex-wrap">
+      <ScreenKpiBanner
+        heading={isAr ? 'مؤشرات حركة وتدفق المخزون' : isEn ? 'Inventory Flow & Audit' : 'Indicateurs de Flux & Conformité d’Inventaire'}
+        language={language}
+        primaryCard={{
+          label: isAr ? 'الوحدات المضافة (+)' : isEn ? 'Stock In (+)' : 'Entrées Physiques (+)',
+          badgeText: 'Réassorts & Retours',
+          count: movementStats.unitsIn,
+          tone: 'emerald',
+          isActive: directionFilter === 'in',
+          onToggle: () => setDirectionFilter((p) => (p === 'in' ? 'all' : 'in')),
+        }}
+        secondaryCard={{
+          label: isAr ? 'الوحدات المخصومة (-)' : isEn ? 'Stock Out (-)' : 'Sorties Physiques (-)',
+          badgeText: 'ventes & pertes',
+          count: movementStats.unitsOut,
+          tone: 'terracotta',
+          isActive: directionFilter === 'out',
+          onToggle: () => setDirectionFilter((p) => (p === 'out' ? 'all' : 'out')),
+        }}
+        darkCard={{
+          label: isAr ? 'تدقيق الحركات والرصيد الصافي' : isEn ? 'Net Movement Delta' : 'Journal & Solde Net',
+          badgePrefix: '',
+          badgeCount: movementStats.totalMovements,
+          badgeSuffix: isAr ? 'حركة' : 'mouvements',
+          valuePrefix: movementStats.netUnitsDelta >= 0 ? '+' : '',
+          valueCount: movementStats.netUnitsDelta,
+          valueSuffix: ' u.',
+          caption: `${movementStats.adjustmentsCount} rectifications · ${currentBranch?.name || 'Magasin'}`,
+        }}
+      />
 
+      <ScreenPod>
+        <ScreenCollectionToolbar
+          title={isAr ? 'سجل حركات المخزون والمراجعة' : isEn ? 'Stock Audit Log' : 'Registre des Mouvements de Stock'}
+          liveRegionText={`${sortedMovements.length} mouvements`}
+          language={language}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder={isAr ? 'بحث في الحركات والفرع...' : 'Rechercher produit, motif, branche...'}
+          statusOptions={statusOptions}
+          statusValue={movementTypeFilter}
+          onStatusChange={setMovementTypeFilter}
+          hasActiveAdvancedFilters={hasActiveAdvancedFilters}
+          activeFiltersCount={activeFiltersCount}
+          isFilterModalOpen={isFilterModalOpen}
+          filterButtonRef={filterButtonRef}
+          onToggleFilterModal={() => setIsFilterModalOpen((p) => !p)}
+          viewMode={viewMode}
+          onViewModeChange={(m) => setViewMode(m === 'grid' ? 'grid' : 'list')}
+          onExport={handleExportMovementsCSV}
+          activeChips={activeChips}
+          onResetAllFilters={handleResetFilters}
+        />
 
-          <button
-            type="button"
-            onClick={handleExportMovementsCSV}
-            className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-50 text-xs font-bold text-black/70 dark:text-white flex items-center gap-1.5 cursor-pointer shadow-2xs"
-          >
-            <Download size={14} />
-            <span>{language === 'ar' ? 'تصدير CSV' : 'Export CSV'}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* TOP METRICS POD TRAY */}
-      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
-          <div className="flex items-center gap-2">
-            <Activity size={18} className="text-[#d4522f]" />
-            <h2 className="text-xs font-black uppercase tracking-wider text-black dark:text-white">
-              {language === 'ar' ? 'مؤشرات حركة وتدفق المخزون' : 'Indicateurs de Flux & Conformité d’Inventaire'}
-            </h2>
-          </div>
-          <span className="text-xs text-black/55 dark:text-white/55 font-medium">
-            {currentBranch.name} · Live Registry
-          </span>
-        </div>
-
-        {/* 3-Card Canonical Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Card 1: Entrées */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-            <div>
-              <div className="flex items-center justify-between text-black/55 dark:text-white/75">
-                <span className="text-xs font-semibold text-black/70 dark:text-white/75">
-                  {language === 'ar' ? 'الوحدات المضافة' : 'Entrées Physiques (+)'}
-                </span>
-                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                  Réassorts
-                </span>
-              </div>
-            </div>
-            <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-              +{movementStats.unitsIn}
-            </div>
-          </div>
-
-          {/* Card 2: Sorties */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-            <div>
-              <div className="flex items-center justify-between text-black/55 dark:text-white/75">
-                <span className="text-xs font-semibold text-black/70 dark:text-white/75">
-                  {language === 'ar' ? 'الوحدات المخصومة' : 'Sorties Physiques (-)'}
-                </span>
-                <span className="text-[10px] font-bold text-red-600 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded-full">
-                  Ventes & Pertes
-                </span>
-              </div>
-            </div>
-            <div className="text-2xl font-black text-red-600 dark:text-red-400 tracking-tight tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-              -{movementStats.unitsOut}
-            </div>
-          </div>
-
-          {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
-          <div className="bg-[#1F1D1B] rounded-[20px] p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between h-[124px] relative overflow-hidden group">
-            {/* Glowing Sparkline Graphic */}
-            <div className="absolute -right-4 -bottom-6 opacity-20 group-hover:opacity-30 transition-opacity pointer-events-none">
-              <svg width="140" height="90" viewBox="0 0 140 90" fill="none">
-                <path
-                  d="M10 50 L35 65 L60 35 L85 45 L110 20 L135 15"
-                  stroke="#FB923C"
-                  strokeWidth="3.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <circle cx="135" cy="15" r="4" fill="#FB923C" />
-              </svg>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-white/80">
-                  {language === 'ar' ? 'تدقيق الحركات والتسوية' : 'Journal & Solde Net'}
-                </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
-                  {movementStats.totalMovements} événements
-                </span>
-              </div>
-              <div className="text-2xl font-black tracking-tight text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                {movementStats.netUnitsDelta > 0 ? `+${movementStats.netUnitsDelta}` : movementStats.netUnitsDelta} <span className="text-xs font-normal text-white/75">unités nettes</span>
-              </div>
-            </div>
-
-            <div className="pt-1.5 border-t border-neutral-800/80 flex items-center justify-between text-[10px] text-white/75">
-              <span>{movementStats.adjustmentsCount} rectifications manuelles</span>
-              <span className="text-[#FB923C] font-semibold">Registre certifié</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* BOTTOM COLLECTION POD TRAY */}
-      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-        {/* Controls Bar: Left Anchor + Seek Search + FilterSelect + Actions */}
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-          {/* Left Title / Icon / Count Anchor */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
-              <History size={18} />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-black dark:text-white">
-                {language === 'ar' ? 'سجل حركات المخزون والمراجعة' : 'Registre des Mouvements de Stock'}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <div className="w-full sm:w-56">
-              <Seek
-                placeholder={language === 'ar' ? 'بحث في الحركات...' : 'Rechercher un mouvement...'}
-                value={searchQuery}
-                onChange={setSearchQuery}
-              />
-            </div>
-
-            <FilterSelect
-              value={movementTypeFilter}
-              onChange={setMovementTypeFilter}
-              options={[
-                {
-                  value: 'all',
-                  label: language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All',
-                  tooltip: language === 'ar' ? 'جميع الحركات' : language === 'fr' ? 'Tous les mouvements' : 'All movements',
-                },
-                {
-                  value: 'Sale',
-                  label: language === 'ar' ? 'مبيعات' : language === 'fr' ? 'Ventes' : 'Sales',
-                  tooltip: language === 'ar' ? 'مبيعات كاشير' : language === 'fr' ? 'Ventes Caisse' : 'POS Sales',
-                },
-                {
-                  value: 'Restock',
-                  label: language === 'ar' ? 'تموين' : language === 'fr' ? 'Réassort' : 'Restock',
-                  tooltip: language === 'ar' ? 'تموين واستلام' : language === 'fr' ? 'Réassort Stock' : 'Stock Restock',
-                },
-                {
-                  value: 'Return',
-                  label: language === 'ar' ? 'إرجاع' : language === 'fr' ? 'Retours' : 'Returns',
-                  tooltip: language === 'ar' ? 'إرجاع زبون' : language === 'fr' ? 'Retour Client' : 'Customer Return',
-                },
-                {
-                  value: 'Damage',
-                  label: language === 'ar' ? 'تالف' : language === 'fr' ? 'Casse' : 'Damage',
-                  tooltip: language === 'ar' ? 'تالف / خردة' : language === 'fr' ? 'Casse / Dépréciation' : 'Damaged / Write-off',
-                },
-                {
-                  value: 'Adjustment',
-                  label: language === 'ar' ? 'تعديل' : language === 'fr' ? 'Ajustement' : 'Adjust',
-                  tooltip: language === 'ar' ? 'تعديل جرد' : language === 'fr' ? 'Ajustement Manuel' : 'Manual Adjustment',
-                },
-              ]}
-              ariaLabel="Filtrer par type de mouvement"
-            />
-          </div>
-        </div>
-
-        {/* Collection Floating on Pod Tray */}
-        <div className="w-full">
-          <UniversalDataCollection<StockMovement>
-            items={sortedMovements}
-            keyExtractor={(m) => m.id}
-            defaultViewMode="list"
-            columns={movementColumns}
-            sortBy={movementSortBy}
-            sortDirection={movementSortDir}
-            onSortChange={(key) => {
-              if (movementSortBy === key) {
-                setMovementSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-              } else {
-                setMovementSortBy(key);
-                setMovementSortDir('asc');
-              }
-            }}
-            renderCard={(m) => (
-              <div className="flex flex-col justify-between h-full space-y-3">
-                <div>
-                  <div className="flex items-start justify-between gap-2 mb-1">
-                    <span className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase">
-                      {m.type}
-                    </span>
-                    <span
-                      className={`font-mono font-black text-xs tabular-nums ${
-                        m.quantity > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
-                      }`}
-                    >
-                      {m.quantity > 0 ? `+${m.quantity}` : m.quantity}
-                    </span>
-                  </div>
-                  <div className="font-bold text-xs text-black dark:text-white truncate">
-                    {m.productName}
-                  </div>
-                  {m.reason && (
-                    <div className="text-[10px] text-black/55 dark:text-white/55 truncate mt-0.5">
-                      {m.reason}
-                    </div>
-                  )}
+        <UniversalDataCollection<StockMovement>
+          data={sortedMovements}
+          keyExtractor={(m) => m.id}
+          viewMode={viewMode}
+          hideToolbar
+          openItemId={inspectingMovement?.id ?? null}
+          isLoading={isSyncing || networkMode === 'force_skeleton'}
+          isOffline={networkMode === 'offline'}
+          isTimedOut={isSyncTimeout}
+          lastSyncedAt={lastSyncedAt}
+          onRetrySync={retryCloudSync}
+          columns={movementColumns}
+          sortBy={movementSortBy}
+          sortDirection={movementSortDir}
+          onSortChange={(col, dir) => {
+            setMovementSortBy(col);
+            setMovementSortDir(dir);
+          }}
+          onItemClick={(m, opener) => {
+            setDrawerOpenerEl(opener || null);
+            setInspectingMovement(m);
+          }}
+          onViewDetails={(m, opener) => {
+            setDrawerOpenerEl(opener || null);
+            setInspectingMovement(m);
+          }}
+          renderCard={(m) => (
+            <div className="flex flex-col justify-between h-full space-y-3">
+              <div>
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <span className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase">
+                    {m.type}
+                  </span>
+                  <span
+                    className={`font-mono font-black text-xs tabular-nums ${
+                      m.quantity > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+                    }`}
+                  >
+                    {m.quantity > 0 ? `+${m.quantity}` : m.quantity}
+                  </span>
                 </div>
-
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/50 flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
-                  <span className="font-mono">{m.previousStock} → {m.newStock}</span>
-                  <span>{new Date(m.createdAt).toLocaleDateString()}</span>
+                <div className="font-bold text-xs text-black dark:text-white truncate">
+                  {m.productName}
                 </div>
+                {m.reason && (
+                  <div className="text-[10px] text-black/55 dark:text-white/55 truncate mt-0.5">
+                    {m.reason}
+                  </div>
+                )}
               </div>
-            )}
-            selectedIds={selectedMovementIds}
-            onSelectionChange={setSelectedMovementIds}
-            isPinned={(m) => pinnedMovementIds.has(m.id)}
-            onTogglePin={(m) => {
-              setPinnedMovementIds((prev) => {
-                const next = new Set(prev);
-                if (next.has(m.id)) next.delete(m.id);
-                else next.add(m.id);
-                return next;
-              });
-            }}
-            emptyTitle={language === 'ar' ? 'لا توجد حركات مطابقة' : 'Aucun mouvement trouvé'}
-            emptyDescription={language === 'ar' ? 'قم بتسجيل مبيعات أو تعديل المخزون' : 'Les transactions et réassorts apparaîtront ici.'}
-          />
-        </div>
-      </div>
+              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/50 flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
+                <span className="font-mono">{m.previousStock} → {m.newStock}</span>
+                <span>{new Date(m.createdAt).toLocaleDateString()}</span>
+              </div>
+            </div>
+          )}
+          selectedIds={selectedMovementIds}
+          onSelectionChange={setSelectedMovementIds}
+          pinnedIds={pinnedMovementIds}
+          onPinToggle={(idOrItem) => {
+            const id = typeof idOrItem === 'string' ? idOrItem : idOrItem.id;
+            setPinnedMovementIds((prev) => {
+              const next = new Set(prev);
+              if (next.has(id)) next.delete(id);
+              else next.add(id);
+              return next;
+            });
+          }}
+          emptyTitle={isAr ? 'لا توجد حركات مطابقة' : 'Aucun mouvement trouvé'}
+          emptyDescription={isAr ? 'قم بتسجيل مبيعات أو تعديل المخزون' : 'Les transactions et réassorts apparaîtront ici.'}
+          onResetFilters={handleResetFilters}
+          hasActiveFilters={hasActiveAdvancedFilters || directionFilter !== 'all' || movementTypeFilter !== 'all' || searchQuery.trim().length > 0}
+        />
+      </ScreenPod>
+
+      <KineticFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        triggerRef={filterButtonRef}
+        language={language}
+        displayCount={sortedMovements.length}
+        entityPluralLabel={isAr ? 'حركات' : 'mouvements'}
+        hasActiveFilters={hasActiveAdvancedFilters || directionFilter !== 'all'}
+        onResetFilters={handleResetFilters}
+        sections={filterSections}
+      />
+
+      <KineticSlideOverInspector<StockMovement>
+        isOpen={inspectingMovement !== null}
+        item={inspectingMovement}
+        allItems={sortedMovements}
+        keyExtractor={(m) => m.id}
+        openerElement={drawerOpenerEl}
+        language={language}
+        title={inspectingMovement?.productName || ''}
+        subtitle={inspectingMovement ? `${inspectingMovement.type} · ${new Date(inspectingMovement.createdAt).toLocaleString()}` : undefined}
+        branchName={inspectingMovement ? resolveRecordBranch(inspectingMovement, branchesById, currentBranch, language).name : undefined}
+        statusLabel={inspectingMovement ? (inspectingMovement.quantity >= 0 ? `+${inspectingMovement.quantity}` : `${inspectingMovement.quantity}`) : undefined}
+        statusClassName={
+          inspectingMovement && inspectingMovement.quantity >= 0
+            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+            : 'bg-rose-50 text-rose-700 border border-rose-200'
+        }
+        onClose={() => setInspectingMovement(null)}
+        onSelectItem={(m) => setInspectingMovement(m)}
+        renderBody={(m) => (
+          <div className="space-y-4 text-xs">
+            <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] grid grid-cols-2 gap-3">
+              <div>
+                <span className="text-black/60 dark:text-white/65 block text-[11px]">Solde Avant</span>
+                <span className="font-mono font-bold text-sm text-black dark:text-white">{m.previousStock}</span>
+              </div>
+              <div>
+                <span className="text-black/60 dark:text-white/65 block text-[11px]">Solde Après</span>
+                <span className="font-mono font-bold text-sm text-[#d4522f]">{m.newStock}</span>
+              </div>
+              <div>
+                <span className="text-black/60 dark:text-white/65 block text-[11px]">Opérateur</span>
+                <span className="font-semibold text-black dark:text-white">{m.createdBy || 'Staff'}</span>
+              </div>
+              <div>
+                <span className="text-black/60 dark:text-white/65 block text-[11px]">Variation</span>
+                <span className="font-mono font-black flex items-center gap-1">
+                  <ArrowDownUp size={12} className="text-[#d4522f]" />
+                  {m.quantity > 0 ? `+${m.quantity}` : m.quantity}
+                </span>
+              </div>
+            </div>
+            <div className="p-4 rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] bg-white dark:bg-[#1E1C1A]">
+              <span className="text-black/60 dark:text-white/65 block text-[11px] mb-1">Motif enregistré</span>
+              <p className="font-medium text-black dark:text-white">{m.reason || 'Mouvement standard POS'}</p>
+            </div>
+          </div>
+        )}
+      />
     </div>
   );
 };

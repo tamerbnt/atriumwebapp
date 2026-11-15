@@ -1,35 +1,22 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   Users,
-  Search,
   Plus,
   Play,
   FileText,
-  DollarSign,
   Briefcase,
-  Clock,
-  ChevronRight,
-  X,
   Mail,
   Phone,
   Globe,
   Edit2,
   CheckCircle,
-  Building,
   Trash2,
   AlertTriangle,
-  Pin,
-  Download,
-  Sparkles,
-  Home,
-  ChevronDown,
-  Building2,
-  Check,
+  X,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumStore, showToast } from '../../../services/store';
 import { formatCurrencyAmount, formatDuration } from '../../../utils/rules';
 import { FreelanceClient, FreelanceClientStatus, CurrencyCode } from '../../../types/index';
-import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -37,9 +24,28 @@ import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import {
+  ScreenHeaderBar,
+  ScreenKpiBanner,
+  ScreenPod,
+  ScreenCollectionToolbar,
+  ActiveFilterChip,
+  KineticFilterModal,
+  KineticFilterSection,
+  KineticSlideOverInspector,
+  buildBranchesByIdMap,
+  resolveRecordBranch,
+  downloadCsvSafe,
+} from '../../ui/kinetic';
+
+const extractStr = (val: any): string =>
+  typeof val === 'string' ? val : val?.target?.value ?? String(val ?? '');
 
 export const FreelanceClientsView: React.FC = () => {
-  const { t, language, isRtl } = useTranslation();
+  const { t, language } = useTranslation();
+  const isAr = language === 'ar';
+  const isFr = language === 'fr';
+
   const {
     freelanceClients,
     freelanceProjects,
@@ -50,14 +56,9 @@ export const FreelanceClientsView: React.FC = () => {
     deleteFreelanceClient,
     startTimer,
     billUnbilledHours,
-    businesses,
     branches,
-    currentBusinessId,
-    currentBranchId,
-    switchBusiness,
-    switchBranch,
+    currentBranch,
     setScreen,
-    showToast,
     isSyncing,
     networkMode,
     retryCloudSync,
@@ -65,22 +66,26 @@ export const FreelanceClientsView: React.FC = () => {
     isSyncTimeout,
   } = useAtriumStore();
 
-  const currentBranch = branches.find((b) => b.id === currentBranchId);
-  const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
-
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [branchFilter, setBranchFilter] = useState<string>('All');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const filterButtonRef = useRef<HTMLButtonElement | null>(null);
+
   const [selectedClient, setSelectedClient] = useState<FreelanceClient | null>(null);
+  const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [clientToEdit, setClientToEdit] = useState<FreelanceClient | null>(null);
   const [clientToDelete, setClientToDelete] = useState<FreelanceClient | null>(null);
   const [deleteCascade, setDeleteCascade] = useState(false);
-  const [selectedClientIds, setSelectedClientIds] = useState<Set<string>>(new Set());
-  const [pinnedClientIds, setPinnedClientIds] = useState<Set<string>>(new Set());
+
+  const [selectedClientIds, setSelectedClientIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedClientIds, setPinnedClientIds] = useState<Set<string>>(() => new Set<string>());
   const [clientSortBy, setClientSortBy] = useState<string>('client');
   const [clientSortDir, setClientSortDir] = useState<'asc' | 'desc'>('asc');
 
-  // Form state
   const [formData, setFormData] = useState({
     name: '',
     company: '',
@@ -95,43 +100,95 @@ export const FreelanceClientsView: React.FC = () => {
     notes: '',
   });
 
+  const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
+
+  const branchCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    freelanceClients.forEach((c) => {
+      const bName = resolveRecordBranch(c, branchesById, currentBranch, language).name;
+      map.set(bName, (map.get(bName) || 0) + 1);
+    });
+    return map;
+  }, [freelanceClients, branchesById, currentBranch, language]);
+
   const filteredClients = useMemo(() => {
     return freelanceClients.filter((client) => {
-      const matchesSearch =
-        client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (client.company && client.company.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        client.email.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStatus =
-        selectedStatus === 'all' ? true : client.status.toLowerCase() === selectedStatus.toLowerCase();
-      return matchesSearch && matchesStatus;
+      if (branchFilter !== 'All') {
+        const bName = resolveRecordBranch(client, branchesById, currentBranch, language).name;
+        if (bName !== branchFilter) return false;
+      }
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesSearch =
+          client.name.toLowerCase().includes(q) ||
+          (client.company && client.company.toLowerCase().includes(q)) ||
+          client.email.toLowerCase().includes(q);
+        if (!matchesSearch) return false;
+      }
+      if (selectedStatus !== 'all') {
+        if (client.status.toLowerCase() !== selectedStatus.toLowerCase()) return false;
+      }
+      return true;
     });
-  }, [freelanceClients, searchQuery, selectedStatus]);
+  }, [freelanceClients, branchFilter, searchQuery, selectedStatus, branchesById, currentBranch, language]);
 
-  // Aggregate metrics
+  const sortedClients = useMemo(() => {
+    return [...filteredClients].sort((a, b) => {
+      const aPinned = pinnedClientIds.has(a.id);
+      const bPinned = pinnedClientIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (clientSortBy === 'client') {
+        const cmp = a.name.localeCompare(b.name);
+        return clientSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (clientSortBy === 'branch') {
+        const cmp = resolveRecordBranch(a, branchesById, currentBranch, language).name.localeCompare(
+          resolveRecordBranch(b, branchesById, currentBranch, language).name
+        );
+        return clientSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (clientSortBy === 'rate') {
+        return clientSortDir === 'asc' ? a.hourlyRate - b.hourlyRate : b.hourlyRate - a.hourlyRate;
+      }
+      return 0;
+    });
+  }, [filteredClients, pinnedClientIds, clientSortBy, clientSortDir, branchesById, currentBranch, language]);
+
+  const activeClient = useMemo(() => {
+    if (!selectedClient) return null;
+    return freelanceClients.find((c) => c.id === selectedClient.id) || selectedClient;
+  }, [selectedClient, freelanceClients]);
+
   const totalClientsCount = freelanceClients.length;
   const activeRetainersCount = freelanceClients.filter((c) => c.status === 'ActiveRetainer').length;
+  const projectBasedCount = freelanceClients.filter((c) => c.status === 'ProjectBased').length;
   const totalBilledEquiv = freelanceInvoices
     .filter((inv) => inv.status === 'Paid')
     .reduce((sum, inv) => sum + inv.totalAmount, 0);
 
-  const getClientUnbilledTime = (clientId: string) => {
-    const unbilledLogs = timeLogs.filter(
-      (log) => log.clientId === clientId && log.isBillable && !log.isInvoiced
-    );
-    const totalSeconds = unbilledLogs.reduce((acc, log) => acc + log.durationSeconds, 0);
-    const unbilledAmount = unbilledLogs.reduce(
-      (acc, log) => acc + (log.durationSeconds / 3600) * log.rateAtMoment,
-      0
-    );
-    return {
-      hours: Number((totalSeconds / 3600).toFixed(1)),
-      seconds: totalSeconds,
-      amount: Math.round(unbilledAmount),
-      count: unbilledLogs.length,
-    };
-  };
+  const getClientUnbilledTime = useCallback(
+    (clientId: string) => {
+      const unbilledLogs = timeLogs.filter(
+        (log) => log.clientId === clientId && log.isBillable && !log.isInvoiced
+      );
+      const totalSeconds = unbilledLogs.reduce((acc, log) => acc + log.durationSeconds, 0);
+      const unbilledAmount = unbilledLogs.reduce(
+        (acc, log) => acc + (log.durationSeconds / 3600) * log.rateAtMoment,
+        0
+      );
+      return {
+        hours: Number((totalSeconds / 3600).toFixed(1)),
+        seconds: totalSeconds,
+        amount: Math.round(unbilledAmount),
+        count: unbilledLogs.length,
+      };
+    },
+    [timeLogs]
+  );
 
-  const handleOpenAddModal = () => {
+  const handleOpenAddModal = useCallback(() => {
     setClientToEdit(null);
     setFormData({
       name: '',
@@ -147,9 +204,9 @@ export const FreelanceClientsView: React.FC = () => {
       notes: '',
     });
     setIsAddModalOpen(true);
-  };
+  }, []);
 
-  const handleOpenEditModal = (client: FreelanceClient) => {
+  const handleOpenEditModal = useCallback((client: FreelanceClient) => {
     setClientToEdit(client);
     setFormData({
       name: client.name,
@@ -165,7 +222,7 @@ export const FreelanceClientsView: React.FC = () => {
       notes: client.notes || '',
     });
     setIsAddModalOpen(true);
-  };
+  }, []);
 
   const handleSubmitClient = (e: React.FormEvent) => {
     e.preventDefault();
@@ -211,194 +268,212 @@ export const FreelanceClientsView: React.FC = () => {
     setIsAddModalOpen(false);
   };
 
-  const handleQuickStartTimer = (client: FreelanceClient) => {
-    const clientProjects = freelanceProjects.filter((p) => p.clientId === client.id);
-    const activeProject = clientProjects[0];
-    startTimer(
-      client.id,
-      client.name,
-      activeProject ? activeProject.id : 'proj_general',
-      activeProject ? activeProject.title : t('free_inv_default_item_desc', language),
-      `${t('free_time_working_on_label', language)} ${client.name}`,
-      activeProject?.deliverables[0]?.id,
-      activeProject?.deliverables[0]?.title,
-      true,
-      false
-    );
-  };
-
-  const handleQuickBill = (client: FreelanceClient) => {
-    try {
-      billUnbilledHours(client.id, 0, `Invoice for unbilled hours - ${client.name}`);
-      setScreen('shop');
-    } catch (err: any) {
-      console.error('Unable to bill unbilled hours:', err?.message || err);
-    }
-  };
-
-  const sortedClients = useMemo(() => {
-    return [...filteredClients].sort((a, b) => {
-      const aPinned = pinnedClientIds.has(a.id);
-      const bPinned = pinnedClientIds.has(b.id);
-      if (aPinned && !bPinned) return -1;
-      if (!aPinned && bPinned) return 1;
-
-      if (clientSortBy === 'client') {
-        const cmp = a.name.localeCompare(b.name);
-        return clientSortDir === 'asc' ? cmp : -cmp;
-      }
-      if (clientSortBy === 'rate') {
-        return clientSortDir === 'asc' ? a.hourlyRate - b.hourlyRate : b.hourlyRate - a.hourlyRate;
-      }
-      return 0;
-    });
-  }, [filteredClients, pinnedClientIds, clientSortBy, clientSortDir]);
-
-  const clientColumns: ColumnDefinition<FreelanceClient>[] = useMemo(() => [
-    {
-      key: 'client',
-      header: t('free_clients_table_client', language) || 'Client',
-      width: '2.5*',
-      minWidth: '220px',
-      sortable: true,
-      renderCell: (client) => (
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">
-            {client.name.charAt(0)}
-          </div>
-          <div className="min-w-0">
-            <div className="font-semibold text-black dark:text-white truncate hover:text-[#d4522f] transition-colors">
-              {client.name}
-            </div>
-            <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
-              {client.company || t('free_clients_private_client', language)}
-            </div>
-          </div>
-        </div>
-      ),
+  const handleQuickStartTimer = useCallback(
+    (client: FreelanceClient) => {
+      const clientProjects = freelanceProjects.filter((p) => p.clientId === client.id);
+      const activeProject = clientProjects[0];
+      startTimer(
+        client.id,
+        client.name,
+        activeProject ? activeProject.id : 'proj_general',
+        activeProject ? activeProject.title : t('free_inv_default_item_desc', language),
+        `${t('free_time_working_on_label', language)} ${client.name}`,
+        activeProject?.deliverables[0]?.id,
+        activeProject?.deliverables[0]?.title,
+        true,
+        false
+      );
+      showToast({
+        type: 'success',
+        title: t('free_timer_start', language),
+        message: client.name,
+        category: 'freelance_solo',
+      });
     },
-    {
-      key: 'status',
-      header: t('free_clients_table_status', language) || 'Status',
-      width: '1.8*',
-      minWidth: '140px',
-      renderCell: (client) => (
-        <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-            client.status === 'ActiveRetainer'
-              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-              : client.status === 'ProjectBased'
-              ? 'bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700'
-              : 'bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75'
-          }`}
-        >
-          {client.status === 'ActiveRetainer'
-            ? t('free_clients_status_active_retainer', language)
-            : client.status === 'ProjectBased'
-            ? t('free_clients_status_project_based', language)
-            : client.status}
-        </span>
-      ),
+    [freelanceProjects, startTimer, t, language]
+  );
+
+  const handleQuickBill = useCallback(
+    (client: FreelanceClient) => {
+      try {
+        billUnbilledHours(client.id, 0, `Invoice for unbilled hours - ${client.name}`);
+        setScreen('shop');
+      } catch (err: any) {
+        showToast({
+          type: 'error',
+          title: isAr ? 'تعذر الفوترة' : isFr ? 'Facturation impossible' : 'Billing failed',
+          message: String(err?.message || err),
+          category: 'freelance_solo',
+        });
+      }
     },
-    {
-      key: 'rate',
-      header: t('free_clients_hourly_rate', language),
-      width: '1.8*',
-      minWidth: '150px',
-      sortable: true,
-      renderCell: (client) => (
-        <div className="text-xs">
-          <span className="font-semibold text-black dark:text-white tabular-nums">
-            {formatCurrencyAmount(client.hourlyRate, client.currency)}{t('free_dash_per_hour', language)}
-          </span>
-          {client.monthlyRetainerHours ? (
-            <span className="block text-[10px] text-black/55 dark:text-white/55">
-              {client.monthlyRetainerHours}h Retainer
+    [billUnbilledHours, setScreen, isAr, isFr]
+  );
+
+  const clientColumns: ColumnDefinition<FreelanceClient>[] = useMemo(
+    () => [
+      {
+        key: 'client',
+        header: t('free_clients_table_client', language) || 'Client',
+        width: '2.3*',
+        minWidth: '210px',
+        sortable: true,
+        renderCell: (client) => (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">
+              {client.name.charAt(0)}
+            </div>
+            <div className="min-w-0">
+              <div className="font-semibold text-black dark:text-white truncate hover:text-[#d4522f] transition-colors">
+                {client.name}
+              </div>
+              <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
+                {client.company || t('free_clients_private_client', language)}
+              </div>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'branch',
+        header: isAr ? 'الفرع' : isFr ? 'Branche' : 'Branch',
+        width: '1.3*',
+        minWidth: '125px',
+        sortable: true,
+        renderCell: (client) => {
+          const bInfo = resolveRecordBranch(client, branchesById, currentBranch, language);
+          return (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
+              {bInfo.name}
             </span>
-          ) : null}
-        </div>
-      ),
-    },
-    {
-      key: 'projects',
-      header: t('free_kpi_active_projects', language),
-      width: '1.2*',
-      minWidth: '100px',
-      renderCell: (client) => {
-        const count = freelanceProjects.filter((p) => p.clientId === client.id).length;
-        return (
-          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 tabular-nums">
-            {count} {t('free_nav_deliverables', language)}
-          </span>
-        );
+          );
+        },
       },
-    },
-    {
-      key: 'unbilled',
-      header: t('free_kpi_unbilled_hours', language),
-      width: '1.8*',
-      minWidth: '140px',
-      renderCell: (client) => {
-        const unbilled = getClientUnbilledTime(client.id);
-        return unbilled.amount > 0 ? (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 tabular-nums">
-            {unbilled.hours}h · {formatCurrencyAmount(unbilled.amount, client.currency)}
+      {
+        key: 'status',
+        header: t('free_clients_table_status', language) || 'Status',
+        width: '1.6*',
+        minWidth: '130px',
+        renderCell: (client) => (
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+              client.status === 'ActiveRetainer'
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                : client.status === 'ProjectBased'
+                ? 'bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700'
+                : 'bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75'
+            }`}
+          >
+            {client.status === 'ActiveRetainer'
+              ? t('free_clients_status_active_retainer', language)
+              : client.status === 'ProjectBased'
+              ? t('free_clients_status_project_based', language)
+              : client.status}
           </span>
-        ) : (
-          <span className="text-black/55 dark:text-white/55 text-xs">0h</span>
-        );
+        ),
       },
-    },
-  ], [freelanceProjects, language, t]);
+      {
+        key: 'rate',
+        header: t('free_clients_hourly_rate', language),
+        width: '1.6*',
+        minWidth: '140px',
+        sortable: true,
+        renderCell: (client) => (
+          <div className="text-xs">
+            <span className="font-semibold text-black dark:text-white tabular-nums">
+              {formatCurrencyAmount(client.hourlyRate, client.currency)}
+              {t('free_dash_per_hour', language)}
+            </span>
+            {client.monthlyRetainerHours ? (
+              <span className="block text-[10px] text-black/55 dark:text-white/55">
+                {client.monthlyRetainerHours}h Retainer
+              </span>
+            ) : null}
+          </div>
+        ),
+      },
+      {
+        key: 'projects',
+        header: t('free_kpi_active_projects', language),
+        width: '1.2*',
+        minWidth: '100px',
+        renderCell: (client) => {
+          const count = freelanceProjects.filter((p) => p.clientId === client.id).length;
+          return (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 tabular-nums">
+              {count} {t('free_nav_deliverables', language)}
+            </span>
+          );
+        },
+      },
+      {
+        key: 'unbilled',
+        header: t('free_kpi_unbilled_hours', language),
+        width: '1.6*',
+        minWidth: '130px',
+        renderCell: (client) => {
+          const unbilled = getClientUnbilledTime(client.id);
+          return unbilled.amount > 0 ? (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 tabular-nums">
+              {unbilled.hours}h · {formatCurrencyAmount(unbilled.amount, client.currency)}
+            </span>
+          ) : (
+            <span className="text-black/55 dark:text-white/55 text-xs">0h</span>
+          );
+        },
+      },
+    ],
+    [freelanceProjects, getClientUnbilledTime, language, t, branchesById, currentBranch, isAr, isFr]
+  );
 
-  const handleExportCSV = () => {
-    if (freelanceClients.length === 0) return;
+  const handleExportCSV = useCallback(() => {
+    if (sortedClients.length === 0) return;
     const headers = [
-      language === 'ar' ? 'معرف العميل' : 'Client ID',
-      language === 'ar' ? 'اسم العميل' : 'Client Name',
-      language === 'ar' ? 'الشركة' : 'Company',
-      language === 'ar' ? 'البريد الإلكتروني' : 'Email',
-      language === 'ar' ? 'الهاتف' : 'Phone',
-      language === 'ar' ? 'البلد' : 'Country',
-      language === 'ar' ? 'العملة' : 'Currency',
-      language === 'ar' ? 'سعر الساعة' : 'Hourly Rate',
-      language === 'ar' ? 'الحالة' : 'Status',
-      language === 'ar' ? 'ساعات الحجز الشهري' : 'Retainer Hours',
-      language === 'ar' ? 'مبلغ الحجز الشهري' : 'Retainer Amount',
-      language === 'ar' ? 'المشاريع' : 'Projects Count',
-      language === 'ar' ? 'الساعات غير المفوترة' : 'Unbilled Hours',
+      isAr ? 'معرف العميل' : 'Client ID',
+      isAr ? 'اسم العميل' : 'Client Name',
+      isAr ? 'الشركة' : 'Company',
+      isAr ? 'الفرع' : isFr ? 'Branche' : 'Branch',
+      isAr ? 'البريد الإلكتروني' : 'Email',
+      isAr ? 'الهاتف' : 'Phone',
+      isAr ? 'البلد' : 'Country',
+      isAr ? 'العملة' : 'Currency',
+      isAr ? 'سعر الساعة' : 'Hourly Rate',
+      isAr ? 'الحالة' : 'Status',
+      isAr ? 'ساعات الحجز الشهري' : 'Retainer Hours',
+      isAr ? 'مبلغ الحجز الشهري' : 'Retainer Amount',
+      isAr ? 'المشاريع' : 'Projects Count',
+      isAr ? 'الساعات غير المفوترة' : 'Unbilled Hours',
     ];
 
     const rows = sortedClients.map((client) => {
       const clientProjects = freelanceProjects.filter((p) => p.clientId === client.id);
       const unbilled = getClientUnbilledTime(client.id);
+      const bName = resolveRecordBranch(client, branchesById, currentBranch, language).name;
       return [
-        `"${client.id}"`,
-        `"${client.name.replace(/"/g, '""')}"`,
-        `"${(client.company || '').replace(/"/g, '""')}"`,
-        `"${client.email}"`,
-        `"${client.phone || ''}"`,
-        `"${client.country || ''}"`,
-        `"${client.currency}"`,
+        client.id,
+        client.name,
+        client.company || '',
+        bName,
+        client.email,
+        client.phone || '',
+        client.country || '',
+        client.currency,
         client.hourlyRate,
-        `"${client.status}"`,
+        client.status,
         client.monthlyRetainerHours || 0,
         client.monthlyRetainerAmount || 0,
         clientProjects.length,
         unbilled.hours,
-      ].join(',');
+      ];
     });
 
-    const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `atrium_freelance_clients_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+    downloadCsvSafe(
+      `atrium_freelance_clients_${new Date().toISOString().split('T')[0]}.csv`,
+      headers,
+      rows
+    );
+  }, [sortedClients, freelanceProjects, getClientUnbilledTime, branchesById, currentBranch, language, isAr, isFr]);
 
   const handleBatchSetRetainer = () => {
     if (selectedClientIds.size === 0) return;
@@ -409,8 +484,8 @@ export const FreelanceClientsView: React.FC = () => {
     setSelectedClientIds(new Set());
     showToast({
       type: 'success',
-      title: language === 'ar' ? 'تم التحديث' : language === 'fr' ? 'Mis à jour' : 'Updated',
-      message: `${count} ${language === 'ar' ? 'عملاء تم تحويلهم لعقد شهري' : 'clients updated to Active Retainer'}`,
+      title: isAr ? 'تم التحديث' : isFr ? 'Mis à jour' : 'Updated',
+      message: `${count} ${isAr ? 'عملاء تم تحويلهم لعقد شهري' : 'clients updated to Active Retainer'}`,
       category: 'freelance_solo',
     });
   };
@@ -424,8 +499,8 @@ export const FreelanceClientsView: React.FC = () => {
     setSelectedClientIds(new Set());
     showToast({
       type: 'info',
-      title: language === 'ar' ? 'تم التحديث' : language === 'fr' ? 'Mis à jour' : 'Updated',
-      message: `${count} ${language === 'ar' ? 'عملاء تم تحويلهم لنمط المشاريع' : 'clients updated to Project Based'}`,
+      title: isAr ? 'تم التحديث' : isFr ? 'Mis à jour' : 'Updated',
+      message: `${count} ${isAr ? 'عملاء تم تحويلهم لنمط المشاريع' : 'clients updated to Project Based'}`,
       category: 'freelance_solo',
     });
   };
@@ -433,19 +508,83 @@ export const FreelanceClientsView: React.FC = () => {
   const handleBatchDelete = () => {
     if (selectedClientIds.size === 0) return;
     const count = selectedClientIds.size;
-    if (confirm(language === 'ar' ? `هل أنت متأكد من حذف ${count} عملاء؟` : `Delete ${count} selected clients?`)) {
-      selectedClientIds.forEach((id) => {
-        deleteFreelanceClient(id, false);
-      });
-      setSelectedClientIds(new Set());
-      showToast({
-        type: 'info',
-        title: language === 'ar' ? 'تم الحذف' : language === 'fr' ? 'Suppression' : 'Deleted',
-        message: `${count} ${language === 'ar' ? 'عملاء تم حذفهم' : 'clients deleted'}`,
-        category: 'freelance_solo',
+    selectedClientIds.forEach((id) => {
+      deleteFreelanceClient(id, false);
+      if (selectedClient?.id === id) setSelectedClient(null);
+    });
+    setSelectedClientIds(new Set());
+    showToast({
+      type: 'info',
+      title: isAr ? 'تم الحذف' : isFr ? 'Suppression' : 'Deleted',
+      message: `${count} ${isAr ? 'عملاء تم حذفهم' : 'clients deleted'}`,
+      category: 'freelance_solo',
+    });
+  };
+
+  const statusOptions = useMemo(
+    () => [
+      { value: 'all', label: t('free_clients_all_statuses', language) },
+      { value: 'activeretainer', label: t('free_clients_status_active_retainer', language) },
+      { value: 'projectbased', label: t('free_clients_status_project_based', language) },
+      { value: 'prospect', label: t('free_clients_status_prospect', language) },
+    ],
+    [t, language]
+  );
+
+  const filterSections: KineticFilterSection[] = useMemo(() => {
+    const branchOpts = [
+      { value: 'All', label: isAr ? 'كل الفروع' : isFr ? 'Toutes les branches' : 'All Branches', count: freelanceClients.length },
+      ...Array.from(branchCounts.entries()).map(([name, count]) => ({
+        value: name,
+        label: name,
+        count,
+      })),
+    ];
+
+    return [
+      {
+        id: 'branch',
+        label: isAr ? 'الفرع / الموقع' : isFr ? 'Branche' : 'Branch',
+        value: branchFilter,
+        onChange: setBranchFilter,
+        resetValue: 'All',
+        kind: 'tiles',
+        columns: 2,
+        options: branchOpts,
+      },
+      {
+        id: 'status',
+        label: t('free_clients_status', language),
+        value: selectedStatus,
+        onChange: setSelectedStatus,
+        resetValue: 'all',
+        kind: 'segmented',
+        options: statusOptions.map((o) => ({ value: o.value, label: String(o.label) })),
+      },
+    ];
+  }, [isAr, isFr, freelanceClients.length, branchCounts, branchFilter, t, language, selectedStatus, statusOptions]);
+
+  const activeChips: ActiveFilterChip[] = useMemo(() => {
+    const chips: ActiveFilterChip[] = [];
+    if (branchFilter !== 'All') {
+      chips.push({
+        key: 'branch',
+        label: `${isAr ? 'الفرع' : isFr ? 'Branche' : 'Branch'}: ${branchFilter}`,
+        onRemove: () => setBranchFilter('All'),
       });
     }
-  };
+    if (selectedStatus !== 'all') {
+      const matched = statusOptions.find((o) => o.value === selectedStatus);
+      chips.push({
+        key: 'status',
+        label: String(matched?.label || selectedStatus),
+        onRemove: () => setSelectedStatus('all'),
+      });
+    }
+    return chips;
+  }, [branchFilter, selectedStatus, statusOptions, isAr, isFr]);
+
+  const activeFiltersCount = (branchFilter !== 'All' ? 1 : 0) + (selectedStatus !== 'all' ? 1 : 0);
 
   const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
@@ -477,419 +616,405 @@ export const FreelanceClientsView: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Outer Rounded Workspace Panel (WPF Spec: CornerRadius 28px, 1px CardBorderBrush) */}
-      <div className="space-y-6">
-        
-        {/* Row 0 — Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
-              <Users size={22} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
-                  {t('free_clients_crm_title', language)}
-                </h1>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
-            {/* Add Client CTA Button */}
-            <AtriumButton
-              type="button"
-              variant="primary"
-              size="sm"
-              glow
-              icon={<Plus size={14} />}
-              onClick={handleOpenAddModal}
-            >
-              {t('free_clients_add_new', language)}
-            </AtriumButton>
-          </div>
-        </div>
-
-        {/* Batch Selection Toolbar */}
-        {selectedClientIds.size > 0 && (
-          <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
-            <div className="flex items-center gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
-              <span className="text-xs font-bold text-black dark:text-white">
-                {selectedClientIds.size} {language === 'ar' ? 'عملاء محددين' : language === 'fr' ? 'clients sélectionnés' : 'clients selected'}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <button
-                onClick={() => setSelectedClientIds(new Set())}
-                className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer"
-              >
-                {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
-              </button>
-              <button
-                onClick={handleBatchSetRetainer}
-                className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-              >
-                <CheckCircle size={13} />
-                <span>{language === 'ar' ? 'تحويل لعقد شهري' : language === 'fr' ? 'Passer en Retainer' : 'Set Active Retainer'}</span>
-              </button>
-              <button
-                onClick={handleBatchSetProject}
-                className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-              >
-                <Briefcase size={13} />
-                <span>{language === 'ar' ? 'تحويل لمشروع' : language === 'fr' ? 'Passer au Projet' : 'Set Project Based'}</span>
-              </button>
-              <button
-                onClick={handleBatchDelete}
-                className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-              >
-                <Trash2 size={13} />
-                <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Top Metrics Pod Tray (Screenshot_30: bg-[#F3EDE7], rounded-[24px], p-5) */}
-        <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-3">
-          <div>
-            <h3 className="text-xs font-bold text-black dark:text-white tracking-tight">
-              {language === 'ar' ? 'سعة ومؤشرات شبكة العملاء' : language === 'fr' ? 'Capacité & Santé du Portefeuille Clients' : 'Client Roster & Capacity'}
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {/* Inset White Card 1: Active Retainer Ratio */}
-            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-medium text-black/55 dark:text-white/75">
-                  {t('free_clients_total_network', language)}
-                </span>
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-                  ↗ 100% actif
-                </span>
-              </div>
-              <div>
-                <span className="text-2xl font-bold text-black dark:text-white tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                  {totalClientsCount}
-                </span>
-                <span className="text-xs text-black/55 dark:text-white/55 ml-1">
-                  / {totalClientsCount} comptes
-                </span>
-                <p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
-                  {language === 'ar' ? 'إجمالي العملاء المسجلين' : 'Comptes actifs répertoriés'}
-                </p>
-              </div>
-            </div>
-
-            {/* Inset White Card 2: Active Retainers */}
-            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-medium text-black/55 dark:text-white/75">
-                  {t('free_kpi_active_clients', language)}
-                </span>
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-                  {activeRetainersCount} forfaits mensuels
-                </span>
-              </div>
-              <div>
-                <span className="text-2xl font-bold text-black dark:text-white tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                  {activeRetainersCount}
-                </span>
-                <span className="text-xs text-black/55 dark:text-white/55 ml-1">
-                  clients
-                </span>
-                <p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
-                  {language === 'ar' ? 'عقود حجز شهري نشطة' : 'Sous contrat récurrent actif'}
-                </p>
-              </div>
-            </div>
-
-            {/* Inset Card 3: DARK ESPRESSO CARD (#1F1D1B) — Lifetime Billed */}
-            <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-medium text-white/75">
-                  {t('free_kpi_invoiced_ytd', language)}
-                </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 inline-block">
-                  Facturation Totale
-                </span>
-              </div>
-              <div>
-                <span className="text-2xl font-bold text-[#FB923C] tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                  {totalBilledEquiv.toLocaleString()} DZD
-                </span>
-                <p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
-                  <span>{language === 'ar' ? 'إجمالي المقبوضات المسواة' : 'Volume cumulé réglé'}</span>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Collection Pod Tray (Screenshot_30: bg-[#F3EDE7], rounded-[24px], p-5) */}
-        <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-          
-          {/* Integrated Toolbar */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-            {/* Title & Count Badge */}
-            <div className="flex items-center gap-2">
-              <Users size={18} className="text-black/70 dark:text-white/75" />
-              <h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                {t('free_clients_crm_title', language)}
-              </h2>
-            </div>
-
-            {/* Right Controls: Seek + Filter Capsules + Export CSV */}
-            <div className="flex items-center gap-2.5 flex-wrap">
-              {/* Kinetic Seek Search */}
-              <Seek
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder={t('free_search_clients_ph', language)}
-                shutSize={36}
-                openWidth={220}
-              />
-
-              {/* Status Filter Capsules */}
-              <div className="flex items-center gap-1 p-1 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-2xs">
-                {[
-                  { id: 'all', label: t('free_clients_all_statuses', language) },
-                  { id: 'activeretainer', label: t('free_clients_status_active_retainer', language) },
-                  { id: 'projectbased', label: t('free_clients_status_project_based', language) },
-                  { id: 'prospect', label: t('free_clients_status_prospect', language) },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setSelectedStatus(tab.id)}
-                    className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
-                      selectedStatus === tab.id
-                        ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f]'
-                        : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Export CSV Button */}
-              <button
-                type="button"
-                onClick={handleExportCSV}
-                className="h-9 px-3 bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
-                title="Export CSV"
-              >
-                <Download size={13} />
-                <span className="hidden sm:inline">CSV</span>
-              </button>
-            </div>
-          </div>
-
-      {/* Universal Collection (List view & Grid view with 6-button corner-fan) */}
-      <UniversalDataCollection<FreelanceClient>
-        items={sortedClients}
-        keyExtractor={(c) => c.id}
-        defaultViewMode="list"
-        columns={clientColumns}
-        sortBy={clientSortBy}
-        sortDirection={clientSortDir}
-        onSortChange={(key) => {
-          if (clientSortBy === key) {
-            setClientSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-          } else {
-            setClientSortBy(key);
-            setClientSortDir('asc');
-          }
+      <ScreenHeaderBar
+        icon={<Users size={22} />}
+        title={t('free_clients_crm_title', language)}
+        subtitle={
+          currentBranch?.name
+            ? `${currentBranch.name} · ${totalClientsCount} ${isAr ? 'عميل' : isFr ? 'clients' : 'clients'}`
+            : undefined
+        }
+        primaryAction={{
+          label: t('free_clients_add_new', language),
+          onClick: handleOpenAddModal,
+          icon: <Plus size={16} strokeWidth={2.2} />,
+          dataAction: 'add-freelance-client',
         }}
-        renderCard={(client) => {
-          const unbilled = getClientUnbilledTime(client.id);
-          const clientProjects = freelanceProjects.filter((p) => p.clientId === client.id);
+      />
 
-          return (
-            <div className="flex flex-col items-center justify-center w-full">
-              <div className="w-24 h-24 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center text-[32px] font-bold shadow-md mb-4 select-none border border-neutral-200 dark:border-neutral-700">
-                {client.name.charAt(0)}
-              </div>
-              <h3 className="text-[16px] font-bold text-black dark:text-white truncate max-w-[210px] mb-1 tracking-tight">
-                {client.name}
-              </h3>
-              <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700 mb-3 truncate max-w-[200px]">
-                {client.company || t('free_clients_private_client', language)}
-              </span>
+      {selectedClientIds.size > 0 && (
+        <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
+            <span className="text-xs font-bold text-black dark:text-white">
+              {selectedClientIds.size}{' '}
+              {isAr ? 'عملاء محددين' : isFr ? 'clients sélectionnés' : 'clients selected'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setSelectedClientIds(new Set())}
+              className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer"
+            >
+              {isAr ? 'إلغاء التحديد' : isFr ? 'Désélectionner' : 'Deselect'}
+            </button>
+            <button
+              type="button"
+              onClick={handleBatchSetRetainer}
+              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <CheckCircle size={13} />
+              <span>{isAr ? 'تحويل لعقد شهري' : isFr ? 'Passer en Retainer' : 'Set Active Retainer'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleBatchSetProject}
+              className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Briefcase size={13} />
+              <span>{isAr ? 'تحويل لمشروع' : isFr ? 'Passer au Projet' : 'Set Project Based'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleBatchDelete}
+              className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Trash2 size={13} />
+              <span>{isAr ? 'حذف المحدد' : isFr ? 'Supprimer' : 'Delete'}</span>
+            </button>
+          </div>
+        </div>
+      )}
 
-              <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1.5 text-center">
-                <div className="flex items-center justify-between text-black/70 dark:text-white/75">
-                  <span className="text-[11px]">{t('free_clients_hourly_rate', language)}:</span>
-                  <span className="font-semibold text-black dark:text-white tabular-nums">
-                    {formatCurrencyAmount(client.hourlyRate, client.currency)}{t('free_dash_per_hour', language)}
-                  </span>
+      <ScreenKpiBanner
+        heading={
+          isAr
+            ? 'سعة ومؤشرات شبكة العملاء'
+            : isFr
+            ? 'Capacité & Santé du Portefeuille Clients'
+            : 'Client Roster & Capacity'
+        }
+        language={language}
+        primaryCard={{
+          label: t('free_kpi_active_clients', language),
+          badgeText: `${activeRetainersCount} ${isAr ? 'عقد شهري' : isFr ? 'forfaits' : 'retainers'}`,
+          count: activeRetainersCount,
+          tone: 'emerald',
+          isActive: selectedStatus === 'activeretainer',
+          onToggle: () =>
+            setSelectedStatus((prev) => (prev === 'activeretainer' ? 'all' : 'activeretainer')),
+        }}
+        secondaryCard={{
+          label: t('free_clients_status_project_based', language),
+          badgeText: isAr ? 'بالـمشروع' : isFr ? 'au projet' : 'project-based',
+          count: projectBasedCount,
+          tone: 'terracotta',
+          isActive: selectedStatus === 'projectbased',
+          onToggle: () =>
+            setSelectedStatus((prev) => (prev === 'projectbased' ? 'all' : 'projectbased')),
+        }}
+        darkCard={{
+          label: t('free_kpi_invoiced_ytd', language),
+          badgeCount: totalClientsCount,
+          badgePrefix: '',
+          badgeSuffix: isAr ? 'عميل' : 'clients',
+          valueCount: totalBilledEquiv,
+          valuePrefix: '',
+          valueSuffix: ' DZD',
+          formatValue: (n) => `${n.toLocaleString()} DZD`,
+          caption: isAr ? 'إجمالي المقبوضات المسواة' : isFr ? 'Volume cumulé réglé' : 'Total paid revenue',
+        }}
+      />
+
+      <ScreenPod>
+        <ScreenCollectionToolbar
+          title={t('free_clients_crm_title', language)}
+          liveRegionText={`${sortedClients.length} ${isAr ? 'عملاء' : 'clients'}`}
+          language={language}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder={t('free_search_clients_ph', language)}
+          statusOptions={statusOptions}
+          statusValue={selectedStatus}
+          onStatusChange={setSelectedStatus}
+          hasActiveAdvancedFilters={activeFiltersCount > 0}
+          activeFiltersCount={activeFiltersCount}
+          isFilterModalOpen={isFilterModalOpen}
+          filterButtonRef={filterButtonRef}
+          onToggleFilterModal={() => setIsFilterModalOpen((v) => !v)}
+          viewMode={viewMode}
+          onViewModeChange={(m) => setViewMode(m === 'grid' ? 'grid' : 'list')}
+          onExport={handleExportCSV}
+          activeChips={activeChips}
+          onResetAllFilters={() => {
+            setBranchFilter('All');
+            setSelectedStatus('all');
+            setSearchQuery('');
+          }}
+        />
+
+        <UniversalDataCollection<FreelanceClient>
+          hideToolbar
+          data={sortedClients}
+          keyExtractor={(c) => c.id}
+          viewMode={viewMode}
+          columns={clientColumns}
+          isLoading={isSyncing || networkMode === 'force_skeleton'}
+          isOffline={networkMode === 'offline'}
+          isTimedOut={isSyncTimeout}
+          lastSyncedAt={lastSyncedAt}
+          onRetrySync={retryCloudSync}
+          sortBy={clientSortBy}
+          sortDirection={clientSortDir}
+          onSortChange={(key, dir) => {
+            setClientSortBy(key);
+            setClientSortDir(dir);
+          }}
+          openItemId={activeClient?.id ?? null}
+          renderCard={(client) => {
+            const unbilled = getClientUnbilledTime(client.id);
+            const clientProjects = freelanceProjects.filter((p) => p.clientId === client.id);
+
+            return (
+              <div className="flex flex-col items-center justify-center w-full">
+                <div className="w-20 h-20 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center text-[28px] font-bold shadow-sm mb-3 select-none border border-neutral-200 dark:border-neutral-700">
+                  {client.name.charAt(0)}
                 </div>
-                <div className="flex items-center justify-between text-black/70 dark:text-white/75">
-                  <span className="text-[11px]">{t('free_kpi_active_projects', language)}:</span>
-                  <span className="font-semibold text-black dark:text-white tabular-nums">
-                    {clientProjects.length}
-                  </span>
-                </div>
+                <h3 className="text-[15px] font-bold text-black dark:text-white truncate max-w-[210px] mb-1 tracking-tight">
+                  {client.name}
+                </h3>
+                <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700 mb-3 truncate max-w-[200px]">
+                  {client.company || t('free_clients_private_client', language)}
+                </span>
 
-                {unbilled.amount > 0 && (
-                  <div className="mt-2 p-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-center justify-between text-[11px]">
-                    <span className="text-amber-800 dark:text-amber-300 font-medium">
-                      {unbilled.hours}h unbilled
-                    </span>
-                    <span className="font-bold text-amber-900 dark:text-amber-200 tabular-nums">
-                      {formatCurrencyAmount(unbilled.amount, client.currency)}
+                <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1.5 text-center">
+                  <div className="flex items-center justify-between text-black/70 dark:text-white/75">
+                    <span className="text-[11px]">{t('free_clients_hourly_rate', language)}:</span>
+                    <span className="font-semibold text-black dark:text-white tabular-nums">
+                      {formatCurrencyAmount(client.hourlyRate, client.currency)}
+                      {t('free_dash_per_hour', language)}
                     </span>
                   </div>
-                )}
+                  <div className="flex items-center justify-between text-black/70 dark:text-white/75">
+                    <span className="text-[11px]">{t('free_kpi_active_projects', language)}:</span>
+                    <span className="font-semibold text-black dark:text-white tabular-nums">
+                      {clientProjects.length}
+                    </span>
+                  </div>
+
+                  {unbilled.amount > 0 && (
+                    <div className="mt-2 p-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-center justify-between text-[11px]">
+                      <span className="text-amber-800 dark:text-amber-300 font-medium">
+                        {unbilled.hours}h unbilled
+                      </span>
+                      <span className="font-bold text-amber-900 dark:text-amber-200 tabular-nums">
+                        {formatCurrencyAmount(unbilled.amount, client.currency)}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        }}
-        onItemClick={(client) => setSelectedClient(client)}
-        onViewDetails={(client) => setSelectedClient(client)}
-        onEdit={(client) => handleOpenEditModal(client)}
-        onTogglePin={(client) => {
-          setPinnedClientIds((prev) => {
-            const next = new Set(prev);
-            if (next.has(client.id)) {
-              next.delete(client.id);
-              showToast?.({
-                type: 'info',
-                title: 'Unpinned',
-                message: `${client.name} unpinned`,
-              });
-            } else {
-              next.add(client.id);
-              showToast?.({
-                type: 'info',
-                title: 'Pinned',
-                message: `${client.name} pinned to top`,
+            );
+          }}
+          onItemClick={(client, el) => {
+            setDrawerOpenerEl(el || null);
+            setSelectedClient(client);
+          }}
+          onViewDetails={(client, el) => {
+            setDrawerOpenerEl(el || null);
+            setSelectedClient(client);
+          }}
+          onEdit={(client) => handleOpenEditModal(client)}
+          onPinToggle={(idOrItem) => {
+            const id = typeof idOrItem === 'string' ? idOrItem : idOrItem.id;
+            const target = freelanceClients.find((c) => c.id === id);
+            setPinnedClientIds((prev) => {
+              const next = new Set(prev);
+              if (next.has(id)) {
+                next.delete(id);
+                if (target) {
+                  showToast({
+                    type: 'info',
+                    title: 'Unpinned',
+                    message: `${target.name} unpinned`,
+                  });
+                }
+              } else {
+                next.add(id);
+                if (target) {
+                  showToast({
+                    type: 'info',
+                    title: 'Pinned',
+                    message: `${target.name} pinned to top`,
+                  });
+                }
+              }
+              return next;
+            });
+          }}
+          onDelete={(client) => setClientToDelete(client)}
+          customActions={(client) => {
+            const unbilled = getClientUnbilledTime(client.id);
+            const actions = [
+              {
+                id: 'timer',
+                tooltip: t('free_timer_start', language),
+                icon: <Play size={13} />,
+                iconColor: '#d4522f',
+                onClick: () => handleQuickStartTimer(client),
+              },
+            ];
+            if (unbilled.count > 0) {
+              actions.push({
+                id: 'bill',
+                tooltip: `${t('free_clients_quick_bill', language)} (${unbilled.hours}h)`,
+                icon: <FileText size={13} />,
+                iconColor: '#10B981',
+                onClick: () => handleQuickBill(client),
               });
             }
-            return next;
-          });
+            return actions;
+          }}
+          pinnedIds={pinnedClientIds}
+          selectedIds={selectedClientIds}
+          onSelectionChange={setSelectedClientIds}
+          emptyTitle={t('free_clients_no_clients', language)}
+          emptyDescription={t('free_clients_no_clients_desc', language)}
+          primaryActionLabel={t('free_clients_add_new', language)}
+          onAddFirstItem={handleOpenAddModal}
+        />
+      </ScreenPod>
+
+      <KineticFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        triggerRef={filterButtonRef}
+        language={language}
+        displayCount={sortedClients.length}
+        entityPluralLabel={isAr ? 'عملاء' : 'clients'}
+        hasActiveFilters={activeFiltersCount > 0}
+        onResetFilters={() => {
+          setBranchFilter('All');
+          setSelectedStatus('all');
         }}
-        onDelete={(client) => setClientToDelete(client)}
-        customActions={(client) => {
-          const unbilled = getClientUnbilledTime(client.id);
-          const actions = [
-            {
-              id: 'timer',
-              tooltip: t('free_timer_start', language),
-              icon: <Play size={13} />,
-              iconColor: '#d4522f',
-              onClick: (e: React.MouseEvent) => {
-                e.stopPropagation();
-                handleQuickStartTimer(client);
-              },
-            },
-          ];
-          if (unbilled.count > 0) {
-            actions.push({
-              id: 'bill',
-              tooltip: `${t('free_clients_quick_bill', language)} (${unbilled.hours}h)`,
-              icon: <FileText size={13} />,
-              iconColor: '#10B981',
-              onClick: (e: React.MouseEvent) => {
-                e.stopPropagation();
-                handleQuickBill(client);
-              },
-            });
-          }
-          return actions;
-        }}
-        isPinned={(client) => pinnedClientIds.has(client.id)}
-        selectedIds={selectedClientIds}
-        onSelectionChange={setSelectedClientIds}
-        emptyTitle={t('free_clients_no_clients', language)}
-        emptyDescription={t('free_clients_no_clients_desc', language)}
-        primaryActionLabel={t('free_clients_add_new', language)}
-        onAddFirstItem={handleOpenAddModal}
+        sections={filterSections}
       />
-        </div>
-      </div>
 
-      {/* 360° Client Inspector Slide-over Drawer */}
-      {selectedClient && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="w-full max-w-md bg-white dark:bg-[#18181B] h-full shadow-2xl border-l border-neutral-200 dark:border-neutral-800 flex flex-col overflow-hidden animate-in slide-in-from-right duration-200">
-            {/* Drawer Header */}
-            <div className="p-5 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
-              <div>
-                <span className="text-[11px] font-semibold text-[#d4522f] uppercase tracking-wider block">
-                  {t('free_clients_profile_360', language)}
-                </span>
-                <h2 className="text-lg font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                  {selectedClient.name}
-                </h2>
-                <p className="text-xs text-black/55 dark:text-white/55">{selectedClient.company || t('free_clients_private_client', language)}</p>
+      <KineticSlideOverInspector<FreelanceClient>
+        isOpen={Boolean(activeClient)}
+        item={activeClient}
+        allItems={sortedClients}
+        keyExtractor={(c) => c.id}
+        openerElement={drawerOpenerEl}
+        language={language}
+        title={activeClient?.name || ''}
+        subtitle={activeClient?.company || t('free_clients_private_client', language)}
+        avatarText={activeClient ? activeClient.name.charAt(0).toUpperCase() : 'C'}
+        avatarColor="#d4522f"
+        branchName={
+          activeClient
+            ? resolveRecordBranch(activeClient, branchesById, currentBranch, language).name
+            : undefined
+        }
+        statusLabel={
+          activeClient
+            ? activeClient.status === 'ActiveRetainer'
+              ? t('free_clients_status_active_retainer', language)
+              : activeClient.status === 'ProjectBased'
+              ? t('free_clients_status_project_based', language)
+              : activeClient.status
+            : undefined
+        }
+        statusClassName={
+          activeClient?.status === 'ActiveRetainer'
+            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+            : 'bg-[#FCEEE8] text-[#d4522f] border border-[#F5E2D8] dark:bg-neutral-800 dark:border-neutral-700'
+        }
+        onSelectItem={(c) => setSelectedClient(c)}
+        onClose={() => setSelectedClient(null)}
+        onDelete={(c) => setClientToDelete(c)}
+        holdToDelete={false}
+        renderBody={(client) => {
+          const clientProjects = freelanceProjects.filter((p) => p.clientId === client.id);
+          const unbilled = getClientUnbilledTime(client.id);
+          const clientLogs = timeLogs
+            .filter((tl) => tl.clientId === client.id && !tl.isInvoiced)
+            .slice(0, 5);
+
+          return (
+            <div className="space-y-5 text-xs">
+              <div className="flex items-center gap-2 flex-wrap">
+                <AtriumButton
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  icon={<Play size={13} />}
+                  onClick={() => handleQuickStartTimer(client)}
+                >
+                  {t('free_timer_start', language)}
+                </AtriumButton>
+                <AtriumButton
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  icon={<Edit2 size={13} />}
+                  onClick={() => handleOpenEditModal(client)}
+                >
+                  {t('common_edit', language) || (isFr ? 'Modifier' : 'Edit')}
+                </AtriumButton>
+                {unbilled.count > 0 && (
+                  <AtriumButton
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    icon={<FileText size={13} />}
+                    onClick={() => handleQuickBill(client)}
+                  >
+                    {t('free_clients_gen_invoice', language)} ({unbilled.hours}h)
+                  </AtriumButton>
+                )}
               </div>
-              <button
-                type="button"
-                onClick={() => setSelectedClient(null)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
-              >
-                <X size={16} />
-              </button>
-            </div>
 
-            {/* Drawer Body */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-6 text-xs">
-              {/* Contact Information */}
               <div className="p-4 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800 space-y-2.5">
-                <div className="flex items-center gap-2 text-black/70 dark:text-white/75">
+                <div className="flex items-center gap-2 text-black/75 dark:text-white/80">
                   <Mail size={13} className="text-black/55 dark:text-white/55 shrink-0" />
-                  <span className="truncate">{selectedClient.email}</span>
+                  <span className="truncate">{client.email}</span>
                 </div>
-                {selectedClient.phone && (
-                  <div className="flex items-center gap-2 text-black/70 dark:text-white/75">
+                {client.phone && (
+                  <div className="flex items-center gap-2 text-black/75 dark:text-white/80">
                     <Phone size={13} className="text-black/55 dark:text-white/55 shrink-0" />
-                    <span>{selectedClient.phone}</span>
+                    <span>{client.phone}</span>
                   </div>
                 )}
-                {selectedClient.country && (
-                  <div className="flex items-center gap-2 text-black/70 dark:text-white/75">
+                {client.country && (
+                  <div className="flex items-center gap-2 text-black/75 dark:text-white/80">
                     <Globe size={13} className="text-black/55 dark:text-white/55 shrink-0" />
-                    <span>{selectedClient.country} · {t('free_clients_billing_in', language)} {selectedClient.currency}</span>
+                    <span>
+                      {client.country} · {t('free_clients_billing_in', language)} {client.currency}
+                    </span>
                   </div>
                 )}
               </div>
 
-              {/* Retainer & Rate Parameters */}
               <div className="space-y-2">
                 <span className="font-semibold text-black dark:text-white block">
                   {t('free_clients_contract_terms', language)}
                 </span>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800">
+                  <div className="p-3 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900/40">
                     <span className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider block">
                       {t('free_clients_hourly_rate', language)}
                     </span>
                     <span className="text-base font-bold text-black dark:text-white tabular-nums">
-                      {formatCurrencyAmount(selectedClient.hourlyRate, selectedClient.currency)}
+                      {formatCurrencyAmount(client.hourlyRate, client.currency)}
                     </span>
                   </div>
-
-                  <div className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800">
+                  <div className="p-3 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900/40">
                     <span className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider block">
                       {t('free_clients_monthly_retainer', language)}
                     </span>
                     <span className="text-base font-bold text-black dark:text-white tabular-nums">
-                      {selectedClient.monthlyRetainerHours || 0} {t('free_dash_hours_unit', language)}
+                      {client.monthlyRetainerHours || 0} {t('free_dash_hours_unit', language)}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Active Projects & Deliverables */}
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-black dark:text-white">
-                    {t('free_kpi_active_projects', language)} ({freelanceProjects.filter((p) => p.clientId === selectedClient.id).length})
+                    {t('free_kpi_active_projects', language)} ({clientProjects.length})
                   </span>
                   <button
                     type="button"
@@ -902,117 +1027,97 @@ export const FreelanceClientsView: React.FC = () => {
                     {t('free_clients_manage_deliv', language)}
                   </button>
                 </div>
-
                 <div className="space-y-2">
-                  {freelanceProjects
-                    .filter((p) => p.clientId === selectedClient.id)
-                    .map((project) => (
-                      <div
-                        key={project.id}
-                        className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/40"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-black dark:text-white">
-                            {project.title}
-                          </span>
-                          <span className="text-[11px] text-black/55 dark:text-white/55">
-                            {project.stage === 'InProgress' ? t('free_stage_in_progress', language) : project.stage === 'ClientReview' ? t('free_stage_client_review', language) : project.stage === 'Approved' ? t('free_stage_approved', language) : project.stage === 'Briefing' ? (t('pm_status_brief', language) || 'Briefing') : project.stage === 'Billed' ? (t('free_stage_completed', language) || 'Billed') : (project.stage as string)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3 text-black/55 dark:text-white/55 mt-1 text-[11px]">
-                          <span>
-                            {t('free_dash_logged_label', language)} <strong className="text-black/70 dark:text-white/75 tabular-nums">{project.loggedHours}h</strong> / {project.estimatedHours}h
-                          </span>
-                          <span>·</span>
-                          <span>{t('free_dash_budget_label', language)} {formatCurrencyAmount(project.budget, project.currency)}</span>
-                        </div>
+                  {clientProjects.map((project) => (
+                    <div
+                      key={project.id}
+                      className="p-3 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900/40"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-bold text-black dark:text-white truncate">
+                          {project.title}
+                        </span>
+                        <span className="text-[11px] text-black/55 dark:text-white/55 shrink-0">
+                          {project.stage === 'InProgress'
+                            ? t('free_stage_in_progress', language)
+                            : project.stage === 'ClientReview'
+                            ? t('free_stage_client_review', language)
+                            : project.stage === 'Approved'
+                            ? t('free_stage_approved', language)
+                            : project.stage === 'Briefing'
+                            ? t('pm_status_brief', language) || 'Briefing'
+                            : project.stage === 'Billed'
+                            ? t('free_stage_completed', language) || 'Billed'
+                            : String(project.stage)}
+                        </span>
                       </div>
-                    ))}
+                      <div className="flex items-center gap-3 text-black/55 dark:text-white/55 mt-1 text-[11px]">
+                        <span>
+                          {t('free_dash_logged_label', language)}{' '}
+                          <strong className="text-black/75 dark:text-white/80 tabular-nums">
+                            {project.loggedHours}h
+                          </strong>{' '}
+                          / {project.estimatedHours}h
+                        </span>
+                        <span>·</span>
+                        <span>
+                          {t('free_dash_budget_label', language)}{' '}
+                          {formatCurrencyAmount(project.budget, project.currency)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  {clientProjects.length === 0 && (
+                    <p className="text-black/50 dark:text-white/50 text-[11px]">
+                      {isAr ? 'لا توجد مشاريع مرتبطة حالياً.' : isFr ? 'Aucun projet associé.' : 'No active projects yet.'}
+                    </p>
+                  )}
                 </div>
               </div>
 
-              {/* Unbilled Time Logs */}
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-black dark:text-white">
                     {t('free_clients_unbilled_logs', language)}
                   </span>
-                  {getClientUnbilledTime(selectedClient.id).count > 0 && (
+                  {unbilled.count > 0 && (
                     <button
                       type="button"
-                      onClick={() => handleQuickBill(selectedClient)}
+                      onClick={() => handleQuickBill(client)}
                       className="text-[#d4522f] hover:underline font-semibold cursor-pointer"
                     >
                       {t('free_clients_gen_invoice', language)}
                     </button>
                   )}
                 </div>
-
                 <div className="space-y-2">
-                  {timeLogs
-                    .filter((t) => t.clientId === selectedClient.id && !t.isInvoiced)
-                    .slice(0, 5)
-                    .map((log) => (
-                      <div
-                        key={log.id}
-                        className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800 text-[11px] flex items-center justify-between"
-                      >
-                        <div>
-                          <p className="font-medium text-black dark:text-white truncate max-w-[200px]">
-                            {log.taskDescription}
-                          </p>
-                          <span className="text-black/55 dark:text-white/55">{log.date}</span>
-                        </div>
-                        <span className="font-bold tabular-nums text-black dark:text-white">
-                          {formatDuration(log.durationSeconds)}
-                        </span>
+                  {clientLogs.map((log) => (
+                    <div
+                      key={log.id}
+                      className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800 text-[11px] flex items-center justify-between"
+                    >
+                      <div className="min-w-0 pr-2">
+                        <p className="font-medium text-black dark:text-white truncate">
+                          {log.taskDescription}
+                        </p>
+                        <span className="text-black/55 dark:text-white/55">{log.date}</span>
                       </div>
-                    ))}
+                      <span className="font-bold tabular-nums text-black dark:text-white shrink-0">
+                        {formatDuration(log.durationSeconds)}
+                      </span>
+                    </div>
+                  ))}
+                  {clientLogs.length === 0 && (
+                    <p className="text-black/50 dark:text-white/50 text-[11px]">
+                      {isAr ? 'لا توجد ساعات غير مفوترة.' : isFr ? 'Aucune heure non facturée.' : 'No unbilled time entries.'}
+                    </p>
+                  )}
                 </div>
               </div>
-
-              {/* Notes */}
-              {selectedClient.notes && (
-                <div className="space-y-1">
-                  <span className="font-semibold text-black dark:text-white block">
-                    {t('free_clients_engagement_notes', language)}
-                  </span>
-                  <p className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-800 text-black/70 dark:text-white/75 text-xs">
-                    {selectedClient.notes}
-                  </p>
-                </div>
-              )}
             </div>
-
-            {/* Drawer Bottom Actions */}
-            <div className="p-4 border-t border-neutral-100 dark:border-neutral-800 flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickStartTimer(selectedClient)}
-                className="flex-1 py-2.5 rounded-xl bg-[#d4522f] text-white text-xs font-semibold flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
-              >
-                <Play size={13} />
-                <span>{t('free_timer_start', language)}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleOpenEditModal(selectedClient)}
-                className="px-3 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-              >
-                {t('free_clients_edit', language)}
-              </button>
-              <button
-                type="button"
-                onClick={() => setClientToDelete(selectedClient)}
-                className="p-2.5 rounded-xl border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
-                title={t('free_clients_delete', language)}
-              >
-                <Trash2 size={15} />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          );
+        }}
+      />
 
       {/* Add / Edit Client Modal */}
       {isAddModalOpen && (
@@ -1021,7 +1126,9 @@ export const FreelanceClientsView: React.FC = () => {
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div>
                 <h3 className="text-base font-bold text-black dark:text-white">
-                  {clientToEdit ? t('free_clients_modal_title_edit', language) : t('free_clients_modal_title_add', language)}
+                  {clientToEdit
+                    ? t('free_clients_modal_title_edit', language)
+                    : t('free_clients_modal_title_add', language)}
                 </h3>
                 <p className="text-xs text-black/55 dark:text-white/55 mt-0.5">
                   {t('free_clients_modal_desc', language)}
@@ -1031,6 +1138,7 @@ export const FreelanceClientsView: React.FC = () => {
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
                 className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
+                aria-label="Close modal"
               >
                 <X size={16} />
               </button>
@@ -1043,7 +1151,7 @@ export const FreelanceClientsView: React.FC = () => {
                   label={`${t('free_clients_full_name', language)} *`}
                   required
                   value={formData.name}
-                  onChange={(v) => setFormData({ ...formData, name: v })}
+                  onChange={(v) => setFormData({ ...formData, name: extractStr(v) })}
                   placeholder={t('free_clients_ph_name', language)}
                   width="100%"
                   height={46}
@@ -1053,7 +1161,7 @@ export const FreelanceClientsView: React.FC = () => {
                   field="Company"
                   label={t('free_clients_company', language)}
                   value={formData.company}
-                  onChange={(v) => setFormData({ ...formData, company: v })}
+                  onChange={(v) => setFormData({ ...formData, company: extractStr(v) })}
                   placeholder={t('free_clients_ph_company', language)}
                   width="100%"
                   height={46}
@@ -1068,7 +1176,7 @@ export const FreelanceClientsView: React.FC = () => {
                   type="email"
                   required
                   value={formData.email}
-                  onChange={(v) => setFormData({ ...formData, email: v })}
+                  onChange={(v) => setFormData({ ...formData, email: extractStr(v) })}
                   placeholder={t('free_clients_ph_email', language)}
                   width="100%"
                   height={46}
@@ -1079,7 +1187,7 @@ export const FreelanceClientsView: React.FC = () => {
                   label={t('free_clients_phone', language)}
                   type="tel"
                   value={formData.phone}
-                  onChange={(v) => setFormData({ ...formData, phone: v })}
+                  onChange={(v) => setFormData({ ...formData, phone: extractStr(v) })}
                   placeholder={t('free_clients_ph_phone', language)}
                   width="100%"
                   height={46}
@@ -1095,7 +1203,7 @@ export const FreelanceClientsView: React.FC = () => {
                   onChange={(val) =>
                     setFormData({
                       ...formData,
-                      currency: (val?.target?.value ?? String(val)) as CurrencyCode,
+                      currency: extractStr(val) as CurrencyCode,
                     })
                   }
                   options={[
@@ -1111,7 +1219,7 @@ export const FreelanceClientsView: React.FC = () => {
                   label={t('free_clients_hourly_rate', language)}
                   type="number"
                   value={formData.hourlyRate ? String(formData.hourlyRate) : ''}
-                  onChange={(v) => setFormData({ ...formData, hourlyRate: Number(v) || 0 })}
+                  onChange={(v) => setFormData({ ...formData, hourlyRate: Number(extractStr(v)) || 0 })}
                   width="100%"
                   height={46}
                   corner={14}
@@ -1123,12 +1231,18 @@ export const FreelanceClientsView: React.FC = () => {
                   onChange={(val) =>
                     setFormData({
                       ...formData,
-                      status: (val?.target?.value ?? String(val)) as FreelanceClientStatus,
+                      status: extractStr(val) as FreelanceClientStatus,
                     })
                   }
                   options={[
-                    { value: 'ActiveRetainer', label: t('free_clients_status_active_retainer', language) },
-                    { value: 'ProjectBased', label: t('free_clients_status_project_based', language) },
+                    {
+                      value: 'ActiveRetainer',
+                      label: t('free_clients_status_active_retainer', language),
+                    },
+                    {
+                      value: 'ProjectBased',
+                      label: t('free_clients_status_project_based', language),
+                    },
                     { value: 'Prospect', label: t('free_clients_status_prospect', language) },
                     { value: 'Archived', label: t('free_clients_status_archived', language) },
                   ]}
@@ -1144,7 +1258,9 @@ export const FreelanceClientsView: React.FC = () => {
                     label={t('free_clients_retainer_hours', language)}
                     type="number"
                     value={formData.monthlyRetainerHours ? String(formData.monthlyRetainerHours) : ''}
-                    onChange={(v) => setFormData({ ...formData, monthlyRetainerHours: Number(v) || 0 })}
+                    onChange={(v) =>
+                      setFormData({ ...formData, monthlyRetainerHours: Number(extractStr(v)) || 0 })
+                    }
                     placeholder={t('free_clients_ph_retainer_hrs', language)}
                     width="100%"
                     height={46}
@@ -1155,7 +1271,12 @@ export const FreelanceClientsView: React.FC = () => {
                     label={t('free_clients_flat_fee', language)}
                     type="number"
                     value={formData.monthlyRetainerAmount ? String(formData.monthlyRetainerAmount) : ''}
-                    onChange={(v) => setFormData({ ...formData, monthlyRetainerAmount: Number(v) || 0 })}
+                    onChange={(v) =>
+                      setFormData({
+                        ...formData,
+                        monthlyRetainerAmount: Number(extractStr(v)) || 0,
+                      })
+                    }
                     placeholder={t('free_clients_ph_flat_fee', language)}
                     width="100%"
                     height={46}
@@ -1189,7 +1310,9 @@ export const FreelanceClientsView: React.FC = () => {
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
-                  {clientToEdit ? t('free_clients_save_changes', language) : t('free_clients_create_btn', language)}
+                  {clientToEdit
+                    ? t('free_clients_save_changes', language)
+                    : t('free_clients_create_btn', language)}
                 </button>
               </div>
             </form>
@@ -1199,20 +1322,28 @@ export const FreelanceClientsView: React.FC = () => {
 
       {/* Delete Client Confirmation Modal */}
       {clientToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
           <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
             <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
               <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60">
                 <AlertTriangle size={20} />
               </div>
               <div>
-                <h3 className="text-base font-bold text-black dark:text-white">{t('free_clients_delete', language)}</h3>
-                <p className="text-xs text-black/55 dark:text-white/55">{t('free_clients_delete_warning', language)}</p>
+                <h3 className="text-base font-bold text-black dark:text-white">
+                  {t('free_clients_delete', language)}
+                </h3>
+                <p className="text-xs text-black/55 dark:text-white/55">
+                  {t('free_clients_delete_warning', language)}
+                </p>
               </div>
             </div>
 
             <p className="text-xs text-black/70 dark:text-white/75">
-              {t('free_clients_delete_confirm', language)} <strong className="text-black dark:text-white font-semibold">{clientToDelete.name}</strong> ({clientToDelete.company || t('free_clients_private_badge', language)})?
+              {t('free_clients_delete_confirm', language)}{' '}
+              <strong className="text-black dark:text-white font-semibold">
+                {clientToDelete.name}
+              </strong>{' '}
+              ({clientToDelete.company || t('free_clients_private_badge', language)})?
             </p>
 
             <label className="flex items-start gap-2.5 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs text-black/70 dark:text-white/75 cursor-pointer">
@@ -1223,7 +1354,9 @@ export const FreelanceClientsView: React.FC = () => {
                 className="mt-0.5 rounded text-[#d4522f] focus:ring-[#d4522f]"
               />
               <div>
-                <span className="font-semibold block text-black dark:text-white">{t('free_clients_cascade_delete', language)}</span>
+                <span className="font-semibold block text-black dark:text-white">
+                  {t('free_clients_cascade_delete', language)}
+                </span>
                 <span className="text-[11px] text-black/55 dark:text-white/75 block mt-0.5">
                   {t('free_clients_cascade_desc', language)}
                 </span>

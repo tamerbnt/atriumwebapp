@@ -19,6 +19,7 @@ import {
   selectCurrentServicesFromState,
   selectCurrentStaffFromState,
   selectCurrentBranchFromState,
+  showToast,
 } from '../../../services/store';
 import { calculateArt317Timbre, formatMoney } from '../../../utils/rules';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -60,7 +61,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
     shallowEqualObjects
   );
 
-  const { showToast, retryCloudSync } = useAtriumActions();
+  const { retryCloudSync } = useAtriumActions();
   const isRtl = language === 'ar';
 
   const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({

@@ -20,7 +20,7 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({ isOpen, onCl
 	const [clientPhone, setClientPhone] = React.useState("");
 	const [clientNationalId, setClientNationalId] = React.useState("");
 	const [negotiatorName, setNegotiatorName] = React.useState("Karim Zerrouki");
-	const [clientImpression, setClientImpression] = React.useState("Interested");
+	const [clientImpression, setClientImpression] = React.useState<'Interested' | 'NeedsNegotiation' | 'OfferSubmitted' | 'PriceTooHigh' | 'Unfavorable'>("Interested");
 	const [counterOfferDzd, setCounterOfferDzd] = React.useState(activeProp ? Math.round(activeProp.priceDzd * .95) : 0);
 	const [feedbackNotes, setFeedbackNotes] = React.useState("");
 	const [gpsLatitude, setGpsLatitude] = React.useState<any>(null);
@@ -137,7 +137,7 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({ isOpen, onCl
 <h2 className="text-xl font-bold tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">Bon de Visite Numérique Certifié</h2>
 </div>
 </div>
-<button onClick={onClose} className="p-2 rounded-xl text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"><X className="w-5 h-5" /></button>
+<button type="button" onClick={onClose} aria-label="Fermer" className="p-2 rounded-xl text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"><X className="w-5 h-5" /></button>
 </div>
 <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-[#141416] border border-[#E6DED6] dark:border-[#232328] mb-5 flex items-center justify-between">
 <div>
@@ -180,12 +180,12 @@ m)
 </span> : /* @__PURE__ */ <span className="text-amber-600">Signal GPS faible</span>}
 </div>
 </div>
-<button type="button" onClick={handleCaptureGps} className="text-xs text-[#d4522f] hover:underline font-semibold">Actualiser GPS</button>
+<button type="button" onClick={handleCaptureGps} className="text-xs text-[#d4522f] hover:underline font-semibold cursor-pointer">Actualiser GPS</button>
 </div>
 <div className="space-y-1.5">
 <div className="flex items-center justify-between text-xs">
 <span className="font-semibold text-black dark:text-white">Signature Tactile de l'Acquéreur (Sur l'écran)</span>
-<button type="button" onClick={clearSignature} className="flex items-center gap-1 text-black/70 dark:text-white/75 hover:text-[#d4522f] transition-colors">
+<button type="button" onClick={clearSignature} className="flex items-center gap-1 text-black/70 dark:text-white/75 hover:text-[#d4522f] transition-colors cursor-pointer">
 <RotateCcw className="w-3.5 h-3.5" />
 <span>Effacer</span>
 </button>
@@ -201,7 +201,7 @@ m)
 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 <div>
 <label className="block text-xs font-semibold text-black dark:text-white mb-1.5">Impression de Visite</label>
-<select value={clientImpression} onChange={(e) => setClientImpression(e.target.value)} className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DED6] dark:border-[#27272A] bg-white dark:bg-[#141416] text-xs font-medium focus:ring-2 focus:ring-[#d4522f]">
+<select value={clientImpression} onChange={(e) => setClientImpression(e.target.value as 'Interested' | 'NeedsNegotiation' | 'OfferSubmitted' | 'PriceTooHigh' | 'Unfavorable')} className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DED6] dark:border-[#27272A] bg-white dark:bg-[#141416] text-xs font-medium focus:ring-2 focus:ring-[#d4522f]">
 <option value="Interested">Très Intéressé (Candidat Solide)</option>
 <option value="NeedsNegotiation">Intéressé sous réserve de négociation</option>
 <option value="OfferSubmitted">Offre Ferme Soumise</option>

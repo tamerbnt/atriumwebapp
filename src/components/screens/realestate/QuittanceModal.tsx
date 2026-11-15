@@ -14,6 +14,8 @@ interface QuittanceModalProps {
   selectedLease?: RealEstateLease | null;
 }
 
+const extractStr = (v: any): string => (typeof v === 'string' ? v : String(v?.target?.value ?? v?.value ?? v ?? ''));
+
 export const QuittanceModal: React.FC<QuittanceModalProps> = ({
   isOpen,
   onClose,
@@ -37,7 +39,8 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleLeaseChange = (newLeaseId: string) => {
+  const handleLeaseChange = (rawLeaseId: any) => {
+    const newLeaseId = extractStr(rawLeaseId);
     setLeaseId(newLeaseId);
     const chosen = leases.find((l) => l.id === newLeaseId);
     if (chosen) {
@@ -114,8 +117,10 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-2 rounded-xl text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            aria-label="Fermer"
+            className="p-2 rounded-xl text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -138,7 +143,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
             <LabelSelect
               label="Mois de Facturation"
               value={periodMonth.toString()}
-              onChange={(val) => setPeriodMonth(Number(val))}
+              onChange={(val) => setPeriodMonth(Number(extractStr(val)))}
               options={monthNames.map((m, idx) => ({
                 value: (idx + 1).toString(),
                 label: m,
@@ -174,7 +179,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
             <LabelSelect
               label="Mode de Règlement"
               value={paymentMethod}
-              onChange={(val) => setPaymentMethod(val as any)}
+              onChange={(val) => setPaymentMethod(extractStr(val) as 'Cash' | 'Cheque' | 'Virement' | 'BaridiMob')}
               options={[
                 { value: 'Cash', label: 'Espèces (Timbre Fiscal Applicable)' },
                 { value: 'BaridiMob', label: 'BaridiMob / Virement Postal (Exonéré)' },

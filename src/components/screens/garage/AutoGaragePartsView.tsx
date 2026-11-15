@@ -1,772 +1,1193 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   Boxes,
   Plus,
-  AlertCircle,
-  Search,
   CheckCircle2,
-  ShieldCheck,
-  Tag,
   Package,
-  Layers,
   MapPin,
-  TrendingUp,
-  Download,
-  Trash2,
   Edit,
   Pin,
   X,
   Save,
   Check,
-  Send,
   AlertTriangle,
-  ArrowRight,
-  DollarSign,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { useGarageData, SparePart } from './garageData';
 import { AtriumButton } from '../../ui/AtriumButton';
-import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import {
+  ScreenHeaderBar,
+  ScreenKpiBanner,
+  ScreenPod,
+  ScreenCollectionToolbar,
+  ActiveFilterChip,
+  KineticFilterModal,
+  KineticFilterSection,
+  KineticSlideOverInspector,
+  buildBranchesByIdMap,
+  resolveRecordBranch,
+  downloadCsvSafe,
+} from '../../ui/kinetic';
 
+const extractStr = (eOrVal: any): string =>
+  eOrVal?.target?.value !== undefined ? String(eOrVal.target.value) : String(eOrVal ?? '');
 
+const PART_CATEGORIES = [
+  'Freinage',
+  'Filtration',
+  'Suspension',
+  'Moteur',
+  'Électrique',
+  'Huiles & Fluides',
+];
 
 export const AutoGaragePartsView: React.FC<any> = () => {
-	const { language, currentBusiness, currentBranch, currentUser, isSyncing, networkMode, isSyncTimeout, retryCloudSync } = useAtriumStore();
-	const isAr = language === "ar";
-	const { parts, addPart, updatePart, deletePart } = useGarageData();
-	const [searchQuery, setSearchQuery] = React.useState("");
-	const [categoryFilter, setCategoryFilter] = React.useState("All");
-	const [viewMode, setViewMode] = React.useState("list");
-	const [selectedIds, setSelectedIds] = React.useState(/* @__PURE__ */ new Set());
-	const [pinnedIds, setPinnedIds] = React.useState(/* @__PURE__ */ new Set(["part_01"]));
-	const [sortBy, setSortBy] = React.useState("name");
-	const [sortDir, setSortDir] = React.useState("asc");
-	const [isModalOpen, setIsModalOpen] = React.useState(false);
-	const [partToEdit, setPartToEdit] = React.useState<any>(null);
-	const [name, setName] = React.useState("");
-	const [sku, setSku] = React.useState("");
-	const [category, setCategory] = React.useState("Freinage");
-	const [stockQuantity, setStockQuantity] = React.useState("10");
-	const [minThreshold, setMinThreshold] = React.useState("4");
-	const [buyingPriceDzd, setBuyingPriceDzd] = React.useState("4000");
-	const [sellingPriceDzd, setSellingPriceDzd] = React.useState("6500");
-	const [locationBin, setLocationBin] = React.useState("Rayon A-01");
-	const [compatibility, setCompatibility] = React.useState("Renault, Dacia, Peugeot");
-	const [selectedPart, setSelectedPart] = React.useState<any>(() => {
-		return parts[0] || null;
-	});
-	const [activeTab, setActiveTab] = React.useState("fiche");
-	const [inspectorNotes, setInspectorNotes] = React.useState("");
-	const [noteSaved, setNoteSaved] = React.useState(false);
-	const openCreateModal = () => {
-		setPartToEdit(null);
-		setName("");
-		setSku(`PR-${Math.floor(1e3 + Math.random() * 9e3)}`);
-		setCategory("Freinage");
-		setStockQuantity("10");
-		setMinThreshold("4");
-		setBuyingPriceDzd("4000");
-		setSellingPriceDzd("6500");
-		setLocationBin("Rayon A-01");
-		setCompatibility("Multi-marques");
-		setIsModalOpen(true);
-	};
-	const openEditModal = (p: any) => {
-		setPartToEdit(p);
-		setName(p.name);
-		setSku(p.sku);
-		setCategory(p.category);
-		setStockQuantity(String(p.stockQuantity));
-		setMinThreshold(String(p.minThreshold));
-		setBuyingPriceDzd(String(p.buyingPriceDzd));
-		setSellingPriceDzd(String(p.sellingPriceDzd));
-		setLocationBin(p.locationBin);
-		setCompatibility(p.compatibility?.join(", ") || "");
-		setIsModalOpen(true);
-	};
-	const handleSaveModal = (e: any) => {
-		e.preventDefault();
-		if (!name.trim() || !sku.trim()) {
-			showToast(isAr ? "يرجى إدخال اسم القطعة ورمز SKU" : "Veuillez saisir le nom et le SKU", "error");
-			return;
-		}
-		const payload: any = {
-			id: partToEdit?.id || `part_${Date.now()}`,
-			accountId: partToEdit?.accountId || "acc_01",
-			businessId: currentBusiness?.id || "biz_garage",
-			branchId: currentBranch?.id || "branch_garage_main",
-			staffId: currentUser?.id || "staff_01",
-			name: name.trim(),
-			sku: sku.trim(),
-			category,
-			stockQuantity: parseInt(stockQuantity, 10) || 0,
-			minThreshold: parseInt(minThreshold, 10) || 1,
-			buyingPriceDzd: parseFloat(buyingPriceDzd) || 0,
-			sellingPriceDzd: parseFloat(sellingPriceDzd) || 0,
-			locationBin: locationBin.trim() || "Rayon A-01",
-			compatibility: compatibility.split(",").map((s) => s.trim()).filter(Boolean),
-			createdAt: partToEdit?.createdAt || (/* @__PURE__ */ new Date()).toISOString()
-		};
-		if (partToEdit) {
-			updatePart(payload);
-			if (selectedPart?.id === payload.id) setSelectedPart(payload);
-			showToast(isAr ? "تم تحديث بيانات الصنف" : "Pièce mise à jour avec succès", "success");
-		} else {
-			addPart(payload);
-			setSelectedPart(payload);
-			showToast(isAr ? "تمت إضافة صنف جديد للمخزن" : "Nouvelle référence enregistrée", "success");
-		}
-		setIsModalOpen(false);
-	};
-	const [isPoModalOpen, setIsPoModalOpen] = React.useState(false);
-	const [poSupplier, setPoSupplier] = React.useState("Comptoir Pièces Bab Ezzouar (Alger)");
-	const [poPartId, setPoPartId] = React.useState("p_01");
-	const [poQuantity, setPoQuantity] = React.useState("10");
-	const [poUnitCost, setPoUnitCost] = React.useState("4000");
-	const filteredParts = React.useMemo(() => {
-		return parts.filter((p) => {
-			if (categoryFilter === "LowStock") {
-				if (p.stockQuantity > p.minThreshold) return false;
-			} else if (categoryFilter !== "All" && p.category !== categoryFilter) return false;
-			if (searchQuery.trim()) {
-				const q = searchQuery.toLowerCase();
-				const matchesName = p.name.toLowerCase().includes(q);
-				const matchesSku = p.sku.toLowerCase().includes(q);
-				const matchesCat = p.category.toLowerCase().includes(q);
-				const matchesLoc = p.locationBin.toLowerCase().includes(q);
-				if (!matchesName && !matchesSku && !matchesCat && !matchesLoc) return false;
-			}
-			return true;
-		});
-	}, [
-		parts,
-		categoryFilter,
-		searchQuery
-	]);
-	const lowStockCount = parts.filter((p) => p.stockQuantity <= p.minThreshold).length;
-	const totalStockUnits = parts.reduce((acc, p) => acc + p.stockQuantity, 0);
-	const totalValuation = parts.reduce((acc, p) => acc + p.stockQuantity * p.sellingPriceDzd, 0);
-	const handlePin = (p: any) => {
-		setPinnedIds((prev) => {
-			const next = new Set(prev);
-			if (next.has(p.id)) next.delete(p.id);
-			else next.add(p.id);
-			return next;
-		});
-		showToast(pinnedIds.has(p.id) ? isAr ? "تم إلغاء التثبيت" : "Référence désépinglée" : isAr ? "تم تثبيت الصنف" : "Référence épinglée", "info");
-	};
-	const handleDelete = (p: any) => {
-		deletePart(p.id);
-		if (selectedPart?.id === p.id) setSelectedPart(null);
-		showToast(isAr ? "تم حذف القطعة من المخزن" : "Référence retirée du stock", "success");
-	};
-	const handleQuickAddStock = (p: any) => {
-		const updated = {
-			...p,
-			stockQuantity: p.stockQuantity + 5
-		};
-		updatePart(updated);
-		if (selectedPart?.id === p.id) setSelectedPart(updated);
-		showToast(isAr ? `تمت زيادة المخزون (+5): ${updated.stockQuantity} وحدات` : `Stock réapprovisionné (+5) : ${updated.stockQuantity} unités`, "success");
-	};
-	const handleExportCsv = () => {
-		const headers = [
-			"SKU",
-			"Désignation",
-			"Catégorie",
-			"Emplacement",
-			"Stock",
-			"Seuil Min",
-			"Prix Achat DZD",
-			"Prix Vente DZD"
-		];
-		const rows = filteredParts.map((p) => [
-			p.sku,
-			`"${p.name.replace(/"/g, "\"\"")}"`,
-			p.category,
-			p.locationBin,
-			p.stockQuantity,
-			p.minThreshold,
-			p.buyingPriceDzd,
-			p.sellingPriceDzd
-		]);
-		const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
-		const encodedUri = encodeURI(csvContent);
-		const link = document.createElement("a");
-		link.setAttribute("href", encodedUri);
-		link.setAttribute("download", `magasin_pieces_${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}.csv`);
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
-		showToast(isAr ? "تم تصدير ملف قطع الغيار CSV" : "Export CSV des pièces généré", "info");
-	};
-	const handleSaveNotes = () => {
-		if (!selectedPart) return;
-		setNoteSaved(true);
-		setTimeout(() => setNoteSaved(false), 2e3);
-		showToast(isAr ? "تم حفظ تعليمات التخزين" : "Consignes de stockage enregistrées", "success");
-	};
-	const columns = [
-		{
-			id: "sku",
-			header: isAr ? "رمز القطعة" : "SKU / Réf",
-			accessorKey: "sku",
-			sortable: true,
-			minWidth: "130px",
-			cell: (p: any) => /* @__PURE__ */ <div className="flex items-center gap-2">
-<div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0"><Boxes size={16} /></div>
-<div>
-<div className="font-mono font-bold text-xs text-black dark:text-white flex items-center gap-1.5">
-{p.sku}
-{pinnedIds.has(p.id) && /* @__PURE__ */ <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />}
-</div>
-<div className="text-[10px] text-black/55 dark:text-white/55">{p.locationBin}</div>
-</div>
-</div>
-		},
-		{
-			id: "name",
-			header: isAr ? "اسم الصنف" : "Désignation Pièce",
-			accessorKey: "name",
-			sortable: true,
-			minWidth: "220px",
-			cell: (p: any) => /* @__PURE__ */ <div>
-<div className="font-semibold text-xs text-black dark:text-white line-clamp-1">{p.name}</div>
-<div className="text-[11px] text-black/55 dark:text-white/55">{p.category}</div>
-</div>
-		},
-		{
-			id: "stockQuantity",
-			header: isAr ? "الكمية المتوفرة" : "Stock en Rayon",
-			accessorKey: "stockQuantity",
-			sortable: true,
-			minWidth: "130px",
-			cell: (p: any) => {
-				const isLow = p.stockQuantity <= p.minThreshold;
-				return /* @__PURE__ */ <div className="flex items-center gap-1.5">
-<span className={`font-mono font-bold text-xs px-2 py-0.5 rounded-full ${isLow ? "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300" : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"}`}>
-{p.stockQuantity}
-{" u."}
-</span>
-{isLow && /* @__PURE__ */ <AlertTriangle size={13} className="text-amber-500 shrink-0" />}
-</div>;
-			}
-		},
-		{
-			id: "sellingPrice",
-			header: isAr ? "سعر البيع" : "Prix de Vente",
-			accessorKey: "sellingPriceDzd",
-			sortable: true,
-			minWidth: "130px",
-			cell: (p: any) => /* @__PURE__ */ <div>
-<div className="font-mono font-bold text-xs text-black dark:text-white">{formatMoney(p.sellingPriceDzd)}</div>
-<div className="text-[10px] text-black/55 dark:text-white/55">
-{"Achat: "}
-{formatMoney(p.buyingPriceDzd)}
-</div>
-</div>
-		},
-		{
-			id: "locationBin",
-			header: isAr ? "الموقع" : "Emplacement",
-			accessorKey: "locationBin",
-			sortable: true,
-			minWidth: "130px",
-			cell: (p: any) => /* @__PURE__ */ <div className="flex items-center gap-1 text-xs text-black/70 dark:text-white/75">
-<MapPin size={12} className="text-[#d4522f] shrink-0" />
-<span>{p.locationBin}</span>
-</div>
-		}
-	];
-	const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
-		isLoading: isSyncing || networkMode === "force_skeleton",
-		hasCachedData: parts.length > 0
-	});
-	if (showSkeleton && (parts.length === 0 || networkMode === "force_skeleton")) return /* @__PURE__ */ <SkeletonCollectionScreen kpiCount={3} columns={[
-			{
-				width: "2.5*",
-				minWidth: "180px"
-			},
-			{
-				width: "1.5*",
-				minWidth: "120px"
-			},
-			{
-				width: "1.5*",
-				minWidth: "120px"
-			},
-			{
-				width: "1.5*",
-				minWidth: "120px"
-			},
-			{
-				width: "100px",
-				minWidth: "80px"
-			}
-		]} hasIcon hasFacility hasActionBtn actionBtnWidth={140} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
-	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1">
-<div className="flex items-center gap-3">
-<div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Boxes size={22} /></div>
-<div>
-<div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{isAr ? "قطع الغيار" : language === "en" ? "Parts" : "Pièces"}</h1>
-<span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
-{parts.length}
-{" "}
-{isAr ? "صنف" : "références"}
-</span>
-</div>
-</div>
-</div>
-<div className="flex items-center gap-2 flex-wrap">
-<AtriumButton variant="ghost" size="sm" onClick={handleExportCsv} icon={<Download size={14} />}>{isAr ? "تصدير CSV" : "Export CSV"}</AtriumButton>
-<AtriumButton variant="secondary" size="sm" onClick={() => {
-								if (selectedPart) {
-									setPoPartId(selectedPart.id);
-									setPoUnitCost(String(selectedPart.buyingPriceDzd));
-								}
-								setIsPoModalOpen(true);
-							}} icon={<Package size={14} />}>{isAr ? "طلبية مورد" : "Commande Fournisseur"}</AtriumButton>
-<AtriumButton variant="primary" onClick={openCreateModal} icon={<Plus size={14} />}>{isAr ? "صنف جديد" : "Nouvelle Référence"}</AtriumButton>
-</div>
-</div>
-<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-<div>
-<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
-{isAr ? "مؤشرات المستودع والقطع الحرجة" : "Niveaux de Stock & Approvisionnement"}
-</h2>
-</div>
-<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "إجمالي القطع المتوفرة" : "Unités en Rayon"}</span>
-<div>
-<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{totalStockUnits}</div>
-<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">
-{parts.length}
-{" "}
-{isAr ? "صنف مفهرس" : "références cataloguées"}
-</p>
-</div>
-</div>
-<div onClick={() => setCategoryFilter(categoryFilter === "LowStock" ? "All" : "LowStock")} className={`p-5 rounded-[20px] bg-white dark:bg-neutral-800 border transition-all cursor-pointer flex flex-col justify-between h-[124px] shadow-2xs ${categoryFilter === "LowStock" ? "border-amber-400 ring-2 ring-amber-400/20" : "border-[#E6DED6] dark:border-neutral-700/60 hover:border-amber-300"}`}>
-<div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "قطع تحت حد الأمان" : "Alertes Réapprovisionnement"}</span>
-{lowStockCount > 0 && /* @__PURE__ */ <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">Filtrer</span>}
-</div>
-<div>
-<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{lowStockCount}</div>
-<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">
-{lowStockCount > 0 ? isAr ? "تتطلب طلبية مورد" : "Commande fournisseur requise" : "Aucune rupture"}
-</p>
-</div>
-</div>
-<div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-<div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-white/80">{isAr ? "القيمة التقديرية للمخزون" : "Valeur Estimée Stock"}</span>
-<span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">Prix Vente Atelier</span>
-</div>
-<div>
-<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalValuation)}</div>
-<p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
-<CheckCircle2 size={11} />
-{isAr ? "مستودع مؤمن ومطابق" : "Valorisation active"}
-</p>
-</div>
-</div>
-</div>
-</div>
-<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
-<div className="flex flex-wrap items-center justify-between gap-3">
-<div className="flex items-center gap-2">
-<Boxes size={16} className="text-black/55 dark:text-white/55" />
-<span className="text-sm font-bold text-black dark:text-white">{isAr ? "كتالوج قطع الغيار" : "Catalogue Pièces de Rechange"}</span>
-</div>
-<div className="flex flex-wrap items-center gap-2.5 ml-auto">
-<Seek value={searchQuery} onChange={setSearchQuery} placeholder={isAr ? "بحث بالرمز، الاسم، الفئة..." : "Rechercher référence, rayon..."} shutSize={36} openWidth={220} />
-<div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs overflow-x-auto max-w-full">
-{[
-									{
-										id: "All",
-										label: isAr ? "الكل" : language === "fr" ? "Toutes" : "All",
-										tooltip: isAr ? "جميع فئات قطع الغيار" : language === "fr" ? "Toutes les catégories de pièces" : "All spare part categories"
-									},
-									{
-										id: "LowStock",
-										label: isAr ? "تنبيهات" : language === "fr" ? "Alertes" : "Alerts",
-										tooltip: isAr ? `تنبيهات نقص المخزون (${lowStockCount})` : language === "fr" ? `Pièces en alerte de stock (${lowStockCount})` : `Low stock alerts (${lowStockCount})`
-									},
-									{
-										id: "Freinage",
-										label: "Freinage",
-										tooltip: isAr ? "قطع الفرامل" : "Système de freinage"
-									},
-									{
-										id: "Filtration",
-										label: "Filtration",
-										tooltip: isAr ? "فلاتر المحرك" : "Filtres & filtration"
-									},
-									{
-										id: "Suspension",
-										label: "Suspension",
-										tooltip: isAr ? "نظام التعليق" : "Pièces de suspension"
-									},
-									{
-										id: "Distribution",
-										label: "Distribution",
-										tooltip: isAr ? "أطقم التوزيع" : "Kits de distribution"
-									},
-									{
-										id: "Lubrifiants",
-										label: "Lubrifiants",
-										tooltip: isAr ? "الزيوت والسوائل" : "Huiles & lubrifiants"
-									}
-								].map((filter) => {
-									const isActive = categoryFilter === filter.id;
-									return /* @__PURE__ */ <button key={filter.id} type="button" onClick={() => setCategoryFilter(filter.id)} title={filter.tooltip} style={{
-											backgroundColor: isActive ? "#FCEEE8" : "transparent",
-											color: isActive ? "var(--color-accent)" : "#71717A"
-										}} className={`px-3 py-1 rounded-full cursor-pointer transition-all whitespace-nowrap ${isActive ? "font-bold" : "hover:text-black dark:hover:text-white"}`}>{filter.label}</button>;
-								})}
-</div>
-<AtriumButton variant="secondary" size="sm" onClick={handleExportCsv} icon={<Download size={13} />}>Export CSV</AtriumButton>
-</div>
-</div>
-<div className="flex items-start gap-4">
-<div className="flex-1 min-w-0">
-<UniversalDataCollection data={filteredParts} columns={columns} keyExtractor={(p) => p.id} searchQuery={searchQuery} onSearchChange={setSearchQuery} searchPlaceholder={isAr ? "بحث بالرمز، الاسم، الفئة، الموقع..." : "Rechercher par référence, désignation, rayon..."} filterValue={categoryFilter} onFilterChange={setCategoryFilter} filterOptions={[
-								{
-									value: "All",
-									label: isAr ? "الكل" : language === "fr" ? "Toutes" : "All",
-									tooltip: isAr ? "جميع الفئات" : "Toutes les catégories"
-								},
-								{
-									value: "Freinage",
-									label: "Freinage"
-								},
-								{
-									value: "Filtration",
-									label: "Filtration"
-								},
-								{
-									value: "Suspension",
-									label: "Suspension"
-								},
-								{
-									value: "Distribution",
-									label: "Distribution"
-								},
-								{
-									value: "Lubrifiants",
-									label: "Lubrifiants"
-								}
-							]} viewMode={viewMode} onViewModeChange={setViewMode} selectedIds={selectedIds} onSelectionChange={setSelectedIds} bulkSecondaryAction={{
-								label: isAr ? "إعادة طلب groupé" : "Réassort groupé",
-								icon: /* @__PURE__ */ <Plus size={14} />,
-								onClick: (ids: any) => {
-									showToast(isAr ? `تم تحضير أمر إعادة تموين لـ ${ids.size} قطع` : `Réassort préparé pour ${ids.size} références`);
-								}
-							}} onBulkDelete={(ids) => {
-								ids.forEach((id) => deletePart(id));
-								setSelectedIds(/* @__PURE__ */ new Set());
-								if (selectedPart && ids.has(selectedPart.id)) setSelectedPart(null);
-								showToast(isAr ? "تم حذف القطع المحددة" : "Pièces sélectionnées supprimées");
-							}} pinnedIds={pinnedIds} onPinToggle={handlePin} sortBy={sortBy} sortDir={sortDir} onSortChange={(field, dir) => {
-								setSortBy(field);
-								setSortDir(dir);
-							}} onItemClick={(p) => {
-								setSelectedPart(p);
-							}} onEdit={openEditModal} onDelete={handleDelete} emptyIcon={<Boxes size={32} className="text-black/55 dark:text-white/55" />} emptyTitle={isAr ? "لا توجد قطع غيار" : "Aucune pièce trouvée"} emptyDescription={searchQuery ? isAr ? "لا توجد نتائج مطابقة لبحثك" : "Aucune référence ne correspond à votre recherche" : isAr ? "قم بإضافة أول صنف لمخزن الورشة" : "Enregistrez votre première pièce en stock"} customActions={[{
-								id: "addStock",
-								label: isAr ? "إضافة مخزون (+5)" : "Réappro (+5)",
-								icon: /* @__PURE__ */ <Plus size={14} />,
-								onClick: handleQuickAddStock
-							}]} renderGridCard={(p) => {
-								const isLow = p.stockQuantity <= p.minThreshold;
-								return /* @__PURE__ */ <div className="space-y-3">
-<div className="flex items-center justify-between">
-<span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg border border-[#d4522f]/20">{p.sku}</span>
-<span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isLow ? "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300" : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"}`}>
-{p.stockQuantity}
-{" en stock"}
-</span>
-</div>
-<div>
-<h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">{p.name}</h3>
-<div className="text-xs text-black/55 dark:text-white/55 font-medium mt-0.5">
-{p.category}
-{" • Rayon "}
-{p.locationBin}
-</div>
-</div>
-<div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-<div>
-<div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">Prix Vente</div>
-<div className="font-mono font-bold text-black dark:text-white mt-0.5">{formatMoney(p.sellingPriceDzd)}</div>
-</div>
-<div className="text-right">
-<div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">Seuil Min</div>
-<div className="font-mono font-semibold text-black/70 dark:text-white/75 mt-0.5">
-{p.minThreshold}
-{" u."}
-</div>
-</div>
-</div>
-</div>;
-							}} />
-</div>
-{selectedPart && /* @__PURE__ */ <div className="w-[390px] shrink-0 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5 space-y-4 shadow-lg animate-in slide-in-from-right-4 duration-200">
-<div className="flex items-start justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-<div className="flex items-center gap-2.5">
-<div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold"><Boxes size={18} /></div>
-<div>
-<div className="flex items-center gap-1.5">
-<span className="font-mono font-bold text-xs text-black dark:text-white">{selectedPart.sku}</span>
-{selectedPart.stockQuantity <= selectedPart.minThreshold && /* @__PURE__ */ <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">Seuil Bas</span>}
-</div>
-<p className="text-xs font-semibold text-black/70 dark:text-white/75 line-clamp-1">{selectedPart.name}</p>
-</div>
-</div>
-<button onClick={() => setSelectedPart(null)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"><X size={16} /></button>
-</div>
-<div className="flex items-center gap-1.5 flex-wrap">
-<button onClick={() => handleQuickAddStock(selectedPart)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 transition-colors">
-<Plus size={12} />
-{isAr ? "+5 مخزون" : "+5 Stock"}
-</button>
-<button onClick={() => openEditModal(selectedPart)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-neutral-100 text-black/70 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-white/75 transition-colors">
-<Edit size={12} />
-{isAr ? "تعديل" : "Modifier"}
-</button>
-<button onClick={() => handleDelete(selectedPart)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 transition-colors ml-auto"><Trash2 size={12} /></button>
-</div>
-<div className="flex border-b border-neutral-100 dark:border-neutral-800 gap-1 text-xs">
-<button onClick={() => setActiveTab("fiche")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "fiche" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "المواصفات" : "Fiche Pièce"}</button>
-<button onClick={() => setActiveTab("stock")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "stock" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "الأسعار والمخزون" : "Prix & Marges"}</button>
-<button onClick={() => setActiveTab("mouvements")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "mouvements" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "التوافق" : "Compatibilité"}</button>
-<button onClick={() => setActiveTab("notes")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "الملاحظات" : "Consignes"}</button>
-</div>
-{activeTab === "fiche" && /* @__PURE__ */ <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
-<div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55">{isAr ? "رمز القطعة SKU:" : "Code SKU Atelier:"}</span>
-<span className="font-mono font-bold text-black dark:text-white">{selectedPart.sku}</span>
-</div>
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55">{isAr ? "الفئة:" : "Catégorie:"}</span>
-<span className="font-semibold text-black dark:text-white">{selectedPart.category}</span>
-</div>
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55">{isAr ? "موقع التخزين:" : "Emplacement Rayon:"}</span>
-<span className="font-semibold text-[#d4522f]">{selectedPart.locationBin}</span>
-</div>
-</div>
-<div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55">{isAr ? "الكمية المتوفرة:" : "Quantité en Stock:"}</span>
-<span className="font-mono font-bold text-black dark:text-white">
-{selectedPart.stockQuantity}
-{" unités"}
-</span>
-</div>
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55">{isAr ? "حد الطلب الأدنى:" : "Seuil d’Alerte Min:"}</span>
-<span className="font-mono text-amber-600 dark:text-amber-400 font-semibold">
-{selectedPart.minThreshold}
-{" unités"}
-</span>
-</div>
-</div>
-</div>}
-{activeTab === "stock" && /* @__PURE__ */ <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
-<div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55">{isAr ? "سعر الشراء (مورد):" : "Prix d’Achat Fournisseur:"}</span>
-<span className="font-mono font-semibold text-black dark:text-white">{formatMoney(selectedPart.buyingPriceDzd)}</span>
-</div>
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55">{isAr ? "سعر البيع (ورشة):" : "Prix de Vente Client:"}</span>
-<span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{formatMoney(selectedPart.sellingPriceDzd)}</span>
-</div>
-<div className="flex justify-between items-center pt-1 border-t border-neutral-200 dark:border-neutral-700">
-<span className="text-black/55 dark:text-white/55">{isAr ? "الهامش الصافي للقطعة:" : "Marge Brute Unitaire:"}</span>
-<span className="font-mono font-bold text-[#d4522f]">{formatMoney(selectedPart.sellingPriceDzd - selectedPart.buyingPriceDzd)}</span>
-</div>
-</div>
-<div className="p-3 rounded-xl bg-orange-50/50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30">
-<div className="flex justify-between items-center">
-<span className="text-black/70 dark:text-white/75">Valeur totale en rayon:</span>
-<span className="font-mono font-bold text-black dark:text-white">{formatMoney(selectedPart.stockQuantity * selectedPart.sellingPriceDzd)}</span>
-</div>
-</div>
-</div>}
-{activeTab === "mouvements" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
-<p className="text-black/55 dark:text-white/55 text-[11px]">Modèles et motorisations compatibles avec cette référence :</p>
-<div className="space-y-1.5">
-{selectedPart.compatibility && selectedPart.compatibility.length > 0 ? selectedPart.compatibility.map((c: any, i: any) => /* @__PURE__ */ <div key={i} className="p-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 text-black dark:text-white flex items-center gap-2">
-<CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
-<span>{c}</span>
-</div>) : /* @__PURE__ */ <div className="text-black/55 dark:text-white/55 text-center py-4">Référence universelle / adaptable standard</div>}
-</div>
-</div>}
-{activeTab === "notes" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
-<p className="text-black/55 dark:text-white/55 text-[11px]">
-{isAr ? "تعليمات التخزين، المورد المفضل، وشروط الضمان:" : "Conditions de stockage, fournisseur référent et consignes magasinier :"}
-</p>
-<textarea rows={6} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} placeholder="Noter les détails de conditionnement, références équivalentes OE..." className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none" />
-<button onClick={handleSaveNotes} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#d4522f] text-white hover:bg-[#a86246] transition-colors font-medium text-xs shadow-xs">
-{noteSaved ? /* @__PURE__ */ <>
-<Check size={14} />
-{isAr ? "تم الحفظ" : "Consignes enregistrées"}
-</> : /* @__PURE__ */ <>
-<Save size={14} />
-{isAr ? "حفظ" : "Enregistrer"}
-</>}
-</button>
-</div>}
-</div>}
-</div>
-</div>
-{isModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-<div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto">
-<div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-<div className="flex items-center gap-2.5">
-<div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold"><Boxes size={20} /></div>
-<div>
-<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-{partToEdit ? isAr ? "تعديل صنف قطعة الغيار" : "Modifier la Référence" : isAr ? "إضافة صنف جديد للمخزن" : "Nouvelle Référence Magasin"}
-</h2>
-<p className="text-xs text-black/55 dark:text-white/55">
-{isAr ? "البيانات الفنية، المخزون، والأسعار" : "Gestion du catalogue pièces et seuils d’alerte"}
-</p>
-</div>
-</div>
-<button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
-</div>
-<form onSubmit={handleSaveModal} className="space-y-4">
-<div className="grid grid-cols-2 gap-3">
-<LabelInput label={isAr ? "رمز SKU *" : "Code SKU *"} placeholder="PR-1029" value={sku} onChange={(e) => setSku(e.target.value)} required />
-<LabelSelect label={isAr ? "الفئة" : "Catégorie"} value={category} onChange={(e) => setCategory(e.target.value)} options={[
-										{
-											value: "Freinage",
-											label: "Freinage"
-										},
-										{
-											value: "Filtration",
-											label: "Filtration"
-										},
-										{
-											value: "Suspension",
-											label: "Suspension"
-										},
-										{
-											value: "Distribution",
-											label: "Distribution"
-										},
-										{
-											value: "Lubrifiants",
-											label: "Lubrifiants"
-										}
-									]} />
-</div>
-<LabelInput label={isAr ? "اسم وتعيين القطعة *" : "Désignation de la Pièce *"} placeholder="Ex: Jeu 4 Plaquettes de frein avant" value={name} onChange={(e) => setName(e.target.value)} required />
-<div className="grid grid-cols-2 gap-3">
-<LabelInput label={isAr ? "الكمية في المخزن" : "Quantité Stock"} type="number" value={stockQuantity} onChange={(e) => setStockQuantity(e.target.value)} required />
-<LabelInput label={isAr ? "حد الأمان الأدنى" : "Seuil d’Alerte Min"} type="number" value={minThreshold} onChange={(e) => setMinThreshold(e.target.value)} required />
-</div>
-<div className="grid grid-cols-2 gap-3">
-<LabelInput label={isAr ? "سعر الشراء (دج)" : "Prix d’Achat (DZD)"} type="number" value={buyingPriceDzd} onChange={(e) => setBuyingPriceDzd(e.target.value)} required />
-<LabelInput label={isAr ? "سعر البيع (دج)" : "Prix de Vente (DZD)"} type="number" value={sellingPriceDzd} onChange={(e) => setSellingPriceDzd(e.target.value)} required />
-</div>
-<div className="grid grid-cols-2 gap-3">
-<LabelInput label={isAr ? "موقع التخزين / الرف" : "Emplacement / Rayon"} placeholder="Ex: Rayon B-04" value={locationBin} onChange={(e) => setLocationBin(e.target.value)} />
-<LabelInput label={isAr ? "التوافق" : "Compatibilité (marques)"} placeholder="Ex: Renault Clio 4, Dacia Sandero" value={compatibility} onChange={(e) => setCompatibility(e.target.value)} />
-</div>
-<div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-<AtriumButton variant="ghost" size="sm" onClick={() => setIsModalOpen(false)}>{isAr ? "إلغاء" : "Annuler"}</AtriumButton>
-<AtriumButton variant="primary" size="sm" type="submit">
-{partToEdit ? isAr ? "حفظ التعديلات" : "Enregistrer" : isAr ? "تسجيل القطعة" : "Ajouter au Stock"}
-</AtriumButton>
-</div>
-</form>
-</div>
-</div>}
-{isPoModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-<div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5">
-<div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-<div className="flex items-center gap-2.5">
-<div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center font-bold"><Package size={20} /></div>
-<div>
-<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-{isAr ? "طلبية تموين من المورد (Bon de Commande)" : "Bon de Commande Fournisseur Gros"}
-</h2>
-</div>
-</div>
-<button onClick={() => setIsPoModalOpen(false)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
-</div>
-<form onSubmit={(e) => {
-							e.preventDefault();
-							const target = parts.find((p) => p.id === poPartId);
-							const qty = parseInt(poQuantity, 10) || 5;
-							const cost = parseFloat(poUnitCost) || target?.buyingPriceDzd || 0;
-							if (target) {
-								const updated = {
-									...target,
-									stockQuantity: target.stockQuantity + qty,
-									buyingPriceDzd: cost
-								};
-								updatePart(updated);
-								if (selectedPart?.id === target.id) setSelectedPart(updated);
-							}
-							showToast(isAr ? `تم تسجيل استلام الطلبية (+${qty}) بنجاح من ${poSupplier}` : `Bon d'entrée stock validé (+${qty} unités) depuis ${poSupplier}`, "success");
-							setIsPoModalOpen(false);
-						}} className="space-y-4">
-<LabelSelect label={isAr ? "المورد المعتمد" : "Fournisseur Référent"} value={poSupplier} onChange={(e) => setPoSupplier(e.target.value)} options={[
-									{
-										value: "Comptoir Pièces Bab Ezzouar (Alger)",
-										label: "Comptoir Pièces Bab Ezzouar (Alger)"
-									},
-									{
-										value: "Sarl Maghreb Pièces Baraki (Alger)",
-										label: "Sarl Maghreb Pièces Baraki (Alger)"
-									},
-									{
-										value: "Établissement Benali Distribution (El Eulma)",
-										label: "Éts Benali Distribution (El Eulma)"
-									},
-									{
-										value: "Accumulateurs Algérie SPA (Oued Smar)",
-										label: "Accumulateurs Algérie SPA (Oued Smar)"
-									}
-								]} />
-<LabelSelect label={isAr ? "القطعة المراد تموينها" : "Référence Pièce à Réapprovisionner"} value={poPartId} onChange={(e) => {
-									setPoPartId(e.target.value);
-									const p = parts.find((item) => item.id === e.target.value);
-									if (p) setPoUnitCost(String(p.buyingPriceDzd));
-								}} options={parts.map((p) => ({
-									value: p.id,
-									label: `${p.sku} — ${p.name} (Stock: ${p.stockQuantity} u.)`
-								}))} />
-<div className="grid grid-cols-2 gap-3">
-<LabelInput label={isAr ? "الكمية المطلوبة *" : "Quantité Commandée *"} type="number" value={poQuantity} onChange={(e) => setPoQuantity(e.target.value)} required />
-<LabelInput label={isAr ? "سعر الشراء الفردي (دج)" : "Prix Achat Unitaire (DZD)"} type="number" value={poUnitCost} onChange={(e) => setPoUnitCost(e.target.value)} required />
-</div>
-<div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 flex items-center justify-between text-xs">
-<span className="text-black/55 dark:text-white/55">{isAr ? "إجمالي قيمة الطلبية HT:" : "Montant Total Commande HT:"}</span>
-<span className="font-mono font-bold text-base text-black dark:text-white">{formatMoney((parseInt(poQuantity, 10) || 0) * (parseFloat(poUnitCost) || 0))}</span>
-</div>
-<div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
-<AtriumButton variant="ghost" size="sm" onClick={() => setIsPoModalOpen(false)}>{isAr ? "إلغاء" : "Annuler"}</AtriumButton>
-<AtriumButton variant="primary" size="sm" type="submit" icon={<Check size={14} />}>{isAr ? "تأكيد استلام السلعة بالمستودع" : "Confirmer Réception en Stock"}</AtriumButton>
-</div>
-</form>
-</div>
-</div>}
-</div>;
+  const {
+    language,
+    currentBusiness,
+    currentBranch,
+    currentUser,
+    branches,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    retryCloudSync,
+  } = useAtriumStore();
+  const isAr = language === 'ar';
+  const isEn = language === 'en';
+
+  const { parts, addPart, updatePart, deletePart } = useGarageData();
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('All');
+  const [branchFilter, setBranchFilter] = useState<string>('All');
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
+
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const filterButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>(['part_01']));
+  const [sortBy, setSortBy] = useState<string>('name');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [partToEdit, setPartToEdit] = useState<SparePart | null>(null);
+  const [name, setName] = useState('');
+  const [sku, setSku] = useState('');
+  const [category, setCategory] = useState('Freinage');
+  const [stockQuantity, setStockQuantity] = useState('10');
+  const [minThreshold, setMinThreshold] = useState('4');
+  const [buyingPriceDzd, setBuyingPriceDzd] = useState('4000');
+  const [sellingPriceDzd, setSellingPriceDzd] = useState('6500');
+  const [locationBin, setLocationBin] = useState('Rayon A-01');
+  const [compatibility, setCompatibility] = useState('Renault, Dacia, Peugeot');
+
+  const [isPoModalOpen, setIsPoModalOpen] = useState(false);
+  const [poSupplier, setPoSupplier] = useState('Comptoir Pièces Bab Ezzouar (Alger)');
+  const [poPartId, setPoPartId] = useState(parts[0]?.id || 'p_01');
+  const [poQuantity, setPoQuantity] = useState('10');
+  const [poUnitCost, setPoUnitCost] = useState('4000');
+
+  const [inspectedPart, setInspectedPart] = useState<SparePart | null>(null);
+  const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('fiche');
+  const [inspectorNotes, setInspectorNotes] = useState('');
+  const [noteSaved, setNoteSaved] = useState(false);
+
+  const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
+
+  const activePart = useMemo(() => {
+    if (!inspectedPart) return null;
+    return parts.find((p) => p.id === inspectedPart.id) || inspectedPart;
+  }, [inspectedPart, parts]);
+
+  const branchCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    parts.forEach((p) => {
+      const bName = resolveRecordBranch(p, branchesById, currentBranch, language).name;
+      map.set(bName, (map.get(bName) || 0) + 1);
+    });
+    return map;
+  }, [parts, branchesById, currentBranch, language]);
+
+  const lowStockCount = useMemo(
+    () => parts.filter((p) => p.stockQuantity <= p.minThreshold).length,
+    [parts]
+  );
+  const normalStockCount = parts.length - lowStockCount;
+  const totalStockUnits = useMemo(
+    () => parts.reduce((acc, p) => acc + p.stockQuantity, 0),
+    [parts]
+  );
+  const totalValuation = useMemo(
+    () => parts.reduce((acc, p) => acc + p.stockQuantity * p.sellingPriceDzd, 0),
+    [parts]
+  );
+
+  const filteredParts = useMemo(() => {
+    return parts.filter((p) => {
+      if (categoryFilter === 'LowStock') {
+        if (p.stockQuantity > p.minThreshold) return false;
+      } else if (categoryFilter === 'Healthy') {
+        if (p.stockQuantity <= p.minThreshold) return false;
+      } else if (categoryFilter !== 'All' && p.category !== categoryFilter) {
+        return false;
+      }
+      if (branchFilter !== 'All') {
+        const bName = resolveRecordBranch(p, branchesById, currentBranch, language).name;
+        if (bName !== branchFilter) return false;
+      }
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesName = p.name.toLowerCase().includes(q);
+        const matchesSku = p.sku.toLowerCase().includes(q);
+        const matchesCat = p.category.toLowerCase().includes(q);
+        const matchesLoc = p.locationBin.toLowerCase().includes(q);
+        if (!matchesName && !matchesSku && !matchesCat && !matchesLoc) return false;
+      }
+      return true;
+    });
+  }, [parts, categoryFilter, branchFilter, searchQuery, branchesById, currentBranch, language]);
+
+  const sortedParts = useMemo(() => {
+    const list = [...filteredParts];
+    list.sort((a, b) => {
+      const aPinned = pinnedIds.has(a.id);
+      const bPinned = pinnedIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      let cmp = 0;
+      if (sortBy === 'sku') {
+        cmp = a.sku.localeCompare(b.sku);
+      } else if (sortBy === 'name') {
+        cmp = a.name.localeCompare(b.name);
+      } else if (sortBy === 'branch') {
+        const ba = resolveRecordBranch(a, branchesById, currentBranch, language).name;
+        const bb = resolveRecordBranch(b, branchesById, currentBranch, language).name;
+        cmp = ba.localeCompare(bb);
+      } else if (sortBy === 'stockQuantity') {
+        cmp = a.stockQuantity - b.stockQuantity;
+      } else if (sortBy === 'sellingPrice') {
+        cmp = a.sellingPriceDzd - b.sellingPriceDzd;
+      } else if (sortBy === 'locationBin') {
+        cmp = a.locationBin.localeCompare(b.locationBin);
+      }
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+    return list;
+  }, [filteredParts, pinnedIds, sortBy, sortDir, branchesById, currentBranch, language]);
+
+  const openCreateModal = useCallback(() => {
+    setPartToEdit(null);
+    setName('');
+    setSku(`PR-${Math.floor(1000 + Math.random() * 9000)}`);
+    setCategory('Freinage');
+    setStockQuantity('10');
+    setMinThreshold('4');
+    setBuyingPriceDzd('4000');
+    setSellingPriceDzd('6500');
+    setLocationBin('Rayon A-01');
+    setCompatibility('Multi-marques');
+    setIsModalOpen(true);
+  }, []);
+
+  const openEditModal = useCallback((p: SparePart) => {
+    setPartToEdit(p);
+    setName(p.name);
+    setSku(p.sku);
+    setCategory(p.category);
+    setStockQuantity(String(p.stockQuantity));
+    setMinThreshold(String(p.minThreshold));
+    setBuyingPriceDzd(String(p.buyingPriceDzd));
+    setSellingPriceDzd(String(p.sellingPriceDzd));
+    setLocationBin(p.locationBin);
+    setCompatibility(p.compatibility?.join(', ') || '');
+    setIsModalOpen(true);
+  }, []);
+
+  const handleSaveModal = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !sku.trim()) {
+      showToast({
+        type: 'error',
+        title: isAr ? 'خطأ' : 'Champs requis',
+        message: isAr ? 'يرجى إدخال اسم القطعة ورمز SKU' : 'Veuillez saisir le nom et le SKU',
+      });
+      return;
+    }
+    const payload: SparePart = {
+      id: partToEdit?.id || `part_${Date.now()}`,
+      accountId: partToEdit?.accountId || 'acc_01',
+      businessId: currentBusiness?.id || 'biz_garage',
+      branchId: currentBranch?.id || 'branch_garage_main',
+      staffId: currentUser?.id || 'staff_01',
+      name: name.trim(),
+      sku: sku.trim(),
+      category: category as SparePart['category'],
+      stockQuantity: parseInt(stockQuantity, 10) || 0,
+      minThreshold: parseInt(minThreshold, 10) || 1,
+      buyingPriceDzd: parseFloat(buyingPriceDzd) || 0,
+      sellingPriceDzd: parseFloat(sellingPriceDzd) || 0,
+      locationBin: locationBin.trim() || 'Rayon A-01',
+      compatibility: compatibility
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean),
+      createdAt: partToEdit?.createdAt || new Date().toISOString(),
+    };
+    if (partToEdit) {
+      updatePart(payload);
+      if (inspectedPart?.id === payload.id) setInspectedPart(payload);
+      showToast({
+        type: 'success',
+        title: payload.sku,
+        message: isAr ? 'تم تحديث بيانات الصنف' : 'Pièce mise à jour avec succès',
+      });
+    } else {
+      addPart(payload);
+      setInspectedPart(payload);
+      showToast({
+        type: 'success',
+        title: payload.sku,
+        message: isAr ? 'تمت إضافة صنف جديد للمخزن' : 'Nouvelle référence enregistrée',
+      });
+    }
+    setIsModalOpen(false);
+  };
+
+  const handlePin = useCallback(
+    (p: SparePart) => {
+      setPinnedIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(p.id)) next.delete(p.id);
+        else next.add(p.id);
+        return next;
+      });
+      showToast({
+        type: 'info',
+        title: p.sku,
+        message: pinnedIds.has(p.id)
+          ? isAr
+            ? 'تم إلغاء التثبيت'
+            : 'Référence désépinglée'
+          : isAr
+          ? 'تم تثبيت الصنف'
+          : 'Référence épinglée',
+      });
+    },
+    [pinnedIds, isAr]
+  );
+
+  const handleDelete = useCallback(
+    (p: SparePart) => {
+      deletePart(p.id);
+      if (inspectedPart?.id === p.id) setInspectedPart(null);
+      showToast({
+        type: 'success',
+        title: isAr ? 'حذف' : 'Supprimé',
+        message: isAr ? 'تم حذف القطعة من المخزن' : 'Référence retirée du stock',
+      });
+    },
+    [deletePart, inspectedPart, isAr]
+  );
+
+  const handleQuickAddStock = useCallback(
+    (p: SparePart) => {
+      const updated: SparePart = {
+        ...p,
+        stockQuantity: p.stockQuantity + 5,
+      };
+      updatePart(updated);
+      if (inspectedPart?.id === p.id) setInspectedPart(updated);
+      showToast({
+        type: 'success',
+        title: updated.sku,
+        message: isAr
+          ? `تمت زيادة المخزون (+5): ${updated.stockQuantity} وحدات`
+          : `Stock réapprovisionné (+5) : ${updated.stockQuantity} unités`,
+      });
+    },
+    [updatePart, inspectedPart, isAr]
+  );
+
+  const handleExportCsv = useCallback(() => {
+    const headers = [
+      'SKU',
+      'Désignation',
+      'Catégorie',
+      'Succursale',
+      'Emplacement',
+      'Stock',
+      'Seuil Min',
+      'Prix Achat DZD',
+      'Prix Vente DZD',
+    ];
+    const rows = sortedParts.map((p) => {
+      const branchInfo = resolveRecordBranch(p, branchesById, currentBranch, language);
+      return [
+        p.sku,
+        p.name,
+        p.category,
+        branchInfo.name,
+        p.locationBin,
+        String(p.stockQuantity),
+        String(p.minThreshold),
+        String(p.buyingPriceDzd),
+        String(p.sellingPriceDzd),
+      ];
+    });
+    downloadCsvSafe(`magasin_pieces_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
+    showToast({
+      type: 'info',
+      title: isAr ? 'تصدير CSV' : 'Export CSV',
+      message: isAr ? 'تم تصدير ملف قطع الغيار CSV' : 'Export CSV des pièces généré',
+    });
+  }, [sortedParts, branchesById, currentBranch, language, isAr]);
+
+  const handleSaveNotes = () => {
+    if (!activePart) return;
+    setNoteSaved(true);
+    setTimeout(() => setNoteSaved(false), 2000);
+    showToast({
+      type: 'success',
+      title: activePart.sku,
+      message: isAr ? 'تم حفظ تعليمات التخزين' : 'Consignes de stockage enregistrées',
+    });
+  };
+
+  const columns: ColumnDefinition<SparePart>[] = useMemo(
+    () => [
+      {
+        key: 'sku',
+        header: isAr ? 'رمز القطعة' : 'SKU / Réf',
+        width: '1.6*',
+        sortable: true,
+        renderCell: (p) => (
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0">
+              <Boxes size={16} />
+            </div>
+            <div className="min-w-0">
+              <div className="font-mono font-bold text-xs text-black dark:text-white flex items-center gap-1.5">
+                <span>{p.sku}</span>
+                {pinnedIds.has(p.id) && <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />}
+              </div>
+              <div className="text-[10px] text-black/55 dark:text-white/55 truncate">{p.locationBin}</div>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'name',
+        header: isAr ? 'اسم الصنف' : isEn ? 'Part Description' : 'Désignation Pièce',
+        width: '2.5*',
+        sortable: true,
+        renderCell: (p) => (
+          <div className="min-w-0">
+            <div className="font-semibold text-xs text-black dark:text-white line-clamp-1">{p.name}</div>
+            <div className="text-[11px] text-black/55 dark:text-white/55">{p.category}</div>
+          </div>
+        ),
+      },
+      {
+        key: 'branch',
+        header: isAr ? 'المستودع / الفرع' : isEn ? 'Branch' : 'Succursale',
+        width: '1.5*',
+        sortable: true,
+        renderCell: (p) => {
+          const info = resolveRecordBranch(p, branchesById, currentBranch, language);
+          return (
+            <span className="text-xs font-medium text-black/75 dark:text-white/80 truncate block">
+              {info.name}
+            </span>
+          );
+        },
+      },
+      {
+        key: 'stockQuantity',
+        header: isAr ? 'الكمية المتوفرة' : isEn ? 'Stock' : 'Stock en Rayon',
+        width: '1.3*',
+        sortable: true,
+        renderCell: (p) => {
+          const isLow = p.stockQuantity <= p.minThreshold;
+          return (
+            <div className="flex items-center gap-1.5">
+              <span
+                className={`font-mono font-bold text-xs px-2 py-0.5 rounded-full ${
+                  isLow
+                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                    : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                }`}
+              >
+                {p.stockQuantity} u.
+              </span>
+              {isLow && <AlertTriangle size={13} className="text-amber-500 shrink-0" />}
+            </div>
+          );
+        },
+      },
+      {
+        key: 'sellingPrice',
+        header: isAr ? 'سعر البيع' : isEn ? 'Sale Price' : 'Prix de Vente',
+        width: '1.5*',
+        sortable: true,
+        renderCell: (p) => (
+          <div>
+            <div className="font-mono font-bold text-xs text-black dark:text-white">
+              {formatMoney(p.sellingPriceDzd, language)}
+            </div>
+            <div className="text-[10px] text-black/55 dark:text-white/55">
+              Achat: {formatMoney(p.buyingPriceDzd, language)}
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'locationBin',
+        header: isAr ? 'الموقع' : isEn ? 'Bin' : 'Emplacement',
+        width: '1.3*',
+        sortable: true,
+        renderCell: (p) => (
+          <div className="flex items-center gap-1 text-xs text-black/70 dark:text-white/75">
+            <MapPin size={12} className="text-[#d4522f] shrink-0" />
+            <span className="truncate">{p.locationBin}</span>
+          </div>
+        ),
+      },
+    ],
+    [isAr, isEn, pinnedIds, branchesById, currentBranch, language]
+  );
+
+  const hasAdvancedFilters = branchFilter !== 'All' || !['All', 'LowStock', 'Healthy'].includes(categoryFilter);
+  const activeAdvancedCount =
+    (branchFilter !== 'All' ? 1 : 0) +
+    (!['All', 'LowStock', 'Healthy'].includes(categoryFilter) ? 1 : 0);
+
+  const filterSections: KineticFilterSection[] = useMemo(
+    () => [
+      {
+        id: 'category',
+        label: isAr ? 'الفئة وحالة المخزون' : isEn ? 'Category & Stock' : 'Catégorie & Alertes',
+        value: categoryFilter,
+        onChange: setCategoryFilter,
+        resetValue: 'All',
+        kind: 'tiles',
+        columns: 2,
+        options: [
+          { value: 'All', label: isAr ? 'الكل' : 'Toutes', count: parts.length },
+          { value: 'LowStock', label: isAr ? 'تنبيهات النقص' : 'Alertes Stock Bas', count: lowStockCount },
+          { value: 'Healthy', label: isAr ? 'مخزون آمن' : 'Stock Disponible', count: normalStockCount },
+          ...PART_CATEGORIES.map((cat) => ({
+            value: cat,
+            label: cat,
+            count: parts.filter((p) => p.category === cat).length,
+          })),
+        ],
+      },
+      {
+        id: 'branch',
+        label: isAr ? 'المستودع / الفرع' : isEn ? 'Branch' : 'Succursale',
+        value: branchFilter,
+        onChange: setBranchFilter,
+        resetValue: 'All',
+        kind: 'tiles',
+        columns: 2,
+        options: [
+          { value: 'All', label: isAr ? 'كل الفروع' : isEn ? 'All Branches' : 'Toutes', count: parts.length },
+          ...Array.from(branchCounts.entries()).map(([bName, count]) => ({
+            value: bName,
+            label: bName,
+            count,
+          })),
+        ],
+      },
+    ],
+    [isAr, isEn, categoryFilter, branchFilter, parts, lowStockCount, normalStockCount, branchCounts]
+  );
+
+  const activeChips: ActiveFilterChip[] = useMemo(() => {
+    const chips: ActiveFilterChip[] = [];
+    if (categoryFilter !== 'All') {
+      chips.push({
+        key: 'category',
+        label:
+          categoryFilter === 'LowStock'
+            ? isAr
+              ? 'تنبيهات النقص'
+              : 'Alertes Stock Bas'
+            : categoryFilter === 'Healthy'
+            ? isAr
+              ? 'مخزون آمن'
+              : 'Stock Disponible'
+            : categoryFilter,
+        onRemove: () => setCategoryFilter('All'),
+      });
+    }
+    if (branchFilter !== 'All') {
+      chips.push({
+        key: 'branch',
+        label: `${isAr ? 'الفرع' : 'Succursale'}: ${branchFilter}`,
+        onRemove: () => setBranchFilter('All'),
+      });
+    }
+    return chips;
+  }, [categoryFilter, branchFilter, isAr]);
+
+  const handleResetAllFilters = useCallback(() => {
+    setSearchQuery('');
+    setCategoryFilter('All');
+    setBranchFilter('All');
+  }, []);
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: parts.length > 0,
+  });
+
+  if (showSkeleton && (parts.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn
+        actionBtnWidth={140}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut || isSyncTimeout}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200">
+      <ScreenHeaderBar
+        icon={<Boxes size={26} />}
+        title={isAr ? 'قطع الغيار' : isEn ? 'Parts' : 'Pièces'}
+        subtitle={
+          isAr
+            ? `${parts.length} مرجع مفهرس · ${totalStockUnits} وحدة بالمخزن`
+            : `${parts.length} références · ${totalStockUnits} unités en rayon`
+        }
+        secondaryActions={
+          <AtriumButton
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              const target = activePart || parts[0];
+              if (target) {
+                setPoPartId(target.id);
+                setPoUnitCost(String(target.buyingPriceDzd));
+              }
+              setIsPoModalOpen(true);
+            }}
+            icon={<Package size={14} />}
+          >
+            {isAr ? 'طلبية مورد' : isEn ? 'Supplier PO' : 'Commande Fournisseur'}
+          </AtriumButton>
+        }
+        primaryAction={{
+          label: isAr ? 'صنف جديد' : isEn ? 'New Part' : 'Nouvelle Référence',
+          icon: <Plus size={16} strokeWidth={2.5} />,
+          onClick: openCreateModal,
+        }}
+      />
+
+      <ScreenKpiBanner
+        heading={
+          isAr ? 'مؤشرات المستودع والقطع الحرجة' : isEn ? 'Inventory & Stock Alerts' : 'Niveaux de Stock & Approvisionnement'
+        }
+        language={language}
+        primaryCard={{
+          label: isAr ? 'أصناف متوفرة بشكل طبيعي' : isEn ? 'Healthy Stock SKUs' : 'Références Conformes',
+          badgeText: isAr ? 'متوفرة' : isEn ? 'In Stock' : 'Stock OK',
+          count: normalStockCount,
+          isActive: categoryFilter === 'Healthy',
+          onToggle: () => setCategoryFilter((prev) => (prev === 'Healthy' ? 'All' : 'Healthy')),
+          tone: 'emerald',
+          filteredLabel: isAr ? 'تمت التصفية' : 'Filtre actif',
+        }}
+        secondaryCard={{
+          label: isAr ? 'قطع تحت حد الأمان' : isEn ? 'Low Stock Alerts' : 'Alertes Réapprovisionnement',
+          badgeText: isAr ? 'حرج' : isEn ? 'Low Stock' : 'Seuil Bas',
+          count: lowStockCount,
+          isActive: categoryFilter === 'LowStock',
+          onToggle: () => setCategoryFilter((prev) => (prev === 'LowStock' ? 'All' : 'LowStock')),
+          tone: 'terracotta',
+          filteredLabel: isAr ? 'تمت التصفية' : 'Filtre actif',
+        }}
+        darkCard={{
+          label: isAr ? 'القيمة التقديرية للمخزون' : isEn ? 'Total Stock Valuation' : 'Valeur Estimée Stock',
+          badgeCount: totalStockUnits,
+          badgeSuffix: isAr ? ' وحدة' : ' u.',
+          valueCount: totalValuation,
+          valueSuffix: ' DA',
+          caption: isAr ? 'تقييم المخزون بسعر البيع الورشة' : 'Valorisation active prix vente atelier',
+        }}
+      />
+
+      <ScreenPod>
+        <ScreenCollectionToolbar
+          title={isAr ? 'كتالوج قطع الغيار' : isEn ? 'Spare Parts Catalog' : 'Catalogue Pièces de Rechange'}
+          language={language}
+          liveRegionText={`${sortedParts.length} ${isAr ? 'صنف' : 'références'}`}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder={
+            isAr ? 'بحث بالرمز، الاسم، الفئة...' : 'Rechercher référence, désignation, rayon...'
+          }
+          statusValue={['All', 'LowStock', 'Healthy'].includes(categoryFilter) ? categoryFilter : 'All'}
+          onStatusChange={setCategoryFilter}
+          statusOptions={[
+            { value: 'All', label: isAr ? 'الكل' : 'Toutes', count: parts.length },
+            { value: 'LowStock', label: isAr ? 'تنبيهات' : 'Alertes', count: lowStockCount },
+            { value: 'Healthy', label: isAr ? 'متوفر' : 'Conformes', count: normalStockCount },
+          ]}
+          hasActiveAdvancedFilters={hasAdvancedFilters}
+          activeFiltersCount={activeAdvancedCount}
+          isFilterModalOpen={isFilterModalOpen}
+          filterButtonRef={filterButtonRef}
+          onToggleFilterModal={() => setIsFilterModalOpen((prev) => !prev)}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          showViewToggle
+          onExport={handleExportCsv}
+          activeChips={activeChips}
+          onResetAllFilters={handleResetAllFilters}
+        />
+
+        <UniversalDataCollection
+          hideToolbar
+          data={sortedParts}
+          columns={columns}
+          keyExtractor={(p) => p.id}
+          defaultViewMode={viewMode}
+          sortBy={sortBy}
+          sortDirection={sortDir}
+          onSortChange={(field, dir) => {
+            setSortBy(field);
+            setSortDir(dir);
+          }}
+          selectedIds={selectedIds}
+          onSelectionChange={setSelectedIds}
+          bulkSecondaryAction={{
+            label: isAr ? 'إعادة طلب مجمّع' : 'Réassort groupé',
+            icon: <Plus size={14} />,
+            onClick: (ids) => {
+              showToast({
+                type: 'info',
+                title: isAr ? 'تموين' : 'Réassort',
+                message: isAr ? `تم تحضير أمر إعادة تموين لـ ${ids.size} قطع` : `Réassort préparé pour ${ids.size} références`,
+              });
+            },
+          }}
+          onBulkDelete={(ids) => {
+            ids.forEach((id) => deletePart(id));
+            setSelectedIds(new Set());
+            if (inspectedPart && ids.has(inspectedPart.id)) setInspectedPart(null);
+            showToast({
+              type: 'success',
+              title: isAr ? 'حذف' : 'Supprimé',
+              message: isAr ? 'تم حذف القطع المحددة' : 'Pièces sélectionnées supprimées',
+            });
+          }}
+          isPinned={(p) => pinnedIds.has(p.id)}
+          onTogglePin={handlePin}
+          openItemId={activePart?.id || null}
+          onItemClick={(p, el) => {
+            setDrawerOpenerEl(el || null);
+            setInspectedPart(p);
+          }}
+          onViewDetails={(p, el) => {
+            setDrawerOpenerEl(el || null);
+            setInspectedPart(p);
+          }}
+          onEdit={openEditModal}
+          onDelete={handleDelete}
+          customActions={(p) => [
+            {
+              id: 'addStock',
+              label: isAr ? 'إضافة (+5)' : 'Réappro (+5)',
+              icon: <Plus size={14} />,
+              onClick: () => handleQuickAddStock(p),
+            },
+          ]}
+          renderCard={(p) => {
+            const isLow = p.stockQuantity <= p.minThreshold;
+            return (
+              <div className="space-y-3 text-left rtl:text-right w-full">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg border border-[#d4522f]/20">
+                    {p.sku}
+                  </span>
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      isLow
+                        ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                        : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                    }`}
+                  >
+                    {p.stockQuantity} en stock
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">{p.name}</h3>
+                  <div className="text-xs text-black/55 dark:text-white/55 font-medium mt-0.5">
+                    {p.category} • {p.locationBin}
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
+                  <div>
+                    <div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">Prix Vente</div>
+                    <div className="font-mono font-bold text-black dark:text-white mt-0.5">
+                      {formatMoney(p.sellingPriceDzd, language)}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">Seuil Min</div>
+                    <div className="font-mono font-semibold text-black/70 dark:text-white/75 mt-0.5">
+                      {p.minThreshold} u.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          }}
+        />
+      </ScreenPod>
+
+      <KineticFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        triggerRef={filterButtonRef}
+        language={language}
+        displayCount={sortedParts.length}
+        entityPluralLabel={isAr ? 'صنف' : isEn ? 'parts' : 'références'}
+        hasActiveFilters={categoryFilter !== 'All' || branchFilter !== 'All'}
+        onResetFilters={handleResetAllFilters}
+        sections={filterSections}
+      />
+
+      <KineticSlideOverInspector
+        isOpen={Boolean(activePart)}
+        item={activePart}
+        allItems={sortedParts}
+        keyExtractor={(p) => p.id}
+        openerElement={drawerOpenerEl}
+        language={language}
+        title={activePart?.name || ''}
+        subtitle={activePart ? `${activePart.sku} · ${activePart.category}` : ''}
+        avatarText={activePart?.sku.slice(-3) || 'PR'}
+        avatarColor="#d4522f"
+        branchName={
+          activePart ? resolveRecordBranch(activePart, branchesById, currentBranch, language).name : ''
+        }
+        statusLabel={
+          activePart && activePart.stockQuantity <= activePart.minThreshold
+            ? isAr
+              ? 'نقص مخزون'
+              : 'Seuil Bas'
+            : `${activePart?.stockQuantity || 0} u.`
+        }
+        tabs={[
+          { id: 'fiche', label: isAr ? 'المواصفات' : 'Fiche Pièce' },
+          { id: 'stock', label: isAr ? 'الأسعار' : 'Prix & Marges' },
+          { id: 'mouvements', label: isAr ? 'التوافق' : 'Compatibilité' },
+          { id: 'notes', label: isAr ? 'الملاحظات' : 'Consignes' },
+        ]}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onSelectItem={(item) => setInspectedPart(item)}
+        onClose={() => setInspectedPart(null)}
+        onDelete={handleDelete}
+        holdToDelete
+        renderBody={(part) => (
+          <div className="space-y-4 text-xs">
+            <div className="flex items-center gap-2">
+              <AtriumButton
+                variant="primary"
+                size="sm"
+                className="flex-1"
+                icon={<Plus size={13} />}
+                onClick={() => handleQuickAddStock(part)}
+              >
+                {isAr ? '+5 مخزون' : '+5 Stock'}
+              </AtriumButton>
+              <AtriumButton
+                variant="secondary"
+                size="sm"
+                icon={<Edit size={13} />}
+                onClick={() => openEditModal(part)}
+              >
+                {isAr ? 'تعديل' : 'Modifier'}
+              </AtriumButton>
+            </div>
+
+            {activeTab === 'fiche' && (
+              <div className="space-y-3">
+                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-black/55 dark:text-white/55">Code SKU Atelier:</span>
+                    <span className="font-mono font-bold text-black dark:text-white">{part.sku}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-black/55 dark:text-white/55">Catégorie:</span>
+                    <span className="font-semibold text-black dark:text-white">{part.category}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-black/55 dark:text-white/55">Emplacement Rayon:</span>
+                    <span className="font-semibold text-[#d4522f]">{part.locationBin}</span>
+                  </div>
+                </div>
+                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-black/55 dark:text-white/55">Quantité en Stock:</span>
+                    <span className="font-mono font-bold text-black dark:text-white">{part.stockQuantity} unités</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-black/55 dark:text-white/55">Seuil d’Alerte Min:</span>
+                    <span className="font-mono text-amber-600 dark:text-amber-400 font-semibold">
+                      {part.minThreshold} unités
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'stock' && (
+              <div className="space-y-3">
+                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-black/55 dark:text-white/55">Prix d’Achat Fournisseur:</span>
+                    <span className="font-mono font-semibold text-black dark:text-white">
+                      {formatMoney(part.buyingPriceDzd, language)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-black/55 dark:text-white/55">Prix de Vente Client:</span>
+                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                      {formatMoney(part.sellingPriceDzd, language)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pt-1 border-t border-neutral-200 dark:border-neutral-700">
+                    <span className="text-black/55 dark:text-white/55">Marge Brute Unitaire:</span>
+                    <span className="font-mono font-bold text-[#d4522f]">
+                      {formatMoney(part.sellingPriceDzd - part.buyingPriceDzd, language)}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-3 rounded-xl bg-orange-50/50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30">
+                  <div className="flex justify-between items-center">
+                    <span className="text-black/70 dark:text-white/75">Valeur totale en rayon:</span>
+                    <span className="font-mono font-bold text-black dark:text-white">
+                      {formatMoney(part.stockQuantity * part.sellingPriceDzd, language)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'mouvements' && (
+              <div className="space-y-3">
+                <p className="text-black/55 dark:text-white/55 text-[11px]">
+                  Modèles et motorisations compatibles avec cette référence :
+                </p>
+                <div className="space-y-1.5">
+                  {part.compatibility && part.compatibility.length > 0 ? (
+                    part.compatibility.map((c, i) => (
+                      <div
+                        key={i}
+                        className="p-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 text-black dark:text-white flex items-center gap-2"
+                      >
+                        <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
+                        <span>{c}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-black/55 dark:text-white/55 text-center py-4">
+                      Référence universelle / adaptable standard
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'notes' && (
+              <div className="space-y-3">
+                <p className="text-black/55 dark:text-white/55 text-[11px]">
+                  {isAr
+                    ? 'تعليمات التخزين، المورد المفضل، وشروط الضمان:'
+                    : 'Conditions de stockage, fournisseur référent et consignes magasinier :'}
+                </p>
+                <textarea
+                  rows={5}
+                  value={inspectorNotes}
+                  onChange={(e) => setInspectorNotes(e.target.value)}
+                  placeholder="Noter les détails de conditionnement, références équivalentes OE..."
+                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleSaveNotes}
+                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#d4522f] text-white hover:bg-[#b03b1b] transition-colors font-medium text-xs shadow-xs cursor-pointer"
+                >
+                  {noteSaved ? (
+                    <>
+                      <Check size={14} />
+                      <span>{isAr ? 'تم الحفظ' : 'Consignes enregistrées'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save size={14} />
+                      <span>{isAr ? 'حفظ' : 'Enregistrer'}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      />
+
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold">
+                  <Boxes size={20} />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                    {partToEdit
+                      ? isAr
+                        ? 'تعديل صنف قطعة الغيار'
+                        : 'Modifier la Référence'
+                      : isAr
+                      ? 'إضافة صنف جديد للمخزن'
+                      : 'Nouvelle Référence Magasin'}
+                  </h2>
+                  <p className="text-xs text-black/55 dark:text-white/55">
+                    {isAr ? 'البيانات الفنية، المخزون، والأسعار' : 'Gestion du catalogue pièces et seuils d’alerte'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={handleSaveModal} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  label={isAr ? 'رمز SKU *' : 'Code SKU *'}
+                  placeholder="PR-1029"
+                  value={sku}
+                  onChange={(e) => setSku(e.target.value)}
+                  required
+                />
+                <LabelSelect
+                  label={isAr ? 'الفئة' : 'Catégorie'}
+                  value={category}
+                  onChange={(v) => setCategory(extractStr(v))}
+                  options={PART_CATEGORIES.map((cat) => ({ value: cat, label: cat }))}
+                />
+              </div>
+              <LabelInput
+                label={isAr ? 'اسم وتعيين القطعة *' : 'Désignation de la Pièce *'}
+                placeholder="Ex: Jeu 4 Plaquettes de frein avant"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  label={isAr ? 'الكمية في المخزن' : 'Quantité Stock'}
+                  type="number"
+                  value={stockQuantity}
+                  onChange={(e) => setStockQuantity(e.target.value)}
+                  required
+                />
+                <LabelInput
+                  label={isAr ? 'حد الأمان الأدنى' : 'Seuil d’Alerte Min'}
+                  type="number"
+                  value={minThreshold}
+                  onChange={(e) => setMinThreshold(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  label={isAr ? 'سعر الشراء (دج)' : 'Prix d’Achat (DZD)'}
+                  type="number"
+                  value={buyingPriceDzd}
+                  onChange={(e) => setBuyingPriceDzd(e.target.value)}
+                  required
+                />
+                <LabelInput
+                  label={isAr ? 'سعر البيع (دج)' : 'Prix de Vente (DZD)'}
+                  type="number"
+                  value={sellingPriceDzd}
+                  onChange={(e) => setSellingPriceDzd(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  label={isAr ? 'موقع التخزين / الرف' : 'Emplacement / Rayon'}
+                  placeholder="Ex: Rayon B-04"
+                  value={locationBin}
+                  onChange={(e) => setLocationBin(e.target.value)}
+                />
+                <LabelInput
+                  label={isAr ? 'التوافق' : 'Compatibilité (marques)'}
+                  placeholder="Ex: Renault Clio 4, Dacia Sandero"
+                  value={compatibility}
+                  onChange={(e) => setCompatibility(e.target.value)}
+                />
+              </div>
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                <AtriumButton variant="ghost" size="sm" onClick={() => setIsModalOpen(false)}>
+                  {isAr ? 'إلغاء' : 'Annuler'}
+                </AtriumButton>
+                <AtriumButton variant="primary" size="sm" type="submit">
+                  {partToEdit ? (isAr ? 'حفظ التعديلات' : 'Enregistrer') : isAr ? 'تسجيل القطعة' : 'Ajouter au Stock'}
+                </AtriumButton>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isPoModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5">
+            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center font-bold">
+                  <Package size={20} />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                    {isAr ? 'طلبية تموين من المورد (Bon de Commande)' : 'Bon de Commande Fournisseur Gros'}
+                  </h2>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPoModalOpen(false)}
+                aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const target = parts.find((p) => p.id === poPartId);
+                const qty = parseInt(poQuantity, 10) || 5;
+                const cost = parseFloat(poUnitCost) || target?.buyingPriceDzd || 0;
+                if (target) {
+                  const updated: SparePart = {
+                    ...target,
+                    stockQuantity: target.stockQuantity + qty,
+                    buyingPriceDzd: cost,
+                  };
+                  updatePart(updated);
+                  if (inspectedPart?.id === target.id) setInspectedPart(updated);
+                }
+                showToast({
+                  type: 'success',
+                  title: isAr ? 'استلام طلبية' : 'Réception Stock',
+                  message: isAr
+                    ? `تم تسجيل استلام الطلبية (+${qty}) بنجاح من ${poSupplier}`
+                    : `Bon d'entrée stock validé (+${qty} unités) depuis ${poSupplier}`,
+                });
+                setIsPoModalOpen(false);
+              }}
+              className="space-y-4"
+            >
+              <LabelSelect
+                label={isAr ? 'المورد المعتمد' : 'Fournisseur Référent'}
+                value={poSupplier}
+                onChange={(v) => setPoSupplier(extractStr(v))}
+                options={[
+                  { value: 'Comptoir Pièces Bab Ezzouar (Alger)', label: 'Comptoir Pièces Bab Ezzouar (Alger)' },
+                  { value: 'Sarl Maghreb Pièces Baraki (Alger)', label: 'Sarl Maghreb Pièces Baraki (Alger)' },
+                  { value: 'Établissement Benali Distribution (El Eulma)', label: 'Éts Benali Distribution (El Eulma)' },
+                  { value: 'Accumulateurs Algérie SPA (Oued Smar)', label: 'Accumulateurs Algérie SPA (Oued Smar)' },
+                ]}
+              />
+              <LabelSelect
+                label={isAr ? 'القطعة المراد تموينها' : 'Référence Pièce à Réapprovisionner'}
+                value={poPartId}
+                onChange={(v) => {
+                  const nextId = extractStr(v);
+                  setPoPartId(nextId);
+                  const p = parts.find((item) => item.id === nextId);
+                  if (p) setPoUnitCost(String(p.buyingPriceDzd));
+                }}
+                options={parts.map((p) => ({
+                  value: p.id,
+                  label: `${p.sku} — ${p.name} (Stock: ${p.stockQuantity} u.)`,
+                }))}
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  label={isAr ? 'الكمية المطلوبة *' : 'Quantité Commandée *'}
+                  type="number"
+                  value={poQuantity}
+                  onChange={(e) => setPoQuantity(e.target.value)}
+                  required
+                />
+                <LabelInput
+                  label={isAr ? 'سعر الشراء الفردي (دج)' : 'Prix Achat Unitaire (DZD)'}
+                  type="number"
+                  value={poUnitCost}
+                  onChange={(e) => setPoUnitCost(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 flex items-center justify-between text-xs">
+                <span className="text-black/55 dark:text-white/55">
+                  {isAr ? 'إجمالي قيمة الطلبية HT:' : 'Montant Total Commande HT:'}
+                </span>
+                <span className="font-mono font-bold text-base text-black dark:text-white">
+                  {formatMoney((parseInt(poQuantity, 10) || 0) * (parseFloat(poUnitCost) || 0), language)}
+                </span>
+              </div>
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                <AtriumButton variant="ghost" size="sm" onClick={() => setIsPoModalOpen(false)}>
+                  {isAr ? 'إلغاء' : 'Annuler'}
+                </AtriumButton>
+                <AtriumButton variant="primary" size="sm" type="submit" icon={<Check size={14} />}>
+                  {isAr ? 'تأكيد استلام السلعة بالمستودع' : 'Confirmer Réception en Stock'}
+                </AtriumButton>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };

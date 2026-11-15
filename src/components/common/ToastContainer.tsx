@@ -9,11 +9,11 @@ import {
   Cloud,
   Database,
 } from 'lucide-react';
-import { useAtriumStore } from '../../services/store';
+import { useAtriumStore, dismissToast } from '../../services/store';
 import { ToastNotification } from '../../types/index';
 
 export const ToastContainer: React.FC = () => {
-  const { toasts, dismissToast } = useAtriumStore();
+  const { toasts } = useAtriumStore();
 
   if (!toasts || toasts.length === 0) return null;
 

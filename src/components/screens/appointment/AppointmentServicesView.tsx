@@ -14,6 +14,7 @@ import {
   shallowEqualObjects,
   selectCurrentServicesFromState,
   selectCurrentBranchFromState,
+  showToast,
 } from '../../../services/store';
 import { ServiceItem } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -78,7 +79,6 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
     updateServiceItem,
     deleteServiceItem,
     batchDeleteServiceItems,
-    showToast,
     retryCloudSync,
   } = useAtriumActions();
 
@@ -120,8 +120,14 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
   const catalogMetrics = useMemo(() => {
     const list = servicesCatalog;
     const totalServices = list.length;
-    const hairCount = list.filter((s) => s.category === 'Hair' || s.category === 'Color' || s.category === 'Barber').length;
-    const premiumCount = list.filter((s) => s.price >= 4500 || s.category === 'Bridal' || s.category === 'Spa').length;
+    const hairCount = list.filter((s) => {
+      const cat = s.category as string;
+      return cat === 'Hair' || cat === 'Color' || cat === 'Barber';
+    }).length;
+    const premiumCount = list.filter((s) => {
+      const cat = s.category as string;
+      return s.price >= 4500 || cat === 'Bridal' || cat === 'Spa';
+    }).length;
     const avgPrice =
       totalServices > 0 ? Math.round(list.reduce((acc, s) => acc + s.price, 0) / totalServices) : 0;
     const avgDuration =
@@ -156,10 +162,11 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
     const q = searchQuery.trim().toLowerCase();
     return servicesCatalog.filter((s) => {
       if (activeCategory !== 'All' && s.category !== activeCategory) return false;
-      if (tierFilter === 'Hair' && s.category !== 'Hair' && s.category !== 'Color' && s.category !== 'Barber') {
+      const cat = s.category as string;
+      if (tierFilter === 'Hair' && cat !== 'Hair' && cat !== 'Color' && cat !== 'Barber') {
         return false;
       }
-      if (tierFilter === 'Premium' && s.price < 4500 && s.category !== 'Bridal' && s.category !== 'Spa') {
+      if (tierFilter === 'Premium' && s.price < 4500 && cat !== 'Bridal' && cat !== 'Spa') {
         return false;
       }
       if (branchFilter !== 'All') {
@@ -621,16 +628,11 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
         statusClassName="bg-emerald-50 text-emerald-700 border border-emerald-200"
         onClose={() => setInspectingService(null)}
         onSelectItem={(s) => setInspectingService(s)}
-        onEdit={(s) => {
+        holdToDelete
+        deleteLabel={isAr ? 'حذف' : 'Supprimer'}
+        onDelete={(s) => {
+          deleteServiceItem(s.id);
           setInspectingService(null);
-          handleOpenEditModal(s);
-        }}
-        holdToDelete={{
-          label: isAr ? 'حذف' : 'Supprimer',
-          onDelete: (s) => {
-            deleteServiceItem(s.id);
-            setInspectingService(null);
-          },
         }}
         renderBody={(service) => (
           <div className="space-y-4 text-xs">

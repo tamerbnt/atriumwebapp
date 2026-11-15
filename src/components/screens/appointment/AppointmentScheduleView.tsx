@@ -17,6 +17,7 @@ import {
   selectCurrentAppointmentsFromState,
   selectCurrentStaffFromState,
   selectCurrentBranchFromState,
+  showToast,
 } from '../../../services/store';
 import { Appointment } from '../../../types/index';
 import { AppointmentModal } from '../../modals/AppointmentModal';
@@ -96,7 +97,6 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
     checkoutAppointment,
     batchDeleteAppointments,
     batchUpdateAppointmentStatus,
-    showToast,
     retryCloudSync,
   } = useAtriumActions();
 
@@ -444,7 +444,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
         language={language}
         primaryCard={{
           label: t('salon_kpi_total_bookings', language),
-          badgeText: `↗ ${stats.completedCount} terminés`,
+          badgeText: `↗ ${stats.completed} terminés`,
           count: stats.all,
           tone: 'emerald',
           isActive: statusFilter === 'Confirmed',
@@ -759,10 +759,6 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
         statusClassName="bg-amber-50 text-amber-700 border border-amber-200"
         onClose={() => setInspectingApt(null)}
         onSelectItem={(a) => setInspectingApt(a)}
-        onEdit={(a) => {
-          setInspectingApt(null);
-          handleOpenEditModal(a);
-        }}
         renderBody={(apt) => (
           <div className="space-y-4 text-xs">
             <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex justify-between items-center">
@@ -814,6 +810,17 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                   {t('salon_quick_checkout', language)}
                 </AtriumButton>
               )}
+              <AtriumButton
+                type="button"
+                variant="secondary"
+                className="w-full justify-center"
+                onClick={() => {
+                  setInspectingApt(null);
+                  handleOpenEditModal(apt);
+                }}
+              >
+                {isAr ? 'تعديل الموعد' : isEn ? 'Edit Appointment' : 'Modifier le Rendez-Vous'}
+              </AtriumButton>
             </div>
           </div>
         )}

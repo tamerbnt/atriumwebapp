@@ -166,7 +166,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 		paymentMethod,
 		isCashFiscalStampEnabled
 	]);
-	const handleSubmit = (targetStatus = "Validated") => {
+	const handleSubmit = (targetStatus: CommercialDocument["status"] = "Validated") => {
 		if (!clientId) {
 			alert(t("trading_composer_alert_select_client"));
 			return;
@@ -269,7 +269,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 								}
 							].map((item) => {
 								const isSelected = docType === item.type;
-								return /* @__PURE__ */ <button key={item.type} type="button" onClick={() => setDocType(item.type)} className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium transition-all ${isSelected ? "border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f] shadow-xs font-bold" : "border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-black/70 dark:text-white/75 hover:border-stone-300"}`}>
+								return /* @__PURE__ */ <button key={item.type} type="button" onClick={() => setDocType(item.type as CommercialDocType)} className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium transition-all ${isSelected ? "border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f] shadow-xs font-bold" : "border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-black/70 dark:text-white/75 hover:border-stone-300"}`}>
 <span className="w-2 h-2 rounded-full bg-current opacity-70" />
 <span>{item.label}</span>
 </button>;

@@ -19,6 +19,7 @@ import {
   selectCurrentPlansFromState,
   selectCurrentBranchFromState,
   selectTerminologyFromState,
+  showToast,
 } from '../../../services/store';
 import { RegistrationLead } from '../../../types/index';
 import { Avatar } from '../../ui/Avatar';
@@ -83,7 +84,6 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
     updateLeadStatus,
     deleteLead,
     convertLeadToMember,
-    showToast,
     retryCloudSync,
   } = useAtriumActions();
 

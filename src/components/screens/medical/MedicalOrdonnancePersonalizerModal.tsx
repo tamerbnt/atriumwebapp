@@ -224,18 +224,28 @@ Palette de Style & Sécurité
 <span className="text-xs font-semibold text-black/70 dark:text-white/75 block">Couleur d'En-tête Clinique</span>
 <span className="text-[10px] text-black/55 dark:text-white/75">Bandeau de séparation et lettrage médical</span>
 </div>
-<div className="flex items-center gap-2">
-{[
-												"emerald",
-												"navy",
-												"burgundy",
-												"obsidian",
-												"terracotta"
-											].map((accent) => /* @__PURE__ */ <button key={accent} type="button" onClick={() => setFormData({
-													...formData,
-													themeAccent: accent
-												})} className={`w-7 h-7 rounded-full border-2 transition-transform cursor-pointer ${formData.themeAccent === accent ? "scale-110 border-neutral-900 dark:border-white shadow-xs" : "border-transparent opacity-80 hover:opacity-100"}`} style={{ backgroundColor: getAccentColor(accent) }} title={accent} />)}
-</div>
+					<div className="flex items-center gap-2">
+						{(["emerald", "navy", "burgundy", "obsidian", "terracotta"] as const).map((accent) => (
+							<button
+								key={accent}
+								type="button"
+								onClick={() =>
+									setFormData({
+										...formData,
+										themeAccent: accent,
+									})
+								}
+								className={`w-7 h-7 rounded-full border-2 transition-transform cursor-pointer ${
+									formData.themeAccent === accent
+										? "scale-110 border-neutral-900 dark:border-white shadow-xs"
+										: "border-transparent opacity-80 hover:opacity-100"
+								}`}
+								style={{ backgroundColor: getAccentColor(accent) }}
+								title={accent}
+								aria-label={accent}
+							/>
+						))}
+					</div>
 </div>
 <div className="flex items-center justify-between pt-2 border-t border-neutral-200 dark:border-neutral-700">
 <span className="text-xs text-black/70 dark:text-white/75">Filigrane Caducée / Armoirie Médicale en arrière-plan</span>

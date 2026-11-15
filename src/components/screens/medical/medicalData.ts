@@ -776,8 +776,10 @@ export const useMedicalData = () => {
   const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
   const activeBranchId = currentBranchId || 'branch_medical_main';
   const belongsToActiveBranch = useCallback(
-    (item: { branchId?: string; facilityId?: string }) =>
-      (item.branchId || item.facilityId || 'branch_medical_main') === activeBranchId,
+    (item: unknown) => {
+      const rec = item as { branchId?: string; facilityId?: string } | null | undefined;
+      return (rec?.branchId || rec?.facilityId || 'branch_medical_main') === activeBranchId;
+    },
     [activeBranchId]
   );
   const withBranch = <T extends object>(item: T): T =>

@@ -19,6 +19,7 @@ import {
   selectCurrentAppointmentsFromState,
   selectCurrentStaffFromState,
   selectCurrentBranchFromState,
+  showToast,
 } from '../../../services/store';
 import { Member } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -79,7 +80,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
       shallowEqualObjects
     );
 
-    const { updateMember, deleteMember, showToast, retryCloudSync } = useAtriumActions();
+    const { updateMember, deleteMember, retryCloudSync } = useAtriumActions();
     const isAr = language === 'ar';
     const isEn = language === 'en';
 
@@ -731,13 +732,11 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
           }
           onClose={() => setInspectingClient(null)}
           onSelectItem={(c) => setInspectingClient(c)}
-          onEdit={onEditMember ? (c) => onEditMember(c) : undefined}
-          holdToDelete={{
-            label: isAr ? 'حذف' : 'Supprimer',
-            onDelete: (c) => {
-              deleteMember(c.id);
-              setInspectingClient(null);
-            },
+          holdToDelete
+          deleteLabel={isAr ? 'حذف' : 'Supprimer'}
+          onDelete={(c) => {
+            deleteMember(c.id);
+            setInspectingClient(null);
           }}
           renderBody={(client) => (
             <div className="space-y-4 text-xs">
@@ -928,18 +927,33 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
                 </div>
               )}
 
-              <AtriumButton
-                type="button"
-                variant="primary"
-                icon={<Calendar size={14} />}
-                className="w-full justify-center"
-                onClick={() => {
-                  setInspectingClient(null);
-                  setIsNewBookingModalOpen(true);
-                }}
-              >
-                {isAr ? 'برمجة موعد عناية' : isEn ? 'Schedule Treatment' : 'Programmer un Soin'}
-              </AtriumButton>
+              <div className="flex flex-col gap-2">
+                {onEditMember && (
+                  <AtriumButton
+                    type="button"
+                    variant="secondary"
+                    className="w-full justify-center"
+                    onClick={() => {
+                      setInspectingClient(null);
+                      onEditMember(client);
+                    }}
+                  >
+                    {isAr ? 'تعديل الملف' : isEn ? 'Edit Client' : 'Modifier la fiche'}
+                  </AtriumButton>
+                )}
+                <AtriumButton
+                  type="button"
+                  variant="primary"
+                  icon={<Calendar size={14} />}
+                  className="w-full justify-center"
+                  onClick={() => {
+                    setInspectingClient(null);
+                    setIsNewBookingModalOpen(true);
+                  }}
+                >
+                  {isAr ? 'برمجة موعد عناية' : isEn ? 'Schedule Treatment' : 'Programmer un Soin'}
+                </AtriumButton>
+              </div>
             </div>
           )}
         />

@@ -96,13 +96,17 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
     }
   };
 
+  const extractStr = (eOrVal: any): string =>
+    eOrVal?.target?.value !== undefined ? String(eOrVal.target.value) : String(eOrVal ?? '');
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!plate.trim() || !brand.trim() || !ownerName.trim()) {
-      showToast(
-        isAr ? 'يرجى إدخال الترقيم، الماركة، وبيانات المالك' : 'Veuillez renseigner l’immatriculation, la marque et le propriétaire',
-        'error'
-      );
+      showToast({
+        type: 'error',
+        title: isAr ? 'بيانات ناقصة' : 'Champs requis',
+        message: isAr ? 'يرجى إدخال الترقيم، الماركة، وبيانات المالك' : 'Veuillez renseigner l’immatriculation, la marque et le propriétaire',
+      });
       return;
     }
 
@@ -156,8 +160,10 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"
+            aria-label={isAr ? 'إغلاق' : 'Fermer'}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -169,7 +175,7 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
             <button
               type="button"
               onClick={() => handleFleetToggle(false)}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all ${
+              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 !isFleet
                   ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-xs border border-neutral-200 dark:border-neutral-700'
                   : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
@@ -180,7 +186,7 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
             <button
               type="button"
               onClick={() => handleFleetToggle(true)}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all ${
+              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 isFleet
                   ? 'bg-[#d4522f] text-white shadow-xs'
                   : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
@@ -200,7 +206,7 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
               <LabelSelect
                 label={isAr ? 'الشركة المالكة للأسطول' : 'Entreprise Cliente'}
                 value={fleetId}
-                onChange={(e) => handleFleetChange(e.target.value)}
+                onChange={(v) => handleFleetChange(extractStr(v))}
                 options={fleets.map((f) => ({
                   value: f.id,
                   label: `${f.companyName} (${f.tradeName})`,
@@ -251,7 +257,7 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
             <LabelSelect
               label={isAr ? 'نوع الوقود' : 'Carburant'}
               value={fuelType || 'Diesel'}
-              onChange={(e) => setFuelType(e.target.value as any)}
+              onChange={(v) => setFuelType(extractStr(v) as VehicleAsset['fuelType'])}
               options={[
                 { value: 'Diesel', label: 'Diesel (Gazole)' },
                 { value: 'Essence', label: 'Essence Sans Plomb' },

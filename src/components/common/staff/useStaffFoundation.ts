@@ -185,7 +185,7 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
       }
       if (branchFilter !== 'All') {
         const b = resolveRecordBranch(s, branchesById, currentBranch, language);
-        if (b.branchId !== branchFilter) return false;
+        if (b.id !== branchFilter) return false;
       }
       if (contractFilter !== 'All') {
         const ct = (s.contractType || s.recruitmentType || 'CDI').toLowerCase();
@@ -197,7 +197,7 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
         const matchesEmail = s.email?.toLowerCase().includes(q);
         const matchesPhone = s.phoneNumber?.includes(q);
         const matchesRole = s.role?.toLowerCase().includes(q);
-        const matchesBranch = b.branchName.toLowerCase().includes(q);
+        const matchesBranch = b.name.toLowerCase().includes(q);
         const matchesToken =
           s.badgeToken?.toLowerCase().includes(q) || s.cardId?.toLowerCase().includes(q);
         if (!matchesName && !matchesEmail && !matchesPhone && !matchesRole && !matchesBranch && !matchesToken) {
@@ -408,7 +408,7 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
         s.id,
         s.fullName,
         s.role || '',
-        b.branchName,
+        b.name,
         s.status,
         s.phoneNumber || '',
         s.contractType || s.recruitmentType || 'CDI',

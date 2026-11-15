@@ -14,7 +14,7 @@ import {
   Layers,
   Send,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumStore, showToast } from '../../../services/store';
 import { rentalService } from '../../../lib/supabase/services/rentalService';
 import { isSupabaseConfigured } from '../../../lib/supabase/client';
 import { RentalBooking } from '../../../types/index';
@@ -31,7 +31,6 @@ export const VenueCloudSyncModal: React.FC<VenueCloudSyncModalProps> = ({ isOpen
     rentalRenters,
     securityDeposits,
     syncWithSupabase,
-    showToast,
   } = useAtriumStore();
 
   const [isLoading, setIsLoading] = useState(false);

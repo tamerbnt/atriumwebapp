@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   ClipboardList,
   Plus,
@@ -7,628 +7,1130 @@ import {
   UserCheck,
   ArrowRight,
   X,
-  ChevronRight,
-  GraduationCap,
-  Sparkles,
-  Search,
-  Home,
-  ChevronDown,
-  Download,
-  Building2,
-  Check,
   Trash2,
   CheckCircle2,
-  AlertCircle,
   LayoutGrid,
   Columns,
-  Eye,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumStore, showToast } from '../../../services/store';
 import { AdmissionStage, EduAdmissionLead } from '../../../types';
-import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
-import { AtriumButton } from '../../ui/AtriumButton';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonKanbanPipeline, SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import {
+  ScreenHeaderBar,
+  ScreenKpiBanner,
+  ScreenPod,
+  ScreenCollectionToolbar,
+  ActiveFilterChip,
+  KineticFilterModal,
+  KineticFilterSection,
+  KineticSlideOverInspector,
+  buildBranchesByIdMap,
+  resolveRecordBranch,
+  downloadCsvSafe,
+} from '../../ui/kinetic';
 
+const extractStr = (val: any): string =>
+  typeof val === 'string' ? val : val?.target?.value ?? String(val ?? '');
 
+export const EducationAdmissionsView: React.FC = () => {
+  const { t, isRtl, language } = useTranslation();
+  const isAr = language === 'ar';
+  const isEn = language === 'en';
 
-export const EducationAdmissionsView: React.FC<any> = () => {
-	const { t, isRtl, language } = useTranslation();
-	const { eduAdmissions, eduCourses, eduCohorts, currentBranch, businesses, branches, currentBusinessId, switchBusiness, switchBranch, resetEduMockData, addEduAdmissionLead, updateAdmissionStage, updateEduAdmissionLead, deleteEduAdmissionLead, convertAdmissionToStudent, showToast, isSyncing, networkMode, retryCloudSync, lastSyncedAt, isSyncTimeout } = useAtriumStore();
-	const [viewLayout, setViewLayout] = React.useState("kanban");
-	const [isAddLeadModalOpen, setIsAddLeadModalOpen] = React.useState(false);
-	const [conversionLead, setConversionLead] = React.useState<any>(null);
-	const [targetCohortId, setTargetCohortId] = React.useState(eduCohorts[0]?.id || "");
-	const [conversionDeposit, setConversionDeposit] = React.useState(0);
-	const [searchQuery, setSearchQuery] = React.useState("");
-	const [selectedLeadIds, setSelectedLeadIds] = React.useState(/* @__PURE__ */ new Set());
-	const [pinnedLeadIds, setPinnedLeadIds] = React.useState(/* @__PURE__ */ new Set());
-	const [leadSortBy, setLeadSortBy] = React.useState("studentName");
-	const [leadSortDir, setLeadSortDir] = React.useState("asc");
-	const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = React.useState(false);
-	const [formData, setFormData] = React.useState({
-		studentName: "",
-		phone: "",
-		email: "",
-		desiredCourseId: eduCourses[0]?.id || "",
-		guardianName: "",
-		placementScore: "",
-		source: "Social Media",
-		notes: ""
-	});
-	const stages = [
-		{
-			id: "Inquiry",
-			title: t("edu_stage_inquiry")
-		},
-		{
-			id: "PlacementTest",
-			title: t("edu_stage_placement")
-		},
-		{
-			id: "TrialClass",
-			title: t("edu_stage_trial")
-		},
-		{
-			id: "Admitted",
-			title: t("edu_stage_admitted")
-		},
-		{
-			id: "Enrolled",
-			title: t("edu_stage_enrolled")
-		}
-	];
-	const handleCreateLead = (e: any) => {
-		e.preventDefault();
-		const course = eduCourses.find((c) => c.id === formData.desiredCourseId);
-		if (!course) return;
-		addEduAdmissionLead({
-			studentName: formData.studentName,
-			phone: formData.phone,
-			email: formData.email || void 0,
-			desiredCourseId: course.id,
-			desiredCourseTitle: course.title,
-			stage: "Inquiry",
-			guardianName: formData.guardianName || void 0,
-			placementScore: formData.placementScore || void 0,
-			source: formData.source,
-			notes: formData.notes || void 0
-		});
-		setIsAddLeadModalOpen(false);
-	};
-	const handleConfirmConversion = () => {
-		if (!conversionLead || !targetCohortId) return;
-		convertAdmissionToStudent(conversionLead.id, targetCohortId, conversionDeposit);
-		setConversionLead(null);
-		setConversionDeposit(0);
-	};
-	const filteredAdmissions = React.useMemo(() => {
-		return eduAdmissions.filter((lead) => {
-			if (!searchQuery.trim()) return true;
-			const q = searchQuery.toLowerCase();
-			return lead.studentName.toLowerCase().includes(q) || lead.phone.toLowerCase().includes(q) || lead.email && lead.email.toLowerCase().includes(q) || lead.desiredCourseTitle.toLowerCase().includes(q);
-		});
-	}, [eduAdmissions, searchQuery]);
-	const sortedLeads = React.useMemo(() => {
-		return [...filteredAdmissions].sort((a, b) => {
-			const aPinned = pinnedLeadIds.has(a.id);
-			const bPinned = pinnedLeadIds.has(b.id);
-			if (aPinned && !bPinned) return -1;
-			if (!aPinned && bPinned) return 1;
-			if (leadSortBy === "studentName") {
-				const cmp = a.studentName.localeCompare(b.studentName);
-				return leadSortDir === "asc" ? cmp : -cmp;
-			}
-			if (leadSortBy === "stage") {
-				const cmp = a.stage.localeCompare(b.stage);
-				return leadSortDir === "asc" ? cmp : -cmp;
-			}
-			return 0;
-		});
-	}, [
-		filteredAdmissions,
-		pinnedLeadIds,
-		leadSortBy,
-		leadSortDir
-	]);
-	const leadColumns = React.useMemo(() => [
-		{
-			key: "studentName",
-			header: language === "ar" ? "المترشح / الطالب" : language === "fr" ? "Candidat / Élève" : "Prospect Name",
-			width: "2.5*",
-			minWidth: "220px",
-			sortable: true,
-			renderCell: (lead: any) => /* @__PURE__ */ <div className="flex items-center gap-3">
-<div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700">{lead.studentName.charAt(0)}</div>
-<div className="min-w-0">
-<div className="font-bold text-black dark:text-white truncate">{lead.studentName}</div>
-<div className="text-[11px] text-[#d4522f] font-medium truncate">{lead.desiredCourseTitle}</div>
-</div>
-</div>
-		},
-		{
-			key: "contact",
-			header: language === "ar" ? "الاتصال" : language === "fr" ? "Coordonnées" : "Contact",
-			width: "2*",
-			minWidth: "180px",
-			renderCell: (lead: any) => /* @__PURE__ */ <div className="space-y-0.5 text-xs">
-<div className="flex items-center gap-1.5 text-black/70 dark:text-white/75 font-mono text-[11px]">
-<Phone size={12} className="text-black/55 dark:text-white/55 shrink-0" />
-<span>{lead.phone}</span>
-</div>
-{lead.email && /* @__PURE__ */ <div className="flex items-center gap-1.5 text-black/55 dark:text-white/75 truncate text-[11px]">
-<Mail size={12} className="text-black/55 dark:text-white/55 shrink-0" />
-<span className="truncate">{lead.email}</span>
-</div>}
-</div>
-		},
-		{
-			key: "guardian",
-			header: language === "ar" ? "الولي / الوصي" : language === "fr" ? "Tuteur / Parent" : "Guardian",
-			width: "1.8*",
-			minWidth: "150px",
-			renderCell: (lead: any) => /* @__PURE__ */ <span className="text-xs text-black/70 dark:text-white/75">{lead.guardianName || (language === "ar" ? "مترشح راشد" : "Adult / Self")}</span>
-		},
-		{
-			key: "score",
-			header: language === "ar" ? "نتيجة التقييم" : language === "fr" ? "Test d'orientation" : "Placement Score",
-			width: "1.8*",
-			minWidth: "150px",
-			renderCell: (lead: any) => /* @__PURE__ */ <span className="text-xs text-black/70 dark:text-white/75">
-{lead.placementScore ? /* @__PURE__ */ <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f]">{lead.placementScore}</span> : "—"}
-</span>
-		},
-		{
-			key: "stage",
-			header: language === "ar" ? "المرحلة" : language === "fr" ? "Étape" : "Stage",
-			width: "1.5*",
-			minWidth: "140px",
-			sortable: true,
-			renderCell: (lead: any) => {
-				const isAdmitted = lead.stage === "Admitted";
-				const isEnrolled = lead.stage === "Enrolled";
-				return /* @__PURE__ */ <div className="flex items-center gap-2">
-<span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${isEnrolled ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : isAdmitted ? "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300" : "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"}`}>{lead.stage}</span>
-{isAdmitted && /* @__PURE__ */ <button type="button" onClick={() => setConversionLead(lead)} className="p-1 rounded-md bg-[#d4522f] text-white hover:opacity-90 shadow-2xs" title={t("edu_btn_convert_student")}><UserCheck size={12} /></button>}
-</div>;
-			}
-		}
-	], [language, t]);
-	const handleExportCSV = () => {
-		const headers = [
-			language === "ar" ? "اسم المترشح" : language === "fr" ? "Nom Prospect" : "Candidate Name",
-			language === "ar" ? "الهاتف" : language === "fr" ? "Téléphone" : "Phone",
-			language === "ar" ? "البريد الإلكتروني" : language === "fr" ? "Email" : "Email",
-			language === "ar" ? "المقرر المطلوب" : language === "fr" ? "Programme Souhaité" : "Desired Course",
-			language === "ar" ? "المرحلة الحالية" : language === "fr" ? "Étape" : "Stage",
-			language === "ar" ? "الولي" : language === "fr" ? "Tuteur" : "Guardian",
-			language === "ar" ? "نتيجة الاختبار" : language === "fr" ? "Score" : "Placement Score",
-			language === "ar" ? "مصدر التسجيل" : language === "fr" ? "Source" : "Source",
-			language === "ar" ? "ملاحظات" : language === "fr" ? "Remarques" : "Notes"
-		];
-		const rows = sortedLeads.map((l) => [
-			`"${l.studentName}"`,
-			`"${l.phone}"`,
-			`"${l.email || ""}"`,
-			`"${l.desiredCourseTitle}"`,
-			`"${l.stage}"`,
-			`"${l.guardianName || "Adult / Self"}"`,
-			`"${l.placementScore || ""}"`,
-			`"${l.source || ""}"`,
-			`"${(l.notes || "").replace(/"/g, "\"\"")}"`
-		]);
-		const csvContent = "data:text/csv;charset=utf-8,﻿" + [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
-		const encodedUri = encodeURI(csvContent);
-		const link = document.createElement("a");
-		link.setAttribute("href", encodedUri);
-		link.setAttribute("download", `admission-leads-${(/* @__PURE__ */ new Date()).toISOString().split("T")[0]}.csv`);
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
-		showToast({
-			type: "success",
-			title: language === "ar" ? "تم التصدير" : language === "fr" ? "Exportation réussie" : "Export Complete",
-			message: `${sortedLeads.length} ${language === "ar" ? "طلبات تسجيل تم تصديرها" : "leads exported successfully"}`
-		});
-	};
-	const handleBatchSetStage = (stage: any) => {
-		if (selectedLeadIds.size === 0) return;
-		const count = selectedLeadIds.size;
-		selectedLeadIds.forEach((id) => updateAdmissionStage(id, stage));
-		setSelectedLeadIds(/* @__PURE__ */ new Set());
-		showToast({
-			type: "success",
-			title: "Statut Mis à Jour",
-			message: `${count} dossiers passés à l'étape ${stage}`
-		});
-	};
-	const handleBatchDelete = () => {
-		if (selectedLeadIds.size === 0) return;
-		const count = selectedLeadIds.size;
-		if (confirm(language === "ar" ? `هل أنت متأكد من حذف ${count} ملف تسجيل؟` : language === "fr" ? `Supprimer définitivement ${count} dossiers sélectionnés ?` : `Delete ${count} selected leads?`)) {
-			selectedLeadIds.forEach((id) => deleteEduAdmissionLead(id));
-			setSelectedLeadIds(/* @__PURE__ */ new Set());
-			showToast({
-				type: "info",
-				title: language === "ar" ? "تم الحذف" : language === "fr" ? "Suppression" : "Deleted",
-				message: `${count} ${language === "ar" ? "ملفات تم حذفها" : "leads deleted"}`
-			});
-		}
-	};
-	const totalLeads = eduAdmissions.length;
-	const admittedCount = eduAdmissions.filter((l) => l.stage === "Admitted" || l.stage === "Enrolled").length;
-	const conversionRate = totalLeads > 0 ? Math.round(admittedCount / totalLeads * 100) : 0;
-	const projectedPipeline = totalLeads * 38e3;
-	const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
-		isLoading: isSyncing || networkMode === "force_skeleton",
-		hasCachedData: eduAdmissions.length > 0
-	});
-	if (showSkeleton && (eduAdmissions.length === 0 || networkMode === "force_skeleton")) {
-		if (viewLayout === "kanban") return /* @__PURE__ */ <SkeletonKanbanPipeline columnsCount={5} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
-		return /* @__PURE__ */ <SkeletonCollectionScreen kpiCount={3} columns={[
-				{
-					width: "2.5*",
-					minWidth: "180px"
-				},
-				{
-					width: "1.5*",
-					minWidth: "120px"
-				},
-				{
-					width: "1.5*",
-					minWidth: "120px"
-				},
-				{
-					width: "1.2*",
-					minWidth: "100px"
-				},
-				{
-					width: "100px",
-					minWidth: "80px"
-				}
-			]} viewMode="list" isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
-	}
-	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="space-y-6">
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
-<div className="flex items-center gap-3.5">
-<div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"><ClipboardList size={22} /></div>
-<div>
-<div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("edu_admissions_title")}</h1>
-</div>
-</div>
-</div>
-<div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
-<div className="flex items-center p-1 bg-[#F4EFEA] dark:bg-neutral-800 rounded-xl border border-[#E8DFD8] dark:border-neutral-700 shadow-2xs">
-<button type="button" onClick={() => setViewLayout("kanban")} className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer ${viewLayout === "kanban" ? "bg-white dark:bg-neutral-900 text-[#d4522f] shadow-2xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>
-<Columns size={13} />
-<span>Kanban</span>
-</button>
-<button type="button" onClick={() => setViewLayout("collection")} className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer ${viewLayout === "collection" ? "bg-white dark:bg-neutral-900 text-[#d4522f] shadow-2xs" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>
-<LayoutGrid size={13} />
-<span>
-{language === "ar" ? "جدول وبطاقات" : language === "fr" ? "Liste & Grille" : "List & Grid"}
-</span>
-</button>
-</div>
-<AtriumButton variant="primary" onClick={() => setIsAddLeadModalOpen(true)} icon={<Plus size={14} />}>{t("edu_btn_new_lead")}</AtriumButton>
-</div>
-</div>
-{selectedLeadIds.size > 0 && /* @__PURE__ */ <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
-<div className="flex items-center gap-3">
-<span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
-<span className="text-xs font-bold text-black dark:text-white">
-{selectedLeadIds.size}
-{" "}
-{language === "ar" ? "طلبات تسجيل محددة" : language === "fr" ? "dossiers sélectionnés" : "leads selected"}
-</span>
-</div>
-<div className="flex items-center gap-2 flex-wrap">
-<button onClick={() => setSelectedLeadIds(/* @__PURE__ */ new Set())} className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer">
-{language === "ar" ? "إلغاء التحديد" : language === "fr" ? "Désélectionner" : "Deselect"}
-</button>
-<button onClick={() => handleBatchSetStage("TrialClass")} className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs">
-<CheckCircle2 size={13} />
-<span>{language === "ar" ? "حصة تجريبية" : "Trial Class"}</span>
-</button>
-<button onClick={() => handleBatchSetStage("Admitted")} className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs">
-<CheckCircle2 size={13} />
-<span>{language === "ar" ? "قبول الملف" : "Admit"}</span>
-</button>
-<button onClick={handleBatchDelete} className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs">
-<Trash2 size={13} />
-<span>{language === "ar" ? "حذف المحدد" : language === "fr" ? "Supprimer" : "Delete"}</span>
-</button>
-</div>
-</div>}
-<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-3">
-<div>
-<h3 className="text-xs font-bold text-black dark:text-white tracking-tight">
-{language === "ar" ? "قمع القبول والتسجيلات" : language === "fr" ? "Pipeline d'Admissions & Conversion" : "Admissions Pipeline & Conversion Health"}
-</h3>
-</div>
-<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-<div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
-{language === "ar" ? "ملفات قيد المعالجة" : language === "fr" ? "Prospects Actifs" : "Active Pipeline"}
-</span>
-<span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">5 Étapes d'admission</span>
-</div>
-<div>
-<span className="text-2xl font-bold text-black dark:text-white tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">{totalLeads}</span>
-<span className="text-xs text-black/55 dark:text-white/55 tabular-nums ml-1">
-{"/ "}
-{totalLeads}
-{" "}
-{language === "ar" ? "ملف في المسار" : "leads"}
-</span>
-<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
-{language === "ar" ? "طلبات تسجيل قيد المتابعة" : "Dossiers en instruction active"}
-</p>
-</div>
-</div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-<div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
-{language === "ar" ? "معدل التحويل للقبول" : language === "fr" ? "Taux d'admission" : "Admission Conversion"}
-</span>
-<span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-{admittedCount}
-{" "}
-{language === "ar" ? "مقبول" : "admis"}
-</span>
-</div>
-<div>
-<span className="text-2xl font-bold text-black dark:text-white tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-{conversionRate}
-%
-</span>
-<span className="text-xs text-black/55 dark:text-white/55 ml-1">{language === "ar" ? "نسبة التحويل" : "conversion rate"}</span>
-<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
-{language === "ar" ? "تحويل المقابلات إلى قبول نهائي" : "Transformation en inscriptions"}
-</p>
-</div>
-</div>
-<div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-<div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-white/75">
-{language === "ar" ? "القيمة المتوقعة للتسجيلات" : language === "fr" ? "Potentiel Recouvrement Frais" : "Projected Tuition Pipeline"}
-</span>
-<span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 inline-block">
-{language === "ar" ? "أقساط متوقعة" : language === "fr" ? "Pipeline Actif" : "Estimated Inflow"}
-</span>
-</div>
-<div>
-<span className="text-2xl font-bold text-[#FB923C] tabular-nums tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-{projectedPipeline.toLocaleString()}
-{" DZD"}
-</span>
-<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
-<span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
-<span>
-{language === "ar" ? "إجمالي الرسوم المتوقعة" : "Potentiel d'encaissement rentrée"}
-</span>
-</p>
-</div>
-</div>
-</div>
-</div>
-<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-<div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-<div className="flex items-center gap-2">
-<ClipboardList size={18} className="text-black/70 dark:text-white/75" />
-<h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-{language === "ar" ? "طلبات التسجيل والقبول" : language === "fr" ? "Dossiers d'Admission" : "Admissions Pipeline"}
-</h2>
-</div>
-<div className="flex items-center gap-2.5 flex-wrap">
-<LiveSegmentedControl size="sm" value={viewLayout} onValueChange={(val) => setViewLayout(val)} options={[{
-												value: "kanban",
-												label: language === "ar" ? "كانبان" : "Kanban",
-												tooltip: language === "ar" ? "مسار كانبان للقبول" : language === "fr" ? "Vue en pipeline Kanban" : "Kanban admissions funnel",
-												count: totalLeads
-											}, {
-												value: "collection",
-												label: language === "ar" ? "سجل" : language === "fr" ? "Tableau" : "Table",
-												tooltip: language === "ar" ? "عرض السجل والجدول" : language === "fr" ? "Affichage tableau & grille" : "Table & grid registry"
-											}]} aria-label="Admissions View Mode" />
-<Seek value={searchQuery} onChange={setSearchQuery} placeholder="Search leads by student, phone, desired course..." shutSize={36} openWidth={240} />
-<button type="button" onClick={handleExportCSV} className="h-9 px-3 bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer" title="Export CSV">
-<Download size={13} />
-<span className="hidden sm:inline">CSV</span>
-</button>
-</div>
-</div>
-{viewLayout === "collection" && /* @__PURE__ */ <UniversalDataCollection items={sortedLeads} keyExtractor={(l) => l.id} defaultViewMode="list" columns={leadColumns} isLoading={isSyncing || networkMode === "force_skeleton"} isOffline={networkMode === "offline"} isTimedOut={isSyncTimeout} lastSyncedAt={lastSyncedAt} onRetrySync={retryCloudSync} sortBy={leadSortBy} sortDirection={leadSortDir} onSortChange={(key) => {
-									if (leadSortBy === key) setLeadSortDir((prev) => prev === "asc" ? "desc" : "asc");
-									else {
-										setLeadSortBy(key);
-										setLeadSortDir("asc");
-									}
-								}} renderCard={(lead) => /* @__PURE__ */ <div className="flex flex-col items-center justify-center w-full">
-<div className="w-20 h-20 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-[28px] font-bold shadow-md mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">{lead.studentName.charAt(0)}</div>
-<h3 className="text-[16px] font-bold text-black dark:text-white truncate max-w-[210px] mb-1 tracking-tight text-center">{lead.studentName}</h3>
-<span className="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700 mb-2 truncate max-w-[200px]">{lead.desiredCourseTitle}</span>
-<div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1.5 text-center">
-<div className="font-mono text-black/70 dark:text-white/75 text-[11px]">{lead.phone}</div>
-{lead.guardianName && /* @__PURE__ */ <div className="text-black/55 dark:text-white/55 text-[11px]">
-{"Guardian: "}
-{lead.guardianName}
-</div>}
-{lead.placementScore && /* @__PURE__ */ <div className="text-[11px] font-semibold text-[#d4522f]">{lead.placementScore}</div>}
-<div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
-<span className="text-[11px] text-black/55 dark:text-white/55">Stage:</span>
-<span className="font-semibold text-black dark:text-white">{lead.stage}</span>
-</div>
-</div>
-</div>} onItemClick={(lead) => {
-									if (lead.stage === "Admitted") setConversionLead(lead);
-								}} onViewDetails={(lead) => {
-									if (lead.stage === "Admitted") setConversionLead(lead);
-								}} onEdit={(lead) => {
-									if (lead.stage === "Admitted") setConversionLead(lead);
-								}} onTogglePin={(lead) => {
-									setPinnedLeadIds((prev) => {
-										const next = new Set(prev);
-										if (next.has(lead.id)) {
-											next.delete(lead.id);
-											showToast?.({
-												type: "info",
-												title: "Unpinned",
-												message: `${lead.studentName} unpinned`
-											});
-										} else {
-											next.add(lead.id);
-											showToast?.({
-												type: "info",
-												title: "Pinned",
-												message: `${lead.studentName} pinned to top`
-											});
-										}
-										return next;
-									});
-								}} onDelete={(lead) => {
-									if (confirm(`Delete admission record for ${lead.studentName}?`)) deleteEduAdmissionLead(lead.id);
-								}} isPinned={(lead) => pinnedLeadIds.has(lead.id)} selectedIds={selectedLeadIds} onSelectionChange={setSelectedLeadIds} emptyTitle="No admission prospects" emptyDescription="No student leads match the current filters" primaryActionLabel={t("edu_btn_new_lead")} onAddFirstItem={() => setIsAddLeadModalOpen(true)} />}
-{viewLayout === "kanban" && /* @__PURE__ */ <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 items-start">
-{stages.map((stage) => {
-									const leadsInStage = filteredAdmissions.filter((l) => l.stage === stage.id);
-									return /* @__PURE__ */ <div key={stage.id} className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 p-3.5 flex flex-col space-y-3 min-h-[480px] shadow-2xs">
-<div className="flex items-center justify-between pb-2 border-b border-neutral-200/80 dark:border-neutral-800">
-<span className="text-xs font-bold text-black dark:text-white">{stage.title}</span>
-<span className="w-5 h-5 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-[10px] font-bold flex items-center justify-center">{leadsInStage.length}</span>
-</div>
-<div className="space-y-2.5 flex-1">
-{leadsInStage.map((lead) => /* @__PURE__ */ <div key={lead.id} className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-2xs hover:border-[#d4522f]/50 transition-all space-y-2 group">
-<div>
-<div className="flex items-center justify-between">
-<span className="font-bold text-black dark:text-white text-xs group-hover:text-[#d4522f] transition-colors">{lead.studentName}</span>
-{lead.placementScore && /* @__PURE__ */ <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f]">
-{"Score: "}
-{lead.placementScore}
-</span>}
-</div>
-<span className="text-[11px] font-medium text-[#d4522f] block mt-0.5">{lead.desiredCourseTitle}</span>
-</div>
-<div className="space-y-1 text-[11px] text-black/55 dark:text-white/75">
-<div className="flex items-center gap-1.5">
-<Phone size={11} className="text-black/55 dark:text-white/55" />
-<span>{lead.phone}</span>
-</div>
-{lead.guardianName && /* @__PURE__ */ <div className="text-[10px] text-black/55 dark:text-white/55">{t("edu_guardian_prefix", { name: lead.guardianName })}</div>}
-{lead.source && /* @__PURE__ */ <div className="text-[10px] text-black/55 dark:text-white/55">
-{"Source: "}
-{lead.source}
-</div>}
-</div>
-<div className="pt-2 border-t border-neutral-100 dark:border-neutral-800/80 flex items-center justify-between">
-{stage.id === "Admitted" ? /* @__PURE__ */ <button type="button" onClick={() => setConversionLead(lead)} className="w-full py-1.5 px-2 rounded-lg bg-[#d4522f] text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-90 shadow-2xs">
-<UserCheck size={12} />
-<span>{t("edu_btn_convert_student")}</span>
-</button> : stage.id !== "Enrolled" ? /* @__PURE__ */ <button type="button" onClick={() => {
-																const nextIndex = stages.findIndex((s) => s.id === stage.id) + 1;
-																if (nextIndex < stages.length) updateAdmissionStage(lead.id, stages[nextIndex].id as any);
-															}} className="w-full py-1 text-center text-[10px] font-semibold text-black/70 dark:text-white/75 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer">
-<span>Move Next</span>
-<ArrowRight size={11} className="rtl:rotate-180" />
-</button> : /* @__PURE__ */ <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 mx-auto">
-<UserCheck size={11} />
-{" Converted"}
-</span>}
-</div>
-</div>)}
-{leadsInStage.length === 0 && /* @__PURE__ */ <div className="py-8 text-center text-black/55 dark:text-white/55 text-[11px]">No leads in this stage</div>}
-</div>
-</div>;
-								})}
-</div>}
-</div>
-</div>
-{conversionLead && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-<div className="relative w-full max-w-md bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6">
-<div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("edu_lead_modal_title")}</h2>
-<button type="button" onClick={() => setConversionLead(null)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
-</div>
-<div className="pt-4 space-y-4 text-xs">
-<p className="text-black/70 dark:text-white/75">
-{"You are about to register "}
-<strong className="text-black dark:text-white">{conversionLead.studentName}</strong>
-{" into the student CRM and create an active enrollment record."}
-</p>
-<LabelSelect label={t("edu_label_cohort")} value={targetCohortId} onChange={(val) => setTargetCohortId(val?.target?.value ?? String(val))} options={eduCohorts.map((c) => ({
-									value: c.id,
-									label: `${c.name} (${c.cohortCode || c.courseTitle}) — ${c.tuitionFee.toLocaleString()} DZD`
-								}))} placeholder="Select Starting Cohort..." />
-<LabelInput label="Acompte Initial Reçu (DZD)" type="number" min="0" step="1000" value={conversionDeposit === 0 ? "" : conversionDeposit} placeholder="0 DZD (Optionnel - Règlement à l'inscription)" onChange={(e) => setConversionDeposit(Math.max(0, Number(e.target.value) || 0))} />
-<div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-<button type="button" onClick={() => setConversionLead(null)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer">{t("common_cancel")}</button>
-<button type="button" onClick={handleConfirmConversion} className="px-5 py-2 rounded-xl bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs">{t("edu_btn_convert_student")}</button>
-</div>
-</div>
-</div>
-</div>}
-{isAddLeadModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-<div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6">
-<div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
-<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{t("edu_btn_new_lead")}</h2>
-<button type="button" onClick={() => setIsAddLeadModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={16} /></button>
-</div>
-<form onSubmit={handleCreateLead} className="space-y-4 pt-4 text-xs">
-<div>
-<LabelInput field="studentName" label={t("edu_field_fullname")} required placeholder="e.g. Yacine Benali" value={formData.studentName} onChange={(val) => setFormData({
-									...formData,
-									studentName: String(val)
-								})} width="100%" height={44} corner={12} />
-</div>
-<div className="grid grid-cols-2 gap-3">
-<div>
-<LabelInput field="phone" label={t("edu_field_phone")} type="tel" required placeholder="0550 00 00 00" value={formData.phone} onChange={(val) => setFormData({
-										...formData,
-										phone: String(val)
-									})} width="100%" height={44} corner={12} />
-</div>
-<div>
-<LabelInput field="email" label={t("edu_field_email")} type="email" placeholder="yacine@example.com" value={formData.email} onChange={(val) => setFormData({
-										...formData,
-										email: String(val)
-									})} width="100%" height={44} corner={12} />
-</div>
-</div>
-<LabelSelect label={t("edu_field_course_title")} value={formData.desiredCourseId} onChange={(val) => setFormData({
-									...formData,
-									desiredCourseId: val?.target?.value ?? String(val)
-								})} options={eduCourses.map((co) => ({
-									value: co.id,
-									label: `${co.title} (${co.category})`
-								}))} />
-<div className="grid grid-cols-2 gap-3">
-<div>
-<LabelInput field="guardianName" label={t("edu_field_guardian_name")} placeholder="Parent / Sponsor" value={formData.guardianName} onChange={(val) => setFormData({
-										...formData,
-										guardianName: String(val)
-									})} width="100%" height={44} corner={12} />
-</div>
-<div>
-<LabelInput field="source" label={t("member_field_acquisition")} placeholder="e.g. Instagram, Referral, Walk-in" value={formData.source} onChange={(val) => setFormData({
-										...formData,
-										source: String(val)
-									})} width="100%" height={44} corner={12} />
-</div>
-</div>
-<div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
-<button type="button" onClick={() => setIsAddLeadModalOpen(false)} className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer">{t("common_cancel")}</button>
-<button type="submit" className="px-5 py-2 rounded-xl bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs">{t("edu_btn_new_lead")}</button>
-</div>
-</form>
-</div>
-</div>}
-</div>;
+  const {
+    eduAdmissions,
+    eduCourses,
+    eduCohorts,
+    currentBranch,
+    branches,
+    addEduAdmissionLead,
+    updateAdmissionStage,
+    deleteEduAdmissionLead,
+    convertAdmissionToStudent,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
+  } = useAtriumStore();
+
+  const [viewLayout, setViewLayout] = useState<'kanban' | 'collection'>('kanban');
+  const [collectionViewMode, setCollectionViewMode] = useState<'list' | 'grid'>('list');
+  const [branchFilter, setBranchFilter] = useState<string>('All');
+  const [stageFilter, setStageFilter] = useState<string>('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const filterButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  const [isAddLeadModalOpen, setIsAddLeadModalOpen] = useState(false);
+  const [conversionLead, setConversionLead] = useState<EduAdmissionLead | null>(null);
+  const [targetCohortId, setTargetCohortId] = useState<string>(eduCohorts[0]?.id || '');
+  const [conversionDeposit, setConversionDeposit] = useState<number>(0);
+
+  const [selectedLead, setSelectedLead] = useState<EduAdmissionLead | null>(null);
+  const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+
+  const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedLeadIds, setPinnedLeadIds] = useState<Set<string>>(() => new Set<string>());
+  const [leadSortBy, setLeadSortBy] = useState<string>('studentName');
+  const [leadSortDir, setLeadSortDir] = useState<'asc' | 'desc'>('asc');
+
+  const [formData, setFormData] = useState({
+    studentName: '',
+    phone: '',
+    email: '',
+    desiredCourseId: eduCourses[0]?.id || '',
+    guardianName: '',
+    placementScore: '',
+    source: 'Social Media',
+    notes: '',
+  });
+
+  const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
+
+  const branchCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    eduAdmissions.forEach((l) => {
+      const b = resolveRecordBranch(l, branchesById, currentBranch, language).name;
+      map.set(b, (map.get(b) || 0) + 1);
+    });
+    return map;
+  }, [eduAdmissions, branchesById, currentBranch, language]);
+
+  const stages = useMemo(
+    () => [
+      { id: 'Inquiry' as AdmissionStage, title: t('edu_stage_inquiry') },
+      { id: 'PlacementTest' as AdmissionStage, title: t('edu_stage_placement') },
+      { id: 'TrialClass' as AdmissionStage, title: t('edu_stage_trial') },
+      { id: 'Admitted' as AdmissionStage, title: t('edu_stage_admitted') },
+      { id: 'Enrolled' as AdmissionStage, title: t('edu_stage_enrolled') },
+    ],
+    [t]
+  );
+
+  const filteredAdmissions = useMemo(() => {
+    return eduAdmissions.filter((lead) => {
+      if (branchFilter !== 'All') {
+        const b = resolveRecordBranch(lead, branchesById, currentBranch, language).name;
+        if (b !== branchFilter) return false;
+      }
+      if (stageFilter !== 'All' && lead.stage !== stageFilter) return false;
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase();
+      return (
+        lead.studentName.toLowerCase().includes(q) ||
+        lead.phone.toLowerCase().includes(q) ||
+        (lead.email && lead.email.toLowerCase().includes(q)) ||
+        lead.desiredCourseTitle.toLowerCase().includes(q)
+      );
+    });
+  }, [eduAdmissions, branchFilter, stageFilter, searchQuery, branchesById, currentBranch, language]);
+
+  const sortedLeads = useMemo(() => {
+    return [...filteredAdmissions].sort((a, b) => {
+      const aPinned = pinnedLeadIds.has(a.id);
+      const bPinned = pinnedLeadIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+      let cmp = 0;
+      if (leadSortBy === 'stage') {
+        cmp = a.stage.localeCompare(b.stage);
+      } else if (leadSortBy === 'branch') {
+        cmp = resolveRecordBranch(a, branchesById, currentBranch, language).name.localeCompare(
+          resolveRecordBranch(b, branchesById, currentBranch, language).name
+        );
+      } else {
+        cmp = a.studentName.localeCompare(b.studentName);
+      }
+      return leadSortDir === 'asc' ? cmp : -cmp;
+    });
+  }, [filteredAdmissions, pinnedLeadIds, leadSortBy, leadSortDir, branchesById, currentBranch, language]);
+
+  const activeLead = useMemo(() => {
+    if (!selectedLead) return null;
+    return eduAdmissions.find((l) => l.id === selectedLead.id) || selectedLead;
+  }, [selectedLead, eduAdmissions]);
+
+  const handleCreateLead = (e: React.FormEvent) => {
+    e.preventDefault();
+    const course = eduCourses.find((c) => c.id === formData.desiredCourseId);
+    if (!course) return;
+    addEduAdmissionLead({
+      studentName: formData.studentName,
+      phone: formData.phone,
+      email: formData.email || undefined,
+      desiredCourseId: course.id,
+      desiredCourseTitle: course.title,
+      stage: 'Inquiry',
+      guardianName: formData.guardianName || undefined,
+      placementScore: formData.placementScore || undefined,
+      source: formData.source,
+      notes: formData.notes || undefined,
+    });
+    setIsAddLeadModalOpen(false);
+    showToast({
+      type: 'success',
+      title: isAr ? 'تمت إضافة المترشح' : isEn ? 'Lead Created' : 'Prospect ajouté',
+      message: `${formData.studentName} — ${course.title}`,
+    });
+  };
+
+  const handleConfirmConversion = () => {
+    if (!conversionLead || !targetCohortId) return;
+    convertAdmissionToStudent(conversionLead.id, targetCohortId, conversionDeposit);
+    showToast({
+      type: 'success',
+      title: isAr ? 'تم التحويل إلى طالب مسجل' : isEn ? 'Converted to Student' : 'Converti en Étudiant',
+      message: conversionLead.studentName,
+    });
+    setConversionLead(null);
+    setConversionDeposit(0);
+  };
+
+  const handleExportCSV = useCallback(() => {
+    const headers = [
+      isAr ? 'اسم المترشح' : isEn ? 'Candidate Name' : 'Nom Prospect',
+      isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone',
+      isAr ? 'البريد الإلكتروني' : 'Email',
+      isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
+      isAr ? 'المقرر المطلوب' : isEn ? 'Desired Course' : 'Programme Souhaité',
+      isAr ? 'المرحلة الحالية' : isEn ? 'Stage' : 'Étape',
+      isAr ? 'الولي' : isEn ? 'Guardian' : 'Tuteur',
+      isAr ? 'نتيجة الاختبار' : isEn ? 'Placement Score' : 'Score',
+      isAr ? 'المصدر' : 'Source',
+      isAr ? 'ملاحظات' : isEn ? 'Notes' : 'Remarques',
+    ];
+    const rows = sortedLeads.map((l) => [
+      l.studentName,
+      l.phone,
+      l.email || '',
+      resolveRecordBranch(l, branchesById, currentBranch, language).name,
+      l.desiredCourseTitle,
+      l.stage,
+      l.guardianName || 'Adult / Self',
+      l.placementScore || '',
+      l.source || '',
+      l.notes || '',
+    ]);
+    downloadCsvSafe(`admission-leads-${new Date().toISOString().split('T')[0]}.csv`, headers, rows);
+    showToast({
+      type: 'success',
+      title: isAr ? 'تم التصدير' : isEn ? 'Export Complete' : 'Exportation réussie',
+      message: `${sortedLeads.length} ${isAr ? 'طلبات تسجيل تم تصديرها' : 'leads exported'}`,
+    });
+  }, [sortedLeads, branchesById, currentBranch, language, isAr, isEn]);
+
+  const handleBatchSetStage = (stage: AdmissionStage) => {
+    if (selectedLeadIds.size === 0) return;
+    const count = selectedLeadIds.size;
+    selectedLeadIds.forEach((id) => updateAdmissionStage(id, stage));
+    setSelectedLeadIds(new Set<string>());
+    showToast({
+      type: 'success',
+      title: isAr ? 'تم تحديث المرحلة' : isEn ? 'Stage Updated' : 'Statut Mis à Jour',
+      message: `${count} dossiers passés à l'étape ${stage}`,
+    });
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedLeadIds.size === 0) return;
+    const count = selectedLeadIds.size;
+    selectedLeadIds.forEach((id) => deleteEduAdmissionLead(id));
+    if (selectedLead && selectedLeadIds.has(selectedLead.id)) setSelectedLead(null);
+    setSelectedLeadIds(new Set<string>());
+    showToast({
+      type: 'info',
+      title: isAr ? 'تم الحذف' : isEn ? 'Deleted' : 'Suppression',
+      message: `${count} ${isAr ? 'ملفات تم حذفها' : 'leads deleted'}`,
+    });
+  };
+
+  const filterSections: KineticFilterSection[] = useMemo(() => {
+    const branchOpts = [
+      { value: 'All', label: isAr ? 'جميع الفروع' : isEn ? 'All Branches' : 'Toutes les branches', count: eduAdmissions.length },
+      ...Array.from(branchCounts.entries()).map(([n, c]) => ({ value: n, label: n, count: c })),
+    ];
+    return [
+      {
+        id: 'branch',
+        label: isAr ? 'الفرع / المؤسسة' : isEn ? 'Branch' : 'Branche',
+        value: branchFilter,
+        onChange: setBranchFilter,
+        resetValue: 'All',
+        kind: 'tiles',
+        columns: 2,
+        options: branchOpts,
+      },
+      {
+        id: 'stage',
+        label: isAr ? 'مرحلة القبول' : isEn ? 'Admission Stage' : 'Étape du Pipeline',
+        value: stageFilter,
+        onChange: setStageFilter,
+        resetValue: 'All',
+        kind: 'segmented',
+        options: [
+          { value: 'All', label: t('edu_filter_all') },
+          ...stages.map((s) => ({ value: s.id, label: s.title })),
+        ],
+      },
+    ];
+  }, [branchFilter, stageFilter, branchCounts, eduAdmissions.length, isAr, isEn, t, stages]);
+
+  const activeChips: ActiveFilterChip[] = useMemo(() => {
+    const chips: ActiveFilterChip[] = [];
+    if (branchFilter !== 'All') {
+      chips.push({
+        key: 'branch',
+        label: `${isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche'}: ${branchFilter}`,
+        onRemove: () => setBranchFilter('All'),
+      });
+    }
+    if (stageFilter !== 'All') {
+      const stageLabel = stages.find((s) => s.id === stageFilter)?.title || stageFilter;
+      chips.push({
+        key: 'stage',
+        label: stageLabel,
+        onRemove: () => setStageFilter('All'),
+      });
+    }
+    return chips;
+  }, [branchFilter, stageFilter, stages, isAr, isEn]);
+
+  const activeFiltersCount = (branchFilter !== 'All' ? 1 : 0) + (stageFilter !== 'All' ? 1 : 0);
+
+  const leadColumns: ColumnDefinition<EduAdmissionLead>[] = useMemo(
+    () => [
+      {
+        key: 'studentName',
+        header: isAr ? 'المترشح / الطالب' : isEn ? 'Prospect Name' : 'Candidat / Élève',
+        width: '2.4*',
+        minWidth: '210px',
+        sortable: true,
+        renderCell: (lead) => (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700">
+              {lead.studentName.charAt(0)}
+            </div>
+            <div className="min-w-0">
+              <div className="font-bold text-black dark:text-white truncate">{lead.studentName}</div>
+              <div className="text-[11px] text-[#d4522f] font-medium truncate">{lead.desiredCourseTitle}</div>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'branch',
+        header: isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
+        width: '135px',
+        sortable: true,
+        renderCell: (lead) => {
+          const b = resolveRecordBranch(lead, branchesById, currentBranch, language);
+          return (
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-black/75 dark:text-white/80 truncate">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
+              <span className="truncate">{b.name}</span>
+            </span>
+          );
+        },
+      },
+      {
+        key: 'contact',
+        header: isAr ? 'الاتصال' : isEn ? 'Contact' : 'Coordonnées',
+        width: '1.8*',
+        minWidth: '170px',
+        renderCell: (lead) => (
+          <div className="space-y-0.5 text-xs">
+            <div className="flex items-center gap-1.5 text-black/70 dark:text-white/75 font-mono text-[11px]">
+              <Phone size={12} className="text-black/55 dark:text-white/55 shrink-0" />
+              <span>{lead.phone}</span>
+            </div>
+            {lead.email && (
+              <div className="flex items-center gap-1.5 text-black/55 dark:text-white/75 truncate text-[11px]">
+                <Mail size={12} className="text-black/55 dark:text-white/55 shrink-0" />
+                <span className="truncate">{lead.email}</span>
+              </div>
+            )}
+          </div>
+        ),
+      },
+      {
+        key: 'guardian',
+        header: isAr ? 'الولي / الوصي' : isEn ? 'Guardian' : 'Tuteur / Parent',
+        width: '1.5*',
+        minWidth: '130px',
+        renderCell: (lead) => (
+          <span className="text-xs text-black/70 dark:text-white/75">
+            {lead.guardianName || (isAr ? 'مترشح راشد' : 'Adult / Self')}
+          </span>
+        ),
+      },
+      {
+        key: 'score',
+        header: isAr ? 'نتيجة التقييم' : isEn ? 'Placement Score' : "Test d'orientation",
+        width: '1.3*',
+        minWidth: '120px',
+        renderCell: (lead) => (
+          <span className="text-xs text-black/70 dark:text-white/75">
+            {lead.placementScore ? (
+              <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f]">
+                {lead.placementScore}
+              </span>
+            ) : (
+              '—'
+            )}
+          </span>
+        ),
+      },
+      {
+        key: 'stage',
+        header: isAr ? 'المرحلة' : isEn ? 'Stage' : 'Étape',
+        width: '1.5*',
+        minWidth: '140px',
+        sortable: true,
+        renderCell: (lead) => {
+          const isAdmitted = lead.stage === 'Admitted';
+          const isEnrolled = lead.stage === 'Enrolled';
+          return (
+            <div className="flex items-center gap-2">
+              <span
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+                  isEnrolled
+                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                    : isAdmitted
+                    ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
+                    : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
+                }`}
+              >
+                {lead.stage}
+              </span>
+              {isAdmitted && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setConversionLead(lead);
+                  }}
+                  className="p-1 rounded-md bg-[#d4522f] text-white hover:opacity-90 shadow-2xs cursor-pointer"
+                  title={t('edu_btn_convert_student')}
+                >
+                  <UserCheck size={12} />
+                </button>
+              )}
+            </div>
+          );
+        },
+      },
+    ],
+    [isAr, isEn, t, branchesById, currentBranch, language]
+  );
+
+  const totalLeads = eduAdmissions.length;
+  const admittedCount = eduAdmissions.filter((l) => l.stage === 'Admitted' || l.stage === 'Enrolled').length;
+  const conversionRate = totalLeads > 0 ? Math.round((admittedCount / totalLeads) * 100) : 0;
+  const projectedPipeline = totalLeads * 38000;
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: eduAdmissions.length > 0,
+  });
+
+  if (showSkeleton && (eduAdmissions.length === 0 || networkMode === 'force_skeleton')) {
+    if (viewLayout === 'kanban') {
+      return (
+        <SkeletonKanbanPipeline
+          columnsCount={5}
+          isOffline={isOffline}
+          isTimedOut={isTimedOut}
+          onRetry={retryCloudSync || retry}
+        />
+      );
+    }
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        viewMode="list"
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200" dir={isRtl ? 'rtl' : 'ltr'}>
+      <ScreenHeaderBar
+        icon={<ClipboardList size={22} />}
+        title={t('edu_admissions_title')}
+        subtitle={`${totalLeads} ${isAr ? 'طلب قبول في المسار' : isEn ? 'prospects in pipeline' : 'candidats dans le pipeline'}`}
+        secondaryActions={
+          <div className="flex items-center p-1 bg-[#F4EFEA] dark:bg-neutral-800 rounded-xl border border-[#E8DFD8] dark:border-neutral-700 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => setViewLayout('kanban')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer ${
+                viewLayout === 'kanban'
+                  ? 'bg-white dark:bg-neutral-900 text-[#d4522f] shadow-2xs'
+                  : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
+              }`}
+            >
+              <Columns size={13} />
+              <span>Kanban</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewLayout('collection')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer ${
+                viewLayout === 'collection'
+                  ? 'bg-white dark:bg-neutral-900 text-[#d4522f] shadow-2xs'
+                  : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
+              }`}
+            >
+              <LayoutGrid size={13} />
+              <span>{isAr ? 'جدول وبطاقات' : isEn ? 'List & Grid' : 'Liste & Grille'}</span>
+            </button>
+          </div>
+        }
+        primaryAction={{
+          label: t('edu_btn_new_lead'),
+          icon: <Plus size={14} />,
+          onClick: () => setIsAddLeadModalOpen(true),
+        }}
+      />
+
+      {selectedLeadIds.size > 0 && (
+        <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
+            <span className="text-xs font-bold text-black dark:text-white">
+              {selectedLeadIds.size}{' '}
+              {isAr ? 'طلبات تسجيل محددة' : isEn ? 'leads selected' : 'dossiers sélectionnés'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setSelectedLeadIds(new Set<string>())}
+              className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer"
+            >
+              {isAr ? 'إلغاء التحديد' : isEn ? 'Deselect' : 'Désélectionner'}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleBatchSetStage('TrialClass')}
+              className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <CheckCircle2 size={13} />
+              <span>{isAr ? 'حصة تجريبية' : 'Trial Class'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleBatchSetStage('Admitted')}
+              className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <CheckCircle2 size={13} />
+              <span>{isAr ? 'قبول الملف' : 'Admit'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleBatchDelete}
+              className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Trash2 size={13} />
+              <span>{isAr ? 'حذف المحدد' : isEn ? 'Delete' : 'Supprimer'}</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      <ScreenKpiBanner
+        heading={
+          isAr
+            ? 'قمع القبول والتسجيلات'
+            : isEn
+            ? 'Admissions Pipeline & Conversion Health'
+            : "Pipeline d'Admissions & Conversion"
+        }
+        language={language}
+        primaryCard={{
+          label: isAr ? 'ملفات قيد المعالجة' : isEn ? 'Active Pipeline' : 'Prospects Actifs',
+          count: totalLeads,
+          badgeText: `5 ${isAr ? 'مراحل' : isEn ? 'stages' : 'étapes'}`,
+          tone: 'terracotta',
+          isActive: stageFilter === 'All',
+          onToggle: () => setStageFilter('All'),
+        }}
+        secondaryCard={{
+          label: isAr ? 'معدل التحويل للقبول' : isEn ? 'Admission Conversion' : "Taux d'admission",
+          count: conversionRate,
+          formatValue: (v) => `${v}%`,
+          badgeText: `${admittedCount} ${isAr ? 'مقبول' : 'admis'}`,
+          tone: 'emerald',
+          isActive: stageFilter === 'Admitted',
+          onToggle: () => setStageFilter((p) => (p === 'Admitted' ? 'All' : 'Admitted')),
+        }}
+        darkCard={{
+          label: isAr
+            ? 'القيمة المتوقعة للتسجيلات'
+            : isEn
+            ? 'Projected Tuition Pipeline'
+            : 'Potentiel Recouvrement Frais',
+          valueCount: projectedPipeline,
+          valueSuffix: ' DZD',
+          badgeCount: admittedCount,
+          badgeSuffix: isAr ? ' مقبول' : ' admis',
+          caption: isAr ? 'إجمالي الرسوم المتوقعة' : "Potentiel d'encaissement rentrée",
+        }}
+      />
+
+      <ScreenPod>
+        <ScreenCollectionToolbar
+          title={
+            isAr
+              ? 'طلبات التسجيل والقبول'
+              : isEn
+              ? 'Admissions Pipeline'
+              : "Dossiers d'Admission"
+          }
+          liveRegionText={`${sortedLeads.length} ${isAr ? 'مترشح' : 'prospects'}`}
+          language={language}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder={
+            isAr
+              ? 'بحث عن مترشح، هاتف، دورة...'
+              : isEn
+              ? 'Search leads by student, phone, desired course...'
+              : 'Rechercher candidat, tél, formation...'
+          }
+          hasActiveAdvancedFilters={activeFiltersCount > 0}
+          activeFiltersCount={activeFiltersCount}
+          isFilterModalOpen={isFilterModalOpen}
+          filterButtonRef={filterButtonRef}
+          onToggleFilterModal={() => setIsFilterModalOpen((v) => !v)}
+          viewMode={collectionViewMode}
+          showViewToggle={viewLayout === 'collection'}
+          onViewModeChange={(m) => setCollectionViewMode(m === 'grid' ? 'grid' : 'list')}
+          extraTrailingControls={
+            <LiveSegmentedControl
+              size="md"
+              value={viewLayout}
+              onValueChange={(val) => setViewLayout(val as 'kanban' | 'collection')}
+              options={[
+                {
+                  value: 'kanban',
+                  label: isAr ? 'كانبان' : 'Kanban',
+                  count: totalLeads,
+                },
+                {
+                  value: 'collection',
+                  label: isAr ? 'سجل' : isEn ? 'Table' : 'Tableau',
+                },
+              ]}
+              aria-label="Admissions View Mode"
+            />
+          }
+          onExport={handleExportCSV}
+          activeChips={activeChips}
+          onResetAllFilters={() => {
+            setBranchFilter('All');
+            setStageFilter('All');
+            setSearchQuery('');
+          }}
+        />
+
+        {viewLayout === 'collection' && (
+          <UniversalDataCollection<EduAdmissionLead>
+            hideToolbar
+            data={sortedLeads}
+            keyExtractor={(l) => l.id}
+            viewMode={collectionViewMode}
+            columns={leadColumns}
+            isLoading={isSyncing || networkMode === 'force_skeleton'}
+            isOffline={networkMode === 'offline'}
+            isTimedOut={isSyncTimeout}
+            lastSyncedAt={lastSyncedAt}
+            onRetrySync={retryCloudSync}
+            sortBy={leadSortBy}
+            sortDirection={leadSortDir}
+            onSortChange={(key, dir) => {
+              setLeadSortBy(key);
+              setLeadSortDir(dir);
+            }}
+            openItemId={activeLead?.id ?? null}
+            selectedIds={selectedLeadIds}
+            onSelectionChange={setSelectedLeadIds}
+            pinnedIds={pinnedLeadIds}
+            onPinToggle={(idOrItem) => {
+              const id = typeof idOrItem === 'string' ? idOrItem : idOrItem.id;
+              setPinnedLeadIds((prev) => {
+                const next = new Set(prev);
+                if (next.has(id)) {
+                  next.delete(id);
+                  showToast({ type: 'info', title: 'Unpinned', message: 'Lead unpinned' });
+                } else {
+                  next.add(id);
+                  showToast({ type: 'info', title: 'Pinned', message: 'Lead pinned to top' });
+                }
+                return next;
+              });
+            }}
+            onItemClick={(lead, el) => {
+              setDrawerOpenerEl(el || null);
+              setSelectedLead(lead);
+            }}
+            onViewDetails={(lead, el) => {
+              setDrawerOpenerEl(el || null);
+              setSelectedLead(lead);
+            }}
+            onEdit={(lead) => {
+              if (lead.stage === 'Admitted') setConversionLead(lead);
+              else setSelectedLead(lead);
+            }}
+            onDelete={(lead) => {
+              deleteEduAdmissionLead(lead.id);
+              if (selectedLead?.id === lead.id) setSelectedLead(null);
+            }}
+            renderCard={(lead) => {
+              const b = resolveRecordBranch(lead, branchesById, currentBranch, language);
+              return (
+                <div className="flex flex-col items-center justify-center w-full">
+                  <div className="w-20 h-20 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-[28px] font-bold shadow-md mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
+                    {lead.studentName.charAt(0)}
+                  </div>
+                  <h3 className="text-[16px] font-bold text-black dark:text-white truncate max-w-[210px] mb-1 tracking-tight text-center">
+                    {lead.studentName}
+                  </h3>
+                  <span className="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700 mb-2 truncate max-w-[200px]">
+                    {lead.desiredCourseTitle}
+                  </span>
+                  <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1.5 text-center">
+                    <div className="font-mono text-black/70 dark:text-white/75 text-[11px]">{lead.phone}</div>
+                    <div className="text-black/55 dark:text-white/55 text-[11px]">{b.name}</div>
+                    {lead.placementScore && (
+                      <div className="text-[11px] font-semibold text-[#d4522f]">{lead.placementScore}</div>
+                    )}
+                    <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                      <span className="text-[11px] text-black/55 dark:text-white/55">Stage:</span>
+                      <span className="font-semibold text-black dark:text-white">{lead.stage}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            }}
+            emptyTitle="No admission prospects"
+            emptyDescription="No student leads match the current filters"
+            primaryActionLabel={t('edu_btn_new_lead')}
+            onAddFirstItem={() => setIsAddLeadModalOpen(true)}
+          />
+        )}
+
+        {viewLayout === 'kanban' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 items-start">
+            {stages.map((stage) => {
+              const leadsInStage = filteredAdmissions.filter((l) => l.stage === stage.id);
+              return (
+                <div
+                  key={stage.id}
+                  className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 p-3.5 flex flex-col space-y-3 min-h-[480px] shadow-2xs"
+                >
+                  <div className="flex items-center justify-between pb-2 border-b border-neutral-200/80 dark:border-neutral-800">
+                    <span className="text-xs font-bold text-black dark:text-white">{stage.title}</span>
+                    <span className="w-5 h-5 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-[10px] font-bold flex items-center justify-center">
+                      {leadsInStage.length}
+                    </span>
+                  </div>
+                  <div className="space-y-2.5 flex-1">
+                    {leadsInStage.map((lead) => (
+                      <div
+                        key={lead.id}
+                        className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-2xs hover:border-[#d4522f]/50 transition-all space-y-2 group"
+                      >
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            setDrawerOpenerEl(e.currentTarget);
+                            setSelectedLead(lead);
+                          }}
+                          className="w-full text-left rtl:text-right cursor-pointer space-y-1.5"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-black dark:text-white text-xs group-hover:text-[#d4522f] transition-colors">
+                              {lead.studentName}
+                            </span>
+                            {lead.placementScore && (
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f]">
+                                Score: {lead.placementScore}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[11px] font-medium text-[#d4522f] block">
+                            {lead.desiredCourseTitle}
+                          </span>
+                          <div className="space-y-1 text-[11px] text-black/55 dark:text-white/75">
+                            <div className="flex items-center gap-1.5">
+                              <Phone size={11} className="text-black/55 dark:text-white/55" />
+                              <span>{lead.phone}</span>
+                            </div>
+                            {lead.guardianName && (
+                              <div className="text-[10px] text-black/55 dark:text-white/55">
+                                {t('edu_guardian_prefix', { name: lead.guardianName })}
+                              </div>
+                            )}
+                            {lead.source && (
+                              <div className="text-[10px] text-black/55 dark:text-white/55">
+                                Source: {lead.source}
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                        <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800/80 flex items-center justify-between">
+                          {stage.id === 'Admitted' ? (
+                            <button
+                              type="button"
+                              onClick={() => setConversionLead(lead)}
+                              className="w-full py-1.5 px-2 rounded-lg bg-[#d4522f] text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-90 shadow-2xs"
+                            >
+                              <UserCheck size={12} />
+                              <span>{t('edu_btn_convert_student')}</span>
+                            </button>
+                          ) : stage.id !== 'Enrolled' ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const nextIndex = stages.findIndex((s) => s.id === stage.id) + 1;
+                                if (nextIndex < stages.length) {
+                                  updateAdmissionStage(lead.id, stages[nextIndex].id);
+                                }
+                              }}
+                              className="w-full py-1 text-center text-[10px] font-semibold text-black/70 dark:text-white/75 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                            >
+                              <span>Move Next</span>
+                              <ArrowRight size={11} className="rtl:rotate-180" />
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 mx-auto">
+                              <UserCheck size={11} /> Converted
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {leadsInStage.length === 0 && (
+                      <div className="py-8 text-center text-black/55 dark:text-white/55 text-[11px]">
+                        No leads in this stage
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </ScreenPod>
+
+      <KineticFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        triggerRef={filterButtonRef}
+        language={language}
+        displayCount={sortedLeads.length}
+        entityPluralLabel={isAr ? 'مترشح' : isEn ? 'prospects' : 'candidats'}
+        hasActiveFilters={activeFiltersCount > 0}
+        onResetFilters={() => {
+          setBranchFilter('All');
+          setStageFilter('All');
+        }}
+        sections={filterSections}
+      />
+
+      <KineticSlideOverInspector<EduAdmissionLead>
+        isOpen={Boolean(activeLead)}
+        item={activeLead}
+        allItems={sortedLeads}
+        keyExtractor={(l) => l.id}
+        openerElement={drawerOpenerEl}
+        language={language}
+        title={activeLead?.studentName || ''}
+        subtitle={activeLead ? `${activeLead.desiredCourseTitle} · ${activeLead.phone}` : ''}
+        avatarText={(activeLead?.studentName || 'L').charAt(0).toUpperCase()}
+        avatarColor="#d4522f"
+        branchName={
+          activeLead ? resolveRecordBranch(activeLead, branchesById, currentBranch, language).name : undefined
+        }
+        statusLabel={activeLead?.stage}
+        onSelectItem={(l) => setSelectedLead(l)}
+        onClose={() => setSelectedLead(null)}
+        onDelete={(l) => {
+          deleteEduAdmissionLead(l.id);
+          setSelectedLead(null);
+        }}
+        renderBody={(lead) => (
+          <div className="space-y-4 text-xs">
+            <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-2">
+              <div className="flex justify-between">
+                <span className="text-black/55 dark:text-white/55">{t('edu_field_phone')}:</span>
+                <span className="font-mono font-semibold text-black dark:text-white">{lead.phone}</span>
+              </div>
+              {lead.email && (
+                <div className="flex justify-between">
+                  <span className="text-black/55 dark:text-white/55">{t('edu_field_email')}:</span>
+                  <span className="font-medium text-black dark:text-white">{lead.email}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-black/55 dark:text-white/55">{t('edu_field_guardian_name')}:</span>
+                <span className="font-medium text-black dark:text-white">
+                  {lead.guardianName || (isAr ? 'مترشح راشد' : 'Adult / Self')}
+                </span>
+              </div>
+              {lead.source && (
+                <div className="flex justify-between">
+                  <span className="text-black/55 dark:text-white/55">Source:</span>
+                  <span className="font-medium text-black dark:text-white">{lead.source}</span>
+                </div>
+              )}
+              {lead.placementScore && (
+                <div className="flex justify-between">
+                  <span className="text-black/55 dark:text-white/55">Placement Score:</span>
+                  <span className="font-bold text-[#d4522f]">{lead.placementScore}</span>
+                </div>
+              )}
+            </div>
+
+            {lead.notes && (
+              <div className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+                <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-bold block mb-1">
+                  Notes
+                </span>
+                <p className="text-black/80 dark:text-white/80 leading-relaxed">{lead.notes}</p>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-bold block">
+                {isAr ? 'تغيير مرحلة القبول' : isEn ? 'Pipeline Stage' : 'Progression Pipeline'}
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {stages.map((st) => (
+                  <button
+                    key={st.id}
+                    type="button"
+                    onClick={() => updateAdmissionStage(lead.id, st.id)}
+                    className={`px-2.5 py-1.5 rounded-lg text-[11px] font-semibold border transition-colors cursor-pointer ${
+                      lead.stage === st.id
+                        ? 'bg-[#d4522f] text-white border-[#d4522f]'
+                        : 'bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-black/75 dark:text-white/75 hover:border-[#d4522f]/50'
+                    }`}
+                  >
+                    {st.title}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {lead.stage !== 'Enrolled' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setConversionLead(lead);
+                  setSelectedLead(null);
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#d4522f] text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 cursor-pointer shadow-xs"
+              >
+                <UserCheck size={15} />
+                <span>{t('edu_btn_convert_student')}</span>
+              </button>
+            )}
+          </div>
+        )}
+      />
+
+      {conversionLead && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="relative w-full max-w-md bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+              <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                {t('edu_lead_modal_title')}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setConversionLead(null)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="pt-4 space-y-4 text-xs">
+              <p className="text-black/70 dark:text-white/75">
+                You are about to register{' '}
+                <strong className="text-black dark:text-white">{conversionLead.studentName}</strong> into the
+                student CRM and create an active enrollment record.
+              </p>
+              <LabelSelect
+                label={t('edu_label_cohort')}
+                value={targetCohortId}
+                onChange={(val) => setTargetCohortId(extractStr(val))}
+                options={eduCohorts.map((c) => ({
+                  value: c.id,
+                  label: `${c.name} (${c.cohortCode || c.courseTitle}) — ${c.tuitionFee.toLocaleString()} DZD`,
+                }))}
+                placeholder="Select Starting Cohort..."
+              />
+              <LabelInput
+                label="Acompte Initial Reçu (DZD)"
+                type="number"
+                min="0"
+                step="1000"
+                value={conversionDeposit === 0 ? '' : conversionDeposit}
+                placeholder="0 DZD (Optionnel - Règlement à l'inscription)"
+                onChange={(val) => setConversionDeposit(Math.max(0, Number(extractStr(val)) || 0))}
+              />
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                <button
+                  type="button"
+                  onClick={() => setConversionLead(null)}
+                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer"
+                >
+                  {t('common_cancel')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmConversion}
+                  className="px-5 py-2 rounded-xl bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                >
+                  {t('edu_btn_convert_student')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isAddLeadModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6">
+            <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
+              <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                {t('edu_btn_new_lead')}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setIsAddLeadModalOpen(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <form onSubmit={handleCreateLead} className="space-y-4 pt-4 text-xs">
+              <div>
+                <LabelInput
+                  field="studentName"
+                  label={t('edu_field_fullname')}
+                  required
+                  placeholder="e.g. Yacine Benali"
+                  value={formData.studentName}
+                  onChange={(val) => setFormData({ ...formData, studentName: extractStr(val) })}
+                  width="100%"
+                  height={44}
+                  corner={12}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <LabelInput
+                    field="phone"
+                    label={t('edu_field_phone')}
+                    type="tel"
+                    required
+                    placeholder="0550 00 00 00"
+                    value={formData.phone}
+                    onChange={(val) => setFormData({ ...formData, phone: extractStr(val) })}
+                    width="100%"
+                    height={44}
+                    corner={12}
+                  />
+                </div>
+                <div>
+                  <LabelInput
+                    field="email"
+                    label={t('edu_field_email')}
+                    type="email"
+                    placeholder="yacine@example.com"
+                    value={formData.email}
+                    onChange={(val) => setFormData({ ...formData, email: extractStr(val) })}
+                    width="100%"
+                    height={44}
+                    corner={12}
+                  />
+                </div>
+              </div>
+              <LabelSelect
+                label={t('edu_field_course_title')}
+                value={formData.desiredCourseId}
+                onChange={(val) => setFormData({ ...formData, desiredCourseId: extractStr(val) })}
+                options={eduCourses.map((co) => ({
+                  value: co.id,
+                  label: `${co.title} (${co.category})`,
+                }))}
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <LabelInput
+                    field="guardianName"
+                    label={t('edu_field_guardian_name')}
+                    placeholder="Parent / Sponsor"
+                    value={formData.guardianName}
+                    onChange={(val) => setFormData({ ...formData, guardianName: extractStr(val) })}
+                    width="100%"
+                    height={44}
+                    corner={12}
+                  />
+                </div>
+                <div>
+                  <LabelInput
+                    field="source"
+                    label={t('member_field_acquisition')}
+                    placeholder="e.g. Instagram, Referral, Walk-in"
+                    value={formData.source}
+                    onChange={(val) => setFormData({ ...formData, source: extractStr(val) })}
+                    width="100%"
+                    height={44}
+                    corner={12}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+                <button
+                  type="button"
+                  onClick={() => setIsAddLeadModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer"
+                >
+                  {t('common_cancel')}
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                >
+                  {t('edu_btn_new_lead')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };

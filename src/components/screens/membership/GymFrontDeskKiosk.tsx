@@ -19,6 +19,7 @@ import {
   selectCurrentMembersFromState,
   selectCurrentMemberCheckInsFromState,
   selectCurrentBranchFromState,
+  showToast,
 } from '../../../services/store';
 import { calculateArt317Timbre, formatMoney } from '../../../utils/rules';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -72,7 +73,6 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
     addMemberCheckIn,
     addWalkInTicket,
     updateMember,
-    showToast,
     retryCloudSync,
   } = useAtriumActions();
 
