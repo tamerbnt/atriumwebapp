@@ -1088,6 +1088,7 @@ export const SkeletonCollectionScreen: React.FC<SkeletonCollectionScreenProps> =
     { width: '1.8*', minWidth: '140px' },
     { width: '1.5*', minWidth: '120px' },
     { width: '1.2*', minWidth: '100px' },
+    { width: '1.2*', minWidth: '100px' },
     { width: '100px' },
   ],
   viewMode = 'list',
@@ -1095,63 +1096,86 @@ export const SkeletonCollectionScreen: React.FC<SkeletonCollectionScreenProps> =
   hasViewToggle = true,
   hasFacility = false,
   hasActionBtn = true,
-  actionBtnWidth = 150,
+  actionBtnWidth = 156,
   isOffline,
   isTimedOut,
   lastSyncedAt,
   onRetry,
 }) => {
-  const gridColsClass = kpiLayout || (kpiCount === 4 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 md:grid-cols-3');
+  const gridColsClass = kpiLayout || (kpiCount === 4 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3');
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading collection view">
       <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
       
-      {/* 1. Full Page Header Skeleton */}
+      {/* 1. Member-style Header Bar */}
       <SkeletonPageHeader
         hasIcon={hasIcon}
-        hasViewToggle={hasViewToggle}
+        hasViewToggle={false}
         hasFacility={hasFacility}
         hasActionBtn={hasActionBtn}
         actionBtnWidth={actionBtnWidth}
       />
 
-      {/* 2. Top Metric Pod Tray (#F3EDE7, CornerRadius 24px) with 3 Cards */}
+      {/* 2. Top Metric Pod Tray (#F3EDE7, CornerRadius 24px) with 2 White + 1 Dark #1F1D1B Cards */}
       {kpiCount > 0 && (
-        <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
-          <div className="space-y-1">
+        <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
+          <div>
             <SkeletonText size="sm" width="220px" />
-            <SkeletonText size="xs" width="320px" />
           </div>
           <div className={`grid ${gridColsClass} gap-4`}>
-            {Array.from({ length: kpiCount }).map((_, i) => (
-              <div
-                key={`coll_kpi_${i}`}
-                className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]"
-              >
-                <div className="flex items-center justify-between">
-                  <SkeletonText size="xs" width="120px" />
-                  <SkeletonBox width={65} height={18} rounded="rounded-md" />
-                </div>
-                <div>
-                  <SkeletonText size="2xl" width="80px" />
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <SkeletonCircle size={14} />
-                    <SkeletonText size="xs" width="130px" />
+            {Array.from({ length: kpiCount }).map((_, i) => {
+              const isDarkCard = kpiCount >= 3 && i === kpiCount - 1;
+              return (
+                <div
+                  key={`coll_kpi_${i}`}
+                  className={`p-4.5 sm:p-5 rounded-[18px] border flex flex-col justify-between min-h-[132px] ${
+                    isDarkCard
+                      ? 'bg-[#1F1D1B] border-white/[0.08]'
+                      : 'bg-white dark:bg-neutral-800/90 border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs'
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <SkeletonText size="xs" width="128px" className={isDarkCard ? '!bg-white/15' : ''} />
+                      {isDarkCard && <SkeletonBox width={72} height={20} rounded="rounded-md" className="!bg-[#3D2817]" />}
+                    </div>
+                    {!isDarkCard && <SkeletonBox width={88} height={20} rounded="rounded-md" />}
+                  </div>
+                  <div className="space-y-1.5">
+                    <SkeletonText
+                      size="2xl"
+                      width="72px"
+                      className={isDarkCard ? '!bg-[#FB923C]/40' : ''}
+                    />
+                    {isDarkCard && <SkeletonText size="xs" width="160px" className="!bg-white/10" />}
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
 
-      {/* 3. Collection Body: List Table or Card Grid */}
-      {viewMode === 'list' ? (
-        <SkeletonTable columns={columns} rowCount={6} showHeaderControls={true} />
-      ) : (
-        <SkeletonCardGrid count={6} />
-      )}
+      {/* 3. Collection Pod (#F3EDE7): 5 Toolbar Controls + Table / Grid */}
+      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <SkeletonText size="sm" width="180px" />
+          <div className="flex flex-wrap items-center gap-2.5 ms-auto">
+            <SkeletonBox width={40} height={40} rounded="rounded-xl" />
+            <SkeletonBox width={210} height={40} rounded="rounded-xl" />
+            <SkeletonBox width={96} height={40} rounded="rounded-xl" />
+            {hasViewToggle && <SkeletonBox width={84} height={40} rounded="rounded-xl" />}
+            <SkeletonBox width={148} height={40} rounded="rounded-xl" className="!bg-[#d4522f]/25" />
+          </div>
+        </div>
+
+        {viewMode === 'list' ? (
+          <SkeletonTable columns={columns} rowCount={6} showHeaderControls={false} />
+        ) : (
+          <SkeletonCardGrid count={6} />
+        )}
+      </div>
     </div>
   );
 };

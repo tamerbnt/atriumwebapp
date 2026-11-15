@@ -1,6 +1,8 @@
 import React from 'react';
-import { Users, Clock, DollarSign, TrendingUp, ShieldCheck, Lock } from 'lucide-react';
+import { Users, Plus } from 'lucide-react';
 import { formatMoney } from '../../../utils/rules';
+import { ScreenHeaderBar, ScreenKpiBanner } from '../../ui/kinetic';
+import { StaffLifecycleStatus } from '../../../types/index';
 
 interface StaffHeaderTrayProps {
   totalStaffCount: number;
@@ -14,9 +16,16 @@ interface StaffHeaderTrayProps {
   metricLabel: string | { labelFr: string; labelEn: string; labelAr: string; unit?: string };
   language: string;
   categoryTitle?: string;
+  headerTitle?: string;
+  headerIcon?: React.ReactNode;
+  onOpenCreate?: () => void;
+  canCreate?: boolean;
+  newStaffButtonLabel?: string;
+  statusFilter?: 'all' | StaffLifecycleStatus;
+  onStatusFilterChange?: (next: 'all' | StaffLifecycleStatus) => void;
 }
 
-export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = ({
+export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = React.memo(({
   totalStaffCount,
   activeCount,
   onLeaveCount,
@@ -28,6 +37,13 @@ export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = ({
   metricLabel,
   language,
   categoryTitle,
+  headerTitle,
+  headerIcon,
+  onOpenCreate,
+  canCreate = false,
+  newStaffButtonLabel,
+  statusFilter = 'all',
+  onStatusFilterChange,
 }) => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
@@ -41,140 +57,90 @@ export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = ({
       ? metricLabel?.labelEn
       : metricLabel?.labelFr;
 
+  const activePct = totalStaffCount > 0 ? Math.round((activeCount / totalStaffCount) * 100) : 0;
+
+  const resolvedPageTitle =
+    headerTitle ||
+    (isAr ? 'الفريق والموارد' : isEn ? 'Team & Staff' : 'Équipe');
+
+  const resolvedBannerHeading =
+    categoryTitle ||
+    (isAr ? 'فريق العمل ومؤشرات الحضور' : isEn ? 'Workforce & Operational Health' : 'Effectif & Santé Opérationnelle');
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      {/* Dark Espresso Anchor Card */}
-      <div className="bg-[#1F1D1B] text-white p-5 rounded-[18px] flex flex-col justify-between shadow-sm relative overflow-hidden">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[11.5px] font-semibold tracking-[0.06em] uppercase rtl:normal-case rtl:tracking-normal text-white/75">
-            {categoryTitle || (isAr ? 'الفريق' : isEn ? 'Team' : 'Effectif')}
-          </span>
-          <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-[#FB923C]">
-            <Users size={16} />
-          </div>
-        </div>
-        <div>
-          <div className="text-[32px] leading-none font-bold tracking-tight text-white mb-1.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
-            {totalStaffCount}
-            <span className="text-xs font-sans font-normal text-white/70 ms-2">
-              {isAr ? 'موظف' : isEn ? 'staff' : 'agents'}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-white/85 tabular-nums">
-            <span className="inline-flex items-center gap-1 text-emerald-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              {activeCount} {isAr ? 'نشط' : isEn ? 'active' : 'actifs'}
-            </span>
-            <span>·</span>
-            <span className="text-amber-300">
-              {onLeaveCount} {isAr ? 'عطلة' : isEn ? 'leave' : 'congé'}
-            </span>
-            {frozenCount > 0 && (
-              <>
-                <span>·</span>
-                <span className="text-rose-400">
-                  {frozenCount} {isAr ? 'موقوف' : isEn ? 'paused' : 'gelé'}
-                </span>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <ScreenHeaderBar
+        icon={headerIcon || <Users size={22} />}
+        title={resolvedPageTitle}
+        primaryAction={
+          onOpenCreate && canCreate
+            ? {
+                label:
+                  newStaffButtonLabel ||
+                  (isAr ? 'إضافة موظف' : isEn ? 'Add Staff' : 'Nouveau Collaborateur'),
+                icon: <Plus size={16} strokeWidth={2.2} />,
+                onClick: onOpenCreate,
+              }
+            : undefined
+        }
+      />
 
-      {/* KPI 1: Active In-Service Count */}
-      <div className="bg-[#FBF8F5] dark:bg-[#1C1B1A] p-5 rounded-[18px] border border-[#E6DED6] dark:border-[#3A3734] flex flex-col justify-between">
-        <div className="flex items-center justify-between text-black/62 dark:text-white/68 mb-1">
-          <span className="text-[11.5px] font-semibold uppercase tracking-[0.06em] rtl:normal-case rtl:tracking-normal">
-            {isAr ? 'النشطون' : isEn ? 'Active' : 'En Poste'}
-          </span>
-          <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-            <ShieldCheck size={15} />
-          </div>
-        </div>
-        <div>
-          <div className="text-[28px] leading-none font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
-            {activeCount}
-            <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65 ms-1.5">
-              / {totalStaffCount}
-            </span>
-          </div>
-          <p className="text-xs text-black/62 dark:text-white/65 mt-1.5 tabular-nums">
-            {Math.round((activeCount / (totalStaffCount || 1)) * 100)}% {isAr ? 'متاح' : isEn ? 'ready' : 'dispo'}
-          </p>
-        </div>
-      </div>
-
-      {/* KPI 2: Today's Shift Attendance Rate */}
-      <div className="bg-[#FBF8F5] dark:bg-[#1C1B1A] p-5 rounded-[18px] border border-[#E6DED6] dark:border-[#3A3734] flex flex-col justify-between">
-        <div className="flex items-center justify-between text-black/62 dark:text-white/68 mb-1">
-          <span className="text-[11.5px] font-semibold uppercase tracking-[0.06em] rtl:normal-case rtl:tracking-normal">
-            {isAr ? 'الحضور' : isEn ? 'Attendance' : 'Présence'}
-          </span>
-          <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-            <Clock size={15} />
-          </div>
-        </div>
-        <div>
-          <div className="text-[28px] leading-none font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums flex items-baseline gap-2">
-            <span>{presentPercentage}%</span>
-            <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65">
-              ({todayPresentCount} {isAr ? 'حاضر' : isEn ? 'present' : 'présents'})
-            </span>
-          </div>
-          <div className="w-full bg-[#E6DED6] dark:bg-[#262422] h-1.5 rounded-full mt-2 overflow-hidden">
-            <div
-              className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
-              style={{ width: `${Math.min(100, Math.max(0, presentPercentage))}%` }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* KPI 3: Monthly Payroll / Mass (Strict RBAC Masked for non-owners) */}
-      <div className="bg-[#FBF8F5] dark:bg-[#1C1B1A] p-5 rounded-[18px] border border-[#E6DED6] dark:border-[#3A3734] flex flex-col justify-between">
-        <div className="flex items-center justify-between text-black/62 dark:text-white/68 mb-1">
-          <span className="text-[11.5px] font-semibold uppercase tracking-[0.06em] rtl:normal-case rtl:tracking-normal">
-            {isOwnerViewer
-              ? isAr
-                ? 'الرواتب'
-                : isEn
-                ? 'Payroll'
-                : 'Paie'
-              : isAr
-              ? 'الأداء'
-              : isEn
-              ? 'Score'
-              : 'Performance'}
-          </span>
-          <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-            {isOwnerViewer ? <DollarSign size={15} /> : <TrendingUp size={15} />}
-          </div>
-        </div>
-        <div>
-          {isOwnerViewer ? (
-            <>
-              <div className="text-[28px] leading-none font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
-                {formatMoney(totalMonthlyPayroll)}
-              </div>
-              <p className="text-xs text-black/62 dark:text-white/65 mt-1.5 tabular-nums">
-                {isAr ? 'الدفع: 28' : isEn ? 'Payout: 28th' : 'Virement le 28'}
-              </p>
-            </>
-          ) : (
-            <>
-              <div className="text-2xl font-bold text-black dark:text-white flex items-center gap-1.5">
-                <Lock size={16} className="text-black/62 dark:text-white/65" />
-                <span className="text-base text-black/72 dark:text-white/75 font-normal">
-                  {isAr ? 'مقيد' : isEn ? 'Restricted' : 'Confidentiel'}
-                </span>
-              </div>
-              <p className="text-xs text-black/62 dark:text-white/65 mt-1">
-                {resolvedMetricLabel}
-              </p>
-            </>
-          )}
-        </div>
-      </div>
+      <ScreenKpiBanner
+        heading={resolvedBannerHeading}
+        language={language}
+        primaryCard={{
+          label: isAr ? 'قاعدة الفريق النشطة' : isEn ? 'Active Staff Base' : 'Base active collaborateurs',
+          badgeText: `↗ ${activePct}% ${isAr ? 'نشط' : isEn ? 'active' : 'Actifs'}`,
+          count: activeCount,
+          tone: 'emerald',
+          isActive: statusFilter === 'active',
+          onToggle: onStatusFilterChange
+            ? () => onStatusFilterChange(statusFilter === 'active' ? 'all' : 'active')
+            : undefined,
+          title: isAr ? 'تصفية النشطين' : isEn ? 'Filter active staff' : 'Filtrer les collaborateurs actifs',
+        }}
+        secondaryCard={{
+          label: isAr ? 'حضور اليوم' : isEn ? "Today's Attendance" : 'Pointage du Jour',
+          badgeText: `${isAr ? 'حاضرون' : isEn ? 'present' : 'présents'} · ${presentPercentage}%`,
+          count: todayPresentCount,
+          tone: 'terracotta',
+          isActive: statusFilter === 'on_leave',
+          onToggle: onStatusFilterChange
+            ? () => onStatusFilterChange(statusFilter === 'on_leave' ? 'all' : 'on_leave')
+            : undefined,
+          title: isAr ? 'عرض الإجازات / الحضور' : isEn ? 'Filter staff on leave' : 'Voir congés / pointage',
+        }}
+        darkCard={
+          isOwnerViewer
+            ? {
+                label: isAr ? 'الكتلة الأجرية الشهرية' : isEn ? 'Monthly Payroll Budget' : 'Masse Salariale Mensuelle',
+                badgePrefix: '',
+                badgeCount: totalStaffCount,
+                badgeSuffix: isAr ? 'عضو' : isEn ? 'staff' : 'agents',
+                valuePrefix: '',
+                valueCount: totalMonthlyPayroll,
+                valueSuffix: ' DZD',
+                formatValue: (n) => formatMoney(n),
+                caption: isAr
+                  ? `${onLeaveCount} عطلة · ${frozenCount} موقوف`
+                  : isEn
+                  ? `${onLeaveCount} on leave · ${frozenCount} paused`
+                  : `${onLeaveCount} en congé · ${frozenCount} gelé(s) · Virement le 28`,
+              }
+            : {
+                label: isAr ? 'مؤشر الأداء العام' : isEn ? 'Operational Score' : 'Indice de Performance',
+                badgePrefix: '',
+                badgeCount: totalStaffCount,
+                badgeSuffix: isAr ? 'عضو' : isEn ? 'staff' : 'agents',
+                valuePrefix: '',
+                valueCount: presentPercentage,
+                valueSuffix: '%',
+                caption: resolvedMetricLabel || (isAr ? 'مقيد للإدارة' : isEn ? 'Restricted payroll' : 'Paie restreinte'),
+              }
+        }
+      />
     </div>
   );
-};
+});
+
+StaffHeaderTray.displayName = 'StaffHeaderTray';

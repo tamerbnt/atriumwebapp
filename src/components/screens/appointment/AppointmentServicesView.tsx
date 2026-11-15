@@ -1,78 +1,109 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   Scissors,
-  Sparkles,
   Clock,
   Plus,
-  Building2,
-  ChevronDown,
-  Download,
-  Trash2,
-  Pin,
   Edit2,
-  DollarSign,
-  TrendingUp,
-  Percent,
-  Search,
-  Filter,
-  CheckCircle2,
+  Trash2,
   X,
-  AlertCircle,
-  Calendar,
-  Sparkle,
-  SparkleIcon,
-  Tag,
+  Building2,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  shallowEqualObjects,
+  selectCurrentServicesFromState,
+  selectCurrentBranchFromState,
+} from '../../../services/store';
 import { ServiceItem } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
-import { Seek } from '../../ui/Seek';
-import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { formatMoney } from '../../../utils/rules';
-import { AppointmentModal } from '../../modals/AppointmentModal';
 import { ConfirmDialog } from '../../ui/ConfirmDialog';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import {
+  ScreenHeaderBar,
+  ScreenKpiBanner,
+  ScreenPod,
+  ScreenCollectionToolbar,
+  ActiveFilterChip,
+  KineticFilterModal,
+  KineticFilterSection,
+  KineticSlideOverInspector,
+  buildBranchesByIdMap,
+  resolveRecordBranch,
+  downloadCsvSafe,
+} from '../../ui/kinetic';
 
-export const AppointmentServicesView: React.FC = () => {
+const CATEGORY_LABELS: Record<string, string> = {
+  Hair: 'Coiffure',
+  Color: 'Colorimétrie',
+  Spa: 'Soins & Spa',
+  Nails: 'Onglerie Russe',
+  Facial: 'Soins Visage',
+  Bridal: 'Haute Mariée',
+  Massage: 'Massages & Corps',
+  Barber: 'Barbier',
+};
+
+export const AppointmentServicesView: React.FC = React.memo(() => {
   const {
     servicesCatalog,
-    currentBranch,
     branches,
-    switchBranch,
+    currentBranch,
+    language,
+    isSyncing,
+    networkMode,
+    lastSyncedAt,
+    isSyncTimeout,
+  } = useAtriumSelector(
+    (s) => ({
+      servicesCatalog: selectCurrentServicesFromState(s),
+      branches: s.branches,
+      currentBranch: selectCurrentBranchFromState(s),
+      language: s.language,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+      isSyncTimeout: s.isSyncTimeout || false,
+    }),
+    shallowEqualObjects
+  );
+
+  const {
     addServiceItem,
     updateServiceItem,
     deleteServiceItem,
     batchDeleteServiceItems,
-    resetSalonMockData,
     showToast,
-    isSyncing,
-    networkMode,
     retryCloudSync,
-    lastSyncedAt,
-    isSyncTimeout,
-    language,
-  } = useAtriumStore();
+  } = useAtriumActions();
+
+  const isAr = language === 'ar';
+  const isEn = language === 'en';
 
   const [activeCategory, setActiveCategory] = useState<string>('All');
+  const [tierFilter, setTierFilter] = useState<'All' | 'Hair' | 'Premium'>('All');
+  const [branchFilter, setBranchFilter] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
-  // Selection & Pinning State for UniversalDataCollection
-  const [selectedServiceIds, setSelectedServiceIds] = useState<Set<string>>(new Set());
-  const [pinnedServiceIds, setPinnedServiceIds] = useState<Set<string>>(new Set());
+  const [selectedServiceIds, setSelectedServiceIds] = useState<Set<string>>(() => new Set());
+  const [pinnedServiceIds, setPinnedServiceIds] = useState<Set<string>>(() => new Set());
   const [sortBy, setSortBy] = useState<string>('price');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
-  // Modal State
+  const [inspectingService, setInspectingService] = useState<ServiceItem | null>(null);
+  const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [editingService, setEditingService] = useState<ServiceItem | null>(null);
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [serviceToDelete, setServiceToDelete] = useState<ServiceItem | null>(null);
 
-  // Form State
   const [formName, setFormName] = useState('');
   const [formCategory, setFormCategory] = useState<ServiceItem['category']>('Hair');
   const [formDuration, setFormDuration] = useState(60);
@@ -83,53 +114,91 @@ export const AppointmentServicesView: React.FC = () => {
   const [formColor, setFormColor] = useState('#d4522f');
   const [formDescription, setFormDescription] = useState('');
 
-  // Filtered services list
+  const filterButtonRef = useRef<HTMLButtonElement | null>(null);
+  const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
+
+  const catalogMetrics = useMemo(() => {
+    const list = servicesCatalog;
+    const totalServices = list.length;
+    const hairCount = list.filter((s) => s.category === 'Hair' || s.category === 'Color' || s.category === 'Barber').length;
+    const premiumCount = list.filter((s) => s.price >= 4500 || s.category === 'Bridal' || s.category === 'Spa').length;
+    const avgPrice =
+      totalServices > 0 ? Math.round(list.reduce((acc, s) => acc + s.price, 0) / totalServices) : 0;
+    const avgDuration =
+      totalServices > 0
+        ? Math.round(list.reduce((acc, s) => acc + s.durationMinutes, 0) / totalServices)
+        : 0;
+    const totalValuation = list.reduce((acc, s) => acc + s.price, 0);
+    const totalCost = list.reduce((acc, s) => acc + (s.costPrice || 0), 0);
+    const avgGrossMargin =
+      totalValuation > 0 ? Math.round(((totalValuation - totalCost) / totalValuation) * 100) : 0;
+    const branchCounts = new Map<string, number>();
+    list.forEach((s) => {
+      const bName = resolveRecordBranch(s, branchesById, currentBranch, language).name;
+      branchCounts.set(bName, (branchCounts.get(bName) || 0) + 1);
+    });
+    return {
+      totalServices,
+      hairCount,
+      premiumCount,
+      avgPrice,
+      avgDuration,
+      avgGrossMargin,
+      branchOptionsWithCounts: Array.from(branchCounts.entries()).map(([name, count]) => ({
+        value: name,
+        label: name,
+        count,
+      })),
+    };
+  }, [servicesCatalog, branchesById, currentBranch, language]);
+
   const filteredServices = useMemo(() => {
-    return (servicesCatalog || []).filter((s) => {
-      if (activeCategory !== 'All' && s.category !== activeCategory) {
+    const q = searchQuery.trim().toLowerCase();
+    return servicesCatalog.filter((s) => {
+      if (activeCategory !== 'All' && s.category !== activeCategory) return false;
+      if (tierFilter === 'Hair' && s.category !== 'Hair' && s.category !== 'Color' && s.category !== 'Barber') {
         return false;
       }
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchName = s.name.toLowerCase().includes(q);
-        const matchDesc = (s.description || '').toLowerCase().includes(q);
-        const matchCat = s.category.toLowerCase().includes(q);
-        return matchName || matchDesc || matchCat;
+      if (tierFilter === 'Premium' && s.price < 4500 && s.category !== 'Bridal' && s.category !== 'Spa') {
+        return false;
+      }
+      if (branchFilter !== 'All') {
+        const bName = resolveRecordBranch(s, branchesById, currentBranch, language).name;
+        if (bName !== branchFilter) return false;
+      }
+      if (q) {
+        const bName = resolveRecordBranch(s, branchesById, currentBranch, language).name.toLowerCase();
+        return (
+          s.name.toLowerCase().includes(q) ||
+          (s.description || '').toLowerCase().includes(q) ||
+          s.category.toLowerCase().includes(q) ||
+          bName.includes(q)
+        );
       }
       return true;
     });
-  }, [servicesCatalog, activeCategory, searchQuery]);
+  }, [servicesCatalog, activeCategory, tierFilter, branchFilter, searchQuery, branchesById, currentBranch, language]);
 
-  // Category counts
-  const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { All: (servicesCatalog || []).length };
-    (servicesCatalog || []).forEach((s) => {
-      counts[s.category] = (counts[s.category] || 0) + 1;
+  const sortedServices = useMemo(() => {
+    const sign = sortDir === 'asc' ? 1 : -1;
+    return [...filteredServices].sort((a, b) => {
+      const aPinned = pinnedServiceIds.has(a.id) ? 0 : 1;
+      const bPinned = pinnedServiceIds.has(b.id) ? 0 : 1;
+      if (aPinned !== bPinned) return aPinned - bPinned;
+      if (sortBy === 'name') return a.name.localeCompare(b.name) * sign;
+      if (sortBy === 'category') return a.category.localeCompare(b.category) * sign;
+      if (sortBy === 'durationMinutes') return (a.durationMinutes - b.durationMinutes) * sign;
+      if (sortBy === 'commissionRate') return ((a.commissionRate || 40) - (b.commissionRate || 40)) * sign;
+      if (sortBy === 'branch') {
+        const ba = resolveRecordBranch(a, branchesById, currentBranch, language).name;
+        const bb = resolveRecordBranch(b, branchesById, currentBranch, language).name;
+        return ba.localeCompare(bb) * sign;
+      }
+      return (a.price - b.price) * sign;
     });
-    return counts;
-  }, [servicesCatalog]);
+  }, [filteredServices, pinnedServiceIds, sortBy, sortDir, branchesById, currentBranch, language]);
 
-  // Top Metrics
-  const catalogMetrics = useMemo(() => {
-    const list = servicesCatalog || [];
-    const totalServices = list.length;
-    const avgPrice = totalServices > 0 ? Math.round(list.reduce((acc, s) => acc + s.price, 0) / totalServices) : 0;
-    const avgDuration = totalServices > 0 ? Math.round(list.reduce((acc, s) => acc + s.durationMinutes, 0) / totalServices) : 0;
-    const avgCommission = totalServices > 0 ? Math.round(list.reduce((acc, s) => acc + (s.commissionRate || 40), 0) / totalServices) : 40;
-    const totalValuation = list.reduce((acc, s) => acc + s.price, 0);
-    const totalCost = list.reduce((acc, s) => acc + (s.costPrice || 0), 0);
-    const avgGrossMargin = totalValuation > 0 ? Math.round(((totalValuation - totalCost) / totalValuation) * 100) : 0;
-
-    return {
-      totalServices,
-      avgPrice,
-      avgDuration,
-      avgCommission,
-      avgGrossMargin,
-    };
-  }, [servicesCatalog]);
-
-  const handleOpenCreateModal = () => {
+  const handleOpenCreateModal = useCallback(() => {
     setEditingService(null);
     setFormName('');
     setFormCategory('Hair');
@@ -141,9 +210,9 @@ export const AppointmentServicesView: React.FC = () => {
     setFormColor('#d4522f');
     setFormDescription('');
     setIsServiceModalOpen(true);
-  };
+  }, []);
 
-  const handleOpenEditModal = (service: ServiceItem) => {
+  const handleOpenEditModal = useCallback((service: ServiceItem) => {
     setEditingService(service);
     setFormName(service.name);
     setFormCategory(service.category);
@@ -155,244 +224,232 @@ export const AppointmentServicesView: React.FC = () => {
     setFormColor(service.color || '#d4522f');
     setFormDescription(service.description || '');
     setIsServiceModalOpen(true);
-  };
+  }, []);
 
-  const handleSaveService = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formName.trim()) {
-      showToast({
-        type: 'error',
-        title: 'Nom requis',
-        message: 'Veuillez saisir le nom de la prestation.',
-        category: 'appointment_service',
-      });
-      return;
-    }
+  const handleSaveService = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!formName.trim()) {
+        showToast?.({ type: 'error', title: 'Nom requis', message: 'Saisissez le nom du soin.' });
+        return;
+      }
+      if (editingService) {
+        updateServiceItem(editingService.id, {
+          name: formName.trim(),
+          category: formCategory,
+          durationMinutes: Number(formDuration),
+          price: Number(formPrice),
+          costPrice: Number(formCostPrice),
+          commissionRate: Number(formCommission),
+          bufferMinutes: Number(formBuffer),
+          color: formColor,
+          description: formDescription.trim(),
+        });
+        showToast?.({ type: 'success', title: 'Prestation mise à jour', message: formName });
+      } else {
+        addServiceItem({
+          tenantId: 'acc_01',
+          name: formName.trim(),
+          category: formCategory,
+          durationMinutes: Number(formDuration),
+          price: Number(formPrice),
+          costPrice: Number(formCostPrice),
+          commissionRate: Number(formCommission),
+          bufferMinutes: Number(formBuffer),
+          color: formColor,
+          colorCode: formColor,
+          description: formDescription.trim(),
+          isActive: true,
+        });
+        showToast?.({ type: 'success', title: 'Prestation ajoutée', message: formName });
+      }
+      setIsServiceModalOpen(false);
+    },
+    [
+      formName,
+      editingService,
+      formCategory,
+      formDuration,
+      formPrice,
+      formCostPrice,
+      formCommission,
+      formBuffer,
+      formColor,
+      formDescription,
+      updateServiceItem,
+      addServiceItem,
+      showToast,
+    ]
+  );
 
-    if (editingService) {
-      updateServiceItem(editingService.id, {
-        name: formName.trim(),
-        category: formCategory,
-        durationMinutes: Number(formDuration),
-        price: Number(formPrice),
-        costPrice: Number(formCostPrice),
-        commissionRate: Number(formCommission),
-        bufferMinutes: Number(formBuffer),
-        color: formColor,
-        description: formDescription.trim(),
-      });
-      showToast({
-        type: 'success',
-        title: 'Prestation mise à jour',
-        message: `${formName} a été mise à jour avec succès.`,
-        category: 'appointment_service',
-      });
-    } else {
-      addServiceItem({
-        tenantId: 'acc_01',
-        name: formName.trim(),
-        category: formCategory,
-        durationMinutes: Number(formDuration),
-        price: Number(formPrice),
-        costPrice: Number(formCostPrice),
-        commissionRate: Number(formCommission),
-        bufferMinutes: Number(formBuffer),
-        color: formColor,
-        colorCode: formColor,
-        description: formDescription.trim(),
-        isActive: true,
-      });
-      showToast({
-        type: 'success',
-        title: 'Prestation ajoutée',
-        message: `${formName} a été enregistrée au catalogue.`,
-        category: 'appointment_service',
-      });
-    }
-    setIsServiceModalOpen(false);
-  };
-
-  const handleBatchDelete = () => {
+  const handleBatchDelete = useCallback(() => {
     const count = selectedServiceIds.size;
     batchDeleteServiceItems(Array.from(selectedServiceIds));
     setSelectedServiceIds(new Set());
-    showToast({
-      type: 'info',
-      title: 'Suppression en masse',
-      message: `${count} prestations supprimées.`,
-      category: 'appointment_service',
-    });
-  };
+    showToast?.({ type: 'info', title: 'Suppression en masse', message: `${count} prestations supprimées.` });
+  }, [selectedServiceIds, batchDeleteServiceItems, showToast]);
 
-  const handleExportCSV = () => {
+  const handleExportCSV = useCallback(() => {
     const headers = [
       'Prestation',
       'Catégorie',
       'Durée (min)',
       'Tarif Client (DZD)',
-      'Coût Consommables (DZD)',
-      'Commission Styliste (%)',
-      'Description',
+      'Commission (%)',
+      isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
     ];
+    const rows = sortedServices.map((s) => [
+      s.name,
+      s.category,
+      s.durationMinutes,
+      s.price,
+      s.commissionRate || 40,
+      resolveRecordBranch(s, branchesById, currentBranch, language).name,
+    ]);
+    downloadCsvSafe(`atrium-salon-services-${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
+  }, [sortedServices, isAr, isEn, branchesById, currentBranch, language]);
 
-    const rows = filteredServices.map((s) => {
-      const cost = s.costPrice || 0;
-      return [
-        `"${s.name}"`,
-        `"${s.category}"`,
-        s.durationMinutes,
-        s.price,
-        cost,
-        s.commissionRate || 40,
-        `"${s.description || ''}"`,
-      ].join(',');
-    });
+  const handleResetFilters = useCallback(() => {
+    setActiveCategory('All');
+    setTierFilter('All');
+    setBranchFilter('All');
+    setSearchQuery('');
+    setIsFilterModalOpen(false);
+  }, []);
 
-    const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `Catalogue_Prestations_${currentBranch?.name || 'Salon'}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const hasActiveAdvancedFilters = activeCategory !== 'All' || branchFilter !== 'All';
+  const activeFiltersCount = (activeCategory !== 'All' ? 1 : 0) + (branchFilter !== 'All' ? 1 : 0);
 
-  // Columns for UniversalDataCollection
-  const columns: ColumnDefinition<ServiceItem>[] = [
-    {
-      key: 'name',
-      header: 'Prestation / Soin',
-      width: '2.5*',
-      minWidth: '220px',
-      sortable: true,
-      renderCell: (service) => (
-        <div className="flex items-center gap-2.5">
-          <div
-            className="w-3.5 h-3.5 rounded-full shrink-0 shadow-2xs"
-            style={{ backgroundColor: service.color || '#d4522f' }}
-          />
-          <div className="min-w-0">
-            <span className="font-bold text-xs text-black dark:text-white block truncate">
-              {service.name}
-            </span>
-            {service.description && (
-              <span className="text-[10px] text-black/55 dark:text-white/55 block truncate max-w-[220px]">
-                {service.description}
-              </span>
-            )}
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'category',
-      header: 'Catégorie',
-      width: '1.4*',
-      minWidth: '120px',
-      sortable: true,
-      renderCell: (service) => {
-        const catMap: Record<string, string> = {
-          Hair: 'Coiffure',
-          Color: 'Colorimétrie',
-          Spa: 'Soins & Spa',
-          Nails: 'Onglerie Russe',
-          Facial: 'Soins Visage',
-          Bridal: 'Haute Mariée',
-          Massage: 'Massages & Corps',
-          Barber: 'Barbier',
-        };
-        return (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white">
-            {catMap[service.category] || service.category}
-          </span>
-        );
+  const statusOptions = useMemo(
+    () => [
+      { value: 'All', label: isAr ? 'الكل' : isEn ? 'All' : 'Toutes', count: servicesCatalog.length },
+      { value: 'Hair', label: isAr ? 'الشعر' : isEn ? 'Hair' : 'Coiffure', count: catalogMetrics.hairCount },
+      { value: 'Premium', label: isAr ? 'متميزة' : isEn ? 'Signature' : 'Signature', count: catalogMetrics.premiumCount },
+    ],
+    [isAr, isEn, servicesCatalog.length, catalogMetrics.hairCount, catalogMetrics.premiumCount]
+  );
+
+  const filterSections = useMemo<KineticFilterSection[]>(
+    () => [
+      {
+        id: 'branch',
+        label: isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
+        value: branchFilter,
+        onChange: setBranchFilter,
+        kind: 'tiles',
+        columns: 2,
+        options: [
+          {
+            value: 'All',
+            label: isAr ? 'كل الفروع' : isEn ? 'All Branches' : 'Toutes les branches',
+            count: servicesCatalog.length,
+          },
+          ...catalogMetrics.branchOptionsWithCounts,
+        ],
       },
-    },
-    {
-      key: 'durationMinutes',
-      header: 'Durée & Tampon',
-      width: '1.4*',
-      minWidth: '120px',
-      sortable: true,
-      renderCell: (service) => (
-        <div className="flex items-center gap-1.5 text-xs text-black dark:text-white">
-          <Clock className="w-3.5 h-3.5 text-black/55 dark:text-white/55" />
-          <span className="font-semibold tabular-nums">{service.durationMinutes} min</span>
-          {service.bufferMinutes ? (
-            <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
-              (+{service.bufferMinutes}m)
-            </span>
-          ) : null}
-        </div>
-      ),
-    },
-    {
-      key: 'costPrice',
-      header: 'Coût Produits',
-      width: '1.2*',
-      minWidth: '100px',
-      sortable: true,
-      renderCell: (service) => (
-        <span className="text-xs text-black/70 dark:text-white/75 font-mono tabular-nums">
-          {formatMoney(service.costPrice || 0)}
-        </span>
-      ),
-    },
-    {
-      key: 'commissionRate',
-      header: 'Comm. Styliste',
-      width: '1.2*',
-      minWidth: '110px',
-      sortable: true,
-      renderCell: (service) => (
-        <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
-          {service.commissionRate || 40}%
-        </span>
-      ),
-    },
-    {
-      key: 'price',
-      header: 'Tarif Client',
-      width: '1.4*',
-      minWidth: '120px',
-      sortable: true,
-      renderCell: (service) => (
-        <span className="text-xs font-bold text-black dark:text-white font-mono tabular-nums">
-          {formatMoney(service.price)}
-        </span>
-      ),
-    },
-    {
-      key: 'actions',
-      header: '',
-      width: '1*',
-      minWidth: '70px',
-      renderCell: (service) => (
-        <div className="flex items-center justify-end gap-1.5">
-          <button
-            type="button"
-            onClick={() => handleOpenEditModal(service)}
-            className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors cursor-pointer"
-            title="Modifier le tarif"
-          >
-            <Edit2 className="w-3.5 h-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setServiceToDelete(service)}
-            className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
-            title="Supprimer du catalogue"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      ),
-    },
-  ];
+      {
+        id: 'category',
+        label: isAr ? 'الفئة' : isEn ? 'Category' : 'Catégorie',
+        value: activeCategory,
+        onChange: setActiveCategory,
+        kind: 'tiles',
+        columns: 2,
+        options: [
+          { value: 'All', label: isAr ? 'الكل' : 'Toutes' },
+          { value: 'Hair', label: 'Coiffure' },
+          { value: 'Nails', label: 'Onglerie' },
+          { value: 'Facial', label: 'Visage' },
+          { value: 'Bridal', label: 'Mariée' },
+          { value: 'Massage', label: 'Spa & Corps' },
+          { value: 'Barber', label: 'Barbier' },
+        ],
+      },
+    ],
+    [isAr, isEn, branchFilter, servicesCatalog.length, catalogMetrics.branchOptionsWithCounts, activeCategory]
+  );
 
-  const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
+  const activeChips = useMemo<ActiveFilterChip[]>(() => {
+    const chips: ActiveFilterChip[] = [];
+    if (branchFilter !== 'All') chips.push({ key: 'branch', label: branchFilter, onRemove: () => setBranchFilter('All') });
+    if (activeCategory !== 'All') {
+      chips.push({
+        key: 'cat',
+        label: CATEGORY_LABELS[activeCategory] || activeCategory,
+        onRemove: () => setActiveCategory('All'),
+      });
+    }
+    return chips;
+  }, [branchFilter, activeCategory]);
+
+  const columns: ColumnDefinition<ServiceItem>[] = useMemo(
+    () => [
+      {
+        key: 'name',
+        header: isAr ? 'الخدمة والعناية' : isEn ? 'Service' : 'Prestation / Soin',
+        sortable: true,
+        renderCell: (service) => (
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div
+              className="w-3 h-3 rounded-full shrink-0"
+              style={{ backgroundColor: service.color || '#d4522f' }}
+            />
+            <div className="min-w-0">
+              <span className="text-[13.5px] font-semibold text-black dark:text-white truncate block">
+                {service.name}
+              </span>
+              <span className="text-[11px] text-black/62 dark:text-white/65 truncate block">
+                {CATEGORY_LABELS[service.category] || service.category}
+              </span>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'durationMinutes',
+        header: isAr ? 'المدة والعمولة' : isEn ? 'Duration & Comm.' : 'Durée & Comm.',
+        sortable: true,
+        renderCell: (service) => (
+          <div className="text-[12.5px] tabular-nums">
+            <span className="font-semibold text-black dark:text-white block">
+              {service.durationMinutes} min
+              {service.bufferMinutes ? ` (+${service.bufferMinutes}m)` : ''}
+            </span>
+            <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 block">
+              {service.commissionRate || 40}% commission
+            </span>
+          </div>
+        ),
+      },
+      {
+        key: 'price',
+        header: isAr ? 'التعريفة' : isEn ? 'Client Price' : 'Tarif Client',
+        sortable: true,
+        renderCell: (service) => (
+          <div className="tabular-nums">
+            <span className="text-[13px] font-bold font-mono text-[#d4522f] block">
+              {formatMoney(service.price)}
+            </span>
+            <span className="text-[11px] text-black/62 dark:text-white/65 font-mono block">
+              Coût: {formatMoney(service.costPrice || 0)}
+            </span>
+          </div>
+        ),
+      },
+      {
+        key: 'branch',
+        header: isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
+        sortable: true,
+        renderCell: (service) => (
+          <span className="text-[12.5px] font-medium text-black/80 dark:text-white/85 truncate block">
+            {resolveRecordBranch(service, branchesById, currentBranch, language).name}
+          </span>
+        ),
+      },
+    ],
+    [isAr, isEn, branchesById, currentBranch, language]
+  );
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: servicesCatalog.length > 0,
   });
@@ -402,327 +459,245 @@ export const AppointmentServicesView: React.FC = () => {
       <SkeletonCollectionScreen
         kpiCount={3}
         columns={[
-          { width: '2.5*', minWidth: '220px' },
+          { width: '2.5*', minWidth: '200px' },
+          { width: '1.5*', minWidth: '130px' },
           { width: '1.4*', minWidth: '120px' },
-          { width: '1.4*', minWidth: '120px' },
-          { width: '1.4*', minWidth: '130px' },
-          { width: '1.4*', minWidth: '110px' },
-          { width: '1*', minWidth: '70px' },
+          { width: '1.2*', minWidth: '110px' },
         ]}
-        hasIcon
-        hasFacility
-        hasActionBtn
-        actionBtnWidth={140}
+        viewMode={viewMode}
         isOffline={isOffline}
         isTimedOut={isTimedOut}
-        onRetry={retryCloudSync}
+        onRetry={retryCloudSync || retry}
       />
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-              <Scissors className="text-[#d4522f]" size={32} />
-              <span>{language === 'ar' ? 'الخدمات' : language === 'fr' ? 'Soins' : 'Services'}</span>
-            </h1>
-            <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-800 rtl:normal-case">
-              {servicesCatalog.length} Prestations
-            </span>
-          </div>
-        </div>
+    <div className="w-full space-y-6 animate-in fade-in duration-200 relative">
+      <ScreenHeaderBar
+        icon={<Scissors size={22} />}
+        title={isAr ? 'الخدمات' : isEn ? 'Services' : 'Soins'}
+        primaryAction={{
+          label: isAr ? 'خدمة جديدة' : isEn ? 'New Service' : 'Nouvelle Prestation',
+          icon: <Plus size={15} strokeWidth={2.5} />,
+          onClick: handleOpenCreateModal,
+        }}
+      />
 
-        <div className="flex items-center gap-2.5 flex-wrap">
+      <ScreenKpiBanner
+        heading={isAr ? 'مؤشرات التسعير والربحية' : isEn ? 'Service Catalog & Pricing' : 'Rentabilité & Grille Tarifaire'}
+        language={language}
+        primaryCard={{
+          label: isAr ? 'خدمات تصفيف الشعر' : isEn ? 'Hair & Styling' : 'Coiffure & Coupe',
+          badgeText: `↗ ${catalogMetrics.avgDuration} min moy.`,
+          count: catalogMetrics.hairCount,
+          tone: 'emerald',
+          isActive: tierFilter === 'Hair',
+          onToggle: () => setTierFilter((p) => (p === 'Hair' ? 'All' : 'Hair')),
+        }}
+        secondaryCard={{
+          label: isAr ? 'عناية فاخرة وسبا' : isEn ? 'Signature & Spa' : 'Soins Signature & Spa',
+          badgeText: `${catalogMetrics.totalServices} total`,
+          count: catalogMetrics.premiumCount,
+          tone: 'terracotta',
+          isActive: tierFilter === 'Premium',
+          onToggle: () => setTierFilter((p) => (p === 'Premium' ? 'All' : 'Premium')),
+        }}
+        darkCard={{
+          label: isAr ? 'متوسط التعريفة' : isEn ? 'Average Service Tariff' : 'Tarif Moyen au Barème',
+          badgePrefix: '~',
+          badgeCount: catalogMetrics.avgGrossMargin,
+          badgeSuffix: '% marge',
+          valuePrefix: '',
+          valueCount: catalogMetrics.avgPrice,
+          formatValue: (n) => formatMoney(n),
+          caption: `${currentBranch?.name || 'Salon Principal'} · ${isAr ? 'التسعيرة الرسمية' : 'Grille Certifiée'}`,
+        }}
+      />
 
-          <AtriumButton
-            variant="secondary"
-            size="sm"
-            icon={<Download className="w-3.5 h-3.5" />}
-            onClick={handleExportCSV}
-          >
-            Export CSV
-          </AtriumButton>
+      <ScreenPod>
+        <ScreenCollectionToolbar
+          title={isAr ? 'كتالوج الخدمات والأسعار' : isEn ? 'Services Catalog' : 'Prestations & Forfaits'}
+          liveRegionText={`${sortedServices.length} prestations`}
+          language={language}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder={
+            isAr ? 'بحث عن خدمة أو فرع...' : isEn ? 'Search service, category, branch...' : 'Rechercher soin, catégorie, branche...'
+          }
+          statusOptions={statusOptions}
+          statusValue={tierFilter}
+          onStatusChange={(v) => setTierFilter(v as any)}
+          hasActiveAdvancedFilters={hasActiveAdvancedFilters}
+          activeFiltersCount={activeFiltersCount}
+          isFilterModalOpen={isFilterModalOpen}
+          filterButtonRef={filterButtonRef}
+          onToggleFilterModal={() => setIsFilterModalOpen((p) => !p)}
+          viewMode={viewMode}
+          onViewModeChange={(m) => setViewMode(m === 'grid' ? 'grid' : 'list')}
+          onExport={handleExportCSV}
+          activeChips={activeChips}
+          onResetAllFilters={handleResetFilters}
+        />
 
-          <AtriumButton
-            variant="primary"
-            size="sm"
-            icon={<Plus className="w-3.5 h-3.5" />}
-            onClick={handleOpenCreateModal}
-          >
-            Nouvelle Prestation
-          </AtriumButton>
-        </div>
-      </div>
+        <UniversalDataCollection<ServiceItem>
+          data={sortedServices}
+          columns={columns}
+          keyExtractor={(s) => s.id}
+          viewMode={viewMode}
+          hideToolbar
+          openItemId={inspectingService?.id ?? null}
+          isLoading={isSyncing || networkMode === 'force_skeleton'}
+          isOffline={networkMode === 'offline'}
+          isTimedOut={isSyncTimeout}
+          lastSyncedAt={lastSyncedAt}
+          onRetrySync={retryCloudSync}
+          sortBy={sortBy}
+          sortDirection={sortDir}
+          onSortChange={(key, dir) => {
+            setSortBy(key);
+            setSortDir(dir);
+          }}
+          selectedIds={selectedServiceIds}
+          onSelectionChange={setSelectedServiceIds}
+          pinnedIds={pinnedServiceIds}
+          onPinToggle={(s: any) => {
+            const id = typeof s === 'string' ? s : s.id;
+            setPinnedServiceIds((prev) => {
+              const next = new Set(prev);
+              if (next.has(id)) next.delete(id);
+              else next.add(id);
+              return next;
+            });
+          }}
+          onItemClick={(service, opener) => {
+            setDrawerOpenerEl(opener || null);
+            setInspectingService(service);
+          }}
+          onViewDetails={(service, opener) => {
+            setDrawerOpenerEl(opener || null);
+            setInspectingService(service);
+          }}
+          onEdit={(service) => handleOpenEditModal(service)}
+          onDelete={(service) => setServiceToDelete(service)}
+          onBulkDelete={handleBatchDelete}
+          emptyTitle={isAr ? 'لا توجد خدمات' : 'Aucune prestation trouvée'}
+          emptyDescription={isAr ? 'أضف خدمات جديدة للكتالوج' : 'Ajoutez de nouvelles prestations au catalogue.'}
+          primaryActionLabel="Nouvelle Prestation"
+          onAddFirstItem={handleOpenCreateModal}
+          onResetFilters={handleResetFilters}
+          hasActiveFilters={hasActiveAdvancedFilters || tierFilter !== 'All' || searchQuery.trim().length > 0}
+        />
+      </ScreenPod>
 
-      {/* TOP METRICS POD TRAY */}
-      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
-          <div className="flex items-center gap-2">
-            <Tag size={18} className="text-[#d4522f]" />
-            <h2 className="text-xs font-black uppercase tracking-wider text-black dark:text-white rtl:normal-case rtl:tracking-normal">
-              Indicateurs Clés de Rentabilité & Tarification
-            </h2>
-          </div>
-          <span className="text-xs text-black/55 dark:text-white/55 font-medium">
-            {currentBranch?.name || 'Salon Principal'} · Grille Officielle
-          </span>
-        </div>
+      <KineticFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        triggerRef={filterButtonRef}
+        language={language}
+        displayCount={sortedServices.length}
+        entityPluralLabel={isAr ? 'خدمات' : 'prestations'}
+        hasActiveFilters={hasActiveAdvancedFilters}
+        onResetFilters={handleResetFilters}
+        sections={filterSections}
+      />
 
-        {/* 3-Card Canonical Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Card 1: Total Prestations & Durée */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-            <div>
-              <div className="flex items-center justify-between text-black/70 dark:text-white/70">
-                <span className="text-xs font-semibold text-black/70 dark:text-white/70">
-                  Total Prestations
-                </span>
-                <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full">
-                  {catalogMetrics.avgDuration} min moy.
+      <KineticSlideOverInspector<ServiceItem>
+        isOpen={inspectingService !== null}
+        item={inspectingService}
+        allItems={sortedServices}
+        keyExtractor={(s) => s.id}
+        openerElement={drawerOpenerEl}
+        language={language}
+        title={inspectingService?.name || ''}
+        subtitle={inspectingService ? `${CATEGORY_LABELS[inspectingService.category] || inspectingService.category} · ${inspectingService.durationMinutes} min` : undefined}
+        avatarText={inspectingService ? inspectingService.name.charAt(0).toUpperCase() : undefined}
+        branchName={
+          inspectingService
+            ? resolveRecordBranch(inspectingService, branchesById, currentBranch, language).name
+            : undefined
+        }
+        statusLabel={`${inspectingService?.commissionRate || 40}% comm.`}
+        statusClassName="bg-emerald-50 text-emerald-700 border border-emerald-200"
+        onClose={() => setInspectingService(null)}
+        onSelectItem={(s) => setInspectingService(s)}
+        onEdit={(s) => {
+          setInspectingService(null);
+          handleOpenEditModal(s);
+        }}
+        holdToDelete={{
+          label: isAr ? 'حذف' : 'Supprimer',
+          onDelete: (s) => {
+            deleteServiceItem(s.id);
+            setInspectingService(null);
+          },
+        }}
+        renderBody={(service) => (
+          <div className="space-y-4 text-xs">
+            <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex justify-between items-center">
+              <div>
+                <span className="text-[11px] font-semibold uppercase text-[#d4522f] block">Tarif Client</span>
+                <span className="text-2xl font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums text-black dark:text-white">
+                  {formatMoney(service.price)}
                 </span>
               </div>
-            </div>
-            <div className="text-2xl font-black tabular-nums text-black dark:text-white tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-              {catalogMetrics.totalServices} <span className="text-xs font-normal text-black/55 dark:text-white/55">soins au barème</span>
-            </div>
-          </div>
-
-          {/* Card 2: Average Service Price & Commission */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-            <div>
-              <div className="flex items-center justify-between text-black/70 dark:text-white/70">
-                <span className="text-xs font-semibold text-black/70 dark:text-white/70">
-                  Tarif Moyen Soin
-                </span>
-                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                  {catalogMetrics.avgCommission}% comm.
-                </span>
-              </div>
-            </div>
-            <div className="text-2xl font-black tabular-nums text-black dark:text-white tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-              {formatMoney(catalogMetrics.avgPrice)}
-            </div>
-          </div>
-
-          {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
-          <div className="bg-[#1F1D1B] rounded-[20px] p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between h-[124px] relative overflow-hidden group">
-            {/* Glowing Sparkline Graphic */}
-            <div className="absolute -right-4 -bottom-6 opacity-20 group-hover:opacity-30 transition-opacity pointer-events-none">
-              <svg width="140" height="90" viewBox="0 0 140 90" fill="none">
-                <path
-                  d="M10 65 L35 50 L60 55 L85 25 L110 30 L135 12"
-                  stroke="#FB923C"
-                  strokeWidth="3.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <circle cx="135" cy="12" r="4" fill="#FB923C" />
-              </svg>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-white/75">
-                  Rentabilité & Valorisation
-                </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
-                  Marge Nette ~{catalogMetrics.avgGrossMargin}%
-                </span>
-              </div>
-              <div className="text-2xl font-black tabular-nums tracking-tight text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                ~{catalogMetrics.avgGrossMargin}% <span className="text-xs font-normal text-white/75">marge brute</span>
-              </div>
-            </div>
-
-            <div className="pt-1.5 border-t border-neutral-800/80 flex items-center justify-between text-[10px] text-white/75">
-              <span>Positionnement salon haute coiffure</span>
-              <span className="text-[#FB923C] font-semibold">Grille certifiée</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* BOTTOM COLLECTION POD TRAY */}
-      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-        {/* Integrated Toolbar: Left Anchor + Controls Bar */}
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-          {/* Left Title / Icon / Count Anchor */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
-              <Scissors size={18} />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-black dark:text-white">
-                Prestations & Forfaits
+              <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] font-semibold">
+                {service.durationMinutes} min
               </span>
             </div>
-          </div>
-
-          {/* Controls Bar: Category Filter Pills + Seek */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-            {/* Category Tabs */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-              {[
-                { id: 'All', label: 'Toutes', count: categoryCounts.All || 0 },
-                { id: 'Hair', label: 'Coiffure', count: categoryCounts.Hair || 0 },
-                { id: 'Nails', label: 'Onglerie Russe', count: categoryCounts.Nails || 0 },
-                { id: 'Facial', label: 'Soins Visage', count: categoryCounts.Facial || 0 },
-                { id: 'Bridal', label: 'Haute Mariée', count: categoryCounts.Bridal || 0 },
-                { id: 'Massage', label: 'Massages & Corps', count: categoryCounts.Massage || 0 },
-                { id: 'Barber', label: 'Barbier', count: categoryCounts.Barber || 0 },
-              ].map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setActiveCategory(cat.id)}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-xl whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer ${
-                    activeCategory === cat.id
-                      ? 'bg-[#d4522f] text-white shadow-xs'
-                      : 'bg-white dark:bg-neutral-800 text-black/70 dark:text-white/70 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-[#E6DED6] dark:border-neutral-700/60'
-                  }`}
-                >
-                  <span>{cat.label}</span>
-                  <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                      activeCategory === cat.id ? 'bg-white/20 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75'
-                    }`}
-                  >
-                    {cat.count}
-                  </span>
-                </button>
-              ))}
+            <div className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-2.5">
+              <div className="flex justify-between">
+                <span className="text-black/62 dark:text-white/65">Coût consommables:</span>
+                <span className="font-mono font-semibold">{formatMoney(service.costPrice || 0)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-black/62 dark:text-white/65">Temps tampon:</span>
+                <span className="font-mono font-semibold">{service.bufferMinutes || 0} min</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-black/62 dark:text-white/65">Branche:</span>
+                <span className="font-semibold flex items-center gap-1">
+                  <Building2 size={12} className="text-[#d4522f]" />
+                  {resolveRecordBranch(service, branchesById, currentBranch, language).name}
+                </span>
+              </div>
+              {service.description && (
+                <p className="pt-2 border-t border-[#E6DED6] dark:border-[#3A3734] text-black/75 dark:text-white/80">
+                  {service.description}
+                </p>
+              )}
             </div>
-
-            {/* Search */}
-            <div className="w-full sm:w-64">
-              <Seek
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Rechercher une prestation..."
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Batch Actions Toolbar */}
-        {selectedServiceIds.size > 0 && (
-          <div className="p-3 bg-neutral-900 text-white rounded-xl flex items-center justify-between gap-4 shadow-xl">
-            <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-[#d4522f] text-white text-xs font-bold flex items-center justify-center">
-                {selectedServiceIds.size}
-              </span>
-              <span className="text-xs font-medium">prestations sélectionnées</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleBatchDelete}
-                className="h-8 px-3 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
-              >
-                <Trash2 size={13} />
-                <span>Supprimer</span>
-              </button>
-            </div>
+            <AtriumButton
+              type="button"
+              variant="primary"
+              icon={<Edit2 size={14} />}
+              className="w-full justify-center"
+              onClick={() => {
+                setInspectingService(null);
+                handleOpenEditModal(service);
+              }}
+            >
+              Modifier le Tarif / Protocole
+            </AtriumButton>
           </div>
         )}
+      />
 
-        {/* Collection Floating on Pod Tray */}
-        <div className="w-full">
-          <UniversalDataCollection<ServiceItem>
-            items={filteredServices}
-            keyExtractor={(s) => s.id}
-            defaultViewMode="list"
-            columns={columns}
-            isLoading={isSyncing || networkMode === 'force_skeleton'}
-            isOffline={networkMode === 'offline'}
-            isTimedOut={isSyncTimeout}
-            lastSyncedAt={lastSyncedAt}
-            onRetrySync={retryCloudSync}
-            sortBy={sortBy}
-            sortDirection={sortDir}
-            onSortChange={(key) => {
-              if (sortBy === key) {
-                setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-              } else {
-                setSortBy(key);
-                setSortDir('asc');
-              }
-            }}
-            renderCard={(service) => (
-              <div className="flex flex-col justify-between h-full space-y-3">
-                <div>
-                  <div className="flex items-start justify-between gap-2 mb-1">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-3 h-3 rounded-full shrink-0 shadow-2xs"
-                        style={{ backgroundColor: service.color || '#d4522f' }}
-                      />
-                      <span className="font-bold text-xs text-black dark:text-white truncate">
-                        {service.name}
-                      </span>
-                    </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white">
-                      {service.category}
-                    </span>
-                  </div>
-                  {service.description && (
-                    <p className="text-[11px] text-black/55 dark:text-white/55 line-clamp-2 mt-1">
-                      {service.description}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-700/60">
-                  <div className="flex items-center gap-1 text-[11px] text-black/70 dark:text-white/75">
-                    <Clock size={12} className="text-black/55 dark:text-white/55" />
-                    <span>{service.durationMinutes} min</span>
-                  </div>
-                  <span className="font-mono font-bold text-sm text-[#d4522f] tabular-nums">
-                    {formatMoney(service.price)}
-                  </span>
-                </div>
-              </div>
-            )}
-            selectedIds={selectedServiceIds}
-            onSelectionChange={setSelectedServiceIds}
-            isPinned={(s) => pinnedServiceIds.has(s.id)}
-            onTogglePin={(s) => {
-              setPinnedServiceIds((prev) => {
-                const next = new Set(prev);
-                if (next.has(s.id)) next.delete(s.id);
-                else next.add(s.id);
-                return next;
-              });
-            }}
-            emptyTitle="Aucune prestation trouvée"
-            emptyDescription="Ajoutez de nouvelles prestations au catalogue pour vos rendez-vous."
-            primaryActionLabel="Nouvelle Prestation"
-            onAddFirstItem={handleOpenCreateModal}
-          />
-        </div>
-      </div>
-
-      {/* CREATE / EDIT SERVICE MODAL */}
       {isServiceModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+        <div className="fixed inset-0 bg-[#1F1D1B]/45 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-[#1C1B1A] rounded-[24px] max-w-lg w-full p-6 shadow-2xl border border-[#E6DED6] dark:border-[#3A3734] space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-[#3A3734]">
               <h3 className="text-base font-bold text-black dark:text-white">
-                {editingService ? 'Modifier la Prestation' : 'Nouvelle Prestation de Luxe'}
+                {editingService ? 'Modifier la Prestation' : 'Nouvelle Prestation'}
               </h3>
               <button
                 type="button"
                 onClick={() => setIsServiceModalOpen(false)}
-                className="text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
+                className="text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
-
             <form onSubmit={handleSaveService} className="space-y-4">
               <LabelInput
                 field="Name"
@@ -735,13 +710,14 @@ export const AppointmentServicesView: React.FC = () => {
                 height={42}
                 corner={10}
               />
-
               <div className="grid grid-cols-2 gap-3">
                 <LabelSelect
                   field="Category"
                   label="Catégorie"
                   value={formCategory}
-                  onChange={(val) => setFormCategory(typeof val === 'string' ? (val as any) : (val.target?.value || val))}
+                  onChange={(val) =>
+                    setFormCategory(typeof val === 'string' ? (val as any) : val.target?.value || val)
+                  }
                   options={[
                     { value: 'Hair', label: 'Coiffure & Lissage' },
                     { value: 'Nails', label: 'Onglerie Russe' },
@@ -753,20 +729,18 @@ export const AppointmentServicesView: React.FC = () => {
                   height={42}
                   corner={10}
                 />
-
                 <LabelInput
                   field="Duration"
                   label="Durée cabine (minutes)"
                   type="number"
                   required
                   value={String(formDuration)}
-                  onChange={(v) => setFormDuration(parseInt(v) || 30)}
+                  onChange={(v) => setFormDuration(parseInt(v, 10) || 30)}
                   width="100%"
                   height={42}
                   corner={10}
                 />
               </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
                   field="Price"
@@ -779,7 +753,6 @@ export const AppointmentServicesView: React.FC = () => {
                   height={42}
                   corner={10}
                 />
-
                 <LabelInput
                   field="Commission"
                   label="Commission Styliste (%)"
@@ -791,60 +764,47 @@ export const AppointmentServicesView: React.FC = () => {
                   corner={10}
                 />
               </div>
-
               <LabelInput
                 field="Description"
                 label="Description & Protocole"
                 value={formDescription}
                 onChange={setFormDescription}
-                placeholder="Précisions sur les techniques et produits utilisés..."
+                placeholder="Précisions techniques..."
                 width="100%"
                 height={42}
                 corner={10}
               />
-
               <div className="flex items-center justify-end gap-3 pt-3">
-                <button
-                  type="button"
-                  onClick={() => setIsServiceModalOpen(false)}
-                  className="h-10 px-4 text-xs font-semibold text-black/70 dark:text-white/75 rounded-full hover:bg-neutral-100 cursor-pointer"
-                >
+                <AtriumButton type="button" variant="ghost" onClick={() => setIsServiceModalOpen(false)}>
                   Annuler
-                </button>
-                <button
-                  type="submit"
-                  className="h-10 px-5 text-xs font-bold text-white bg-[#d4522f] rounded-full hover:opacity-90 cursor-pointer shadow-xs"
-                >
+                </AtriumButton>
+                <AtriumButton type="submit" variant="primary">
                   Enregistrer
-                </button>
+                </AtriumButton>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Confirmation Dialog for deletion */}
       <ConfirmDialog
         isOpen={Boolean(serviceToDelete)}
         onClose={() => setServiceToDelete(null)}
         onConfirm={() => {
           if (serviceToDelete) {
             deleteServiceItem(serviceToDelete.id);
-            showToast({
-              type: 'info',
-              title: 'Prestation retirée',
-              message: `"${serviceToDelete.name}" a été supprimée du catalogue.`,
-              category: 'appointment_service',
-            });
+            showToast?.({ type: 'info', title: 'Prestation retirée', message: serviceToDelete.name });
             setServiceToDelete(null);
           }
         }}
         title="Supprimer la prestation"
-        description={`Êtes-vous sûr de vouloir supprimer définitivement "${serviceToDelete?.name}" du catalogue de soins ? Cette action est irréversible.`}
+        description={`Supprimer définitivement "${serviceToDelete?.name}" du catalogue ?`}
         confirmLabel="Supprimer"
         cancelLabel="Annuler"
         variant="danger"
       />
     </div>
   );
-};
+});
+
+AppointmentServicesView.displayName = 'AppointmentServicesView';

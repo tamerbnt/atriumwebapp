@@ -14,6 +14,8 @@ export interface MemberRowData {
   statusVariant?: 'active' | 'blocked' | 'expired';
   expiryDate: string;
   daysRemainingLabel: string;
+  branchName?: string;
+  branchCode?: string;
   balance: number;
   balanceLabel?: string;
   avatarColor?: string;
@@ -291,17 +293,13 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
           </small>
         </span>
 
-        {/* Balance (.sd.c-sd) */}
+        {/* Branch (.br.c-sd) */}
         <span
-          className={`sd c-sd font-mono text-[12px] font-bold tabular-nums truncate ${
-            member.balance === 0
-              ? 'z text-[var(--atr-ok,#096b40)] dark:text-[#5BE3A3]'
-              : 'text-[var(--atr-ink,#000000)] dark:text-white'
-          }`}
+          title={member.branchName || '—'}
+          className="br c-sd inline-flex items-center gap-1.5 min-w-0 max-w-full text-[12.5px] font-medium text-[var(--atr-ink,#000000)] dark:text-white truncate"
         >
-          {member.balance === 0
-            ? 'Soldé'
-            : member.balanceLabel || `${member.balance.toLocaleString()} DZD`}
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-[var(--atr-acc,#d4522f)] shrink-0" />
+          <span className="truncate">{member.branchName || '—'}</span>
         </span>
       </div>
 

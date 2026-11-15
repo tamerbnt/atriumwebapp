@@ -2765,132 +2765,8 @@ export function showToast(
   }
 }
 
-export function useAtriumStore() {
-  const [state, setState] = useState<AppState>(globalState);
 
-  useEffect(() => {
-    const listener = () => setState(globalState);
-    listeners.add(listener);
-    return () => {
-      listeners.delete(listener);
-    };
-  }, []);
-
-  const syncWithSupabase = syncWithSupabaseAction;
-
-  // Synchronize on mount if configured (once across the application)
-  useEffect(() => {
-    if (isSupabaseConfigured() && !hasInitialSynced) {
-      hasInitialSynced = true;
-      syncWithSupabaseAction();
-    }
-  }, []);
-
-  // Supabase Auth state listener for seamless Google OAuth session hydration
-  useEffect(() => {
-    if (!isSupabaseConfigured()) return;
-    const unsubscribe = authService.onAuthStateChange(async (session) => {
-      if (session?.user) {
-        await authService.ensureUserAccount(session.user);
-        const fullName =
-          session.user.user_metadata?.full_name ||
-          session.user.user_metadata?.name ||
-          session.user.email?.split('@')[0] ||
-          'Atrium Owner';
-        globalState = {
-          ...globalState,
-          currentUser: {
-            ...globalState.currentUser,
-            id: session.user.id,
-            email: session.user.email || globalState.currentUser.email,
-            fullName,
-          },
-          isAuthenticated: true,
-        };
-        notify();
-        syncWithSupabaseAction();
-      }
-    });
-    return () => {
-      unsubscribe();
-    };
-  }, []);
-
-  // Real-time synchronization subscription for current active branch
-  useEffect(() => {
-    ensureBranchSubscription(state.currentBranchId);
-  }, [state.currentBranchId]);
-
-  // Active Timer Background Tick
-  useEffect(() => {
-    ensureTimerTick(state.activeTimer.isRunning, state.activeTimer.isPaused);
-  }, [state.activeTimer.isRunning, state.activeTimer.isPaused]);
-
-  // Helpers (cached per state reference via module selectors)
-  const currentBusiness = selectCurrentBusinessFromState(state);
-  const currentBranch = selectCurrentBranchFromState(state);
-  const terminology = selectTerminologyFromState(state);
-
-  // Quotas
-  const plan = state.subscription?.plan || INITIAL_PLANS[0];
-  const businessQuota = checkQuota((state.businesses || []).length, plan?.maxBusinesses || 1);
-  const branchQuota = checkQuota((state.branches || []).length, plan?.maxBranches || 1);
-  const deviceQuota = checkQuota((state.devices || []).length, plan?.maxDevices || 1);
-  const staffQuota = checkQuota((state.staff || []).length, plan?.maxStaff || 1);
-
-  // Scoped lists (cached at module level per slice + branchId so consumers stay render-stable)
-  const currentMembers = selectCurrentMembersFromState(state);
-  const currentLeads = selectCurrentLeadsFromState(state);
-  const currentProducts = selectCurrentProductsFromState(state);
-  const currentStaff = selectCurrentStaffFromState(state);
-  const currentSales = selectCurrentSalesFromState(state);
-  const currentSchedule = selectCurrentScheduleFromState(state);
-  const currentPlans = selectCurrentPlansFromState(state);
-  const currentAppointments = selectCurrentAppointmentsFromState(state);
-  const currentServices = selectCurrentServicesFromState(state);
-  const currentParkedOrders = selectCurrentParkedOrdersFromState(state);
-  const currentStockMovements = selectCurrentStockMovementsFromState(state);
-  const currentFreelanceClients = selectCurrentFreelanceClientsFromState(state);
-  const currentFreelanceProjects = selectCurrentFreelanceProjectsFromState(state);
-  const currentTimeLogs = selectCurrentTimeLogsFromState(state);
-  const currentFreelanceInvoices = selectCurrentFreelanceInvoicesFromState(state);
-  const currentFreelanceProposals = selectCurrentFreelanceProposalsFromState(state);
-  const currentFreelanceExpenses = selectCurrentFreelanceExpensesFromState(state);
-  const currentRentableUnits = selectCurrentRentableUnitsFromState(state);
-  const currentRentalBookings = selectCurrentRentalBookingsFromState(state);
-  const currentRentalRenters = selectCurrentRentalRentersFromState(state);
-  const currentSecurityDeposits = selectCurrentSecurityDepositsFromState(state);
-  const currentEduCourses = selectCurrentEduCoursesFromState(state);
-  const currentEduClassrooms = selectCurrentEduClassroomsFromState(state);
-  const currentEduCohorts = selectCurrentEduCohortsFromState(state);
-  const currentEduStudents = selectCurrentEduStudentsFromState(state);
-  const currentEduEnrollments = selectCurrentEduEnrollmentsFromState(state);
-  const currentEduSessions = selectCurrentEduSessionsFromState(state);
-  const currentEduAttendance = selectCurrentEduAttendanceFromState(state);
-  const currentEduGrades = selectCurrentEduGradesFromState(state);
-  const currentEduCertificates = selectCurrentEduCertificatesFromState(state);
-  const currentEduAdmissions = selectCurrentEduAdmissionsFromState(state);
-  const currentPmProjects = selectCurrentPmProjectsFromState(state);
-  const currentPmMilestones = selectCurrentPmMilestonesFromState(state);
-  const currentPmPrintOrders = selectCurrentPmPrintOrdersFromState(state);
-  const currentPmBatDeliverables = selectCurrentPmBatDeliverablesFromState(state);
-  const currentPmTalents = selectCurrentPmTalentsFromState(state);
-  const currentPmMissions = selectCurrentPmMissionsFromState(state);
-  const currentPmAttendances = selectCurrentPmAttendancesFromState(state);
-  const currentPmExpenses = selectCurrentPmExpensesFromState(state);
-  const currentPmPayrollBatches = selectCurrentPmPayrollBatchesFromState(state);
-  const currentPmCcpSlips = selectCurrentPmCcpSlipsFromState(state);
-  const currentPmEquipmentStock = selectCurrentPmEquipmentStockFromState(state);
-  const currentDevices = selectCurrentDevicesFromState(state);
-  const currentB2bClients = selectCurrentB2bClientsFromState(state);
-  const currentWarehouses = selectCurrentWarehousesFromState(state);
-  const currentCommercialDocs = selectCurrentCommercialDocsFromState(state);
-  const currentPurchaseDocs = selectCurrentPurchaseDocsFromState(state);
-  const currentStockVouchers = selectCurrentStockVouchersFromState(state);
-  const currentMemberCheckIns = selectCurrentMemberCheckInsFromState(state);
-  const unreadNotificationCount = selectUnreadNotificationCountFromState(state);
-  const selectedMember = selectSelectedMemberFromState(state);
-
+function createAtriumActions() {
   // Actions
   const setScreen = setScreenAction;
   const setTheme = setThemeAction;
@@ -2915,21 +2791,21 @@ export function useAtriumStore() {
   };
 
   const getTraceContext = () => {
-    const branchManager = (state.staff || []).find(
+    const branchManager = (globalState.staff || []).find(
       (s) =>
-        (s.branchId === state.currentBranchId || s.facilityId === state.currentBranchId) &&
+        (s.branchId === globalState.currentBranchId || s.facilityId === globalState.currentBranchId) &&
         ['owner', 'manager', 'admin', 'agencydirector'].includes((s.role || '').toLowerCase())
     );
     const activeStaffId =
-      state.currentUser?.id || branchManager?.id || (state.staff && state.staff.length > 0 ? state.staff[0].id : undefined);
+      globalState.currentUser?.id || branchManager?.id || (globalState.staff && globalState.staff.length > 0 ? globalState.staff[0].id : undefined);
 
     return {
-      accountId: state.account.id,
-      businessId: state.currentBusinessId,
-      branchId: state.currentBranchId,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
+      branchId: globalState.currentBranchId,
       staffId: activeStaffId,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
     };
   };
 
@@ -3108,16 +2984,16 @@ export function useAtriumStore() {
   };
 
   const addLead = (newLead: Omit<RegistrationLead, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'updatedAt'>) => {
-    const activeStaffId = state.currentUser?.id || state.staff[0]?.id || undefined;
+    const activeStaffId = globalState.currentUser?.id || globalState.staff[0]?.id || undefined;
     const lead: RegistrationLead = {
       ...newLead,
       id: `lead_${Date.now()}`,
-      accountId: state.account.id,
-      businessId: state.currentBusinessId,
-      branchId: state.currentBranchId,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
+      branchId: globalState.currentBranchId,
       staffId: activeStaffId,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -3171,8 +3047,8 @@ export function useAtriumStore() {
     const newMember: Member = {
       ...trace,
       id: `mem_${Date.now()}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       fullName: lead.fullName,
       email: lead.email,
       phoneNumber: lead.phoneNumber,
@@ -3240,8 +3116,8 @@ export function useAtriumStore() {
     const sale: Sale = {
       ...getTraceContext(),
       id: `sale_${Date.now()}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       memberId,
       memberName: finalCustomerName,
       customerPhone: extra?.customerPhone || member?.phoneNumber,
@@ -3282,8 +3158,8 @@ export function useAtriumStore() {
         newMovements.push({
           ...getTraceContext(),
           id: `sm_${Date.now()}_${p.id}`,
-          tenantId: state.account.id,
-          facilityId: state.currentBranchId,
+          tenantId: globalState.account.id,
+          facilityId: globalState.currentBranchId,
           productId: p.id,
           productName: p.name,
           type: 'Sale',
@@ -3329,8 +3205,8 @@ export function useAtriumStore() {
         returnMovements.push({
           ...getTraceContext(),
           id: `sm_${Date.now()}_${p.id}`,
-          tenantId: state.account.id,
-          facilityId: state.currentBranchId,
+          tenantId: globalState.account.id,
+          facilityId: globalState.currentBranchId,
           productId: p.id,
           productName: p.name,
           type: 'Return',
@@ -3380,8 +3256,8 @@ export function useAtriumStore() {
         movement = {
           ...getTraceContext(),
           id: `sm_${Date.now()}_${p.id}`,
-          tenantId: state.account.id,
-          facilityId: state.currentBranchId,
+          tenantId: globalState.account.id,
+          facilityId: globalState.currentBranchId,
           productId: p.id,
           productName: p.name,
           type,
@@ -3488,9 +3364,9 @@ export function useAtriumStore() {
       ...trace,
       ...staffData,
       id: `stf_${Date.now()}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
-      branchId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
+      branchId: globalState.currentBranchId,
       isActive: staffData.status ? staffData.status === 'active' : true,
       status: staffData.status || 'active',
       hireDate: staffData.hireDate || new Date().toISOString().split('T')[0],
@@ -3958,8 +3834,8 @@ export function useAtriumStore() {
       ...trace,
       ...orderData,
       id: `park_${Date.now()}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       createdAt: new Date().toISOString(),
     };
     globalState = {
@@ -4002,11 +3878,11 @@ export function useAtriumStore() {
   };
 
   const seedDemoInventory = (branchId?: string) => {
-    const targetBranchId = branchId || state.currentBranchId;
+    const targetBranchId = branchId || globalState.currentBranchId;
     const demoItems: Product[] = [
       {
         id: `prod_demo_01_${Date.now()}`,
-        tenantId: state.account.id,
+        tenantId: globalState.account.id,
         facilityId: targetBranchId,
         name: 'Single Origin Roasted Espresso Beans (1kg)',
         description: '100% Arabica dark roast whole beans blend',
@@ -4025,7 +3901,7 @@ export function useAtriumStore() {
       },
       {
         id: `prod_demo_02_${Date.now()}`,
-        tenantId: state.account.id,
+        tenantId: globalState.account.id,
         facilityId: targetBranchId,
         name: 'Organic Extra Virgin Olive Oil (750ml)',
         description: 'Cold-pressed first harvest from Kabylie olive groves',
@@ -4044,7 +3920,7 @@ export function useAtriumStore() {
       },
       {
         id: `prod_demo_03_${Date.now()}`,
-        tenantId: state.account.id,
+        tenantId: globalState.account.id,
         facilityId: targetBranchId,
         name: 'French Butter Croissant (Box of 4)',
         description: 'Freshly baked laminated dough with Normandy butter',
@@ -4063,7 +3939,7 @@ export function useAtriumStore() {
       },
       {
         id: `prod_demo_04_${Date.now()}`,
-        tenantId: state.account.id,
+        tenantId: globalState.account.id,
         facilityId: targetBranchId,
         name: 'Artisan Dark Chocolate Bar 72% (100g)',
         description: 'Handcrafted bean-to-bar dark chocolate',
@@ -4082,7 +3958,7 @@ export function useAtriumStore() {
       },
       {
         id: `prod_demo_05_${Date.now()}`,
-        tenantId: state.account.id,
+        tenantId: globalState.account.id,
         facilityId: targetBranchId,
         name: 'Cold-Pressed Citrus Juice (330ml)',
         description: '100% natural orange and clementine juice',
@@ -4104,10 +3980,10 @@ export function useAtriumStore() {
     const enrichedDemoItems: Product[] = demoItems.map((item) => ({
       ...trace,
       ...item,
-      accountId: state.account.id,
-      businessId: state.currentBusinessId,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
       branchId: targetBranchId,
-      tenantId: state.account.id,
+      tenantId: globalState.account.id,
       facilityId: targetBranchId,
     }));
     globalState = {
@@ -4144,8 +4020,8 @@ export function useAtriumStore() {
         newMovements.push({
           ...trace,
           id: `sm_${Date.now()}_${p.id}`,
-          tenantId: state.account.id,
-          facilityId: state.currentBranchId,
+          tenantId: globalState.account.id,
+          facilityId: globalState.currentBranchId,
           productId: p.id,
           productName: p.name,
           type: 'Restock',
@@ -4177,7 +4053,7 @@ export function useAtriumStore() {
   };
 
   const resetPosMockData = () => {
-    const targetBranchId = state.currentBranchId || 'branch_rest_didouche';
+    const targetBranchId = globalState.currentBranchId || 'branch_rest_didouche';
     const trace = getTraceContext();
 
     const posProducts = INITIAL_PRODUCTS.filter(
@@ -4187,8 +4063,8 @@ export function useAtriumStore() {
       ...p,
       facilityId: targetBranchId,
       branchId: targetBranchId,
-      accountId: state.account.id,
-      businessId: state.currentBusinessId,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
     }));
 
     const posSales = INITIAL_SALES.filter(
@@ -4198,8 +4074,8 @@ export function useAtriumStore() {
       ...s,
       facilityId: targetBranchId,
       branchId: targetBranchId,
-      accountId: state.account.id,
-      businessId: state.currentBusinessId,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
     }));
 
     const posParked = INITIAL_PARKED_ORDERS.map((po) => ({
@@ -4207,8 +4083,8 @@ export function useAtriumStore() {
       ...po,
       facilityId: targetBranchId,
       branchId: targetBranchId,
-      accountId: state.account.id,
-      businessId: state.currentBusinessId,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
     }));
 
     const posMovements = INITIAL_STOCK_MOVEMENTS.map((sm) => ({
@@ -4216,8 +4092,8 @@ export function useAtriumStore() {
       ...sm,
       facilityId: targetBranchId,
       branchId: targetBranchId,
-      accountId: state.account.id,
-      businessId: state.currentBusinessId,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
     }));
 
     globalState = {
@@ -4245,8 +4121,8 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...aptData,
       id: `apt_${Date.now()}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       createdAt: new Date().toISOString(),
     };
     globalState = {
@@ -4386,7 +4262,7 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...serviceData,
       id: `srv_${Date.now()}`,
-      facilityId: state.currentBranchId,
+      facilityId: globalState.currentBranchId,
     };
     globalState = {
       ...globalState,
@@ -4406,8 +4282,8 @@ export function useAtriumStore() {
     const sale: Sale = {
       ...getTraceContext(),
       id: `sale_${Date.now()}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       memberId: apt.clientId,
       memberName: apt.clientName,
       totalAmount: apt.price,
@@ -4554,7 +4430,7 @@ export function useAtriumStore() {
   };
 
   const resetSalonMockData = () => {
-    const targetBranchId = state.currentBranchId || 'branch_salon_hydra';
+    const targetBranchId = globalState.currentBranchId || 'branch_salon_hydra';
     const trace = getTraceContext();
 
     const salonServices = INITIAL_SALON_SERVICES.map((s) => ({
@@ -4562,8 +4438,8 @@ export function useAtriumStore() {
       ...s,
       facilityId: targetBranchId,
       branchId: targetBranchId,
-      accountId: state.account.id,
-      businessId: state.currentBusinessId,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
     }));
 
     const salonAppointments = INITIAL_APPOINTMENTS.map((a) => ({
@@ -4571,8 +4447,8 @@ export function useAtriumStore() {
       ...a,
       facilityId: targetBranchId,
       branchId: targetBranchId,
-      accountId: state.account.id,
-      businessId: state.currentBusinessId,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
     }));
 
     const salonClients = INITIAL_SALON_CLIENTS.map((c) => ({
@@ -4580,8 +4456,8 @@ export function useAtriumStore() {
       ...c,
       facilityId: targetBranchId,
       branchId: targetBranchId,
-      accountId: state.account.id,
-      businessId: state.currentBusinessId,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
     }));
 
     const existingNonSalonMembers = (globalState.members || []).filter((m) => m.facilityId !== targetBranchId);
@@ -4608,6 +4484,8 @@ export function useAtriumStore() {
 
 
   const addStaff = (staffData: Omit<StaffMember, 'id' | 'tenantId' | 'facilityId'>) => {
+    const plan = globalState.subscription?.plan || INITIAL_PLANS[0];
+    const staffQuota = checkQuota((globalState.staff || []).length, plan?.maxStaff || 1);
     if (!staffQuota.isAllowed) {
       throw new Error(`Staff limit reached for ${plan.name} plan. Upgrade to expand capacity.`);
     }
@@ -4616,8 +4494,8 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...staffData,
       id: `stf_${Date.now()}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
     };
     globalState = {
       ...globalState,
@@ -4635,14 +4513,16 @@ export function useAtriumStore() {
   };
 
   const addBusiness = (name: string, category: BusinessCategory, address?: string, phone?: string) => {
+    const plan = globalState.subscription?.plan || INITIAL_PLANS[0];
+    const businessQuota = checkQuota((globalState.businesses || []).length, plan?.maxBusinesses || 1);
     if (!businessQuota.isAllowed) {
-      openDesktopUpgradeModal('business_limit');
+      openDesktopUpgradeModal("business_limit");
       throw new Error(`Business limit reached for ${plan.name} (${plan.maxBusinesses}). Upgrade to Atrium Desktop to unlock multi-business management.`);
     }
 
     const newBiz: Business = {
       id: `biz_${Date.now()}`,
-      accountId: state.account.id,
+      accountId: globalState.account.id,
       name,
       displayName: name,
       category,
@@ -4654,7 +4534,7 @@ export function useAtriumStore() {
 
     const newBranch: Branch = {
       id: `branch_${Date.now()}`,
-      accountId: state.account.id,
+      accountId: globalState.account.id,
       businessId: newBiz.id,
       name: `${name} Main`,
       code: name.substring(0, 3).toUpperCase() || 'M01',
@@ -4676,7 +4556,7 @@ export function useAtriumStore() {
 
     if (isSupabaseConfigured()) {
       tenantService
-        .createBusiness(state.account.id, name, category, address, phone)
+        .createBusiness(globalState.account.id, name, category, address, phone)
         .catch((err) => {
           console.warn('[store] Failed to create business on Supabase:', err);
         });
@@ -4686,15 +4566,17 @@ export function useAtriumStore() {
   };
 
   const addBranch = (name: string, code: string, address?: string, phone?: string) => {
+    const plan = globalState.subscription?.plan || INITIAL_PLANS[0];
+    const branchQuota = checkQuota((globalState.branches || []).length, plan?.maxBranches || 1);
     if (!branchQuota.isAllowed) {
-      openDesktopUpgradeModal('branch_limit');
+      openDesktopUpgradeModal("branch_limit");
       throw new Error(`Branch limit reached for ${plan.name}. Upgrade to Atrium Desktop to unlock multi-branch management.`);
     }
 
     const newBranch: Branch = {
       id: `branch_${Date.now()}`,
-      accountId: state.account.id,
-      businessId: state.currentBusinessId,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
       name,
       code,
       address,
@@ -4713,7 +4595,7 @@ export function useAtriumStore() {
 
     if (isSupabaseConfigured()) {
       tenantService
-        .createBranch(state.account.id, state.currentBusinessId, name, address, phone)
+        .createBranch(globalState.account.id, globalState.currentBusinessId, name, address, phone)
         .catch((err) => {
           console.warn('[store] Failed to create branch on Supabase:', err);
         });
@@ -4723,14 +4605,16 @@ export function useAtriumStore() {
   };
 
   const registerDevice = (label: string, hardwareId: string) => {
+    const plan = globalState.subscription?.plan || INITIAL_PLANS[0];
+    const deviceQuota = checkQuota((globalState.devices || []).length, plan?.maxDevices || 1);
     if (!deviceQuota.isAllowed) {
       throw new Error(`Device limit reached for ${plan.name} plan.`);
     }
 
     const newDevice: Device = {
       id: `dev_${Date.now()}`,
-      accountId: state.account.id,
-      branchId: state.currentBranchId,
+      accountId: globalState.account.id,
+      branchId: globalState.currentBranchId,
       label,
       hardwareId,
       isActive: true,
@@ -4811,8 +4695,8 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...productData,
       id: `prod_${Date.now()}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
     };
     globalState = {
       ...globalState,
@@ -5369,8 +5253,8 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...clientData,
       id: `fcli_${Date.now()}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       lifetimeBilled: 0,
       createdAt: new Date().toISOString(),
     };
@@ -5444,8 +5328,8 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...projectData,
       id: `fproj_${Date.now()}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       loggedHours: 0,
       createdAt: new Date().toISOString(),
     };
@@ -5640,8 +5524,8 @@ export function useAtriumStore() {
       ...trace,
       ...entryData,
       id: `time_${Date.now()}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       isInvoiced: false,
       createdAt: new Date().toISOString(),
     };
@@ -5772,8 +5656,8 @@ export function useAtriumStore() {
     const newInvoice: FreelanceInvoice = {
       ...getTraceContext(),
       id: `inv_${Date.now()}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       clientId,
       clientName: client.name,
       clientCompany: client.company,
@@ -5797,7 +5681,7 @@ export function useAtriumStore() {
       notes: notes || (globalState.language === 'ar' ? `فاتورة مفصلة عن ${totalHours.toFixed(1)} ساعة من الخدمات الاحترافية.` : globalState.language === 'fr' ? `Facturation détaillée pour ${totalHours.toFixed(1)} heures de prestations professionnelles.` : `Itemized bill for ${totalHours.toFixed(1)} hours of professional services.`),
       paymentDetails: {
         bankName: 'BEA / International Wire or Algérie Poste',
-        accountHolder: state.account.fullName,
+        accountHolder: globalState.account.fullName,
         ribOrIban: '002 00012 34567890 12',
       },
       createdAt: new Date().toISOString(),
@@ -5837,8 +5721,8 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...invoiceData,
       id: `inv_${Date.now()}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       createdAt: new Date().toISOString(),
     };
     globalState = {
@@ -5970,8 +5854,8 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...proposalData,
       id: `prop_${Date.now()}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       createdAt: new Date().toISOString(),
     };
     globalState = {
@@ -6030,8 +5914,8 @@ export function useAtriumStore() {
       client = {
         ...getTraceContext(),
         id: `fcli_${Date.now()}`,
-        tenantId: state.account.id,
-        facilityId: state.currentBranchId,
+        tenantId: globalState.account.id,
+        facilityId: globalState.currentBranchId,
         name: prop.clientName,
         company: prop.clientCompany,
         email: prop.clientEmail,
@@ -6050,8 +5934,8 @@ export function useAtriumStore() {
     const newProject: FreelanceProject = {
       ...getTraceContext(),
       id: `fproj_${Date.now()}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       clientId: client.id,
       clientName: client.company || client.name,
       title: prop.title,
@@ -6120,8 +6004,8 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...expenseData,
       id: `exp_${Date.now()}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       createdAt: new Date().toISOString(),
     };
     globalState = {
@@ -6159,8 +6043,8 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...bookingData,
       id: bookingId,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -6172,8 +6056,8 @@ export function useAtriumStore() {
       newDeposit = {
         ...getTraceContext(),
         id: depositId,
-        tenantId: state.account.id,
-        facilityId: state.currentBranchId,
+        tenantId: globalState.account.id,
+        facilityId: globalState.currentBranchId,
         bookingId: newBooking.id,
         renterName: newBooking.renterName,
         unitName: newBooking.unitName,
@@ -6414,8 +6298,8 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...unitData,
       id: unitId,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       createdAt: new Date().toISOString(),
     };
     globalState = {
@@ -6530,8 +6414,8 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...renterData,
       id: renterId,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       totalBookings: 0,
       totalSpent: 0,
       createdAt: new Date().toISOString(),
@@ -6744,9 +6628,9 @@ export function useAtriumStore() {
   };
 
   const resetVenueMockData = () => {
-    const targetFacilityId = state.currentBranchId || 'branch_venue_main';
-    const targetAccountId = state.account.id || 'acc_01';
-    const targetBusinessId = state.currentBusinessId || 'biz_venue';
+    const targetFacilityId = globalState.currentBranchId || 'branch_venue_main';
+    const targetAccountId = globalState.account.id || 'acc_01';
+    const targetBusinessId = globalState.currentBusinessId || 'biz_venue';
 
     const freshBookings = createInitialRentalBookings().map((b) => ({
       ...b,
@@ -6794,9 +6678,9 @@ export function useAtriumStore() {
   };
 
   const resetEduMockData = () => {
-    const targetFacilityId = state.currentBranchId || 'branch_edu_main';
-    const targetAccountId = state.account.id || 'acc_01';
-    const targetBusinessId = state.currentBusinessId || 'biz_edu';
+    const targetFacilityId = globalState.currentBranchId || 'branch_edu_main';
+    const targetAccountId = globalState.account.id || 'acc_01';
+    const targetBusinessId = globalState.currentBusinessId || 'biz_edu';
 
     const freshStudents = INITIAL_EDU_STUDENTS.map((s) => ({
       ...s,
@@ -6876,8 +6760,8 @@ export function useAtriumStore() {
   };
 
   const resetFreelanceMockData = () => {
-    const targetFacilityId = state.currentBranchId || 'branch_freelance_main';
-    const targetAccountId = state.account.id || 'acc_01';
+    const targetFacilityId = globalState.currentBranchId || 'branch_freelance_main';
+    const targetAccountId = globalState.account.id || 'acc_01';
 
     const freshClients = INITIAL_FREELANCE_CLIENTS.map((c) => ({
       ...c,
@@ -6937,8 +6821,8 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...studentData,
       id: `std_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       createdAt: new Date().toISOString(),
     };
     globalState = {
@@ -6997,8 +6881,8 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...cohortData,
       id: `cohort_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       enrolledCount: 0,
       createdAt: new Date().toISOString(),
     };
@@ -7048,8 +6932,8 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...sessionData,
       id: `sess_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       createdAt: new Date().toISOString(),
     };
     globalState = {
@@ -7095,8 +6979,8 @@ export function useAtriumStore() {
     const newRecords: EduAttendance[] = records.map((r) => ({
       ...trace,
       id: `att_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       sessionId,
       cohortId,
       studentId: r.studentId,
@@ -7145,8 +7029,8 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...gradeData,
       id: `grd_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       gradedAt: new Date().toISOString(),
     };
     globalState = {
@@ -7223,8 +7107,8 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...enrollmentData,
       id: `enr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       enrolledAt: new Date().toISOString(),
     };
 
@@ -7255,8 +7139,8 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...leadData,
       id: `lead_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       createdAt: new Date().toISOString(),
     };
     globalState = {
@@ -7311,8 +7195,8 @@ export function useAtriumStore() {
     const newStudent: EduStudent = {
       ...trace,
       id: `std_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       fullName: lead.studentName,
       email: lead.email,
       phone: lead.phone,
@@ -7333,8 +7217,8 @@ export function useAtriumStore() {
     const newEnrollment: EduEnrollment = {
       ...trace,
       id: `enr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       studentId: newStudent.id,
       studentName: newStudent.fullName,
       cohortId: cohort.id,
@@ -7389,8 +7273,8 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...certData,
       id: `cert_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       certificateNumber: certNum,
       verificationHash: hash,
       createdAt: new Date().toISOString(),
@@ -7420,8 +7304,8 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...classroomData,
       id: `room_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       createdAt: new Date().toISOString(),
     };
     globalState = {
@@ -7437,8 +7321,8 @@ export function useAtriumStore() {
       ...getTraceContext(),
       ...courseData,
       id: `course_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      tenantId: state.account.id,
-      facilityId: state.currentBranchId,
+      tenantId: globalState.account.id,
+      facilityId: globalState.currentBranchId,
       createdAt: new Date().toISOString(),
     };
     globalState = {
@@ -7912,9 +7796,9 @@ export function useAtriumStore() {
   };
 
   const resetPmMockData = () => {
-    const targetFacilityId = state.currentBranchId || 'branch_agency_main';
-    const targetAccountId = state.account.id || 'acc_01';
-    const targetBizId = state.currentBusinessId || 'biz_agency';
+    const targetFacilityId = globalState.currentBranchId || 'branch_agency_main';
+    const targetAccountId = globalState.account.id || 'acc_01';
+    const targetBizId = globalState.currentBusinessId || 'biz_agency';
 
     const freshClients = INITIAL_PM_CLIENTS.map((c) => ({
       ...c,
@@ -8832,7 +8716,457 @@ export function useAtriumStore() {
   const setNetworkMode = setNetworkModeAction;
   const retryCloudSync = retryCloudSyncAction;
 
+
+  const syncWithSupabase = syncWithSupabaseAction;
+  const setActiveContractorRole = (role: ContractorRole) => {
+    globalState = { ...globalState, activeContractorRole: role, activeScreen: "home" };
+    notify();
+  };
+  const setActiveAgriRole = (role: AgriRole) => {
+    globalState = { ...globalState, activeAgriRole: role, activeScreen: "home" };
+    notify();
+  };
+  const setActiveMembershipRole = (role: StandardRole) => {
+    globalState = { ...globalState, activeMembershipRole: role, activeScreen: "home" };
+    notify();
+  };
+  const setActiveAppointmentRole = (role: StandardRole) => {
+    globalState = { ...globalState, activeAppointmentRole: role, activeScreen: "home" };
+    notify();
+  };
+  const setActivePosRole = (role: StandardRole) => {
+    globalState = { ...globalState, activePosRole: role, activeScreen: "home" };
+    notify();
+  };
+  const setActiveEducationRole = (role: StandardRole) => {
+    globalState = { ...globalState, activeEducationRole: role, activeScreen: "home" };
+    notify();
+  };
+  const addMemberCheckIn = (checkIn: MemberCheckInLog) => {
+    const scopedCheckIn: MemberCheckInLog = {
+      ...checkIn,
+      businessId: checkIn.businessId || globalState.currentBusinessId,
+      branchId: checkIn.branchId || globalState.currentBranchId,
+    };
+    globalState = {
+      ...globalState,
+      memberCheckIns: [scopedCheckIn, ...(globalState.memberCheckIns || [])],
+    };
+    notify();
+  };
+  const addWalkInTicket = (ticket: WalkInTicket) => {
+    globalState = {
+      ...globalState,
+      walkInTickets: [ticket, ...(globalState.walkInTickets || [])],
+    };
+    notify();
+  };
+  const updateSalonChairStation = (station: SalonChairStation) => {
+    const existing = (globalState.salonChairStations || []).findIndex(
+      (s) => s.workstationId === station.workstationId
+    );
+    const nextStations = [...(globalState.salonChairStations || [])];
+    if (existing >= 0) nextStations[existing] = station;
+    else nextStations.push(station);
+    globalState = { ...globalState, salonChairStations: nextStations };
+    notify();
+  };
+  const recordQuickAttendance = (record: EduQuickAttendanceRecord) => {
+    const existing = (globalState.eduQuickAttendance || []).findIndex(
+      (r) => r.sessionId === record.sessionId && r.studentId === record.studentId
+    );
+    const nextRecords = [...(globalState.eduQuickAttendance || [])];
+    if (existing >= 0) nextRecords[existing] = record;
+    else nextRecords.push(record);
+    globalState = { ...globalState, eduQuickAttendance: nextRecords };
+    notify();
+  };
+  const toggleTopBarCollapsed = toggleTopBarCollapsedAction;
+  const toggleTopBarAutoHide = toggleTopBarAutoHideAction;
+  const setTopBarAutoHide = (autoHide: boolean) => {
+    globalState = { ...globalState, isTopBarAutoHide: autoHide };
+    notify();
+  };
+  const setTopBarCollapsed = (collapsed: boolean) => {
+    globalState = { ...globalState, isTopBarCollapsed: collapsed };
+    notify();
+  };
+  const canAccessStaffScreenFn = (cat: BusinessCategory | string, role?: string) =>
+    canAccessStaffScreen(cat, role || globalState.currentUser?.role);
+  const canViewSensitivePayrollFn = (role?: string) =>
+    canViewSensitivePayroll(role || globalState.currentUser?.role);
+
   return {
+    setScreen,
+    setTheme,
+    setLanguage,
+    setSystemDefaultLanguage,
+    switchFacility,
+    switchBusiness,
+    switchBranch,
+    selectMember,
+    closeDetail,
+    addMember,
+    updateMember,
+    deleteMember,
+    checkInMember,
+    addLead,
+    updateLeadStatus,
+    deleteLead,
+    convertLeadToMember,
+    processSale,
+    refundSale,
+    adjustStock,
+    updateProduct,
+    deleteProduct,
+    deleteSale,
+    batchDeleteSales,
+    deleteScheduleEvent,
+    batchDeleteScheduleEvents,
+    createStaffMember,
+    updateStaffMember,
+    freezeStaffMember,
+    vacationStaffMember,
+    terminateStaffMember,
+    deleteStaffMember,
+    punchStaffAttendance,
+    createStaffSalaryAdvance,
+    waiveStaffSalaryAdvance,
+    generateStaffPayrollRun,
+    approveStaffPayrollRun,
+    markStaffPayrollSlipPaid,
+    logStaffAttendanceManual,
+    parkOrder,
+    resumeParkedOrder,
+    deleteParkedOrder,
+    updateReceiptConfig,
+    seedDemoInventory,
+    batchDeleteProducts,
+    batchRestockProducts,
+    resetPosMockData,
+    createAppointment,
+    updateAppointmentStatus,
+    rescheduleAppointment,
+    deleteAppointment,
+    addServiceItem,
+    checkoutAppointment,
+    batchDeleteAppointments,
+    batchUpdateAppointmentStatus,
+    updateServiceItem,
+    deleteServiceItem,
+    batchDeleteServiceItems,
+    updateStylistPayoutStatus,
+    resetSalonMockData,
+    addStaff,
+    addBusiness,
+    addBranch,
+    registerDevice,
+    revokeDevice,
+    redeemVoucher,
+    addProduct,
+    resolveSubRolesForUser,
+    login,
+    loginWithPin,
+    switchStaffUser,
+    logout,
+    openOnboarding,
+    closeOnboarding,
+    openFastSwitch,
+    closeFastSwitch,
+    openDesktopUpgradeModal,
+    closeDesktopUpgradeModal,
+    completeOnboarding,
+    startTimer,
+    pauseTimer,
+    resumeTimer,
+    stopTimer,
+    resetTimer,
+    addFreelanceClient,
+    updateFreelanceClient,
+    deleteFreelanceClient,
+    addFreelanceProject,
+    updateFreelanceProject,
+    deleteFreelanceProject,
+    updateProjectStage,
+    addDeliverable,
+    updateDeliverable,
+    deleteDeliverable,
+    updateDeliverableStage,
+    logTimeEntry,
+    updateTimeLog,
+    deleteTimeLog,
+    billUnbilledHours,
+    createFreelanceInvoice,
+    updateInvoiceStatus,
+    deleteFreelanceInvoice,
+    createFreelanceProposal,
+    updateFreelanceProposal,
+    deleteFreelanceProposal,
+    convertProposalToProject,
+    addFreelanceExpense,
+    deleteFreelanceExpense,
+    createRentalBooking,
+    updateRentalBooking,
+    deleteRentalBooking,
+    checkInBooking,
+    checkOutBooking,
+    createRentableUnit,
+    updateRentableUnit,
+    deleteRentableUnit,
+    createRentalRenter,
+    updateRentalRenter,
+    deleteRentalRenter,
+    releaseSecurityDeposit,
+    deductSecurityDeposit,
+    resetVenueMockData,
+    resetEduMockData,
+    resetFreelanceMockData,
+    addEduStudent,
+    updateEduStudent,
+    deleteEduStudent,
+    addEduCohort,
+    updateEduCohort,
+    deleteEduCohort,
+    addEduSession,
+    updateEduSession,
+    deleteEduSession,
+    batchRecordAttendance,
+    recordEduGrade,
+    deleteEduGrade,
+    recordTuitionPayment,
+    addEduEnrollment,
+    addEduAdmissionLead,
+    updateAdmissionStage,
+    updateEduAdmissionLead,
+    deleteEduAdmissionLead,
+    convertAdmissionToStudent,
+    issueEduCertificate,
+    addEduClassroom,
+    addEduCourse,
+    setActivePmRole,
+    setActiveGarageRole,
+    setActiveRealEstateRole,
+    setActiveManufacturingRole,
+    setActiveLegalRole,
+    setActiveLogisticsRole,
+    setActivePmSubScreen,
+    addPmProject,
+    updatePmProjectStatus,
+    addPmPrintOrder,
+    updatePmPrintOrderStatus,
+    addPmBatDeliverable,
+    reviewPmBatDeliverable,
+    addPmTalent,
+    updatePmTalentStatus,
+    addPmMission,
+    updatePmAttendanceStatus,
+    closePmRollCall,
+    addPmExpense,
+    approvePmExpense,
+    rejectPmExpense,
+    approvePmPayrollBatch,
+    generatePmCcpSlipsForBatch,
+    markPmCcpSlipPrinted,
+    addPmEquipmentStock,
+    updatePmEquipmentStatus,
+    resetPmMockData,
+    deletePmProject,
+    batchDeletePmProjects,
+    batchUpdatePmProjectStatus,
+    batchApprovePmExpenses,
+    batchRejectPmExpenses,
+    batchDeletePmExpenses,
+    batchApprovePmPayrollBatches,
+    batchUpdatePmPrintOrderStatus,
+    batchDeletePmPrintOrders,
+    batchReviewPmBatDeliverables,
+    batchDeletePmBatDeliverables,
+    batchDeletePmTalents,
+    batchUpdatePmTalentStatus,
+    batchDeletePmMissions,
+    batchUpdatePmAttendanceStatus,
+    batchMarkPmCcpSlipsPrinted,
+    batchUpdatePmEquipmentStatus,
+    batchDeletePmEquipmentStock,
+    resetAllData,
+    resetToDefaultDemoData,
+    createCommercialDoc,
+    updateCommercialDoc,
+    deleteCommercialDoc,
+    convertCommercialDoc,
+    createPurchaseDoc,
+    updatePurchaseDoc,
+    receivePurchaseDoc,
+    createStockVoucher,
+    createB2bClient,
+    updateB2bClient,
+    deleteB2bClient,
+    createB2bSupplier,
+    updateB2bSupplier,
+    deleteB2bSupplier,
+    createWarehouseDepot,
+    resetTradingMockData,
+    exportDatabase,
+    importDatabase,
+    setNetworkMode,
+    retryCloudSync,
+    syncWithSupabase,
+    setActiveContractorRole,
+    setActiveAgriRole,
+    setActiveMembershipRole,
+    setActiveAppointmentRole,
+    setActivePosRole,
+    setActiveEducationRole,
+    addMemberCheckIn,
+    addWalkInTicket,
+    updateSalonChairStation,
+    recordQuickAttendance,
+    toggleTopBarCollapsed,
+    toggleTopBarAutoHide,
+    setTopBarAutoHide,
+    setTopBarCollapsed,
+    canAccessStaffScreen: canAccessStaffScreenFn,
+    canViewSensitivePayroll: canViewSensitivePayrollFn,
+  };
+}
+
+export const atriumActions = createAtriumActions();
+export type AtriumActions = typeof atriumActions;
+export function getAtriumActions(): AtriumActions {
+  return atriumActions;
+}
+export function useAtriumActions(): AtriumActions {
+  return atriumActions;
+}
+
+export function useAtriumStore() {
+  const [state, setState] = useState<AppState>(globalState);
+
+  useEffect(() => {
+    const listener = () => setState(globalState);
+    listeners.add(listener);
+    return () => {
+      listeners.delete(listener);
+    };
+  }, []);
+
+  const syncWithSupabase = syncWithSupabaseAction;
+
+  // Synchronize on mount if configured (once across the application)
+  useEffect(() => {
+    if (isSupabaseConfigured() && !hasInitialSynced) {
+      hasInitialSynced = true;
+      syncWithSupabaseAction();
+    }
+  }, []);
+
+  // Supabase Auth state listener for seamless Google OAuth session hydration
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    const unsubscribe = authService.onAuthStateChange(async (session) => {
+      if (session?.user) {
+        await authService.ensureUserAccount(session.user);
+        const fullName =
+          session.user.user_metadata?.full_name ||
+          session.user.user_metadata?.name ||
+          session.user.email?.split('@')[0] ||
+          'Atrium Owner';
+        globalState = {
+          ...globalState,
+          currentUser: {
+            ...globalState.currentUser,
+            id: session.user.id,
+            email: session.user.email || globalState.currentUser.email,
+            fullName,
+          },
+          isAuthenticated: true,
+        };
+        notify();
+        syncWithSupabaseAction();
+      }
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  // Real-time synchronization subscription for current active branch
+  useEffect(() => {
+    ensureBranchSubscription(state.currentBranchId);
+  }, [state.currentBranchId]);
+
+  // Active Timer Background Tick
+  useEffect(() => {
+    ensureTimerTick(state.activeTimer.isRunning, state.activeTimer.isPaused);
+  }, [state.activeTimer.isRunning, state.activeTimer.isPaused]);
+
+  // Helpers (cached per state reference via module selectors)
+  const currentBusiness = selectCurrentBusinessFromState(state);
+  const currentBranch = selectCurrentBranchFromState(state);
+  const terminology = selectTerminologyFromState(state);
+
+  // Quotas
+  const plan = state.subscription?.plan || INITIAL_PLANS[0];
+  const businessQuota = checkQuota((state.businesses || []).length, plan?.maxBusinesses || 1);
+  const branchQuota = checkQuota((state.branches || []).length, plan?.maxBranches || 1);
+  const deviceQuota = checkQuota((state.devices || []).length, plan?.maxDevices || 1);
+  const staffQuota = checkQuota((state.staff || []).length, plan?.maxStaff || 1);
+
+  // Scoped lists (cached at module level per slice + branchId so consumers stay render-stable)
+  const currentMembers = selectCurrentMembersFromState(state);
+  const currentLeads = selectCurrentLeadsFromState(state);
+  const currentProducts = selectCurrentProductsFromState(state);
+  const currentStaff = selectCurrentStaffFromState(state);
+  const currentSales = selectCurrentSalesFromState(state);
+  const currentSchedule = selectCurrentScheduleFromState(state);
+  const currentPlans = selectCurrentPlansFromState(state);
+  const currentAppointments = selectCurrentAppointmentsFromState(state);
+  const currentServices = selectCurrentServicesFromState(state);
+  const currentParkedOrders = selectCurrentParkedOrdersFromState(state);
+  const currentStockMovements = selectCurrentStockMovementsFromState(state);
+  const currentFreelanceClients = selectCurrentFreelanceClientsFromState(state);
+  const currentFreelanceProjects = selectCurrentFreelanceProjectsFromState(state);
+  const currentTimeLogs = selectCurrentTimeLogsFromState(state);
+  const currentFreelanceInvoices = selectCurrentFreelanceInvoicesFromState(state);
+  const currentFreelanceProposals = selectCurrentFreelanceProposalsFromState(state);
+  const currentFreelanceExpenses = selectCurrentFreelanceExpensesFromState(state);
+  const currentRentableUnits = selectCurrentRentableUnitsFromState(state);
+  const currentRentalBookings = selectCurrentRentalBookingsFromState(state);
+  const currentRentalRenters = selectCurrentRentalRentersFromState(state);
+  const currentSecurityDeposits = selectCurrentSecurityDepositsFromState(state);
+  const currentEduCourses = selectCurrentEduCoursesFromState(state);
+  const currentEduClassrooms = selectCurrentEduClassroomsFromState(state);
+  const currentEduCohorts = selectCurrentEduCohortsFromState(state);
+  const currentEduStudents = selectCurrentEduStudentsFromState(state);
+  const currentEduEnrollments = selectCurrentEduEnrollmentsFromState(state);
+  const currentEduSessions = selectCurrentEduSessionsFromState(state);
+  const currentEduAttendance = selectCurrentEduAttendanceFromState(state);
+  const currentEduGrades = selectCurrentEduGradesFromState(state);
+  const currentEduCertificates = selectCurrentEduCertificatesFromState(state);
+  const currentEduAdmissions = selectCurrentEduAdmissionsFromState(state);
+  const currentPmProjects = selectCurrentPmProjectsFromState(state);
+  const currentPmMilestones = selectCurrentPmMilestonesFromState(state);
+  const currentPmPrintOrders = selectCurrentPmPrintOrdersFromState(state);
+  const currentPmBatDeliverables = selectCurrentPmBatDeliverablesFromState(state);
+  const currentPmTalents = selectCurrentPmTalentsFromState(state);
+  const currentPmMissions = selectCurrentPmMissionsFromState(state);
+  const currentPmAttendances = selectCurrentPmAttendancesFromState(state);
+  const currentPmExpenses = selectCurrentPmExpensesFromState(state);
+  const currentPmPayrollBatches = selectCurrentPmPayrollBatchesFromState(state);
+  const currentPmCcpSlips = selectCurrentPmCcpSlipsFromState(state);
+  const currentPmEquipmentStock = selectCurrentPmEquipmentStockFromState(state);
+  const currentDevices = selectCurrentDevicesFromState(state);
+  const currentB2bClients = selectCurrentB2bClientsFromState(state);
+  const currentWarehouses = selectCurrentWarehousesFromState(state);
+  const currentCommercialDocs = selectCurrentCommercialDocsFromState(state);
+  const currentPurchaseDocs = selectCurrentPurchaseDocsFromState(state);
+  const currentStockVouchers = selectCurrentStockVouchersFromState(state);
+  const currentMemberCheckIns = selectCurrentMemberCheckInsFromState(state);
+  const unreadNotificationCount = selectUnreadNotificationCountFromState(state);
+  const selectedMember = selectSelectedMemberFromState(state);
+
+  return {
+    ...atriumActions,
     account: state.account,
     subscription: state.subscription,
     businesses: state.businesses,
@@ -8859,10 +9193,7 @@ export function useAtriumStore() {
     syncErrorMessage: state.syncErrorMessage,
     networkMode: state.networkMode || 'online',
     isSyncTimeout: state.isSyncTimeout || false,
-    setNetworkMode,
-    retryCloudSync,
     isSupabaseConfigured: isSupabaseConfigured(),
-    syncWithSupabase,
     // Freelancer Collections (Strictly Scoped by Active Branch)
     freelanceClients: currentFreelanceClients,
     freelanceProjects: currentFreelanceProjects,
@@ -8912,145 +9243,11 @@ export function useAtriumStore() {
     eduAdmissions: currentEduAdmissions,
     selectedMember,
     isDetailOpen: state.isDetailOpen,
-    // Actions
-    setScreen,
-    setTheme,
-    setLanguage,
-    setSystemDefaultLanguage,
-    switchFacility,
-    switchBusiness,
-    switchBranch,
-    selectMember,
-    closeDetail,
-    addMember,
-    updateMember,
-    deleteMember,
-    checkInMember,
-    addLead,
-    updateLeadStatus,
-    deleteLead,
-    convertLeadToMember,
-    addProduct,
-    updateProduct,
-    deleteProduct,
-    processSale,
-    refundSale,
-    deleteSale,
-    batchDeleteSales,
-    deleteScheduleEvent,
-    batchDeleteScheduleEvents,
-    adjustStock,
-    parkOrder,
-    resumeParkedOrder,
-    deleteParkedOrder,
-    updateReceiptConfig,
-    seedDemoInventory,
-    batchDeleteProducts,
-    batchRestockProducts,
-    resetPosMockData,
-    addStaff,
-    addBusiness,
-    addBranch,
-    registerDevice,
-    revokeDevice,
-    redeemVoucher,
-    resetAllData,
-    resetToDefaultDemoData,
-    exportDatabase,
-    importDatabase,
-    // Appointment & Salon Actions
-
-    createAppointment,
-    updateAppointmentStatus,
-    rescheduleAppointment,
-    deleteAppointment,
-    batchDeleteAppointments,
-    batchUpdateAppointmentStatus,
-    addServiceItem,
-    updateServiceItem,
-    deleteServiceItem,
-    batchDeleteServiceItems,
-    checkoutAppointment,
-    updateStylistPayoutStatus,
-    resetSalonMockData,
     salonWorkstations: state.salonWorkstations || INITIAL_SALON_WORKSTATIONS,
     stylistPayouts: state.stylistPayouts || INITIAL_STYLIST_PAYOUTS,
-
-    // Freelance Actions
-    startTimer,
-    pauseTimer,
-    resumeTimer,
-    stopTimer,
-    resetTimer,
-    addFreelanceClient,
-    updateFreelanceClient,
-    deleteFreelanceClient,
-    addFreelanceProject,
-    updateFreelanceProject,
-    deleteFreelanceProject,
-    updateProjectStage,
-    addDeliverable,
-    updateDeliverable,
-    deleteDeliverable,
-    updateDeliverableStage,
-    logTimeEntry,
-    updateTimeLog,
-    deleteTimeLog,
-    billUnbilledHours,
-    createFreelanceInvoice,
-    updateInvoiceStatus,
-    deleteFreelanceInvoice,
-    createFreelanceProposal,
-    updateFreelanceProposal,
-    deleteFreelanceProposal,
-    convertProposalToProject,
-    addFreelanceExpense,
-    deleteFreelanceExpense,
-    resetFreelanceMockData,
-    // Rentals & Venue Actions
-    createRentalBooking,
-    updateRentalBooking,
-    deleteRentalBooking,
-    checkInBooking,
-    checkOutBooking,
-    createRentableUnit,
-    updateRentableUnit,
-    deleteRentableUnit,
-    createRentalRenter,
-    updateRentalRenter,
-    deleteRentalRenter,
-    releaseSecurityDeposit,
-    deductSecurityDeposit,
-    resetVenueMockData,
-    // Education & Academy Actions
-    resetEduMockData,
-    addEduStudent,
-    updateEduStudent,
-    deleteEduStudent,
-    addEduCohort,
-    updateEduCohort,
-    deleteEduCohort,
-    addEduSession,
-    updateEduSession,
-    deleteEduSession,
-    batchRecordAttendance,
-    recordEduGrade,
-    deleteEduGrade,
-    recordTuitionPayment,
-    addEduEnrollment,
-    addEduAdmissionLead,
-    updateAdmissionStage,
-    updateEduAdmissionLead,
-    deleteEduAdmissionLead,
-    convertAdmissionToStudent,
-    issueEduCertificate,
-    addEduClassroom,
-    addEduCourse,
-    // Project & Milestone State & Actions
+    // Project & Milestone State
     activePmRole: state.activePmRole || 'direction',
-    setActivePmRole,
     activePmSubScreen: state.activePmSubScreen || 'dashboard',
-    setActivePmSubScreen,
     pmClients: state.pmClients || [],
     pmProjects: currentPmProjects,
     pmMilestones: currentPmMilestones,
@@ -9064,57 +9261,7 @@ export function useAtriumStore() {
     pmPayrollBatches: currentPmPayrollBatches,
     pmCcpSlips: currentPmCcpSlips,
     pmEquipmentStock: currentPmEquipmentStock,
-    addPmProject,
-    updatePmProjectStatus,
-    addPmPrintOrder,
-    updatePmPrintOrderStatus,
-    addPmBatDeliverable,
-    reviewPmBatDeliverable,
-    addPmTalent,
-    updatePmTalentStatus,
-    addPmMission,
-    updatePmAttendanceStatus,
-    closePmRollCall,
-    addPmExpense,
-    approvePmExpense,
-    rejectPmExpense,
-    approvePmPayrollBatch,
-    generatePmCcpSlipsForBatch,
-    markPmCcpSlipPrinted,
-    addPmEquipmentStock,
-    updatePmEquipmentStatus,
-    resetPmMockData,
-    deletePmProject,
-    batchDeletePmProjects,
-    batchUpdatePmProjectStatus,
-    batchApprovePmExpenses,
-    batchRejectPmExpenses,
-    batchDeletePmExpenses,
-    batchApprovePmPayrollBatches,
-    batchUpdatePmPrintOrderStatus,
-    batchDeletePmPrintOrders,
-    batchReviewPmBatDeliverables,
-    batchDeletePmBatDeliverables,
-    batchDeletePmTalents,
-    batchUpdatePmTalentStatus,
-    batchDeletePmMissions,
-    batchUpdatePmAttendanceStatus,
-    batchMarkPmCcpSlipsPrinted,
-    batchUpdatePmEquipmentStatus,
-    batchDeletePmEquipmentStock,
-    // Auth Actions
-    login,
-    loginWithPin,
-    switchStaffUser,
-    logout,
-    openOnboarding,
-    closeOnboarding,
-    openFastSwitch,
-    closeFastSwitch,
-    completeOnboarding,
-    openDesktopUpgradeModal,
-    closeDesktopUpgradeModal,
-    // B2B Trading & Commercial Collections & Actions
+    // B2B Trading & Commercial Collections
     b2bClients: currentB2bClients,
     allB2bClients: state.b2bClients || [],
     b2bSuppliers: state.b2bSuppliers || [],
@@ -9126,197 +9273,30 @@ export function useAtriumStore() {
     allPurchaseDocs: state.purchaseDocs || [],
     stockVouchers: currentStockVouchers,
     allStockVouchers: state.stockVouchers || [],
-    createCommercialDoc,
-    updateCommercialDoc,
-    deleteCommercialDoc,
-    convertCommercialDoc,
-    createPurchaseDoc,
-    updatePurchaseDoc,
-    receivePurchaseDoc,
-    createStockVoucher,
-    createB2bClient,
-    updateB2bClient,
-    deleteB2bClient,
-    createB2bSupplier,
-    updateB2bSupplier,
-    deleteB2bSupplier,
-    createWarehouseDepot,
-    resetTradingMockData,
-    // Automotive Garage Role State & Actions
+    // Operational Role State
     activeGarageRole: state.activeGarageRole || 'gerant',
-    setActiveGarageRole,
-    // Real Estate Operational Role State & Actions
     activeRealEstateRole: state.activeRealEstateRole || 'direction',
-    setActiveRealEstateRole,
-    // Light Manufacturing Operational Role State & Actions
     activeManufacturingRole: state.activeManufacturingRole || 'gerant',
-    setActiveManufacturingRole,
-    // Legal Cabinet & Accounting Operational Role State & Actions
     activeLegalRole: state.activeLegalRole || 'avocat_associe',
-    setActiveLegalRole,
-    // Logistics, Couriers & Parcel Dispatch Operational Role State & Actions
     activeLogisticsRole: state.activeLogisticsRole || 'gerant',
-    setActiveLogisticsRole,
-    // Construction & BTP Contracting Operational Role State & Actions
     activeContractorRole: state.activeContractorRole || 'gerant',
-    setActiveContractorRole: (role: ContractorRole) => {
-      globalState = {
-        ...globalState,
-        activeContractorRole: role,
-        activeScreen: 'home',
-      };
-      notify();
-    },
-    // Agriculture & Livestock Operational Role State & Actions
     activeAgriRole: state.activeAgriRole || 'gerant',
-    setActiveAgriRole: (role: AgriRole) => {
-      globalState = {
-        ...globalState,
-        activeAgriRole: role,
-        activeScreen: 'home',
-      };
-      notify();
-    },
-    // Dual-Role (Owner / Staff) State & Actions for Gym, Salon, POS, Education
     activeMembershipRole: state.activeMembershipRole || 'owner',
-    setActiveMembershipRole: (role: StandardRole) => {
-      globalState = {
-        ...globalState,
-        activeMembershipRole: role,
-        activeScreen: 'home',
-      };
-      notify();
-    },
     activeAppointmentRole: state.activeAppointmentRole || 'owner',
-    setActiveAppointmentRole: (role: StandardRole) => {
-      globalState = {
-        ...globalState,
-        activeAppointmentRole: role,
-        activeScreen: 'home',
-      };
-      notify();
-    },
     activePosRole: state.activePosRole || 'owner',
-    setActivePosRole: (role: StandardRole) => {
-      globalState = {
-        ...globalState,
-        activePosRole: role,
-        activeScreen: 'home',
-      };
-      notify();
-    },
     activeEducationRole: state.activeEducationRole || 'owner',
-    setActiveEducationRole: (role: StandardRole) => {
-      globalState = {
-        ...globalState,
-        activeEducationRole: role,
-        activeScreen: 'home',
-      };
-      notify();
-    },
     memberCheckIns: currentMemberCheckIns,
-    addMemberCheckIn: (checkIn: MemberCheckInLog) => {
-      const scopedCheckIn: MemberCheckInLog = {
-        ...checkIn,
-        businessId: checkIn.businessId || globalState.currentBusinessId,
-        branchId: checkIn.branchId || globalState.currentBranchId,
-      };
-      globalState = {
-        ...globalState,
-        memberCheckIns: [scopedCheckIn, ...(globalState.memberCheckIns || [])],
-      };
-      notify();
-    },
     walkInTickets: state.walkInTickets || [],
-    addWalkInTicket: (ticket: WalkInTicket) => {
-      globalState = {
-        ...globalState,
-        walkInTickets: [ticket, ...(globalState.walkInTickets || [])],
-      };
-      notify();
-    },
     salonChairStations: state.salonChairStations || [],
-    updateSalonChairStation: (station: SalonChairStation) => {
-      const existing = (globalState.salonChairStations || []).findIndex(
-        (s) => s.workstationId === station.workstationId
-      );
-      let nextStations = [...(globalState.salonChairStations || [])];
-      if (existing >= 0) {
-        nextStations[existing] = station;
-      } else {
-        nextStations.push(station);
-      }
-      globalState = {
-        ...globalState,
-        salonChairStations: nextStations,
-      };
-      notify();
-    },
     eduQuickAttendance: state.eduQuickAttendance || [],
-    recordQuickAttendance: (record: EduQuickAttendanceRecord) => {
-      const existing = (globalState.eduQuickAttendance || []).findIndex(
-        (r) => r.sessionId === record.sessionId && r.studentId === record.studentId
-      );
-      let nextRecords = [...(globalState.eduQuickAttendance || [])];
-      if (existing >= 0) {
-        nextRecords[existing] = record;
-      } else {
-        nextRecords.push(record);
-      }
-      globalState = {
-        ...globalState,
-        eduQuickAttendance: nextRecords,
-      };
-      notify();
-    },
     // Toast Notifications & Notification Center
     toasts: state.toasts || [],
     notifications: state.notifications || [],
     unreadNotificationCount,
-    showToast,
-    dismissToast,
-    markNotificationAsRead,
-    markAllNotificationsAsRead,
-    clearAllNotifications,
-    removeNotification,
-    addNotification,
-    toggleTopBarCollapsed: toggleTopBarCollapsedAction,
-    toggleTopBarAutoHide: toggleTopBarAutoHideAction,
-    setTopBarAutoHide: (autoHide: boolean) => {
-      globalState = {
-        ...globalState,
-        isTopBarAutoHide: autoHide,
-      };
-      notify();
-    },
-    setTopBarCollapsed: (collapsed: boolean) => {
-      globalState = {
-        ...globalState,
-        isTopBarCollapsed: collapsed,
-      };
-      notify();
-    },
-    // Universal Workforce & Staff Management
-    createStaffMember,
-    updateStaffMember,
-    freezeStaffMember,
-    vacationStaffMember,
-    terminateStaffMember,
-    deleteStaffMember,
-    punchStaffAttendance,
+    // Universal Workforce & Staff Management Collections
     staffAttendanceLogs: state.staffAttendanceLogs || [],
     staffSalaryAdvances: state.staffSalaryAdvances || [],
     staffPayrollRuns: state.staffPayrollRuns || [],
     staffPayrollSlips: state.staffPayrollSlips || [],
-    createStaffSalaryAdvance,
-    waiveStaffSalaryAdvance,
-    generateStaffPayrollRun,
-    approveStaffPayrollRun,
-    markStaffPayrollSlipPaid,
-    logStaffAttendanceManual,
-    canAccessStaffScreen: (cat: BusinessCategory | string, role?: string) =>
-      canAccessStaffScreen(cat, role || state.currentUser?.role),
-    canViewSensitivePayroll: (role?: string) =>
-      canViewSensitivePayroll(role || state.currentUser?.role),
   };
 }

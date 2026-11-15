@@ -46,3 +46,5 @@ export type { MotionTier, MotionConfig } from './motion';
 
 export * from './charts';
 
+export * from '../components/ui/kinetic';
+

@@ -1,5 +1,11 @@
-import { useState, useMemo } from 'react';
-import { useAtriumStore } from '../../../services/store';
+import { useState, useMemo, useCallback } from 'react';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  useAtriumActions,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { StaffMember, StaffLifecycleStatus, BusinessCategory } from '../../../types/index';
 import {
   canAccessStaffScreen,
@@ -8,33 +14,70 @@ import {
   getEffectiveUserRole,
   canCreateStaff,
 } from '../../../utils/staffRules';
+import {
+  buildBranchesByIdMap,
+  resolveRecordBranch,
+  downloadCsvSafe,
+} from '../../ui/kinetic';
 
 export interface UseStaffFoundationOptions {
   category: BusinessCategory | string;
 }
 
 export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
+  const storeSlice = useAtriumSelector(
+    (s) => ({
+      allStaff: s.staff,
+      branches: s.branches,
+      currentBranchId: s.currentBranchId,
+      currentUser: s.currentUser,
+      staffAttendanceLogs: s.staffAttendanceLogs,
+      staffSalaryAdvances: s.staffSalaryAdvances,
+      staffPayrollRuns: s.staffPayrollRuns,
+      staffPayrollSlips: s.staffPayrollSlips,
+      language: s.language,
+      activePmRole: s.activePmRole,
+      activeGarageRole: s.activeGarageRole,
+      activeRealEstateRole: s.activeRealEstateRole,
+      activeManufacturingRole: s.activeManufacturingRole,
+      activeLegalRole: s.activeLegalRole,
+      activeLogisticsRole: s.activeLogisticsRole,
+      activeContractorRole: s.activeContractorRole,
+      activeAgriRole: s.activeAgriRole,
+      activeMembershipRole: s.activeMembershipRole,
+      activeAppointmentRole: s.activeAppointmentRole,
+      activePosRole: s.activePosRole,
+      activeEducationRole: s.activeEducationRole,
+    }),
+    shallowEqualObjects
+  );
+
+  const currentBranch = useAtriumSelector(selectCurrentBranchFromState);
+
   const {
-    staff: allStaff,
-    currentBranchId,
-    currentUser,
     punchStaffAttendance,
     updateStaffMember,
     deleteStaffMember,
     freezeStaffMember,
     vacationStaffMember,
     terminateStaffMember,
-    staffAttendanceLogs,
-    staffSalaryAdvances,
-    staffPayrollRuns,
-    staffPayrollSlips,
     createStaffSalaryAdvance,
     waiveStaffSalaryAdvance,
     generateStaffPayrollRun,
     approveStaffPayrollRun,
     markStaffPayrollSlipPaid,
     logStaffAttendanceManual,
-    showToast,
+  } = useAtriumActions();
+
+  const {
+    allStaff,
+    branches,
+    currentBranchId,
+    currentUser,
+    staffAttendanceLogs,
+    staffSalaryAdvances,
+    staffPayrollRuns,
+    staffPayrollSlips,
     language,
     activePmRole,
     activeGarageRole,
@@ -48,7 +91,7 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
     activeAppointmentRole,
     activePosRole,
     activeEducationRole,
-  } = useAtriumStore();
+  } = storeSlice;
 
   const isAr = language === 'ar';
   const isEn = language === 'en';
@@ -56,30 +99,51 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
   const [activeSubTab, setActiveSubTab] = useState<'directory' | 'attendance' | 'payroll' | 'history'>('directory');
 
   // Strict RBAC Access Check based on Effective Active Role
-  const effectiveRole = getEffectiveUserRole(category, {
-    currentUser,
-    activePmRole,
-    activeGarageRole,
-    activeRealEstateRole,
-    activeManufacturingRole,
-    activeLegalRole,
-    activeLogisticsRole,
-    activeContractorRole,
-    activeAgriRole,
-    activeMembershipRole,
-    activeAppointmentRole,
-    activePosRole,
-    activeEducationRole,
-  });
+  const effectiveRole = useMemo(
+    () =>
+      getEffectiveUserRole(category, {
+        currentUser,
+        activePmRole,
+        activeGarageRole,
+        activeRealEstateRole,
+        activeManufacturingRole,
+        activeLegalRole,
+        activeLogisticsRole,
+        activeContractorRole,
+        activeAgriRole,
+        activeMembershipRole,
+        activeAppointmentRole,
+        activePosRole,
+        activeEducationRole,
+      }),
+    [
+      category,
+      currentUser,
+      activePmRole,
+      activeGarageRole,
+      activeRealEstateRole,
+      activeManufacturingRole,
+      activeLegalRole,
+      activeLogisticsRole,
+      activeContractorRole,
+      activeAgriRole,
+      activeMembershipRole,
+      activeAppointmentRole,
+      activePosRole,
+      activeEducationRole,
+    ]
+  );
 
   const hasAccess = canAccessStaffScreen(category, effectiveRole);
   const isOwnerViewer = canViewSensitivePayroll(effectiveRole);
   const canCreate = canCreateStaff(category, effectiveRole);
-  const metricLabel = getCategoryPerformanceMetricLabel(category);
+  const metricLabel = useMemo(() => getCategoryPerformanceMetricLabel(category), [category]);
+
+  const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
   // Facility / Branch filtering
   const facilityStaff = useMemo(() => {
-    return allStaff.filter((s) => {
+    return (allStaff || []).filter((s) => {
       if (s.facilityId && currentBranchId) {
         return s.facilityId === currentBranchId || s.branchId === currentBranchId;
       }
@@ -90,8 +154,12 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
   // Filters & State
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | StaffLifecycleStatus>('all');
-  const [selectedStaffIds, setSelectedStaffIds] = useState<Set<string>>(new Set());
-  const [pinnedStaffIds, setPinnedStaffIds] = useState<Set<string>>(new Set());
+  const [branchFilter, setBranchFilter] = useState<string>('All');
+  const [contractFilter, setContractFilter] = useState<string>('All');
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+  const [selectedStaffIds, setSelectedStaffIds] = useState<Set<string>>(() => new Set());
+  const [pinnedStaffIds, setPinnedStaffIds] = useState<Set<string>>(() => new Set());
   const [sortBy, setSortBy] = useState<string>('fullName');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
@@ -101,106 +169,162 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
   const [staffToEdit, setStaffToEdit] = useState<StaffMember | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerStaff, setDrawerStaff] = useState<StaffMember | null>(null);
+  const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [isPointageScannerOpen, setIsPointageScannerOpen] = useState(false);
 
   // Filtered & Sorted Staff
   const filteredStaff = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
     return facilityStaff.filter((s) => {
-      if (statusFilter !== 'all' && s.status !== statusFilter) {
-        return false;
+      if (statusFilter !== 'all') {
+        if (statusFilter === 'on_leave') {
+          if (s.status !== 'on_leave' && s.status !== 'vacation') return false;
+        } else if (s.status !== statusFilter) {
+          return false;
+        }
       }
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
+      if (branchFilter !== 'All') {
+        const b = resolveRecordBranch(s, branchesById, currentBranch, language);
+        if (b.branchId !== branchFilter) return false;
+      }
+      if (contractFilter !== 'All') {
+        const ct = (s.contractType || s.recruitmentType || 'CDI').toLowerCase();
+        if (ct !== contractFilter.toLowerCase()) return false;
+      }
+      if (q) {
+        const b = resolveRecordBranch(s, branchesById, currentBranch, language);
         const matchesName = s.fullName?.toLowerCase().includes(q);
         const matchesEmail = s.email?.toLowerCase().includes(q);
         const matchesPhone = s.phoneNumber?.includes(q);
         const matchesRole = s.role?.toLowerCase().includes(q);
-        const matchesToken = s.badgeToken?.toLowerCase().includes(q) || s.cardId?.toLowerCase().includes(q);
-        if (!matchesName && !matchesEmail && !matchesPhone && !matchesRole && !matchesToken) {
+        const matchesBranch = b.branchName.toLowerCase().includes(q);
+        const matchesToken =
+          s.badgeToken?.toLowerCase().includes(q) || s.cardId?.toLowerCase().includes(q);
+        if (!matchesName && !matchesEmail && !matchesPhone && !matchesRole && !matchesBranch && !matchesToken) {
           return false;
         }
       }
       return true;
     });
-  }, [facilityStaff, statusFilter, searchQuery]);
+  }, [
+    facilityStaff,
+    statusFilter,
+    branchFilter,
+    contractFilter,
+    searchQuery,
+    branchesById,
+    currentBranch,
+    language,
+  ]);
 
   // Aggregate Metrics for Header Pods
-  const activeCount = useMemo(() => facilityStaff.filter((s) => s.status === 'active').length, [facilityStaff]);
-  const onLeaveCount = useMemo(() => facilityStaff.filter((s) => s.status === 'on_leave' || s.status === 'vacation').length, [facilityStaff]);
-  const frozenCount = useMemo(() => facilityStaff.filter((s) => s.status === 'frozen').length, [facilityStaff]);
+  const activeCount = useMemo(
+    () => facilityStaff.filter((s) => s.status === 'active').length,
+    [facilityStaff]
+  );
+  const onLeaveCount = useMemo(
+    () => facilityStaff.filter((s) => s.status === 'on_leave' || s.status === 'vacation').length,
+    [facilityStaff]
+  );
+  const frozenCount = useMemo(
+    () => facilityStaff.filter((s) => s.status === 'frozen').length,
+    [facilityStaff]
+  );
 
   const todayPresentCount = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
-    return facilityStaff.filter((s) => s.isClockedInToday || s.attendanceLogs?.some((l) => (l.timestamp || '').slice(0, 10) === today && l.type === 'in')).length;
+    return facilityStaff.filter(
+      (s) =>
+        s.isClockedInToday ||
+        s.attendanceLogs?.some((l) => (l.timestamp || '').slice(0, 10) === today && l.type === 'in')
+    ).length;
   }, [facilityStaff]);
 
-  const presentPercentage = facilityStaff.length > 0 ? Math.round((todayPresentCount / facilityStaff.length) * 100) : 0;
+  const presentPercentage =
+    facilityStaff.length > 0 ? Math.round((todayPresentCount / facilityStaff.length) * 100) : 0;
 
   const totalMonthlyPayroll = useMemo(() => {
-    return facilityStaff.filter((s) => s.status !== 'terminated').reduce((sum, s) => sum + (s.salary || 0), 0);
+    return facilityStaff
+      .filter((s) => s.status !== 'terminated')
+      .reduce((sum, s) => sum + (s.salary || 0), 0);
   }, [facilityStaff]);
 
   // Handlers
-  const handleOpenCreate = () => {
+  const handleOpenCreate = useCallback(() => {
     setStaffToEdit(null);
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleOpenEdit = (member: StaffMember) => {
+  const handleOpenEdit = useCallback((member: StaffMember) => {
     setStaffToEdit(member);
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
     setStaffToEdit(null);
-  };
+  }, []);
 
-  const handleOpenDrawer = (member: StaffMember) => {
+  const handleOpenDrawer = useCallback((member: StaffMember, openerEl?: HTMLElement | null) => {
     setDrawerStaff(member);
+    if (openerEl !== undefined) setDrawerOpenerEl(openerEl);
     setIsDrawerOpen(true);
-  };
+  }, []);
 
-  const handleCloseDrawer = () => {
+  const handleCloseDrawer = useCallback(() => {
     setIsDrawerOpen(false);
-    setDrawerStaff(null);
-  };
+  }, []);
 
-  const handlePunchPointage = (staffId: string) => {
-    punchStaffAttendance(staffId);
-    const member = facilityStaff.find((s) => s.id === staffId);
-    showToast({
-      title: isAr ? 'تسجيل الحضور' : isEn ? 'Attendance Pointage' : 'Pointage Présence',
-      message: isAr
-        ? `تم تحديث الحضور لـ ${member?.fullName || ''}`
-        : isEn
-        ? `Attendance updated for ${member?.fullName || ''}`
-        : `Pointage enregistré pour ${member?.fullName || ''}`,
-      type: 'success',
-    });
-  };
+  const handlePunchPointage = useCallback(
+    (staffId: string) => {
+      punchStaffAttendance(staffId);
+      const member = facilityStaff.find((s) => s.id === staffId);
+      showToast({
+        title: isAr ? 'تسجيل الحضور' : isEn ? 'Attendance Pointage' : 'Pointage Présence',
+        message: isAr
+          ? `تم تحديث الحضور لـ ${member?.fullName || ''}`
+          : isEn
+          ? `Attendance updated for ${member?.fullName || ''}`
+          : `Pointage enregistré pour ${member?.fullName || ''}`,
+        type: 'success',
+      });
+    },
+    [punchStaffAttendance, facilityStaff, isAr, isEn]
+  );
 
-  const handleBulkStatusChange = (status: StaffLifecycleStatus) => {
-    if (selectedStaffIds.size === 0) return;
-    selectedStaffIds.forEach((id) => {
-      if (status === 'frozen') freezeStaffMember(id);
-      else if (status === 'vacation' || status === 'on_leave') vacationStaffMember(id);
-      else if (status === 'terminated') terminateStaffMember(id);
-      else updateStaffMember(id, { status, isActive: status === 'active' });
-    });
-    setSelectedStaffIds(new Set());
-    showToast({
-      title: isAr ? 'تحديث الحالة' : isEn ? 'Status Updated' : 'Statut actualisé',
-      message: isAr
-        ? `تم تحديث حالة ${selectedStaffIds.size} موظف`
-        : isEn
-        ? `Status updated for ${selectedStaffIds.size} staff members`
-        : `Statut mis à jour pour ${selectedStaffIds.size} collaborateurs`,
-      type: 'success',
-    });
-  };
+  const handleBulkStatusChange = useCallback(
+    (status: StaffLifecycleStatus) => {
+      if (selectedStaffIds.size === 0) return;
+      selectedStaffIds.forEach((id) => {
+        if (status === 'frozen') freezeStaffMember(id);
+        else if (status === 'vacation' || status === 'on_leave') vacationStaffMember(id);
+        else if (status === 'terminated') terminateStaffMember(id);
+        else updateStaffMember(id, { status, isActive: status === 'active' });
+      });
+      const count = selectedStaffIds.size;
+      setSelectedStaffIds(new Set());
+      showToast({
+        title: isAr ? 'تحديث الحالة' : isEn ? 'Status Updated' : 'Statut actualisé',
+        message: isAr
+          ? `تم تحديث حالة ${count} موظف`
+          : isEn
+          ? `Status updated for ${count} staff members`
+          : `Statut mis à jour pour ${count} collaborateurs`,
+        type: 'success',
+      });
+    },
+    [
+      selectedStaffIds,
+      freezeStaffMember,
+      vacationStaffMember,
+      terminateStaffMember,
+      updateStaffMember,
+      isAr,
+      isEn,
+    ]
+  );
 
-  const handleBulkDelete = () => {
+  const handleBulkDelete = useCallback(() => {
     if (selectedStaffIds.size === 0) return;
     const count = selectedStaffIds.size;
     selectedStaffIds.forEach((id) => {
@@ -216,9 +340,24 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
         : `${count} collaborateurs supprimés avec succès`,
       type: 'warning',
     });
-  };
+  }, [selectedStaffIds, deleteStaffMember, isAr, isEn]);
 
-  const handleBulkPointage = () => {
+  const handleDeleteStaff = useCallback(
+    (member: StaffMember) => {
+      deleteStaffMember(member.id);
+      if (drawerStaff?.id === member.id) {
+        setIsDrawerOpen(false);
+      }
+      showToast({
+        title: isAr ? 'تم الحذف' : isEn ? 'Staff Removed' : 'Collaborateur supprimé',
+        message: member.fullName,
+        type: 'warning',
+      });
+    },
+    [deleteStaffMember, drawerStaff?.id, isAr, isEn]
+  );
+
+  const handleBulkPointage = useCallback(() => {
     if (selectedStaffIds.size === 0) return;
     selectedStaffIds.forEach((id) => {
       punchStaffAttendance(id);
@@ -234,10 +373,65 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
         : `Pointage d'entrée enregistré pour ${count} collaborateurs`,
       type: 'success',
     });
-  };
+  }, [selectedStaffIds, punchStaffAttendance, isAr, isEn]);
+
+  const handleResetFilters = useCallback(() => {
+    setStatusFilter('all');
+    setBranchFilter('All');
+    setContractFilter('All');
+    setSearchQuery('');
+    setIsFilterModalOpen(false);
+  }, []);
+
+  const handleExportCsv = useCallback(() => {
+    if (filteredStaff.length === 0) {
+      showToast(
+        isAr ? 'لا يوجد موظفون للتصدير' : isEn ? 'No staff to export' : 'Aucun collaborateur à exporter',
+        'info'
+      );
+      return;
+    }
+    const branchCol = isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche / Site';
+    const headers = [
+      'ID',
+      isAr ? 'الاسم الكامل' : isEn ? 'Full Name' : 'Nom & Prénom',
+      isAr ? 'الدور' : isEn ? 'Role' : 'Poste / Spécialité',
+      branchCol,
+      isAr ? 'الحالة' : isEn ? 'Status' : 'Statut',
+      isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone',
+      isAr ? 'العقد' : isEn ? 'Contract' : 'Contrat',
+      isOwnerViewer ? (isAr ? 'الراتب (دج)' : isEn ? 'Salary (DZD)' : 'Salaire (DZD)') : 'Badge RFID',
+    ];
+    const rows = filteredStaff.map((s) => {
+      const b = resolveRecordBranch(s, branchesById, currentBranch, language);
+      return [
+        s.id,
+        s.fullName,
+        s.role || '',
+        b.branchName,
+        s.status,
+        s.phoneNumber || '',
+        s.contractType || s.recruitmentType || 'CDI',
+        isOwnerViewer ? s.salary || 0 : s.badgeToken || s.cardId || '',
+      ];
+    });
+    downloadCsvSafe(
+      `atrium-staff-${new Date().toISOString().slice(0, 10)}.csv`,
+      headers,
+      rows
+    );
+    showToast({
+      type: 'success',
+      title: isAr ? 'تصدير الفريق' : isEn ? 'Staff Exported' : 'Export collaborateurs',
+      message: `${filteredStaff.length} ${isAr ? 'سجل' : isEn ? 'records' : 'collaborateurs'}`,
+    });
+  }, [filteredStaff, branchesById, currentBranch, language, isOwnerViewer, isAr, isEn]);
 
   return {
     allStaff,
+    branches,
+    currentBranch,
+    branchesById,
     facilityStaff,
     filteredStaff,
     effectiveRole,
@@ -249,6 +443,14 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
     setSearchQuery,
     statusFilter,
     setStatusFilter,
+    branchFilter,
+    setBranchFilter,
+    contractFilter,
+    setContractFilter,
+    isFilterModalOpen,
+    setIsFilterModalOpen,
+    handleResetFilters,
+    handleExportCsv,
     selectedStaffIds,
     setSelectedStaffIds,
     pinnedStaffIds,
@@ -272,8 +474,10 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
     handleCloseModal,
     isDrawerOpen,
     drawerStaff,
+    drawerOpenerEl,
     handleOpenDrawer,
     handleCloseDrawer,
+    handleDeleteStaff,
     isPointageScannerOpen,
     setIsPointageScannerOpen,
     handlePunchPointage,

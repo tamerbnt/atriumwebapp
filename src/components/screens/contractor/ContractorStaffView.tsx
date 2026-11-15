@@ -1,11 +1,7 @@
 import React from 'react';
-import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { ColumnDefinition } from '../../ui/collection';
 import { useStaffFoundation } from '../../common/staff/useStaffFoundation';
-import { StaffHeaderTray } from '../../common/staff/StaffHeaderTray';
-import { StaffActionToolbar } from '../../common/staff/StaffActionToolbar';
-import { QuickPointageModal } from '../../common/staff/QuickPointageModal';
-import { StaffModal } from '../../modals/StaffModal';
-import { StaffInspectorDrawer } from '../../common/StaffInspectorDrawer';
+import { StandardStaffScreen } from '../../common/staff/StandardStaffScreen';
 import { StaffMember } from '../../../types/index';
 import { HardHat, ShieldCheck, Building2, CheckCircle2 } from 'lucide-react';
 
@@ -134,96 +130,12 @@ export const ContractorStaffView: React.FC = () => {
   ];
 
   return (
-    <div className="w-full">
-      <StaffHeaderTray
-        totalStaffCount={foundation.facilityStaff.length}
-        activeCount={foundation.activeCount}
-        onLeaveCount={foundation.onLeaveCount}
-        frozenCount={foundation.frozenCount}
-        presentPercentage={foundation.presentPercentage}
-        todayPresentCount={foundation.todayPresentCount}
-        totalMonthlyPayroll={foundation.totalMonthlyPayroll}
-        isOwnerViewer={foundation.isOwnerViewer}
-        metricLabel={foundation.metricLabel}
-        language={language}
-        categoryTitle={isAr ? 'عمال وإطارات الورشات BTP' : isEn ? 'Construction Crew & Foremen' : 'Encadrement & Compagnons BTP'}
-      />
-
-      <StaffActionToolbar
-        searchQuery={foundation.searchQuery}
-        onSearchChange={foundation.setSearchQuery}
-        statusFilter={foundation.statusFilter}
-        onStatusFilterChange={foundation.setStatusFilter}
-        viewMode={foundation.viewMode}
-        onViewModeChange={foundation.setViewMode}
-        onOpenCreate={foundation.handleOpenCreate}
-        onOpenPointage={() => foundation.setIsPointageScannerOpen(true)}
-        canCreate={foundation.canCreate}
-        language={language}
-        newStaffButtonLabel={isAr ? 'إضافة عامل / تقني BTP' : isEn ? 'Add Site Staff' : 'Nouveau Compagnon BTP'}
-      />
-
-      <UniversalDataCollection
-        data={foundation.filteredStaff}
-        columns={columns}
-        keyExtractor={(item) => item.id}
-        viewMode={foundation.viewMode}
-        selectedIds={foundation.selectedStaffIds}
-        onSelectionChange={foundation.setSelectedStaffIds}
-        pinnedIds={foundation.pinnedStaffIds}
-        onPinToggle={(id: any) => {
-          const key = typeof id === 'string' ? id : id?.id;
-          const next = new Set(foundation.pinnedStaffIds);
-          if (next.has(key)) next.delete(key);
-          else next.add(key);
-          foundation.setPinnedStaffIds(next);
-        }}
-        onItemClick={(item) => foundation.handleOpenDrawer(item)}
-        onBulkDelete={foundation.handleBulkDelete}
-        bulkCustomActions={[
-          {
-            id: 'punch_in',
-            label: isAr ? 'تسجيل حضور' : isEn ? 'Punch In' : 'Pointer Présents',
-            onClick: foundation.handleBulkPointage,
-          },
-          {
-            id: 'on_leave',
-            label: isAr ? 'تحويل لعطلة' : isEn ? 'Set On Leave' : 'Mettre en Congé',
-            onClick: () => foundation.handleBulkStatusChange('on_leave'),
-          },
-          {
-            id: 'frozen',
-            label: isAr ? 'تجميد مؤقت' : isEn ? 'Suspend' : 'Suspendre',
-            onClick: () => foundation.handleBulkStatusChange('frozen'),
-          },
-        ]}
-      />
-
-      <StaffInspectorDrawer
-        staff={foundation.drawerStaff}
-        isOpen={foundation.isDrawerOpen}
-        onClose={foundation.handleCloseDrawer}
-        onEdit={(member) => {
-          foundation.handleCloseDrawer();
-          foundation.handleOpenEdit(member);
-        }}
-        currentCategory="contractor_construction"
-      />
-
-      <StaffModal
-        isOpen={foundation.isModalOpen}
-        onClose={foundation.handleCloseModal}
-        staffToEdit={foundation.staffToEdit}
-        currentCategory="contractor_construction"
-      />
-
-      <QuickPointageModal
-        isOpen={foundation.isPointageScannerOpen}
-        onClose={() => foundation.setIsPointageScannerOpen(false)}
-        staffList={foundation.facilityStaff}
-        onPunch={foundation.handlePunchPointage}
-        language={language}
-      />
-    </div>
+    <StandardStaffScreen
+      foundation={foundation}
+      category="contractor_construction"
+      columns={columns}
+      categoryTitle={isAr ? 'عمال وإطارات الورشات BTP' : isEn ? 'Construction Crew & Foremen' : 'Encadrement & Compagnons BTP'}
+      newStaffButtonLabel={isAr ? 'إضافة عامل / تقني BTP' : isEn ? 'Add Site Staff' : 'Nouveau Compagnon BTP'}
+    />
   );
 };

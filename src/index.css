@@ -55,25 +55,28 @@
 .th-adherents {
   margin-top: 12px;
   display: grid;
-  grid-template-columns: 22px minmax(200px, 1fr) 190px 120px 155px 105px;
+  grid-template-columns: 22px minmax(180px, 1fr) 175px 110px 140px 140px;
   gap: 16px;
   align-items: center;
   height: 40px;
-  max-height: 52px;
   padding: 0 176px 0 14px;
   border-radius: 12px;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 13px;
   overflow: hidden;
-  transition: max-height 220ms cubic-bezier(.24, 1.34, .38, 1),
-              opacity 160ms ease,
-              margin-top 220ms cubic-bezier(.24, 1.34, .38, 1),
-              border-color 160ms ease;
+  contain: layout style paint;
+  transform-origin: top center;
+  transition: transform 200ms cubic-bezier(.24, 1.34, .38, 1),
+              opacity 140ms ease;
 }
 .th-adherents[data-v="g"] {
-  max-height: 0;
-  opacity: 0;
+  position: absolute;
+  top: 12px;
+  left: 0;
+  right: 0;
   margin-top: 0;
-  border-color: transparent;
+  opacity: 0;
+  transform: translate3d(0, -10px, 0) scaleY(0.84);
   pointer-events: none;
 }
 
@@ -87,7 +90,6 @@
   top: 0;
   contain: layout style;
   backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 .slab {
   position: absolute;
@@ -101,6 +103,7 @@
   box-sizing: border-box;
   z-index: 0;
   contain: layout style paint;
+  backface-visibility: hidden;
   transform-origin: center center;
   transition: box-shadow 160ms, border-color 160ms;
 }
@@ -114,15 +117,19 @@
 
 .in {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   z-index: 2;
   display: grid;
-  grid-template-columns: 22px minmax(200px, 1fr) 190px 120px 155px 105px;
+  grid-template-columns: 22px minmax(180px, 1fr) 175px 110px 140px 140px;
   gap: 16px;
   align-items: center;
   padding: 0 177px 0 15px;
   box-sizing: border-box;
   contain: layout style;
+  backface-visibility: hidden;
 }
 .det {
   contain: layout style paint;
@@ -142,19 +149,23 @@
 .rows[data-v="g"] .c-st { grid-area: st; }
 .rows[data-v="g"] .c-fm { grid-area: fm; }
 .rows[data-v="g"] .c-dt { grid-area: dt; }
-.rows[data-v="g"] .c-sd { grid-area: sd; text-align: right; align-self: end; }
+.rows[data-v="g"] .c-sd { grid-area: sd; text-align: right; justify-self: end; align-self: end; }
 
 [dir="rtl"] .in {
+  left: auto;
+  right: 0;
   padding: 0 15px 0 177px;
 }
 [dir="rtl"] .th-adherents {
   padding: 0 14px 0 176px;
+  font-family: 'Cairo', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 [dir="rtl"] .rows[data-v="g"] .in {
   padding: 16px;
 }
 [dir="rtl"] .rows[data-v="g"] .c-sd {
   text-align: left;
+  justify-self: start;
 }
 
 .rb {
@@ -622,7 +633,7 @@
     font-size: 14px;
     line-height: 1.5;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    text-rendering: optimizeLegibility;
+    text-rendering: auto;
     margin: 0;
     padding: 0;
     -webkit-font-smoothing: antialiased;

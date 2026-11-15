@@ -1,18 +1,16 @@
-import React, { useState, useMemo } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import {
-  LayoutGrid,
-  List,
-  Calendar,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-  Check,
+  Eye,
+  Pencil,
+  CreditCard,
+  Pin,
   Trash2,
-  Download,
+  Power,
+  Building2,
+  Check,
+  Calendar,
 } from 'lucide-react';
-import { CollectionListRow, ActionButtonDef } from './CollectionListRow';
-import { CollectionGridCard } from './CollectionGridCard';
+import { ActionButtonDef } from './CollectionListRow';
 import { CollectionEmptyState } from './CollectionEmptyState';
 import { KebabMenuItem } from './CollectionKebabMenu';
 import { SkeletonTable, SkeletonCardGrid } from '../skeleton/StructuralSkeletons';
@@ -23,14 +21,39 @@ import {
   shallowEqualObjects,
   retryCloudSyncAction,
 } from '../../../services/store';
-import { LiveSegmentedControl, LiveButton } from '../live';
-import { LiquidExportButton } from '../liquid/LiquidExportButton';
+import {
+  ScreenCollectionToolbar,
+  ActiveFilterChip,
+} from '../kinetic/ScreenCollectionToolbar';
+import {
+  KineticCollectionStage,
+  KineticColumnHeader,
+} from '../kinetic/KineticCollectionStage';
+import {
+  KineticRowData,
+  KineticStatusVariant,
+  computeInitialsColor,
+  extractInitials,
+  inferStatusVariant,
+} from '../kinetic/KineticRow';
+import { KineticRowFanAction } from '../kinetic/KineticRowFan';
+import { KineticDetailAction } from '../kinetic/KineticDetailIsland';
+import {
+  KineticFloatingBulkBar,
+  KineticBulkAction,
+} from '../kinetic/KineticFloatingBulkBar';
+import {
+  buildBranchesByIdMap,
+  resolveRecordBranch,
+  downloadCsvSafe,
+} from '../kinetic/branchUtils';
+import { mapLegacyColumnsToKineticSlots } from '../kinetic/kineticMath';
 
 export interface ColumnDefinition<T> {
   key?: string;
   id?: string;
   header: string;
-  width?: string; // e.g. "2.2*", "1.2*", "120px"
+  width?: string; // Legacy flex hint; Stage uses unified 6-track kinetic grid
   minWidth?: string;
   sortable?: boolean;
   accessorKey?: string;
@@ -50,11 +73,11 @@ export interface UniversalDataCollectionProps<T> {
   renderRow?: (item: T, isSelected: boolean, isPinned: boolean) => React.ReactNode;
 
   // Row and Card Click
-  onItemClick?: (item: T) => void;
+  onItemClick?: (item: T, openerEl?: HTMLElement | null) => void;
 
   // Standard Actions
-  onViewDetails?: (item: T) => void;
-  onEdit?: (item: T) => void;
+  onViewDetails?: (item: T, openerEl?: HTMLElement | null) => void;
+  onEdit?: (item: T, openerEl?: HTMLElement | null) => void;
   onPay?: (item: T) => void;
   onToggleStatus?: (item: T) => void;
   onTogglePin?: (item: T) => void;
@@ -104,11 +127,24 @@ export interface UniversalDataCollectionProps<T> {
     | React.Dispatch<React.SetStateAction<'list' | 'grid'>>
     | React.Dispatch<React.SetStateAction<'list' | 'grid' | 'calendar'>>;
 
-  // View Mode Switcher Header Control
+  // View Mode Switcher & Unified Toolbar Controls
   showViewToggle?: boolean;
   showCalendarToggle?: boolean;
   onCalendarClick?: () => void;
   headerActions?: React.ReactNode;
+  hideToolbar?: boolean;
+  onToggleFilterModal?: () => void;
+  hasActiveAdvancedFilters?: boolean;
+  activeFiltersCount?: number;
+  isFilterModalOpen?: boolean;
+  filterButtonRef?: React.Ref<HTMLButtonElement>;
+  onExport?: () => void | Promise<void>;
+  exportFilename?: string;
+  activeChips?: ActiveFilterChip[];
+  openItemId?: string | null;
+
+  // Optional Kinetic Slot Overrides
+  getRowMeta?: (item: T) => Partial<KineticRowData>;
 
   // Empty State
   emptyTitle?: string;
@@ -131,7 +167,75 @@ export interface UniversalDataCollectionProps<T> {
   title?: string;
   subtitle?: string;
   searchFilter?: (item: T, query: string) => boolean;
-  onSelectRow?: (item: T) => void;
+  onSelectRow?: (item: T, openerEl?: HTMLElement | null) => void;
+}
+
+function extractReactText(node: unknown, depth = 0): string {
+  if (depth > 5 || node === null || node === undefined || typeof node === 'boolean') {
+    return '';
+  }
+  if (typeof node === 'string' || typeof node === 'number') {
+    return String(node).trim();
+  }
+  if (Array.isArray(node)) {
+    return node.map((child) => extractReactText(child, depth + 1)).filter(Boolean).join(' ').trim();
+  }
+  if (React.isValidElement(node)) {
+    return extractReactText((node.props as any)?.children, depth + 1);
+  }
+  if (typeof node === 'object') {
+    const obj = node as any;
+    if (typeof obj.name === 'string') return obj.name;
+    if (typeof obj.title === 'string') return obj.title;
+    if (typeof obj.label === 'string') return obj.label;
+    if (typeof obj.amount === 'number') return String(obj.amount);
+  }
+  return '';
+}
+
+function pickRecordTitle(item: any): string {
+  if (!item || typeof item !== 'object') return '—';
+  return (
+    item.fullName ||
+    item.name ||
+    item.title ||
+    item.reference ||
+    item.ref ||
+    item.code ||
+    item.docNumber ||
+    item.plateNumber ||
+    item.clientName ||
+    item.patientName ||
+    item.studentName ||
+    item.renterName ||
+    item.companyName ||
+    item.id ||
+    '—'
+  );
+}
+
+function pickRecordSubline(item: any): string {
+  if (!item || typeof item !== 'object') return '';
+  return (
+    item.phoneNumber ||
+    item.phone ||
+    item.email ||
+    item.sku ||
+    item.code ||
+    item.reference ||
+    item.subtitle ||
+    ''
+  );
+}
+
+function resolveRawFieldValue(item: any, col: ColumnDefinition<any> | undefined): any {
+  if (!item || !col) return '';
+  const field = col.accessorKey || col.key || col.id || '';
+  if (!field) return '';
+  if (field.includes('.')) {
+    return field.split('.').reduce((acc: any, part: string) => (acc ? acc[part] : undefined), item) ?? '';
+  }
+  return item[field] ?? '';
 }
 
 export function UniversalDataCollection<T>({
@@ -140,8 +244,6 @@ export function UniversalDataCollection<T>({
   keyExtractor,
   defaultViewMode = 'list',
   columns,
-  renderCard,
-  renderGridCard,
   renderCalendarView,
   renderRow,
   onItemClick,
@@ -152,7 +254,6 @@ export function UniversalDataCollection<T>({
   onTogglePin,
   onDelete,
   customActions,
-  extraKebabItems,
   selectedIds,
   onSelectionChange,
   isPinned = () => false,
@@ -172,6 +273,17 @@ export function UniversalDataCollection<T>({
   showCalendarToggle = false,
   onCalendarClick,
   headerActions,
+  hideToolbar = false,
+  onToggleFilterModal,
+  hasActiveAdvancedFilters = false,
+  activeFiltersCount = 0,
+  isFilterModalOpen = false,
+  filterButtonRef,
+  onExport,
+  exportFilename,
+  activeChips = [],
+  openItemId = null,
+  getRowMeta,
   emptyTitle,
   emptyDescription,
   emptyIcon,
@@ -179,9 +291,9 @@ export function UniversalDataCollection<T>({
   onAddFirstItem,
   onResetFilters,
   hasActiveFilters = false,
-  isLoading = false,
-  isOffline = false,
-  isTimedOut = false,
+  isLoading,
+  isOffline,
+  isTimedOut,
   lastSyncedAt,
   onRetrySync,
   skeletonRowCount = 6,
@@ -196,169 +308,22 @@ export function UniversalDataCollection<T>({
   filterOptions,
   onSelectRow,
 }: UniversalDataCollectionProps<T>) {
-  const [internalViewMode, setInternalViewMode] = useState<'list' | 'grid' | 'calendar'>(defaultViewMode);
+  const [internalViewMode, setInternalViewMode] = useState<'list' | 'grid' | 'calendar'>(
+    defaultViewMode
+  );
   const [internalSearchQuery, setInternalSearchQuery] = useState('');
-  const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(new Set());
-  const [internalSortBy, setInternalSortBy] = useState<string | undefined>(sortBy);
-  const [internalSortDir, setInternalSortDir] = useState<'asc' | 'desc'>(sortDir || sortDirection || 'asc');
-
-  const viewMode = controlledViewMode !== undefined ? controlledViewMode : internalViewMode;
-  const setViewMode = (mode: 'list' | 'grid' | 'calendar') => {
-    setInternalViewMode(mode);
-    (onViewModeChange as any)?.(mode);
-    if (mode === 'calendar' && onCalendarClick) {
-      onCalendarClick();
-    }
-  };
-
-  const effectiveSelectedIds = (selectedIds !== undefined && onSelectionChange) ? selectedIds : internalSelectedIds;
-
-  const effectiveSortBy = sortBy !== undefined ? sortBy : internalSortBy;
-  const effectiveSortDir = (sortDir || sortDirection) !== undefined ? (sortDir || sortDirection) : internalSortDir;
-
-  const handleSort = (key: string, accessorKey?: string) => {
-    const fieldKey = accessorKey || key;
-    const nextDir = effectiveSortBy === fieldKey && effectiveSortDir === 'asc' ? 'desc' : 'asc';
-    if (onSortChange) {
-      (onSortChange as any)(fieldKey, nextDir);
-    } else {
-      setInternalSortBy(fieldKey);
-      setInternalSortDir(nextDir);
-    }
-  };
-
-  const effectiveSearchQuery = searchQuery !== undefined ? searchQuery : internalSearchQuery;
-  const sourceItems = items || data || [];
-  const rawItems = useMemo(() => {
-    const q = effectiveSearchQuery.trim();
-    if (searchFilter && q) {
-      return sourceItems.filter((item) => searchFilter(item, effectiveSearchQuery));
-    }
-    return sourceItems;
-  }, [sourceItems, searchFilter, effectiveSearchQuery]);
-
-  // Resilient internal sorting fallback with hoisted column lookup (O(N log N) instead of O(N log N * C))
-  const sortedItems = useMemo(() => {
-    if (onSortChange || !effectiveSortBy) return rawItems;
-    const colDef = columns.find(
-      (c) => (c.key || c.id || c.accessorKey) === effectiveSortBy || c.accessorKey === effectiveSortBy
-    );
-    const field = colDef?.accessorKey || colDef?.key || colDef?.id || effectiveSortBy;
-    const dirSign = effectiveSortDir === 'asc' ? 1 : -1;
-    const collator = new Intl.Collator(undefined, { sensitivity: 'base' });
-    return [...rawItems].sort((a: any, b: any) => {
-      const aVal = a?.[field] ?? '';
-      const bVal = b?.[field] ?? '';
-      if (typeof aVal === 'number' && typeof bVal === 'number') {
-        return (aVal - bVal) * dirSign;
-      }
-      return collator.compare(String(aVal), String(bVal)) * dirSign;
-    });
-  }, [rawItems, onSortChange, effectiveSortBy, effectiveSortDir, columns]);
-
-  const actualItems = sortedItems;
-
-  const cardRenderer = (item: T, isSelected: boolean) => {
-    if (renderCard) return renderCard(item, isSelected);
-    if (renderGridCard) return renderGridCard(item, isSelected);
-    return null;
-  };
-
-  const getCustomActions = (item: T): ActionButtonDef[] | undefined => {
-    if (!customActions) return undefined;
-    if (typeof customActions === 'function') {
-      return customActions(item);
-    }
-    return customActions;
-  };
-
-  const checkPinned = (item: T): boolean => {
-    const id = keyExtractor(item);
-    if (pinnedIds) return pinnedIds.has(id);
-    return isPinned(item);
-  };
-
-  const handleTogglePin = (item: T) => {
-    const id = keyExtractor(item);
-    if (onPinToggle) onPinToggle(id);
-    else if (onTogglePin) onTogglePin(item);
-  };
-
-  // Multi-select select all calculation
-  const allItemIds = useMemo(() => actualItems.map(keyExtractor), [actualItems, keyExtractor]);
-  const isAllSelected = actualItems.length > 0 && allItemIds.every((id) => effectiveSelectedIds.has(id));
-  const isPartiallySelected =
-    actualItems.length > 0 && !isAllSelected && allItemIds.some((id) => effectiveSelectedIds.has(id));
-
-  const handleToggleSelectAll = () => {
-    const nextSet = isAllSelected ? new Set<string>() : new Set<string>(allItemIds);
-    if (onSelectionChange) {
-      onSelectionChange(nextSet);
-    }
-    setInternalSelectedIds(nextSet);
-  };
-
-  const handleToggleSelectItem = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const next = new Set(effectiveSelectedIds);
-    if (next.has(id)) {
-      next.delete(id);
-    } else {
-      next.add(id);
-    }
-    if (onSelectionChange) {
-      onSelectionChange(next);
-    }
-    setInternalSelectedIds(next);
-  };
-
-  const handleBulkDelete = () => {
-    if (onBulkDelete) {
-      onBulkDelete(effectiveSelectedIds);
-    } else if (onDelete) {
-      actualItems.forEach((item) => {
-        const id = keyExtractor(item);
-        if (effectiveSelectedIds.has(id)) {
-          onDelete(item);
-        }
-      });
-    }
-    if (onSelectionChange) onSelectionChange(new Set());
-    setInternalSelectedIds(new Set());
-  };
-
-  const handleDefaultSecondaryAction = () => {
-    if (bulkSecondaryAction) {
-      bulkSecondaryAction.onClick(effectiveSelectedIds);
-      return;
-    }
-    // Default fallback: CSV Export of selected rows
-    try {
-      const selectedRows = actualItems.filter((item) => effectiveSelectedIds.has(keyExtractor(item)));
-      if (selectedRows.length === 0) return;
-      const headers = columns.map((c) => c.header).join(',');
-      const rows = selectedRows.map((item: any) =>
-        columns
-          .map((c) => {
-            const val = item[c.accessorKey || c.key || c.id || ''] ?? '';
-            return `"${String(val).replace(/"/g, '""')}"`;
-          })
-          .join(',')
-      );
-      const csvContent = 'data:text/csv;charset=utf-8,' + [headers, ...rows].join('\n');
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement('a');
-      link.setAttribute('href', encodedUri);
-      link.setAttribute('download', `selection_export_${Date.now()}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (err) {
-      console.error('Export error:', err);
-    }
-  };
+  const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(() => new Set());
+  const [internalPinnedIds, setInternalPinnedIds] = useState<Set<string>>(() => new Set());
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
+  const [internalSortBy, setInternalSortBy] = useState<string>(sortBy || '');
+  const [internalSortDir, setInternalSortDir] = useState<'asc' | 'desc'>(
+    sortDir || sortDirection || 'asc'
+  );
+  const lastSelectedIdxRef = useRef<number>(-1);
 
   const {
+    branches,
+    currentBranch,
     isSyncing: storeIsSyncing,
     networkMode: storeNetworkMode,
     isSyncTimeout: storeIsSyncTimeout,
@@ -366,6 +331,10 @@ export function UniversalDataCollection<T>({
     language: storeLanguage,
   } = useAtriumSelector(
     (s) => ({
+      branches: s.branches,
+      currentBranch: s.currentBranchId
+        ? (s.branches || []).find((b) => b.id === s.currentBranchId) || null
+        : null,
       isSyncing: s.isSyncing,
       networkMode: s.networkMode,
       isSyncTimeout: s.isSyncTimeout,
@@ -375,15 +344,672 @@ export function UniversalDataCollection<T>({
     shallowEqualObjects
   );
 
-  const effectiveIsLoading = isLoading !== undefined ? isLoading : (storeIsSyncing || storeNetworkMode === 'force_skeleton');
-  const effectiveIsOffline = isOffline !== undefined ? isOffline : (storeNetworkMode === 'offline');
-  const effectiveIsTimedOut = isTimedOut !== undefined ? isTimedOut : storeIsSyncTimeout;
-  const effectiveLastSyncedAt = lastSyncedAt !== undefined ? lastSyncedAt : storeLastSyncedAt;
-  const effectiveOnRetrySync = onRetrySync !== undefined ? onRetrySync : retryCloudSyncAction;
+  const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
+  const branchHeaderLabel =
+    storeLanguage === 'ar' ? 'الفرع' : storeLanguage === 'fr' ? 'Branche' : 'Branch';
 
-  const shouldRenderSkeleton = (effectiveIsLoading && actualItems.length === 0) || storeNetworkMode === 'force_skeleton';
+  const mappedCols = useMemo(
+    () => mapLegacyColumnsToKineticSlots(columns, branchHeaderLabel),
+    [columns, branchHeaderLabel]
+  );
 
-  // Render Loading Skeleton State (Cold Start / No Cached Data OR Force Skeleton)
+  const kineticHeaders: KineticColumnHeader[] = useMemo(
+    () => [
+      {
+        key: mappedCols.identity.key || mappedCols.identity.id || mappedCols.identity.accessorKey || 'title',
+        label: mappedCols.identity.header,
+        sortable: mappedCols.identity.sortable !== false,
+      },
+      {
+        key: mappedCols.category.key || mappedCols.category.id || mappedCols.category.accessorKey || 'category',
+        label: mappedCols.category.header,
+        sortable: mappedCols.category.sortable !== false,
+      },
+      {
+        key: mappedCols.status.key || mappedCols.status.id || mappedCols.status.accessorKey || 'status',
+        label: mappedCols.status.header,
+        sortable: mappedCols.status.sortable !== false,
+      },
+      {
+        key: mappedCols.metric.key || mappedCols.metric.id || mappedCols.metric.accessorKey || 'metric',
+        label: mappedCols.metric.header,
+        sortable: mappedCols.metric.sortable !== false,
+      },
+      {
+        key: mappedCols.branch.key || mappedCols.branch.id || mappedCols.branch.accessorKey || 'branch',
+        label: mappedCols.branch.header || branchHeaderLabel,
+        sortable: true,
+      },
+    ],
+    [mappedCols, branchHeaderLabel]
+  );
+
+  const viewMode = controlledViewMode !== undefined ? controlledViewMode : internalViewMode;
+  const setViewMode = useCallback(
+    (mode: 'list' | 'grid' | 'calendar') => {
+      setInternalViewMode(mode);
+      (onViewModeChange as any)?.(mode);
+      if (mode === 'calendar' && onCalendarClick) {
+        onCalendarClick();
+      }
+    },
+    [onViewModeChange, onCalendarClick]
+  );
+
+  const effectiveSelectedIds =
+    selectedIds !== undefined && onSelectionChange ? selectedIds : internalSelectedIds;
+
+  const effectiveSortBy = sortBy !== undefined ? sortBy : internalSortBy;
+  const effectiveSortDir =
+    sortBy !== undefined ? sortDir || sortDirection || 'asc' : internalSortDir;
+
+  const handleSort = useCallback(
+    (fieldKey: string) => {
+      const nextDir: 'asc' | 'desc' =
+        effectiveSortBy === fieldKey && effectiveSortDir === 'asc' ? 'desc' : 'asc';
+      if (onSortChange) {
+        onSortChange(fieldKey, nextDir);
+      } else {
+        setInternalSortBy(fieldKey);
+        setInternalSortDir(nextDir);
+      }
+    },
+    [effectiveSortBy, effectiveSortDir, onSortChange]
+  );
+
+  const effectiveSearchQuery =
+    searchQuery !== undefined ? searchQuery : internalSearchQuery;
+  const sourceItems = items || data || [];
+
+  const filteredItems = useMemo(() => {
+    const q = effectiveSearchQuery.trim();
+    if (!q) return sourceItems;
+    const qLower = q.toLowerCase();
+    return sourceItems.filter((item) => {
+      const branchMatch = resolveRecordBranch(
+        item,
+        branchesById,
+        currentBranch,
+        storeLanguage
+      )
+        .name.toLowerCase()
+        .includes(qLower);
+      if (branchMatch) return true;
+      if (searchFilter) return searchFilter(item, effectiveSearchQuery);
+      const t = pickRecordTitle(item).toLowerCase();
+      const s = pickRecordSubline(item).toLowerCase();
+      return t.includes(qLower) || s.includes(qLower);
+    });
+  }, [
+    sourceItems,
+    searchFilter,
+    effectiveSearchQuery,
+    branchesById,
+    currentBranch,
+    storeLanguage,
+  ]);
+
+  const sortedItems = useMemo(() => {
+    // Allow internal Branch sorting even when screen delegates other columns, OR full internal sort
+    if (!effectiveSortBy) return filteredItems;
+    if (onSortChange && effectiveSortBy !== 'branch') return filteredItems;
+
+    const dirSign = effectiveSortDir === 'asc' ? 1 : -1;
+    const collator = new Intl.Collator(undefined, { sensitivity: 'base' });
+    const colDef = columns.find(
+      (c) =>
+        (c.key || c.id || c.accessorKey) === effectiveSortBy ||
+        c.accessorKey === effectiveSortBy
+    );
+    const field = colDef?.accessorKey || colDef?.key || colDef?.id || effectiveSortBy;
+
+    return [...filteredItems].sort((a: any, b: any) => {
+      if (effectiveSortBy === 'branch') {
+        const aBranch = resolveRecordBranch(a, branchesById, currentBranch, storeLanguage).name;
+        const bBranch = resolveRecordBranch(b, branchesById, currentBranch, storeLanguage).name;
+        return collator.compare(aBranch, bBranch) * dirSign;
+      }
+      const aVal = a?.[field] ?? '';
+      const bVal = b?.[field] ?? '';
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        return (aVal - bVal) * dirSign;
+      }
+      return collator.compare(String(aVal), String(bVal)) * dirSign;
+    });
+  }, [
+    filteredItems,
+    onSortChange,
+    effectiveSortBy,
+    effectiveSortDir,
+    columns,
+    branchesById,
+    currentBranch,
+    storeLanguage,
+  ]);
+
+  const actualItems = sortedItems;
+
+  const itemsByIdMap = useMemo(() => {
+    const map = new Map<string, T>();
+    for (let i = 0; i < actualItems.length; i++) {
+      const it = actualItems[i];
+      map.set(String(keyExtractor(it)), it);
+    }
+    return map;
+  }, [actualItems, keyExtractor]);
+
+  const indexByIdMap = useMemo(() => {
+    const map = new Map<string, number>();
+    for (let i = 0; i < actualItems.length; i++) {
+      map.set(String(keyExtractor(actualItems[i])), i);
+    }
+    return map;
+  }, [actualItems, keyExtractor]);
+
+  const checkPinned = useCallback(
+    (item: T): boolean => {
+      const id = String(keyExtractor(item));
+      if (pinnedIds) return pinnedIds.has(id);
+      if (internalPinnedIds.has(id)) return true;
+      return isPinned(item);
+    },
+    [keyExtractor, pinnedIds, internalPinnedIds, isPinned]
+  );
+
+  const resolvedPinnedIds = useMemo(() => {
+    if (pinnedIds) return pinnedIds;
+    const next = new Set<string>(internalPinnedIds);
+    for (let i = 0; i < actualItems.length; i++) {
+      const it = actualItems[i];
+      if (isPinned(it)) next.add(String(keyExtractor(it)));
+    }
+    return next;
+  }, [pinnedIds, internalPinnedIds, actualItems, isPinned, keyExtractor]);
+
+  const handleTogglePin = useCallback(
+    (item: T) => {
+      const id = String(keyExtractor(item));
+      if (onPinToggle) onPinToggle(id);
+      else if (onTogglePin) onTogglePin(item);
+      else {
+        setInternalPinnedIds((prev) => {
+          const next = new Set(prev);
+          if (next.has(id)) next.delete(id);
+          else next.add(id);
+          return next;
+        });
+      }
+    },
+    [keyExtractor, onPinToggle, onTogglePin]
+  );
+
+  const handleToggleSelectAll = useCallback(() => {
+    const allIds = actualItems.map((it) => String(keyExtractor(it)));
+    const allSelected =
+      allIds.length > 0 && allIds.every((id) => effectiveSelectedIds.has(id));
+    const nextSet = allSelected ? new Set<string>() : new Set<string>(allIds);
+    if (onSelectionChange) onSelectionChange(nextSet);
+    setInternalSelectedIds(nextSet);
+  }, [actualItems, keyExtractor, effectiveSelectedIds, onSelectionChange]);
+
+  const handleSelectRow = useCallback(
+    (id: string, e: React.MouseEvent) => {
+      const idx = indexByIdMap.get(id) ?? -1;
+      const next = new Set(effectiveSelectedIds);
+      if (e.shiftKey && lastSelectedIdxRef.current > -1 && idx > -1) {
+        const start = Math.min(lastSelectedIdxRef.current, idx);
+        const end = Math.max(lastSelectedIdxRef.current, idx);
+        for (let i = start; i <= end; i++) {
+          next.add(String(keyExtractor(actualItems[i])));
+        }
+      } else if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      if (idx > -1) lastSelectedIdxRef.current = idx;
+      if (onSelectionChange) onSelectionChange(next);
+      setInternalSelectedIds(next);
+    },
+    [indexByIdMap, effectiveSelectedIds, actualItems, keyExtractor, onSelectionChange]
+  );
+
+  const handleToggleExpand = useCallback((id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const handlePruneSelection = useCallback(
+    (hiddenIds: string[]) => {
+      if (hiddenIds.length === 0) return;
+      const hasAny = hiddenIds.some((id) => effectiveSelectedIds.has(id));
+      if (!hasAny) return;
+      const next = new Set(effectiveSelectedIds);
+      hiddenIds.forEach((id) => next.delete(id));
+      if (onSelectionChange) onSelectionChange(next);
+      setInternalSelectedIds(next);
+    },
+    [effectiveSelectedIds, onSelectionChange]
+  );
+
+  const exportRecordsToCsv = useCallback(
+    (records: readonly T[], suffix = 'export') => {
+      const hasBranchCol = mappedCols.originalIndices.branch >= 0;
+      const headers = [
+        ...columns.map((c) => c.header),
+        ...(hasBranchCol ? [] : [branchHeaderLabel]),
+      ];
+      const rows = records.map((item: any) => {
+        const branch = resolveRecordBranch(
+          item,
+          branchesById,
+          currentBranch,
+          storeLanguage
+        ).name;
+        const baseCells = columns.map((c) => {
+          const raw = resolveRawFieldValue(item, c);
+          if (raw !== '' && raw !== undefined && raw !== null) {
+            return typeof raw === 'object' ? extractReactText(raw) : String(raw);
+          }
+          const rendered = c.renderCell
+            ? c.renderCell(item, false)
+            : c.cell
+            ? c.cell(item, false)
+            : '';
+          return extractReactText(rendered);
+        });
+        return hasBranchCol ? baseCells : [...baseCells, branch];
+      });
+      const dateStr = new Date().toISOString().split('T')[0];
+      const baseName = exportFilename || `atrium-${suffix}-${dateStr}.csv`;
+      downloadCsvSafe(baseName, headers, rows);
+    },
+    [columns, mappedCols.originalIndices.branch, branchHeaderLabel, branchesById, currentBranch, storeLanguage, exportFilename]
+  );
+
+  const handleToolbarExport = useCallback(async () => {
+    if (onExport) {
+      await onExport();
+      return;
+    }
+    exportRecordsToCsv(actualItems, 'collection');
+  }, [onExport, exportRecordsToCsv, actualItems]);
+
+  const handleBulkExport = useCallback(() => {
+    if (bulkSecondaryAction && !bulkCustomActions) {
+      bulkSecondaryAction.onClick(effectiveSelectedIds);
+      return;
+    }
+    const selectedRows = actualItems.filter((item) =>
+      effectiveSelectedIds.has(String(keyExtractor(item)))
+    );
+    if (selectedRows.length === 0) return;
+    exportRecordsToCsv(selectedRows, 'selection');
+  }, [
+    bulkSecondaryAction,
+    bulkCustomActions,
+    effectiveSelectedIds,
+    actualItems,
+    keyExtractor,
+    exportRecordsToCsv,
+  ]);
+
+  const handleBulkDelete = useCallback(() => {
+    if (onBulkDelete) {
+      onBulkDelete(effectiveSelectedIds);
+    } else if (onDelete) {
+      actualItems.forEach((item) => {
+        const id = String(keyExtractor(item));
+        if (effectiveSelectedIds.has(id)) onDelete(item);
+      });
+    }
+    if (onSelectionChange) onSelectionChange(new Set());
+    setInternalSelectedIds(new Set());
+  }, [onBulkDelete, onDelete, actualItems, keyExtractor, effectiveSelectedIds, onSelectionChange]);
+
+  const handleClearSelection = useCallback(() => {
+    if (onSelectionChange) onSelectionChange(new Set());
+    setInternalSelectedIds(new Set());
+  }, [onSelectionChange]);
+
+  const bulkActionsList: KineticBulkAction[] = useMemo(() => {
+    const list: KineticBulkAction[] = [];
+    if (bulkSecondaryAction) {
+      list.push({
+        id: 'bulk-secondary',
+        label: bulkSecondaryAction.label,
+        icon: bulkSecondaryAction.icon,
+        tone: bulkSecondaryAction.variant === 'primary' ? 'accent' : 'default',
+        onClick: () => bulkSecondaryAction.onClick(effectiveSelectedIds),
+      });
+    }
+    if (bulkCustomActions) {
+      bulkCustomActions.forEach((act) => {
+        list.push({
+          id: act.id,
+          label: act.label,
+          icon: act.icon,
+          onClick: () => act.onClick(effectiveSelectedIds),
+        });
+      });
+    }
+    return list;
+  }, [bulkSecondaryAction, bulkCustomActions, effectiveSelectedIds]);
+
+  const getCustomActions = useCallback(
+    (item: T): ActionButtonDef[] | undefined => {
+      if (!customActions) return undefined;
+      return typeof customActions === 'function' ? customActions(item) : customActions;
+    },
+    [customActions]
+  );
+
+  const getRowData = useCallback(
+    (item: T): KineticRowData => {
+      const id = String(keyExtractor(item));
+      const isSelected = effectiveSelectedIds.has(id);
+      const pinned = checkPinned(item);
+      const active = isActive(item);
+      const branchInfo = resolveRecordBranch(
+        item,
+        branchesById,
+        currentBranch,
+        storeLanguage
+      );
+
+      const renderCol = (idx: number): React.ReactNode | undefined => {
+        if (idx < 0 || !columns[idx]) return undefined;
+        const c = columns[idx];
+        return c.renderCell ? c.renderCell(item, isSelected) : c.cell ? c.cell(item, isSelected) : undefined;
+      };
+
+      const identityNode = renderCol(mappedCols.originalIndices.identity);
+      const categoryNode = renderCol(mappedCols.originalIndices.category);
+      const statusNode = renderCol(mappedCols.originalIndices.status);
+      const metricNode = renderCol(mappedCols.originalIndices.metric);
+      const branchNode =
+        mappedCols.originalIndices.branch >= 0
+          ? renderCol(mappedCols.originalIndices.branch)
+          : undefined;
+
+      const rawTitle = pickRecordTitle(item);
+      const extractedTitle = extractReactText(identityNode) || rawTitle;
+      const subline = pickRecordSubline(item);
+      const categoryText =
+        extractReactText(categoryNode) ||
+        String(resolveRawFieldValue(item, columns[mappedCols.originalIndices.category]) || '—');
+      const statusText =
+        extractReactText(statusNode) ||
+        String(
+          resolveRawFieldValue(item, columns[mappedCols.originalIndices.status]) ||
+            (active ? 'Actif' : 'Inactif')
+        );
+      const metricText =
+        extractReactText(metricNode) ||
+        String(resolveRawFieldValue(item, columns[mappedCols.originalIndices.metric]) || '—');
+
+      const overflowFields = mappedCols.overflowIndices
+        .map((idx) => {
+          const c = columns[idx];
+          if (!c) return null;
+          const valNode = renderCol(idx);
+          const rawVal = resolveRawFieldValue(item, c);
+          return {
+            label: c.header,
+            value: valNode ?? (rawVal !== '' ? String(rawVal) : '—'),
+          };
+        })
+        .filter(Boolean) as Array<{ label: string; value: React.ReactNode }>;
+
+      const meta = getRowMeta ? getRowMeta(item) : undefined;
+      const statusVariant: KineticStatusVariant =
+        meta?.statusVariant || inferStatusVariant(statusText);
+
+      return {
+        id,
+        title: meta?.title || extractedTitle || rawTitle,
+        subline: meta?.subline ?? subline,
+        avatarText: meta?.avatarText || extractInitials(extractedTitle || rawTitle),
+        avatarColor: meta?.avatarColor || computeInitialsColor(extractedTitle || rawTitle),
+        categoryLabel: meta?.categoryLabel || categoryText,
+        statusLabel: meta?.statusLabel || statusText,
+        statusVariant,
+        metricPrimary: meta?.metricPrimary || metricText,
+        metricSecondary: meta?.metricSecondary,
+        branchName: meta?.branchName || branchInfo.name,
+        branchCode: meta?.branchCode || branchInfo.code,
+        isPinned: pinned,
+        notes: meta?.notes ?? (item as any)?.notes,
+        identityNode: meta?.identityNode ?? identityNode,
+        categoryNode: meta?.categoryNode ?? categoryNode,
+        statusNode: meta?.statusNode ?? statusNode,
+        metricNode: meta?.metricNode ?? metricNode,
+        branchNode: meta?.branchNode ?? branchNode,
+        detailCol1: meta?.detailCol1 || {
+          heading: mappedCols.identity.header,
+          primaryText: extractedTitle || rawTitle,
+          secondaryText: subline || branchInfo.name,
+          tertiaryText: branchInfo.name,
+        },
+        detailCol2: meta?.detailCol2 || {
+          heading: mappedCols.metric.header,
+          primaryText: metricText || '—',
+          secondaryText: categoryText || undefined,
+          tertiaryText: statusText || undefined,
+        },
+        detailCol3: meta?.detailCol3,
+        overflowFields: meta?.overflowFields ?? overflowFields,
+      };
+    },
+    [
+      keyExtractor,
+      effectiveSelectedIds,
+      checkPinned,
+      isActive,
+      branchesById,
+      currentBranch,
+      storeLanguage,
+      columns,
+      mappedCols,
+      getRowMeta,
+    ]
+  );
+
+  const getFanActions = useCallback(
+    (item: T): KineticRowFanAction[] | undefined => {
+      const id = String(keyExtractor(item));
+      const titleLabel = pickRecordTitle(item);
+      const custom = getCustomActions(item);
+      const acts: KineticRowFanAction[] = [];
+
+      if (onEdit) {
+        acts.push({
+          id: 'edit',
+          label: `${storeLanguage === 'ar' ? 'تعديل' : storeLanguage === 'fr' ? 'Modifier' : 'Edit'} ${titleLabel}`,
+          icon: <Pencil className="w-[15px] h-[15px]" />,
+          onClick: (e) => onEdit(item, e.currentTarget),
+        });
+      } else if (onViewDetails) {
+        acts.push({
+          id: 'view',
+          label: `${storeLanguage === 'ar' ? 'عرض' : storeLanguage === 'fr' ? 'Détails' : 'View'} ${titleLabel}`,
+          icon: <Eye className="w-[15px] h-[15px]" />,
+          onClick: (e) => onViewDetails(item, e.currentTarget),
+        });
+      }
+
+      if (onPay) {
+        acts.push({
+          id: 'pay',
+          label: storeLanguage === 'ar' ? 'دفع' : storeLanguage === 'fr' ? 'Encaisser' : 'Pay',
+          icon: <CreditCard className="w-[15px] h-[15px]" />,
+          onClick: () => onPay(item),
+        });
+      } else if (onToggleStatus) {
+        acts.push({
+          id: 'toggle',
+          label:
+            storeLanguage === 'ar' ? 'تبديل الحالة' : storeLanguage === 'fr' ? 'Changer statut' : 'Toggle status',
+          icon: <Power className="w-[15px] h-[15px]" />,
+          onClick: () => onToggleStatus(item),
+        });
+      } else if (custom && custom[0]) {
+        const firstCustom = custom[0];
+        acts.push({
+          id: `custom_${id}`,
+          label: firstCustom.label,
+          icon: firstCustom.icon,
+          onClick: () => firstCustom.onClick(),
+        });
+      }
+
+      if (onDelete) {
+        acts.push({
+          id: 'del',
+          label: `${storeLanguage === 'ar' ? 'حذف' : storeLanguage === 'fr' ? 'Supprimer' : 'Delete'} ${titleLabel}`,
+          icon: <Trash2 className="w-[15px] h-[15px]" />,
+          isDanger: true,
+          onClick: () => onDelete(item),
+        });
+      }
+
+      return acts.length > 0 ? acts : undefined;
+    },
+    [keyExtractor, getCustomActions, onEdit, onViewDetails, onPay, onToggleStatus, onDelete, storeLanguage]
+  );
+
+  const getDetailActions = useCallback(
+    (item: T): KineticDetailAction[] => {
+      const actionsList: KineticDetailAction[] = [];
+      if (onViewDetails || onItemClick) {
+        actionsList.push({
+          id: 'details',
+          label:
+            storeLanguage === 'ar' ? 'التفاصيل' : storeLanguage === 'fr' ? 'Fiche complète' : 'Details',
+          icon: <Eye className="w-3.5 h-3.5" />,
+          onClick: () => (onViewDetails || onItemClick)?.(item),
+        });
+      }
+      if (onEdit) {
+        actionsList.push({
+          id: 'edit',
+          label: storeLanguage === 'ar' ? 'تعديل' : storeLanguage === 'fr' ? 'Modifier' : 'Edit',
+          icon: <Pencil className="w-3.5 h-3.5" />,
+          onClick: () => onEdit(item),
+        });
+      }
+      if (onPay) {
+        actionsList.push({
+          id: 'pay',
+          label: storeLanguage === 'ar' ? 'دفع' : storeLanguage === 'fr' ? 'Encaisser' : 'Pay',
+          icon: <CreditCard className="w-3.5 h-3.5" />,
+          onClick: () => onPay(item),
+        });
+      }
+      if (onToggleStatus) {
+        actionsList.push({
+          id: 'status',
+          label: storeLanguage === 'ar' ? 'الحالة' : storeLanguage === 'fr' ? 'Statut' : 'Status',
+          icon: <Power className="w-3.5 h-3.5" />,
+          onClick: () => onToggleStatus(item),
+        });
+      }
+      if (onTogglePin || onPinToggle) {
+        const pinned = checkPinned(item);
+        actionsList.push({
+          id: 'pin',
+          label: pinned
+            ? storeLanguage === 'ar' ? 'إلغاء التثبيت' : storeLanguage === 'fr' ? 'Détacher' : 'Unpin'
+            : storeLanguage === 'ar' ? 'تثبيت' : storeLanguage === 'fr' ? 'Épingler' : 'Pin',
+          icon: <Pin className="w-3.5 h-3.5" />,
+          onClick: () => handleTogglePin(item),
+        });
+      }
+      const custom = getCustomActions(item);
+      if (custom) {
+        custom.forEach((act, idx) => {
+          actionsList.push({
+            id: `c_${idx}_${act.label}`,
+            label: act.label,
+            icon: act.icon,
+            onClick: act.onClick,
+          });
+        });
+      }
+      if (onDelete) {
+        actionsList.push({
+          id: 'delete',
+          label: storeLanguage === 'ar' ? 'حذف' : storeLanguage === 'fr' ? 'Supprimer' : 'Delete',
+          icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+          onClick: () => onDelete(item),
+        });
+      }
+      return actionsList;
+    },
+    [
+      onViewDetails,
+      onItemClick,
+      onEdit,
+      onPay,
+      onToggleStatus,
+      onTogglePin,
+      onPinToggle,
+      checkPinned,
+      handleTogglePin,
+      getCustomActions,
+      onDelete,
+      storeLanguage,
+    ]
+  );
+
+  const handleOpenRowDetails = useCallback(
+    (id: string, originEl?: HTMLElement | null) => {
+      const item = itemsByIdMap.get(id);
+      if (!item) return;
+      if (onViewDetails) onViewDetails(item, originEl);
+      else if (onItemClick) onItemClick(item, originEl);
+      else if (onSelectRow) onSelectRow(item, originEl);
+    },
+    [itemsByIdMap, onViewDetails, onItemClick, onSelectRow]
+  );
+
+  const handleEditById = useCallback(
+    (id: string, originEl?: HTMLElement | null) => {
+      const item = itemsByIdMap.get(id);
+      if (item && onEdit) onEdit(item, originEl);
+    },
+    [itemsByIdMap, onEdit]
+  );
+
+  const handleDeleteById = useCallback(
+    (id: string) => {
+      const item = itemsByIdMap.get(id);
+      if (item && onDelete) onDelete(item);
+    },
+    [itemsByIdMap, onDelete]
+  );
+
+  const effectiveIsLoading =
+    isLoading !== undefined
+      ? isLoading
+      : storeIsSyncing || storeNetworkMode === 'force_skeleton';
+  const effectiveIsOffline =
+    isOffline !== undefined ? isOffline : storeNetworkMode === 'offline';
+  const effectiveIsTimedOut =
+    isTimedOut !== undefined ? isTimedOut : storeIsSyncTimeout;
+  const effectiveLastSyncedAt =
+    lastSyncedAt !== undefined ? lastSyncedAt : storeLastSyncedAt;
+  const effectiveOnRetrySync =
+    onRetrySync !== undefined ? onRetrySync : retryCloudSyncAction;
+
+  const shouldRenderSkeleton =
+    (effectiveIsLoading && actualItems.length === 0) ||
+    storeNetworkMode === 'force_skeleton';
+
   if (shouldRenderSkeleton) {
     return (
       <div className="w-full flex flex-col">
@@ -408,13 +1034,13 @@ export function UniversalDataCollection<T>({
 
         {viewMode === 'list' ? (
           <SkeletonTable
-            columns={columns.map((c) => ({
-              width: c.width,
-              minWidth: c.minWidth,
-              header: c.header,
+            columns={kineticHeaders.map((c) => ({
+              width: '1.5*',
+              minWidth: '100px',
+              header: c.label,
             }))}
             rowCount={skeletonRowCount}
-            showHeaderControls={true}
+            showHeaderControls={!hideToolbar}
           />
         ) : (
           <SkeletonCardGrid count={skeletonRowCount} />
@@ -423,37 +1049,72 @@ export function UniversalDataCollection<T>({
     );
   }
 
-  // Render Empty State
-  if (actualItems.length === 0) {
-    return (
-      <div className="w-full flex flex-col">
-        <OfflineRetryBanner
-          isOffline={effectiveIsOffline}
-          isTimedOut={effectiveIsTimedOut}
-          lastSyncedAt={effectiveLastSyncedAt}
-          onRetry={effectiveOnRetrySync}
+  const shouldRenderToolbar =
+    !hideToolbar &&
+    (Boolean(title) ||
+      Boolean(headerActions) ||
+      (Boolean(filterOptions) && filterOptions!.length > 0 && Boolean(onFilterChange)) ||
+      Boolean(searchFilter) ||
+      Boolean(onSearchChange) ||
+      showViewToggle);
+
+  const filterKey = `${effectiveSearchQuery}|${filterValue || ''}|${effectiveSortBy}|${effectiveSortDir}|${actualItems.length}`;
+
+  const toolbarSearchHandler = (val: string) => {
+    setInternalSearchQuery(val);
+    onSearchChange?.(val);
+  };
+
+  return (
+    <div className="w-full flex flex-col relative space-y-4">
+      <OfflineRetryBanner
+        isOffline={effectiveIsOffline}
+        isTimedOut={effectiveIsTimedOut}
+        lastSyncedAt={effectiveLastSyncedAt}
+        onRetry={effectiveOnRetrySync}
+      />
+
+      {shouldRenderToolbar && (
+        <ScreenCollectionToolbar
+          title={title || ''}
+          liveRegionText={`${actualItems.length} ${
+            storeLanguage === 'ar' ? 'سجل' : storeLanguage === 'fr' ? 'éléments' : 'records'
+          }`}
+          language={storeLanguage}
+          searchQuery={effectiveSearchQuery}
+          onSearchChange={toolbarSearchHandler}
+          searchPlaceholder={searchPlaceholder}
+          statusOptions={
+            filterOptions && filterOptions.length > 0 && onFilterChange
+              ? filterOptions.map((o) => ({
+                  value: o.value,
+                  label: o.label,
+                  tooltip: o.tooltip,
+                  count: o.count,
+                }))
+              : undefined
+          }
+          statusValue={filterValue}
+          onStatusChange={onFilterChange}
+          hasActiveAdvancedFilters={hasActiveAdvancedFilters}
+          activeFiltersCount={activeFiltersCount}
+          isFilterModalOpen={isFilterModalOpen}
+          filterButtonRef={filterButtonRef}
+          onToggleFilterModal={onToggleFilterModal}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          showViewToggle={showViewToggle}
+          showCalendarToggle={showCalendarToggle}
+          onExport={handleToolbarExport}
+          extraTrailingControls={headerActions}
+          activeChips={activeChips}
+          onResetAllFilters={onResetFilters}
         />
+      )}
 
-        {/* Optional View Switcher Bar Even When Empty */}
-        <div className="flex items-center justify-between pb-3">
-          <div className="flex items-center gap-2">{headerActions}</div>
-          {showViewToggle && (
-            <LiveSegmentedControl
-              size="md"
-              options={[
-                { value: 'list', icon: <List className="w-4 h-4" />, 'aria-label': 'List View' },
-                { value: 'grid', icon: <LayoutGrid className="w-4 h-4" />, 'aria-label': 'Grid View' },
-                ...(showCalendarToggle
-                  ? [{ value: 'calendar', icon: <Calendar className="w-4 h-4" />, 'aria-label': 'Calendar View' }]
-                  : []),
-              ]}
-              value={viewMode}
-              onValueChange={(val) => setViewMode(val as any)}
-              aria-label="View Mode"
-            />
-          )}
-        </div>
-
+      {viewMode === 'calendar' && renderCalendarView ? (
+        <div className="w-full">{renderCalendarView()}</div>
+      ) : actualItems.length === 0 && (onAddFirstItem || hasActiveFilters || emptyTitle) ? (
         <CollectionEmptyState
           title={emptyTitle}
           description={emptyDescription}
@@ -463,375 +1124,55 @@ export function UniversalDataCollection<T>({
           onResetFilters={onResetFilters}
           hasActiveFilters={hasActiveFilters}
         />
-      </div>
-    );
-  }
-
-  return (
-    <div className="w-full flex flex-col relative">
-      {/* Offline / Delayed Retry Banner */}
-      <OfflineRetryBanner
-        isOffline={effectiveIsOffline}
-        isTimedOut={effectiveIsTimedOut}
-        lastSyncedAt={effectiveLastSyncedAt}
-        onRetry={effectiveOnRetrySync}
-      />
-
-      {/* ================= TOP VIEW SWITCHER / HEADER CONTROLS ================= */}
-      {(Boolean(title) || Boolean(headerActions) || (Boolean(filterOptions) && filterOptions!.length > 0 && Boolean(onFilterChange)) || Boolean(searchFilter) || showViewToggle) && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5">
-          {title ? (
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">{title}</h2>
-                {effectiveIsLoading && (
-                  <span className="text-[11px] text-[#d4522f] dark:text-[#FB923C] font-medium">
-                    Syncing...
-                  </span>
-                )}
-              </div>
-              {subtitle && (
-                <p className="text-[12.5px] text-black/62 dark:text-white/68 mt-0.5">{subtitle}</p>
-              )}
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              {headerActions}
-              {!headerActions && filterOptions && filterOptions.length > 0 && onFilterChange && (
-                <LiveSegmentedControl
-                  size="sm"
-                  options={filterOptions.map((opt) => ({
-                    value: opt.value,
-                    label: opt.label,
-                    tooltip: opt.tooltip,
-                    count: opt.count,
-                  }))}
-                  value={filterValue || filterOptions[0].value}
-                  onValueChange={onFilterChange}
-                />
-              )}
-              {effectiveIsLoading && (
-                <span className="text-[11px] text-[#d4522f] dark:text-[#FB923C] font-medium ms-2">
-                  Syncing...
-                </span>
-              )}
-            </div>
-          )}
-
-          <div className="flex items-center gap-2.5 ms-auto">
-            {searchFilter && (
-              <div className="w-56">
-                <input
-                  type="text"
-                  placeholder={searchPlaceholder || (storeLanguage === 'ar' ? 'بحث...' : storeLanguage === 'fr' ? 'Rechercher...' : 'Search...')}
-                  value={effectiveSearchQuery}
-                  onChange={(e) => {
-                    setInternalSearchQuery(e.target.value);
-                    onSearchChange?.(e.target.value);
-                  }}
-                  className="w-full h-9 px-3.5 rounded-xl text-[12.5px] bg-white dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/55 focus:outline-none focus:ring-1 focus:ring-[#d4522f]"
-                />
-              </div>
-            )}
-
-            {showViewToggle && (
-              <LiveSegmentedControl
-                size="md"
-                options={[
-                  { value: 'list', icon: <List className="w-4 h-4" />, 'aria-label': 'List View' },
-                  { value: 'grid', icon: <LayoutGrid className="w-4 h-4" />, 'aria-label': 'Grid View' },
-                  ...(showCalendarToggle
-                    ? [{ value: 'calendar', icon: <Calendar className="w-4 h-4" />, 'aria-label': 'Calendar View' }]
-                    : []),
-                ]}
-                value={viewMode}
-                onValueChange={(val) => setViewMode(val as any)}
-                aria-label="View Mode"
-              />
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ================= LIST VIEW ================= */}
-      {viewMode === 'list' && (
-        <div className="w-full flex flex-col">
-          {/* Column Headers Bar (Wrapped in White Container Floating on Warm Pod) */}
-          <div className="w-full bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 rounded-[14px] px-4 py-3 mb-2.5 flex items-center shadow-2xs">
-            {/* Column 0: Multi-select master checkbox */}
-            <div className="w-[38px] shrink-0 flex items-center pr-1">
-              <button
-                type="button"
-                onClick={handleToggleSelectAll}
-                className={`w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer ${
-                  isAllSelected
-                    ? 'bg-[#d4522f] border-[#d4522f] text-white'
-                    : isPartiallySelected
-                    ? 'bg-[#d4522f]/30 border-[#d4522f] text-white'
-                    : 'border-[#D4C8BC] dark:border-neutral-600 hover:border-[#b9aba0]'
-                }`}
-                title={storeLanguage === 'ar' ? 'تحديد الكل' : storeLanguage === 'fr' ? 'Tout sélectionner' : 'Select All'}
-              >
-                {(isAllSelected || isPartiallySelected) && (
-                  <Check className="w-3 h-3 stroke-[3]" />
-                )}
-              </button>
-            </div>
-
-            {/* Column Headers */}
-            <div className="flex-1 flex items-center gap-3 overflow-hidden">
-              {columns.map((col, idx) => {
-                const colKey = col.key || col.id || col.accessorKey || `hdr_${idx}`;
-                const isCurrentSort = effectiveSortBy === colKey || effectiveSortBy === col.accessorKey;
-                const isSortable = col.sortable !== false; // Enabled for all columns by default
-
-                return (
-                  <div
-                    key={colKey}
-                    style={{
-                      flex: col.width?.includes('*')
-                        ? col.width.replace('*', '')
-                        : undefined,
-                      width: !col.width?.includes('*') ? col.width : undefined,
-                      minWidth: col.minWidth || '90px',
-                    }}
-                    className="flex items-center gap-1.5"
-                  >
-                    {isSortable ? (
-                      <button
-                        type="button"
-                        onClick={() => handleSort(colKey, col.accessorKey)}
-                        className="group flex items-center gap-1.5 text-[11px] uppercase tracking-[0.06em] rtl:normal-case rtl:tracking-normal font-semibold text-black/68 dark:text-white/72 hover:text-black dark:hover:text-white transition-colors cursor-pointer select-none"
-                      >
-                        <span className="truncate">{col.header}</span>
-                        {/* Sort arrow badge pill */}
-                        <span
-                          className={`inline-flex items-center px-1.5 py-0.5 rounded-[5px] transition-colors ${
-                            isCurrentSort
-                              ? 'bg-[#d4522f]/15 text-[#d4522f]'
-                              : 'bg-[#F3EDE7] dark:bg-neutral-800 text-black/56 dark:text-white/60 group-hover:text-black dark:group-hover:text-white'
-                          }`}
-                        >
-                          {isCurrentSort ? (
-                            effectiveSortDir === 'asc' ? (
-                              <ArrowUp className="w-2.5 h-3 text-[#d4522f] stroke-[2.5]" />
-                            ) : (
-                              <ArrowDown className="w-2.5 h-3 text-[#d4522f] stroke-[2.5]" />
-                            )
-                          ) : (
-                            <ArrowUpDown className="w-2.5 h-3" />
-                          )}
-                        </span>
-                      </button>
-                    ) : (
-                      <span className="text-[11px] uppercase tracking-[0.06em] rtl:normal-case rtl:tracking-normal font-semibold text-black/68 dark:text-white/72 truncate">
-                        {col.header}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Column 5: Kebab header placeholder */}
-            <div className="w-[36px] shrink-0" />
-          </div>
-
-          {/* Scrollable list of row cards floating on grey background */}
-          <div className="flex flex-col">
-            {actualItems.map((item, idx) => {
-              const id = keyExtractor(item) || (item as any)?.id || `item_${idx}`;
-              const isSelected = effectiveSelectedIds.has(id);
-              const pinned = checkPinned(item);
-              const active = isActive(item);
-
-              if (renderRow) {
-                return (
-                  <React.Fragment key={id}>
-                    {renderRow(item, isSelected, pinned)}
-                  </React.Fragment>
-                );
-              }
-
-              return (
-                <CollectionListRow
-                  key={id}
-                  id={id}
-                  isSelected={isSelected}
-                  isPinned={pinned}
-                  isActive={active}
-                  onRowClick={() => (onItemClick || onSelectRow)?.(item)}
-                  onViewDetails={onViewDetails ? () => onViewDetails(item) : undefined}
-                  onEdit={onEdit ? () => onEdit(item) : undefined}
-                  onToggleStatus={onToggleStatus ? () => onToggleStatus(item) : undefined}
-                  onTogglePin={() => handleTogglePin(item)}
-                  onDelete={onDelete ? () => onDelete(item) : undefined}
-                  customActions={getCustomActions(item)}
-                  extraKebabItems={extraKebabItems ? extraKebabItems(item) : undefined}
-                >
-                  {/* Column 0: Multi-select row checkbox */}
-                  <div className="w-[38px] shrink-0 flex items-center pr-1">
-                    <button
-                      type="button"
-                      onClick={(e) => handleToggleSelectItem(id, e)}
-                      className={`w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer ${
-                        isSelected
-                          ? 'bg-[#d4522f] border-[#d4522f] text-white'
-                          : 'border-[#D4C8BC] dark:border-neutral-600 hover:border-[#d4522f]'
-                      }`}
-                    >
-                      {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
-                    </button>
-                  </div>
-
-                  {/* Render Columns */}
-                  {columns.map((col, idx) => {
-                    const colKey = col.key || col.id || col.accessorKey || `col_${idx}`;
-                    const cellContent = col.renderCell
-                      ? col.renderCell(item, isSelected)
-                      : col.cell
-                      ? col.cell(item, isSelected)
-                      : null;
-
-                    return (
-                      <div
-                        key={colKey}
-                        style={{
-                          flex: col.width?.includes('*')
-                            ? col.width.replace('*', '')
-                            : undefined,
-                          width: !col.width?.includes('*') ? col.width : undefined,
-                          minWidth: col.minWidth || '90px',
-                        }}
-                        className="overflow-hidden flex items-center"
-                      >
-                        {cellContent}
-                      </div>
-                    );
-                  })}
-                </CollectionListRow>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* ================= GRID / CARD VIEW ================= */}
-      {viewMode === 'grid' && (
-        <div className="w-full flex flex-wrap items-start">
+      ) : renderRow && viewMode === 'list' ? (
+        <div className="w-full flex flex-col gap-2">
           {actualItems.map((item, idx) => {
-            const id = keyExtractor(item) || (item as any)?.id || `grid_item_${idx}`;
-            const isSelected = effectiveSelectedIds.has(id);
-            const pinned = checkPinned(item);
-            const active = isActive(item);
-
+            const id = String(keyExtractor(item) || `item_${idx}`);
             return (
-              <CollectionGridCard
-                key={id}
-                id={id}
-                isSelected={isSelected}
-                isPinned={pinned}
-                isActive={active}
-                onCardClick={() => (onItemClick || onSelectRow)?.(item)}
-                onViewDetails={onViewDetails ? () => onViewDetails(item) : undefined}
-                onEdit={onEdit ? () => onEdit(item) : undefined}
-                onPay={onPay ? () => onPay(item) : undefined}
-                onToggleStatus={onToggleStatus ? () => onToggleStatus(item) : undefined}
-                onTogglePin={() => handleTogglePin(item)}
-                onDelete={onDelete ? () => onDelete(item) : undefined}
-                customActions={getCustomActions(item)}
-              >
-                {cardRenderer(item, isSelected)}
-              </CollectionGridCard>
+              <React.Fragment key={id}>
+                {renderRow(item, effectiveSelectedIds.has(id), checkPinned(item))}
+              </React.Fragment>
             );
           })}
         </div>
+      ) : (
+        <KineticCollectionStage<T>
+          items={actualItems}
+          keyExtractor={(it) => String(keyExtractor(it))}
+          columns={kineticHeaders}
+          getRowData={getRowData}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          filterKey={filterKey}
+          expandedIds={expandedIds}
+          selectedIds={effectiveSelectedIds}
+          pinnedIds={resolvedPinnedIds}
+          openItemId={openItemId}
+          sortBy={effectiveSortBy}
+          sortDir={effectiveSortDir}
+          language={storeLanguage}
+          ariaLabel={title || 'Collection'}
+          emptyMessage={emptyDescription || emptyTitle}
+          onPruneSelection={handlePruneSelection}
+          onToggleSelectAll={handleToggleSelectAll}
+          onToggleSort={handleSort}
+          onSelectRow={handleSelectRow}
+          onToggleExpand={handleToggleExpand}
+          onOpenDetails={handleOpenRowDetails}
+          onEdit={onEdit ? handleEditById : undefined}
+          onDelete={onDelete ? handleDeleteById : undefined}
+          getFanActions={getFanActions}
+          getDetailActions={getDetailActions}
+        />
       )}
 
-      {/* ================= CALENDAR / TIMELINE VIEW ================= */}
-      {viewMode === 'calendar' && renderCalendarView && (
-        <div className="w-full">
-          {renderCalendarView()}
-        </div>
-      )}
-
-      {/* ================= FLOATING BULK SELECTION ACTION TOOLBAR ================= */}
-      {effectiveSelectedIds.size > 0 && (() => {
-        const bulkToolbar = (
-        <div data-atrium-bulk-toolbar="true" className="fixed top-4 left-1/2 -translate-x-1/2 z-[45] max-w-[calc(100vw-24px)] overflow-x-auto bg-[#1F1D1B]/95 backdrop-blur-md text-white rounded-2xl px-5 py-3 shadow-2xl border border-white/[0.1] flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-200">
-          <div className="flex items-center gap-2 pr-3 border-r border-white/15">
-            <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white text-xs font-bold flex items-center justify-center font-mono tabular-nums">
-              {effectiveSelectedIds.size}
-            </span>
-            <span className="text-xs font-medium text-white/90 whitespace-nowrap">
-              {storeLanguage === 'ar' ? `${effectiveSelectedIds.size} محدد` : storeLanguage === 'fr' ? `${effectiveSelectedIds.size} sélectionné${effectiveSelectedIds.size > 1 ? 's' : ''}` : `${effectiveSelectedIds.size} selected`}
-            </span>
-          </div>
-
-          {/* Secondary Action button (Category specific or export fallback) */}
-          {bulkSecondaryAction ? (
-            <button
-              type="button"
-              onClick={() => bulkSecondaryAction.onClick(effectiveSelectedIds)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border shadow-2xs ${
-                bulkSecondaryAction.variant === 'warning'
-                  ? 'bg-amber-500 hover:bg-amber-600 text-black border-amber-400 font-bold'
-                  : bulkSecondaryAction.variant === 'primary'
-                  ? 'bg-[#d4522f] hover:bg-[#b03b1b] text-white border-[#d4522f]'
-                  : 'bg-white/10 hover:bg-white/15 text-white border-white/15'
-              }`}
-            >
-              {bulkSecondaryAction.icon}
-              <span>{bulkSecondaryAction.label}</span>
-            </button>
-          ) : (
-            <LiquidExportButton
-              size="sm"
-              onExport={handleDefaultSecondaryAction}
-              idleLabel={storeLanguage === 'ar' ? 'تصدير' : storeLanguage === 'fr' ? 'EXPORTER' : 'EXPORT'}
-              id="bulk-toolbar-export-btn"
-            />
-          )}
-
-          {/* Custom extra bulk actions if provided */}
-          {bulkCustomActions?.map((act) => (
-            <button
-              key={act.id}
-              type="button"
-              onClick={() => act.onClick(effectiveSelectedIds)}
-              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-white flex items-center gap-1.5 transition-colors cursor-pointer border border-white/15 shadow-2xs"
-            >
-              {act.icon}
-              <span>{act.label}</span>
-            </button>
-          ))}
-
-          {/* Delete Action button (Always present) */}
-          <button
-            type="button"
-            onClick={handleBulkDelete}
-            className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
-            title={storeLanguage === 'ar' ? 'حذف' : storeLanguage === 'fr' ? 'Supprimer' : 'Delete'}
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>{storeLanguage === 'ar' ? 'حذف' : storeLanguage === 'fr' ? 'Supprimer' : 'Delete'}</span>
-          </button>
-
-          {/* Cancel button */}
-          <button
-            type="button"
-            onClick={() => {
-              if (onSelectionChange) onSelectionChange(new Set());
-              setInternalSelectedIds(new Set());
-            }}
-            className="text-xs text-white/75 hover:text-white px-2 py-1 transition-colors cursor-pointer ml-1"
-          >
-            {storeLanguage === 'ar' ? 'إلغاء' : storeLanguage === 'fr' ? 'Annuler' : 'Cancel'}
-          </button>
-        </div>
-        );
-        return typeof document !== 'undefined' ? createPortal(bulkToolbar, document.body) : bulkToolbar;
-      })()}
+      <KineticFloatingBulkBar
+        selectedCount={effectiveSelectedIds.size}
+        language={storeLanguage}
+        actions={bulkActionsList}
+        onExport={handleBulkExport}
+        onDelete={onBulkDelete || onDelete ? handleBulkDelete : undefined}
+        onClear={handleClearSelection}
+      />
     </div>
   );
 }

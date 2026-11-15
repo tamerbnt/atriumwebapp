@@ -1,436 +1,568 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
-  Clock,
-  Calendar,
-  Sparkles,
   Printer,
-  Download,
-  Building2,
-  ChevronDown,
-  User,
-  Scissors,
-  CreditCard,
-  CheckCircle2,
-  AlertCircle,
-  Pin,
-  Trash2,
-  FileText,
-  Search,
-  RefreshCw,
-  X,
   History,
-  Activity,
-  Award,
+  Building2,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  shallowEqualObjects,
+  selectCurrentAppointmentsFromState,
+  selectCurrentBranchFromState,
+} from '../../../services/store';
 import { Appointment } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
-import { Seek } from '../../ui/Seek';
 import { AtriumButton } from '../../ui/AtriumButton';
-import { FilterSelect } from '../../ui/FilterSelect';
 import { formatMoney } from '../../../utils/rules';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import {
+  ScreenHeaderBar,
+  ScreenKpiBanner,
+  ScreenPod,
+  ScreenCollectionToolbar,
+  ActiveFilterChip,
+  KineticFilterModal,
+  KineticFilterSection,
+  KineticSlideOverInspector,
+  buildBranchesByIdMap,
+  resolveRecordBranch,
+  downloadCsvSafe,
+} from '../../ui/kinetic';
 
+export const AppointmentHistoryView: React.FC = React.memo(() => {
+  const {
+    appointments,
+    branches,
+    currentBranch,
+    language,
+    isSyncing,
+    networkMode,
+    lastSyncedAt,
+    isSyncTimeout,
+  } = useAtriumSelector(
+    (s) => ({
+      appointments: selectCurrentAppointmentsFromState(s),
+      branches: s.branches,
+      currentBranch: selectCurrentBranchFromState(s),
+      language: s.language,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+      isSyncTimeout: s.isSyncTimeout || false,
+    }),
+    shallowEqualObjects
+  );
 
+  const { deleteAppointment, batchDeleteAppointments, showToast, retryCloudSync } = useAtriumActions();
+  const isAr = language === 'ar';
+  const isEn = language === 'en';
 
-export const AppointmentHistoryView: React.FC<any> = () => {
-	const { appointments, currentBranch, branches, switchBranch, deleteAppointment, batchDeleteAppointments, resetSalonMockData, showToast, isSyncing, networkMode, retryCloudSync, lastSyncedAt, isSyncTimeout, language } = useAtriumStore();
-	const [searchQuery, setSearchQuery] = React.useState("");
-	const [selectedMethodFilter, setSelectedMethodFilter] = React.useState("All");
-	const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = React.useState(false);
-	const [selectedHistoryIds, setSelectedHistoryIds] = React.useState(/* @__PURE__ */ new Set());
-	const [pinnedHistoryIds, setPinnedHistoryIds] = React.useState(/* @__PURE__ */ new Set());
-	const [sortBy, setSortBy] = React.useState("date");
-	const [sortDir, setSortDir] = React.useState("desc");
-	const [receiptAppointment, setReceiptAppointment] = React.useState<any>(null);
-	const historyAppointments = React.useMemo(() => {
-		return (appointments || []).filter((a) => {
-			if (selectedMethodFilter !== "All" && a.paymentMethod !== selectedMethodFilter) return false;
-			if (searchQuery.trim()) {
-				const q = searchQuery.toLowerCase();
-				const matchClient = a.clientName.toLowerCase().includes(q);
-				const matchService = a.serviceName.toLowerCase().includes(q);
-				const matchStaff = a.staffName.toLowerCase().includes(q);
-				const matchFormula = (a.colorFormula || "").toLowerCase().includes(q);
-				return matchClient || matchService || matchStaff || matchFormula;
-			}
-			return true;
-		});
-	}, [
-		appointments,
-		selectedMethodFilter,
-		searchQuery
-	]);
-	const historyStats = React.useMemo(() => {
-		const list = appointments || [];
-		return {
-			totalCount: list.length,
-			completedCount: list.filter((a) => a.status === "Completed").length,
-			totalRevenue: list.filter((a) => a.status === "Completed").reduce((sum, a) => sum + (a.price || 0), 0),
-			formulasCount: list.filter((a) => a.colorFormula && a.colorFormula.trim().length > 0).length
-		};
-	}, [appointments]);
-	const handleExportCSV = () => {
-		const headers = [
-			"Date",
-			"Heure",
-			"Client",
-			"Téléphone",
-			"Prestation",
-			"Styliste",
-			"Fauteuil / Cabine",
-			"Tarif (DZD)",
-			"Statut",
-			"Mode de Paiement",
-			"Formule Technique"
-		];
-		const rows = historyAppointments.map((a) => [
-			a.date,
-			a.startTime,
-			`"${a.clientName}"`,
-			`"${a.clientPhone || ""}"`,
-			`"${a.serviceName}"`,
-			`"${a.staffName}"`,
-			`"${a.chairId || "Non assigné"}"`,
-			a.price,
-			`"${a.status}"`,
-			`"${a.paymentMethod || "Non payé"}"`,
-			`"${a.colorFormula || ""}"`
-		].join(","));
-		const csvContent = "﻿" + [headers.join(","), ...rows].join("\n");
-		const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-		const url = URL.createObjectURL(blob);
-		const link = document.createElement("a");
-		link.href = url;
-		link.setAttribute("download", `Historique_RendezVous_${currentBranch?.name || "Salon"}.csv`);
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
-		showToast({
-			type: "success",
-			title: "Historique exporté",
-			message: `${historyAppointments.length} rendez-vous exportés en CSV.`,
-			category: "appointment_service"
-		});
-	};
-	const columns = [
-		{
-			key: "date",
-			header: "Date & Créneau",
-			width: "1.6*",
-			minWidth: "140px",
-			sortable: true,
-			renderCell: (apt: any) => /* @__PURE__ */ <div className="text-xs">
-<span className="font-bold text-black dark:text-white font-mono block">{apt.date}</span>
-<span className="text-[11px] text-[#d4522f] font-bold font-mono">
-{apt.startTime}
-{" ("}
-{apt.durationMinutes}
-m)
-</span>
-</div>
-		},
-		{
-			key: "clientName",
-			header: "Client & Coordonnées",
-			width: "2.5*",
-			minWidth: "200px",
-			sortable: true,
-			renderCell: (apt: any) => /* @__PURE__ */ <div className="min-w-0">
-<span className="font-bold text-xs text-black dark:text-white block truncate">{apt.clientName}</span>
-{apt.clientPhone && /* @__PURE__ */ <span className="text-[10px] text-black/55 dark:text-white/55 font-mono block">{apt.clientPhone}</span>}
-</div>
-		},
-		{
-			key: "serviceName",
-			header: "Prestation & Technique",
-			width: "2.5*",
-			minWidth: "200px",
-			sortable: true,
-			renderCell: (apt: any) => /* @__PURE__ */ <div className="min-w-0">
-<span className="font-semibold text-xs text-black dark:text-white block truncate">{apt.serviceName}</span>
-{apt.colorFormula && /* @__PURE__ */ <span className="text-[10px] text-amber-700 dark:text-amber-300 font-mono block truncate">
-{"🧪 "}
-{apt.colorFormula}
-</span>}
-</div>
-		},
-		{
-			key: "staffName",
-			header: "Styliste",
-			width: "1.5*",
-			minWidth: "130px",
-			sortable: true,
-			renderCell: (apt: any) => /* @__PURE__ */ <span className="text-xs text-black/70 dark:text-white/75 truncate block">{apt.staffName}</span>
-		},
-		{
-			key: "price",
-			header: "Tarif & Règlement",
-			width: "1.5*",
-			minWidth: "130px",
-			sortable: true,
-			renderCell: (apt: any) => /* @__PURE__ */ <div className="text-xs">
-<span className="font-bold font-mono text-black dark:text-white tabular-nums block">{formatMoney(apt.price)}</span>
-<span className="text-[10px] text-black/55 dark:text-white/55">{apt.paymentMethod ? apt.paymentMethod : "Non payé"}</span>
-</div>
-		},
-		{
-			key: "status",
-			header: "Statut",
-			width: "1.2*",
-			minWidth: "100px",
-			sortable: true,
-			renderCell: (apt: any) => {
-				const isCompleted = apt.status === "Completed";
-				const isInChair = apt.status === "InChair";
-				return /* @__PURE__ */ <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isCompleted ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300" : isInChair ? "bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300" : "bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300"}`}>{isCompleted ? "Terminé" : isInChair ? "En Fauteuil" : "Confirmé"}</span>;
-			}
-		},
-		{
-			key: "actions",
-			header: "",
-			width: "1.2*",
-			minWidth: "80px",
-			renderCell: (apt: any) => /* @__PURE__ */ <div className="flex items-center justify-end gap-1">
-<button type="button" onClick={() => setReceiptAppointment(apt)} className="p-1.5 text-black/55 dark:text-white/55 hover:text-[#d4522f] hover:bg-[#FCEEE8] dark:hover:bg-neutral-800 rounded-lg transition-colors cursor-pointer" title="Ticket Thermique 80mm"><Printer className="w-3.5 h-3.5" /></button>
-<button type="button" onClick={() => {
-						if (confirm(`Supprimer le rendez-vous de ${apt.clientName} ?`)) deleteAppointment(apt.id);
-					}} className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer" title="Supprimer"><Trash2 className="w-3.5 h-3.5" /></button>
-</div>
-		}
-	];
-	const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
-		isLoading: isSyncing || networkMode === "force_skeleton",
-		hasCachedData: appointments.length > 0
-	});
-	if (showSkeleton && (appointments.length === 0 || networkMode === "force_skeleton")) return /* @__PURE__ */ <SkeletonCollectionScreen kpiCount={3} columns={[
-			{
-				width: "1.8*",
-				minWidth: "150px"
-			},
-			{
-				width: "2*",
-				minWidth: "160px"
-			},
-			{
-				width: "1.6*",
-				minWidth: "130px"
-			},
-			{
-				width: "1.4*",
-				minWidth: "120px"
-			},
-			{
-				width: "1.4*",
-				minWidth: "110px"
-			},
-			{
-				width: "1*",
-				minWidth: "80px"
-			}
-		]} hasIcon hasFacility={false} hasActionBtn actionBtnWidth={130} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync} />;
-	return /* @__PURE__ */ <div className="space-y-6">
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-<div>
-<div className="flex items-center gap-3">
-<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-black uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white flex items-center gap-2.5 rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-<History className="text-[#d4522f]" size={32} />
-<span>{language === 'ar' ? 'السجل' : language === 'fr' ? 'Historique' : 'History'}</span>
-</h1>
-<span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
-{historyStats.completedCount}
-{" Soins Réalisés"}
-</span>
-</div>
-</div>
-<div className="flex items-center gap-2.5 flex-wrap">
-<AtriumButton variant="secondary" size="sm" icon={<Download className="w-3.5 h-3.5" />} onClick={handleExportCSV}>Export CSV</AtriumButton>
-</div>
-</div>
-<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-<div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
-<div className="flex items-center gap-2">
-<Activity size={18} className="text-[#d4522f]" />
-<h2 className="text-xs font-black uppercase tracking-wider text-black dark:text-white">Registre d'Audit & Performances Historiques</h2>
-</div>
-<span className="text-xs text-black/55 dark:text-white/55 font-medium">
-{currentBranch?.name || "Salon"}
-{" · Base Certifiée"}
-</span>
-</div>
-<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-<div>
-<div className="flex items-center justify-between text-black/55 dark:text-white/75">
-<span className="text-xs font-semibold text-black/70 dark:text-white/75">Soins Clôturés</span>
-<span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-{"Sur "}
-{historyStats.totalCount}
-{" rés."}
-</span>
-</div>
-</div>
-<div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-{historyStats.completedCount}
-{" "}
-<span className="text-xs font-normal text-black/55 dark:text-white/55">prestations</span>
-</div>
-</div>
-<div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-<div>
-<div className="flex items-center justify-between text-black/55 dark:text-white/75">
-<span className="text-xs font-semibold text-black/70 dark:text-white/75">Recette Réalisée</span>
-<span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full">
-{historyStats.formulasCount}
-{" formules"}
-</span>
-</div>
-</div>
-<div className="text-2xl font-black text-black dark:text-white tracking-tight tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(historyStats.totalRevenue)}</div>
-</div>
-<div className="bg-[#1F1D1B] rounded-[20px] p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between h-[124px] relative overflow-hidden group">
-<div className="absolute -right-4 -bottom-6 opacity-20 group-hover:opacity-30 transition-opacity pointer-events-none">
-<svg width="140" height="90" viewBox="0 0 140 90" fill="none">
-<path d="M10 65 L35 50 L60 55 L85 25 L110 30 L135 12" stroke="#FB923C" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
-<circle cx="135" cy="12" r="4" fill="#FB923C" />
-</svg>
-</div>
-<div>
-<div className="flex items-center justify-between mb-1">
-<span className="text-xs font-medium text-white/80">Audit & Conformité</span>
-<span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">Certifié 100%</span>
-</div>
-<div className="text-2xl font-black tracking-tight text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-{historyStats.completedCount}
-{" "}
-<span className="text-xs font-normal text-white/75">reçus édités</span>
-</div>
-</div>
-<div className="pt-1.5 border-t border-neutral-800/80 flex items-center justify-between text-[10px] text-white/75">
-<span>Support Reçus 80mm</span>
-<span className="text-[#FB923C] font-semibold">Horodatage certifié</span>
-</div>
-</div>
-</div>
-</div>
-<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-<div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-<div>
-<h2 className="text-base font-black text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">Registre Chronologique des Prestations</h2>
-</div>
-<div className="flex items-center gap-2.5 flex-wrap">
-<div className="w-64">
-<Seek placeholder="Rechercher client, formule, soin..." value={searchQuery} onChange={setSearchQuery} />
-</div>
-<FilterSelect value={selectedMethodFilter} onChange={setSelectedMethodFilter} options={[
-								{
-									value: "All",
-									label: "Tous",
-									tooltip: "Tous les paiements"
-								},
-								{
-									value: "Cash",
-									label: "Espèces",
-									tooltip: "Paiement en espèces"
-								},
-								{
-									value: "BaridiMob",
-									label: "BaridiMob",
-									tooltip: "Paiement BaridiMob"
-								},
-								{
-									value: "Dahabia_CIB",
-									label: "CIB",
-									tooltip: "Carte CIB / Edahabia"
-								},
-								{
-									value: "Card",
-									label: "Carte",
-									tooltip: "Carte bancaire"
-								}
-							]} ariaLabel="Filtrer par mode de paiement" />
-</div>
-</div>
-<div className="w-full">
-<UniversalDataCollection items={historyAppointments} keyExtractor={(a) => a.id} defaultViewMode="list" columns={columns} sortBy={sortBy} sortDirection={sortDir} onSortChange={(key) => {
-							if (sortBy === key) setSortDir((prev) => prev === "asc" ? "desc" : "asc");
-							else {
-								setSortBy(key);
-								setSortDir("asc");
-							}
-						}} renderCard={(apt) => /* @__PURE__ */ <div className="flex flex-col justify-between h-full space-y-3">
-<div>
-<div className="flex items-start justify-between gap-2 mb-1">
-<span className="font-mono font-bold text-xs text-black dark:text-white">
-{apt.date}
-{" · "}
-{apt.startTime}
-</span>
-<span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${apt.status === "Completed" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{apt.status}</span>
-</div>
-<div className="font-bold text-xs text-black dark:text-white">{apt.clientName}</div>
-<div className="text-[11px] text-[#d4522f] font-semibold mt-0.5">{apt.serviceName}</div>
-{apt.colorFormula && /* @__PURE__ */ <div className="text-[10px] text-amber-700 dark:text-amber-300 font-mono mt-1 bg-amber-50 dark:bg-amber-950/40 p-1.5 rounded-lg">
-{"🧪 "}
-{apt.colorFormula}
-</div>}
-</div>
-<div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
-<span className="text-xs text-black/55 dark:text-white/55">{apt.staffName}</span>
-<span className="font-mono font-bold text-sm text-black dark:text-white">{formatMoney(apt.price)}</span>
-</div>
-</div>} selectedIds={selectedHistoryIds} onSelectionChange={setSelectedHistoryIds} isPinned={(a) => pinnedHistoryIds.has(a.id)} onTogglePin={(a) => {
-							setPinnedHistoryIds((prev) => {
-								const next = new Set(prev);
-								if (next.has(a.id)) next.delete(a.id);
-								else next.add(a.id);
-								return next;
-							});
-						}} emptyTitle="Aucun historique trouvé" emptyDescription="Les rendez-vous terminés apparaîtront ici." />
-</div>
-</div>
-{receiptAppointment && /* @__PURE__ */ <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-<div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4">
-<div className="text-center font-mono text-xs border-b border-dashed border-neutral-300 dark:border-neutral-700 pb-3">
-<div className="text-sm font-black uppercase tracking-wider text-black dark:text-white">{currentBranch?.name || "LUXE SPA HYDRA"}</div>
-<div className="text-[10px] text-black/55 dark:text-white/55">Institut de Coiffure & Beauté</div>
-<div className="text-[10px] text-black/55 dark:text-white/55 mt-1">{(/* @__PURE__ */ new Date()).toLocaleString()}</div>
-</div>
-<div className="font-mono text-xs space-y-2">
-<div className="flex justify-between">
-<span className="text-black/55 dark:text-white/55">Client :</span>
-<span className="font-bold text-black dark:text-white">{receiptAppointment.clientName}</span>
-</div>
-<div className="flex justify-between">
-<span className="text-black/55 dark:text-white/55">Soin :</span>
-<span className="font-bold text-black dark:text-white">{receiptAppointment.serviceName}</span>
-</div>
-<div className="flex justify-between">
-<span className="text-black/55 dark:text-white/55">Styliste :</span>
-<span>{receiptAppointment.staffName}</span>
-</div>
-<div className="flex justify-between">
-<span className="text-black/55 dark:text-white/55">Mode :</span>
-<span>{receiptAppointment.paymentMethod || "Espèces"}</span>
-</div>
-{receiptAppointment.colorFormula && /* @__PURE__ */ <div className="p-2 bg-neutral-100 dark:bg-neutral-800 rounded text-[10px] text-black/70 dark:text-white/75">
-{"Formule: "}
-{receiptAppointment.colorFormula}
-</div>}
-<div className="pt-2 border-t border-dashed border-neutral-300 dark:border-neutral-700 flex justify-between font-black text-sm">
-<span>TOTAL PAYÉ :</span>
-<span>{formatMoney(receiptAppointment.price)}</span>
-</div>
-</div>
-<div className="flex items-center justify-end gap-2 pt-2">
-<button type="button" onClick={() => window.print()} className="h-9 px-4 rounded-full bg-[#d4522f] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer">
-<Printer size={13} />
-<span>Imprimer 80mm</span>
-</button>
-<button type="button" onClick={() => setReceiptAppointment(null)} className="h-9 px-4 rounded-full text-black/55 dark:text-white/55 hover:bg-neutral-100 text-xs font-semibold cursor-pointer">Fermer</button>
-</div>
-</div>
-</div>}
-</div>;
-};
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedMethodFilter, setSelectedMethodFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState<'All' | 'Completed' | 'Active'>('All');
+  const [branchFilter, setBranchFilter] = useState('All');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+  const [selectedHistoryIds, setSelectedHistoryIds] = useState<Set<string>>(() => new Set());
+  const [pinnedHistoryIds, setPinnedHistoryIds] = useState<Set<string>>(() => new Set());
+  const [sortBy, setSortBy] = useState('date');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [receiptAppointment, setReceiptAppointment] = useState<Appointment | null>(null);
+  const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+
+  const filterButtonRef = useRef<HTMLButtonElement | null>(null);
+  const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
+
+  const historyStats = useMemo(() => {
+    const list = appointments;
+    const completedCount = list.filter((a) => a.status === 'Completed').length;
+    const activeCount = list.length - completedCount;
+    const totalRevenue = list
+      .filter((a) => a.status === 'Completed')
+      .reduce((sum, a) => sum + (a.price || 0), 0);
+    const formulasCount = list.filter((a) => a.colorFormula && a.colorFormula.trim().length > 0).length;
+    const branchCounts = new Map<string, number>();
+    list.forEach((a) => {
+      const bName = resolveRecordBranch(a, branchesById, currentBranch, language).name;
+      branchCounts.set(bName, (branchCounts.get(bName) || 0) + 1);
+    });
+    return {
+      totalCount: list.length,
+      completedCount,
+      activeCount,
+      totalRevenue,
+      formulasCount,
+      branchOptionsWithCounts: Array.from(branchCounts.entries()).map(([name, count]) => ({
+        value: name,
+        label: name,
+        count,
+      })),
+    };
+  }, [appointments, branchesById, currentBranch, language]);
+
+  const filteredAppointments = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return appointments.filter((a) => {
+      if (statusFilter === 'Completed' && a.status !== 'Completed') return false;
+      if (statusFilter === 'Active' && a.status === 'Completed') return false;
+      if (selectedMethodFilter !== 'All' && a.paymentMethod !== selectedMethodFilter) return false;
+      if (branchFilter !== 'All') {
+        const bName = resolveRecordBranch(a, branchesById, currentBranch, language).name;
+        if (bName !== branchFilter) return false;
+      }
+      if (q) {
+        const bName = resolveRecordBranch(a, branchesById, currentBranch, language).name.toLowerCase();
+        return (
+          a.clientName.toLowerCase().includes(q) ||
+          a.serviceName.toLowerCase().includes(q) ||
+          a.staffName.toLowerCase().includes(q) ||
+          (a.colorFormula || '').toLowerCase().includes(q) ||
+          bName.includes(q)
+        );
+      }
+      return true;
+    });
+  }, [appointments, statusFilter, selectedMethodFilter, branchFilter, searchQuery, branchesById, currentBranch, language]);
+
+  const sortedAppointments = useMemo(() => {
+    const sign = sortDir === 'asc' ? 1 : -1;
+    return [...filteredAppointments].sort((a, b) => {
+      const aPinned = pinnedHistoryIds.has(a.id) ? 0 : 1;
+      const bPinned = pinnedHistoryIds.has(b.id) ? 0 : 1;
+      if (aPinned !== bPinned) return aPinned - bPinned;
+      if (sortBy === 'clientName') return a.clientName.localeCompare(b.clientName) * sign;
+      if (sortBy === 'serviceName') return a.serviceName.localeCompare(b.serviceName) * sign;
+      if (sortBy === 'price') return (a.price - b.price) * sign;
+      if (sortBy === 'branch') {
+        const ba = resolveRecordBranch(a, branchesById, currentBranch, language).name;
+        const bb = resolveRecordBranch(b, branchesById, currentBranch, language).name;
+        return ba.localeCompare(bb) * sign;
+      }
+      return `${a.date} ${a.startTime}`.localeCompare(`${b.date} ${b.startTime}`) * sign;
+    });
+  }, [filteredAppointments, pinnedHistoryIds, sortBy, sortDir, branchesById, currentBranch, language]);
+
+  const handleResetFilters = useCallback(() => {
+    setSelectedMethodFilter('All');
+    setStatusFilter('All');
+    setBranchFilter('All');
+    setSearchQuery('');
+    setIsFilterModalOpen(false);
+  }, []);
+
+  const hasActiveAdvancedFilters = selectedMethodFilter !== 'All' || branchFilter !== 'All';
+  const activeFiltersCount = (selectedMethodFilter !== 'All' ? 1 : 0) + (branchFilter !== 'All' ? 1 : 0);
+
+  const handleExportCSV = useCallback(() => {
+    const headers = [
+      'Date',
+      'Heure',
+      'Client',
+      'Prestation',
+      'Styliste',
+      'Tarif (DZD)',
+      'Statut',
+      'Paiement',
+      isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
+    ];
+    const rows = sortedAppointments.map((a) => [
+      a.date,
+      a.startTime,
+      a.clientName,
+      a.serviceName,
+      a.staffName,
+      a.price,
+      a.status,
+      a.paymentMethod || 'Espèces',
+      resolveRecordBranch(a, branchesById, currentBranch, language).name,
+    ]);
+    downloadCsvSafe(`atrium-salon-history-${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
+  }, [sortedAppointments, isAr, isEn, branchesById, currentBranch, language]);
+
+  const statusOptions = useMemo(
+    () => [
+      { value: 'All', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous', count: historyStats.totalCount },
+      { value: 'Completed', label: isAr ? 'مكتمل' : isEn ? 'Completed' : 'Terminés', count: historyStats.completedCount },
+      { value: 'Active', label: isAr ? 'قيد التنفيذ' : isEn ? 'In Progress' : 'En cours', count: historyStats.activeCount },
+    ],
+    [isAr, isEn, historyStats.totalCount, historyStats.completedCount, historyStats.activeCount]
+  );
+
+  const filterSections = useMemo<KineticFilterSection[]>(
+    () => [
+      {
+        id: 'branch',
+        label: isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
+        value: branchFilter,
+        onChange: setBranchFilter,
+        kind: 'tiles',
+        columns: 2,
+        options: [
+          {
+            value: 'All',
+            label: isAr ? 'كل الفروع' : isEn ? 'All Branches' : 'Toutes les branches',
+            count: historyStats.totalCount,
+          },
+          ...historyStats.branchOptionsWithCounts,
+        ],
+      },
+      {
+        id: 'method',
+        label: isAr ? 'طريقة الدفع' : isEn ? 'Payment Method' : 'Mode de règlement',
+        value: selectedMethodFilter,
+        onChange: setSelectedMethodFilter,
+        kind: 'tiles',
+        columns: 2,
+        options: [
+          { value: 'All', label: isAr ? 'الكل' : 'Tous' },
+          { value: 'Cash', label: 'Espèces' },
+          { value: 'BaridiMob', label: 'BaridiMob' },
+          { value: 'Dahabia_CIB', label: 'CIB / Dahabia' },
+          { value: 'Card', label: 'Carte' },
+        ],
+      },
+    ],
+    [isAr, isEn, branchFilter, historyStats.totalCount, historyStats.branchOptionsWithCounts, selectedMethodFilter]
+  );
+
+  const activeChips = useMemo<ActiveFilterChip[]>(() => {
+    const chips: ActiveFilterChip[] = [];
+    if (branchFilter !== 'All') chips.push({ key: 'branch', label: branchFilter, onRemove: () => setBranchFilter('All') });
+    if (selectedMethodFilter !== 'All') {
+      chips.push({ key: 'method', label: selectedMethodFilter, onRemove: () => setSelectedMethodFilter('All') });
+    }
+    return chips;
+  }, [branchFilter, selectedMethodFilter]);
+
+  const columns: ColumnDefinition<Appointment>[] = useMemo(
+    () => [
+      {
+        key: 'clientName',
+        header: isAr ? 'الزبون والموعد' : isEn ? 'Client & Slot' : 'Client & Créneau',
+        sortable: true,
+        renderCell: (apt) => (
+          <div className="min-w-0">
+            <span className="text-[13.5px] font-semibold text-black dark:text-white truncate block">
+              {apt.clientName}
+            </span>
+            <span className="text-[11px] font-mono text-[#d4522f] font-semibold block">
+              {apt.date} · {apt.startTime} ({apt.durationMinutes}m)
+            </span>
+          </div>
+        ),
+      },
+      {
+        key: 'serviceName',
+        header: isAr ? 'الخدمة والمصففة' : isEn ? 'Service & Stylist' : 'Prestation & Styliste',
+        sortable: true,
+        renderCell: (apt) => (
+          <div className="min-w-0">
+            <span className="text-[12.5px] font-semibold text-black dark:text-white truncate block">
+              {apt.serviceName}
+            </span>
+            <span className="text-[11px] text-black/62 dark:text-white/65 truncate block">
+              {apt.staffName}
+              {apt.colorFormula ? ` · 🧪 ${apt.colorFormula}` : ''}
+            </span>
+          </div>
+        ),
+      },
+      {
+        key: 'status',
+        header: isAr ? 'الحالة' : isEn ? 'Status' : 'Statut',
+        sortable: true,
+        renderCell: (apt) => {
+          const isCompleted = apt.status === 'Completed';
+          const isInChair = apt.status === 'InChair';
+          return (
+            <span
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11.5px] font-semibold ${
+                isCompleted
+                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
+                  : isInChair
+                  ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300'
+                  : 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300'
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  isCompleted ? 'bg-emerald-500' : isInChair ? 'bg-amber-500' : 'bg-blue-500'
+                }`}
+              />
+              {isCompleted ? 'Terminé' : isInChair ? 'En Fauteuil' : 'Confirmé'}
+            </span>
+          );
+        },
+      },
+      {
+        key: 'price',
+        header: isAr ? 'التعريفة' : isEn ? 'Amount' : 'Tarif & Règlement',
+        sortable: true,
+        renderCell: (apt) => (
+          <div className="tabular-nums">
+            <span className="font-mono text-[13px] font-bold text-black dark:text-white block">
+              {formatMoney(apt.price)}
+            </span>
+            <span className="text-[11px] text-black/62 dark:text-white/65 block">
+              {apt.paymentMethod || 'Non payé'}
+            </span>
+          </div>
+        ),
+      },
+      {
+        key: 'branch',
+        header: isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
+        sortable: true,
+        renderCell: (apt) => (
+          <span className="text-[12.5px] font-medium text-black/80 dark:text-white/85 truncate block">
+            {resolveRecordBranch(apt, branchesById, currentBranch, language).name}
+          </span>
+        ),
+      },
+    ],
+    [isAr, isEn, branchesById, currentBranch, language]
+  );
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: appointments.length > 0,
+  });
+
+  if (showSkeleton && (appointments.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.4*', minWidth: '180px' },
+          { width: '1.8*', minWidth: '150px' },
+          { width: '1.3*', minWidth: '110px' },
+          { width: '1.3*', minWidth: '110px' },
+          { width: '1.2*', minWidth: '100px' },
+        ]}
+        viewMode={viewMode}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
+
+  return (
+    <div className="w-full space-y-6 animate-in fade-in duration-200 relative">
+      <ScreenHeaderBar
+        icon={<History size={22} />}
+        title={isAr ? 'السجل' : isEn ? 'History' : 'Historique'}
+        primaryAction={{
+          label: isAr ? 'طباعة السجل' : isEn ? 'Print Ledger' : 'Imprimer Journal',
+          icon: <Printer size={15} />,
+          onClick: () => window.print(),
+        }}
+      />
+
+      <ScreenKpiBanner
+        heading={isAr ? 'سجل التدقيق والأداء' : isEn ? 'Audit & History Ledger' : 'Registre d’Audit & Prestations'}
+        language={language}
+        primaryCard={{
+          label: isAr ? 'الخدمات المكتملة' : isEn ? 'Completed Services' : 'Soins Clôturés',
+          badgeText: `↗ ${historyStats.totalCount} total`,
+          count: historyStats.completedCount,
+          tone: 'emerald',
+          isActive: statusFilter === 'Completed',
+          onToggle: () => setStatusFilter((p) => (p === 'Completed' ? 'All' : 'Completed')),
+        }}
+        secondaryCard={{
+          label: isAr ? 'قيد الإنجاز / المؤكدة' : isEn ? 'In Progress & Confirmed' : 'En Cours & Confirmés',
+          badgeText: `${historyStats.formulasCount} formules`,
+          count: historyStats.activeCount,
+          tone: 'terracotta',
+          isActive: statusFilter === 'Active',
+          onToggle: () => setStatusFilter((p) => (p === 'Active' ? 'All' : 'Active')),
+        }}
+        darkCard={{
+          label: isAr ? 'إجمالي الإيرادات المحققة' : isEn ? 'Realized Revenue' : 'Recette Réalisée',
+          badgePrefix: '',
+          badgeCount: historyStats.completedCount,
+          badgeSuffix: isAr ? 'وصولات' : 'reçus',
+          valuePrefix: '',
+          valueCount: historyStats.totalRevenue,
+          formatValue: (n) => formatMoney(n),
+          caption: `${currentBranch?.name || 'Salon'} · ${isAr ? 'وصولات 80mm' : 'Tickets 80mm Certifiés'}`,
+        }}
+      />
+
+      <ScreenPod>
+        <ScreenCollectionToolbar
+          title={isAr ? 'السجل الزمني للخدمات' : isEn ? 'Service Timeline Ledger' : 'Registre Chronologique'}
+          liveRegionText={`${sortedAppointments.length} rendez-vous`}
+          language={language}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder={
+            isAr
+              ? 'بحث بالزبون، الخدمة أو الفرع...'
+              : isEn
+              ? 'Search client, formula, branch...'
+              : 'Rechercher client, formule, branche...'
+          }
+          statusOptions={statusOptions}
+          statusValue={statusFilter}
+          onStatusChange={(v) => setStatusFilter(v as any)}
+          hasActiveAdvancedFilters={hasActiveAdvancedFilters}
+          activeFiltersCount={activeFiltersCount}
+          isFilterModalOpen={isFilterModalOpen}
+          filterButtonRef={filterButtonRef}
+          onToggleFilterModal={() => setIsFilterModalOpen((p) => !p)}
+          viewMode={viewMode}
+          onViewModeChange={(m) => setViewMode(m === 'grid' ? 'grid' : 'list')}
+          onExport={handleExportCSV}
+          activeChips={activeChips}
+          onResetAllFilters={handleResetFilters}
+        />
+
+        <UniversalDataCollection<Appointment>
+          data={sortedAppointments}
+          columns={columns}
+          keyExtractor={(a) => a.id}
+          viewMode={viewMode}
+          hideToolbar
+          openItemId={receiptAppointment?.id ?? null}
+          isLoading={isSyncing || networkMode === 'force_skeleton'}
+          isOffline={networkMode === 'offline'}
+          isTimedOut={isSyncTimeout}
+          lastSyncedAt={lastSyncedAt}
+          onRetrySync={retryCloudSync}
+          sortBy={sortBy}
+          sortDirection={sortDir}
+          onSortChange={(key, dir) => {
+            setSortBy(key);
+            setSortDir(dir);
+          }}
+          selectedIds={selectedHistoryIds}
+          onSelectionChange={setSelectedHistoryIds}
+          pinnedIds={pinnedHistoryIds}
+          onPinToggle={(a: any) => {
+            const id = typeof a === 'string' ? a : a.id;
+            setPinnedHistoryIds((prev) => {
+              const next = new Set(prev);
+              if (next.has(id)) next.delete(id);
+              else next.add(id);
+              return next;
+            });
+          }}
+          onItemClick={(apt, opener) => {
+            setDrawerOpenerEl(opener || null);
+            setReceiptAppointment(apt);
+          }}
+          onViewDetails={(apt, opener) => {
+            setDrawerOpenerEl(opener || null);
+            setReceiptAppointment(apt);
+          }}
+          onDelete={(apt) => {
+            deleteAppointment(apt.id);
+            if (receiptAppointment?.id === apt.id) setReceiptAppointment(null);
+            showToast?.({ type: 'info', title: 'Rendez-vous supprimé', message: apt.clientName });
+          }}
+          onBulkDelete={(ids) => {
+            batchDeleteAppointments(Array.from(ids));
+            setSelectedHistoryIds(new Set());
+          }}
+          emptyTitle={isAr ? 'لا يوجد سجل' : 'Aucun historique trouvé'}
+          emptyDescription={isAr ? 'ستظهر المواعيد المكتملة هنا' : 'Les rendez-vous terminés apparaîtront ici.'}
+          onResetFilters={handleResetFilters}
+          hasActiveFilters={hasActiveAdvancedFilters || statusFilter !== 'All' || searchQuery.trim().length > 0}
+        />
+      </ScreenPod>
+
+      <KineticFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        triggerRef={filterButtonRef}
+        language={language}
+        displayCount={sortedAppointments.length}
+        entityPluralLabel={isAr ? 'سجلات' : 'prestations'}
+        hasActiveFilters={hasActiveAdvancedFilters}
+        onResetFilters={handleResetFilters}
+        sections={filterSections}
+      />
+
+      <KineticSlideOverInspector<Appointment>
+        isOpen={receiptAppointment !== null}
+        item={receiptAppointment}
+        allItems={sortedAppointments}
+        keyExtractor={(a) => a.id}
+        openerElement={drawerOpenerEl}
+        language={language}
+        title={receiptAppointment?.clientName || ''}
+        subtitle={receiptAppointment ? `${receiptAppointment.date} · ${receiptAppointment.startTime}` : undefined}
+        avatarText={receiptAppointment ? receiptAppointment.clientName.charAt(0).toUpperCase() : undefined}
+        branchName={
+          receiptAppointment
+            ? resolveRecordBranch(receiptAppointment, branchesById, currentBranch, language).name
+            : undefined
+        }
+        statusLabel={receiptAppointment?.status}
+        statusClassName={
+          receiptAppointment?.status === 'Completed'
+            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+            : 'bg-amber-50 text-amber-700 border border-amber-200'
+        }
+        onClose={() => setReceiptAppointment(null)}
+        onSelectItem={(a) => setReceiptAppointment(a)}
+        holdToDelete={{
+          label: isAr ? 'حذف' : 'Supprimer',
+          onDelete: (a) => {
+            deleteAppointment(a.id);
+            setReceiptAppointment(null);
+          },
+        }}
+        renderBody={(apt) => (
+          <div className="space-y-4 text-xs">
+            <div className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] border border-dashed border-[#D4C8BC] dark:border-[#3A3734] font-mono space-y-2">
+              <div className="text-center border-b border-dashed border-[#D4C8BC] dark:border-[#3A3734] pb-2">
+                <span className="font-bold uppercase block text-black dark:text-white">
+                  {resolveRecordBranch(apt, branchesById, currentBranch, language).name}
+                </span>
+                <span className="text-[11px] text-black/62 dark:text-white/65">Ticket Thermique 80mm</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-black/62 dark:text-white/65">Soin :</span>
+                <span className="font-bold text-black dark:text-white">{apt.serviceName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-black/62 dark:text-white/65">Styliste :</span>
+                <span>{apt.staffName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-black/62 dark:text-white/65">Paiement :</span>
+                <span>{apt.paymentMethod || 'Espèces'}</span>
+              </div>
+              {apt.colorFormula && (
+                <div className="p-2 rounded-lg bg-[#F3EDE7] dark:bg-[#1C1B1A] text-[11px]">
+                  Formule: {apt.colorFormula}
+                </div>
+              )}
+              <div className="pt-2 border-t border-dashed border-[#D4C8BC] dark:border-[#3A3734] flex justify-between font-bold text-sm text-[#d4522f]">
+                <span>TOTAL :</span>
+                <span>{formatMoney(apt.price)}</span>
+              </div>
+            </div>
+            <AtriumButton
+              type="button"
+              variant="primary"
+              icon={<Printer size={14} />}
+              className="w-full justify-center"
+              onClick={() => window.print()}
+            >
+              Imprimer Ticket 80mm
+            </AtriumButton>
+          </div>
+        )}
+      />
+    </div>
+  );
+});
+
+AppointmentHistoryView.displayName = 'AppointmentHistoryView';

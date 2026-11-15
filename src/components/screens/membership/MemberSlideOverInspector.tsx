@@ -21,6 +21,8 @@ import { Member } from '../../../types/index';
 import { calculateDaysRemaining } from '../../../utils/rules';
 import { Sp, TUNES, subscribeFrame, wake } from './motion/adherentsMotion';
 import { clamp, computePanelMetrics } from './motion/adherentsMath';
+import { useAtriumSelector, shallowEqualObjects } from '../../../services/store';
+import { buildBranchesByIdMap, resolveRecordBranch } from '../../ui/kinetic/branchUtils';
 
 export interface MemberSlideOverInspectorProps {
   isOpen: boolean;
@@ -65,12 +67,39 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
   const [notesText, setNotesText] = useState(() => member?.notes || '');
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
+  const branchState = useAtriumSelector(
+    (s) => ({
+      branches: s.branches,
+      currentBranchId: s.currentBranchId,
+      language: s.language,
+    }),
+    shallowEqualObjects
+  );
+
   // Retain the last displayed member during close bounce so content stays visible until settled
   const retainedMemberRef = useRef<Member | null>(member);
   if (member) {
     retainedMemberRef.current = member;
   }
   const activeMember = member || retainedMemberRef.current;
+
+  const branchesById = useMemo(
+    () => buildBranchesByIdMap(branchState.branches),
+    [branchState.branches]
+  );
+  const currentBranch = useMemo(
+    () =>
+      branchState.branches?.find((b: any) => b.id === branchState.currentBranchId) ||
+      branchState.branches?.[0],
+    [branchState.branches, branchState.currentBranchId]
+  );
+  const memberBranch = useMemo(
+    () =>
+      activeMember
+        ? resolveRecordBranch(activeMember, branchesById, currentBranch, branchState.language)
+        : null,
+    [activeMember, branchesById, currentBranch, branchState.language]
+  );
 
   // DOM refs for direct rAF style writes (zero per-frame React state updates)
   const scrimRef = useRef<HTMLDivElement | null>(null);
@@ -550,6 +579,11 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                   <span className="pill inline-flex items-center px-2.5 py-[3px] rounded-md text-[12px] font-medium bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] border border-[#d4522f]/25 dark:border-[#52291F] truncate max-w-full">
                     {planName}
                   </span>
+                  {memberBranch && (
+                    <span className="pill inline-flex items-center px-2.5 py-[3px] rounded-md text-[12px] font-medium bg-[#F3EDE7] dark:bg-white/[0.08] text-black dark:text-white border border-[#E6DED6] dark:border-[#3A3734] truncate max-w-full">
+                      {memberBranch.branchName}
+                    </span>
+                  )}
                   <span className={`pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-md text-[12px] font-medium ${statusPillCls}`}>
                     <i className="w-1.5 h-1.5 rounded-full bg-current" />
                     {statusLabel}
