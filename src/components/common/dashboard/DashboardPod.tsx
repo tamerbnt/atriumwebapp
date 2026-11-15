@@ -36,7 +36,7 @@ export const DashboardPod: React.FC<DashboardPodProps> = ({
           )}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-[15.5px] sm:text-[16.5px] font-semibold tracking-[-0.018em] leading-snug text-black dark:text-white">
+              <h2 className="text-[15.5px] sm:text-[16.5px] font-semibold tracking-[-0.018em] rtl:tracking-normal leading-snug text-black dark:text-white">
                 {title}
               </h2>
               {badge}

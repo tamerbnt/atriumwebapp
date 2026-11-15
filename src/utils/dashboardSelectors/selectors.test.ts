@@ -28,6 +28,16 @@ import {
   selectMedicalDashboard,
   selectRealEstateDashboard,
 } from './specializedVerticals.ts';
+import {
+  DASHBOARD_HELP_TEXT,
+  getDashboardHelpText,
+  type DashboardCategoryHelpKey,
+} from './dashboardHelpText.ts';
+import {
+  DASHBOARD_POD_TITLES,
+  getDashboardPodTitle,
+  type DashboardCategoryPodKey,
+} from './dashboardPodTitles.ts';
 
 const ANCHOR = new Date('2026-11-14T14:00:00');
 
@@ -318,4 +328,109 @@ test('per-card cardFilters and real spark/area series work accurately across spe
   assert.equal(agri.waterBullets.length, 1);
   assert.ok(agri.areaPoints.some((pt) => pt.value === 180));
 });
+
+test('DASHBOARD_HELP_TEXT covers all 16 business categories in fr, en, and ar with non-empty unique copy', () => {
+  const expectedCategories: DashboardCategoryHelpKey[] = [
+    'membership',
+    'medical',
+    'pos',
+    'project',
+    'agriculture',
+    'appointment',
+    'contractor',
+    'education',
+    'freelance',
+    'garage',
+    'legal',
+    'logistics',
+    'manufacturing',
+    'realestate',
+    'trading',
+    'venue',
+  ];
+
+  assert.deepEqual(Object.keys(DASHBOARD_HELP_TEXT).sort(), [...expectedCategories].sort());
+
+  for (const category of expectedCategories) {
+    const cards = DASHBOARD_HELP_TEXT[category];
+    const cardKeys = Object.keys(cards);
+    assert.ok(cardKeys.length >= 7, `Category ${category} should have >= 7 help entries`);
+
+    for (const cardKey of cardKeys) {
+      for (const lang of ['fr', 'en', 'ar'] as const) {
+        const text = getDashboardHelpText(category, cardKey, lang);
+        assert.ok(text.trim().length > 25, `${category}.${cardKey}.${lang} is too short or empty`);
+        assert.ok(!/todo|lorem|placeholder/i.test(text), `${category}.${cardKey}.${lang} contains placeholder text`);
+      }
+    }
+  }
+
+  // Dynamic toggle variants must differ cleanly
+  assert.notEqual(
+    getDashboardHelpText('medical', 'queueWait', 'en'),
+    getDashboardHelpText('medical', 'queueLowStock', 'en')
+  );
+  assert.notEqual(
+    getDashboardHelpText('agriculture', 'darParcels', 'fr'),
+    getDashboardHelpText('agriculture', 'darHerd', 'fr')
+  );
+  assert.notEqual(
+    getDashboardHelpText('contractor', 'retentionHeld', 'ar'),
+    getDashboardHelpText('contractor', 'retentionStops', 'ar')
+  );
+  assert.notEqual(
+    getDashboardHelpText('garage', 'alertsBlocked', 'en'),
+    getDashboardHelpText('garage', 'alertsParts', 'en')
+  );
+  assert.notEqual(
+    getDashboardHelpText('realestate', 'arrearsDebt', 'fr'),
+    getDashboardHelpText('realestate', 'arrearsMandates', 'fr')
+  );
+
+  // Unknown key returns empty string safely
+  assert.equal(getDashboardHelpText('membership', 'nonexistent_key', 'fr'), '');
+});
+
+test('DASHBOARD_POD_TITLES covers all 16 business categories with 2-3 concise trilingual pod titles', () => {
+  const expectedCategories: DashboardCategoryPodKey[] = [
+    'membership',
+    'medical',
+    'pos',
+    'project',
+    'agriculture',
+    'appointment',
+    'contractor',
+    'education',
+    'freelance',
+    'garage',
+    'legal',
+    'logistics',
+    'manufacturing',
+    'realestate',
+    'trading',
+    'venue',
+  ];
+
+  assert.deepEqual(Object.keys(DASHBOARD_POD_TITLES).sort(), [...expectedCategories].sort());
+
+  for (const category of expectedCategories) {
+    const pods = DASHBOARD_POD_TITLES[category];
+    const podKeys = Object.keys(pods);
+    assert.ok(
+      podKeys.length >= 2 && podKeys.length <= 3,
+      `Category ${category} should define 2 to 3 pods (got ${podKeys.length})`
+    );
+
+    for (const podKey of podKeys) {
+      for (const lang of ['fr', 'en', 'ar'] as const) {
+        const title = getDashboardPodTitle(category, podKey as keyof typeof pods, lang);
+        assert.ok(title.trim().length >= 8, `${category}.${podKey}.${lang} pod title is too short`);
+        assert.ok(!/todo|lorem|placeholder/i.test(title), `${category}.${podKey}.${lang} contains placeholder text`);
+      }
+    }
+  }
+
+  assert.equal(getDashboardPodTitle('membership', 'nonexistent_pod' as any, 'fr'), '');
+});
+
 

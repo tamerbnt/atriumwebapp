@@ -334,8 +334,8 @@
   pointer-events: none;
   transform-origin: top center;
   transition:
-    opacity 0.16s ease,
-    transform 0.36s var(--ax-sp2);
+    opacity 0.09s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.3s var(--ax-sp2);
 }
 
 .ax-pop::before {
@@ -355,6 +355,10 @@
   opacity: 1;
   transform: translate3d(0, 0, 0) scale(1);
   pointer-events: auto;
+}
+
+.ax-card:has(.ax-pop[data-open='true']) {
+  z-index: 30;
 }
 
 /* ---------- Display Numbers & Tabular Mono ---------- */

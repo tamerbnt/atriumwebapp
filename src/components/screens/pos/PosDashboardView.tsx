@@ -23,10 +23,11 @@ import { useCardFilters } from '../../../hooks/useCardFilters';
 import { SkeletonDashboardPos } from '../../ui/skeleton/StructuralSkeletons';
 import { AtriumButton } from '../../ui/AtriumButton';
 import {
-  BENTO_SPAN,
   DashboardBentoFrame,
-  DashboardBentoGrid,
   DashboardHeader,
+  DashboardPod,
+  DashboardPodGrid,
+  POD_SPAN,
   getSurfaceProps,
   localizeText,
   toChartLocale,
@@ -37,6 +38,8 @@ import {
   resolveChartState,
 } from '../../../utils/dashboardSelectors/common';
 import { selectPosDashboard } from '../../../utils/dashboardSelectors/coreVerticals';
+import { getDashboardHelpText } from '../../../utils/dashboardSelectors/dashboardHelpText';
+import { getDashboardPodTitle } from '../../../utils/dashboardSelectors/dashboardPodTitles';
 
 export interface PosDashboardViewProps {
   onAddMember?: () => void;
@@ -147,176 +150,193 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
         }
       />
 
-      <DashboardBentoGrid>
-        <KpiSparkCard
-          className={BENTO_SPAN.kpiHalf}
-          title={localizeText(language, 'Chiffre d’affaires caisse', 'Register Revenue', 'مبيعات الصندوق')}
-          subtitle={localizeText(
-            language,
-            `${data.ticketsCount} tickets · panier moyen ${data.avgTicket.toLocaleString()} DZD`,
-            `${data.ticketsCount} tickets · avg ${data.avgTicket.toLocaleString()} DZD`,
-            `${data.ticketsCount} تذاكر · متوسط ${data.avgTicket.toLocaleString()} دج`
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(sales.length > 0)}
-          value={data.grossRevenue}
-          deltaPercent={data.revenueDelta}
-          format="currency"
-          currency="DZD"
-          series={data.revenueSpark}
-          filter={makeFilter('revenue', fullTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun ticket encaissé sur la période.',
-            'No sales recorded in this period.',
-            'لا توجد تذاكر مسجلة في هذه الفترة.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('pos', 'kpis', language)}>
+        <DashboardPodGrid layout="equal">
+          <KpiSparkCard
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Chiffre d’affaires caisse', 'Register Revenue', 'مبيعات الصندوق')}
+            subtitle={localizeText(
+              language,
+              `${data.ticketsCount} tickets · panier moyen ${data.avgTicket.toLocaleString()} DZD`,
+              `${data.ticketsCount} tickets · avg ${data.avgTicket.toLocaleString()} DZD`,
+              `${data.ticketsCount} تذاكر · متوسط ${data.avgTicket.toLocaleString()} دج`
+            )}
+            helpText={getDashboardHelpText('pos', 'revenue', language)}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(sales.length > 0)}
+            value={data.grossRevenue}
+            deltaPercent={data.revenueDelta}
+            format="currency"
+            currency="DZD"
+            series={data.revenueSpark}
+            filter={makeFilter('revenue', fullTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun ticket encaissé sur la période.',
+              'No sales recorded in this period.',
+              'لا توجد تذاكر مسجلة في هذه الفترة.'
+            )}
+          />
 
-        <KpiMetricInverseCard
-          className={BENTO_SPAN.kpiHalf}
-          title={localizeText(language, 'Ruptures & alertes stock', 'Low Stock Alerts', 'تنبيهات نقص المخزون')}
-          subtitle={localizeText(
-            language,
-            `${data.lowStockCount} références ciblées sur ${data.totalProducts} articles`,
-            `${data.lowStockCount} flagged SKUs out of ${data.totalProducts}`,
-            `${data.lowStockCount} مواد محددة من ${data.totalProducts}`
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(products.length > 0)}
-          value={data.lowStockCount}
-          format="number"
-          unit={localizeText(language, 'articles', 'SKUs', 'مادة')}
-          series={[]}
-          filter={makeFilter('stock', stockOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Ajoutez des articles pour surveiller les seuils.',
-            'Add catalog items to track stock levels.',
-            'أضف منتجات لمتابعة المخزون.'
-          )}
-        />
+          <KpiMetricInverseCard
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Ruptures & alertes stock', 'Low Stock Alerts', 'تنبيهات نقص المخزون')}
+            subtitle={localizeText(
+              language,
+              `${data.lowStockCount} références ciblées sur ${data.totalProducts} articles`,
+              `${data.lowStockCount} flagged SKUs out of ${data.totalProducts}`,
+              `${data.lowStockCount} مواد محددة من ${data.totalProducts}`
+            )}
+            helpText={getDashboardHelpText('pos', 'stock', language)}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(products.length > 0)}
+            value={data.lowStockCount}
+            format="number"
+            unit={localizeText(language, 'articles', 'SKUs', 'مادة')}
+            series={[]}
+            filter={makeFilter('stock', stockOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Ajoutez des articles pour surveiller les seuils.',
+              'Add catalog items to track stock levels.',
+              'أضف منتجات لمتابعة المخزون.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
-        <AreaTrendChart
-          className={BENTO_SPAN.wide7}
-          title={localizeText(language, 'Trajectoire des ventes', 'Sales Trajectory', 'مسار المبيعات')}
-          subtitle={localizeText(
-            language,
-            'Période sélectionnée comparée à la fenêtre précédente',
-            'Current timeframe compared against prior window',
-            'الفترة الحالية مقارنة بالفترة السابقة'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(sales.length > 0)}
-          points={data.areaPoints}
-          format="currency"
-          currency="DZD"
-          filter={makeFilter('trend', compactTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucune donnée d’encaissement disponible.',
-            'No checkout trend data available.',
-            'لا توجد بيانات مبيعات متاحة.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('pos', 'margins', language)}>
+        <DashboardPodGrid layout="split75">
+          <AreaTrendChart
+            className={POD_SPAN.wide7}
+            title={localizeText(language, 'Trajectoire des ventes', 'Sales Trajectory', 'مسار المبيعات')}
+            subtitle={localizeText(
+              language,
+              'Période sélectionnée comparée à la fenêtre précédente',
+              'Current timeframe compared against prior window',
+              'الفترة الحالية مقارنة بالفترة السابقة'
+            )}
+            helpText={getDashboardHelpText('pos', 'trend', language)}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(sales.length > 0)}
+            points={data.areaPoints}
+            format="currency"
+            currency="DZD"
+            filter={makeFilter('trend', compactTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune donnée d’encaissement disponible.',
+              'No checkout trend data available.',
+              'لا توجد بيانات مبيعات متاحة.'
+            )}
+          />
 
-        <WaterfallChart
-          className={BENTO_SPAN.medium5}
-          title={localizeText(language, 'Pont de marge nette', 'Net Margin Bridge', 'جسر صافي الهامش')}
-          subtitle={localizeText(
-            language,
-            'Ventes brutes → Remises → Coût d’achat → TVA → Marge nette',
-            'Gross Sales → Discounts → COGS → Taxes → Net Margin',
-            'المبيعات الإجمالية ← التخفيضات ← التكلفة ← الضرائب ← الصافي'
-          )}
-          locale={locale}
-          {...featuredSurface}
-          state={resolveChartState(data.waterfallSteps.length > 0)}
-          steps={data.waterfallSteps}
-          format="currency"
-          currency="DZD"
-          filter={makeFilter('waterfall', fullTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucune vente sur la période pour calculer la marge.',
-            'No sales in period to compute margin bridge.',
-            'لا توجد مبيعات لحساب صافي الهامش.'
-          )}
-        />
+          <WaterfallChart
+            className={POD_SPAN.side5}
+            title={localizeText(language, 'Pont de marge nette', 'Net Margin Bridge', 'جسر صافي الهامش')}
+            subtitle={localizeText(
+              language,
+              'Ventes brutes → Remises → Coût d’achat → TVA → Marge nette',
+              'Gross Sales → Discounts → COGS → Taxes → Net Margin',
+              'المبيعات الإجمالية ← التخفيضات ← التكلفة ← الضرائب ← الصافي'
+            )}
+            helpText={getDashboardHelpText('pos', 'waterfall', language)}
+            locale={locale}
+            {...featuredSurface}
+            state={resolveChartState(data.waterfallSteps.length > 0)}
+            steps={data.waterfallSteps}
+            format="currency"
+            currency="DZD"
+            filter={makeFilter('waterfall', fullTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune vente sur la période pour calculer la marge.',
+              'No sales in period to compute margin bridge.',
+              'لا توجد مبيعات لحساب صافي الهامش.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
-        <SquarifiedTreemap
-          className={BENTO_SPAN.thirdCompact}
-          title={localizeText(language, 'Valeur stock par catégorie', 'Inventory by Category', 'قيمة المخزون حسب الفئة')}
-          subtitle={localizeText(
-            language,
-            'Valorisation des stocks actifs par rayon',
-            'Stock valuation grouped by product category',
-            'تقييم المخزون الحالي حسب الفئة'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.treemapItems.length > 0)}
-          items={data.treemapItems}
-          format="currency"
-          currency="DZD"
-          filter={makeFilter('treemap', treemapOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun stock valorisé en rayon.',
-            'No valued stock in inventory.',
-            'لا يوجد مخزون مقيم حالياً.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('pos', 'merchandising', language)}>
+        <DashboardPodGrid layout="equal">
+          <HourlyHeatmap
+            className={POD_SPAN.full}
+            title={localizeText(language, 'Heures de pointe caisse', 'Peak Checkout Hours', 'ساعات ذروة البيع')}
+            subtitle={localizeText(
+              language,
+              'Volume de tickets par jour et tranche horaire',
+              'Ticket density by weekday and hour',
+              'توزيع الفواتير حسب اليوم والساعة'
+            )}
+            helpText={getDashboardHelpText('pos', 'heatmap', language)}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.rushHeatmap.hasAny)}
+            rows={data.rushHeatmap.rows}
+            cols={data.rushHeatmap.cols}
+            cells={data.rushHeatmap.cells}
+            filter={makeFilter('heatmap', compactTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun passage en caisse horodaté.',
+              'No timestamped tickets recorded.',
+              'لا توجد فواتير مؤرخة.'
+            )}
+          />
 
-        <RankedBarList
-          className={BENTO_SPAN.thirdCompact}
-          title={localizeText(language, 'Top articles vendus', 'Top Selling SKUs', 'أفضل المنتجات مبيعاً')}
-          subtitle={localizeText(
-            language,
-            'Par chiffre d’affaires ou volume d’unités',
-            'Ranked by net revenue or units sold',
-            'الترتيب حسب المبيعات أو الكمية'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.rankedSkus.length > 0)}
-          criteria={skuCriteria}
-          items={data.rankedSkus}
-          emptyMessage={localizeText(
-            language,
-            'Aucune ligne de vente sur la période.',
-            'No line items sold in this period.',
-            'لا توجد مبيعات منتجات في هذه الفترة.'
-          )}
-        />
+          <SquarifiedTreemap
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Valeur stock par catégorie', 'Inventory by Category', 'قيمة المخزون حسب الفئة')}
+            subtitle={localizeText(
+              language,
+              'Valorisation des stocks actifs par rayon',
+              'Stock valuation grouped by product category',
+              'تقييم المخزون الحالي حسب الفئة'
+            )}
+            helpText={getDashboardHelpText('pos', 'treemap', language)}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.treemapItems.length > 0)}
+            items={data.treemapItems}
+            format="currency"
+            currency="DZD"
+            filter={makeFilter('treemap', treemapOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun stock valorisé en rayon.',
+              'No valued stock in inventory.',
+              'لا يوجد مخزون مقيم حالياً.'
+            )}
+          />
 
-        <HourlyHeatmap
-          className={BENTO_SPAN.thirdWideTablet}
-          title={localizeText(language, 'Heures de pointe caisse', 'Peak Checkout Hours', 'ساعات ذروة البيع')}
-          subtitle={localizeText(
-            language,
-            'Volume de tickets par jour et tranche horaire',
-            'Ticket density by weekday and hour',
-            'توزيع الفواتير حسب اليوم والساعة'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.rushHeatmap.hasAny)}
-          rows={data.rushHeatmap.rows}
-          cols={data.rushHeatmap.cols}
-          cells={data.rushHeatmap.cells}
-          filter={makeFilter('heatmap', compactTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun passage en caisse horodaté.',
-            'No timestamped tickets recorded.',
-            'لا توجد فواتير مؤرخة.'
-          )}
-        />
-      </DashboardBentoGrid>
+          <RankedBarList
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Top articles vendus', 'Top Selling SKUs', 'أفضل المنتجات مبيعاً')}
+            subtitle={localizeText(
+              language,
+              'Par chiffre d’affaires ou volume d’unités',
+              'Ranked by net revenue or units sold',
+              'الترتيب حسب المبيعات أو الكمية'
+            )}
+            helpText={getDashboardHelpText('pos', 'ranked', language)}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.rankedSkus.length > 0)}
+            criteria={skuCriteria}
+            items={data.rankedSkus}
+            emptyMessage={localizeText(
+              language,
+              'Aucune ligne de vente sur la période.',
+              'No line items sold in this period.',
+              'لا توجد مبيعات منتجات في هذه الفترة.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
     </DashboardBentoFrame>
   );
 };

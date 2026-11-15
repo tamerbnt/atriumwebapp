@@ -27,6 +27,7 @@ export type { GuardianCardProps } from './GuardianCard';
 
 export {
   BENTO_SPAN,
+  POD_SPAN,
   DashboardBentoFrame,
   DashboardBentoGrid,
   DashboardPodGrid,
@@ -35,4 +36,4 @@ export {
   toChartLocale,
   localizeText,
 } from './DashboardBentoFrame';
-export type { DashboardBentoFrameProps } from './DashboardBentoFrame';
+export type { DashboardBentoFrameProps, DashboardPodGridProps } from './DashboardBentoFrame';

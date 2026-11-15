@@ -18,10 +18,11 @@ import { SkeletonDashboardContractor } from '../../ui/skeleton/StructuralSkeleto
 import { AtriumButton } from '../../ui/AtriumButton';
 import { ContractorProjectModal } from './ContractorProjectModal';
 import {
-  BENTO_SPAN,
   DashboardBentoFrame,
-  DashboardBentoGrid,
   DashboardHeader,
+  DashboardPod,
+  DashboardPodGrid,
+  POD_SPAN,
   getSurfaceProps,
   localizeText,
   toChartLocale,
@@ -32,6 +33,8 @@ import {
   resolveChartState,
 } from '../../../utils/dashboardSelectors/common';
 import { selectContractorDashboard } from '../../../utils/dashboardSelectors/specializedVerticals';
+import { getDashboardHelpText } from '../../../utils/dashboardSelectors/dashboardHelpText';
+import { getDashboardPodTitle } from '../../../utils/dashboardSelectors/dashboardPodTitles';
 
 export const ContractorDashboardView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -172,182 +175,203 @@ export const ContractorDashboardView: React.FC = () => {
         }
       />
 
-      <DashboardBentoGrid>
-        <KpiSparkCard
-          className={BENTO_SPAN.kpiHalf}
-          title={localizeText(language, 'Situations DGP certifiées', 'Certified DGP Billing', 'كشوف الأشغال المعتمدة')}
-          subtitle={localizeText(
-            language,
-            `${projects.length} chantiers · ${dgps.length} décomptes`,
-            `${projects.length} sites · ${dgps.length} progress bills`,
-            `${projects.length} ورشات · ${dgps.length} كشوف`
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(dgps.length > 0)}
-          value={data.dgpCertifiedTotal}
-          deltaPercent={data.dgpDelta}
-          format="currency"
-          currency="DZD"
-          series={data.dgpSpark}
-          filter={makeFilter('dgp', fullTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucune situation DGP certifiée.',
-            'No certified DGP progress bills yet.',
-            'لا توجد كشوف أشغال معتمدة بعد.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('contractor', 'kpis', language)}>
+        <DashboardPodGrid layout="equal">
+          <KpiSparkCard
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Situations DGP certifiées', 'Certified DGP Billing', 'كشوف الأشغال المعتمدة')}
+            subtitle={localizeText(
+              language,
+              `${projects.length} chantiers · ${dgps.length} décomptes`,
+              `${projects.length} sites · ${dgps.length} progress bills`,
+              `${projects.length} ورشات · ${dgps.length} كشوف`
+            )}
+            helpText={getDashboardHelpText('contractor', 'dgp', language)}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(dgps.length > 0)}
+            value={data.dgpCertifiedTotal}
+            deltaPercent={data.dgpDelta}
+            format="currency"
+            currency="DZD"
+            series={data.dgpSpark}
+            filter={makeFilter('dgp', fullTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune situation DGP certifiée.',
+              'No certified DGP progress bills yet.',
+              'لا توجد كشوف أشغال معتمدة بعد.'
+            )}
+          />
 
-        <KpiMetricInverseCard
-          className={BENTO_SPAN.kpiHalf}
-          title={
-            showingStops
-              ? localizeText(language, 'Ordres d’arrêt (OS)', 'Active Stop Orders', 'أوامر التوقف النشطة')
-              : localizeText(language, 'Retenues de garantie', 'Retention Held', 'اقتطاعات الضمان')
-          }
-          subtitle={localizeText(
-            language,
-            `${data.activeStopOrders} ordres d’arrêt (OS) · ${data.totalRetention.toLocaleString()} DZD`,
-            `${data.activeStopOrders} active stop orders · ${data.totalRetention.toLocaleString()} DZD`,
-            `${data.activeStopOrders} أوامر توقف · ${data.totalRetention.toLocaleString()} دج`
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(projects.length > 0 || dgps.length > 0 || serviceOrders.length > 0)}
-          value={showingStops ? data.activeStopOrders : data.totalRetention}
-          format={showingStops ? 'number' : 'currency'}
-          currency={showingStops ? undefined : 'DZD'}
-          series={[]}
-          filter={makeFilter('retention', retentionOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun marché ni retenue suivi.',
-            'No contract retention recorded.',
-            'لا توجد صفقات أو اقتطاعات ضمان مسجلة.'
-          )}
-        />
+          <KpiMetricInverseCard
+            className={POD_SPAN.half}
+            title={
+              showingStops
+                ? localizeText(language, 'Ordres d’arrêt (OS)', 'Active Stop Orders', 'أوامر التوقف النشطة')
+                : localizeText(language, 'Retenues de garantie', 'Retention Held', 'اقتطاعات الضمان')
+            }
+            subtitle={localizeText(
+              language,
+              `${data.activeStopOrders} ordres d’arrêt (OS) · ${data.totalRetention.toLocaleString()} DZD`,
+              `${data.activeStopOrders} active stop orders · ${data.totalRetention.toLocaleString()} DZD`,
+              `${data.activeStopOrders} أوامر توقف · ${data.totalRetention.toLocaleString()} دج`
+            )}
+            helpText={getDashboardHelpText(
+              'contractor',
+              showingStops ? 'retentionStops' : 'retentionHeld',
+              language
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(projects.length > 0 || dgps.length > 0 || serviceOrders.length > 0)}
+            value={showingStops ? data.activeStopOrders : data.totalRetention}
+            format={showingStops ? 'number' : 'currency'}
+            currency={showingStops ? undefined : 'DZD'}
+            series={[]}
+            filter={makeFilter('retention', retentionOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun marché ni retenue suivi.',
+              'No contract retention recorded.',
+              'لا توجد صفقات أو اقتطاعات ضمان مسجلة.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
-        <WaterfallChart
-          className={BENTO_SPAN.hero8}
-          title={localizeText(language, 'Décompte DGP net à mandater', 'DGP Net Payable Waterfall', 'صافي كشف الأشغال')}
-          subtitle={localizeText(
-            language,
-            'Montant certifié, retenue 5%, sous-traitance et net',
-            'Certified gross, 5% retention, subcontractors, and net payout',
-            'الكشف الإجمالي، اقتطاع الضمان، المقاولة من الباطن والصافي'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.waterfallSteps.length > 0)}
-          steps={data.waterfallSteps}
-          format="currency"
-          currency="DZD"
-          filter={makeFilter('waterfall', portfolioTf)}
-          emptyMessage={localizeText(
-            language,
-            'Ajoutez un marché ou DGP pour visualiser le décompte.',
-            'Add projects or DGP bills to trace net payout.',
-            'أضف ورشة أو كشف أشغال لعرض التفاصيل.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('contractor', 'compliance', language)}>
+        <DashboardPodGrid layout="split84">
+          <WaterfallChart
+            className={POD_SPAN.wide8}
+            title={localizeText(language, 'Décompte DGP net à mandater', 'DGP Net Payable Waterfall', 'صافي كشف الأشغال')}
+            subtitle={localizeText(
+              language,
+              'Montant certifié, retenue 5%, sous-traitance et net',
+              'Certified gross, 5% retention, subcontractors, and net payout',
+              'الكشف الإجمالي، اقتطاع الضمان، المقاولة من الباطن والصافي'
+            )}
+            helpText={getDashboardHelpText('contractor', 'waterfall', language)}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.waterfallSteps.length > 0)}
+            steps={data.waterfallSteps}
+            format="currency"
+            currency="DZD"
+            filter={makeFilter('waterfall', portfolioTf)}
+            emptyMessage={localizeText(
+              language,
+              'Ajoutez un marché ou DGP pour visualiser le décompte.',
+              'Add projects or DGP bills to trace net payout.',
+              'أضف ورشة أو كشف أشغال لعرض التفاصيل.'
+            )}
+          />
 
-        <RadialGauge
-          className={BENTO_SPAN.side4}
-          title={localizeText(language, 'Essais CTC & Sécurité HSE', 'CTC Concrete & HSE Safety', 'اختبارات الخرسانة والسلامة')}
-          subtitle={localizeText(
-            language,
-            `${concretePours.length} prélèvements · ${dailyLogs.length} journaux`,
-            `${concretePours.length} concrete pours · ${dailyLogs.length} daily logs`,
-            `${concretePours.length} اختبارات خرسانة · ${dailyLogs.length} تقارير يومية`
-          )}
-          locale={locale}
-          {...featuredSurface}
-          state={resolveChartState(concretePours.length > 0 || dailyLogs.length > 0)}
-          metrics={data.gauges}
-          emptyMessage={localizeText(
-            language,
-            'Enregistrez des coulages CTC ou journaux HSE.',
-            'Record concrete pours or daily site logs.',
-            'سجل اختبارات الخرسانة أو تقارير السلامة.'
-          )}
-        />
+          <RadialGauge
+            className={POD_SPAN.side4}
+            title={localizeText(language, 'Essais CTC & Sécurité HSE', 'CTC Concrete & HSE Safety', 'اختبارات الخرسانة والسلامة')}
+            subtitle={localizeText(
+              language,
+              `${concretePours.length} prélèvements · ${dailyLogs.length} journaux`,
+              `${concretePours.length} concrete pours · ${dailyLogs.length} daily logs`,
+              `${concretePours.length} اختبارات خرسانة · ${dailyLogs.length} تقارير يومية`
+            )}
+            helpText={getDashboardHelpText('contractor', 'gauges', language)}
+            locale={locale}
+            {...featuredSurface}
+            state={resolveChartState(concretePours.length > 0 || dailyLogs.length > 0)}
+            metrics={data.gauges}
+            emptyMessage={localizeText(
+              language,
+              'Enregistrez des coulages CTC ou journaux HSE.',
+              'Record concrete pours or daily site logs.',
+              'سجل اختبارات الخرسانة أو تقارير السلامة.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
-        <BulletChart
-          className={BENTO_SPAN.thirdCompact}
-          title={localizeText(language, 'Avancement des lots DQE', 'BOQ Lot Execution', 'تنفيذ حصص الكميات DQE')}
-          subtitle={localizeText(
-            language,
-            'Travaux exécutés vs montant prévu au devis',
-            'Executed lot value compared against BOQ plan',
-            'الأشغال المنجزة مقارنة بالمخطط التعاقدي'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.boqBullets.length > 0)}
-          items={data.boqBullets}
-          format="currency"
-          currency="DZD"
-          actualLegendLabel={localizeText(language, 'Exécuté', 'Executed', 'المنجز')}
-          targetLegendLabel={localizeText(language, 'Prévu DQE', 'Planned BOQ', 'المخطط')}
-          filter={makeFilter('bullets', bulletsOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun poste DQE renseigné.',
-            'No BOQ items logged yet.',
-            'لا توجد بنود كميات مسجلة بعد.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('contractor', 'execution', language)}>
+        <DashboardPodGrid layout="equal">
+          <DumbbellChart
+            className={POD_SPAN.full}
+            title={localizeText(language, 'Délai écoulé vs Avancement réel', 'Elapsed Time vs Physical Progress', 'المدة المنقضية مقابل الإنجاز الفعلي')}
+            subtitle={localizeText(
+              language,
+              'Détection des écarts de planning sur les chantiers',
+              'Schedule drift comparison per active construction site',
+              'مقارنة التقدم الزمني بالتقدم الميداني لكل ورشة'
+            )}
+            helpText={getDashboardHelpText('contractor', 'dumbbell', language)}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.progressDumbbell.length > 0)}
+            items={data.progressDumbbell}
+            prevLabel={localizeText(language, 'Délai écoulé', 'Time Elapsed', 'الوقت المنقضي')}
+            currentLabel={localizeText(language, 'Avancement', 'Physical Progress', 'الإنجاز')}
+            unit="%"
+            filter={makeFilter('dumbbell', dumbbellOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Créez un chantier pour suivre le glissement planning.',
+              'Add projects to compare physical vs schedule progress.',
+              'أضف ورشة لمتابعة انحراف المخطط الزمني.'
+            )}
+          />
 
-        <SquarifiedTreemap
-          className={BENTO_SPAN.thirdCompact}
-          title={localizeText(language, 'Portefeuille des marchés', 'Contract Value Treemap', 'توزيع قيمة الصفقات')}
-          subtitle={localizeText(
-            language,
-            'Poids relatif de chaque chantier BTP',
-            'Proportional contract value across active sites',
-            'الحجم التعاقدي النسبي لكل مشروع'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.treemapItems.length > 0)}
-          items={data.treemapItems}
-          format="currency"
-          currency="DZD"
-          filter={makeFilter('treemap', treemapOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun marché BTP enregistré.',
-            'No contractor projects recorded.',
-            'لا توجد مشاريع مقاولة مسجلة.'
-          )}
-        />
+          <BulletChart
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Avancement des lots DQE', 'BOQ Lot Execution', 'تنفيذ حصص الكميات DQE')}
+            subtitle={localizeText(
+              language,
+              'Travaux exécutés vs montant prévu au devis',
+              'Executed lot value compared against BOQ plan',
+              'الأشغال المنجزة مقارنة بالمخطط التعاقدي'
+            )}
+            helpText={getDashboardHelpText('contractor', 'bullets', language)}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.boqBullets.length > 0)}
+            items={data.boqBullets}
+            format="currency"
+            currency="DZD"
+            actualLegendLabel={localizeText(language, 'Exécuté', 'Executed', 'المنجز')}
+            targetLegendLabel={localizeText(language, 'Prévu DQE', 'Planned BOQ', 'المخطط')}
+            filter={makeFilter('bullets', bulletsOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun poste DQE renseigné.',
+              'No BOQ items logged yet.',
+              'لا توجد بنود كميات مسجلة بعد.'
+            )}
+          />
 
-        <DumbbellChart
-          className={BENTO_SPAN.thirdWideTablet}
-          title={localizeText(language, 'Délai écoulé vs Avancement réel', 'Elapsed Time vs Physical Progress', 'المدة المنقضية مقابل الإنجاز الفعلي')}
-          subtitle={localizeText(
-            language,
-            'Détection des écarts de planning sur les chantiers',
-            'Schedule drift comparison per active construction site',
-            'مقارنة التقدم الزمني بالتقدم الميداني لكل ورشة'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.progressDumbbell.length > 0)}
-          items={data.progressDumbbell}
-          prevLabel={localizeText(language, 'Délai écoulé', 'Time Elapsed', 'الوقت المنقضي')}
-          currentLabel={localizeText(language, 'Avancement', 'Physical Progress', 'الإنجاز')}
-          unit="%"
-          filter={makeFilter('dumbbell', dumbbellOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Créez un chantier pour suivre le glissement planning.',
-            'Add projects to compare physical vs schedule progress.',
-            'أضف ورشة لمتابعة انحراف المخطط الزمني.'
-          )}
-        />
-      </DashboardBentoGrid>
+          <SquarifiedTreemap
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Portefeuille des marchés', 'Contract Value Treemap', 'توزيع قيمة الصفقات')}
+            subtitle={localizeText(
+              language,
+              'Poids relatif de chaque chantier BTP',
+              'Proportional contract value across active sites',
+              'الحجم التعاقدي النسبي لكل مشروع'
+            )}
+            helpText={getDashboardHelpText('contractor', 'treemap', language)}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.treemapItems.length > 0)}
+            items={data.treemapItems}
+            format="currency"
+            currency="DZD"
+            filter={makeFilter('treemap', treemapOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun marché BTP enregistré.',
+              'No contractor projects recorded.',
+              'لا توجد مشاريع مقاولة مسجلة.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
       {isModalOpen && (
         <ContractorProjectModal

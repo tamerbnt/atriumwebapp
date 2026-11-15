@@ -17,6 +17,7 @@ export const ChartInfoPopover: React.FC<ChartInfoPopoverProps> = React.memo(
     const [focused, setFocused] = useState(false);
     const [layout, setLayout] = useState({ shiftPx: 0, arrowPx: 10 });
     const wrapRef = useRef<HTMLDivElement>(null);
+    const popRef = useRef<HTMLDivElement>(null);
     const popoverId = useId();
 
     const open = pinned || hovered || focused;
@@ -29,7 +30,7 @@ export const ChartInfoPopover: React.FC<ChartInfoPopoverProps> = React.memo(
       if (wrap && card) {
         const wRect = wrap.getBoundingClientRect();
         const cRect = card.getBoundingClientRect();
-        const popW = Math.min(232, cRect.width * 0.7);
+        const popW = popRef.current?.offsetWidth || Math.min(232, cRect.width * 0.7);
         const dirAttr = (card as HTMLElement).dir || card.closest('[dir]')?.getAttribute('dir');
         const isRtl = dirAttr ? dirAttr === 'rtl' : getComputedStyle(card).direction === 'rtl';
         const btnCenterX = wRect.left + wRect.width / 2;
@@ -89,12 +90,21 @@ export const ChartInfoPopover: React.FC<ChartInfoPopoverProps> = React.memo(
           aria-label={ariaLabel}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          onClick={() => setPinned((prev) => !prev)}
+          onClick={() => {
+            if (pinned) {
+              setPinned(false);
+              setHovered(false);
+              setFocused(false);
+            } else {
+              setPinned(true);
+            }
+          }}
         >
           ?
         </button>
         <div
           id={popoverId}
+          ref={popRef}
           role="tooltip"
           className="ax-pop"
           data-open={open ? 'true' : 'false'}

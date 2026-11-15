@@ -26,10 +26,11 @@ import { SkeletonDashboardTrading } from '../../ui/skeleton/StructuralSkeletons'
 import { AtriumButton } from '../../ui/AtriumButton';
 import { CommercialDocComposerModal } from './CommercialDocComposerModal';
 import {
-  BENTO_SPAN,
   DashboardBentoFrame,
-  DashboardBentoGrid,
   DashboardHeader,
+  DashboardPod,
+  DashboardPodGrid,
+  POD_SPAN,
   getSurfaceProps,
   localizeText,
   toChartLocale,
@@ -40,6 +41,8 @@ import {
   resolveChartState,
 } from '../../../utils/dashboardSelectors/common';
 import { selectTradingDashboard } from '../../../utils/dashboardSelectors/coreVerticals';
+import { getDashboardHelpText } from '../../../utils/dashboardSelectors/dashboardHelpText';
+import { getDashboardPodTitle } from '../../../utils/dashboardSelectors/dashboardPodTitles';
 
 export const TradingDashboardView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -167,183 +170,196 @@ export const TradingDashboardView: React.FC = () => {
         }
       />
 
-      <DashboardBentoGrid>
-        <KpiSparkCard
-          className={BENTO_SPAN.kpiHalf}
-          title={localizeText(language, 'Chiffre d’affaires B2B', 'B2B Sales Turnover', 'رقم أعمال الجملة')}
-          subtitle={localizeText(
-            language,
-            `${commercialDocs.length} pièces commerciales · ${warehouses.length} dépôts`,
-            `${commercialDocs.length} commercial docs · ${warehouses.length} depots`,
-            `${commercialDocs.length} وثائق تجارية · ${warehouses.length} مستودعات`
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(commercialDocs.length > 0)}
-          value={data.b2bTurnover}
-          deltaPercent={data.turnoverDelta}
-          format="currency"
-          currency="DZD"
-          series={data.turnoverSpark}
-          filter={makeFilter('turnover', fullTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucune facture ou BL émis sur la période.',
-            'No B2B invoices or dispatches recorded.',
-            'لا توجد فواتير أو سندات شحن مسجلة.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('trading', 'commercial', language)}>
+        <DashboardPodGrid layout="split75">
+          <KpiSparkCard
+            className={POD_SPAN.half12}
+            title={localizeText(language, 'Chiffre d’affaires B2B', 'B2B Sales Turnover', 'رقم أعمال الجملة')}
+            helpText={getDashboardHelpText('trading', 'turnover', language)}
+            subtitle={localizeText(
+              language,
+              `${commercialDocs.length} pièces commerciales · ${warehouses.length} dépôts`,
+              `${commercialDocs.length} commercial docs · ${warehouses.length} depots`,
+              `${commercialDocs.length} وثائق تجارية · ${warehouses.length} مستودعات`
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(commercialDocs.length > 0)}
+            value={data.b2bTurnover}
+            deltaPercent={data.turnoverDelta}
+            format="currency"
+            currency="DZD"
+            series={data.turnoverSpark}
+            filter={makeFilter('turnover', fullTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune facture ou BL émis sur la période.',
+              'No B2B invoices or dispatches recorded.',
+              'لا توجد فواتير أو سندات شحن مسجلة.'
+            )}
+          />
 
-        <KpiMetricInverseCard
-          className={BENTO_SPAN.kpiHalf}
-          title={localizeText(language, 'Encours créances B2B', 'B2B Credit Exposure', 'مستحقات العملاء الآجلة')}
-          subtitle={localizeText(
-            language,
-            `${b2bClients.length} comptes grossistes suivis`,
-            `${b2bClients.length} wholesale accounts tracked`,
-            `${b2bClients.length} حسابات تجارية متابعة`
-          )}
-          locale={locale}
-          {...featuredSurface}
-          state={resolveChartState(b2bClients.length > 0)}
-          value={data.outstandingReceivables}
-          format="currency"
-          currency="DZD"
-          series={[]}
-          filter={makeFilter('receivables', receivablesOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun compte client B2B enregistré.',
-            'No wholesale accounts registered.',
-            'لا توجد حسابات عملاء مسجلة.'
-          )}
-        />
+          <KpiMetricInverseCard
+            className={POD_SPAN.half12}
+            title={localizeText(language, 'Encours créances B2B', 'B2B Credit Exposure', 'مستحقات العملاء الآجلة')}
+            helpText={getDashboardHelpText('trading', 'receivables', language)}
+            subtitle={localizeText(
+              language,
+              `${b2bClients.length} comptes grossistes suivis`,
+              `${b2bClients.length} wholesale accounts tracked`,
+              `${b2bClients.length} حسابات تجارية متابعة`
+            )}
+            locale={locale}
+            {...featuredSurface}
+            state={resolveChartState(b2bClients.length > 0)}
+            value={data.outstandingReceivables}
+            format="currency"
+            currency="DZD"
+            series={[]}
+            filter={makeFilter('receivables', receivablesOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun compte client B2B enregistré.',
+              'No wholesale accounts registered.',
+              'لا توجد حسابات عملاء مسجلة.'
+            )}
+          />
 
-        <StackedBarChart
-          className={BENTO_SPAN.wide7}
-          title={localizeText(language, 'Ventes B2B vs Achats', 'Sales vs Purchases Flow', 'المبيعات مقابل المشتريات')}
-          subtitle={localizeText(
-            language,
-            'Équilibre des flux sortants et réapprovisionnements',
-            'Outbound B2B billing vs supplier purchase receipts',
-            'توازن الفوترة والتموين خلال الفترة'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(commercialDocs.length > 0 || purchaseDocs.length > 0)}
-          series={flowSeries}
-          buckets={data.stackedBuckets}
-          format="currency"
-          currency="DZD"
-          filter={makeFilter('flow', compactTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucune transaction B2B enregistrée.',
-            'No B2B transactions recorded.',
-            'لا توجد معاملات تجارية مسجلة.'
-          )}
-        />
+          <StackedBarChart
+            className={POD_SPAN.wide7}
+            title={localizeText(language, 'Ventes B2B vs Achats', 'Sales vs Purchases Flow', 'المبيعات مقابل المشتريات')}
+            helpText={getDashboardHelpText('trading', 'flow', language)}
+            subtitle={localizeText(
+              language,
+              'Équilibre des flux sortants et réapprovisionnements',
+              'Outbound B2B billing vs supplier purchase receipts',
+              'توازن الفوترة والتموين خلال الفترة'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(commercialDocs.length > 0 || purchaseDocs.length > 0)}
+            series={flowSeries}
+            buckets={data.stackedBuckets}
+            format="currency"
+            currency="DZD"
+            filter={makeFilter('flow', compactTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune transaction B2B enregistrée.',
+              'No B2B transactions recorded.',
+              'لا توجد معاملات تجارية مسجلة.'
+            )}
+          />
 
-        <WaterfallChart
-          className={BENTO_SPAN.medium5}
-          title={localizeText(language, 'Pont de marge négoce', 'Trading Margin Bridge', 'جسر هامش التجارة')}
-          subtitle={localizeText(
-            language,
-            'Ventes HT → Remises → Achats fournisseurs → Marge nette',
-            'B2B Sales → Discounts → Purchases → Net Margin',
-            'المبيعات ← التخفيضات ← المشتريات ← صافي الربح'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.waterfallSteps.length > 0)}
-          steps={data.waterfallSteps}
-          format="currency"
-          currency="DZD"
-          filter={makeFilter('waterfall', compactTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun flux ventes/achats enregistré.',
-            'No B2B sales or purchase flow recorded.',
-            'لا توجد حركة مبيعات أو مشتريات مسجلة.'
-          )}
-        />
+          <WaterfallChart
+            className={POD_SPAN.side5}
+            title={localizeText(language, 'Pont de marge négoce', 'Trading Margin Bridge', 'جسر هامش التجارة')}
+            helpText={getDashboardHelpText('trading', 'waterfall', language)}
+            subtitle={localizeText(
+              language,
+              'Ventes HT → Remises → Achats fournisseurs → Marge nette',
+              'B2B Sales → Discounts → Purchases → Net Margin',
+              'المبيعات ← التخفيضات ← المشتريات ← صافي الربح'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.waterfallSteps.length > 0)}
+            steps={data.waterfallSteps}
+            format="currency"
+            currency="DZD"
+            filter={makeFilter('waterfall', compactTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun flux ventes/achats enregistré.',
+              'No B2B sales or purchase flow recorded.',
+              'لا توجد حركة مبيعات أو مشتريات مسجلة.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
-        <BubbleScatterChart
-          className={BENTO_SPAN.thirdWideTablet}
-          title={localizeText(language, 'Matrice clients : Fréquence vs Volume', 'Client Volume & Credit Risk', 'مصفوفة الزبائن: التكرار والحجم')}
-          subtitle={localizeText(
-            language,
-            'Nombre de commandes (X), chiffre d’affaires (Y) et encours (taille)',
-            'Order count (X), volume (Y), and credit exposure (bubble size)',
-            'عدد الطلبات، حجم المعاملات ومبلغ الائتمان'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.bubblePoints.length > 0)}
-          groups={data.bubbleGroups}
-          points={data.bubblePoints}
-          xAxisLabel={localizeText(language, 'Commandes', 'Orders', 'الطلبات')}
-          sizeLabel={localizeText(language, 'Encours', 'Exposure', 'المستحقات')}
-          yFormat="currency"
-          sizeFormat="currency"
-          currency="DZD"
-          filter={makeFilter('bubble', bubbleOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun compte distributeur actif.',
-            'No active B2B distributors.',
-            'لا يوجد موزعون نشطون.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('trading', 'risk', language)}>
+        <DashboardPodGrid layout="equal">
+          <BubbleScatterChart
+            className={POD_SPAN.full}
+            title={localizeText(language, 'Matrice clients : Fréquence vs Volume', 'Client Volume & Credit Risk', 'مصفوفة الزبائن: التكرار والحجم')}
+            helpText={getDashboardHelpText('trading', 'bubble', language)}
+            subtitle={localizeText(
+              language,
+              'Nombre de commandes (X), chiffre d’affaires (Y) et encours (taille)',
+              'Order count (X), volume (Y), and credit exposure (bubble size)',
+              'عدد الطلبات، حجم المعاملات ومبلغ الائتمان'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.bubblePoints.length > 0)}
+            groups={data.bubbleGroups}
+            points={data.bubblePoints}
+            xAxisLabel={localizeText(language, 'Commandes', 'Orders', 'الطلبات')}
+            sizeLabel={localizeText(language, 'Encours', 'Exposure', 'المستحقات')}
+            yFormat="currency"
+            sizeFormat="currency"
+            currency="DZD"
+            filter={makeFilter('bubble', bubbleOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun compte distributeur actif.',
+              'No active B2B distributors.',
+              'لا يوجد موزعون نشطون.'
+            )}
+          />
 
-        <SquarifiedTreemap
-          className={BENTO_SPAN.thirdCompact}
-          title={localizeText(language, 'Valorisation par dépôt', 'Warehouse Stock Valuation', 'تقييم المخزون حسب المستودع')}
-          subtitle={localizeText(
-            language,
-            'Répartition de la valeur stockée sur les sites',
-            'Inventory capital distribution across depots',
-            'توزيع رأس مال المخزون عبر المستودعات'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.treemapItems.length > 0)}
-          items={data.treemapItems}
-          format="currency"
-          currency="DZD"
-          filter={makeFilter('treemap', treemapOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun dépôt ou stock valorisé.',
-            'No valued warehouse stock available.',
-            'لا يوجد مخزون مقيم بالمستودعات.'
-          )}
-        />
+          <SquarifiedTreemap
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Valorisation par dépôt', 'Warehouse Stock Valuation', 'تقييم المخزون حسب المستودع')}
+            helpText={getDashboardHelpText('trading', 'treemap', language)}
+            subtitle={localizeText(
+              language,
+              'Répartition de la valeur stockée sur les sites',
+              'Inventory capital distribution across depots',
+              'توزيع رأس مال المخزون عبر المستودعات'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.treemapItems.length > 0)}
+            items={data.treemapItems}
+            format="currency"
+            currency="DZD"
+            filter={makeFilter('treemap', treemapOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun dépôt ou stock valorisé.',
+              'No valued warehouse stock available.',
+              'لا يوجد مخزون مقيم بالمستودعات.'
+            )}
+          />
 
-        <BulletChart
-          className={BENTO_SPAN.thirdCompact}
-          title={localizeText(language, 'Encours vs Plafond crédit', 'Balance vs Credit Limit', 'المستحقات مقابل سقف الائتمان')}
-          subtitle={localizeText(
-            language,
-            'Utilisation des lignes de crédit par distributeur',
-            'Outstanding balance compared to approved credit cap',
-            'الرصيد المستحق مقارنة بالحد الائتماني'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.creditBullets.length > 0)}
-          items={data.creditBullets}
-          format="currency"
-          currency="DZD"
-          filter={makeFilter('bullets', bulletsOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun plafond crédit configuré.',
-            'No client credit limits configured.',
-            'لا توجد حدود ائتمان مهيأة.'
-          )}
-        />
-      </DashboardBentoGrid>
+          <BulletChart
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Encours vs Plafond crédit', 'Balance vs Credit Limit', 'المستحقات مقابل سقف الائتمان')}
+            helpText={getDashboardHelpText('trading', 'bullets', language)}
+            subtitle={localizeText(
+              language,
+              'Utilisation des lignes de crédit par distributeur',
+              'Outstanding balance compared to approved credit cap',
+              'الرصيد المستحق مقارنة بالحد الائتماني'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.creditBullets.length > 0)}
+            items={data.creditBullets}
+            format="currency"
+            currency="DZD"
+            filter={makeFilter('bullets', bulletsOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun plafond crédit configuré.',
+              'No client credit limits configured.',
+              'لا توجد حدود ائتمان مهيأة.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
       {isComposerOpen && (
         <CommercialDocComposerModal

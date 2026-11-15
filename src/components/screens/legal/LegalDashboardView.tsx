@@ -19,10 +19,11 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { LegalMatterModal } from './LegalMatterModal';
 import { CpcaDeadlineModal } from '../../modals/CpcaDeadlineModal';
 import {
-  BENTO_SPAN,
   DashboardBentoFrame,
-  DashboardBentoGrid,
   DashboardHeader,
+  DashboardPod,
+  DashboardPodGrid,
+  POD_SPAN,
   getSurfaceProps,
   localizeText,
   toChartLocale,
@@ -33,6 +34,8 @@ import {
   resolveChartState,
 } from '../../../utils/dashboardSelectors/common';
 import { selectLegalDashboard } from '../../../utils/dashboardSelectors/specializedVerticals';
+import { getDashboardHelpText } from '../../../utils/dashboardSelectors/dashboardHelpText';
+import { getDashboardPodTitle } from '../../../utils/dashboardSelectors/dashboardPodTitles';
 
 export const LegalDashboardView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -171,179 +174,196 @@ export const LegalDashboardView: React.FC = () => {
         }
       />
 
-      <DashboardBentoGrid>
-        <KpiSparkCard
-          className={BENTO_SPAN.kpiHalf}
-          title={localizeText(language, 'Honoraires encaissés', 'Collected Fees', 'الأتعاب المحصلة')}
-          subtitle={localizeText(
-            language,
-            `${matters.length} dossiers · ${notaryDeeds.length} actes`,
-            `${matters.length} matters · ${notaryDeeds.length} deeds`,
-            `${matters.length} قضايا · ${notaryDeeds.length} عقود`
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(cashReceipts.length > 0)}
-          value={data.collectedHonoraires}
-          deltaPercent={data.receiptDelta}
-          format="currency"
-          currency="DZD"
-          series={data.receiptSpark}
-          filter={makeFilter('honoraires', fullTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun reçu d’honoraires enregistré.',
-            'No fee receipts recorded yet.',
-            'لا توجد وصولات أتعاب مسجلة بعد.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('legal', 'kpis', language)}>
+        <DashboardPodGrid layout="equal">
+          <KpiSparkCard
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Honoraires encaissés', 'Collected Fees', 'الأتعاب المحصلة')}
+            helpText={getDashboardHelpText('legal', 'honoraires', language)}
+            subtitle={localizeText(
+              language,
+              `${matters.length} dossiers · ${notaryDeeds.length} actes`,
+              `${matters.length} matters · ${notaryDeeds.length} deeds`,
+              `${matters.length} قضايا · ${notaryDeeds.length} عقود`
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(cashReceipts.length > 0)}
+            value={data.collectedHonoraires}
+            deltaPercent={data.receiptDelta}
+            format="currency"
+            currency="DZD"
+            series={data.receiptSpark}
+            filter={makeFilter('honoraires', fullTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun reçu d’honoraires enregistré.',
+              'No fee receipts recorded yet.',
+              'لا توجد وصولات أتعاب مسجلة بعد.'
+            )}
+          />
 
-        <KpiMetricInverseCard
-          className={BENTO_SPAN.kpiHalf}
-          title={localizeText(language, 'Échéances critiques CPCA', 'Critical CPCA Deadlines', 'الآجال الحاسمة')}
-          subtitle={localizeText(
-            language,
-            `CARPA : ${data.escrowTotal.toLocaleString()} DZD séquestrés`,
-            `Escrow balance: ${data.escrowTotal.toLocaleString()} DZD`,
-            `رصيد الودائع: ${data.escrowTotal.toLocaleString()} دج`
-          )}
-          locale={locale}
-          {...featuredSurface}
-          state={resolveChartState(deadlines.length > 0 || escrowAccounts.length > 0)}
-          value={data.criticalDeadlines}
-          format="number"
-          series={[]}
-          filter={makeFilter('deadlines', deadlineOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucune échéance CPCA suivie.',
-            'No procedural deadlines tracked.',
-            'لا توجد آجال إجرائية مسجلة.'
-          )}
-        />
+          <KpiMetricInverseCard
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Échéances critiques CPCA', 'Critical CPCA Deadlines', 'الآجال الحاسمة')}
+            helpText={getDashboardHelpText('legal', 'deadlines', language)}
+            subtitle={localizeText(
+              language,
+              `CARPA : ${data.escrowTotal.toLocaleString()} DZD séquestrés`,
+              `Escrow balance: ${data.escrowTotal.toLocaleString()} DZD`,
+              `رصيد الودائع: ${data.escrowTotal.toLocaleString()} دج`
+            )}
+            locale={locale}
+            {...featuredSurface}
+            state={resolveChartState(deadlines.length > 0 || escrowAccounts.length > 0)}
+            value={data.criticalDeadlines}
+            format="number"
+            series={[]}
+            filter={makeFilter('deadlines', deadlineOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune échéance CPCA suivie.',
+              'No procedural deadlines tracked.',
+              'لا توجد آجال إجرائية مسجلة.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
-        <AreaTrendChart
-          className={BENTO_SPAN.wide7}
-          title={localizeText(language, 'Trajectoire des honoraires', 'Fee Collection Trend', 'منحنى تحصيل الأتعاب')}
-          subtitle={localizeText(
-            language,
-            'Comparatif entre la période active et précédente',
-            'Current fee inflow vs previous timeframe',
-            'مقارنة التحصيل الحالي بالفترة السابقة'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(cashReceipts.length > 0)}
-          points={data.areaPoints}
-          format="currency"
-          currency="DZD"
-          filter={makeFilter('trend', compactTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun encaissement enregistré.',
-            'No fee receipts recorded in window.',
-            'لا توجد مداخيل مسجلة في هذه الفترة.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('legal', 'escrow', language)}>
+        <DashboardPodGrid layout="split75">
+          <AreaTrendChart
+            className={POD_SPAN.wide7}
+            title={localizeText(language, 'Trajectoire des honoraires', 'Fee Collection Trend', 'منحنى تحصيل الأتعاب')}
+            helpText={getDashboardHelpText('legal', 'trend', language)}
+            subtitle={localizeText(
+              language,
+              'Comparatif entre la période active et précédente',
+              'Current fee inflow vs previous timeframe',
+              'مقارنة التحصيل الحالي بالفترة السابقة'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(cashReceipts.length > 0)}
+            points={data.areaPoints}
+            format="currency"
+            currency="DZD"
+            filter={makeFilter('trend', compactTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun encaissement enregistré.',
+              'No fee receipts recorded in window.',
+              'لا توجد مداخيل مسجلة في هذه الفترة.'
+            )}
+          />
 
-        <BulletChart
-          className={BENTO_SPAN.medium5}
-          title={localizeText(language, 'Comptes CARPA séquestrés', 'CARPA Escrow Balances', 'حسابات الضمان CARPA')}
-          subtitle={localizeText(
-            language,
-            'Solde disponible vs provision initiale déposée',
-            'Remaining escrow vs initial client deposit',
-            'الرصيد المتاح مقابل الإيداع الأولي'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.escrowBullets.length > 0)}
-          items={data.escrowBullets}
-          format="currency"
-          currency="DZD"
-          actualLegendLabel={localizeText(language, 'Solde', 'Balance', 'الرصيد')}
-          targetLegendLabel={localizeText(language, 'Déposé', 'Deposited', 'المودع')}
-          filter={makeFilter('bullets', bulletsOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun compte séquestre ouvert.',
-            'No escrow accounts opened.',
-            'لا توجد حسابات ضمان مفتوحة.'
-          )}
-        />
+          <BulletChart
+            className={POD_SPAN.side5}
+            title={localizeText(language, 'Comptes CARPA séquestrés', 'CARPA Escrow Balances', 'حسابات الضمان CARPA')}
+            helpText={getDashboardHelpText('legal', 'bullets', language)}
+            subtitle={localizeText(
+              language,
+              'Solde disponible vs provision initiale déposée',
+              'Remaining escrow vs initial client deposit',
+              'الرصيد المتاح مقابل الإيداع الأولي'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.escrowBullets.length > 0)}
+            items={data.escrowBullets}
+            format="currency"
+            currency="DZD"
+            actualLegendLabel={localizeText(language, 'Solde', 'Balance', 'الرصيد')}
+            targetLegendLabel={localizeText(language, 'Déposé', 'Deposited', 'المودع')}
+            filter={makeFilter('bullets', bulletsOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun compte séquestre ouvert.',
+              'No escrow accounts opened.',
+              'لا توجد حسابات ضمان مفتوحة.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
-        <ConversionFunnel
-          className={BENTO_SPAN.thirdCompact}
-          title={localizeText(language, 'Avancement des dossiers', 'Docket & Deed Funnel', 'مسار الملفات والعقود')}
-          subtitle={localizeText(
-            language,
-            'De l’ouverture à la clôture / publication',
-            'From intake to hearing, minute, and closure',
-            'من فتح الملف إلى الجلسة والغلق'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.funnelStages.length > 0)}
-          stages={data.funnelStages}
-          filter={makeFilter('funnel', compactTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun dossier ou acte enregistré.',
-            'No matters or notary deeds recorded.',
-            'لا توجد قضايا أو عقود مسجلة.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('legal', 'dockets', language)}>
+        <DashboardPodGrid layout="equal">
+          <RankedBarList
+            className={POD_SPAN.full}
+            title={localizeText(language, 'Charge par avocat', 'Caseload by Advocate', 'توزيع القضايا حسب المحامي')}
+            helpText={getDashboardHelpText('legal', 'ranked', language)}
+            subtitle={localizeText(
+              language,
+              'Nombre de dossiers et provisions conventionnelles',
+              'Assigned matters and agreed retainer fees',
+              'عدد القضايا ومبالغ الأتعاب المتفق عليها'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.rankedLawyers.length > 0)}
+            criteria={lawyerCriteria}
+            activeCriterionId={lawyerCriterion}
+            onCriterionChange={(id) => setLawyerCriterion(id as 'matters' | 'retainer')}
+            items={data.rankedLawyers}
+            emptyMessage={localizeText(
+              language,
+              'Aucun dossier attribué.',
+              'No matters assigned to advocates.',
+              'لا توجد ملفات موزعة على المحامين.'
+            )}
+          />
 
-        <DumbbellChart
-          className={BENTO_SPAN.thirdCompact}
-          title={localizeText(language, 'Provision vs Honoraires perçus', 'Retainer vs Collected per Matter', 'المتفق عليه مقابل المحصل')}
-          subtitle={localizeText(
-            language,
-            'Écart entre montant convenu et encaissements cumulés',
-            'Agreed retainer against cumulative paid receipts',
-            'مقارنة قيمة التعاقد مع المبالغ المحصلة فعلياً'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.feeDumbbell.length > 0)}
-          items={data.feeDumbbell}
-          prevLabel={localizeText(language, 'Provision', 'Retainer', 'المتفق عليه')}
-          currentLabel={localizeText(language, 'Encaissé', 'Collected', 'المحصل')}
-          format="currency"
-          currency="DZD"
-          filter={makeFilter('dumbbell', dumbbellOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Ajoutez des dossiers et quittances pour comparer.',
-            'Add matters and receipts to compare billing.',
-            'أضف ملفات ووصولات للمقارنة.'
-          )}
-        />
+          <ConversionFunnel
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Avancement des dossiers', 'Docket & Deed Funnel', 'مسار الملفات والعقود')}
+            helpText={getDashboardHelpText('legal', 'funnel', language)}
+            subtitle={localizeText(
+              language,
+              'De l’ouverture à la clôture / publication',
+              'From intake to hearing, minute, and closure',
+              'من فتح الملف إلى الجلسة والغلق'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.funnelStages.length > 0)}
+            stages={data.funnelStages}
+            filter={makeFilter('funnel', compactTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun dossier ou acte enregistré.',
+              'No matters or notary deeds recorded.',
+              'لا توجد قضايا أو عقود مسجلة.'
+            )}
+          />
 
-        <RankedBarList
-          className={BENTO_SPAN.thirdWideTablet}
-          title={localizeText(language, 'Charge par avocat', 'Caseload by Advocate', 'توزيع القضايا حسب المحامي')}
-          subtitle={localizeText(
-            language,
-            'Nombre de dossiers et provisions conventionnelles',
-            'Assigned matters and agreed retainer fees',
-            'عدد القضايا ومبالغ الأتعاب المتفق عليها'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.rankedLawyers.length > 0)}
-          criteria={lawyerCriteria}
-          activeCriterionId={lawyerCriterion}
-          onCriterionChange={(id) => setLawyerCriterion(id as 'matters' | 'retainer')}
-          items={data.rankedLawyers}
-          emptyMessage={localizeText(
-            language,
-            'Aucun dossier attribué.',
-            'No matters assigned to advocates.',
-            'لا توجد ملفات موزعة على المحامين.'
-          )}
-        />
-      </DashboardBentoGrid>
+          <DumbbellChart
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Provision vs Honoraires perçus', 'Retainer vs Collected per Matter', 'المتفق عليه مقابل المحصل')}
+            helpText={getDashboardHelpText('legal', 'dumbbell', language)}
+            subtitle={localizeText(
+              language,
+              'Écart entre montant convenu et encaissements cumulés',
+              'Agreed retainer against cumulative paid receipts',
+              'مقارنة قيمة التعاقد مع المبالغ المحصلة فعلياً'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.feeDumbbell.length > 0)}
+            items={data.feeDumbbell}
+            prevLabel={localizeText(language, 'Provision', 'Retainer', 'المتفق عليه')}
+            currentLabel={localizeText(language, 'Encaissé', 'Collected', 'المحصل')}
+            format="currency"
+            currency="DZD"
+            filter={makeFilter('dumbbell', dumbbellOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Ajoutez des dossiers et quittances pour comparer.',
+              'Add matters and receipts to compare billing.',
+              'أضف ملفات ووصولات للمقارنة.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
       {isMatterModalOpen && (
         <LegalMatterModal

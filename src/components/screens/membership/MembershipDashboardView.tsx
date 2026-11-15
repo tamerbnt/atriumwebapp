@@ -22,10 +22,11 @@ import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { useCardFilters } from '../../../hooks/useCardFilters';
 import { SkeletonDashboardGym } from '../../ui/skeleton/StructuralSkeletons';
 import {
-  BENTO_SPAN,
   DashboardBentoFrame,
-  DashboardBentoGrid,
   DashboardHeader,
+  DashboardPod,
+  DashboardPodGrid,
+  POD_SPAN,
   getSurfaceProps,
   localizeText,
   toChartLocale,
@@ -35,6 +36,8 @@ import {
   resolveChartState,
 } from '../../../utils/dashboardSelectors/common';
 import { selectMembershipDashboard } from '../../../utils/dashboardSelectors/coreVerticals';
+import { getDashboardHelpText } from '../../../utils/dashboardSelectors/dashboardHelpText';
+import { getDashboardPodTitle } from '../../../utils/dashboardSelectors/dashboardPodTitles';
 
 export interface MembershipDashboardViewProps {
   onAddMember?: () => void;
@@ -166,175 +169,192 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
     >
       <DashboardHeader />
 
-      <DashboardBentoGrid>
-        <KpiSparkCard
-          className={BENTO_SPAN.kpiHalf}
-          title={localizeText(language, 'Encaissements', 'Collected Revenue', 'المداخيل المحصلة')}
-          subtitle={localizeText(
-            language,
-            `${data.activeCount} adhérents actifs sur ${data.totalMembers}`,
-            `${data.activeCount} active of ${data.totalMembers} members`,
-            `${data.activeCount} عضو نشط من ${data.totalMembers}`
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.hasSales || data.hasMembers)}
-          value={data.revenueTotal}
-          deltaPercent={data.revenueDelta}
-          format="currency"
-          currency="DZD"
-          series={data.revenueSpark}
-          filter={makeFilter('revenue', compactTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucune vente enregistrée sur la période.',
-            'No sales recorded in this period.',
-            'لا توجد مبيعات مسجلة في هذه الفترة.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('membership', 'kpis', language)}>
+        <DashboardPodGrid layout="equal">
+          <KpiSparkCard
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Encaissements', 'Collected Revenue', 'المداخيل المحصلة')}
+            subtitle={localizeText(
+              language,
+              `${data.activeCount} adhérents actifs sur ${data.totalMembers}`,
+              `${data.activeCount} active of ${data.totalMembers} members`,
+              `${data.activeCount} عضو نشط من ${data.totalMembers}`
+            )}
+            helpText={getDashboardHelpText('membership', 'revenue', language)}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.hasSales || data.hasMembers)}
+            value={data.revenueTotal}
+            deltaPercent={data.revenueDelta}
+            format="currency"
+            currency="DZD"
+            series={data.revenueSpark}
+            filter={makeFilter('revenue', compactTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune vente enregistrée sur la période.',
+              'No sales recorded in this period.',
+              'لا توجد مبيعات مسجلة في هذه الفترة.'
+            )}
+          />
 
-        <KpiMetricInverseCard
-          className={BENTO_SPAN.kpiHalf}
-          title={localizeText(language, 'Risque de churn', 'Churn Risk Rate', 'معدل خطر الانسحاب')}
-          subtitle={localizeText(
-            language,
-            `${data.churnRiskCount} adhésions ciblées sur ${data.totalMembers}`,
-            `${data.churnRiskCount} flagged memberships out of ${data.totalMembers}`,
-            `${data.churnRiskCount} اشتراكات معنية من ${data.totalMembers}`
-          )}
-          locale={locale}
-          {...featuredSurface}
-          state={resolveChartState(data.hasMembers)}
-          value={data.churnRiskRate}
-          format="percent"
-          series={[]}
-          filter={makeFilter('risk', riskOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Ajoutez des adhérents pour suivre le risque de churn.',
-            'Add members to monitor churn risk.',
-            'أضف مشتركين لمتابعة خطر الانسحاب.'
-          )}
-        />
+          <KpiMetricInverseCard
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Risque de churn', 'Churn Risk Rate', 'معدل خطر الانسحاب')}
+            subtitle={localizeText(
+              language,
+              `${data.churnRiskCount} adhésions ciblées sur ${data.totalMembers}`,
+              `${data.churnRiskCount} flagged memberships out of ${data.totalMembers}`,
+              `${data.churnRiskCount} اشتراكات معنية من ${data.totalMembers}`
+            )}
+            helpText={getDashboardHelpText('membership', 'risk', language)}
+            locale={locale}
+            {...featuredSurface}
+            state={resolveChartState(data.hasMembers)}
+            value={data.churnRiskRate}
+            format="percent"
+            series={[]}
+            filter={makeFilter('risk', riskOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Ajoutez des adhérents pour suivre le risque de churn.',
+              'Add members to monitor churn risk.',
+              'أضف مشتركين لمتابعة خطر الانسحاب.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
-        <StackedBarChart
-          className={BENTO_SPAN.hero8}
-          title={localizeText(language, 'Mix revenus abonnements & coaching', 'Plans vs Coaching Revenue', 'توزيع مداخيل الاشتراكات والتدريب')}
-          subtitle={localizeText(
-            language,
-            'Répartition des encaissements sur la période',
-            'Revenue breakdown over the selected window',
-            'توزيع الإيرادات خلال الفترة المحددة'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.hasSales)}
-          series={mixSeries}
-          buckets={data.stackedBuckets}
-          format="currency"
-          currency="DZD"
-          filter={makeFilter('mix', compactTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucune transaction encaissée.',
-            'No paid transactions yet.',
-            'لا توجد معاملات محصلة بعد.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('membership', 'floor', language)}>
+        <DashboardPodGrid layout="split84">
+          <StackedBarChart
+            className={POD_SPAN.wide8}
+            title={localizeText(language, 'Mix revenus abonnements & coaching', 'Plans vs Coaching Revenue', 'توزيع مداخيل الاشتراكات والتدريب')}
+            subtitle={localizeText(
+              language,
+              'Ventilation forfaits & coaching sur la période',
+              'Plans vs personal coaching over window',
+              'توزيع الاشتراكات والتدريب خلال الفترة'
+            )}
+            helpText={getDashboardHelpText('membership', 'mix', language)}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.hasSales)}
+            series={mixSeries}
+            buckets={data.stackedBuckets}
+            format="currency"
+            currency="DZD"
+            filter={makeFilter('mix', compactTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune transaction encaissée.',
+              'No paid transactions yet.',
+              'لا توجد معاملات محصلة بعد.'
+            )}
+          />
 
-        <CapacityWaffle
-          className={BENTO_SPAN.side4}
-          title={localizeText(language, 'Occupation salle', 'Floor Occupancy', 'إشغال القاعة')}
-          subtitle={localizeText(
-            language,
-            'Présence sur plateau vs capacité',
-            'Active floor count vs capacity',
-            'الحضور الحالي مقارنة بالسعة'
-          )}
-          locale={locale}
-          {...featuredSurface}
-          state={resolveChartState(data.totalCapacity > 0 && data.hasMembers)}
-          occupied={data.floorOccupied}
-          capacity={data.totalCapacity}
-          occupiedLabel={localizeText(language, 'Présents', 'Inside', 'حاضرون')}
-          availableLabel={localizeText(language, 'Disponibles', 'Open', 'متاح')}
-          filter={makeFilter('capacity', capacityOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucune capacité active enregistrée.',
-            'No active capacity recorded.',
-            'لا توجد سعة نشطة مسجلة.'
-          )}
-        />
+          <CapacityWaffle
+            className={POD_SPAN.side4}
+            title={localizeText(language, 'Occupation salle', 'Floor Occupancy', 'إشغال القاعة')}
+            subtitle={localizeText(
+              language,
+              'Présence sur plateau vs capacité',
+              'Active floor count vs capacity',
+              'الحضور الحالي مقارنة بالسعة'
+            )}
+            helpText={getDashboardHelpText('membership', 'capacity', language)}
+            locale={locale}
+            {...featuredSurface}
+            state={resolveChartState(data.totalCapacity > 0 && data.hasMembers)}
+            occupied={data.floorOccupied}
+            capacity={data.totalCapacity}
+            occupiedLabel={localizeText(language, 'Présents', 'Inside', 'حاضرون')}
+            availableLabel={localizeText(language, 'Disponibles', 'Open', 'متاح')}
+            filter={makeFilter('capacity', capacityOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune capacité active enregistrée.',
+              'No active capacity recorded.',
+              'لا توجد سعة نشطة مسجلة.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
-        <HourlyHeatmap
-          className={BENTO_SPAN.thirdWideTablet}
-          title={localizeText(language, 'Affluence hebdomadaire', 'Hourly Check-In Heatmap', 'كثافة الحضور الأسبوعية')}
-          subtitle={localizeText(
-            language,
-            'Passages scannés par jour et créneau horaire',
-            'Check-ins grouped by weekday and hour',
-            'عمليات الدخول حسب اليوم والساعة'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.hasCheckIns)}
-          rows={data.heatmap.rows}
-          cols={data.heatmap.cols}
-          cells={data.heatmap.cells}
-          filter={makeFilter('heatmap', compactTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun passage badgé enregistré.',
-            'No check-ins recorded yet.',
-            'لم تُسجل أي عمليات دخول بعد.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('membership', 'pipeline', language)}>
+        <DashboardPodGrid layout="equal">
+          <HourlyHeatmap
+            className={POD_SPAN.full}
+            title={localizeText(language, 'Affluence hebdomadaire', 'Hourly Check-In Heatmap', 'كثافة الحضور الأسبوعية')}
+            subtitle={localizeText(
+              language,
+              'Passages scannés par jour et créneau horaire',
+              'Check-ins grouped by weekday and hour',
+              'عمليات الدخول حسب اليوم والساعة'
+            )}
+            helpText={getDashboardHelpText('membership', 'heatmap', language)}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.hasCheckIns)}
+            rows={data.heatmap.rows}
+            cols={data.heatmap.cols}
+            cells={data.heatmap.cells}
+            filter={makeFilter('heatmap', compactTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun passage badgé enregistré.',
+              'No check-ins recorded yet.',
+              'لم تُسجل أي عمليات دخول بعد.'
+            )}
+          />
 
-        <CohortHeatmap
-          className={BENTO_SPAN.thirdCompact}
-          title={localizeText(language, 'Rétention par cohorte', 'Cohort Retention', 'الاحتفاظ حسب الدفعة')}
-          subtitle={localizeText(
-            language,
-            'Maintien actif par mois d’inscription',
-            'Active retention by signup month',
-            'نسبة الاستمرار حسب شهر التسجيل'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.cohorts.length > 0)}
-          cohorts={data.cohorts}
-          filter={makeFilter('cohorts', cohortOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Historique insuffisant pour tracer les cohortes.',
-            'Not enough history to build cohorts.',
-            'لا توجد بيانات كافية لبناء الدفعات.'
-          )}
-        />
+          <CohortHeatmap
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Rétention par cohorte', 'Cohort Retention', 'الاحتفاظ حسب الدفعة')}
+            subtitle={localizeText(
+              language,
+              'Maintien actif par mois d’inscription',
+              'Active retention by signup month',
+              'نسبة الاستمرار حسب شهر التسجيل'
+            )}
+            helpText={getDashboardHelpText('membership', 'cohorts', language)}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.cohorts.length > 0)}
+            cohorts={data.cohorts}
+            filter={makeFilter('cohorts', cohortOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Historique insuffisant pour tracer les cohortes.',
+              'Not enough history to build cohorts.',
+              'لا توجد بيانات كافية لبناء الدفعات.'
+            )}
+          />
 
-        <ConversionFunnel
-          className={BENTO_SPAN.thirdCompact}
-          title={localizeText(language, 'Tunnel prospects', 'Acquisition Funnel', 'مسار التسجيل')}
-          subtitle={localizeText(
-            language,
-            'Des demandes d’inscription aux membres actifs',
-            'From initial inquiries to active memberships',
-            'من طلبات التسجيل إلى الأعضاء النشطين'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.funnelStages.length > 0)}
-          stages={data.funnelStages}
-          filter={makeFilter('funnel', funnelOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun prospect ni membre enregistré.',
-            'No leads or members recorded.',
-            'لا توجد طلبات أو أعضاء مسجلين.'
-          )}
-        />
-      </DashboardBentoGrid>
+          <ConversionFunnel
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Tunnel prospects', 'Acquisition Funnel', 'مسار التسجيل')}
+            subtitle={localizeText(
+              language,
+              'Des demandes d’inscription aux membres actifs',
+              'From initial inquiries to active memberships',
+              'من طلبات التسجيل إلى الأعضاء النشطين'
+            )}
+            helpText={getDashboardHelpText('membership', 'funnel', language)}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.funnelStages.length > 0)}
+            stages={data.funnelStages}
+            filter={makeFilter('funnel', funnelOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun prospect ni membre enregistré.',
+              'No leads or members recorded.',
+              'لا توجد طلبات أو أعضاء مسجلين.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
     </DashboardBentoFrame>
   );
 };

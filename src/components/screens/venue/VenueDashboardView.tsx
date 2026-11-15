@@ -24,10 +24,11 @@ import { SkeletonDashboardVenue } from '../../ui/skeleton/StructuralSkeletons';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { BookingModal } from './BookingModal';
 import {
-  BENTO_SPAN,
   DashboardBentoFrame,
-  DashboardBentoGrid,
   DashboardHeader,
+  DashboardPod,
+  DashboardPodGrid,
+  POD_SPAN,
   getSurfaceProps,
   localizeText,
   toChartLocale,
@@ -39,6 +40,8 @@ import {
   resolveChartState,
 } from '../../../utils/dashboardSelectors/common';
 import { selectVenueDashboard } from '../../../utils/dashboardSelectors/coreVerticals';
+import { getDashboardHelpText } from '../../../utils/dashboardSelectors/dashboardHelpText';
+import { getDashboardPodTitle } from '../../../utils/dashboardSelectors/dashboardPodTitles';
 
 export const VenueDashboardView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -153,179 +156,196 @@ export const VenueDashboardView: React.FC = () => {
         }
       />
 
-      <DashboardBentoGrid>
-        <KpiSparkCard
-          className={BENTO_SPAN.kpiHalf}
-          title={localizeText(language, 'Recettes réservations', 'Booking Revenue', 'مداخيل الحجوزات')}
-          subtitle={localizeText(
-            language,
-            `Cautions retenues : ${data.heldDepositsTotal.toLocaleString()} DZD`,
-            `Held deposits: ${data.heldDepositsTotal.toLocaleString()} DZD`,
-            `الودائع المحتجزة: ${data.heldDepositsTotal.toLocaleString()} دج`
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(rentalBookings.length > 0)}
-          value={data.bookingRevenue}
-          deltaPercent={data.revenueDelta}
-          format="currency"
-          currency="DZD"
-          series={data.revenueSpark}
-          filter={makeFilter('revenue', fullTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucune réservation active enregistrée.',
-            'No active bookings recorded.',
-            'لا توجد حجوزات نشطة مسجلة.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('venue', 'kpis', language)}>
+        <DashboardPodGrid layout="equal">
+          <KpiSparkCard
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Recettes réservations', 'Booking Revenue', 'مداخيل الحجوزات')}
+            helpText={getDashboardHelpText('venue', 'revenue', language)}
+            subtitle={localizeText(
+              language,
+              `Cautions retenues : ${data.heldDepositsTotal.toLocaleString()} DZD`,
+              `Held deposits: ${data.heldDepositsTotal.toLocaleString()} DZD`,
+              `الودائع المحتجزة: ${data.heldDepositsTotal.toLocaleString()} دج`
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(rentalBookings.length > 0)}
+            value={data.bookingRevenue}
+            deltaPercent={data.revenueDelta}
+            format="currency"
+            currency="DZD"
+            series={data.revenueSpark}
+            filter={makeFilter('revenue', fullTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune réservation active enregistrée.',
+              'No active bookings recorded.',
+              'لا توجد حجوزات نشطة مسجلة.'
+            )}
+          />
 
-        <KpiMetricInverseCard
-          className={BENTO_SPAN.kpiHalf}
-          title={localizeText(language, 'Soldes restants dus', 'Outstanding Balance', 'المستحقات المتبقية')}
-          subtitle={localizeText(
-            language,
-            'Reliquats à encaisser avant remise des clés',
-            'Remaining balances due before check-in',
-            'المبالغ المتبقية للتحصيل قبل التسليم'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(rentalBookings.length > 0)}
-          value={data.outstandingBalance}
-          format="currency"
-          currency="DZD"
-          series={[]}
-          filter={makeFilter('balance', balanceOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun contrat locatif ouvert.',
-            'No open rental balances.',
-            'لا توجد عقود إيجار مفتوحة.'
-          )}
-        />
+          <KpiMetricInverseCard
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Soldes restants dus', 'Outstanding Balance', 'المستحقات المتبقية')}
+            helpText={getDashboardHelpText('venue', 'balance', language)}
+            subtitle={localizeText(
+              language,
+              'Reliquats à encaisser avant remise des clés',
+              'Remaining balances due before check-in',
+              'المبالغ المتبقية للتحصيل قبل التسليم'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(rentalBookings.length > 0)}
+            value={data.outstandingBalance}
+            format="currency"
+            currency="DZD"
+            series={[]}
+            filter={makeFilter('balance', balanceOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun contrat locatif ouvert.',
+              'No open rental balances.',
+              'لا توجد عقود إيجار مفتوحة.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
-        <AreaTrendChart
-          className={BENTO_SPAN.hero8}
-          title={localizeText(language, 'Trajectoire des encaissements', 'Rental Revenue Trend', 'تطور مداخيل التأجير')}
-          subtitle={localizeText(
-            language,
-            'Comparatif entre la fenêtre active et précédente',
-            'Active booking period compared to prior period',
-            'مقارنة الفترة الحالية بالفترة السابقة'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(rentalBookings.length > 0)}
-          points={data.areaPoints}
-          format="currency"
-          currency="DZD"
-          filter={makeFilter('trend', compactTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucune donnée d’encaissement locatif.',
-            'No rental cashflow trend data.',
-            'لا توجد بيانات تدفق نقدي للتأجير.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('venue', 'occupancy', language)}>
+        <DashboardPodGrid layout="split84">
+          <AreaTrendChart
+            className={POD_SPAN.wide8}
+            title={localizeText(language, 'Trajectoire des encaissements', 'Rental Revenue Trend', 'تطور مداخيل التأجير')}
+            helpText={getDashboardHelpText('venue', 'trend', language)}
+            subtitle={localizeText(
+              language,
+              'Comparatif entre la fenêtre active et précédente',
+              'Active booking period compared to prior period',
+              'مقارنة الفترة الحالية بالفترة السابقة'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(rentalBookings.length > 0)}
+            points={data.areaPoints}
+            format="currency"
+            currency="DZD"
+            filter={makeFilter('trend', compactTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune donnée d’encaissement locatif.',
+              'No rental cashflow trend data.',
+              'لا توجد بيانات تدفق نقدي للتأجير.'
+            )}
+          />
 
-        <RadialGauge
-          className={BENTO_SPAN.side4}
-          title={localizeText(language, 'Taux d’occupation & Contrats', 'Occupancy & Signed Contracts', 'معدل الإشغال والعقود')}
-          subtitle={localizeText(
-            language,
-            `${data.occupiedUnits} / ${data.totalUnits} espaces occupés`,
-            `${data.occupiedUnits} / ${data.totalUnits} spaces occupied`,
-            `${data.occupiedUnits} / ${data.totalUnits} مساحات مشغولة`
-          )}
-          locale={locale}
-          {...featuredSurface}
-          state={resolveChartState(rentableUnits.length > 0 || rentalBookings.length > 0)}
-          metrics={data.gauges}
-          emptyMessage={localizeText(
-            language,
-            'Configurez des salles ou espaces locatifs.',
-            'Add rentable units to track occupancy.',
-            'أضف قاعات أو مساحات لمتابعة الإشغال.'
-          )}
-        />
+          <RadialGauge
+            className={POD_SPAN.side4}
+            title={localizeText(language, 'Taux d’occupation & Contrats', 'Occupancy & Signed Contracts', 'معدل الإشغال والعقود')}
+            helpText={getDashboardHelpText('venue', 'gauges', language)}
+            subtitle={localizeText(
+              language,
+              `${data.occupiedUnits} / ${data.totalUnits} espaces occupés`,
+              `${data.occupiedUnits} / ${data.totalUnits} spaces occupied`,
+              `${data.occupiedUnits} / ${data.totalUnits} مساحات مشغولة`
+            )}
+            locale={locale}
+            {...featuredSurface}
+            state={resolveChartState(rentableUnits.length > 0 || rentalBookings.length > 0)}
+            metrics={data.gauges}
+            emptyMessage={localizeText(
+              language,
+              'Configurez des salles ou espaces locatifs.',
+              'Add rentable units to track occupancy.',
+              'أضف قاعات أو مساحات لمتابعة الإشغال.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
-        <ResourceTimeline
-          className={BENTO_SPAN.full}
-          title={localizeText(language, 'Planning des salles & espaces', 'Space Allocation Timeline', 'جدول حجز القاعات والمساحات')}
-          subtitle={localizeText(
-            language,
-            'Créneaux occupés et réservations confirmées',
-            'Active check-ins and scheduled venue bookings',
-            'الحجوزات المؤكدة والتسليمات الجارية'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.resources.length > 0 && data.blocks.length > 0)}
-          resources={data.resources}
-          blocks={data.blocks}
-          startHour={data.timelineStartHour}
-          endHour={data.timelineEndHour}
-          nowHour={nowHour}
-          toneLabels={toneLabels}
-          filter={makeFilter('timeline', shiftOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucune réservation planifiée.',
-            'No bookings scheduled on units.',
-            'لا توجد حجوزات مجدولة على المساحات.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('venue', 'spaces', language)}>
+        <DashboardPodGrid layout="equal">
+          <ResourceTimeline
+            className={POD_SPAN.full}
+            title={localizeText(language, 'Planning des salles & espaces', 'Space Allocation Timeline', 'جدول حجز القاعات والمساحات')}
+            helpText={getDashboardHelpText('venue', 'timeline', language)}
+            subtitle={localizeText(
+              language,
+              'Créneaux occupés et réservations confirmées',
+              'Active check-ins and scheduled venue bookings',
+              'الحجوزات المؤكدة والتسليمات الجارية'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.resources.length > 0 && data.blocks.length > 0)}
+            resources={data.resources}
+            blocks={data.blocks}
+            startHour={data.timelineStartHour}
+            endHour={data.timelineEndHour}
+            nowHour={nowHour}
+            toneLabels={toneLabels}
+            filter={makeFilter('timeline', shiftOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune réservation planifiée.',
+              'No bookings scheduled on units.',
+              'لا توجد حجوزات مجدولة على المساحات.'
+            )}
+          />
 
-        <CapacityWaffle
-          className={BENTO_SPAN.pair5Compact}
-          title={localizeText(language, 'Capacité active', 'Space Utilization', 'استغلال المساحات')}
-          subtitle={localizeText(
-            language,
-            'Unités actuellement occupées vs libres',
-            'Occupied rentable units vs available pool',
-            'الوحدات المشغولة مقابل المتاحة'
-          )}
-          locale={locale}
-          {...featuredSurface}
-          state={resolveChartState(data.totalUnits > 0)}
-          occupied={data.occupiedUnits}
-          capacity={data.totalUnits}
-          occupiedLabel={localizeText(language, 'Occupées', 'Occupied', 'مشغول')}
-          availableLabel={localizeText(language, 'Disponibles', 'Open', 'متاح')}
-          filter={makeFilter('capacity', unitOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun espace référencé.',
-            'No spaces registered.',
-            'لا توجد مساحات مسجلة.'
-          )}
-        />
+          <CapacityWaffle
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Capacité active', 'Space Utilization', 'استغلال المساحات')}
+            helpText={getDashboardHelpText('venue', 'capacity', language)}
+            subtitle={localizeText(
+              language,
+              'Unités actuellement occupées vs libres',
+              'Occupied rentable units vs available pool',
+              'الوحدات المشغولة مقابل المتاحة'
+            )}
+            locale={locale}
+            {...featuredSurface}
+            state={resolveChartState(data.totalUnits > 0)}
+            occupied={data.occupiedUnits}
+            capacity={data.totalUnits}
+            occupiedLabel={localizeText(language, 'Occupées', 'Occupied', 'مشغول')}
+            availableLabel={localizeText(language, 'Disponibles', 'Open', 'متاح')}
+            filter={makeFilter('capacity', unitOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun espace référencé.',
+              'No spaces registered.',
+              'لا توجد مساحات مسجلة.'
+            )}
+          />
 
-        <DonutChart
-          className={BENTO_SPAN.pair7Compact}
-          title={localizeText(language, 'Revenus par type d’espace', 'Revenue by Space Type', 'الإيرادات حسب نوع المساحة')}
-          subtitle={localizeText(
-            language,
-            'Part de facturation par catégorie de salle',
-            'Revenue breakdown by unit category',
-            'توزيع العائدات حسب نوع القاعة'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.donutSegments.length > 0)}
-          segments={data.donutSegments}
-          format="currency"
-          currency="DZD"
-          filter={makeFilter('donut', compactTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucune location facturée.',
-            'No billed space bookings.',
-            'لا توجد حجوزات مفوترة.'
-          )}
-        />
-      </DashboardBentoGrid>
+          <DonutChart
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Revenus par type d’espace', 'Revenue by Space Type', 'الإيرادات حسب نوع المساحة')}
+            helpText={getDashboardHelpText('venue', 'donut', language)}
+            subtitle={localizeText(
+              language,
+              'Part de facturation par catégorie de salle',
+              'Revenue breakdown by unit category',
+              'توزيع العائدات حسب نوع القاعة'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.donutSegments.length > 0)}
+            segments={data.donutSegments}
+            format="currency"
+            currency="DZD"
+            filter={makeFilter('donut', compactTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune location facturée.',
+              'No billed space bookings.',
+              'لا توجد حجوزات مفوترة.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
       {isBookingModalOpen && (
         <BookingModal

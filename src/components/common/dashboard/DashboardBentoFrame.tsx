@@ -68,14 +68,34 @@ export const BENTO_SPAN = {
   thirdWideTablet: 'col-span-1 md:col-span-6 xl:col-span-4',
 } as const;
 
-export const DashboardPodGrid: React.FC<{
+export const POD_SPAN = {
+  half: 'col-span-1',
+  full: 'col-span-full',
+  wide7: 'col-span-1 lg:col-span-7',
+  side5: 'col-span-1 lg:col-span-5',
+  wide8: 'col-span-1 lg:col-span-8',
+  side4: 'col-span-1 lg:col-span-4',
+  half12: 'col-span-1 lg:col-span-6',
+} as const;
+
+export interface DashboardPodGridProps {
   children: React.ReactNode;
+  layout?: 'equal' | 'split75' | 'split84';
   className?: string;
-}> = ({ children, className = '' }) => (
-  <div className={`grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch ${className}`}>
-    {children}
-  </div>
-);
+}
+
+export const DashboardPodGrid: React.FC<DashboardPodGridProps> = ({
+  children,
+  layout = 'equal',
+  className = '',
+}) => {
+  const layoutClass =
+    layout === 'equal'
+      ? 'grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5'
+      : 'grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5';
+
+  return <div className={`grid ${layoutClass} items-stretch ${className}`}>{children}</div>;
+};
 
 export function getInlineDarkSurface(theme: AppTheme): ChartSurface {
   return theme === 'light' ? 'dark' : 'auto';

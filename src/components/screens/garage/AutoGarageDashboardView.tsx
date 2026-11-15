@@ -19,10 +19,11 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { AutoOrderModal } from './AutoOrderModal';
 import { AutoVehicleModal } from './AutoVehicleModal';
 import {
-  BENTO_SPAN,
   DashboardBentoFrame,
-  DashboardBentoGrid,
   DashboardHeader,
+  DashboardPod,
+  DashboardPodGrid,
+  POD_SPAN,
   getSurfaceProps,
   localizeText,
   toChartLocale,
@@ -34,6 +35,8 @@ import {
   resolveChartState,
 } from '../../../utils/dashboardSelectors/common';
 import { selectGarageDashboard } from '../../../utils/dashboardSelectors/specializedVerticals';
+import { getDashboardHelpText } from '../../../utils/dashboardSelectors/dashboardHelpText';
+import { getDashboardPodTitle } from '../../../utils/dashboardSelectors/dashboardPodTitles';
 
 export const AutoGarageDashboardView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -161,182 +164,199 @@ export const AutoGarageDashboardView: React.FC = () => {
         }
       />
 
-      <DashboardBentoGrid>
-        <KpiSparkCard
-          className={BENTO_SPAN.kpiHalf}
-          title={localizeText(language, 'Facturation atelier', 'Workshop Revenue', 'فوترة الورشة')}
-          subtitle={localizeText(
-            language,
-            `${data.fleetsCount} flottes B2B · ${vehicles.length} véhicules`,
-            `${data.fleetsCount} B2B fleets · ${vehicles.length} vehicles`,
-            `${data.fleetsCount} أساطيل · ${vehicles.length} مركبات`
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(invoices.length > 0)}
-          value={data.workshopRevenue}
-          deltaPercent={data.revenueDelta}
-          format="currency"
-          currency="DZD"
-          series={data.revenueSpark}
-          filter={makeFilter('revenue', fullTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucune facture atelier émise.',
-            'No workshop invoices issued yet.',
-            'لم تصدر أي فواتير ورشة بعد.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('garage', 'kpis', language)}>
+        <DashboardPodGrid layout="equal">
+          <KpiSparkCard
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Facturation atelier', 'Workshop Revenue', 'فوترة الورشة')}
+            helpText={getDashboardHelpText('garage', 'revenue', language)}
+            subtitle={localizeText(
+              language,
+              `${data.fleetsCount} flottes B2B · ${vehicles.length} véhicules`,
+              `${data.fleetsCount} B2B fleets · ${vehicles.length} vehicles`,
+              `${data.fleetsCount} أساطيل · ${vehicles.length} مركبات`
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(invoices.length > 0)}
+            value={data.workshopRevenue}
+            deltaPercent={data.revenueDelta}
+            format="currency"
+            currency="DZD"
+            series={data.revenueSpark}
+            filter={makeFilter('revenue', fullTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune facture atelier émise.',
+              'No workshop invoices issued yet.',
+              'لم تصدر أي فواتير ورشة بعد.'
+            )}
+          />
 
-        <KpiMetricInverseCard
-          className={BENTO_SPAN.kpiHalf}
-          title={
-            isPartsMode
-              ? localizeText(language, 'Pièces sous seuil', 'Low Spare Parts', 'قطع غيار منخفضة المخزون')
-              : localizeText(language, 'OR bloqués pièces', 'Orders Waiting Parts', 'أوامر بانتظار القطع')
-          }
-          subtitle={
-            isPartsMode
-              ? localizeText(language, `${data.blockedOrders} OR actuellement en attente`, `${data.blockedOrders} orders waiting parts`, `${data.blockedOrders} أوامر بانتظار القطع`)
-              : localizeText(language, `${data.lowParts} références pièces sous seuil`, `${data.lowParts} spare parts low stock`, `${data.lowParts} قطع غيار منخفضة المخزون`)
-          }
-          locale={locale}
-          {...featuredSurface}
-          state={resolveChartState(orders.length > 0 || parts.length > 0)}
-          value={isPartsMode ? data.lowParts : data.blockedOrders}
-          format="number"
-          series={[]}
-          filter={makeFilter('alerts', alertOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun ordre de réparation actif.',
-            'No active repair orders.',
-            'لا توجد أوامر إصلاح نشطة.'
-          )}
-        />
+          <KpiMetricInverseCard
+            className={POD_SPAN.half}
+            title={
+              isPartsMode
+                ? localizeText(language, 'Pièces sous seuil', 'Low Spare Parts', 'قطع غيار منخفضة المخزون')
+                : localizeText(language, 'OR bloqués pièces', 'Orders Waiting Parts', 'أوامر بانتظار القطع')
+            }
+            helpText={getDashboardHelpText('garage', isPartsMode ? 'alertsParts' : 'alertsBlocked', language)}
+            subtitle={
+              isPartsMode
+                ? localizeText(language, `${data.blockedOrders} OR actuellement en attente`, `${data.blockedOrders} orders waiting parts`, `${data.blockedOrders} أوامر بانتظار القطع`)
+                : localizeText(language, `${data.lowParts} références pièces sous seuil`, `${data.lowParts} spare parts low stock`, `${data.lowParts} قطع غيار منخفضة المخزون`)
+            }
+            locale={locale}
+            {...featuredSurface}
+            state={resolveChartState(orders.length > 0 || parts.length > 0)}
+            value={isPartsMode ? data.lowParts : data.blockedOrders}
+            format="number"
+            series={[]}
+            filter={makeFilter('alerts', alertOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun ordre de réparation actif.',
+              'No active repair orders.',
+              'لا توجد أوامر إصلاح نشطة.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
-        <WaterfallChart
-          className={BENTO_SPAN.hero8}
-          title={localizeText(language, 'Cascade marge atelier', 'Workshop Margin Waterfall', 'شلال هامش الورشة')}
-          subtitle={localizeText(
-            language,
-            'Main-d’œuvre, pièces facturées, remises et coûts',
-            'Labor, parts revenue, discounts, and parts cost',
-            'اليد العاملة وقطع الغيار والتكاليف الصافية'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.waterfallSteps.length > 0)}
-          steps={data.waterfallSteps}
-          format="currency"
-          currency="DZD"
-          filter={makeFilter('waterfall', compactTf)}
-          emptyMessage={localizeText(
-            language,
-            'Créez un ordre de réparation pour calculer la marge.',
-            'Create repair orders to inspect margin flow.',
-            'أنشئ أمر إصلاح لحساب هامش الورشة.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('garage', 'margins', language)}>
+        <DashboardPodGrid layout="equal">
+          <WaterfallChart
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Cascade marge atelier', 'Workshop Margin Waterfall', 'شلال هامش الورشة')}
+            helpText={getDashboardHelpText('garage', 'waterfall', language)}
+            subtitle={localizeText(
+              language,
+              'Main-d’œuvre, pièces facturées, remises et coûts',
+              'Labor, parts revenue, discounts, and parts cost',
+              'اليد العاملة وقطع الغيار والتكاليف الصافية'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.waterfallSteps.length > 0)}
+            steps={data.waterfallSteps}
+            format="currency"
+            currency="DZD"
+            filter={makeFilter('waterfall', compactTf)}
+            emptyMessage={localizeText(
+              language,
+              'Créez un ordre de réparation pour calculer la marge.',
+              'Create repair orders to inspect margin flow.',
+              'أنشئ أمر إصلاح لحساب هامش الورشة.'
+            )}
+          />
 
-        <CapacityWaffle
-          className={BENTO_SPAN.side4}
-          title={localizeText(language, 'Occupation des ponts', 'Bay & Lift Utilization', 'إشغال الجسور')}
-          subtitle={localizeText(
-            language,
-            `${data.occupiedBays} / ${data.totalBays} baies occupées`,
-            `${data.occupiedBays} / ${data.totalBays} service bays active`,
-            `${data.occupiedBays} / ${data.totalBays} جسور مشغولة`
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.totalBays > 0)}
-          occupied={data.occupiedBays}
-          capacity={data.totalBays}
-          occupiedLabel={localizeText(language, 'Occupés', 'Busy', 'مشغول')}
-          availableLabel={localizeText(language, 'Libres', 'Free', 'شاغر')}
-          filter={makeFilter('capacity', bayOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun pont configuré.',
-            'No workshop bays configured.',
-            'لا توجد جسور عمل مسجلة.'
-          )}
-        />
+          <ConversionFunnel
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Pipeline réparations', 'Repair Funnel', 'مسار الإصلاح')}
+            helpText={getDashboardHelpText('garage', 'funnel', language)}
+            subtitle={localizeText(
+              language,
+              'De la réception véhicule à la livraison',
+              'From intake to diagnostic, repair, and pickup',
+              'من الاستقبال إلى الفحص والإصلاح والتسليم'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.funnelStages.length > 0)}
+            stages={data.funnelStages}
+            filter={makeFilter('funnel', compactTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun ordre de réparation créé.',
+              'No repair orders created.',
+              'لم يُنشأ أي أمر إصلاح بعد.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
-        <ResourceTimeline
-          className={BENTO_SPAN.full}
-          title={localizeText(language, 'Planning des ponts élévateurs', 'Bay Allocation Timeline', 'تخطيط جسور الصيانة')}
-          subtitle={localizeText(
-            language,
-            'Véhicules immobilisés par baie technique',
-            'Open repair orders assigned to workshop bays',
-            'أوامر الإصلاح الموزعة على جسور الورشة'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.resources.length > 0 && data.blocks.length > 0)}
-          resources={data.resources}
-          blocks={data.blocks}
-          startHour={data.timelineStartHour}
-          endHour={data.timelineEndHour}
-          nowHour={11}
-          toneLabels={toneLabels}
-          filter={makeFilter('timeline', shiftOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun véhicule affecté aux ponts.',
-            'No active orders assigned to bays.',
-            'لا توجد مركبات مخصصة للجسور.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('garage', 'bays', language)}>
+        <DashboardPodGrid layout="equal">
+          <ResourceTimeline
+            className={POD_SPAN.full}
+            title={localizeText(language, 'Planning des ponts élévateurs', 'Bay Allocation Timeline', 'تخطيط جسور الصيانة')}
+            helpText={getDashboardHelpText('garage', 'timeline', language)}
+            subtitle={localizeText(
+              language,
+              'Véhicules immobilisés par baie technique',
+              'Open repair orders assigned to workshop bays',
+              'أوامر الإصلاح الموزعة على جسور الورشة'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.resources.length > 0 && data.blocks.length > 0)}
+            resources={data.resources}
+            blocks={data.blocks}
+            startHour={data.timelineStartHour}
+            endHour={data.timelineEndHour}
+            nowHour={11}
+            toneLabels={toneLabels}
+            filter={makeFilter('timeline', shiftOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun véhicule affecté aux ponts.',
+              'No active orders assigned to bays.',
+              'لا توجد مركبات مخصصة للجسور.'
+            )}
+          />
 
-        <ConversionFunnel
-          className={BENTO_SPAN.pair5Compact}
-          title={localizeText(language, 'Pipeline réparations', 'Repair Funnel', 'مسار الإصلاح')}
-          subtitle={localizeText(
-            language,
-            'De la réception véhicule à la livraison',
-            'From intake to diagnostic, repair, and pickup',
-            'من الاستقبال إلى الفحص والإصلاح والتسليم'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.funnelStages.length > 0)}
-          stages={data.funnelStages}
-          filter={makeFilter('funnel', compactTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun ordre de réparation créé.',
-            'No repair orders created.',
-            'لم يُنشأ أي أمر إصلاح بعد.'
-          )}
-        />
+          <CapacityWaffle
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Occupation des ponts', 'Bay & Lift Utilization', 'إشغال الجسور')}
+            helpText={getDashboardHelpText('garage', 'capacity', language)}
+            subtitle={localizeText(
+              language,
+              `${data.occupiedBays} / ${data.totalBays} baies occupées`,
+              `${data.occupiedBays} / ${data.totalBays} service bays active`,
+              `${data.occupiedBays} / ${data.totalBays} جسور مشغولة`
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.totalBays > 0)}
+            occupied={data.occupiedBays}
+            capacity={data.totalBays}
+            occupiedLabel={localizeText(language, 'Occupés', 'Busy', 'مشغول')}
+            availableLabel={localizeText(language, 'Libres', 'Free', 'شاغر')}
+            filter={makeFilter('capacity', bayOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun pont configuré.',
+              'No workshop bays configured.',
+              'لا توجد جسور عمل مسجلة.'
+            )}
+          />
 
-        <RankedBarList
-          className={BENTO_SPAN.pair7Compact}
-          title={localizeText(language, 'Performance techniciens', 'Technician Output', 'أداء الفنيين')}
-          subtitle={localizeText(
-            language,
-            'Classement par chiffre d’affaires ou volume OR',
-            'Mechanics ranked by billed revenue or repair count',
-            'ترتيب الميكانيكيين حسب الإيراد أو عدد الأوامر'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.rankedMechanics.length > 0)}
-          criteria={criteria}
-          activeCriterionId={techCriterion}
-          onCriterionChange={(id) => setTechCriterion(id as 'revenue' | 'orders')}
-          items={data.rankedMechanics}
-          emptyMessage={localizeText(
-            language,
-            'Aucune intervention technicien enregistrée.',
-            'No technician repair orders recorded.',
-            'لا توجد تدخلات فنية مسجلة.'
-          )}
-        />
-      </DashboardBentoGrid>
+          <RankedBarList
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Performance techniciens', 'Technician Output', 'أداء الفنيين')}
+            helpText={getDashboardHelpText('garage', 'ranked', language)}
+            subtitle={localizeText(
+              language,
+              'Classement par chiffre d’affaires ou volume OR',
+              'Mechanics ranked by billed revenue or repair count',
+              'ترتيب الميكانيكيين حسب الإيراد أو عدد الأوامر'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.rankedMechanics.length > 0)}
+            criteria={criteria}
+            activeCriterionId={techCriterion}
+            onCriterionChange={(id) => setTechCriterion(id as 'revenue' | 'orders')}
+            items={data.rankedMechanics}
+            emptyMessage={localizeText(
+              language,
+              'Aucune intervention technicien enregistrée.',
+              'No technician repair orders recorded.',
+              'لا توجد تدخلات فنية مسجلة.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
       {isOrderModalOpen && (
         <AutoOrderModal

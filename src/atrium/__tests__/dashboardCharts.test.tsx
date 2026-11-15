@@ -525,5 +525,48 @@ describe('All 19 Atrium dashboard components — render states, edge cases, ARIA
     );
     expect((rankedHtml.match(/role="radiogroup"/g) || []).length).toBe(1);
   });
+
+  it('renders contextual ? help trigger and popover across KPI and chart cards in fr, en, and ar', () => {
+    const frHtml = renderToStaticMarkup(
+      <KpiSparkCard
+        title="Revenus"
+        helpText="Explication contextuelle salle de sport."
+        locale="fr"
+        value={50000}
+        series={[
+          { label: 'J1', value: 20000 },
+          { label: 'J2', value: 30000 },
+        ]}
+      />
+    );
+    expect(frHtml).toContain('class="ax-q"');
+    expect(frHtml).toContain('class="ax-pop"');
+    expect(frHtml).toContain('role="tooltip"');
+    expect(frHtml).toContain('aria-label="À propos de ce graphique"');
+    expect(frHtml).toContain('Explication contextuelle salle de sport.');
+
+    const enHtml = renderToStaticMarkup(
+      <RadialGauge
+        title="Compliance"
+        helpText="Contract compliance and SLA explanation."
+        locale="en"
+        metrics={[{ id: 'm1', label: 'SLA', value: 90, target: 95 }]}
+      />
+    );
+    expect(enHtml).toContain('aria-label="About this chart"');
+    expect(enHtml).toContain('Contract compliance and SLA explanation.');
+
+    const arHtml = renderToStaticMarkup(
+      <KpiMetricInverseCard
+        title="المتأخرات"
+        helpText="شرح مؤشر المتأخرات العقارية."
+        locale="ar"
+        value={3}
+        series={[]}
+      />
+    );
+    expect(arHtml).toContain('aria-label="حول هذا الرسم البياني"');
+    expect(arHtml).toContain('شرح مؤشر المتأخرات العقارية.');
+  });
 });
 

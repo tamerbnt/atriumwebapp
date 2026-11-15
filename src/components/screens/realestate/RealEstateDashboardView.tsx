@@ -19,10 +19,11 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { RealEstatePropertyModal } from './RealEstatePropertyModal';
 import { RealEstateLeaseModal } from './RealEstateLeaseModal';
 import {
-  BENTO_SPAN,
   DashboardBentoFrame,
-  DashboardBentoGrid,
   DashboardHeader,
+  DashboardPod,
+  DashboardPodGrid,
+  POD_SPAN,
   getSurfaceProps,
   localizeText,
   toChartLocale,
@@ -33,6 +34,8 @@ import {
   resolveChartState,
 } from '../../../utils/dashboardSelectors/common';
 import { selectRealEstateDashboard } from '../../../utils/dashboardSelectors/specializedVerticals';
+import { getDashboardHelpText } from '../../../utils/dashboardSelectors/dashboardHelpText';
+import { getDashboardPodTitle } from '../../../utils/dashboardSelectors/dashboardPodTitles';
 
 export const RealEstateDashboardView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -165,186 +168,203 @@ export const RealEstateDashboardView: React.FC = () => {
         }
       />
 
-      <DashboardBentoGrid>
-        <KpiSparkCard
-          className={BENTO_SPAN.kpiHalf}
-          title={localizeText(language, 'Quittances encaissées', 'Collected Quittances', 'الإيجارات المحصلة')}
-          subtitle={localizeText(
-            language,
-            `${quittances.length} quittances · ${properties.length} biens`,
-            `${quittances.length} receipts · ${properties.length} properties`,
-            `${quittances.length} وصل · ${properties.length} عقار`
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(quittances.length > 0)}
-          value={data.collectedTotal}
-          deltaPercent={data.collectedDelta}
-          format="currency"
-          currency="DZD"
-          series={data.collectedSpark}
-          filter={makeFilter('collected', fullTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucune quittance locative encaissée.',
-            'No rental quittances recorded yet.',
-            'لا توجد وصولات كراء مسجلة بعد.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('realestate', 'kpis', language)}>
+        <DashboardPodGrid layout="equal">
+          <KpiSparkCard
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Quittances encaissées', 'Collected Quittances', 'الإيجارات المحصلة')}
+            helpText={getDashboardHelpText('realestate', 'collected', language)}
+            subtitle={localizeText(
+              language,
+              `${quittances.length} quittances · ${properties.length} biens`,
+              `${quittances.length} receipts · ${properties.length} properties`,
+              `${quittances.length} وصل · ${properties.length} عقار`
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(quittances.length > 0)}
+            value={data.collectedTotal}
+            deltaPercent={data.collectedDelta}
+            format="currency"
+            currency="DZD"
+            series={data.collectedSpark}
+            filter={makeFilter('collected', fullTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune quittance locative encaissée.',
+              'No rental quittances recorded yet.',
+              'لا توجد وصولات كراء مسجلة بعد.'
+            )}
+          />
 
-        <KpiMetricInverseCard
-          className={BENTO_SPAN.kpiHalf}
-          title={
-            isMandatesMode
-              ? localizeText(language, 'Mandats à renouveler', 'Expiring Mandates', 'تفويضات قاربت الانتهاء')
-              : localizeText(language, 'Impayés locatifs', 'Rent Arrears', 'متأخرات الكراء')
-          }
-          subtitle={
-            isMandatesMode
-              ? localizeText(language, `${data.arrearsTotal.toLocaleString()} DZD d’impayés`, `${data.arrearsTotal.toLocaleString()} DZD rent arrears`, `${data.arrearsTotal.toLocaleString()} دج متأخرات`)
-              : localizeText(language, `${data.expiringMandates} mandats à renouveler`, `${data.expiringMandates} mandates expiring`, `${data.expiringMandates} تفويضات قاربت الانتهاء`)
-          }
-          locale={locale}
-          {...featuredSurface}
-          state={resolveChartState(leases.length > 0 || mandates.length > 0)}
-          value={isMandatesMode ? data.expiringMandates : data.arrearsTotal}
-          format={isMandatesMode ? 'number' : 'currency'}
-          currency={isMandatesMode ? undefined : 'DZD'}
-          series={[]}
-          filter={makeFilter('arrears', arrearsOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun bail actif suivi.',
-            'No active leases tracked.',
-            'لا توجد عقود إيجار نشطة.'
-          )}
-        />
+          <KpiMetricInverseCard
+            className={POD_SPAN.half}
+            title={
+              isMandatesMode
+                ? localizeText(language, 'Mandats à renouveler', 'Expiring Mandates', 'تفويضات قاربت الانتهاء')
+                : localizeText(language, 'Impayés locatifs', 'Rent Arrears', 'متأخرات الكراء')
+            }
+            helpText={getDashboardHelpText('realestate', isMandatesMode ? 'arrearsMandates' : 'arrearsDebt', language)}
+            subtitle={
+              isMandatesMode
+                ? localizeText(language, `${data.arrearsTotal.toLocaleString()} DZD d’impayés`, `${data.arrearsTotal.toLocaleString()} DZD rent arrears`, `${data.arrearsTotal.toLocaleString()} دج متأخرات`)
+                : localizeText(language, `${data.expiringMandates} mandats à renouveler`, `${data.expiringMandates} mandates expiring`, `${data.expiringMandates} تفويضات قاربت الانتهاء`)
+            }
+            locale={locale}
+            {...featuredSurface}
+            state={resolveChartState(leases.length > 0 || mandates.length > 0)}
+            value={isMandatesMode ? data.expiringMandates : data.arrearsTotal}
+            format={isMandatesMode ? 'number' : 'currency'}
+            currency={isMandatesMode ? undefined : 'DZD'}
+            series={[]}
+            filter={makeFilter('arrears', arrearsOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun bail actif suivi.',
+              'No active leases tracked.',
+              'لا توجد عقود إيجار نشطة.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
-        <BubbleScatterChart
-          className={BENTO_SPAN.wide7}
-          title={localizeText(language, 'Prix vs Surface (m²)', 'Price vs Floor Area', 'السعر مقابل المساحة')}
-          subtitle={localizeText(
-            language,
-            'Positionnement vente et location selon la surface',
-            'Listing valuation plotted by area and room count',
-            'توزيع أسعار البيع والكراء حسب المساحة'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.bubblePoints.length > 0)}
-          groups={data.bubbleGroups}
-          points={data.bubblePoints}
-          xAxisLabel={localizeText(language, 'Surface (m²)', 'Area (m²)', 'المساحة')}
-          sizeLabel={localizeText(language, 'Pièces', 'Rooms', 'الغرف')}
-          yFormat="currency"
-          currency="DZD"
-          xUnit="m²"
-          filter={makeFilter('bubble', listingOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Ajoutez des biens au catalogue pour comparer les prix.',
-            'Add properties to compare price vs floor area.',
-            'أضف عقارات لمقارنة السعر بالمساحة.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('realestate', 'portfolio', language)}>
+        <DashboardPodGrid layout="split75">
+          <BubbleScatterChart
+            className={POD_SPAN.wide7}
+            title={localizeText(language, 'Prix vs Surface (m²)', 'Price vs Floor Area', 'السعر مقابل المساحة')}
+            helpText={getDashboardHelpText('realestate', 'bubble', language)}
+            subtitle={localizeText(
+              language,
+              'Positionnement vente et location selon la surface',
+              'Listing valuation plotted by area and room count',
+              'توزيع أسعار البيع والكراء حسب المساحة'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.bubblePoints.length > 0)}
+            groups={data.bubbleGroups}
+            points={data.bubblePoints}
+            xAxisLabel={localizeText(language, 'Surface (m²)', 'Area (m²)', 'المساحة')}
+            sizeLabel={localizeText(language, 'Pièces', 'Rooms', 'الغرف')}
+            yFormat="currency"
+            currency="DZD"
+            xUnit="m²"
+            filter={makeFilter('bubble', listingOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Ajoutez des biens au catalogue pour comparer les prix.',
+              'Add properties to compare price vs floor area.',
+              'أضف عقارات لمقارنة السعر بالمساحة.'
+            )}
+          />
 
-        <DonutChart
-          className={BENTO_SPAN.medium5}
-          title={localizeText(language, 'Typologie des biens', 'Portfolio Breakdown', 'توزيع أنواع العقارات')}
-          subtitle={localizeText(
-            language,
-            'Répartition du catalogue par catégorie',
-            'Registered units grouped by property type',
-            'توزيع المحفظة العقارية حسب الصنف'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.donutSegments.length > 0)}
-          segments={data.donutSegments}
-          format="number"
-          filter={makeFilter('donut', listingOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun bien immobilier enregistré.',
-            'No properties registered yet.',
-            'لا توجد عقارات مسجلة بعد.'
-          )}
-        />
+          <DonutChart
+            className={POD_SPAN.side5}
+            title={localizeText(language, 'Typologie des biens', 'Portfolio Breakdown', 'توزيع أنواع العقارات')}
+            helpText={getDashboardHelpText('realestate', 'donut', language)}
+            subtitle={localizeText(
+              language,
+              'Répartition du catalogue par catégorie',
+              'Registered units grouped by property type',
+              'توزيع المحفظة العقارية حسب الصنف'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.donutSegments.length > 0)}
+            segments={data.donutSegments}
+            format="number"
+            filter={makeFilter('donut', listingOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun bien immobilier enregistré.',
+              'No properties registered yet.',
+              'لا توجد عقارات مسجلة بعد.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
-        <BulletChart
-          className={BENTO_SPAN.thirdWideTablet}
-          title={localizeText(language, 'Recouvrement loyers', 'Rent Collection Rate', 'نسبة تحصيل الإيجار')}
-          subtitle={localizeText(
-            language,
-            'Loyers perçus vs loyers mensuels attendus',
-            'Collected rent compared to active monthly roll',
-            'المحصل مقارنة بالإيجار الشهري المتوقع'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.rentBullets.length > 0)}
-          items={data.rentBullets}
-          format="currency"
-          currency="DZD"
-          actualLegendLabel={localizeText(language, 'Encaissé', 'Collected', 'محصل')}
-          targetLegendLabel={localizeText(language, 'Attendu', 'Expected', 'متوقع')}
-          filter={makeFilter('bullets', bulletTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun bail actif à comparer.',
-            'Add active leases to compare rent roll.',
-            'أضف عقود إيجار لمقارنة التحصيل.'
-          )}
-        />
+      <DashboardPod title={getDashboardPodTitle('realestate', 'brokerage', language)}>
+        <DashboardPodGrid layout="equal">
+          <BulletChart
+            className={POD_SPAN.full}
+            title={localizeText(language, 'Recouvrement loyers', 'Rent Collection Rate', 'نسبة تحصيل الإيجار')}
+            helpText={getDashboardHelpText('realestate', 'bullets', language)}
+            subtitle={localizeText(
+              language,
+              'Loyers perçus vs loyers mensuels attendus',
+              'Collected rent compared to active monthly roll',
+              'المحصل مقارنة بالإيجار الشهري المتوقع'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.rentBullets.length > 0)}
+            items={data.rentBullets}
+            format="currency"
+            currency="DZD"
+            actualLegendLabel={localizeText(language, 'Encaissé', 'Collected', 'محصل')}
+            targetLegendLabel={localizeText(language, 'Attendu', 'Expected', 'متوقع')}
+            filter={makeFilter('bullets', bulletTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun bail actif à comparer.',
+              'Add active leases to compare rent roll.',
+              'أضف عقود إيجار لمقارنة التحصيل.'
+            )}
+          />
 
-        <DumbbellChart
-          className={BENTO_SPAN.thirdCompact}
-          title={localizeText(language, 'Prix plancher vs Prix demandé', 'Minimum vs Asking Price', 'السعر الأدنى مقابل المطلوب')}
-          subtitle={localizeText(
-            language,
-            'Marge de négociation sur les mandats actifs',
-            'Negotiation spread across active mandates',
-            'هامش التفاوض في التفويضات السارية'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.priceDumbbell.length > 0)}
-          items={data.priceDumbbell}
-          prevLabel={localizeText(language, 'Plancher', 'Floor Price', 'الحد الأدنى')}
-          currentLabel={localizeText(language, 'Mandat', 'Asking Price', 'السعر المطلوب')}
-          format="currency"
-          currency="DZD"
-          filter={makeFilter('dumbbell', listingOptions)}
-          emptyMessage={localizeText(
-            language,
-            'Aucun mandat enregistré.',
-            'No mandates available to compare spreads.',
-            'لا توجد تفويضات عقارية للمقارنة.'
-          )}
-        />
+          <DumbbellChart
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Prix plancher vs Prix demandé', 'Minimum vs Asking Price', 'السعر الأدنى مقابل المطلوب')}
+            helpText={getDashboardHelpText('realestate', 'dumbbell', language)}
+            subtitle={localizeText(
+              language,
+              'Marge de négociation sur les mandats actifs',
+              'Negotiation spread across active mandates',
+              'هامش التفاوض في التفويضات السارية'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.priceDumbbell.length > 0)}
+            items={data.priceDumbbell}
+            prevLabel={localizeText(language, 'Plancher', 'Floor Price', 'الحد الأدنى')}
+            currentLabel={localizeText(language, 'Mandat', 'Asking Price', 'السعر المطلوب')}
+            format="currency"
+            currency="DZD"
+            filter={makeFilter('dumbbell', listingOptions)}
+            emptyMessage={localizeText(
+              language,
+              'Aucun mandat enregistré.',
+              'No mandates available to compare spreads.',
+              'لا توجد تفويضات عقارية للمقارنة.'
+            )}
+          />
 
-        <ConversionFunnel
-          className={BENTO_SPAN.thirdCompact}
-          title={localizeText(language, 'Entonnoir courtage', 'Deal Pipeline', 'مسار الصفقات العقارية')}
-          subtitle={localizeText(
-            language,
-            'Des demandes acquéreurs aux actes signés',
-            'From buyer leads and visits to signed deals',
-            'من طلبات المشترين والمعاينات إلى توقيع العقود'
-          )}
-          locale={locale}
-          {...standardSurface}
-          state={resolveChartState(data.funnelStages.length > 0)}
-          stages={data.funnelStages}
-          filter={makeFilter('funnel', compactTf)}
-          emptyMessage={localizeText(
-            language,
-            'Aucune visite ni mandat actif.',
-            'No leads, visits, or mandates recorded.',
-            'لا توجد معاينات أو تفويضات مسجلة.'
-          )}
-        />
-      </DashboardBentoGrid>
+          <ConversionFunnel
+            className={POD_SPAN.half}
+            title={localizeText(language, 'Entonnoir courtage', 'Deal Pipeline', 'مسار الصفقات العقارية')}
+            helpText={getDashboardHelpText('realestate', 'funnel', language)}
+            subtitle={localizeText(
+              language,
+              'Des demandes acquéreurs aux actes signés',
+              'From buyer leads and visits to signed deals',
+              'من طلبات المشترين والمعاينات إلى توقيع العقود'
+            )}
+            locale={locale}
+            {...standardSurface}
+            state={resolveChartState(data.funnelStages.length > 0)}
+            stages={data.funnelStages}
+            filter={makeFilter('funnel', compactTf)}
+            emptyMessage={localizeText(
+              language,
+              'Aucune visite ni mandat actif.',
+              'No leads, visits, or mandates recorded.',
+              'لا توجد معاينات أو تفويضات مسجلة.'
+            )}
+          />
+        </DashboardPodGrid>
+      </DashboardPod>
 
       {isPropModalOpen && (
         <RealEstatePropertyModal

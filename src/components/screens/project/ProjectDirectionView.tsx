@@ -79,10 +79,11 @@ import {
   WaterfallChart,
 } from '@/atrium';
 import {
-  BENTO_SPAN,
   DashboardBentoFrame,
-  DashboardBentoGrid,
   DashboardHeader,
+  DashboardPod,
+  DashboardPodGrid,
+  POD_SPAN,
   getSurfaceProps,
   localizeText,
   toChartLocale,
@@ -93,6 +94,8 @@ import {
   resolveChartState,
 } from '../../../utils/dashboardSelectors/common';
 import { selectProjectDashboard } from '../../../utils/dashboardSelectors/coreVerticals';
+import { getDashboardHelpText } from '../../../utils/dashboardSelectors/dashboardHelpText';
+import { getDashboardPodTitle } from '../../../utils/dashboardSelectors/dashboardPodTitles';
 
 interface ProjectDirectionViewProps {
   initialTab?: 'dashboard' | 'projects' | 'new_project' | 'approvals' | 'reports';
@@ -581,171 +584,188 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
       }
     />
 
-    <DashboardBentoGrid>
-      <KpiSparkCard
-        className={BENTO_SPAN.kpiHalf}
-        title={localizeText(language, 'Portefeuille engagé', 'Committed Portfolio', 'محفظة العقود')}
-        subtitle={localizeText(
-          language,
-          `${pmProjects.length} campagnes · ${pmTalents.length} talents`,
-          `${pmProjects.length} active projects · ${pmTalents.length} crew`,
-          `${pmProjects.length} مشاريع · ${pmTalents.length} كوادر`
-        )}
-        locale={toChartLocale(language)}
-        {...getSurfaceProps(theme, false)}
-        state={resolveChartState(projectDashData.hasProjects)}
-        value={projectDashData.totalBudget}
-        deltaPercent={projectDashData.budgetDelta}
-        format="currency"
-        currency="DZD"
-        series={projectDashData.budgetSpark}
-        filter={makeDashFilter('budget', dashPortfolioTf)}
-        emptyMessage={localizeText(
-          language,
-          'Aucun contrat projet engagé.',
-          'No project contracts committed.',
-          'لا توجد عقود مشاريع مسجلة.'
-        )}
-      />
+    <DashboardPod title={getDashboardPodTitle('project', 'kpis', language)}>
+      <DashboardPodGrid layout="equal">
+        <KpiSparkCard
+          className={POD_SPAN.half}
+          title={localizeText(language, 'Portefeuille engagé', 'Committed Portfolio', 'محفظة العقود')}
+          helpText={getDashboardHelpText('project', 'budget', language)}
+          subtitle={localizeText(
+            language,
+            `${pmProjects.length} campagnes · ${pmTalents.length} talents`,
+            `${pmProjects.length} active projects · ${pmTalents.length} crew`,
+            `${pmProjects.length} مشاريع · ${pmTalents.length} كوادر`
+          )}
+          locale={toChartLocale(language)}
+          {...getSurfaceProps(theme, false)}
+          state={resolveChartState(projectDashData.hasProjects)}
+          value={projectDashData.totalBudget}
+          deltaPercent={projectDashData.budgetDelta}
+          format="currency"
+          currency="DZD"
+          series={projectDashData.budgetSpark}
+          filter={makeDashFilter('budget', dashPortfolioTf)}
+          emptyMessage={localizeText(
+            language,
+            'Aucun contrat projet engagé.',
+            'No project contracts committed.',
+            'لا توجد عقود مشاريع مسجلة.'
+          )}
+        />
 
-      <KpiMetricInverseCard
-        className={BENTO_SPAN.kpiHalf}
-        title={localizeText(language, 'Approbations en attente', 'Pending Approvals', 'موافقات قيد الانتظار')}
-        subtitle={localizeText(
-          language,
-          `${pendingPayrollBatches.length} paies · ${pendingExpenses.length} frais terrain`,
-          `${pendingPayrollBatches.length} payroll batches · ${pendingExpenses.length} expenses`,
-          `${pendingPayrollBatches.length} دفعات أجور · ${pendingExpenses.length} مصاريف`
-        )}
-        locale={toChartLocale(language)}
-        {...getSurfaceProps(theme, false)}
-        state={resolveChartState(projectDashData.hasProjects || totalPendingApprovals > 0)}
-        value={projectDashData.pendingApprovals}
-        format="number"
-        unit={localizeText(language, 'dossiers', 'items', 'ملفات')}
-        series={[]}
-        filter={makeDashFilter('approvals', dashApprovalOpts)}
-        emptyMessage={localizeText(
-          language,
-          'Aucun dossier à valider.',
-          'No pending approvals.',
-          'لا توجد ملفات بانتظار الموافقة.'
-        )}
-      />
+        <KpiMetricInverseCard
+          className={POD_SPAN.half}
+          title={localizeText(language, 'Approbations en attente', 'Pending Approvals', 'موافقات قيد الانتظار')}
+          helpText={getDashboardHelpText('project', 'approvals', language)}
+          subtitle={localizeText(
+            language,
+            `${pendingPayrollBatches.length} paies · ${pendingExpenses.length} frais terrain`,
+            `${pendingPayrollBatches.length} payroll batches · ${pendingExpenses.length} expenses`,
+            `${pendingPayrollBatches.length} دفعات أجور · ${pendingExpenses.length} مصاريف`
+          )}
+          locale={toChartLocale(language)}
+          {...getSurfaceProps(theme, false)}
+          state={resolveChartState(projectDashData.hasProjects || totalPendingApprovals > 0)}
+          value={projectDashData.pendingApprovals}
+          format="number"
+          unit={localizeText(language, 'dossiers', 'items', 'ملفات')}
+          series={[]}
+          filter={makeDashFilter('approvals', dashApprovalOpts)}
+          emptyMessage={localizeText(
+            language,
+            'Aucun dossier à valider.',
+            'No pending approvals.',
+            'لا توجد ملفات بانتظار الموافقة.'
+          )}
+        />
+      </DashboardPodGrid>
+    </DashboardPod>
 
-      <WaterfallChart
-        className={BENTO_SPAN.hero8}
-        title={localizeText(language, 'Pont financier portefeuille', 'Portfolio Margin Bridge', 'جسر صافي هوامش المشاريع')}
-        subtitle={localizeText(
-          language,
-          'Contrats engagés → Paies talents → Frais terrain → Marge nette',
-          'Contract Cap → Talent Payroll → Field Ops → Net Margin',
-          'العقود ← الأجور ← المصاريف ← الصافي'
-        )}
-        locale={toChartLocale(language)}
-        {...getSurfaceProps(theme, false)}
-        state={resolveChartState(projectDashData.waterfallSteps.length > 0)}
-        steps={projectDashData.waterfallSteps}
-        format="currency"
-        currency="DZD"
-        filter={makeDashFilter('waterfall', dashFullTf)}
-        emptyMessage={localizeText(
-          language,
-          'Aucune donnée financière projet.',
-          'No project financials available.',
-          'لا توجد بيانات مالية للمشاريع.'
-        )}
-      />
+    <DashboardPod title={getDashboardPodTitle('project', 'sla', language)}>
+      <DashboardPodGrid layout="split84">
+        <WaterfallChart
+          className={POD_SPAN.wide8}
+          title={localizeText(language, 'Pont financier portefeuille', 'Portfolio Margin Bridge', 'جسر صافي هوامش المشاريع')}
+          helpText={getDashboardHelpText('project', 'waterfall', language)}
+          subtitle={localizeText(
+            language,
+            'Contrats engagés → Paies talents → Frais terrain → Marge nette',
+            'Contract Cap → Talent Payroll → Field Ops → Net Margin',
+            'العقود ← الأجور ← المصاريف ← الصافي'
+          )}
+          locale={toChartLocale(language)}
+          {...getSurfaceProps(theme, false)}
+          state={resolveChartState(projectDashData.waterfallSteps.length > 0)}
+          steps={projectDashData.waterfallSteps}
+          format="currency"
+          currency="DZD"
+          filter={makeDashFilter('waterfall', dashFullTf)}
+          emptyMessage={localizeText(
+            language,
+            'Aucune donnée financière projet.',
+            'No project financials available.',
+            'لا توجد بيانات مالية للمشاريع.'
+          )}
+        />
 
-      <RadialGauge
-        className={BENTO_SPAN.side4}
-        title={localizeText(language, 'Santé exécution & marge', 'SLA & Margin Gauge', 'مؤشر الإنجاز والهامش')}
-        subtitle={localizeText(
-          language,
-          'Jalons livrés et marge nette portefeuille',
-          'Milestone SLA and net portfolio margin',
-          'إنجاز المراحل وصافي الهامش'
-        )}
-        locale={toChartLocale(language)}
-        {...getSurfaceProps(theme, true)}
-        state={resolveChartState(projectDashData.hasProjects)}
-        metrics={projectDashData.gauges}
-        emptyMessage={localizeText(
-          language,
-          'Ajoutez des projets et jalons pour suivre la performance.',
-          'Add projects and milestones to track SLA.',
-          'أضف مشاريع ومراحل لمتابعة الأداء.'
-        )}
-      />
+        <RadialGauge
+          className={POD_SPAN.side4}
+          title={localizeText(language, 'Santé exécution & marge', 'SLA & Margin Gauge', 'مؤشر الإنجاز والهامش')}
+          helpText={getDashboardHelpText('project', 'gauges', language)}
+          subtitle={localizeText(
+            language,
+            'Jalons livrés et marge nette portefeuille',
+            'Milestone SLA and net portfolio margin',
+            'إنجاز المراحل وصافي الهامش'
+          )}
+          locale={toChartLocale(language)}
+          {...getSurfaceProps(theme, true)}
+          state={resolveChartState(projectDashData.hasProjects)}
+          metrics={projectDashData.gauges}
+          emptyMessage={localizeText(
+            language,
+            'Ajoutez des projets et jalons pour suivre la performance.',
+            'Add projects and milestones to track SLA.',
+            'أضف مشاريع ومراحل لمتابعة الأداء.'
+          )}
+        />
+      </DashboardPodGrid>
+    </DashboardPod>
 
-      <BulletChart
-        className={BENTO_SPAN.thirdWideTablet}
-        title={localizeText(language, 'Consommation vs Plafond budget', 'Spend vs Budget Cap', 'الإنفاق مقابل السقف المالي')}
-        subtitle={localizeText(
-          language,
-          'Engagements paie + terrain face au budget contrat',
-          'Payroll and field spend compared to contract caps',
-          'النفقات الفعلية مقارنة بسقف العقد'
-        )}
-        locale={toChartLocale(language)}
-        {...getSurfaceProps(theme, false)}
-        state={resolveChartState(projectDashData.bulletItems.length > 0)}
-        items={projectDashData.bulletItems}
-        format="currency"
-        currency="DZD"
-        filter={makeDashFilter('bullets', dashBulletOpts)}
-        emptyMessage={localizeText(
-          language,
-          'Aucun budget projet configuré.',
-          'No project budgets configured.',
-          'لا توجد ميزانيات مشاريع مهيأة.'
-        )}
-      />
+    <DashboardPod title={getDashboardPodTitle('project', 'delivery', language)}>
+      <DashboardPodGrid layout="equal">
+        <BulletChart
+          className={POD_SPAN.full}
+          title={localizeText(language, 'Consommation vs Plafond budget', 'Spend vs Budget Cap', 'الإنفاق مقابل السقف المالي')}
+          helpText={getDashboardHelpText('project', 'bullets', language)}
+          subtitle={localizeText(
+            language,
+            'Engagements paie + terrain face au budget contrat',
+            'Payroll and field spend compared to contract caps',
+            'النفقات الفعلية مقارنة بسقف العقد'
+          )}
+          locale={toChartLocale(language)}
+          {...getSurfaceProps(theme, false)}
+          state={resolveChartState(projectDashData.bulletItems.length > 0)}
+          items={projectDashData.bulletItems}
+          format="currency"
+          currency="DZD"
+          filter={makeDashFilter('bullets', dashBulletOpts)}
+          emptyMessage={localizeText(
+            language,
+            'Aucun budget projet configuré.',
+            'No project budgets configured.',
+            'لا توجد ميزانيات مشاريع مهيأة.'
+          )}
+        />
 
-      <ConversionFunnel
-        className={BENTO_SPAN.thirdCompact}
-        title={localizeText(language, 'Pipeline de livraison', 'Delivery Pipeline', 'مسار تسليم المشاريع')}
-        subtitle={localizeText(
-          language,
-          'Cadrage → Créa & BAT → Terrain → Clôture',
-          'Scoping → Creative → Field Ops → Completed',
-          'التأطير ← التصميم ← الميدان ← الإغلاق'
-        )}
-        locale={toChartLocale(language)}
-        {...getSurfaceProps(theme, false)}
-        state={resolveChartState(projectDashData.pipelineStages.length > 0)}
-        stages={projectDashData.pipelineStages}
-        filter={makeDashFilter('funnel', dashPortfolioTf)}
-        emptyMessage={localizeText(
-          language,
-          'Aucun projet dans le pipeline.',
-          'No projects in pipeline.',
-          'لا توجد مشاريع في المسار.'
-        )}
-      />
+        <ConversionFunnel
+          className={POD_SPAN.half}
+          title={localizeText(language, 'Pipeline de livraison', 'Delivery Pipeline', 'مسار تسليم المشاريع')}
+          helpText={getDashboardHelpText('project', 'funnel', language)}
+          subtitle={localizeText(
+            language,
+            'Cadrage → Créa & BAT → Terrain → Clôture',
+            'Scoping → Creative → Field Ops → Completed',
+            'التأطير ← التصميم ← الميدان ← الإغلاق'
+          )}
+          locale={toChartLocale(language)}
+          {...getSurfaceProps(theme, false)}
+          state={resolveChartState(projectDashData.pipelineStages.length > 0)}
+          stages={projectDashData.pipelineStages}
+          filter={makeDashFilter('funnel', dashPortfolioTf)}
+          emptyMessage={localizeText(
+            language,
+            'Aucun projet dans le pipeline.',
+            'No projects in pipeline.',
+            'لا توجد مشاريع في المسار.'
+          )}
+        />
 
-      <RankedBarList
-        className={BENTO_SPAN.thirdCompact}
-        title={localizeText(language, 'Classement marges projets', 'Project Margin Leaderboard', 'ترتيب المشاريع حسب الهامش')}
-        subtitle={localizeText(
-          language,
-          'Trié par marge cible ou plafond contrat',
-          'Ranked by target margin or contract cap',
-          'الترتيب حسب الهامش المستهدف أو الميزانية'
-        )}
-        locale={toChartLocale(language)}
-        {...getSurfaceProps(theme, false)}
-        state={resolveChartState(projectDashData.rankedProjects.length > 0)}
-        criteria={dashRankCriteria}
-        items={projectDashData.rankedProjects}
-        emptyMessage={localizeText(
-          language,
-          'Aucun projet actif à classer.',
-          'No active projects to rank.',
-          'لا توجد مشاريع نشطة للترتيب.'
-        )}
-      />
-    </DashboardBentoGrid>
+        <RankedBarList
+          className={POD_SPAN.half}
+          title={localizeText(language, 'Classement marges projets', 'Project Margin Leaderboard', 'ترتيب المشاريع حسب الهامش')}
+          helpText={getDashboardHelpText('project', 'ranked', language)}
+          subtitle={localizeText(
+            language,
+            'Trié par marge cible ou plafond contrat',
+            'Ranked by target margin or contract cap',
+            'الترتيب حسب الهامش المستهدف أو الميزانية'
+          )}
+          locale={toChartLocale(language)}
+          {...getSurfaceProps(theme, false)}
+          state={resolveChartState(projectDashData.rankedProjects.length > 0)}
+          criteria={dashRankCriteria}
+          items={projectDashData.rankedProjects}
+          emptyMessage={localizeText(
+            language,
+            'Aucun projet actif à classer.',
+            'No active projects to rank.',
+            'لا توجد مشاريع نشطة للترتيب.'
+          )}
+        />
+      </DashboardPodGrid>
+    </DashboardPod>
   </DashboardBentoFrame>
 )}
 {currentScreen === "projects" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
