@@ -126,9 +126,12 @@ export const VenueDashboardView: React.FC = () => {
 
   if (showSkeleton && rentableUnits.length === 0 && rentalBookings.length === 0) {
     return (
-      <div className="p-6">
-        <SkeletonDashboardVenue />
-      </div>
+      <SkeletonDashboardVenue
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
     );
   }
 

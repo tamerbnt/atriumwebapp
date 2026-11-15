@@ -143,9 +143,12 @@ export const FreelanceDashboardView: React.FC = () => {
 
   if (showSkeleton && freelanceClients.length === 0 && freelanceInvoices.length === 0) {
     return (
-      <div className="p-6">
-        <SkeletonDashboardFreelance />
-      </div>
+      <SkeletonDashboardFreelance
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
     );
   }
 

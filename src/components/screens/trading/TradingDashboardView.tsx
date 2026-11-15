@@ -140,9 +140,12 @@ export const TradingDashboardView: React.FC = () => {
 
   if (showSkeleton && commercialDocs.length === 0 && products.length === 0) {
     return (
-      <div className="p-6">
-        <SkeletonDashboardTrading />
-      </div>
+      <SkeletonDashboardTrading
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
     );
   }
 

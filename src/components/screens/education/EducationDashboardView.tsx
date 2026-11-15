@@ -137,9 +137,12 @@ export const EducationDashboardView: React.FC = () => {
 
   if (showSkeleton && eduStudents.length === 0 && eduCohorts.length === 0) {
     return (
-      <div className="p-6">
-        <SkeletonDashboardEducation />
-      </div>
+      <SkeletonDashboardEducation
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
     );
   }
 

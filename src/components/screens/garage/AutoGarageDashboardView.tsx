@@ -122,9 +122,12 @@ export const AutoGarageDashboardView: React.FC = () => {
 
   if (showSkeleton && orders.length === 0 && vehicles.length === 0) {
     return (
-      <div className="p-6">
-        <SkeletonDashboardGarage />
-      </div>
+      <SkeletonDashboardGarage
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
     );
   }
 

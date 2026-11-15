@@ -12,6 +12,7 @@ export interface DashboardBentoFrameProps {
   lastSyncedAt?: string | null;
   onRetry?: () => void;
   'data-testid'?: string;
+  className?: string;
   children: React.ReactNode;
 }
 
@@ -24,6 +25,7 @@ export const DashboardBentoFrame: React.FC<DashboardBentoFrameProps> = ({
   lastSyncedAt = null,
   onRetry,
   'data-testid': testId,
+  className = '',
   children,
 }) => {
   return (
@@ -31,7 +33,7 @@ export const DashboardBentoFrame: React.FC<DashboardBentoFrameProps> = ({
       data-atrium-theme={theme === 'dark' ? 'dark' : 'light'}
       dir={isRtl ? 'rtl' : 'ltr'}
       data-testid={testId}
-      className="ax-scope space-y-5 sm:space-y-6 animate-in fade-in duration-200"
+      className={`ax-scope space-y-5 sm:space-y-6 animate-in fade-in duration-200 ${className}`}
     >
       <OfflineRetryBanner
         isOffline={isOffline}

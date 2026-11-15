@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  SkeletonHomeView,
   SkeletonDashboardGym,
   SkeletonDashboardSalon,
   SkeletonDashboardPos,
@@ -32,8 +33,12 @@ interface ScreenSuspenseFallbackProps {
 
 export const ScreenSuspenseFallback: React.FC<ScreenSuspenseFallbackProps> = ({
   category = 'membership_fitness',
-  screen = 'dashboard',
+  screen = 'home',
 }) => {
+  if (screen === 'home') {
+    return <SkeletonHomeView category={category} />;
+  }
+
   // 1. Category Dashboards
   if (screen === 'dashboard' || screen.endsWith('_dashboard')) {
     switch (category) {

@@ -63,6 +63,7 @@ import {
   Landmark,
   Building,
   User,
+  LayoutDashboard,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -188,7 +189,6 @@ export const TopBar: React.FC<TopBarProps> = ({
     isSyncing,
     currentBusiness,
     activePmRole,
-    activePosRole,
     activeGarageRole,
     activeRealEstateRole,
     activeManufacturingRole,
@@ -208,7 +208,6 @@ export const TopBar: React.FC<TopBarProps> = ({
       isSyncing: s.isSyncing,
       currentBusiness: selectCurrentBusinessFromState(s),
       activePmRole: s.activePmRole || 'direction',
-      activePosRole: s.activePosRole || 'owner',
       activeGarageRole: s.activeGarageRole || 'gerant',
       activeRealEstateRole: s.activeRealEstateRole || 'direction',
       activeManufacturingRole: s.activeManufacturingRole || 'gerant',
@@ -413,52 +412,13 @@ export const TopBar: React.FC<TopBarProps> = ({
     const isFr = language === 'fr';
     const l3 = (ar: string, fr: string, en: string) => (isAr ? ar : isFr ? fr : en);
 
-    const homeLabel = isProjectMilestone
-      ? t('nav_home', language)
-      : isFreelance
-      ? t('nav_solo_home', language)
-      : isRental
-      ? t('nav_venue_dashboard', language)
-      : isEducation
-      ? t('nav_edu_dashboard', language)
-      : isPOS
-      ? t('nav_pos_register', language)
-      : isTrading
-      ? t('nav_trading_dashboard', language)
-      : cat === 'medical_clinic'
-      ? l3('العيادة', 'Clinique', 'Clinic')
-      : cat === 'auto_garage'
-      ? l3('الورشة', 'Garage', 'Garage')
-      : cat === 'real_estate'
-      ? l3('العقارات', 'Immobilier', 'Real Estate')
-      : cat === 'manufacturing_production'
-      ? l3('المصنع', 'Usine', 'Factory')
-      : cat === 'legal_accounting'
-      ? l3('المكتب', 'Cabinet', 'Practice')
-      : cat === 'logistics_delivery'
-      ? l3('التوصيل', 'Livraison', 'Logistics')
-      : cat === 'construction_contractor'
-      ? l3('المشاريع', 'Chantiers', 'Projects')
-      : cat === 'agriculture_farming'
-      ? l3('المزرعة', 'Domaine', 'Farm')
-      : t('nav_home', language);
-
-    const homeTarget: 'pm_dir_dashboard' | 'trading_dashboard' | 'shop' | 'dashboard' =
-      isProjectMilestone || activeScreen.startsWith('pm_')
-        ? 'pm_dir_dashboard'
-        : isTrading || activeScreen.startsWith('trading_')
-        ? 'trading_dashboard'
-        : isPOS && activePosRole === 'staff'
-        ? 'shop'
-        : 'dashboard';
+    const homeLabel = t('nav_home', language);
+    const dashboardCrumbLabel =
+      language === 'ar' ? 'لوحة القيادة' : language === 'fr' ? 'Tableau de bord' : 'Dashboard';
 
     const goHome = () => {
       if (selectedMember) selectMember(null);
-      if (isProjectMilestone || activeScreen.startsWith('pm_')) {
-        setActivePmRole('direction');
-        setActivePmSubScreen('dashboard');
-      }
-      setScreen(homeTarget);
+      setScreen('home');
     };
 
     const homeNode: BreadcrumbNode = {
@@ -483,6 +443,11 @@ export const TopBar: React.FC<TopBarProps> = ({
         homeNode,
         { id: 'staff', label: l3('الفريق', 'Équipe', 'Staff'), icon: Users },
       ]);
+    }
+
+    // Home (Salle d'accueil) root screen
+    if (activeScreen === 'home') {
+      return renderBreadcrumbTrail([homeNode]);
     }
 
     // Project & Milestone category / PM screens
@@ -599,9 +564,12 @@ export const TopBar: React.FC<TopBarProps> = ({
       ]);
     }
 
-    // Home / Dashboard root screen
+    // Explicit Dashboard screen (child of Home)
     if (activeScreen === 'dashboard' || activeScreen === 'trading_dashboard') {
-      return renderBreadcrumbTrail([homeNode]);
+      return renderBreadcrumbTrail([
+        homeNode,
+        { id: activeScreen, label: dashboardCrumbLabel, icon: LayoutDashboard },
+      ]);
     }
 
     // Dedicated Trading screens

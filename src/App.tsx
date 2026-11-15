@@ -44,6 +44,7 @@ const DesktopUpgradeModal = React.lazy(() =>
 // All 116 Screens lazy-loaded with Category Chunk Partitioning
 import {
   SettingsScreen,
+  CategoryHomeView,
   DashboardCatalogScreen,
   FreelanceDashboardView,
   FreelanceClientsView,
@@ -356,6 +357,16 @@ export default function App() {
       if (cat === 'construction_contractor') return <ContractorStaffView />;
       if (cat === 'agriculture_farming') return <AgricultureStaffView />;
       return <MembershipStaffView />;
+    }
+
+    if (activeScreen === 'home') {
+      return (
+        <CategoryHomeView
+          onAddMember={handleOpenAddMember}
+          onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+          onAddLead={() => setIsLeadModalOpen(true)}
+        />
+      );
     }
 
     if (isProjectMilestone) {
@@ -1234,7 +1245,9 @@ export default function App() {
               />
             }
             floatingOverlay={
-              <ScrollJumpPill targetContainerId="main-content-scroll" />
+              activeScreen !== 'home' ? (
+                <ScrollJumpPill targetContainerId="main-content-scroll" />
+              ) : undefined
             }
           >
             {/* Small rounded shape button at top of screen to restore header when collapsed */}
@@ -1251,7 +1264,13 @@ export default function App() {
               </button>
             )}
 
-            <div className="relative w-full min-h-full flex flex-col px-5 py-5 sm:px-8 sm:py-7 lg:px-10 lg:py-8 pb-16 sm:pb-20">
+            <div
+              className={
+                activeScreen === 'home'
+                  ? 'relative w-full min-h-full lg:h-full flex flex-col px-5 py-4 sm:px-7 sm:py-4 lg:px-8 lg:py-5'
+                  : 'relative w-full min-h-full flex flex-col px-5 py-5 sm:px-8 sm:py-7 lg:px-10 lg:py-8 pb-16 sm:pb-20'
+              }
+            >
               <React.Suspense
                 fallback={
                   <ScreenSuspenseFallback

@@ -144,9 +144,12 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
 
   if (showSkeleton && appointments.length === 0) {
     return (
-      <div className="p-6">
-        <SkeletonDashboardSalon />
-      </div>
+      <SkeletonDashboardSalon
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
     );
   }
 

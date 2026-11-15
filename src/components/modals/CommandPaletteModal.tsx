@@ -30,6 +30,7 @@ import {
   Truck,
   Boxes,
   Building2,
+  LayoutDashboard,
 } from 'lucide-react';
 import { useAtriumStore, ActiveScreen } from '../../services/store';
 import { t } from '../../utils/i18n';
@@ -111,12 +112,25 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
 
     const navCategoryLabel = language === 'ar' ? 'التنقل' : language === 'fr' ? 'Navigation' : 'Navigation';
     const actionCategoryLabel = language === 'ar' ? 'إجراءات' : language === 'fr' ? 'Actions' : 'Actions';
+    const dashboardLabel = language === 'ar' ? 'لوحة القيادة' : language === 'fr' ? 'Tableau de bord' : 'Dashboard';
 
-    // 1. Navigation items
+    // 1. Navigation items — Global Home (Salle d'accueil) entry first
+    list.push({
+      id: 'nav-home',
+      title: t('nav_home', language),
+      subtitle: currentBusiness?.name,
+      category: navCategoryLabel,
+      icon: <Home size={15} />,
+      onSelect: () => {
+        setScreen('home');
+        onClose();
+      },
+    });
+
     if (category === 'project_milestone') {
       const pmNavItems: Array<{ id: ActiveScreen; label: string; role: string; icon: React.ReactNode }> = [
         // Direction
-        { id: 'pm_dir_dashboard', label: t('pm_screen_dir_dashboard'), role: t('pm_role_direction_name'), icon: <Home size={15} /> },
+        { id: 'pm_dir_dashboard', label: t('pm_screen_dir_dashboard'), role: t('pm_role_direction_name'), icon: <LayoutDashboard size={15} /> },
         { id: 'pm_dir_new_project', label: t('pm_screen_dir_new_project'), role: t('pm_role_direction_name'), icon: <FileText size={15} /> },
         { id: 'pm_dir_approvals', label: t('pm_screen_dir_approvals'), role: t('pm_role_direction_name'), icon: <ShieldCheck size={15} /> },
         { id: 'pm_dir_reports', label: t('pm_screen_dir_reports'), role: t('pm_role_direction_name'), icon: <BarChart2 size={15} /> },
@@ -165,7 +179,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       });
     } else if (category === 'trading_commercial') {
       const tradingNav: Array<{ id: ActiveScreen; label: string; icon: React.ReactNode }> = [
-        { id: 'trading_dashboard', label: t('nav_trading_dashboard', language), icon: <Home size={15} /> },
+        { id: 'trading_dashboard', label: dashboardLabel, icon: <LayoutDashboard size={15} /> },
         { id: 'trading_sales', label: t('nav_trading_sales', language), icon: <FileText size={15} /> },
         { id: 'trading_purchases', label: t('nav_trading_purchases', language), icon: <Truck size={15} /> },
         { id: 'trading_inventory', label: t('nav_trading_inventory', language), icon: <Boxes size={15} /> },
@@ -189,7 +203,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       });
     } else {
       const navItems: Array<{ id: ActiveScreen; label: string; icon: React.ReactNode }> = [
-        { id: 'dashboard', label: t('nav_dashboard', language), icon: <Home size={15} /> },
+        { id: 'dashboard', label: dashboardLabel, icon: <LayoutDashboard size={15} /> },
         { id: 'members', label: `${terminology.members}`, icon: <Users size={15} /> },
         { id: 'scheduler', label: `${terminology.scheduler}`, icon: <Calendar size={15} /> },
         { id: 'shop', label: `${terminology.shop}`, icon: <ShoppingBag size={15} /> },

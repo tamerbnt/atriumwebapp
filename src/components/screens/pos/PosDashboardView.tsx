@@ -120,9 +120,12 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
 
   if (showSkeleton && products.length === 0 && sales.length === 0) {
     return (
-      <div className="p-6">
-        <SkeletonDashboardPos />
-      </div>
+      <SkeletonDashboardPos
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
     );
   }
 

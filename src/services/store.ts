@@ -210,6 +210,7 @@ export const ATRIUM_STORAGE_VERSION = 2;
 const STORAGE_KEY = 'atrium_erp_desktop_v2';
 
 export type ActiveScreen =
+  | 'home'
   | 'dashboard'
   | 'analytics'
   | 'members'
@@ -423,7 +424,7 @@ const DEFAULT_STATE: AppState = {
   branches: INITIAL_BRANCHES,
   currentBusinessId: 'biz_gym',
   currentBranchId: 'branch_gym_main',
-  activeScreen: 'members',
+  activeScreen: 'home',
   theme: 'light',
   language: initialLangConfig.language,
   isLanguageAuto: initialLangConfig.isAuto,
@@ -1502,6 +1503,7 @@ export function loginWithPinAction(pin: string) {
       currentUser: user,
       isAuthenticated: true,
       isFastSwitchOpen: false,
+      activeScreen: 'home',
       ...resolveSubRolesForUserGlobal(user),
     };
     notify();
@@ -1522,6 +1524,7 @@ export function loginWithPinAction(pin: string) {
       currentUser: ownerUser,
       isAuthenticated: true,
       isFastSwitchOpen: false,
+      activeScreen: 'home',
       ...resolveSubRolesForUserGlobal(ownerUser),
     };
     notify();
@@ -1559,20 +1562,11 @@ export function switchFacilityAction(businessId: string, branchId?: string) {
   const targetBranchId = branchId || (targetBranches[0]?.id ?? globalState.branches[0].id);
   const targetBusiness = globalState.businesses.find((b) => b.id === businessId);
 
-  let nextScreen = globalState.activeScreen;
-  if (targetBusiness?.category === 'pos_inventory') {
-    if (nextScreen === 'scheduler' || nextScreen === 'registrations') {
-      nextScreen = 'shop';
-    }
-  } else if (targetBusiness?.category === 'freelance_solo') {
-    if (nextScreen === 'history') {
-      nextScreen = 'dashboard';
-    }
-  } else if (targetBusiness?.category === 'appointment_service') {
-    if (nextScreen === 'registrations') {
-      nextScreen = 'scheduler';
-    }
-  }
+  const prevBusiness = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
+  let nextScreen: ActiveScreen =
+    prevBusiness?.id !== targetBusiness?.id || prevBusiness?.category !== targetBusiness?.category
+      ? 'home'
+      : globalState.activeScreen;
 
   const prevBusinessId = globalState.currentBusinessId;
   const prevBranchId = globalState.currentBranchId;
@@ -1802,7 +1796,7 @@ export function setActivePmRoleAction(role: PMRole) {
     ...globalState,
     activePmRole: role,
     activePmSubScreen: defaultSubScreen,
-    activeScreen: defaultScreen,
+    activeScreen: 'home',
   };
   notify();
 }
@@ -4965,6 +4959,7 @@ export function useAtriumStore() {
         currentUser: user,
         isAuthenticated: true,
         isFastSwitchOpen: false,
+        activeScreen: 'home',
         ...resolveSubRolesForUser(user),
       };
       notify();
@@ -4985,6 +4980,7 @@ export function useAtriumStore() {
         currentUser: ownerUser,
         isAuthenticated: true,
         isFastSwitchOpen: false,
+        activeScreen: 'home',
         ...resolveSubRolesForUser(ownerUser),
       };
       notify();
@@ -5334,7 +5330,7 @@ export function useAtriumStore() {
       currentUser: newCurrentUser,
       isAuthenticated: true,
       isOnboardingOpen: false,
-      activeScreen: params.category === 'pos_inventory' ? 'shop' : 'dashboard',
+      activeScreen: 'home',
     };
 
     notify();
@@ -7459,105 +7455,46 @@ export function useAtriumStore() {
   const setActivePmRole = setActivePmRoleAction;
 
   const setActiveGarageRole = (role: GarageRole) => {
-    let defaultScreen: ActiveScreen = 'dashboard';
-    if (role === 'gerant') {
-      defaultScreen = 'dashboard';
-    } else if (role === 'reception') {
-      defaultScreen = 'scheduler';
-    } else if (role === 'mecanicien') {
-      defaultScreen = 'scheduler';
-    } else if (role === 'magasinier') {
-      defaultScreen = 'shop';
-    } else if (role === 'caisse') {
-      defaultScreen = 'finance';
-    }
-
     globalState = {
       ...globalState,
       activeGarageRole: role,
-      activeScreen: defaultScreen,
+      activeScreen: 'home',
     };
     notify();
   };
 
   const setActiveRealEstateRole = (role: RealEstateRole) => {
-    let defaultScreen: ActiveScreen = 'dashboard';
-    if (role === 'direction') {
-      defaultScreen = 'dashboard';
-    } else if (role === 'negociateur') {
-      defaultScreen = 'dashboard';
-    } else if (role === 'gestionnaire_locatif') {
-      defaultScreen = 'scheduler';
-    } else if (role === 'notaire_compta') {
-      defaultScreen = 'finance';
-    }
-
     globalState = {
       ...globalState,
       activeRealEstateRole: role,
-      activeScreen: defaultScreen,
+      activeScreen: 'home',
     };
     notify();
   };
 
   const setActiveManufacturingRole = (role: ManufacturingRole) => {
-    let defaultScreen: ActiveScreen = 'dashboard';
-    if (role === 'gerant') {
-      defaultScreen = 'dashboard';
-    } else if (role === 'chef_atelier') {
-      defaultScreen = 'scheduler';
-    } else if (role === 'operateur') {
-      defaultScreen = 'dashboard';
-    } else if (role === 'magasinier') {
-      defaultScreen = 'members';
-    } else if (role === 'qualite') {
-      defaultScreen = 'finance';
-    }
-
     globalState = {
       ...globalState,
       activeManufacturingRole: role,
-      activeScreen: defaultScreen,
+      activeScreen: 'home',
     };
     notify();
   };
 
   const setActiveLegalRole = (role: LegalRole) => {
-    let defaultScreen: ActiveScreen = 'dashboard';
-    if (role === 'avocat_associe') {
-      defaultScreen = 'dashboard';
-    } else if (role === 'notaire_titulaire') {
-      defaultScreen = 'members';
-    } else if (role === 'expert_comptable') {
-      defaultScreen = 'finance';
-    } else if (role === 'secretaire_caisse') {
-      defaultScreen = 'dashboard';
-    }
-
     globalState = {
       ...globalState,
       activeLegalRole: role,
-      activeScreen: defaultScreen,
+      activeScreen: 'home',
     };
     notify();
   };
 
   const setActiveLogisticsRole = (role: LogisticsRole) => {
-    let defaultScreen: ActiveScreen = 'dashboard';
-    if (role === 'gerant') {
-      defaultScreen = 'dashboard';
-    } else if (role === 'dispatcher') {
-      defaultScreen = 'scheduler';
-    } else if (role === 'hub_sorter') {
-      defaultScreen = 'registrations';
-    } else if (role === 'stop_desk_agent') {
-      defaultScreen = 'members';
-    }
-
     globalState = {
       ...globalState,
       activeLogisticsRole: role,
-      activeScreen: defaultScreen,
+      activeScreen: 'home',
     };
     notify();
   };
@@ -9223,42 +9160,20 @@ export function useAtriumStore() {
     // Construction & BTP Contracting Operational Role State & Actions
     activeContractorRole: state.activeContractorRole || 'gerant',
     setActiveContractorRole: (role: ContractorRole) => {
-      let defaultScreen: ActiveScreen = 'dashboard';
-      if (role === 'gerant') {
-        defaultScreen = 'dashboard';
-      } else if (role === 'conducteur' || role === 'conducteur_travaux') {
-        defaultScreen = 'members';
-      } else if (role === 'chef_chantier') {
-        defaultScreen = 'scheduler';
-      } else if (role === 'metreur' || role === 'daf_metreur') {
-        defaultScreen = 'shop';
-      } else if (role === 'comptable') {
-        defaultScreen = 'finance';
-      }
       globalState = {
         ...globalState,
         activeContractorRole: role,
-        activeScreen: defaultScreen,
+        activeScreen: 'home',
       };
       notify();
     },
     // Agriculture & Livestock Operational Role State & Actions
     activeAgriRole: state.activeAgriRole || 'gerant',
     setActiveAgriRole: (role: AgriRole) => {
-      let defaultScreen: ActiveScreen = 'dashboard';
-      if (role === 'gerant') {
-        defaultScreen = 'dashboard';
-      } else if (role === 'chef_culture') {
-        defaultScreen = 'members'; // Parcelles
-      } else if (role === 'zootechnicien') {
-        defaultScreen = 'registrations'; // Cheptel & Traite
-      } else if (role === 'magasinier') {
-        defaultScreen = 'finance'; // Pont-bascule & Caisse
-      }
       globalState = {
         ...globalState,
         activeAgriRole: role,
-        activeScreen: defaultScreen,
+        activeScreen: 'home',
       };
       notify();
     },
@@ -9268,7 +9183,7 @@ export function useAtriumStore() {
       globalState = {
         ...globalState,
         activeMembershipRole: role,
-        activeScreen: 'dashboard',
+        activeScreen: 'home',
       };
       notify();
     },
@@ -9277,7 +9192,7 @@ export function useAtriumStore() {
       globalState = {
         ...globalState,
         activeAppointmentRole: role,
-        activeScreen: 'dashboard',
+        activeScreen: 'home',
       };
       notify();
     },
@@ -9286,7 +9201,7 @@ export function useAtriumStore() {
       globalState = {
         ...globalState,
         activePosRole: role,
-        activeScreen: role === 'staff' ? 'shop' : 'dashboard',
+        activeScreen: 'home',
       };
       notify();
     },
@@ -9295,7 +9210,7 @@ export function useAtriumStore() {
       globalState = {
         ...globalState,
         activeEducationRole: role,
-        activeScreen: role === 'staff' ? 'analytics' : 'dashboard',
+        activeScreen: 'home',
       };
       notify();
     },

@@ -121,9 +121,12 @@ export const MedicalDashboardView: React.FC = () => {
 
   if (showSkeleton && patients.length === 0 && consultations.length === 0) {
     return (
-      <div className="p-6">
-        <SkeletonDashboardMedical />
-      </div>
+      <SkeletonDashboardMedical
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
     );
   }
 

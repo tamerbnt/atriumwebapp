@@ -46,6 +46,8 @@ import {
   Landmark,
   Cloud,
   Building,
+  LayoutDashboard,
+  Activity,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -53,8 +55,6 @@ import {
   selectCurrentBusinessFromState,
   selectTerminologyFromState,
   setScreenAction as setScreen,
-  setActivePmRoleAction as setActivePmRole,
-  setActivePmSubScreenAction as setActivePmSubScreen,
   ActiveScreen,
 } from '../../services/store';
 import { FiveCubesLogo } from '../auth/AtriumMonolith';
@@ -123,6 +123,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isRtl = language === 'ar';
 
   const category = currentBusiness?.category || 'pos_inventory';
+  const dashboardLabel =
+    language === 'ar' ? 'لوحة القيادة' : language === 'fr' ? 'Tableau de bord' : 'Dashboard';
+  const homeNavItem = {
+    id: 'home' as ActiveScreen,
+    icon: <Home size={19} />,
+    title: t('nav_home', language),
+    label: t('nav_home', language),
+  };
 
   let dockNavItems: Array<{
     id: ActiveScreen;
@@ -138,7 +146,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           id: 'pm_dir_dashboard',
           icon: <TrendingUp size={19} />,
           title: t('nav_pm_dir_dashboard', language),
-          label: t('nav_dashboard', language),
+          label: dashboardLabel,
         },
         {
           id: 'pm_dir_new_project',
@@ -318,9 +326,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     dockNavItems = [
       {
         id: 'dashboard',
-        icon: <Home size={19} />,
-        title: t('nav_solo_home', language),
-        label: t('nav_home', language),
+        icon: <LayoutDashboard size={19} />,
+        title: dashboardLabel,
+        label: dashboardLabel,
       },
       {
         id: 'members',
@@ -409,9 +417,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'history',
@@ -438,7 +446,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
+          icon: <Sparkles size={19} />,
           title: language === 'ar' ? 'المحطات' : language === 'fr' ? 'Fauteuils' : 'Stations',
           label: language === 'ar' ? 'المحطات' : language === 'fr' ? 'Fauteuils' : 'Stations',
         },
@@ -459,9 +467,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'scheduler',
@@ -511,9 +519,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     dockNavItems = [
       {
         id: 'dashboard',
-        icon: <Home size={19} />,
-        title: t('nav_home', language),
-        label: t('nav_home', language),
+        icon: <LayoutDashboard size={19} />,
+        title: dashboardLabel,
+        label: dashboardLabel,
       },
       {
         id: 'scheduler',
@@ -584,9 +592,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'scheduler',
@@ -636,9 +644,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     dockNavItems = [
       {
         id: 'trading_dashboard',
-        icon: <Home size={19} />,
-        title: t('nav_home', language),
-        label: t('nav_home', language),
+        icon: <LayoutDashboard size={19} />,
+        title: dashboardLabel,
+        label: dashboardLabel,
       },
       {
         id: 'trading_sales',
@@ -687,9 +695,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     dockNavItems = [
       {
         id: 'dashboard',
-        icon: <Home size={19} />,
-        title: t('nav_home', language),
-        label: t('nav_home', language),
+        icon: <LayoutDashboard size={19} />,
+        title: dashboardLabel,
+        label: dashboardLabel,
       },
       {
         id: 'scheduler',
@@ -757,9 +765,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'shop',
@@ -780,7 +788,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           id: 'dashboard',
           icon: <Clock size={19} />,
           title: language === 'ar' ? 'مهامي' : language === 'fr' ? 'Mes Tâches' : 'My Tasks',
-          label: t('nav_home', language),
+          label: language === 'ar' ? 'مهامي' : language === 'fr' ? 'Mes Tâches' : 'My Tasks',
         },
         {
           id: 'members',
@@ -807,7 +815,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           id: 'dashboard',
           icon: <ClipboardList size={19} />,
           title: language === 'ar' ? 'الطلبات' : language === 'fr' ? 'Demandes' : 'Requests',
-          label: t('nav_home', language),
+          label: language === 'ar' ? 'الطلبات' : language === 'fr' ? 'Demandes' : 'Requests',
         },
         {
           id: 'scheduler',
@@ -834,7 +842,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           id: 'dashboard',
           icon: <Receipt size={19} />,
           title: language === 'ar' ? 'الصندوق' : language === 'fr' ? 'Caisse' : 'Cashier',
-          label: t('nav_home', language),
+          label: language === 'ar' ? 'الصندوق' : language === 'fr' ? 'Caisse' : 'Cashier',
         },
         {
           id: 'members',
@@ -853,9 +861,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'scheduler',
@@ -894,9 +902,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'realestate_mandates',
@@ -921,9 +929,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'members',
@@ -954,9 +962,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'finance',
@@ -981,9 +989,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'realestate_mandates',
@@ -1028,9 +1036,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'scheduler',
@@ -1061,7 +1069,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
+          icon: <Activity size={19} />,
           title: language === 'ar' ? 'المحطة' : language === 'fr' ? 'Poste' : 'Station',
           label: language === 'ar' ? 'المحطة' : language === 'fr' ? 'Poste' : 'Station',
         },
@@ -1094,9 +1102,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
       ];
     } else if (activeManufacturingRole === 'qualite') {
@@ -1109,7 +1117,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
+          icon: <ClipboardList size={19} />,
           title: language === 'ar' ? 'الحجر' : language === 'fr' ? 'Quarantaine' : 'Quarantine',
           label: language === 'ar' ? 'الحجر' : language === 'fr' ? 'Quarantaine' : 'Quarantine',
         },
@@ -1124,9 +1132,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'scheduler',
@@ -1165,9 +1173,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'members',
@@ -1204,9 +1212,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'members',
@@ -1243,9 +1251,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'members',
@@ -1282,9 +1290,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'members',
@@ -1341,9 +1349,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'settings',
@@ -1374,9 +1382,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
       ];
     } else if (activeLogisticsRole === 'stop_desk_agent') {
@@ -1401,18 +1409,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
       ];
     } else {
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'members',
@@ -1451,9 +1459,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'members',
@@ -1484,9 +1492,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <TrendingUp size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'members',
@@ -1517,9 +1525,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'scheduler',
@@ -1550,9 +1558,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <TrendingUp size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'shop',
@@ -1583,9 +1591,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Wallet size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'finance',
@@ -1663,9 +1671,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'members',
@@ -1710,7 +1718,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
+          icon: <DoorOpen size={19} />,
           title: language === 'ar' ? 'الاستقبال' : language === 'fr' ? 'Accueil' : 'Front Desk',
           label: language === 'ar' ? 'الاستقبال' : language === 'fr' ? 'Accueil' : 'Front Desk',
         },
@@ -1731,9 +1739,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       dockNavItems = [
         {
           id: 'dashboard',
-          icon: <Home size={19} />,
-          title: t('nav_home', language),
-          label: t('nav_home', language),
+          icon: <LayoutDashboard size={19} />,
+          title: dashboardLabel,
+          label: dashboardLabel,
         },
         {
           id: 'members',
@@ -1773,6 +1781,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     }
+  }
+
+  // Always prepend global Salle d'accueil Home screen at index 0 across every category & role
+  if (!dockNavItems.some((item) => item.id === 'home')) {
+    dockNavItems.unshift(homeNavItem);
   }
 
   // Unified Staff / Workforce Screen Injection Across All Categories
@@ -1815,90 +1828,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const item = dockNavItems.find(it => it.id === id);
     if (!item) {
       setScreen(id as ActiveScreen);
+      if (onCloseMobile) onCloseMobile();
       return;
     }
     setScreen(item.id);
-    if (category === 'project_milestone') {
-      if (item.id === 'pm_dir_dashboard' || item.id === 'dashboard') {
-        setActivePmRole('direction');
-        setActivePmSubScreen('dashboard');
-      } else if (item.id === 'pm_dir_new_project') {
-        setActivePmRole('direction');
-        setActivePmSubScreen('new_project');
-      } else if (item.id === 'pm_dir_projects') {
-        setActivePmRole('direction');
-        setActivePmSubScreen('dashboard');
-      } else if (item.id === 'pm_dir_approvals') {
-        setActivePmRole('direction');
-        setActivePmSubScreen('approvals');
-      } else if (item.id === 'pm_dir_reports') {
-        setActivePmRole('direction');
-        setActivePmSubScreen('reports');
-      } else if (item.id === 'pm_cp_projects' || item.id === 'scheduler') {
-        setActivePmRole('chef_projet');
-        setActivePmSubScreen('portfolio');
-      } else if (item.id === 'pm_cp_catalog') {
-        setActivePmRole('chef_projet');
-        setActivePmSubScreen('catalog');
-      } else if (item.id === 'pm_cp_orders') {
-        setActivePmRole('chef_projet');
-        setActivePmSubScreen('orders');
-      } else if (item.id === 'pm_cp_files' || item.id === 'pm_cp_deliverables') {
-        setActivePmRole('chef_projet');
-        setActivePmSubScreen('bat');
-      } else if (item.id === 'pm_cp_expenses') {
-        setActivePmRole('chef_projet');
-        setActivePmSubScreen('expenses');
-      } else if (item.id === 'pm_crea_kanban' || item.id === 'registrations') {
-        setActivePmRole('crea');
-        setActivePmSubScreen('demandes');
-      } else if (item.id === 'pm_crea_production') {
-        setActivePmRole('crea');
-        setActivePmSubScreen('production');
-      } else if (item.id === 'pm_crea_upload') {
-        setActivePmRole('crea');
-        setActivePmSubScreen('upload');
-      } else if (item.id === 'pm_crea_briefs') {
-        setActivePmRole('crea');
-        setActivePmSubScreen('briefs');
-      } else if (item.id === 'pm_sup_missions' || item.id === 'analytics') {
-        setActivePmRole('superviseur');
-        setActivePmSubScreen('missions');
-      } else if (item.id === 'pm_sup_attendance') {
-        setActivePmRole('superviseur');
-        setActivePmSubScreen('attendance');
-      } else if (item.id === 'pm_sup_staffing') {
-        setActivePmRole('superviseur');
-        setActivePmSubScreen('staffing');
-      } else if (item.id === 'pm_sup_expenses') {
-        setActivePmRole('superviseur');
-        setActivePmSubScreen('expense');
-      } else if (item.id === 'pm_rh_talents' || item.id === 'members') {
-        setActivePmRole('rh');
-        setActivePmSubScreen('talents');
-      } else if (item.id === 'pm_rh_dossier') {
-        setActivePmRole('rh');
-        setActivePmSubScreen('dossier');
-      } else if (item.id === 'pm_rh_portal') {
-        setActivePmRole('rh');
-        setActivePmSubScreen('portal');
-      } else if (item.id === 'pm_rh_walkin') {
-        setActivePmRole('rh');
-        setActivePmSubScreen('walkin');
-      } else if (item.id === 'pm_compta_payroll' || item.id === 'finance') {
-        setActivePmRole('compta');
-        setActivePmSubScreen('payroll');
-      } else if (item.id === 'pm_compta_ccp') {
-        setActivePmRole('compta');
-        setActivePmSubScreen('ccp');
-      } else if (item.id === 'pm_compta_expenses') {
-        setActivePmRole('compta');
-        setActivePmSubScreen('expenses');
-      } else if (item.id === 'pm_compta_stock') {
-        setActivePmRole('compta');
-        setActivePmSubScreen('stock');
-      }
-    }
     if (onCloseMobile) onCloseMobile();
   };
 
