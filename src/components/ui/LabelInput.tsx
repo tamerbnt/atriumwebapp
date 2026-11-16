@@ -81,7 +81,7 @@ export interface LabelInputProps {
 }
 
 export function LabelInput({
-  field = "Email",
+  field,
   label: explicitLabel,
   value: controlledValue,
   onChange,
@@ -121,8 +121,10 @@ export function LabelInput({
   const id = customId || generatedId;
   const resolvedErrorId = errorId || `${id}-error`;
 
-  const label = explicitLabel || field;
-  const isSecret = type === "password" || field.toLowerCase().includes("password") || label.toLowerCase().includes("password");
+  const resolvedField = field ?? "";
+  const label = explicitLabel || field || "Email";
+  const isSecret = type === "password" || resolvedField.toLowerCase().includes("password") || label.toLowerCase().includes("password");
+  const isEmailField = !type && (resolvedField ? resolvedField.toLowerCase().includes("email") : label.toLowerCase().includes("email"));
 
   const [focus, setFocus] = useState(false);
   const [internalValue, setInternalValue] = useState("");
@@ -327,7 +329,7 @@ export function LabelInput({
           name={name}
           className="lbi-field"
           data-flip={flip % 2}
-          type={isSecret && !show ? "password" : isSecret ? "text" : type || (field.toLowerCase().includes("email") ? "email" : "text")}
+          type={isSecret && !show ? "password" : isSecret ? "text" : type || (isEmailField ? "email" : "text")}
           value={value !== undefined ? String(value) : ""}
           onChange={handleInputChange}
           onFocus={(e) => {

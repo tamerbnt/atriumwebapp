@@ -80,7 +80,7 @@ export const PriceRevisionModal: React.FC<PriceRevisionModalProps> = ({ isOpen, 
 </p>
 </div>
 </div>
-<button onClick={onClose} className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1"><X size={18} /></button>
+<button type="button" aria-label={isAr ? "إغلاق" : "Fermer"} onClick={onClose} className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1"><X size={18} /></button>
 </div>
 <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 space-y-1">
 <div className="flex items-center gap-2 text-xs font-bold text-black dark:text-white">

@@ -6,6 +6,13 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 
+const extractStr = (v: unknown): string =>
+  typeof v === 'string'
+    ? v
+    : typeof v === 'number'
+    ? String(v)
+    : (v as { target?: { value?: string } })?.target?.value ?? '';
+
 interface ContractorProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -118,6 +125,8 @@ export const ContractorProjectModal: React.FC<ContractorProjectModalProps> = ({
             </div>
           </div>
           <button
+            type="button"
+            aria-label={isAr ? 'إغلاق' : 'Fermer'}
             onClick={onClose}
             className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           >
@@ -161,7 +170,7 @@ export const ContractorProjectModal: React.FC<ContractorProjectModalProps> = ({
             <LabelSelect
               label={isAr ? 'نسبة الضمان (Retenue)' : 'Retenue de Garantie'}
               value={retentionPercent}
-              onChange={(e) => setRetentionPercent(e.target.value)}
+              onChange={(v) => setRetentionPercent(extractStr(v))}
               options={[
                 { value: '5', label: '5% (Standard Marchés Publics)' },
                 { value: '10', label: '10% (Privé / Sous-traitance)' },
@@ -195,7 +204,7 @@ export const ContractorProjectModal: React.FC<ContractorProjectModalProps> = ({
             <LabelSelect
               label={isAr ? 'الحالة' : 'Statut Chantier'}
               value={status}
-              onChange={(e) => setStatus(e.target.value as ContractorProject['status'])}
+              onChange={(v) => setStatus(extractStr(v) as ContractorProject['status'])}
               options={[
                 { value: 'InProgress', label: 'En Cours' },
                 { value: 'ProvisionalHandover', label: 'Réception Provisoire' },

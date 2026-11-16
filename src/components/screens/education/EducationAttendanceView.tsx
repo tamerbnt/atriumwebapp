@@ -16,6 +16,7 @@ import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EduStudent, AttendanceStatus } from '../../../types';
+import { localizeStatus } from '../../../utils/rules';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -887,7 +888,7 @@ export const EducationAttendanceView: React.FC = () => {
         branchName={
           activeStudent ? resolveRecordBranch(activeStudent, branchesById, currentBranch, language).name : undefined
         }
-        statusLabel={activeStudent?.status}
+        statusLabel={activeStudent ? localizeStatus(activeStudent.status, language) : undefined}
         onSelectItem={(s) => setSelectedStudent(s)}
         onClose={() => setSelectedStudent(null)}
         renderBody={(st) => {

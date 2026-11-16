@@ -41,7 +41,7 @@ export const OnilBordereauPrintModal: React.FC<OnilBordereauPrintModalProps> = (
 </div>
 <div className="flex items-center gap-2">
 <AtriumButton variant="primary" onClick={handlePrint} icon={<Printer size={15} />}>{isAr ? "طباعة الوثيقة الرسمية" : "Imprimer Bordereau"}</AtriumButton>
-<button type="button" onClick={onClose} className="p-1.5 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
+<button type="button" onClick={onClose} aria-label={isAr ? "إغلاق" : "Fermer"} className="p-1.5 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
 </div>
 </div>
 <div className="bg-white text-black p-8 rounded-2xl border border-neutral-300 shadow-xs space-y-6 font-sans text-xs print:m-0 print:p-0 print:border-none print:shadow-none">

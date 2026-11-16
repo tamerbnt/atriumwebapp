@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { EduStudent, StudentStatus } from '../../../types';
-import { formatMoney } from '../../../utils/rules';
+import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { CertificateModal } from './CertificateModal';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -738,7 +738,7 @@ export const EducationStudentsView: React.FC = () => {
         branchName={
           activeStudent ? resolveRecordBranch(activeStudent, branchesById, currentBranch, language).name : undefined
         }
-        statusLabel={activeStudent?.status}
+        statusLabel={activeStudent ? localizeStatus(activeStudent.status, language) : undefined}
         tabs={[
           { id: 'academic', label: t('edu_drawer_academic') },
           ...(!isStaff ? [{ id: 'financial', label: t('edu_drawer_financial') }] : []),

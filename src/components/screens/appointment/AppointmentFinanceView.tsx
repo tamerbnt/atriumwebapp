@@ -17,7 +17,7 @@ import {
 import { StylistPayout } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { AtriumButton } from '../../ui/AtriumButton';
-import { formatMoney } from '../../../utils/rules';
+import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -535,7 +535,7 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
             ? resolveRecordBranch(inspectingPayout, branchesById, currentBranch, language).name
             : undefined
         }
-        statusLabel={inspectingPayout?.status}
+        statusLabel={inspectingPayout ? localizeStatus(inspectingPayout.status, language) : undefined}
         statusClassName={
           inspectingPayout?.status === 'Paid'
             ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'

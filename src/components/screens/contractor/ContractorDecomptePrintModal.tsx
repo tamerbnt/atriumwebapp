@@ -41,7 +41,7 @@ export const ContractorDecomptePrintModal: React.FC<ContractorDecomptePrintModal
 </div>
 <div className="flex items-center gap-2">
 <AtriumButton variant="primary" onClick={handlePrint} icon={<Printer size={15} />}>{isAr ? "طباعة الكشف" : "Imprimer le Décompte"}</AtriumButton>
-<button type="button" onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
+<button type="button" onClick={onClose} aria-label={isAr ? "إغلاق" : "Fermer"} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
 </div>
 </div>
 <div className="p-6 border border-neutral-300 dark:border-neutral-700 rounded-xl bg-white text-black text-xs space-y-6 shadow-xs font-serif">

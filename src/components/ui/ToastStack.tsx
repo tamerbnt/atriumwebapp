@@ -73,9 +73,10 @@ export const ToastStack: React.FC<ToastStackProps> = ({
       className={`fixed z-[99999] pointer-events-auto select-none ${className}`}
       style={{
         position: 'fixed',
-        top: '76px',
-        right: isRtl ? 'auto' : '24px',
-        left: isRtl ? '24px' : 'auto',
+        bottom: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        maxWidth: 'calc(100vw - 24px)',
         zIndex: 99999,
       }}
       onMouseEnter={() => setIsHovered(true)}

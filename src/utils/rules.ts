@@ -88,11 +88,15 @@ export function calculateDaysRemaining(isLifetime: boolean, expiresAt?: string):
  * Format currency with tabular figures
  */
 export function formatMoney(amount: number, currency = 'DZD'): string {
+  const normalizedCurrency =
+    !currency || currency === 'fr' || currency === 'en' || currency === 'ar'
+      ? 'DZD'
+      : currency;
   const formatted = new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(amount);
-  return `${formatted} ${currency}`;
+  return `${formatted} ${normalizedCurrency}`;
 }
 
 export const STATUS_TRANSLATIONS: Record<MemberStatus, Record<SupportedLanguage, string>> = {
@@ -106,21 +110,63 @@ export const STATUS_TRANSLATIONS: Record<MemberStatus, Record<SupportedLanguage,
   Unknown: { en: 'Unknown', fr: 'Inconnu', ar: 'مجهول' },
 };
 
+export const EXTRA_STATUS_TRANSLATIONS: Record<string, Record<SupportedLanguage, string>> = {
+  Approved: { en: 'Approved', fr: 'Validé', ar: 'معتمد' },
+  Declined: { en: 'Declined', fr: 'Refusé', ar: 'مرفوض' },
+  Confirmed: { en: 'Confirmed', fr: 'Confirmé', ar: 'مؤكد' },
+  InChair: { en: 'Chair', fr: 'Fauteuil', ar: 'جاري' },
+  Completed: { en: 'Completed', fr: 'Terminé', ar: 'مكتمل' },
+  Cancelled: { en: 'Cancelled', fr: 'Annulé', ar: 'ملغى' },
+  NoShow: { en: 'Missed', fr: 'Absent', ar: 'غائب' },
+  Settled: { en: 'Settled', fr: 'Encaissé', ar: 'مسدد' },
+  Refunded: { en: 'Refunded', fr: 'Remboursé', ar: 'مسترجع' },
+  Paid: { en: 'Paid', fr: 'Payé', ar: 'مدفوع' },
+  Draft: { en: 'Draft', fr: 'Brouillon', ar: 'مسودة' },
+  Sent: { en: 'Sent', fr: 'Envoyé', ar: 'مرسل' },
+  Overdue: { en: 'Overdue', fr: 'En retard', ar: 'متأخر' },
+  Ordered: { en: 'Ordered', fr: 'Commandé', ar: 'مطلوب' },
+  Received: { en: 'Received', fr: 'Réceptionné', ar: 'مستلم' },
+  Delivered: { en: 'Delivered', fr: 'Livré', ar: 'مسلّم' },
+  Validated: { en: 'Validated', fr: 'Validé', ar: 'مصادق' },
+  Upcoming: { en: 'Upcoming', fr: 'À venir', ar: 'قادم' },
+  Enrolling: { en: 'Enrolling', fr: 'Inscriptions', ar: 'التسجيل مفتوح' },
+  InProgress: { en: 'In Progress', fr: 'En cours', ar: 'جاري' },
+  Archived: { en: 'Archived', fr: 'Archivé', ar: 'مؤرشف' },
+  Graduated: { en: 'Graduated', fr: 'Diplômé', ar: 'متخرج' },
+  Alumni: { en: 'Alumni', fr: 'Ancien', ar: 'خريج' },
+  Applicant: { en: 'Applicant', fr: 'Candidat', ar: 'مترشح' },
+  Available: { en: 'Available', fr: 'Disponible', ar: 'متاح' },
+  Occupied: { en: 'Occupied', fr: 'Occupé', ar: 'مشغول' },
+  Maintenance: { en: 'Maintenance', fr: 'Maintenance', ar: 'صيانة' },
+  Tentative: { en: 'Tentative', fr: 'Provisoire', ar: 'مبدئي' },
+  CheckedIn: { en: 'Checked In', fr: 'Installé', ar: 'قيد الاستغلال' },
+  Held: { en: 'Held', fr: 'Séquestre', ar: 'محتجز' },
+  Retained: { en: 'Retained', fr: 'Retenue', ar: 'مقتطع' },
+  Present: { en: 'Present', fr: 'Présent', ar: 'حاضر' },
+  Absent: { en: 'Absent', fr: 'Absent', ar: 'غائب' },
+  Late: { en: 'Late', fr: 'Retard', ar: 'متأخر' },
+  Excused: { en: 'Excused', fr: 'Excusé', ar: 'معذور' },
+  Sorted: { en: 'Sorted', fr: 'Trié Quai', ar: 'مفرز' },
+  ReceivedAtHub: { en: 'At Hub', fr: 'Au Hub', ar: 'في المستودع' },
+  OutForDelivery: { en: 'Out for Delivery', fr: 'En Tournée', ar: 'في التوزيع' },
+  Returned: { en: 'Returned', fr: 'Retourné', ar: 'مسترجع' },
+  Open: { en: 'Open', fr: 'Ouvert', ar: 'مفتوح' },
+  Sealed: { en: 'Sealed', fr: 'Scellé', ar: 'مختوم' },
+  MinuteOfficielle: { en: 'Official Minute', fr: 'Minute Inaliénable', ar: 'نسخة أصلية رسمية' },
+  DossierAudit: { en: 'Audit Sealed', fr: 'Audit CAC Scellé', ar: 'تدقيق محاسبي مختوم' },
+  Confidential: { en: 'Confidential', fr: 'Confidentiel Défense', ar: 'سري للغاية' },
+  OriginalScanned: { en: 'Certified Original', fr: 'Original Certifié', ar: 'أصل مصدق' },
+  PieceClient: { en: 'Client Document', fr: 'Pièce Client', ar: 'وثيقة الموكل' },
+};
+
 /**
  * Localizes any status string into French, Arabic, or English
  */
 export function localizeStatus(status: string, lang: SupportedLanguage = 'en'): string {
   const match = STATUS_TRANSLATIONS[status as MemberStatus];
   if (match) return match[lang] || match.en;
-  if (status === 'Approved') return lang === 'ar' ? 'معتمد' : lang === 'fr' ? 'Validé' : 'Approved';
-  if (status === 'Declined') return lang === 'ar' ? 'مرفوض' : lang === 'fr' ? 'Refusé' : 'Declined';
-  if (status === 'Confirmed') return lang === 'ar' ? 'مؤكد' : lang === 'fr' ? 'Confirmé' : 'Confirmed';
-  if (status === 'InChair') return lang === 'ar' ? 'جاري' : lang === 'fr' ? 'Fauteuil' : 'Chair';
-  if (status === 'Completed') return lang === 'ar' ? 'مكتمل' : lang === 'fr' ? 'Terminé' : 'Completed';
-  if (status === 'Cancelled') return lang === 'ar' ? 'ملغى' : lang === 'fr' ? 'Annulé' : 'Cancelled';
-  if (status === 'NoShow') return lang === 'ar' ? 'غائب' : lang === 'fr' ? 'Absent' : 'Missed';
-  if (status === 'Settled') return lang === 'ar' ? 'مسدد' : lang === 'fr' ? 'Encaissé' : 'Settled';
-  if (status === 'Refunded') return lang === 'ar' ? 'مسترجع' : lang === 'fr' ? 'Remboursé' : 'Refunded';
+  const extra = EXTRA_STATUS_TRANSLATIONS[status];
+  if (extra) return extra[lang] || extra.en;
   return status;
 }
 

@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { CohortStatus, EduCohort } from '../../../types';
-import { formatMoney } from '../../../utils/rules';
+import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -647,7 +647,7 @@ export const EducationCohortsView: React.FC = () => {
         branchName={
           activeCohort ? resolveRecordBranch(activeCohort, branchesById, currentBranch, language).name : undefined
         }
-        statusLabel={activeCohort?.status}
+        statusLabel={activeCohort ? localizeStatus(activeCohort.status, language) : undefined}
         onSelectItem={(c) => setSelectedCohort(c)}
         onClose={() => setSelectedCohort(null)}
         onDelete={(c) => {

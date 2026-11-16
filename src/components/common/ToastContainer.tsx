@@ -20,7 +20,7 @@ export const ToastContainer: React.FC = () => {
   return (
     <aside
       aria-label="Notifications"
-      className="fixed top-5 right-5 z-[99999] flex flex-col gap-2.5 max-w-sm sm:max-w-md w-full pointer-events-none px-4 sm:px-0"
+      className="fixed bottom-5 right-5 rtl:right-auto rtl:left-5 z-[99999] flex flex-col gap-2.5 max-w-sm sm:max-w-md w-full pointer-events-none px-4 sm:px-0"
     >
       {toasts.map((toast: ToastNotification) => {
         const isSuccess = toast.type === 'success';
@@ -33,7 +33,7 @@ export const ToastContainer: React.FC = () => {
             key={toast.id}
             role="status"
             aria-live="polite"
-            className="pointer-events-auto bg-white/95 dark:bg-[#1E1E22]/95 backdrop-blur-md rounded-2xl p-4 shadow-xl border border-neutral-200/90 dark:border-neutral-700/80 flex items-start gap-3.5 transition-all duration-300 animate-in slide-in-from-top-3"
+            className="pointer-events-auto bg-white/95 dark:bg-[#1E1E22]/95 backdrop-blur-md rounded-2xl p-4 shadow-xl border border-neutral-200/90 dark:border-neutral-700/80 flex items-start gap-3.5 transition-all duration-300 animate-in slide-in-from-bottom-3"
           >
             {/* Status Icon */}
             <div className="shrink-0 mt-0.5">
@@ -94,9 +94,11 @@ export const ToastContainer: React.FC = () => {
 
             {/* Dismiss Button */}
             <button
+              type="button"
               onClick={() => dismissToast(toast.id)}
               className="shrink-0 p-1 rounded-lg text-black/55 hover:text-black dark:text-white/60 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
               title="Dismiss notification"
+              aria-label="Dismiss notification"
             >
               <X size={14} />
             </button>

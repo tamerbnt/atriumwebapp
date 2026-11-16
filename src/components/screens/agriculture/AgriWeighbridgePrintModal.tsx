@@ -53,6 +53,7 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
             </AtriumButton>
             <button
               type="button"
+              aria-label={isAr ? 'إغلاق' : 'Fermer'}
               onClick={onClose}
               className="p-1.5 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             >

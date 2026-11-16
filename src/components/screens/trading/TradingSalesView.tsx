@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { CommercialDocument, CommercialDocType } from '../../../types';
-import { formatMoney } from '../../../utils/rules';
+import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { CommercialDocComposerModal } from './CommercialDocComposerModal';
 import { CommercialDocPrintModal } from './CommercialDocPrintModal';
@@ -388,7 +388,7 @@ export const TradingSalesView: React.FC = () => {
                   : 'bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75'
               }`}
             >
-              {doc.status}
+              {localizeStatus(doc.status, language)}
             </span>
           );
         },
@@ -721,7 +721,7 @@ export const TradingSalesView: React.FC = () => {
         branchName={
           inspectingDoc ? resolveRecordBranch(inspectingDoc, branchesById, currentBranch, language).name : undefined
         }
-        statusLabel={inspectingDoc?.status}
+        statusLabel={inspectingDoc ? localizeStatus(inspectingDoc.status, language) : undefined}
         onClose={() => setInspectingDoc(null)}
         onSelectItem={(doc) => setInspectingDoc(doc)}
         onDelete={(doc) => setDeleteTarget(doc)}

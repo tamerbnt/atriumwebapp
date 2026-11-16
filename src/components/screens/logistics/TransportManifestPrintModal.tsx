@@ -32,7 +32,7 @@ export const TransportManifestPrintModal: React.FC<TransportManifestPrintModalPr
 </div>
 <div className="flex items-center gap-2">
 <AtriumButton variant="primary" size="sm" onClick={handlePrint} icon={<Printer size={14} />}>{isAr ? "طباعة الوثيقة" : "Imprimer"}</AtriumButton>
-<button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"><X size={18} /></button>
+<button type="button" aria-label={isAr ? "إغلاق" : "Fermer"} onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"><X size={18} /></button>
 </div>
 </div>
 <div className="overflow-y-auto flex-1 p-6 bg-white text-black border border-neutral-300 rounded-xl space-y-6 font-sans text-xs">

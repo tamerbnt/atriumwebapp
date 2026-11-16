@@ -59,9 +59,12 @@ test('calculateDaysRemaining handles lifetime vs expiring dates', () => {
 
 test('formatMoney adds currency and tabular format', () => {
   assert.equal(formatMoney(1500, 'DZD'), '1,500 DZD');
+  assert.equal(formatMoney(45000000, 'fr'), '45,000,000 DZD');
+  assert.equal(formatMoney(5000, 'en'), '5,000 DZD');
+  assert.equal(formatMoney(5000, 'ar'), '5,000 DZD');
 });
 
-test('status config maps status to proper visual tokens', () => {
+test('status config and localizeStatus map statuses across EN/FR/AR', async () => {
   const active = getStatusConfig('Active');
   assert.equal(active.label, 'Active');
   assert.equal(active.color, '#10B981');
@@ -69,6 +72,14 @@ test('status config maps status to proper visual tokens', () => {
   const expired = getStatusConfig('Expired');
   assert.equal(expired.label, 'Expired');
   assert.equal(expired.color, '#EF4444');
+
+  const { localizeStatus } = await import('./rules.ts');
+  assert.equal(localizeStatus('Available', 'fr'), 'Disponible');
+  assert.equal(localizeStatus('Available', 'ar'), 'متاح');
+  assert.equal(localizeStatus('Sorted', 'fr'), 'Trié Quai');
+  assert.equal(localizeStatus('Sealed', 'ar'), 'مختوم');
+  assert.equal(localizeStatus('MinuteOfficielle', 'fr'), 'Minute Inaliénable');
+  assert.equal(localizeStatus('Paid', 'en'), 'Paid');
 });
 
 test('getCategoryTerminology dynamically adapts terms to vertical', () => {

@@ -73,6 +73,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
   const [status, setStatus] = useState<AppointmentStatus>('Confirmed');
   const [notes, setNotes] = useState('');
   const [actionSuccessMessage, setActionSuccessMessage] = useState<string | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   // Sync state when opening modal
   useEffect(() => {
@@ -112,6 +113,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
       }
     }
     setActionSuccessMessage(null);
+    setConfirmingDelete(false);
   }, [appointment, isOpen, initialDate, initialTime, initialStaffId, staff, servicesCatalog, members]);
 
   // When service changes, update duration and price
@@ -234,10 +236,12 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
   const handleDelete = () => {
     if (!appointment) return;
-    if (window.confirm && !window.confirm(t('apt_delete_confirm', language))) {
+    if (!confirmingDelete) {
+      setConfirmingDelete(true);
       return;
     }
     deleteAppointment(appointment.id);
+    setConfirmingDelete(false);
     onClose();
   };
 
@@ -316,14 +320,35 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
               </button>
             )}
 
-            <button
-              type="button"
-              onClick={handleDelete}
-              className="p-1.5 text-black/50 dark:text-white/50 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
-              title={t('apt_action_delete_title', language)}
-            >
-              <Trash2 size={15} />
-            </button>
+            {confirmingDelete ? (
+              <div className="flex items-center gap-1.5 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 rounded-xl px-2 py-1">
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="px-2 py-0.5 text-[11px] font-bold rounded-lg bg-rose-600 hover:bg-rose-700 text-white transition-colors cursor-pointer"
+                >
+                  {language === 'ar' ? 'تأكيد الحذف' : language === 'fr' ? 'Confirmer' : 'Confirm'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmingDelete(false)}
+                  aria-label={t('action_cancel', language)}
+                  className="p-0.5 text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white rounded cursor-pointer"
+                >
+                  <X size={13} />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleDelete}
+                aria-label={t('apt_action_delete_title', language)}
+                className="p-1.5 text-black/50 dark:text-white/50 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
+                title={t('apt_action_delete_title', language)}
+              >
+                <Trash2 size={15} />
+              </button>
+            )}
           </div>
         </div>
       )}

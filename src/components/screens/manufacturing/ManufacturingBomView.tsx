@@ -1,594 +1,900 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   Layers,
   Plus,
   Clock,
-  Boxes,
-  CheckCircle2,
   ShieldCheck,
-  DollarSign,
-  Download,
-  Trash2,
   Edit,
   Pin,
   X,
   Save,
   Check,
-  Send,
-  AlertTriangle,
-  Play,
-  Hammer,
+  MapPin,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { ManufacturingBom } from '../../../types';
 import { useManufacturingData } from './manufacturingData';
 import { AtriumButton } from '../../ui/AtriumButton';
-import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
-import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
-
-
+import {
+  ScreenHeaderBar,
+  ScreenKpiBanner,
+  ScreenPod,
+  ScreenCollectionToolbar,
+  ActiveFilterChip,
+  KineticFilterModal,
+  KineticFilterSection,
+  KineticSlideOverInspector,
+  buildBranchesByIdMap,
+  resolveRecordBranch,
+  downloadCsvSafe,
+} from '../../ui/kinetic';
 
 export const ManufacturingBomView: React.FC<any> = () => {
-	const { language, currentBusiness, currentBranch, currentUser, isSyncing, networkMode, isSyncTimeout, retryCloudSync } = useAtriumStore();
-	const isAr = language === "ar";
-	const { boms, addBom, updateBom, deleteBom } = useManufacturingData();
-	const [searchQuery, setSearchQuery] = React.useState("");
-	const [filterActive, setFilterActive] = React.useState("All");
-	const [viewMode, setViewMode] = React.useState("list");
-	const [selectedIds, setSelectedIds] = React.useState(/* @__PURE__ */ new Set());
-	const [pinnedIds, setPinnedIds] = React.useState(/* @__PURE__ */ new Set(["bom_01"]));
-	const [sortBy, setSortBy] = React.useState("bomCode");
-	const [sortDir, setSortDir] = React.useState("asc");
-	const [isModalOpen, setIsModalOpen] = React.useState(false);
-	const [bomToEdit, setBomToEdit] = React.useState<any>(null);
-	const [bomCode, setBomCode] = React.useState("");
-	const [productName, setProductName] = React.useState("");
-	const [batchYield, setBatchYield] = React.useState("1");
-	const [unit, setUnit] = React.useState("Unité");
-	const [laborHours, setLaborHours] = React.useState("10");
-	const [estimatedCost, setEstimatedCost] = React.useState("80000");
-	const [selectedBom, setSelectedBom] = React.useState<any>(() => {
-		return boms[0] || null;
-	});
-	const [activeTab, setActiveTab] = React.useState("fiche");
-	const [inspectorNotes, setInspectorNotes] = React.useState("");
-	const [noteSaved, setNoteSaved] = React.useState(false);
-	const openCreateModal = () => {
-		setBomToEdit(null);
-		setBomCode(`BOM-PRD-${Math.floor(10 + Math.random() * 90)}`);
-		setProductName("");
-		setBatchYield("1");
-		setUnit("Unité");
-		setLaborHours("10");
-		setEstimatedCost("80000");
-		setIsModalOpen(true);
-	};
-	const openEditModal = (b: any) => {
-		setBomToEdit(b);
-		setBomCode(b.bomCode);
-		setProductName(b.finishedProductName);
-		setBatchYield(String(b.batchYield));
-		setUnit(b.unit);
-		setLaborHours(String(b.standardLaborHours));
-		setEstimatedCost(String(b.estimatedCostDzd));
-		setIsModalOpen(true);
-	};
-	const handleSaveModal = (e: any) => {
-		e.preventDefault();
-		if (!bomCode.trim() || !productName.trim()) {
-			showToast(isAr ? "يرجى إدخال رمز التركيبة واسم المنتج" : "Veuillez saisir le code BOM et nom produit", "error");
-			return;
-		}
-		const payload = {
-			id: bomToEdit?.id || `bom_${Date.now()}`,
-			accountId: bomToEdit?.accountId || "acc_01",
-			businessId: currentBusiness?.id || "biz_manufacturing",
-			branchId: currentBranch?.id || "branch_manufacturing_main",
-			staffId: currentUser?.id || "staff_01",
-			finishedProductId: bomToEdit?.finishedProductId || `prod_${Date.now()}`,
-			finishedProductName: productName.trim(),
-			bomCode: bomCode.trim(),
-			batchYield: parseInt(batchYield, 10) || 1,
-			unit: unit.trim(),
-			standardLaborHours: parseFloat(laborHours) || 1,
-			components: bomToEdit?.components || [{
-				rawProductId: "raw_01",
-				rawProductName: "Matière Principale Standard",
-				quantity: 1,
-				unit: "u",
-				unitCostDzd: 4e4
-			}],
-			estimatedCostDzd: parseFloat(estimatedCost) || 5e4,
-			isActive: true,
-			createdAt: bomToEdit?.createdAt || (/* @__PURE__ */ new Date()).toISOString()
-		};
-		if (bomToEdit) {
-			updateBom(payload);
-			if (selectedBom?.id === payload.id) setSelectedBom(payload);
-			showToast(isAr ? "تم تحديث جدول المكونات BOM" : "Nomenclature mise à jour avec succès", "success");
-		} else {
-			addBom(payload);
-			setSelectedBom(payload);
-			showToast(isAr ? "تم إنشاء جدول مكونات جديد" : "Nouvelle nomenclature BOM créée", "success");
-		}
-		setIsModalOpen(false);
-	};
-	const filteredBoms = React.useMemo(() => {
-		return boms.filter((b) => {
-			if (filterActive === "Active" && !b.isActive) return false;
-			if (filterActive === "Inactive" && b.isActive) return false;
-			if (searchQuery.trim()) {
-				const q = searchQuery.toLowerCase();
-				const matchesCode = b.bomCode.toLowerCase().includes(q);
-				const matchesProduct = b.finishedProductName.toLowerCase().includes(q);
-				if (!matchesCode && !matchesProduct) return false;
-			}
-			return true;
-		});
-	}, [
-		boms,
-		filterActive,
-		searchQuery
-	]);
-	const totalComponents = boms.reduce((acc, b) => acc + (b.components?.length || 0), 0);
-	const avgCost = boms.length > 0 ? boms.reduce((acc, b) => acc + b.estimatedCostDzd, 0) / boms.length : 0;
-	const totalHours = boms.reduce((acc, b) => acc + (b.standardLaborHours || 0), 0);
-	const handlePin = (b: any) => {
-		setPinnedIds((prev) => {
-			const next = new Set(prev);
-			if (next.has(b.id)) next.delete(b.id);
-			else next.add(b.id);
-			return next;
-		});
-		showToast(pinnedIds.has(b.id) ? isAr ? "تم إلغاء التثبيت" : "BOM désépinglée" : isAr ? "تم تثبيت التركيبة" : "BOM épinglée", "info");
-	};
-	const handleDelete = (b: any) => {
-		deleteBom(b.id);
-		if (selectedBom?.id === b.id) setSelectedBom(null);
-		showToast(isAr ? "تم حذف جدول المكونات" : "Nomenclature supprimée", "success");
-	};
-	const handleToggleActive = (b: any) => {
-		const updated = {
-			...b,
-			isActive: !b.isActive
-		};
-		updateBom(updated);
-		if (selectedBom?.id === b.id) setSelectedBom(updated);
-		showToast(updated.isActive ? isAr ? "تم تفعيل جدول المكونات" : "BOM activée pour les OF" : isAr ? "تم إيقاف تفعيل التركيبة" : "BOM désactivée", "info");
-	};
-	const handleExportCsv = () => {
-		const headers = [
-			"Code BOM",
-			"Produit Fini",
-			"Rendement Lot",
-			"Unité",
-			"Heures MO",
-			"Coût Estimé DZD",
-			"Statut Actif"
-		];
-		const rows = filteredBoms.map((b) => [
-			b.bomCode,
-			`"${b.finishedProductName.replace(/"/g, "\"\"")}"`,
-			b.batchYield,
-			b.unit,
-			b.standardLaborHours,
-			b.estimatedCostDzd,
-			b.isActive ? "Actif" : "Inactif"
-		]);
-		const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
-		const encodedUri = encodeURI(csvContent);
-		const link = document.createElement("a");
-		link.setAttribute("href", encodedUri);
-		link.setAttribute("download", `nomenclatures_bom_${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}.csv`);
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
-		showToast(isAr ? "تم تصدير ملف BOM CSV" : "Export CSV des BOM généré", "info");
-	};
-	const handleSaveNotes = () => {
-		if (!selectedBom) return;
-		setNoteSaved(true);
-		setTimeout(() => setNoteSaved(false), 2e3);
-		showToast(isAr ? "تم حفظ التوجيهات الهندسية" : "Consignes opératoires enregistrées", "success");
-	};
-	const columns = [
-		{
-			id: "bomCode",
-			header: isAr ? "رمز التركيبة" : "Code BOM",
-			accessorKey: "bomCode",
-			sortable: true,
-			minWidth: "130px",
-			cell: (b: any) => /* @__PURE__ */ <div className="flex items-center gap-2">
-<div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0"><Layers size={16} /></div>
-<div>
-<div className="font-mono font-bold text-xs text-black dark:text-white flex items-center gap-1.5">
-{b.bomCode}
-{pinnedIds.has(b.id) && /* @__PURE__ */ <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />}
-</div>
-<div className="text-[10px] text-black/55 dark:text-white/55">
-{"Rendement: "}
-{b.batchYield}
-{" "}
-{b.unit}
-</div>
-</div>
-</div>
-		},
-		{
-			id: "finishedProduct",
-			header: isAr ? "المنتج النهائي" : "Produit Fini Fabriqué",
-			accessorKey: "finishedProductName",
-			sortable: true,
-			minWidth: "220px",
-			cell: (b: any) => /* @__PURE__ */ <div>
-<div className="font-semibold text-xs text-black dark:text-white line-clamp-1">{b.finishedProductName}</div>
-<div className="text-[11px] text-black/55 dark:text-white/55">
-{b.components?.length || 0}
-{" composants intégrés"}
-</div>
-</div>
-		},
-		{
-			id: "laborHours",
-			header: isAr ? "ساعات العمل" : "Temps Gamme",
-			accessorKey: "standardLaborHours",
-			sortable: true,
-			minWidth: "120px",
-			cell: (b: any) => /* @__PURE__ */ <div className="flex items-center gap-1 text-xs text-black/70 dark:text-white/75">
-<Clock size={13} className="text-[#d4522f] shrink-0" />
-<span className="font-mono font-bold">
-{b.standardLaborHours}
-{" h"}
-</span>
-</div>
-		},
-		{
-			id: "estimatedCost",
-			header: isAr ? "التكلفة المعيارية" : "Coût Standard DZD",
-			accessorKey: "estimatedCostDzd",
-			sortable: true,
-			minWidth: "140px",
-			cell: (b: any) => /* @__PURE__ */ <div className="font-mono font-bold text-xs text-black dark:text-white">{formatMoney(b.estimatedCostDzd)}</div>
-		},
-		{
-			id: "status",
-			header: isAr ? "الحالة" : "Statut",
-			accessorKey: "isActive",
-			sortable: true,
-			minWidth: "110px",
-			cell: (b: any) => /* @__PURE__ */ <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${b.isActive ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-neutral-100 text-black/70 border-neutral-200 dark:bg-neutral-800 dark:text-white/75"}`}>{b.isActive ? "Active" : "Inactif"}</span>
-		}
-	];
-	const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
-		isLoading: isSyncing || networkMode === "force_skeleton",
-		hasCachedData: boms.length > 0
-	});
-	if (showSkeleton && (boms.length === 0 || networkMode === "force_skeleton")) return /* @__PURE__ */ <SkeletonCollectionScreen kpiCount={3} columns={[
-			{
-				width: "2*",
-				minWidth: "140px"
-			},
-			{
-				width: "2.5*",
-				minWidth: "180px"
-			},
-			{
-				width: "1.5*",
-				minWidth: "120px"
-			},
-			{
-				width: "1.5*",
-				minWidth: "120px"
-			},
-			{
-				width: "100px",
-				minWidth: "80px"
-			}
-		]} hasIcon hasFacility hasActionBtn actionBtnWidth={140} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
-	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1">
-<div className="flex items-center gap-3">
-<div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><Layers size={22} /></div>
-<div>
-<div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
-{isAr ? "الوصفات" : language === "en" ? "Recipes" : "Recettes"}
-</h1>
-<span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
-{boms.length}
-{" BOM"}
-</span>
-</div>
-</div>
-</div>
-<div className="flex items-center gap-2 flex-wrap">
-<AtriumButton variant="ghost" size="sm" onClick={handleExportCsv} icon={<Download size={14} />}>{isAr ? "تصدير CSV" : "Export CSV"}</AtriumButton>
-<AtriumButton variant="primary" onClick={openCreateModal} icon={<Plus size={14} />}>{isAr ? "تركيبة جديدة" : "Nouvelle BOM"}</AtriumButton>
-</div>
-</div>
-<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-<div>
-<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
-{isAr ? "هندسة المنتجات والمكونات المعيارية" : "Ingénierie Produits & Standard de Coût"}
-</h2>
-</div>
-<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "جداول المكونات المعتمدة" : "BOM Produits Définies"}</span>
-<div>
-<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{boms.length}</div>
-<p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">
-{"100% "}
-{isAr ? "جاهزة لإطلاق OF" : "prêtes pour production"}
-</p>
-</div>
-</div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "إجمالي المكونات والمواد" : "Composants Intégrés"}</span>
-<div>
-<div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{totalComponents}</div>
-<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">{isAr ? "مواد أولية وقطع وسيطة" : "Matières premières & sous-ensembles"}</p>
-</div>
-</div>
-<div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-<div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-white/80">{isAr ? "متوسط تكلفة التصنيع" : "Coût Moyen Estimé"}</span>
-<span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">Prix Revient</span>
-</div>
-<div>
-<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(avgCost)}</div>
-<p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
-<CheckCircle2 size={11} />
-{totalHours}
-{" "}
-{isAr ? "ساعات عمل تراكمية" : "heures gamme standard"}
-</p>
-</div>
-</div>
-</div>
-</div>
-<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-<div>
-<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
-{isAr ? "قوائم المكونات الصناعية والتركيبات (BOM)" : "Nomenclatures Produits & Formules BOM"}
-</h2>
-</div>
-<div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
-{[
-							{
-								id: "All",
-								label: isAr ? "الكل" : language === "fr" ? "Toutes" : "All",
-								tooltip: isAr ? "جميع التركيبات" : language === "fr" ? "Toutes les nomenclatures BOM" : "All BOM formulas"
-							},
-							{
-								id: "Active",
-								label: isAr ? "سارية" : language === "fr" ? "Actives" : "Active",
-								tooltip: isAr ? "سارية بالإنتاج" : language === "fr" ? "Actives en série" : "Active in production"
-							},
-							{
-								id: "Inactive",
-								label: isAr ? "معطلة" : language === "fr" ? "Inactives" : "Inactive",
-								tooltip: isAr ? "غير نشطة" : language === "fr" ? "Nomenclatures inactives" : "Inactive formulas"
-							}
-						].map((f) => /* @__PURE__ */ <button key={f.id} type="button" onClick={() => setFilterActive(f.id)} title={f.tooltip} className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer" style={{
-								backgroundColor: filterActive === f.id ? "#FCEEE8" : "transparent",
-								color: filterActive === f.id ? "var(--color-accent)" : "#71717A"
-							}}>{f.label}</button>)}
-</div>
-</div>
-<div className="flex items-start gap-4">
-<div className="flex-1 min-w-0">
-<UniversalDataCollection data={filteredBoms} columns={columns} keyExtractor={(b) => b.id} searchQuery={searchQuery} onSearchChange={setSearchQuery} searchPlaceholder={isAr ? "بحث برمز BOM أو اسم المنتج..." : "Rechercher par code BOM, produit fini..."} filterValue={filterActive} onFilterChange={setFilterActive} filterOptions={[
-								{
-									value: "All",
-									label: isAr ? "الكل" : language === "fr" ? "Toutes" : "All",
-									tooltip: isAr ? "جميع التركيبات" : language === "fr" ? "Toutes les nomenclatures" : "All BOM formulas"
-								},
-								{
-									value: "Active",
-									label: isAr ? "سارية" : language === "fr" ? "Actives" : "Active",
-									tooltip: isAr ? "سارية بالإنتاج" : language === "fr" ? "Nomenclatures actives" : "Active formulas"
-								},
-								{
-									value: "Inactive",
-									label: isAr ? "معطلة" : language === "fr" ? "Inactives" : "Inactive",
-									tooltip: isAr ? "غير نشطة" : language === "fr" ? "Nomenclatures inactives" : "Inactive formulas"
-								}
-							]} viewMode={viewMode} onViewModeChange={setViewMode} selectedIds={selectedIds} onSelectionChange={setSelectedIds} pinnedIds={pinnedIds} onPinToggle={handlePin} sortBy={sortBy} sortDir={sortDir} onSortChange={(field, dir) => {
-								setSortBy(field);
-								setSortDir(dir);
-							}} onItemClick={(b) => {
-								setSelectedBom(b);
-							}} onEdit={openEditModal} onDelete={handleDelete} emptyIcon={<Layers size={32} className="text-black/55 dark:text-white/55" />} emptyTitle={isAr ? "لا توجد جداول مكونات" : "Aucune nomenclature trouvée"} emptyDescription={searchQuery ? isAr ? "لا توجد نتائج مطابقة لبحثك" : "Aucune nomenclature ne correspond à votre recherche" : isAr ? "قم بإنشاء أول جدول مكونات لمنتجاتك" : "Créez votre première BOM produit"} customActions={[{
-								id: "toggleActive",
-								label: isAr ? "تبديل الحالة" : "Activer / Suspendre",
-								icon: /* @__PURE__ */ <ShieldCheck size={14} />,
-								onClick: handleToggleActive
-							}]} renderGridCard={(b) => /* @__PURE__ */ <div className="space-y-3">
-<div className="flex items-center justify-between">
-<span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg border border-[#d4522f]/20">{b.bomCode}</span>
-<span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${b.isActive ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : "bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75"}`}>{b.isActive ? "Active" : "Inactif"}</span>
-</div>
-<div>
-<h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">{b.finishedProductName}</h3>
-<div className="text-xs text-black/55 dark:text-white/55 font-medium mt-0.5">
-{b.components?.length || 0}
-{" matières & pièces associées"}
-</div>
-</div>
-<div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-<div>
-<div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">Coût Estimé</div>
-<div className="font-mono font-bold text-black dark:text-white mt-0.5">{formatMoney(b.estimatedCostDzd)}</div>
-</div>
-<div className="text-right">
-<div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">Gamme MO</div>
-<div className="font-mono font-semibold text-black/70 dark:text-white/75 mt-0.5">
-{b.standardLaborHours}
-h
-</div>
-</div>
-</div>
-</div>} />
-</div>
-{selectedBom && /* @__PURE__ */ <div className="w-[390px] shrink-0 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5 space-y-4 shadow-lg animate-in slide-in-from-right-4 duration-200">
-<div className="flex items-start justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-<div className="flex items-center gap-2.5">
-<div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold"><Layers size={18} /></div>
-<div>
-<div className="flex items-center gap-1.5">
-<span className="font-mono font-bold text-xs text-black dark:text-white">{selectedBom.bomCode}</span>
-<span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${selectedBom.isActive ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : "bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75"}`}>{selectedBom.isActive ? "Active" : "Inactif"}</span>
-</div>
-<p className="text-xs font-semibold text-black/70 dark:text-white/75 line-clamp-1">{selectedBom.finishedProductName}</p>
-</div>
-</div>
-<button onClick={() => setSelectedBom(null)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"><X size={16} /></button>
-</div>
-<div className="flex items-center gap-1.5 flex-wrap">
-<button onClick={() => handleToggleActive(selectedBom)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 transition-colors">
-<ShieldCheck size={12} />
-{selectedBom.isActive ? "Désactiver" : "Activer"}
-</button>
-<button onClick={() => openEditModal(selectedBom)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-neutral-100 text-black/70 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-white/75 transition-colors">
-<Edit size={12} />
-{isAr ? "تعديل" : "Modifier"}
-</button>
-<button onClick={() => handleDelete(selectedBom)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 transition-colors ml-auto"><Trash2 size={12} /></button>
-</div>
-<div className="flex border-b border-neutral-100 dark:border-neutral-800 gap-1 text-xs">
-<button onClick={() => setActiveTab("fiche")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "fiche" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "البطاقة" : "Fiche BOM"}</button>
-<button onClick={() => setActiveTab("composants")} className={`pb-2 px-2 font-medium border-b-2 transition-colors flex items-center gap-1 ${activeTab === "composants" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>
-{isAr ? "المكونات" : "Composants"}
-<span className="text-[10px] bg-neutral-100 dark:bg-neutral-800 px-1 rounded-full">{selectedBom.components?.length || 0}</span>
-</button>
-<button onClick={() => setActiveTab("costs")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "costs" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "التكلفة" : "Coûts"}</button>
-<button onClick={() => setActiveTab("notes")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "التعليمات" : "Consignes"}</button>
-</div>
-{activeTab === "fiche" && /* @__PURE__ */ <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
-<div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55">Code Formule:</span>
-<span className="font-mono font-bold text-black dark:text-white">{selectedBom.bomCode}</span>
-</div>
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55">Produit Cible:</span>
-<span className="font-semibold text-black dark:text-white truncate max-w-[190px]">{selectedBom.finishedProductName}</span>
-</div>
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55">Rendement de lot:</span>
-<span className="font-mono font-bold text-[#d4522f]">
-{selectedBom.batchYield}
-{" "}
-{selectedBom.unit}
-</span>
-</div>
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55">Gamme Opératoire:</span>
-<span className="font-mono text-black dark:text-white">
-{selectedBom.standardLaborHours}
-{" heures MO"}
-</span>
-</div>
-</div>
-<div className="p-3 rounded-xl bg-orange-50/50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30 space-y-1">
-<div className="flex justify-between items-center">
-<span className="text-black/70 dark:text-white/75">Coût Standard Unitaire:</span>
-<span className="font-mono font-bold text-black dark:text-white">{formatMoney(selectedBom.estimatedCostDzd)}</span>
-</div>
-</div>
-</div>}
-{activeTab === "composants" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150 max-h-[360px] overflow-y-auto pr-1">
-{(selectedBom.components || []).map((c: any, i: any) => /* @__PURE__ */ <div key={i} className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1">
-<div className="flex items-center justify-between">
-<span className="font-semibold text-black dark:text-white text-[11px]">{c.rawProductName}</span>
-<span className="font-mono font-bold text-black dark:text-white">{formatMoney(c.quantity * c.unitCostDzd)}</span>
-</div>
-<div className="flex items-center justify-between text-[10px] text-black/55 dark:text-white/55">
-<span>
-{"Dose: "}
-{c.quantity}
-{" "}
-{c.unit}
-</span>
-<span>
-{"PU: "}
-{formatMoney(c.unitCostDzd)}
-</span>
-</div>
-</div>)}
-</div>}
-{activeTab === "costs" && /* @__PURE__ */ <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
-<div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55">Matières Premières:</span>
-<span className="font-mono font-bold text-black dark:text-white">
-{formatMoney((selectedBom.components || []).reduce((acc: any, c: any) => acc + c.quantity * c.unitCostDzd, 0))}
-</span>
-</div>
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55">Main d'oeuvre estimée:</span>
-<span className="font-mono text-black dark:text-white">{formatMoney(selectedBom.standardLaborHours * 1500)}</span>
-</div>
-</div>
-</div>}
-{activeTab === "notes" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
-<p className="text-black/55 dark:text-white/55 text-[11px]">Directives techniques d'usinage, tolérances et normes d'assemblage :</p>
-<textarea rows={6} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} placeholder="Noter les étapes opératoires, réglages de coupe, temps de séchage..." className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none" />
-<button onClick={handleSaveNotes} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#d4522f] text-white hover:bg-[#a86246] transition-colors font-medium text-xs shadow-xs">
-{noteSaved ? /* @__PURE__ */ <>
-<Check size={14} />
-{isAr ? "تم الحفظ" : "Consignes enregistrées"}
-</> : /* @__PURE__ */ <>
-<Save size={14} />
-{isAr ? "حفظ" : "Enregistrer"}
-</>}
-</button>
-</div>}
-</div>}
-</div>
-</div>
-{isModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-<div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto">
-<div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-<div className="flex items-center gap-2.5">
-<div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold"><Layers size={20} /></div>
-<div>
-<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-{bomToEdit ? isAr ? "تعديل جدول المكونات (BOM)" : "Modifier la Nomenclature" : isAr ? "إنشاء جدول مكونات جديد (BOM)" : "Nouvelle Nomenclature Produit"}
-</h2>
-<p className="text-xs text-black/55 dark:text-white/55">
-{isAr ? "تحديد مواصفات تصنيع المنتجات والمواد" : "Définition de la recette de fabrication et standard de coût"}
-</p>
-</div>
-</div>
-<button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
-</div>
-<form onSubmit={handleSaveModal} className="space-y-4">
-<div className="grid grid-cols-2 gap-3">
-<LabelInput label={isAr ? "رمز التركيبة *" : "Code BOM *"} placeholder="BOM-TAB-01" value={bomCode} onChange={(e) => setBomCode(e.target.value)} required />
-<LabelInput label={isAr ? "وحدة الإنتاج" : "Unité de lot"} placeholder="Unité, Lot de 10..." value={unit} onChange={(e) => setUnit(e.target.value)} />
-</div>
-<LabelInput label={isAr ? "اسم المنتج النهائي المصنّع *" : "Produit Fini Fabriqué *"} placeholder="Ex: Table Réunion Chêne Massif 3.2m" value={productName} onChange={(e) => setProductName(e.target.value)} required />
-<div className="grid grid-cols-3 gap-3">
-<LabelInput label={isAr ? "الكمية المنتجة" : "Rendement Lot"} type="number" value={batchYield} onChange={(e) => setBatchYield(e.target.value)} />
-<LabelInput label={isAr ? "ساعات العمل" : "Heures MO"} type="number" value={laborHours} onChange={(e) => setLaborHours(e.target.value)} />
-<LabelInput label={isAr ? "التكلفة المعيارية" : "Coût Total DZD"} type="number" value={estimatedCost} onChange={(e) => setEstimatedCost(e.target.value)} />
-</div>
-<div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-<AtriumButton variant="ghost" size="sm" onClick={() => setIsModalOpen(false)}>{isAr ? "إلغاء" : "Annuler"}</AtriumButton>
-<AtriumButton variant="primary" size="sm" type="submit">
-{bomToEdit ? isAr ? "حفظ التعديلات" : "Enregistrer" : isAr ? "إنشاء التركيبة" : "Créer la BOM"}
-</AtriumButton>
-</div>
-</form>
-</div>
-</div>}
-</div>;
+  const {
+    language,
+    currentBusiness,
+    currentBranch,
+    branches,
+    currentUser,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+  } = useAtriumStore();
+  const isAr = language === 'ar';
+  const isEn = language === 'en';
+
+  const { boms, addBom, updateBom, deleteBom } = useManufacturingData();
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterActive, setFilterActive] = useState<string>('All');
+  const [branchFilter, setBranchFilter] = useState<string>('All');
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
+
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const filterButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>(['bom_01']));
+  const [sortBy, setSortBy] = useState<string>('bomCode');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [bomToEdit, setBomToEdit] = useState<ManufacturingBom | null>(null);
+  const [bomCode, setBomCode] = useState('');
+  const [productName, setProductName] = useState('');
+  const [batchYield, setBatchYield] = useState('1');
+  const [unit, setUnit] = useState('Unité');
+  const [laborHours, setLaborHours] = useState('10');
+  const [estimatedCost, setEstimatedCost] = useState('80000');
+
+  const [selectedBom, setSelectedBom] = useState<ManufacturingBom | null>(null);
+  const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('fiche');
+  const [inspectorNotes, setInspectorNotes] = useState('');
+  const [noteSaved, setNoteSaved] = useState(false);
+
+  const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
+
+  const activeBom = useMemo(() => {
+    if (!selectedBom) return null;
+    return boms.find((b) => b.id === selectedBom.id) || selectedBom;
+  }, [selectedBom, boms]);
+
+  const openCreateModal = useCallback(() => {
+    setBomToEdit(null);
+    setBomCode(`BOM-PRD-${Math.floor(10 + Math.random() * 90)}`);
+    setProductName('');
+    setBatchYield('1');
+    setUnit('Unité');
+    setLaborHours('10');
+    setEstimatedCost('80000');
+    setIsModalOpen(true);
+  }, []);
+
+  const openEditModal = useCallback((b: ManufacturingBom) => {
+    setBomToEdit(b);
+    setBomCode(b.bomCode);
+    setProductName(b.finishedProductName);
+    setBatchYield(String(b.batchYield));
+    setUnit(b.unit);
+    setLaborHours(String(b.standardLaborHours));
+    setEstimatedCost(String(b.estimatedCostDzd));
+    setIsModalOpen(true);
+  }, []);
+
+  const handleSaveModal = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bomCode.trim() || !productName.trim()) {
+      showToast(isAr ? 'يرجى إدخال رمز التركيبة واسم المنتج' : 'Veuillez saisir le code BOM et nom produit', 'error');
+      return;
+    }
+    const payload: ManufacturingBom = {
+      id: bomToEdit?.id || `bom_${Date.now()}`,
+      accountId: bomToEdit?.accountId || 'acc_01',
+      businessId: currentBusiness?.id || 'biz_manufacturing',
+      branchId: bomToEdit?.branchId || currentBranch?.id || 'branch_manufacturing_main',
+      staffId: currentUser?.id || 'staff_01',
+      finishedProductId: bomToEdit?.finishedProductId || `prod_${Date.now()}`,
+      finishedProductName: productName.trim(),
+      bomCode: bomCode.trim(),
+      batchYield: parseInt(batchYield, 10) || 1,
+      unit: unit.trim(),
+      standardLaborHours: parseFloat(laborHours) || 1,
+      components: bomToEdit?.components || [
+        {
+          rawProductId: 'raw_01',
+          rawProductName: 'Matière Principale Standard',
+          quantity: 1,
+          unit: 'u',
+          unitCostDzd: 40000,
+        },
+      ],
+      estimatedCostDzd: parseFloat(estimatedCost) || 50000,
+      isActive: bomToEdit?.isActive ?? true,
+      status: bomToEdit?.status || 'Active',
+      createdAt: bomToEdit?.createdAt || new Date().toISOString(),
+    };
+    if (bomToEdit) {
+      updateBom(payload);
+      if (selectedBom?.id === payload.id) setSelectedBom(payload);
+      showToast(isAr ? 'تم تحديث جدول المكونات BOM' : 'Nomenclature mise à jour avec succès', 'success');
+    } else {
+      addBom(payload);
+      showToast(isAr ? 'تم إنشاء جدول مكونات جديد' : 'Nouvelle nomenclature BOM créée', 'success');
+    }
+    setIsModalOpen(false);
+  };
+
+  const activeBomsCount = useMemo(() => boms.filter((b) => b.isActive).length, [boms]);
+  const inactiveBomsCount = useMemo(() => boms.filter((b) => !b.isActive).length, [boms]);
+  const totalComponents = useMemo(() => boms.reduce((acc, b) => acc + (b.components?.length || 0), 0), [boms]);
+  const avgCost = useMemo(
+    () => (boms.length > 0 ? Math.round(boms.reduce((acc, b) => acc + b.estimatedCostDzd, 0) / boms.length) : 0),
+    [boms]
+  );
+
+  const branchCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    boms.forEach((bom) => {
+      const b = resolveRecordBranch(bom, branchesById, currentBranch, language);
+      const key = b.id || b.name;
+      map.set(key, (map.get(key) || 0) + 1);
+    });
+    return map;
+  }, [boms, branchesById, currentBranch, language]);
+
+  const branchOptions = useMemo(() => {
+    const opts: Array<{ value: string; label: string; count: number }> = [
+      { value: 'All', label: isAr ? 'الكل' : isEn ? 'All' : 'Toutes', count: boms.length },
+    ];
+    const seen = new Set<string>();
+    branches.forEach((b) => {
+      if (!seen.has(b.id)) {
+        seen.add(b.id);
+        opts.push({ value: b.id, label: b.name, count: branchCounts.get(b.id) || 0 });
+      }
+    });
+    if (seen.size === 0 && currentBranch) {
+      opts.push({
+        value: currentBranch.id,
+        label: currentBranch.name,
+        count: branchCounts.get(currentBranch.id) || boms.length,
+      });
+    }
+    return opts;
+  }, [branches, currentBranch, branchCounts, boms.length, isAr, isEn]);
+
+  const filteredBoms = useMemo(() => {
+    return boms.filter((bom) => {
+      if (filterActive === 'Active' && !bom.isActive) return false;
+      if (filterActive === 'Inactive' && bom.isActive) return false;
+      if (branchFilter !== 'All') {
+        const b = resolveRecordBranch(bom, branchesById, currentBranch, language);
+        if ((b.id || b.name) !== branchFilter) return false;
+      }
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const b = resolveRecordBranch(bom, branchesById, currentBranch, language);
+        const matches =
+          bom.bomCode.toLowerCase().includes(q) ||
+          bom.finishedProductName.toLowerCase().includes(q) ||
+          b.name.toLowerCase().includes(q);
+        if (!matches) return false;
+      }
+      return true;
+    });
+  }, [boms, filterActive, branchFilter, searchQuery, branchesById, currentBranch, language]);
+
+  const sortedBoms = useMemo(() => {
+    const list = [...filteredBoms];
+    list.sort((a, b) => {
+      const aPinned = pinnedIds.has(a.id);
+      const bPinned = pinnedIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+      let cmp = 0;
+      if (sortBy === 'bomCode') cmp = a.bomCode.localeCompare(b.bomCode);
+      else if (sortBy === 'finishedProduct') cmp = a.finishedProductName.localeCompare(b.finishedProductName);
+      else if (sortBy === 'laborHours') cmp = a.standardLaborHours - b.standardLaborHours;
+      else if (sortBy === 'estimatedCost') cmp = a.estimatedCostDzd - b.estimatedCostDzd;
+      else if (sortBy === 'branch') {
+        const ba = resolveRecordBranch(a, branchesById, currentBranch, language).name;
+        const bb = resolveRecordBranch(b, branchesById, currentBranch, language).name;
+        cmp = ba.localeCompare(bb);
+      }
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+    return list;
+  }, [filteredBoms, pinnedIds, sortBy, sortDir, branchesById, currentBranch, language]);
+
+  const handlePin = useCallback((b: ManufacturingBom) => {
+    setPinnedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(b.id)) next.delete(b.id);
+      else next.add(b.id);
+      return next;
+    });
+  }, []);
+
+  const handleDelete = useCallback(
+    (b: ManufacturingBom) => {
+      deleteBom(b.id);
+      if (selectedBom?.id === b.id) setSelectedBom(null);
+      showToast(isAr ? 'تم حذف جدول المكونات' : 'Nomenclature supprimée', 'success');
+    },
+    [deleteBom, selectedBom?.id, isAr]
+  );
+
+  const handleBulkDelete = useCallback(
+    (ids: Set<string>) => {
+      ids.forEach((id) => deleteBom(id));
+      if (selectedBom && ids.has(selectedBom.id)) setSelectedBom(null);
+      setSelectedIds(new Set());
+      showToast(isAr ? 'تم حذف الجداول المحددة' : 'Nomenclatures sélectionnées supprimées', 'success');
+    },
+    [deleteBom, selectedBom, isAr]
+  );
+
+  const handleToggleActive = useCallback(
+    (b: ManufacturingBom) => {
+      const updated: ManufacturingBom = { ...b, isActive: !b.isActive, status: !b.isActive ? 'Active' : 'Archived' };
+      updateBom(updated);
+      if (selectedBom?.id === b.id) setSelectedBom(updated);
+      showToast(
+        updated.isActive
+          ? isAr ? 'تم تفعيل جدول المكونات' : 'BOM activée pour les OF'
+          : isAr ? 'تم إيقاف تفعيل التركيبة' : 'BOM désactivée',
+        'info'
+      );
+    },
+    [updateBom, selectedBom?.id, isAr]
+  );
+
+  const handleSelectBom = useCallback((b: ManufacturingBom, openerEl?: HTMLElement | null) => {
+    setSelectedBom(b);
+    setDrawerOpenerEl(openerEl || null);
+    setActiveTab('fiche');
+    setInspectorNotes('');
+    setNoteSaved(false);
+  }, []);
+
+  const handleExportCsv = useCallback(() => {
+    const headers = ['Code BOM', 'Produit Fini', 'Branche', 'Rendement Lot', 'Unité', 'Heures MO', 'Coût Estimé DZD', 'Statut Actif'];
+    const rows = sortedBoms.map((bom) => {
+      const b = resolveRecordBranch(bom, branchesById, currentBranch, language);
+      return [
+        bom.bomCode,
+        bom.finishedProductName,
+        b.name,
+        bom.batchYield,
+        bom.unit,
+        bom.standardLaborHours,
+        bom.estimatedCostDzd,
+        bom.isActive ? 'Actif' : 'Inactif',
+      ];
+    });
+    downloadCsvSafe(`nomenclatures_bom_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
+    showToast(isAr ? 'تم تصدير ملف BOM CSV' : 'Export CSV des BOM généré', 'info');
+  }, [sortedBoms, branchesById, currentBranch, language, isAr]);
+
+  const handleSaveNotes = () => {
+    if (!activeBom) return;
+    setNoteSaved(true);
+    setTimeout(() => setNoteSaved(false), 2000);
+    showToast(isAr ? 'تم حفظ التوجيهات الهندسية' : 'Consignes opératoires enregistrées', 'success');
+  };
+
+  const activeFiltersCount = branchFilter !== 'All' ? 1 : 0;
+  const hasAnyFilters = filterActive !== 'All' || branchFilter !== 'All' || searchQuery.trim().length > 0;
+
+  const resetAllFilters = useCallback(() => {
+    setSearchQuery('');
+    setFilterActive('All');
+    setBranchFilter('All');
+  }, []);
+
+  const activeChips: ActiveFilterChip[] = useMemo(() => {
+    const chips: ActiveFilterChip[] = [];
+    if (filterActive !== 'All') {
+      chips.push({ key: 'active', label: filterActive, onRemove: () => setFilterActive('All') });
+    }
+    if (branchFilter !== 'All') {
+      const bLabel = branchOptions.find((b) => b.value === branchFilter)?.label || branchFilter;
+      chips.push({ key: 'branch', label: bLabel, onRemove: () => setBranchFilter('All') });
+    }
+    return chips;
+  }, [filterActive, branchFilter, branchOptions]);
+
+  const filterSections: KineticFilterSection[] = useMemo(
+    () => [
+      {
+        id: 'activeStatus',
+        label: isAr ? 'حالة التفعيل' : isEn ? 'Status' : 'Statut Nomenclature',
+        value: filterActive,
+        onChange: setFilterActive,
+        kind: 'segmented',
+        options: [
+          { value: 'All', label: isAr ? 'الكل' : 'Toutes', count: boms.length },
+          { value: 'Active', label: isAr ? 'سارية' : 'Actives', count: activeBomsCount },
+          { value: 'Inactive', label: isAr ? 'معطلة' : 'Inactives', count: inactiveBomsCount },
+        ],
+      },
+      {
+        id: 'branch',
+        label: isAr ? 'المصنع / الفرع' : isEn ? 'Branch' : 'Unité / Branche',
+        value: branchFilter,
+        onChange: setBranchFilter,
+        kind: 'tiles',
+        columns: 2,
+        options: branchOptions,
+      },
+    ],
+    [filterActive, branchFilter, boms.length, activeBomsCount, inactiveBomsCount, branchOptions, isAr, isEn]
+  );
+
+  const columns: ColumnDefinition<ManufacturingBom>[] = useMemo(
+    () => [
+      {
+        key: 'bomCode',
+        header: isAr ? 'رمز التركيبة' : 'Code BOM',
+        width: '2.0*',
+        sortable: true,
+        renderCell: (b) => (
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0">
+              <Layers size={16} />
+            </div>
+            <div className="min-w-0">
+              <div className="font-mono font-bold text-xs text-black dark:text-white flex items-center gap-1.5">
+                {b.bomCode}
+                {pinnedIds.has(b.id) && <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />}
+              </div>
+              <div className="text-[10px] text-black/55 dark:text-white/55">
+                Rendement: {b.batchYield} {b.unit}
+              </div>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'finishedProduct',
+        header: isAr ? 'المنتج النهائي' : 'Produit Fini Fabriqué',
+        width: '2.8*',
+        sortable: true,
+        renderCell: (b) => (
+          <div className="min-w-0">
+            <div className="font-semibold text-xs text-black dark:text-white truncate">{b.finishedProductName}</div>
+            <div className="text-[11px] text-black/55 dark:text-white/55">{b.components?.length || 0} composants intégrés</div>
+          </div>
+        ),
+      },
+      {
+        key: 'branch',
+        header: isAr ? 'المصنع' : isEn ? 'Branch' : 'Unité',
+        width: '1.8*',
+        sortable: true,
+        renderCell: (bom) => {
+          const b = resolveRecordBranch(bom, branchesById, currentBranch, language);
+          return (
+            <div className="text-xs font-medium text-black/75 dark:text-white/75 truncate flex items-center gap-1.5">
+              <MapPin size={12} className="text-[#d4522f] shrink-0" />
+              <span className="truncate">{b.name}</span>
+            </div>
+          );
+        },
+      },
+      {
+        key: 'laborHours',
+        header: isAr ? 'ساعات العمل' : 'Temps Gamme',
+        width: '1.3*',
+        sortable: true,
+        renderCell: (b) => (
+          <div className="flex items-center gap-1 text-xs text-black/70 dark:text-white/75">
+            <Clock size={13} className="text-[#d4522f] shrink-0" />
+            <span className="font-mono font-bold">{b.standardLaborHours} h</span>
+          </div>
+        ),
+      },
+      {
+        key: 'estimatedCost',
+        header: isAr ? 'التكلفة المعيارية' : 'Coût Standard DZD',
+        width: '1.6*',
+        sortable: true,
+        renderCell: (b) => (
+          <div className="font-mono font-bold text-xs text-black dark:text-white">{formatMoney(b.estimatedCostDzd, language)}</div>
+        ),
+      },
+      {
+        key: 'status',
+        header: isAr ? 'الحالة' : 'Statut',
+        width: '1.2*',
+        renderCell: (b) => (
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+              b.isActive
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                : 'bg-neutral-100 text-black/70 border-neutral-200 dark:bg-neutral-800 dark:text-white/75'
+            }`}
+          >
+            {b.isActive ? 'Active' : 'Inactif'}
+          </span>
+        ),
+      },
+    ],
+    [pinnedIds, branchesById, currentBranch, language, isAr, isEn]
+  );
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: boms.length > 0,
+  });
+
+  if (showSkeleton && (boms.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2*', minWidth: '140px' },
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn
+        actionBtnWidth={140}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
+
+  const activeBranchInfo = activeBom ? resolveRecordBranch(activeBom, branchesById, currentBranch, language) : null;
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200">
+      <ScreenHeaderBar
+        icon={<Layers size={22} />}
+        title={isAr ? 'الوصفات' : isEn ? 'Recipes' : 'Recettes'}
+        subtitle={
+          isAr
+            ? `${boms.length} تركيبة BOM · ${totalComponents} مكون صناعي`
+            : `${boms.length} nomenclatures BOM · ${totalComponents} composants intégrés`
+        }
+        primaryAction={{
+          label: isAr ? 'تركيبة جديدة' : 'Nouvelle BOM',
+          onClick: openCreateModal,
+          icon: <Plus size={16} strokeWidth={2.2} />,
+        }}
+      />
+
+      <ScreenKpiBanner
+        heading={isAr ? 'هندسة المنتجات والمكونات المعيارية' : 'Ingénierie Produits & Standard de Coût'}
+        language={language}
+        primaryCard={{
+          label: isAr ? 'جداول المكونات السارية' : 'BOM Actives en Série',
+          badgeText: isAr ? 'جاهزة لإطلاق OF' : 'Actives',
+          count: activeBomsCount,
+          tone: 'emerald',
+          isActive: filterActive === 'Active',
+          onToggle: () => setFilterActive((prev) => (prev === 'Active' ? 'All' : 'Active')),
+        }}
+        secondaryCard={{
+          label: isAr ? 'تركيبات موقوفة / أرشيف' : 'BOM Suspendues / Inactives',
+          badgeText: isAr ? 'قيد المراجعة' : 'Inactives',
+          count: inactiveBomsCount,
+          tone: 'terracotta',
+          isActive: filterActive === 'Inactive',
+          onToggle: () => setFilterActive((prev) => (prev === 'Inactive' ? 'All' : 'Inactive')),
+        }}
+        darkCard={{
+          label: isAr ? 'متوسط تكلفة التصنيع المعيارية' : 'Coût Moyen Estimé (Prix Revient)',
+          badgeCount: totalComponents,
+          badgePrefix: '',
+          badgeSuffix: isAr ? 'مكون' : 'composants',
+          valueCount: avgCost,
+          valuePrefix: '',
+          valueSuffix: ' DA',
+          formatValue: (v) => formatMoney(v, language),
+          caption: isAr ? 'تقدير معياري شامل للمواد وساعات التشغيل' : 'Matériaux & gammes opératoires',
+        }}
+      />
+
+      <ScreenPod>
+        <ScreenCollectionToolbar
+          title={isAr ? 'قوائم المكونات الصناعية والتركيبات (BOM)' : 'Nomenclatures Produits & Formules BOM'}
+          liveRegionText={`${sortedBoms.length} BOM`}
+          language={language}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder={isAr ? 'بحث برمز BOM أو اسم المنتج...' : 'Rechercher par code BOM, produit fini...'}
+          statusOptions={[
+            { value: 'All', label: isAr ? 'الكل' : isEn ? 'All' : 'Toutes', count: boms.length },
+            { value: 'Active', label: isAr ? 'سارية' : isEn ? 'Active' : 'Actives', count: activeBomsCount },
+            { value: 'Inactive', label: isAr ? 'معطلة' : isEn ? 'Inactive' : 'Inactives', count: inactiveBomsCount },
+          ]}
+          statusValue={filterActive}
+          onStatusChange={setFilterActive}
+          hasActiveAdvancedFilters={activeFiltersCount > 0}
+          activeFiltersCount={activeFiltersCount}
+          isFilterModalOpen={isFilterModalOpen}
+          filterButtonRef={filterButtonRef}
+          onToggleFilterModal={() => setIsFilterModalOpen((prev) => !prev)}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          onExport={handleExportCsv}
+          activeChips={activeChips}
+          onResetAllFilters={resetAllFilters}
+        />
+
+        <UniversalDataCollection
+          hideToolbar
+          data={sortedBoms}
+          keyExtractor={(b) => b.id}
+          defaultViewMode={viewMode}
+          columns={columns}
+          sortBy={sortBy}
+          sortDirection={sortDir}
+          onSortChange={(field, dir) => {
+            setSortBy(field);
+            setSortDir(dir);
+          }}
+          selectedIds={selectedIds}
+          onSelectionChange={setSelectedIds}
+          onBulkDelete={handleBulkDelete}
+          isPinned={(b) => pinnedIds.has(b.id)}
+          onTogglePin={handlePin}
+          openItemId={activeBom?.id}
+          onItemClick={handleSelectBom}
+          onViewDetails={handleSelectBom}
+          onEdit={openEditModal}
+          onDelete={handleDelete}
+          customActions={(b) => [
+            {
+              id: 'toggleActive',
+              label: isAr ? 'تبديل الحالة' : b.isActive ? 'Suspendre' : 'Activer',
+              icon: <ShieldCheck size={14} />,
+              onClick: () => handleToggleActive(b),
+            },
+          ]}
+          renderCard={(b) => (
+            <div className="space-y-3 w-full">
+              <div className="flex items-center justify-between">
+                <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg border border-[#d4522f]/20">
+                  {b.bomCode}
+                </span>
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    b.isActive
+                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                      : 'bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75'
+                  }`}
+                >
+                  {b.isActive ? 'Active' : 'Inactif'}
+                </span>
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">{b.finishedProductName}</h3>
+                <div className="text-xs text-black/55 dark:text-white/55 font-medium mt-0.5">
+                  {b.components?.length || 0} matières & pièces associées
+                </div>
+              </div>
+              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
+                <div>
+                  <div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">Coût Estimé</div>
+                  <div className="font-mono font-bold text-black dark:text-white mt-0.5">{formatMoney(b.estimatedCostDzd, language)}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">Gamme MO</div>
+                  <div className="font-mono font-semibold text-black/70 dark:text-white/75 mt-0.5">{b.standardLaborHours}h</div>
+                </div>
+              </div>
+            </div>
+          )}
+          emptyTitle={isAr ? 'لا توجد جداول مكونات' : 'Aucune nomenclature trouvée'}
+          emptyDescription={
+            searchQuery
+              ? isAr ? 'لا توجد نتائج مطابقة لبحثك' : 'Aucune nomenclature ne correspond à votre recherche'
+              : isAr ? 'قم بإنشاء أول جدول مكونات لمنتجاتك' : 'Créez votre première BOM produit'
+          }
+          primaryActionLabel={isAr ? 'تركيبة جديدة' : 'Nouvelle BOM'}
+          onAddFirstItem={openCreateModal}
+          onResetFilters={resetAllFilters}
+          hasActiveFilters={hasAnyFilters}
+        />
+      </ScreenPod>
+
+      <KineticFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        triggerRef={filterButtonRef}
+        language={language}
+        displayCount={sortedBoms.length}
+        entityPluralLabel={isAr ? 'تركيبة BOM' : isEn ? 'BOMs' : 'nomenclatures'}
+        hasActiveFilters={activeFiltersCount > 0 || filterActive !== 'All'}
+        onResetFilters={() => {
+          setFilterActive('All');
+          setBranchFilter('All');
+        }}
+        sections={filterSections}
+      />
+
+      <KineticSlideOverInspector
+        isOpen={Boolean(activeBom)}
+        item={activeBom}
+        allItems={sortedBoms}
+        keyExtractor={(b) => b.id}
+        openerElement={drawerOpenerEl}
+        language={language}
+        title={activeBom?.bomCode || ''}
+        subtitle={activeBom?.finishedProductName || ''}
+        avatarText="BOM"
+        branchName={activeBranchInfo?.name}
+        statusLabel={activeBom?.isActive ? (isAr ? 'سارية' : 'Active') : isAr ? 'معطلة' : 'Inactif'}
+        statusClassName={
+          activeBom?.isActive
+            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300'
+            : 'bg-neutral-100 text-neutral-700 border border-neutral-200 dark:bg-neutral-800 dark:text-neutral-300'
+        }
+        tabs={[
+          { id: 'fiche', label: isAr ? 'البطاقة' : 'Fiche BOM' },
+          { id: 'composants', label: isAr ? 'المكونات' : `Composants (${activeBom?.components?.length || 0})` },
+          { id: 'costs', label: isAr ? 'التكلفة' : 'Coûts' },
+          { id: 'notes', label: isAr ? 'التعليمات' : 'Consignes' },
+        ]}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onSelectItem={(b) => handleSelectBom(b)}
+        onClose={() => setSelectedBom(null)}
+        onDelete={handleDelete}
+        holdToDelete
+        renderBody={(bom, tab) => (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 flex-wrap">
+              <AtriumButton
+                type="button"
+                variant="outline"
+                size="sm"
+                icon={<ShieldCheck size={13} />}
+                onClick={() => handleToggleActive(bom)}
+              >
+                {bom.isActive ? (isAr ? 'تعطيل' : 'Désactiver') : isAr ? 'تفعيل' : 'Activer'}
+              </AtriumButton>
+              <AtriumButton
+                type="button"
+                variant="outline"
+                size="sm"
+                icon={<Edit size={13} />}
+                onClick={() => openEditModal(bom)}
+              >
+                {isAr ? 'تعديل' : 'Modifier'}
+              </AtriumButton>
+              <AtriumButton
+                type="button"
+                variant="ghost"
+                size="sm"
+                icon={<Pin size={13} />}
+                onClick={() => handlePin(bom)}
+              >
+                {pinnedIds.has(bom.id) ? (isAr ? 'مثبت' : 'Épinglé') : isAr ? 'تثبيت' : 'Épingler'}
+              </AtriumButton>
+            </div>
+
+            {tab === 'fiche' && (
+              <div className="space-y-3.5 text-xs">
+                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl space-y-2 border border-neutral-100 dark:border-neutral-800">
+                  <div className="flex justify-between items-center py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
+                    <span className="text-black/55 dark:text-white/55">Code Formule:</span>
+                    <span className="font-mono font-bold text-black dark:text-white">{bom.bomCode}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
+                    <span className="text-black/55 dark:text-white/55">Produit Cible:</span>
+                    <span className="font-semibold text-black dark:text-white truncate max-w-[200px]">{bom.finishedProductName}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
+                    <span className="text-black/55 dark:text-white/55">Rendement de lot:</span>
+                    <span className="font-mono font-bold text-[#d4522f]">
+                      {bom.batchYield} {bom.unit}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-1">
+                    <span className="text-black/55 dark:text-white/55">Gamme Opératoire:</span>
+                    <span className="font-mono text-black dark:text-white">{bom.standardLaborHours} heures MO</span>
+                  </div>
+                </div>
+                <div className="p-3.5 rounded-xl bg-orange-50/50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30">
+                  <div className="flex justify-between items-center">
+                    <span className="text-black/70 dark:text-white/75">Coût Standard Unitaire:</span>
+                    <span className="font-mono font-bold text-[#d4522f]">{formatMoney(bom.estimatedCostDzd, language)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {tab === 'composants' && (
+              <div className="space-y-2.5 text-xs">
+                {(bom.components || []).map((c, i) => (
+                  <div
+                    key={i}
+                    className="p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-black dark:text-white text-[11px]">{c.rawProductName}</span>
+                      <span className="font-mono font-bold text-black dark:text-white">
+                        {formatMoney(c.quantity * c.unitCostDzd, language)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] text-black/55 dark:text-white/55">
+                      <span>
+                        Dose: {c.quantity} {c.unit}
+                      </span>
+                      <span>PU: {formatMoney(c.unitCostDzd, language)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {tab === 'costs' && (
+              <div className="space-y-3.5 text-xs">
+                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl space-y-2 border border-neutral-100 dark:border-neutral-800">
+                  <div className="flex justify-between items-center py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
+                    <span className="text-black/55 dark:text-white/55">Matières Premières:</span>
+                    <span className="font-mono font-bold text-black dark:text-white">
+                      {formatMoney(
+                        (bom.components || []).reduce((acc, c) => acc + c.quantity * c.unitCostDzd, 0),
+                        language
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-1">
+                    <span className="text-black/55 dark:text-white/55">Main d'oeuvre estimée:</span>
+                    <span className="font-mono text-black dark:text-white">
+                      {formatMoney(bom.standardLaborHours * 1500, language)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {tab === 'notes' && (
+              <div className="space-y-3 text-xs">
+                <p className="text-black/55 dark:text-white/55 text-[11px]">
+                  Directives techniques d'usinage, tolérances et normes d'assemblage :
+                </p>
+                <textarea
+                  rows={6}
+                  value={inspectorNotes}
+                  onChange={(e) => setInspectorNotes(e.target.value)}
+                  placeholder="Noter les étapes opératoires, réglages de coupe, temps de séchage..."
+                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none"
+                />
+                <AtriumButton
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  className="w-full justify-center"
+                  icon={noteSaved ? <Check size={14} /> : <Save size={14} />}
+                  onClick={handleSaveNotes}
+                >
+                  {noteSaved ? (isAr ? 'تم الحفظ' : 'Consignes enregistrées') : isAr ? 'حفظ' : 'Enregistrer'}
+                </AtriumButton>
+              </div>
+            )}
+          </div>
+        )}
+      />
+
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold">
+                  <Layers size={20} />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                    {bomToEdit
+                      ? isAr ? 'تعديل جدول المكونات (BOM)' : 'Modifier la Nomenclature'
+                      : isAr ? 'إنشاء جدول مكونات جديد (BOM)' : 'Nouvelle Nomenclature Produit'}
+                  </h2>
+                  <p className="text-xs text-black/55 dark:text-white/55">
+                    {isAr ? 'تحديد مواصفات تصنيع المنتجات والمواد' : 'Définition de la recette de fabrication et standard de coût'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                onClick={() => setIsModalOpen(false)}
+                className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={handleSaveModal} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  label={isAr ? 'رمز التركيبة *' : 'Code BOM *'}
+                  placeholder="BOM-TAB-01"
+                  value={bomCode}
+                  onChange={(e) => setBomCode(e.target.value)}
+                  required
+                />
+                <LabelInput
+                  label={isAr ? 'وحدة الإنتاج' : 'Unité de lot'}
+                  placeholder="Unité, Lot de 10..."
+                  value={unit}
+                  onChange={(e) => setUnit(e.target.value)}
+                />
+              </div>
+              <LabelInput
+                label={isAr ? 'اسم المنتج النهائي المصنّع *' : 'Produit Fini Fabriqué *'}
+                placeholder="Ex: Table Réunion Chêne Massif 3.2m"
+                value={productName}
+                onChange={(e) => setProductName(e.target.value)}
+                required
+              />
+              <div className="grid grid-cols-3 gap-3">
+                <LabelInput
+                  label={isAr ? 'الكمية المنتجة' : 'Rendement Lot'}
+                  type="number"
+                  value={batchYield}
+                  onChange={(e) => setBatchYield(e.target.value)}
+                />
+                <LabelInput
+                  label={isAr ? 'ساعات العمل' : 'Heures MO'}
+                  type="number"
+                  value={laborHours}
+                  onChange={(e) => setLaborHours(e.target.value)}
+                />
+                <LabelInput
+                  label={isAr ? 'التكلفة المعيارية' : 'Coût Total DZD'}
+                  type="number"
+                  value={estimatedCost}
+                  onChange={(e) => setEstimatedCost(e.target.value)}
+                />
+              </div>
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                <AtriumButton type="button" variant="ghost" size="sm" onClick={() => setIsModalOpen(false)}>
+                  {isAr ? 'إلغاء' : 'Annuler'}
+                </AtriumButton>
+                <AtriumButton variant="primary" size="sm" type="submit">
+                  {bomToEdit ? (isAr ? 'حفظ التعديلات' : 'Enregistrer') : isAr ? 'إنشاء التركيبة' : 'Créer la BOM'}
+                </AtriumButton>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };

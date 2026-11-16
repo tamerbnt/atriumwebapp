@@ -77,6 +77,8 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
             </div>
           </div>
           <button
+            type="button"
+            aria-label={isAr ? 'إغلاق' : 'Fermer'}
             onClick={onClose}
             className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"
           >

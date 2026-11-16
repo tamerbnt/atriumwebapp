@@ -15,7 +15,7 @@ import {
 import { Appointment } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { AtriumButton } from '../../ui/AtriumButton';
-import { formatMoney } from '../../../utils/rules';
+import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -504,7 +504,7 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
             ? resolveRecordBranch(receiptAppointment, branchesById, currentBranch, language).name
             : undefined
         }
-        statusLabel={receiptAppointment?.status}
+        statusLabel={receiptAppointment ? localizeStatus(receiptAppointment.status, language) : undefined}
         statusClassName={
           receiptAppointment?.status === 'Completed'
             ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'

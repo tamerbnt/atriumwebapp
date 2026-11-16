@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Users,
   Clock,
   DollarSign,
   History,
+  MapPin,
 } from 'lucide-react';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useStaffFoundation } from '../../common/staff/useStaffFoundation';
@@ -13,15 +14,18 @@ import { QuickPointageModal } from '../../common/staff/QuickPointageModal';
 import { StaffModal } from '../../modals/StaffModal';
 import { StaffInspectorDrawer } from '../../common/StaffInspectorDrawer';
 import { StaffMember } from '../../../types/index';
+import { useAtriumStore } from '../../../services/store';
 import { StaffAttendanceSubView } from '../../common/staff/StaffAttendanceSubView';
 import { StaffPayrollSubView } from '../../common/staff/StaffPayrollSubView';
 import { StaffHistorySubView } from '../../common/staff/StaffHistorySubView';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
-import { ScreenPod } from '../../ui/kinetic';
+import { ScreenPod, buildBranchesByIdMap, resolveRecordBranch } from '../../ui/kinetic';
 
 export const MembershipStaffView: React.FC<any> = () => {
   const foundation = useStaffFoundation({ category: 'membership_session' });
   const { isAr, isEn, language } = foundation;
+  const currentBranch = useAtriumStore((s) => s.currentBranch);
+  const branchesById = useMemo(() => buildBranchesByIdMap(foundation.branches), [foundation.branches]);
 
   const columns: ColumnDefinition<StaffMember>[] = [
     {
@@ -139,6 +143,22 @@ export const MembershipStaffView: React.FC<any> = () => {
           {member.contractType || member.recruitmentType || 'CDI'}
         </span>
       ),
+    },
+    {
+      id: 'branch',
+      key: 'branch',
+      header: isAr ? 'الفرع' : isEn ? 'Branch' : 'Agence',
+      accessorKey: 'facilityId',
+      sortable: true,
+      renderCell: (member) => {
+        const b = resolveRecordBranch(member, branchesById, currentBranch, language);
+        return (
+          <div className="flex items-center gap-1 text-xs text-black/75 dark:text-white/75 truncate">
+            <MapPin size={12} className="text-[#d4522f] shrink-0" />
+            <span className="truncate">{b.name}</span>
+          </div>
+        );
+      },
     },
     {
       id: 'salary',

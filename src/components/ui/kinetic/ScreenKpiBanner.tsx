@@ -188,13 +188,13 @@ export const ScreenKpiBanner: React.FC<ScreenKpiBannerProps> = React.memo(({
             <span className="text-[12px] font-medium text-white/75 truncate">
               {darkCard.label}
             </span>
-            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/25 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-0.5 rtl:group-hover:translate-x-0.5 shrink-0">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/25 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-0.5 rtl:group-hover:translate-x-0.5 shrink-0">
               <span ref={darkChipCountRef}>
                 {darkCard.formatBadgeValue
                   ? darkCard.formatBadgeValue(darkCard.badgeCount)
                   : `${darkCard.badgePrefix ?? '+'}${darkCard.badgeCount}`}
               </span>
-              {darkCard.badgeSuffix ? ` ${darkCard.badgeSuffix}` : ''}
+              {darkCard.badgeSuffix ? <span>{darkCard.badgeSuffix.trim()}</span> : null}
             </span>
           </div>
           <div className="relative z-10">

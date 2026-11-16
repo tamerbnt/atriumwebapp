@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { SecurityDepositRecord } from '../../../types/index';
-import { formatCurrencyAmount } from '../../../utils/rules';
+import { formatCurrencyAmount, localizeStatus } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { LabelInput } from '../../ui/LabelInput';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -687,7 +687,7 @@ export const VenueFinanceView: React.FC = () => {
             ? resolveRecordBranch(activeDeposit, branchesById, currentBranch, language).name
             : undefined
         }
-        statusLabel={activeDeposit?.status}
+        statusLabel={activeDeposit ? localizeStatus(activeDeposit.status, language) : undefined}
         tabs={[
           { id: 'caution', label: isAr ? 'الضمان والوديعة' : 'Caution' },
           { id: 'degradations', label: isAr ? 'الأضرار والاقتطاع' : 'Dégradations' },
@@ -703,7 +703,7 @@ export const VenueFinanceView: React.FC = () => {
                   <div className="flex items-center justify-between text-white/80 text-[11px]">
                     <span>Montant Caution Sous Séquestre</span>
                     <span className="bg-[#3D2817] text-[#FB923C] text-[10px] font-bold px-2 py-0.5 rounded-full">
-                      {dep.status}
+                      {localizeStatus(dep.status, language)}
                     </span>
                   </div>
                   <div className="text-2xl font-black tracking-tight text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">

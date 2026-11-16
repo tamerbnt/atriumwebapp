@@ -14,6 +14,13 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 
+const extractStr = (v: unknown): string =>
+  typeof v === 'string'
+    ? v
+    : typeof v === 'number'
+    ? String(v)
+    : (v as { target?: { value?: string } })?.target?.value ?? '';
+
 interface LogisticsShipmentModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -210,6 +217,8 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
             </div>
           </div>
           <button
+            type="button"
+            aria-label={isAr ? 'إغلاق' : 'Fermer'}
             onClick={onClose}
             className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"
           >
@@ -308,7 +317,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
             <LabelSelect
               label={isAr ? 'ولاية الوجهة' : 'Wilaya de Destination'}
               value={destinationWilaya}
-              onChange={setDestinationWilaya}
+              onChange={(v) => setDestinationWilaya(extractStr(v))}
               options={wilayaOptions}
             />
             <LabelInput

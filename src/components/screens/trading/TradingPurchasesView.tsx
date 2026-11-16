@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { PurchaseDocument, CommercialDocument } from '../../../types';
-import { formatMoney } from '../../../utils/rules';
+import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
@@ -693,7 +693,7 @@ export const TradingPurchasesView: React.FC = () => {
         branchName={
           inspectingDoc ? resolveRecordBranch(inspectingDoc, branchesById, currentBranch, language).name : undefined
         }
-        statusLabel={inspectingDoc?.status}
+        statusLabel={inspectingDoc ? localizeStatus(inspectingDoc.status, language) : undefined}
         onClose={() => setInspectingDoc(null)}
         onSelectItem={(doc) => setInspectingDoc(doc)}
         renderBody={(doc) => (

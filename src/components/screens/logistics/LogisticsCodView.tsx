@@ -1,439 +1,1097 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   CreditCard,
-  DollarSign,
   CheckCircle2,
   ArrowUpRight,
   Building2,
   Send,
-  ShieldCheck,
-  Package,
   Truck,
   Printer,
-  Eye,
-  Check,
-  X,
   Share2,
-  Clock,
-  Receipt,
-  FileText,
-  AlertTriangle,
   UserCheck,
+  MapPin,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
-import { LogisticsShipment, CourierCashDischarge, MerchantRemittanceBatch } from '../../../types';
+import { formatMoney } from '../../../utils/rules';
+import { LogisticsShipment } from '../../../types';
 import { useLogisticsData } from './logisticsData';
 import { AtriumButton } from '../../ui/AtriumButton';
-import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
-import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
 import { AlgeriePosteSfp01Modal } from './AlgeriePosteSfp01Modal';
 import { calculateDriverPayout } from '../../../utils/logisticsRules';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
-
-
+import {
+  ScreenHeaderBar,
+  ScreenKpiBanner,
+  ScreenPod,
+  ScreenCollectionToolbar,
+  ActiveFilterChip,
+  KineticFilterModal,
+  KineticFilterSection,
+  KineticSlideOverInspector,
+  buildBranchesByIdMap,
+  resolveRecordBranch,
+  downloadCsvSafe,
+} from '../../ui/kinetic';
 
 export const LogisticsCodView: React.FC<any> = () => {
-	const { language, isSyncing, networkMode, retryCloudSync } = useAtriumStore();
-	const isAr = language === "ar";
-	const { shipments, discharges, remittances, executeRemittance } = useLogisticsData();
-	const [settledIds, setSettledIds] = React.useState(["shp_01"]);
-	const [selectedShipment, setSelectedShipment] = React.useState<any>(null);
-	const [isSfp01ModalOpen, setIsSfp01ModalOpen] = React.useState(false);
-	const [activeTab, setActiveTab] = React.useState("shipments");
-	const formatMoney = (amount: any) => {
-		return `${amount.toLocaleString()} DZD`;
-	};
-	const deliveredShipments = shipments.filter((s) => s.status === "Delivered");
-	const totalCodCollected = deliveredShipments.reduce((acc, s) => acc + s.codAmountDzd, 0);
-	const totalShippingFees = deliveredShipments.reduce((acc, s) => acc + s.shippingFeeDzd, 0);
-	const totalNetToMerchants = totalCodCollected - totalShippingFees;
-	const handleSettle = (id: any, merchant: any, netAmount: any) => {
-		if (!settledIds.includes(id)) {
-			setSettledIds((prev) => [...prev, id]);
-			showToast(isAr ? `تم تحويل مستحقات التاجر (${formatMoney(netAmount)}) بنجاح` : `Virement net de ${formatMoney(netAmount)} validé pour ${merchant}`, "success");
-		}
-	};
-	const salariedDriverPay = calculateDriverPayout({
-		employmentType: "salaried",
-		completedDeliveries: 18,
-		returnedDeliveries: 2,
-		baseSalaryMonthlyDzd: 48e3,
-		fuelAllowanceDzd: 1500
-	});
-	const freelanceDriverPay = calculateDriverPayout({
-		employmentType: "freelance_commission",
-		completedDeliveries: 26,
-		returnedDeliveries: 3,
-		commissionPerDeliveredDzd: 220,
-		commissionPerReturnDzd: 50,
-		fuelAllowanceDzd: 1e3,
-		withholdingTaxRatePercent: 5
-	});
-	const getCodActions = (s: any) => {
-		const net = s.codAmountDzd - s.shippingFeeDzd;
-		const isSettled = settledIds.includes(s.id);
-		return [
-			{
-				label: isAr ? "معاينة التسوية" : "Consulter Détail",
-				icon: /* @__PURE__ */ <Eye size={14} />,
-				onClick: () => setSelectedShipment(s)
-			},
-			...!isSettled ? [{
-				label: isAr ? "تحويل للمتجر" : "Virer Net",
-				icon: /* @__PURE__ */ <Send size={14} />,
-				onClick: () => handleSettle(s.id, s.merchantName, net)
-			}] : [],
-			{
-				label: isAr ? "وصل التحويل" : "Reçu Virement",
-				icon: /* @__PURE__ */ <Printer size={14} />,
-				onClick: () => {
-					showToast(isAr ? `طباعة كشف تحويل المستحقات للطرد ${s.trackingCode}` : `Bordereau de reversement émis pour ${s.trackingCode}`, "info");
-				}
-			},
-			{
-				label: isAr ? "إشعار التاجر" : "Avis SMS",
-				icon: /* @__PURE__ */ <Share2 size={14} />,
-				onClick: () => {
-					showToast(isAr ? `تم إرسال إشعار الدفع إلى ${s.merchantName}` : `Notification SMS de reversement envoyée à ${s.merchantName}`, "success");
-				}
-			}
-		];
-	};
-	const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
-		isLoading: isSyncing || networkMode === "force_skeleton",
-		hasCachedData: deliveredShipments.length > 0
-	});
-	if (showSkeleton && (deliveredShipments.length === 0 || networkMode === "force_skeleton")) return /* @__PURE__ */ <SkeletonCollectionScreen kpiCount={3} columns={[
-			{
-				width: "2.5*",
-				minWidth: "180px"
-			},
-			{
-				width: "1.5*",
-				minWidth: "120px"
-			},
-			{
-				width: "1.5*",
-				minWidth: "120px"
-			},
-			{
-				width: "1.2*",
-				minWidth: "100px"
-			},
-			{
-				width: "100px",
-				minWidth: "80px"
-			}
-		]} viewMode="list" isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
-	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1">
-<div className="flex items-center gap-3">
-<div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs"><CreditCard size={22} /></div>
-<div>
-<div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
-{isAr ? "تحصيل COD" : language === "en" ? "COD Cash" : "Caisse COD"}
-</h1>
-<span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Paiement à la Livraison</span>
-</div>
-</div>
-</div>
-<div className="flex items-center gap-2 flex-wrap">
-<AtriumButton variant="outline" size="sm" onClick={() => setIsSfp01ModalOpen(true)} icon={<Building2 size={14} />}>{isAr ? "بريد الجزائر SFP 01 / B1" : "Export CCP SFP 01"}</AtriumButton>
-<AtriumButton variant="primary" size="sm" onClick={() => {
-							showToast(isAr ? "تم تصدير كشف تسوية COD للمتاجر" : "Bordereau de reversement exporté", "info");
-							window.print();
-						}} icon={<ArrowUpRight size={14} />}>{isAr ? "تصدير كشف التسوية" : "Bordereau Marchands"}</AtriumButton>
-</div>
-</div>
-<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-<div>
-<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
-{isAr ? "مؤشرات صندوق التحصيل وأموال التجار" : "Trésorerie des Encaissements & Reversements"}
-</h2>
-</div>
-<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "إجمالي المقبوض نقداً عند الاستلام" : "Total Brut Encaissé (Livreurs)"}</span>
-<div>
-<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalCodCollected)}</div>
-<p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">
-{deliveredShipments.length}
-{" "}
-{isAr ? "طرد تم تسليمه بنجاح" : "expéditions encaissées"}
-</p>
-</div>
-</div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "رسوم التوصيل المستحقة للشركة" : "Commissions & Frais Livraison"}</span>
-<div>
-<div className="text-2xl font-bold tracking-tight text-[#d4522f] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalShippingFees)}</div>
-<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">Chiffre d'affaires prestations</p>
-</div>
-</div>
-<div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-<div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-white/80">{isAr ? "صافي مستحقات المتاجر للتحويل" : "Solde Net à Reverser"}</span>
-<span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">Marchands</span>
-</div>
-<div>
-<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalNetToMerchants)}</div>
-<p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
-<CheckCircle2 size={11} />
-Prêt pour virement CCP / BaridiMob
-</p>
-</div>
-</div>
-</div>
-</div>
-<LiveSegmentedControl value={activeTab} onChange={(val) => setActiveTab(val)} size="sm" options={[
-					{
-						id: "shipments",
-						label: isAr ? "تسويات" : language === "fr" ? "Colis" : "Parcels",
-						tooltip: isAr ? "تسويات الطرود المسلّمة" : language === "fr" ? "Rapprochement Colis" : "Delivered parcels reconciliation",
-						count: deliveredShipments.length
-					},
-					{
-						id: "discharges",
-						label: isAr ? "تبرئة" : language === "fr" ? "Décharges" : "Discharges",
-						tooltip: isAr ? "تبرئة الذمة ومستندات السائقين" : language === "fr" ? "Bons de Décharge" : "Courier discharge vouchers",
-						count: discharges.length
-					},
-					{
-						id: "remittances",
-						label: isAr ? "دفعات" : language === "fr" ? "Lots" : "Batches",
-						tooltip: isAr ? "دفعات حوالات CCP SFP 01" : language === "fr" ? "Lots CCP SFP 01" : "Postal remittance batches (CCP SFP 01)",
-						count: remittances.length
-					},
-					{
-						id: "driver_payroll",
-						label: isAr ? "أجور" : language === "fr" ? "Paie" : "Payroll",
-						tooltip: isAr ? "أجور وعمولات السائقين" : language === "fr" ? "Paie Livreurs" : "Driver payroll & commissions"
-					}
-				]} />
-{activeTab === "shipments" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-<div className="flex items-center justify-between">
-<div>
-<h2 className="text-sm font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{isAr ? "طرود جاهزة لتسوية المستحقات" : "Colis Livrés & Encaissements"}</h2>
-</div>
-<div className="text-xs font-mono font-bold text-[#d4522f]">
-{deliveredShipments.length}
-{" "}
-{isAr ? "طرد" : "colis"}
-</div>
-</div>
-<UniversalDataCollection items={deliveredShipments} keyExtractor={(s) => s.id} defaultViewMode="list" selectedIds={new Set(settledIds)} onSelectionChange={(newSet) => setSettledIds(Array.from(newSet))} onItemClick={setSelectedShipment} customActions={getCodActions} columns={[
-						{
-							id: "code",
-							header: "AWB",
-							width: "130px",
-							renderCell: (s: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs text-[#d4522f]">{s.trackingCode}</span>
-						},
-						{
-							id: "merchant",
-							header: isAr ? "المتجر والتاريخ" : "Marchand / E-Boutique",
-							renderCell: (s: any) => /* @__PURE__ */ <div>
-<div className="font-semibold text-xs text-black dark:text-white">{s.merchantName}</div>
-<div className="text-[11px] text-black/55 dark:text-white/55">
-{s.createdAt.split("T")[0]}
-{" • Dest: "}
-{s.recipientName}
-</div>
-</div>
-						},
-						{
-							id: "cod",
-							header: "Brut Encaissé",
-							width: "120px",
-							renderCell: (s: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs text-black dark:text-white">{formatMoney(s.codAmountDzd)}</span>
-						},
-						{
-							id: "fee",
-							header: "Commission",
-							width: "110px",
-							renderCell: (s: any) => /* @__PURE__ */ <span className="font-mono text-xs text-black/55 dark:text-white/55">
--
-{formatMoney(s.shippingFeeDzd)}
-</span>
-						},
-						{
-							id: "net",
-							header: "Net Marchand",
-							width: "120px",
-							renderCell: (s: any) => /* @__PURE__ */ <span className="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400">{formatMoney(s.codAmountDzd - s.shippingFeeDzd)}</span>
-						},
-						{
-							id: "settled",
-							header: "Statut",
-							width: "110px",
-							renderCell: (s: any) => {
-								const isSettled = settledIds.includes(s.id);
-								return /* @__PURE__ */ <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isSettled ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300" : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"}`}>{isSettled ? "Viré" : "À Régler"}</span>;
-							}
-						}
-					]} />
-</div>}
-{activeTab === "discharges" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-3">
-<div className="flex items-center justify-between">
-<div>
-<h3 className="text-sm font-bold text-black dark:text-white">
-{isAr ? "محاضر تبرئة ذمة السائقين (Double-Lock Vault)" : "Registre des Billets de Décharge Chauffeurs"}
-</h3>
-</div>
-<span className="text-xs font-mono font-bold text-black/70 dark:text-white/75">
-{discharges.length}
-{" procès-verbaux"}
-</span>
-</div>
-<div className="overflow-x-auto">
-<table className="w-full text-left text-xs">
-<thead>
-<tr className="border-b border-neutral-200 dark:border-neutral-700 text-black/55 dark:text-white/55 font-medium">
-<th className="py-2 px-3">N° Décharge</th>
-<th className="py-2 px-3">Chauffeur</th>
-<th className="py-2 px-3">Date & Heure</th>
-<th className="py-2 px-3 text-right">Attendu</th>
-<th className="py-2 px-3 text-right">Compté</th>
-<th className="py-2 px-3 text-right">Écart</th>
-<th className="py-2 px-3">Statut</th>
-<th className="py-2 px-3 text-right">Action</th>
-</tr>
-</thead>
-<tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 font-mono">
-{discharges.map((d) => /* @__PURE__ */ <tr key={d.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40">
-<td className="py-2.5 px-3 font-bold text-[#d4522f]">{d.dischargeNumber}</td>
-<td className="py-2.5 px-3 font-sans font-semibold text-black dark:text-white">{d.courierStaffId}</td>
-<td className="py-2.5 px-3 text-black/55 dark:text-white/55">{d.timestamp.replace("T", " ").slice(0, 16)}</td>
-<td className="py-2.5 px-3 text-right">{formatMoney(d.expectedCodDzd)}</td>
-<td className="py-2.5 px-3 text-right font-bold text-black dark:text-white">{formatMoney(d.actualCashTurnedInDzd)}</td>
-<td className={`py-2.5 px-3 text-right font-bold ${d.discrepancyDzd === 0 ? "text-emerald-600" : d.discrepancyDzd < 0 ? "text-red-600" : "text-blue-600"}`}>{d.discrepancyDzd === 0 ? "0 DZD" : `${d.discrepancyDzd} DZD`}</td>
-<td className="py-2.5 px-3 font-sans">
-<span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${d.status === "Clean" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300" : "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300"}`}>{d.status === "Clean" ? "Décharge Conforme" : "Manquant (Shortage)"}</span>
-</td>
-<td className="py-2.5 px-3 text-right font-sans">
-<AtriumButton variant="ghost" size="xs" onClick={() => {
-												showToast(isAr ? "طباعة محضر التبرئة" : "Impression décharge", "info");
-												window.print();
-											}} icon={<Printer size={12} />}>Reçu</AtriumButton>
-</td>
-</tr>)}
-</tbody>
-</table>
-</div>
-</div>}
-{activeTab === "remittances" && /* @__PURE__ */ <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-3">
-<div className="flex items-center justify-between">
-<div>
-<h3 className="text-sm font-bold text-black dark:text-white">
-{isAr ? "دفعات التحويل البريدي للتجار (Algérie Poste & BaridiMob)" : "Lots de Règlements E-Commerçants"}
-</h3>
-</div>
-<AtriumButton variant="primary" size="sm" onClick={() => setIsSfp01ModalOpen(true)} icon={<Building2 size={14} />}>{isAr ? "تصدير SFP 01" : "Générer Fichier ASCII"}</AtriumButton>
-</div>
-<div className="overflow-x-auto">
-<table className="w-full text-left text-xs">
-<thead>
-<tr className="border-b border-neutral-200 dark:border-neutral-700 text-black/55 dark:text-white/55 font-medium">
-<th className="py-2 px-3">Lot N°</th>
-<th className="py-2 px-3">Commerçant</th>
-<th className="py-2 px-3">Compte CCP / Clé</th>
-<th className="py-2 px-3">Canal</th>
-<th className="py-2 px-3 text-right">Net à Verser</th>
-<th className="py-2 px-3">Statut</th>
-<th className="py-2 px-3 text-right">Action</th>
-</tr>
-</thead>
-<tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 font-mono">
-{remittances.map((r) => /* @__PURE__ */ <tr key={r.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40">
-<td className="py-2.5 px-3 font-bold text-[#d4522f]">{r.batchNumber}</td>
-<td className="py-2.5 px-3 font-sans font-semibold text-black dark:text-white">{r.merchantName}</td>
-<td className="py-2.5 px-3 text-black/70 dark:text-white/75">
-{r.ccpAccount}
-{" "}
-<span className="text-[#d4522f] font-bold">
-{"Clé "}
-{r.ccpKey}
-</span>
-</td>
-<td className="py-2.5 px-3 font-sans">
-<span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">{r.paymentChannel}</span>
-</td>
-<td className="py-2.5 px-3 text-right font-bold text-emerald-600 dark:text-emerald-400">{formatMoney(r.netPayoutDzd)}</td>
-<td className="py-2.5 px-3 font-sans">
-<span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${r.status === "Executed" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300" : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"}`}>{r.status === "Executed" ? "Exécuté" : "En Attente"}</span>
-</td>
-<td className="py-2.5 px-3 text-right font-sans">
-{r.status !== "Executed" ? /* @__PURE__ */ <AtriumButton variant="primary" size="xs" onClick={() => {
-												executeRemittance(r.id);
-												showToast(isAr ? `تم تنفيذ التحويل للدفعة ${r.batchNumber}` : `Virement ${r.batchNumber} exécuté`, "success");
-											}} icon={<Send size={12} />}>Exécuter</AtriumButton> : /* @__PURE__ */ <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">Archivé</span>}
-</td>
-</tr>)}
-</tbody>
-</table>
-</div>
-</div>}
-{activeTab === "driver_payroll" && /* @__PURE__ */ <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-<div className="p-5 rounded-[24px] bg-[#F3EDE7] dark:bg-[#141312] border border-[#E6DED6] dark:border-[#33302D] space-y-4">
-<div className="flex items-center gap-2.5">
-<div className="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold"><Truck size={18} /></div>
-<div>
-<h3 className="font-bold text-sm text-black dark:text-white">{isAr ? "سائق أجير دائم (Salarié CDI)" : "Chauffeur Salarié Flotte Interne"}</h3>
-</div>
-</div>
-<div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 space-y-2 text-xs">
-<div className="flex justify-between">
-<span className="text-black/55 dark:text-white/55">Base Journalière (48 000 DZD / 26j):</span>
-<span className="font-mono font-bold">1 846 DZD</span>
-</div>
-<div className="flex justify-between">
-<span className="text-black/55 dark:text-white/55">Prime de Rendement (18 colis × 50 DZD):</span>
-<span className="font-mono font-bold text-emerald-600">+900 DZD</span>
-</div>
-<div className="flex justify-between">
-<span className="text-black/55 dark:text-white/55">Indemnité Carburant / Péage:</span>
-<span className="font-mono font-bold">+1 500 DZD</span>
-</div>
-<div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex justify-between font-bold text-sm">
-<span>Net Journalier à Payer:</span>
-<span className="font-mono text-[#d4522f]">{formatMoney(salariedDriverPay.netPayoutDzd)}</span>
-</div>
-</div>
-</div>
-<div className="p-5 rounded-[24px] bg-[#F3EDE7] dark:bg-[#141312] border border-[#E6DED6] dark:border-[#33302D] space-y-4">
-<div className="flex items-center gap-2.5">
-<div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold"><UserCheck size={18} /></div>
-<div>
-<h3 className="font-bold text-sm text-black dark:text-white">
-{isAr ? "سائق مقاول ذاتي (Auto-Entrepreneur)" : "Livreur Sous-Traitant Auto-Entrepreneur"}
-</h3>
-</div>
-</div>
-<div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 space-y-2 text-xs">
-<div className="flex justify-between">
-<span className="text-black/55 dark:text-white/55">Colis Livrés (26 × 220 DZD):</span>
-<span className="font-mono font-bold">5 720 DZD</span>
-</div>
-<div className="flex justify-between">
-<span className="text-black/55 dark:text-white/55">Retours Traités (3 × 50 DZD):</span>
-<span className="font-mono font-bold">+150 DZD</span>
-</div>
-<div className="flex justify-between text-red-600">
-<span>Retenue Impôt Libératoire IFU 5%:</span>
-<span className="font-mono font-bold">
--
-{formatMoney(freelanceDriverPay.taxWithheldDzd)}
-</span>
-</div>
-<div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex justify-between font-bold text-sm">
-<span>Net Viré au Chauffeur:</span>
-<span className="font-mono text-emerald-600 dark:text-emerald-400">{formatMoney(freelanceDriverPay.netPayoutDzd)}</span>
-</div>
-</div>
-</div>
-</div>}
-<AlgeriePosteSfp01Modal isOpen={isSfp01ModalOpen} onClose={() => setIsSfp01ModalOpen(false)} batches={remittances} />
-</div>;
+  const {
+    language,
+    currentBranch,
+    branches,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+  } = useAtriumStore();
+  const isAr = language === 'ar';
+  const isEn = language === 'en';
+
+  const { shipments, discharges, remittances, executeRemittance } = useLogisticsData();
+
+  const [settledIds, setSettledIds] = useState<string[]>(['ship_02']);
+  const [selectedShipment, setSelectedShipment] = useState<LogisticsShipment | null>(null);
+  const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<string>('summary');
+
+  const [isSfp01ModalOpen, setIsSfp01ModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>('shipments');
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [settlementFilter, setSettlementFilter] = useState<string>('All');
+  const [branchFilter, setBranchFilter] = useState<string>('All');
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
+
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const filterButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>());
+  const [sortBy, setSortBy] = useState<string>('trackingCode');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
+  const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
+
+  const deliveredShipments = useMemo(
+    () => shipments.filter((s) => s.status === 'Delivered'),
+    [shipments]
+  );
+
+  const settledCount = useMemo(
+    () => deliveredShipments.filter((s) => settledIds.includes(s.id)).length,
+    [deliveredShipments, settledIds]
+  );
+  const pendingCount = deliveredShipments.length - settledCount;
+
+  const totalCodCollected = useMemo(
+    () => deliveredShipments.reduce((acc, s) => acc + s.codAmountDzd, 0),
+    [deliveredShipments]
+  );
+  const totalShippingFees = useMemo(
+    () => deliveredShipments.reduce((acc, s) => acc + s.shippingFeeDzd, 0),
+    [deliveredShipments]
+  );
+  const totalNetToMerchants = totalCodCollected - totalShippingFees;
+
+  const activeShipment = useMemo(() => {
+    if (!selectedShipment) return null;
+    return deliveredShipments.find((s) => s.id === selectedShipment.id) || selectedShipment;
+  }, [selectedShipment, deliveredShipments]);
+
+  const branchCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    deliveredShipments.forEach((s) => {
+      const b = resolveRecordBranch(s, branchesById, currentBranch, language);
+      const key = b.id || b.name;
+      map.set(key, (map.get(key) || 0) + 1);
+    });
+    return map;
+  }, [deliveredShipments, branchesById, currentBranch, language]);
+
+  const branchOptions = useMemo(() => {
+    const opts: Array<{ value: string; label: string; count: number }> = [
+      { value: 'All', label: isAr ? 'الكل' : isEn ? 'All' : 'Toutes', count: deliveredShipments.length },
+    ];
+    const seen = new Set<string>();
+    branches.forEach((b) => {
+      if (!seen.has(b.id)) {
+        seen.add(b.id);
+        opts.push({ value: b.id, label: b.name, count: branchCounts.get(b.id) || 0 });
+      }
+    });
+    if (seen.size === 0 && currentBranch) {
+      opts.push({
+        value: currentBranch.id,
+        label: currentBranch.name,
+        count: branchCounts.get(currentBranch.id) || deliveredShipments.length,
+      });
+    }
+    return opts;
+  }, [branches, branchCounts, currentBranch, deliveredShipments.length, isAr, isEn]);
+
+  const filteredShipments = useMemo(() => {
+    return deliveredShipments.filter((s) => {
+      const isSettled = settledIds.includes(s.id);
+      if (settlementFilter === 'Settled' && !isSettled) return false;
+      if (settlementFilter === 'Pending' && isSettled) return false;
+      if (branchFilter !== 'All') {
+        const b = resolveRecordBranch(s, branchesById, currentBranch, language);
+        if (b.id !== branchFilter && b.name !== branchFilter) return false;
+      }
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        if (
+          !s.trackingCode.toLowerCase().includes(q) &&
+          !(s.merchantName || '').toLowerCase().includes(q) &&
+          !s.recipientName.toLowerCase().includes(q) &&
+          !s.destinationWilaya.toLowerCase().includes(q)
+        ) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [
+    deliveredShipments,
+    settledIds,
+    settlementFilter,
+    branchFilter,
+    searchQuery,
+    branchesById,
+    currentBranch,
+    language,
+  ]);
+
+  const sortedShipments = useMemo(() => {
+    const list = [...filteredShipments];
+    list.sort((a, b) => {
+      const aPinned = pinnedIds.has(a.id);
+      const bPinned = pinnedIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (sortBy === 'trackingCode') {
+        const cmp = a.trackingCode.localeCompare(b.trackingCode);
+        return sortDir === 'asc' ? cmp : -cmp;
+      }
+      if (sortBy === 'merchant') {
+        const cmp = (a.merchantName || '').localeCompare(b.merchantName || '');
+        return sortDir === 'asc' ? cmp : -cmp;
+      }
+      if (sortBy === 'branch') {
+        const ba = resolveRecordBranch(a, branchesById, currentBranch, language).name;
+        const bb = resolveRecordBranch(b, branchesById, currentBranch, language).name;
+        const cmp = ba.localeCompare(bb);
+        return sortDir === 'asc' ? cmp : -cmp;
+      }
+      if (sortBy === 'net') {
+        const cmp = (a.codAmountDzd - a.shippingFeeDzd) - (b.codAmountDzd - b.shippingFeeDzd);
+        return sortDir === 'asc' ? cmp : -cmp;
+      }
+      return 0;
+    });
+    return list;
+  }, [filteredShipments, pinnedIds, sortBy, sortDir, branchesById, currentBranch, language]);
+
+  const handleSettle = useCallback(
+    (id: string, merchant: string, netAmount: number) => {
+      if (!settledIds.includes(id)) {
+        setSettledIds((prev) => [...prev, id]);
+        showToast(
+          isAr
+            ? `تم تحويل مستحقات التاجر (${formatMoney(netAmount, language)}) بنجاح`
+            : `Virement net de ${formatMoney(netAmount, language)} validé pour ${merchant}`,
+          'success'
+        );
+      }
+    },
+    [settledIds, isAr, language]
+  );
+
+  const handleSelectShipment = useCallback(
+    (s: LogisticsShipment, originEl?: HTMLElement | null) => {
+      if (originEl) setDrawerOpenerEl(originEl);
+      setSelectedShipment(s);
+      setInspectorTab('summary');
+    },
+    []
+  );
+
+  const handleTogglePin = useCallback((s: LogisticsShipment) => {
+    setPinnedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(s.id)) next.delete(s.id);
+      else next.add(s.id);
+      return next;
+    });
+  }, []);
+
+  const handleExportCsv = useCallback(() => {
+    const headers = [
+      'AWB',
+      'Marchand',
+      'Destinataire',
+      'Agence / Hub',
+      'Brut Encaissé (DZD)',
+      'Commission (DZD)',
+      'Net Marchand (DZD)',
+      'Statut',
+    ];
+    const rows = sortedShipments.map((s) => {
+      const b = resolveRecordBranch(s, branchesById, currentBranch, language);
+      const isSettled = settledIds.includes(s.id);
+      return [
+        s.trackingCode,
+        s.merchantName || '',
+        s.recipientName,
+        b.name,
+        s.codAmountDzd,
+        s.shippingFeeDzd,
+        s.codAmountDzd - s.shippingFeeDzd,
+        isSettled ? 'Viré' : 'À Régler',
+      ];
+    });
+    downloadCsvSafe(
+      `caisse_cod_${new Date().toISOString().slice(0, 10)}.csv`,
+      headers,
+      rows
+    );
+    showToast(isAr ? 'تم تصدير كشف تسوية COD' : 'Bordereau de reversement CSV exporté', 'info');
+  }, [sortedShipments, branchesById, currentBranch, language, settledIds, isAr]);
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (settlementFilter !== 'All') count += 1;
+    if (branchFilter !== 'All') count += 1;
+    return count;
+  }, [settlementFilter, branchFilter]);
+
+  const activeChips = useMemo<ActiveFilterChip[]>(() => {
+    const chips: ActiveFilterChip[] = [];
+    if (settlementFilter !== 'All') {
+      chips.push({
+        key: 'settlement',
+        label: settlementFilter === 'Settled' ? (isAr ? 'تم التحويل' : 'Virés') : isAr ? 'قيد التسوية' : 'À Régler',
+        onRemove: () => setSettlementFilter('All'),
+      });
+    }
+    if (branchFilter !== 'All') {
+      const opt = branchOptions.find((o) => o.value === branchFilter);
+      chips.push({
+        key: 'branch',
+        label: opt?.label || branchFilter,
+        onRemove: () => setBranchFilter('All'),
+      });
+    }
+    return chips;
+  }, [settlementFilter, branchFilter, branchOptions, isAr]);
+
+  const resetAllFilters = useCallback(() => {
+    setSearchQuery('');
+    setSettlementFilter('All');
+    setBranchFilter('All');
+  }, []);
+
+  const filterSections = useMemo<KineticFilterSection[]>(
+    () => [
+      {
+        id: 'settlement',
+        kind: 'segmented',
+        label: isAr ? 'حالة التحويل للتاجر' : isEn ? 'Settlement Status' : 'Statut Reversement',
+        value: settlementFilter,
+        onChange: setSettlementFilter,
+        options: [
+          { value: 'All', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous', count: deliveredShipments.length },
+          { value: 'Pending', label: isAr ? 'قيد التسوية' : isEn ? 'Pending' : 'À Régler', count: pendingCount },
+          { value: 'Settled', label: isAr ? 'محوّل' : isEn ? 'Settled' : 'Virés', count: settledCount },
+        ],
+      },
+      {
+        id: 'branch',
+        kind: 'tiles',
+        label: isAr ? 'الفرع / المستودع' : isEn ? 'Branch / Hub' : 'Agence / Hub',
+        value: branchFilter,
+        onChange: setBranchFilter,
+        options: branchOptions,
+      },
+    ],
+    [isAr, isEn, settlementFilter, branchFilter, deliveredShipments.length, pendingCount, settledCount, branchOptions]
+  );
+
+  const salariedDriverPay = useMemo(
+    () =>
+      calculateDriverPayout({
+        employmentType: 'salaried',
+        completedDeliveries: 18,
+        returnedDeliveries: 2,
+        baseSalaryMonthlyDzd: 48000,
+        fuelAllowanceDzd: 1500,
+      }),
+    []
+  );
+  const freelanceDriverPay = useMemo(
+    () =>
+      calculateDriverPayout({
+        employmentType: 'freelance_commission',
+        completedDeliveries: 26,
+        returnedDeliveries: 3,
+        commissionPerDeliveredDzd: 220,
+        commissionPerReturnDzd: 50,
+        fuelAllowanceDzd: 1000,
+        withholdingTaxRatePercent: 5,
+      }),
+    []
+  );
+
+  const columns: ColumnDefinition<LogisticsShipment>[] = useMemo(
+    () => [
+      {
+        key: 'trackingCode',
+        header: 'AWB',
+        width: '1.3*',
+        sortable: true,
+        renderCell: (s) => (
+          <span className="font-mono font-bold text-xs text-[#d4522f]">{s.trackingCode}</span>
+        ),
+      },
+      {
+        key: 'merchant',
+        header: isAr ? 'المتجر والتاريخ' : 'Marchand / E-Boutique',
+        width: '2.2*',
+        sortable: true,
+        renderCell: (s) => (
+          <div className="min-w-0">
+            <div className="font-semibold text-xs text-black dark:text-white truncate">
+              {s.merchantName}
+            </div>
+            <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
+              {s.createdAt.split('T')[0]} • Dest: {s.recipientName}
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'branch',
+        header: isAr ? 'الفرع' : isEn ? 'Branch' : 'Agence',
+        width: '1.4*',
+        sortable: true,
+        renderCell: (s) => {
+          const b = resolveRecordBranch(s, branchesById, currentBranch, language);
+          return (
+            <div className="flex items-center gap-1 text-xs text-black/75 dark:text-white/75 truncate">
+              <MapPin size={12} className="text-[#d4522f] shrink-0" />
+              <span className="truncate">{b.name}</span>
+            </div>
+          );
+        },
+      },
+      {
+        key: 'cod',
+        header: 'Brut Encaissé',
+        width: '1.2*',
+        renderCell: (s) => (
+          <span className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">
+            {formatMoney(s.codAmountDzd, language)}
+          </span>
+        ),
+      },
+      {
+        key: 'fee',
+        header: 'Commission',
+        width: '1.1*',
+        renderCell: (s) => (
+          <span className="font-mono text-xs text-black/55 dark:text-white/55 tabular-nums">
+            -{formatMoney(s.shippingFeeDzd, language)}
+          </span>
+        ),
+      },
+      {
+        key: 'net',
+        header: 'Net Marchand',
+        width: '1.3*',
+        sortable: true,
+        renderCell: (s) => (
+          <span className="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400 tabular-nums">
+            {formatMoney(s.codAmountDzd - s.shippingFeeDzd, language)}
+          </span>
+        ),
+      },
+      {
+        key: 'settled',
+        header: isAr ? 'الحالة' : 'Statut',
+        width: '1.0*',
+        renderCell: (s) => {
+          const isSettled = settledIds.includes(s.id);
+          return (
+            <span
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                isSettled
+                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                  : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+              }`}
+            >
+              {isSettled ? (isAr ? 'محوّل' : 'Viré') : isAr ? 'قيد التسوية' : 'À Régler'}
+            </span>
+          );
+        },
+      },
+    ],
+    [settledIds, isAr, isEn, branchesById, currentBranch, language]
+  );
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: deliveredShipments.length > 0,
+  });
+
+  if (showSkeleton && (deliveredShipments.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200">
+      <ScreenHeaderBar
+        icon={<CreditCard size={22} />}
+        title={isAr ? 'تحصيل COD' : isEn ? 'COD Cash' : 'Caisse COD'}
+        subtitle={
+          isAr
+            ? `الدفع عند الاستلام · ${deliveredShipments.length} طرد مُسلّم`
+            : `Paiement à la Livraison · ${deliveredShipments.length} expéditions encaissées`
+        }
+        primaryAction={{
+          label: isAr ? 'بريد الجزائر SFP 01 / B1' : 'Export CCP SFP 01',
+          icon: <Building2 size={14} />,
+          onClick: () => setIsSfp01ModalOpen(true),
+          dataAction: 'open-sfp01-modal',
+        }}
+        secondaryActions={
+          <AtriumButton
+            variant="outline"
+            size="sm"
+            onClick={handleExportCsv}
+            icon={<ArrowUpRight size={14} />}
+          >
+            {isAr ? 'تصدير كشف التسوية' : 'Bordereau Marchands'}
+          </AtriumButton>
+        }
+      />
+
+      <ScreenKpiBanner
+        heading={
+          isAr
+            ? 'مؤشرات صندوق التحصيل وأموال التجار'
+            : isEn
+            ? 'COD Treasury & Merchant Payouts'
+            : 'Trésorerie des Encaissements & Reversements'
+        }
+        language={language}
+        primaryCard={{
+          label: isAr ? 'قيد التحويل للتجار' : isEn ? 'Pending Payouts' : 'À Régler aux Marchands',
+          badgeText: isAr ? 'قيد التسوية' : 'À Régler',
+          count: pendingCount,
+          tone: 'terracotta',
+          isActive: settlementFilter === 'Pending',
+          onToggle: () => {
+            setActiveTab('shipments');
+            setSettlementFilter((prev) => (prev === 'Pending' ? 'All' : 'Pending'));
+          },
+        }}
+        secondaryCard={{
+          label: isAr ? 'مستحقات محوّلة' : isEn ? 'Settled Parcels' : 'Colis Virés',
+          badgeText: isAr ? 'محوّل' : 'Virés',
+          count: settledCount,
+          tone: 'emerald',
+          isActive: settlementFilter === 'Settled',
+          onToggle: () => {
+            setActiveTab('shipments');
+            setSettlementFilter((prev) => (prev === 'Settled' ? 'All' : 'Settled'));
+          },
+        }}
+        darkCard={{
+          label: isAr ? 'صافي مستحقات المتاجر للتحويل' : isEn ? 'Net Merchant Payout' : 'Solde Net à Reverser',
+          badgeCount: totalShippingFees,
+          badgePrefix: 'Comm. ',
+          badgeSuffix: ' DZD',
+          formatBadgeValue: (v) => Math.round(v).toLocaleString(),
+          valueCount: totalNetToMerchants,
+          formatValue: (v) => formatMoney(Math.round(v), language),
+          caption: isAr ? 'جاهز للتحويل البريدي CCP / BaridiMob' : 'Prêt pour virement CCP / BaridiMob',
+        }}
+      />
+
+      <LiveSegmentedControl
+        value={activeTab}
+        onValueChange={(val) => setActiveTab(val)}
+        size="sm"
+        options={[
+          {
+            value: 'shipments',
+            label: isAr ? 'تسويات' : isEn ? 'Parcels' : 'Colis',
+            tooltip: isAr ? 'تسويات الطرود المسلّمة' : 'Rapprochement Colis',
+            count: deliveredShipments.length,
+          },
+          {
+            value: 'discharges',
+            label: isAr ? 'تبرئة' : isEn ? 'Discharges' : 'Décharges',
+            tooltip: isAr ? 'تبرئة الذمة ومستندات السائقين' : 'Bons de Décharge',
+            count: discharges.length,
+          },
+          {
+            value: 'remittances',
+            label: isAr ? 'دفعات' : isEn ? 'Batches' : 'Lots',
+            tooltip: isAr ? 'دفعات حوالات CCP SFP 01' : 'Lots CCP SFP 01',
+            count: remittances.length,
+          },
+          {
+            value: 'driver_payroll',
+            label: isAr ? 'أجور' : isEn ? 'Payroll' : 'Paie',
+            tooltip: isAr ? 'أجور وعمولات السائقين' : 'Paie Livreurs',
+          },
+        ]}
+      />
+
+      {activeTab === 'shipments' && (
+        <ScreenPod>
+          <ScreenCollectionToolbar
+            title={isAr ? 'طرود جاهزة لتسوية المستحقات' : 'Colis Livrés & Encaissements'}
+            liveRegionText={`${sortedShipments.length} ${isAr ? 'طرد' : 'colis'}`}
+            language={language}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            searchPlaceholder={
+              isAr ? 'بحث بالباركود أو التاجر أو المستلم...' : 'Recherche AWB, marchand, destinataire...'
+            }
+            statusOptions={[
+              { value: 'All', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous', count: deliveredShipments.length },
+              { value: 'Pending', label: isAr ? 'قيد التسوية' : isEn ? 'Pending' : 'À Régler', count: pendingCount },
+              { value: 'Settled', label: isAr ? 'محوّل' : isEn ? 'Settled' : 'Virés', count: settledCount },
+            ]}
+            statusValue={settlementFilter}
+            onStatusChange={setSettlementFilter}
+            hasActiveAdvancedFilters={activeFiltersCount > 0}
+            activeFiltersCount={activeFiltersCount}
+            isFilterModalOpen={isFilterModalOpen}
+            filterButtonRef={filterButtonRef}
+            onToggleFilterModal={() => setIsFilterModalOpen((prev) => !prev)}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            onExport={handleExportCsv}
+            activeChips={activeChips}
+            onResetAllFilters={resetAllFilters}
+          />
+
+          <UniversalDataCollection<LogisticsShipment>
+            hideToolbar
+            data={sortedShipments}
+            keyExtractor={(s) => s.id}
+            defaultViewMode={viewMode}
+            columns={columns}
+            sortBy={sortBy}
+            sortDirection={sortDir}
+            onSortChange={(key, dir) => {
+              setSortBy(key);
+              setSortDir(dir);
+            }}
+            selectedIds={selectedIds}
+            onSelectionChange={setSelectedIds}
+            bulkSecondaryAction={{
+              label: isAr ? 'تحويل المستحقات' : 'Virer Net',
+              icon: <Send size={14} />,
+              onClick: (ids) => {
+                setSettledIds((prev) => Array.from(new Set([...prev, ...Array.from(ids)])));
+                setSelectedIds(new Set<string>());
+                showToast(
+                  isAr ? `تم تحويل ${ids.size} شحنة` : `${ids.size} versements marqués comme virés`,
+                  'success'
+                );
+              },
+            }}
+            isPinned={(s) => pinnedIds.has(s.id)}
+            onTogglePin={handleTogglePin}
+            openItemId={activeShipment?.id || null}
+            onItemClick={handleSelectShipment}
+            onViewDetails={handleSelectShipment}
+            customActions={(s) => {
+              const net = s.codAmountDzd - s.shippingFeeDzd;
+              const isSettled = settledIds.includes(s.id);
+              return [
+                ...(!isSettled
+                  ? [
+                      {
+                        id: 'settle',
+                        label: isAr ? 'تحويل للمتجر' : 'Virer Net',
+                        icon: <Send size={14} />,
+                        variant: 'primary' as const,
+                        onClick: () => handleSettle(s.id, s.merchantName || s.recipientName, net),
+                      },
+                    ]
+                  : []),
+                {
+                  id: 'receipt',
+                  label: isAr ? 'وصل التحويل' : 'Reçu Virement',
+                  icon: <Printer size={14} />,
+                  onClick: () =>
+                    showToast(
+                      isAr
+                        ? `طباعة كشف تحويل المستحقات للطرد ${s.trackingCode}`
+                        : `Bordereau de reversement émis pour ${s.trackingCode}`,
+                      'info'
+                    ),
+                },
+                {
+                  id: 'sms',
+                  label: isAr ? 'إشعار التاجر' : 'Avis SMS',
+                  icon: <Share2 size={14} />,
+                  onClick: () =>
+                    showToast(
+                      isAr
+                        ? `تم إرسال إشعار الدفع إلى ${s.merchantName}`
+                        : `Notification SMS de reversement envoyée à ${s.merchantName}`,
+                      'success'
+                    ),
+                },
+              ];
+            }}
+            renderCard={(s) => {
+              const net = s.codAmountDzd - s.shippingFeeDzd;
+              const isSettled = settledIds.includes(s.id);
+              return (
+                <div className="space-y-2.5 w-full">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono font-bold text-xs text-[#d4522f]">{s.trackingCode}</span>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        isSettled
+                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                          : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                      }`}
+                    >
+                      {isSettled ? 'Viré' : 'À Régler'}
+                    </span>
+                  </div>
+                  <div className="text-sm font-bold text-black dark:text-white truncate">
+                    {s.merchantName}
+                  </div>
+                  <div className="text-xs text-black/55 dark:text-white/55 truncate">
+                    Dest: {s.recipientName}
+                  </div>
+                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
+                    <span className="text-black/55 dark:text-white/55">Net Marchand</span>
+                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                      {formatMoney(net, language)}
+                    </span>
+                  </div>
+                </div>
+              );
+            }}
+            emptyTitle={isAr ? 'لا توجد طرود مطابقة' : 'Aucun colis encaissé trouvé'}
+            emptyDescription={isAr ? 'أعد ضبط الفلاتر لعرض التسويات' : 'Réinitialisez vos filtres pour voir les règlements'}
+            onResetFilters={resetAllFilters}
+            hasActiveFilters={searchQuery.length > 0 || activeFiltersCount > 0}
+          />
+        </ScreenPod>
+      )}
+
+      {activeTab === 'discharges' && (
+        <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-black dark:text-white">
+              {isAr
+                ? 'محاضر تبرئة ذمة السائقين (Double-Lock Vault)'
+                : 'Registre des Billets de Décharge Chauffeurs'}
+            </h3>
+            <span className="text-xs font-mono font-bold text-black/70 dark:text-white/75">
+              {discharges.length} procès-verbaux
+            </span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-neutral-200 dark:border-neutral-700 text-black/55 dark:text-white/55 font-medium">
+                  <th className="py-2 px-3">N° Décharge</th>
+                  <th className="py-2 px-3">Chauffeur</th>
+                  <th className="py-2 px-3">Date & Heure</th>
+                  <th className="py-2 px-3 text-right">Attendu</th>
+                  <th className="py-2 px-3 text-right">Compté</th>
+                  <th className="py-2 px-3 text-right">Écart</th>
+                  <th className="py-2 px-3">Statut</th>
+                  <th className="py-2 px-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 font-mono">
+                {discharges.map((d) => (
+                  <tr key={d.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40">
+                    <td className="py-2.5 px-3 font-bold text-[#d4522f]">{d.dischargeNumber}</td>
+                    <td className="py-2.5 px-3 font-sans font-semibold text-black dark:text-white">
+                      {d.courierStaffId}
+                    </td>
+                    <td className="py-2.5 px-3 text-black/55 dark:text-white/55">
+                      {d.timestamp.replace('T', ' ').slice(0, 16)}
+                    </td>
+                    <td className="py-2.5 px-3 text-right">{formatMoney(d.expectedCodDzd, language)}</td>
+                    <td className="py-2.5 px-3 text-right font-bold text-black dark:text-white">
+                      {formatMoney(d.actualCashTurnedInDzd, language)}
+                    </td>
+                    <td
+                      className={`py-2.5 px-3 text-right font-bold ${
+                        d.discrepancyDzd === 0
+                          ? 'text-emerald-600'
+                          : d.discrepancyDzd < 0
+                          ? 'text-red-600'
+                          : 'text-blue-600'
+                      }`}
+                    >
+                      {d.discrepancyDzd === 0 ? '0 DZD' : `${d.discrepancyDzd} DZD`}
+                    </td>
+                    <td className="py-2.5 px-3 font-sans">
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          d.status === 'Clean'
+                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                            : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
+                        }`}
+                      >
+                        {d.status === 'Clean' ? 'Décharge Conforme' : 'Manquant (Shortage)'}
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-3 text-right font-sans">
+                      <AtriumButton
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => {
+                          showToast(isAr ? 'طباعة محضر التبرئة' : 'Impression décharge', 'info');
+                          window.print();
+                        }}
+                        icon={<Printer size={12} />}
+                      >
+                        Reçu
+                      </AtriumButton>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'remittances' && (
+        <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-black dark:text-white">
+              {isAr
+                ? 'دفعات التحويل البريدي للتجار (Algérie Poste & BaridiMob)'
+                : 'Lots de Règlements E-Commerçants'}
+            </h3>
+            <AtriumButton
+              variant="primary"
+              size="sm"
+              onClick={() => setIsSfp01ModalOpen(true)}
+              icon={<Building2 size={14} />}
+            >
+              {isAr ? 'تصدير SFP 01' : 'Générer Fichier ASCII'}
+            </AtriumButton>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-neutral-200 dark:border-neutral-700 text-black/55 dark:text-white/55 font-medium">
+                  <th className="py-2 px-3">Lot N°</th>
+                  <th className="py-2 px-3">Commerçant</th>
+                  <th className="py-2 px-3">Compte CCP / Clé</th>
+                  <th className="py-2 px-3">Canal</th>
+                  <th className="py-2 px-3 text-right">Net à Verser</th>
+                  <th className="py-2 px-3">Statut</th>
+                  <th className="py-2 px-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 font-mono">
+                {remittances.map((r) => (
+                  <tr key={r.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40">
+                    <td className="py-2.5 px-3 font-bold text-[#d4522f]">{r.batchNumber}</td>
+                    <td className="py-2.5 px-3 font-sans font-semibold text-black dark:text-white">
+                      {r.merchantName}
+                    </td>
+                    <td className="py-2.5 px-3 text-black/70 dark:text-white/75">
+                      {r.ccpAccount} <span className="text-[#d4522f] font-bold">Clé {r.ccpKey}</span>
+                    </td>
+                    <td className="py-2.5 px-3 font-sans">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                        {r.paymentChannel}
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-3 text-right font-bold text-emerald-600 dark:text-emerald-400">
+                      {formatMoney(r.netPayoutDzd, language)}
+                    </td>
+                    <td className="py-2.5 px-3 font-sans">
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          r.status === 'Executed'
+                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                            : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                        }`}
+                      >
+                        {r.status === 'Executed' ? 'Exécuté' : 'En Attente'}
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-3 text-right font-sans">
+                      {r.status !== 'Executed' ? (
+                        <AtriumButton
+                          variant="primary"
+                          size="xs"
+                          onClick={() => {
+                            executeRemittance(r.id);
+                            showToast(
+                              isAr
+                                ? `تم تنفيذ التحويل للدفعة ${r.batchNumber}`
+                                : `Virement ${r.batchNumber} exécuté`,
+                              'success'
+                            );
+                          }}
+                          icon={<Send size={12} />}
+                        >
+                          Exécuter
+                        </AtriumButton>
+                      ) : (
+                        <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+                          Archivé
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'driver_payroll' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-5 rounded-[24px] bg-[#F3EDE7] dark:bg-[#141312] border border-[#E6DED6] dark:border-[#33302D] space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+                <Truck size={18} />
+              </div>
+              <h3 className="font-bold text-sm text-black dark:text-white">
+                {isAr ? 'سائق أجير دائم (Salarié CDI)' : 'Chauffeur Salarié Flotte Interne'}
+              </h3>
+            </div>
+            <div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-black/55 dark:text-white/55">Base Journalière (48 000 DZD / 26j):</span>
+                <span className="font-mono font-bold">1 846 DZD</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-black/55 dark:text-white/55">Prime de Rendement (18 colis × 50 DZD):</span>
+                <span className="font-mono font-bold text-emerald-600">+900 DZD</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-black/55 dark:text-white/55">Indemnité Carburant / Péage:</span>
+                <span className="font-mono font-bold">+1 500 DZD</span>
+              </div>
+              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex justify-between font-bold text-sm">
+                <span>Net Journalier à Payer:</span>
+                <span className="font-mono text-[#d4522f]">
+                  {formatMoney(salariedDriverPay.netPayoutDzd, language)}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="p-5 rounded-[24px] bg-[#F3EDE7] dark:bg-[#141312] border border-[#E6DED6] dark:border-[#33302D] space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                <UserCheck size={18} />
+              </div>
+              <h3 className="font-bold text-sm text-black dark:text-white">
+                {isAr
+                  ? 'سائق مقاول ذاتي (Auto-Entrepreneur)'
+                  : 'Livreur Sous-Traitant Auto-Entrepreneur'}
+              </h3>
+            </div>
+            <div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-black/55 dark:text-white/55">Colis Livrés (26 × 220 DZD):</span>
+                <span className="font-mono font-bold">5 720 DZD</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-black/55 dark:text-white/55">Retours Traités (3 × 50 DZD):</span>
+                <span className="font-mono font-bold">+150 DZD</span>
+              </div>
+              <div className="flex justify-between text-red-600">
+                <span>Retenue Impôt Libératoire IFU 5%:</span>
+                <span className="font-mono font-bold">
+                  -{formatMoney(freelanceDriverPay.taxWithheldDzd, language)}
+                </span>
+              </div>
+              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex justify-between font-bold text-sm">
+                <span>Net Viré au Chauffeur:</span>
+                <span className="font-mono text-emerald-600 dark:text-emerald-400">
+                  {formatMoney(freelanceDriverPay.netPayoutDzd, language)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <KineticFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        triggerRef={filterButtonRef}
+        language={language}
+        displayCount={sortedShipments.length}
+        entityPluralLabel={isAr ? 'تسويات' : 'règlements'}
+        hasActiveFilters={activeFiltersCount > 0}
+        onResetFilters={resetAllFilters}
+        sections={filterSections}
+      />
+
+      <KineticSlideOverInspector
+        isOpen={Boolean(activeShipment)}
+        item={activeShipment}
+        allItems={sortedShipments}
+        keyExtractor={(s) => s.id}
+        openerElement={drawerOpenerEl}
+        language={language}
+        title={activeShipment?.trackingCode || ''}
+        subtitle={
+          activeShipment
+            ? `${activeShipment.merchantName || activeShipment.recipientName}`
+            : undefined
+        }
+        avatarText={(activeShipment?.merchantName || 'COD').slice(0, 2).toUpperCase()}
+        branchName={
+          activeShipment
+            ? resolveRecordBranch(activeShipment, branchesById, currentBranch, language).name
+            : undefined
+        }
+        statusLabel={
+          activeShipment && settledIds.includes(activeShipment.id)
+            ? isAr ? 'محوّل' : 'Viré'
+            : isAr ? 'قيد التسوية' : 'À Régler'
+        }
+        tabs={[
+          { id: 'summary', label: isAr ? 'كشف التسوية' : 'Décompte COD' },
+          { id: 'recipient', label: isAr ? 'المستلم' : 'Destinataire' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={setInspectorTab}
+        onSelectItem={(item) => handleSelectShipment(item)}
+        onClose={() => setSelectedShipment(null)}
+        renderBody={(s, tab) => {
+          const net = s.codAmountDzd - s.shippingFeeDzd;
+          const isSettled = settledIds.includes(s.id);
+          return (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 flex-wrap">
+                {!isSettled && (
+                  <AtriumButton
+                    variant="primary"
+                    size="sm"
+                    icon={<Send size={13} />}
+                    onClick={() => handleSettle(s.id, s.merchantName || s.recipientName, net)}
+                  >
+                    {isAr ? 'تحويل للمتجر' : 'Virer Net'}
+                  </AtriumButton>
+                )}
+                <AtriumButton
+                  variant="outline"
+                  size="sm"
+                  icon={<Printer size={13} />}
+                  onClick={() =>
+                    showToast(
+                      isAr
+                        ? `طباعة كشف تحويل المستحقات للطرد ${s.trackingCode}`
+                        : `Bordereau de reversement émis pour ${s.trackingCode}`,
+                      'info'
+                    )
+                  }
+                >
+                  {isAr ? 'وصل التحويل' : 'Reçu Virement'}
+                </AtriumButton>
+                <AtriumButton
+                  variant="ghost"
+                  size="sm"
+                  icon={<Share2 size={13} />}
+                  onClick={() =>
+                    showToast(
+                      isAr
+                        ? `تم إرسال إشعار الدفع إلى ${s.merchantName}`
+                        : `Notification SMS envoyée à ${s.merchantName}`,
+                      'success'
+                    )
+                  }
+                >
+                  {isAr ? 'إشعار التاجر' : 'Avis SMS'}
+                </AtriumButton>
+              </div>
+
+              {tab === 'summary' && (
+                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2 text-xs">
+                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
+                    <span className="text-black/55 dark:text-white/55">Brut Encaissé</span>
+                    <span className="font-mono font-bold text-black dark:text-white">
+                      {formatMoney(s.codAmountDzd, language)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
+                    <span className="text-black/55 dark:text-white/55">Commission Livraison</span>
+                    <span className="font-mono text-[#d4522f]">
+                      -{formatMoney(s.shippingFeeDzd, language)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-1.5 font-bold text-sm">
+                    <span>Net à Reverser</span>
+                    <span className="font-mono text-emerald-600 dark:text-emerald-400">
+                      {formatMoney(net, language)}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {tab === 'recipient' && (
+                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2 text-xs">
+                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
+                    <span className="text-black/55 dark:text-white/55">Destinataire</span>
+                    <span className="font-bold text-black dark:text-white">{s.recipientName}</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
+                    <span className="text-black/55 dark:text-white/55">Téléphone</span>
+                    <span className="font-mono">{s.recipientPhone}</span>
+                  </div>
+                  <div className="flex justify-between py-1">
+                    <span className="text-black/55 dark:text-white/55">Wilaya</span>
+                    <span className="font-medium">{s.destinationWilaya}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        }}
+      />
+
+      <AlgeriePosteSfp01Modal
+        isOpen={isSfp01ModalOpen}
+        onClose={() => setIsSfp01ModalOpen(false)}
+        batches={remittances}
+      />
+    </div>
+  );
 };

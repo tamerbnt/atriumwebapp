@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { RentableUnit, RentableUnitType, RentableUnitStatus } from '../../../types/index';
-import { formatCurrencyAmount } from '../../../utils/rules';
+import { formatCurrencyAmount, localizeStatus } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
 import { LabelInput } from '../../ui/LabelInput';
@@ -961,14 +961,14 @@ export const VenueInventoryView: React.FC = () => {
         language={language}
         title={activeUnit?.name || ''}
         subtitle={activeUnit ? `${activeUnit.code} · ${activeUnit.type}` : ''}
-        avatarText={(activeUnit?.code || 'SP').slice(0, 2)}
+        avatarText={((activeUnit?.code || 'SP').replace(/[^A-Za-z0-9]/g, '') || 'SP').slice(0, 2).toUpperCase()}
         avatarColor={activeUnit?.colorHex || '#8B5CF6'}
         branchName={
           activeUnit
             ? resolveRecordBranch(activeUnit, branchesById, currentBranch, language).name
             : undefined
         }
-        statusLabel={activeUnit?.status}
+        statusLabel={activeUnit ? localizeStatus(activeUnit.status, language) : undefined}
         tabs={[
           { id: 'fiche', label: isFr ? 'Fiche Espace' : 'Space Specs' },
           { id: 'planning', label: isFr ? 'Planning' : 'Schedule' },

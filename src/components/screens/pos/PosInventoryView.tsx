@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { Product, PurchaseDocument } from '../../../types/index';
-import { formatMoney } from '../../../utils/rules';
+import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -1415,7 +1415,7 @@ export const PosInventoryView: React.FC<any> = () => {
         title={inspectingPurchase?.docNumber || ''}
         subtitle={inspectingPurchase ? `${inspectingPurchase.supplierName} · ${inspectingPurchase.orderDate}` : undefined}
         branchName={inspectingPurchase ? resolveRecordBranch(inspectingPurchase, branchesById, currentBranch, language).name : undefined}
-        statusLabel={inspectingPurchase?.status}
+        statusLabel={inspectingPurchase ? localizeStatus(inspectingPurchase.status, language) : undefined}
         statusClassName="bg-blue-50 text-blue-700 border border-blue-200"
         onClose={() => setInspectingPurchase(null)}
         onSelectItem={(d) => setInspectingPurchase(d)}

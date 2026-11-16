@@ -1,38 +1,41 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   Lock,
-  FileText,
-  Plus,
   ShieldCheck,
   Printer,
   CheckCircle2,
-  Key,
-  Download,
-  Trash2,
   Edit,
   Pin,
   X,
   Save,
   Check,
-  Send,
-  AlertTriangle,
-  FolderLock,
   FileCheck,
-  BookOpen,
   Stamp,
-  QrCode,
-  Building2,
   Scroll,
-  Layers,
-  FileSpreadsheet,
+  Download,
+  MapPin,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { localizeStatus } from '../../../utils/rules';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import {
+  ScreenHeaderBar,
+  ScreenKpiBanner,
+  ScreenPod,
+  ScreenCollectionToolbar,
+  ActiveFilterChip,
+  KineticFilterModal,
+  KineticFilterSection,
+  KineticSlideOverInspector,
+  buildBranchesByIdMap,
+  resolveRecordBranch,
+  downloadCsvSafe,
+} from '../../ui/kinetic';
 
 interface VaultItem {
   id: string;
@@ -43,613 +46,1067 @@ interface VaultItem {
   depositDate: string;
   status: 'OriginalScanned' | 'Confidential' | 'MinuteOfficielle' | 'DossierAudit' | 'PieceClient';
   roleScope: 'avocat' | 'notaire' | 'comptable' | 'secretaire';
+  branchId?: string;
   cadastralVolume?: string;
   cadastralNumber?: string;
   officialSealNumber?: string;
 }
 
-
+const extractStr = (v: unknown): string => {
+  if (typeof v === 'string') return v;
+  if (v && typeof v === 'object') {
+    const obj = v as { target?: { value?: unknown }; value?: unknown };
+    if (obj.target?.value !== undefined) return String(obj.target.value);
+    if (obj.value !== undefined) return String(obj.value);
+  }
+  return String(v ?? '');
+};
 
 export const LegalVaultView: React.FC<any> = () => {
-	const { language, activeLegalRole, isSyncing, networkMode, retryCloudSync } = useAtriumStore();
-	const isAr = language === "ar";
-	const [vaultItems, setVaultItems] = React.useState<any[]>(() => {
-		try {
-			const saved = localStorage.getItem("atrium_legal_vault_v2");
-			if (saved) return JSON.parse(saved);
-		} catch {}
-		return [];
-	});
-	const [searchQuery, setSearchQuery] = React.useState("");
-	const [categoryFilter, setCategoryFilter] = React.useState("All");
-	const [viewMode, setViewMode] = React.useState("list");
-	const [selectedIds, setSelectedIds] = React.useState(/* @__PURE__ */ new Set());
-	const [pinnedIds, setPinnedIds] = React.useState(/* @__PURE__ */ new Set());
-	const [sortBy, setSortBy] = React.useState("depositDate");
-	const [sortDir, setSortDir] = React.useState("desc");
-	const [isModalOpen, setIsModalOpen] = React.useState(false);
-	const [vaultToEdit, setVaultToEdit] = React.useState<any>(null);
-	const [code, setCode] = React.useState("");
-	const [title, setTitle] = React.useState("");
-	const [matterReference, setMatterReference] = React.useState("");
-	const [category, setCategory] = React.useState("Contrats");
-	const [status, setStatus] = React.useState("OriginalScanned");
-	const [selectedItem, setSelectedItem] = React.useState(() => {
-		return vaultItems[0] || null;
-	});
-	const [activeTab, setActiveTab] = React.useState("piece");
-	const [inspectorNotes, setInspectorNotes] = React.useState("");
-	const [noteSaved, setNoteSaved] = React.useState(false);
-	const saveVault = (items: any) => {
-		setVaultItems(items);
-		try {
-			localStorage.setItem("atrium_legal_vault_v2", JSON.stringify(items));
-		} catch {}
-	};
-	const targetScope = React.useMemo(() => {
-		if (activeLegalRole === "notaire_titulaire") return "notaire";
-		if (activeLegalRole === "expert_comptable") return "comptable";
-		if (activeLegalRole === "secretaire_caisse") return "secretaire";
-		return "avocat";
-	}, [activeLegalRole]);
-	const roleScopedItems = React.useMemo(() => {
-		return vaultItems.filter((i: any) => i.roleScope === targetScope || i.roleScope === "avocat");
-	}, [vaultItems, targetScope]);
-	const filteredItems = React.useMemo(() => {
-		return roleScopedItems.filter((item: any) => {
-			if (categoryFilter !== "All" && item.category !== categoryFilter) return false;
-			if (searchQuery.trim()) {
-				const q = searchQuery.toLowerCase();
-				const matchesTitle = item.title.toLowerCase().includes(q);
-				const matchesCode = item.code.toLowerCase().includes(q);
-				const matchesRef = item.matterReference.toLowerCase().includes(q);
-				if (!matchesTitle && !matchesCode && !matchesRef) return false;
-			}
-			return true;
-		});
-	}, [
-		roleScopedItems,
-		categoryFilter,
-		searchQuery
-	]);
-	const openCreateModal = () => {
-		setVaultToEdit(null);
-		setCode(`${targetScope === "notaire" ? "MIN" : targetScope === "comptable" ? "AUD" : targetScope === "secretaire" ? "DEP" : "DOC"}-2026-${Math.floor(100 + Math.random() * 900)}`);
-		setTitle("");
-		setMatterReference("DOS-2026-0091");
-		setCategory(targetScope === "notaire" ? "Minutes Notariées" : targetScope === "comptable" ? "Rapports CAC" : targetScope === "secretaire" ? "Identité NIN/NIF" : "Contrats");
-		setStatus(targetScope === "notaire" ? "MinuteOfficielle" : targetScope === "comptable" ? "DossierAudit" : targetScope === "secretaire" ? "PieceClient" : "OriginalScanned");
-		setIsModalOpen(true);
-	};
-	const openEditModal = (item: any) => {
-		setVaultToEdit(item);
-		setCode(item.code);
-		setTitle(item.title);
-		setMatterReference(item.matterReference);
-		setCategory(item.category);
-		setStatus(item.status);
-		setIsModalOpen(true);
-	};
-	const handleSaveModal = (e: any) => {
-		e.preventDefault();
-		if (!title.trim() || !matterReference.trim()) {
-			showToast(isAr ? "يرجى إدخال عنوان الوثيقة ورقم الملف" : "Veuillez saisir le titre et dossier", "error");
-			return;
-		}
-		const payload = {
-			id: vaultToEdit?.id || `v_${Date.now()}`,
-			code: code.trim(),
-			title: title.trim(),
-			matterReference: matterReference.trim(),
-			category: category.trim(),
-			depositDate: vaultToEdit?.depositDate || (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
-			status,
-			roleScope: targetScope,
-			officialSealNumber: vaultToEdit?.officialSealNumber || `SEAL-${Math.floor(1e3 + Math.random() * 9e3)}`
-		};
-		if (vaultToEdit) {
-			const updated = vaultItems.map((item: any) => item.id === payload.id ? payload : item);
-			saveVault(updated);
-			if (selectedItem?.id === payload.id) setSelectedItem(payload);
-			showToast(isAr ? "تم تحديث بيانات الوثيقة بالخزينة" : "Pièce mise à jour au coffre-fort", "success");
-		} else {
-			const updated = [payload, ...vaultItems];
-			saveVault(updated);
-			setSelectedItem(payload);
-			showToast(isAr ? "تم إيداع الوثيقة بالخزينة الرسمية" : "Pièce scellée avec succès au coffre-fort", "success");
-		}
-		setIsModalOpen(false);
-	};
-	const handlePin = (item: any) => {
-		setPinnedIds((prev) => {
-			const next = new Set(prev);
-			if (next.has(item.id)) next.delete(item.id);
-			else next.add(item.id);
-			return next;
-		});
-		showToast(pinnedIds.has(item.id) ? isAr ? "تم إلغاء التثبيت" : "Pièce désépinglée" : isAr ? "تم تثبيت الوثيقة" : "Pièce épinglée", "info");
-	};
-	const handleDelete = (item: any) => {
-		const updated = vaultItems.filter((i: any) => i.id !== item.id);
-		saveVault(updated);
-		if (selectedItem?.id === item.id) setSelectedItem(null);
-		showToast(isAr ? "تم سحب الوثيقة من الخزينة" : "Pièce retirée du coffre-fort", "success");
-	};
-	const handleCertifyHash = (item: any) => {
-		showToast(isAr ? `تم فحص البصمة الرقمية SHA-256 للوثيقة ${item.code} (مطابقة 100%)` : `Empreinte cryptographique SHA-256 certifiée pour ${item.code} : intégrité probatoire scellée`, "success");
-		if (selectedItem?.id === item.id) setActiveTab("hash");
-	};
-	const handleExportBordereau = () => {
-		showToast(isAr ? "تم توليد جدول إرسال المستندات الرسمي (Bordereau de Communication de Pièces)" : "Génération du Bordereau de Communication contradictoire des pièces", "success");
-		window.print();
-	};
-	const roleMetadata = React.useMemo(() => {
-		if (targetScope === "notaire") return {
-			title: isAr ? "الأرشيف" : language === "en" ? "Archives" : "Archives",
-			badge: "Actes Authentiques",
-			subtitle: isAr ? "حفظ الأصول غير القابلة للتصرف، تسليم النسخ التنفيذية، والتحقق من النشر العقاري" : "Conservation probatoire perpétuelle des minutes d'actes et délivrance de grosses exécutoires",
-			catPills: [
-				{
-					id: "All",
-					label: isAr ? "الكل" : language === "fr" ? "Toutes" : "All",
-					tooltip: isAr ? "جميع الأصول المحفوظة" : "Toutes Minutes"
-				},
-				{
-					id: "Minutes Notariées",
-					label: isAr ? "أصول" : "Minutes",
-					tooltip: isAr ? "أصول العقود الرسمية" : "Minutes Notariées"
-				},
-				{
-					id: "Grosses Exécutoires",
-					label: isAr ? "تنفيذية" : "Grosses",
-					tooltip: isAr ? "النسخ التنفيذية" : "Grosses Exécutoires"
-				},
-				{
-					id: "Expéditions",
-					label: isAr ? "مستخرجات" : "Expéditions",
-					tooltip: isAr ? "النسخ العادية والمستخرجات" : "Expéditions d'actes"
-				}
-			]
-		};
-		if (targetScope === "comptable") return {
-			title: isAr ? "التدقيق" : language === "en" ? "Audit" : "Audit",
-			badge: "Certification CAC",
-			subtitle: isAr ? "أوراق العمل الرقابية، محاضر جرد الأصول، تقارير المصادقة على الحسابات" : "Papiers de travail d'audit légal, diligences fiscales G50 et rapports généraux du CAC",
-			catPills: [
-				{
-					id: "All",
-					label: isAr ? "الكل" : language === "fr" ? "Tous" : "All",
-					tooltip: isAr ? "جميع الملفات الرقابية" : "Tous Dossiers"
-				},
-				{
-					id: "Rapports CAC",
-					label: isAr ? "تقارير" : "Rapports",
-					tooltip: isAr ? "تقارير محافظ الحسابات" : "Rapports CAC"
-				},
-				{
-					id: "Feuilles de Travail",
-					label: isAr ? "أوراق" : "Feuilles",
-					tooltip: isAr ? "أوراق العمل الرقابية" : "Feuilles de Travail"
-				},
-				{
-					id: "Contrôle G50",
-					label: "G50",
-					tooltip: isAr ? "الرقابة الجبائية G50" : "Contrôle G50"
-				}
-			]
-		};
-		if (targetScope === "secretaire") return {
-			title: isAr ? "الإيداع" : language === "en" ? "Filing" : "Dépôts",
-			badge: "Accueil & Dépôt",
-			subtitle: isAr ? "أرشفة وثائق الهوية، السجلات التجارية، تسليم وصولات الإيداع للموكلين" : "Numérisation des cartes NIN, extraits de registre de commerce et récépissés de dépôt",
-			catPills: [
-				{
-					id: "All",
-					label: isAr ? "الكل" : language === "fr" ? "Toutes" : "All",
-					tooltip: isAr ? "جميع الوثائق المودعة" : "Toutes Pièces"
-				},
-				{
-					id: "Identité NIN/NIF",
-					label: "NIN/NIF",
-					tooltip: isAr ? "وثائق الهوية الوطنية والجبائية" : "Identité NIN/NIF"
-				},
-				{
-					id: "Registre Commerce",
-					label: isAr ? "السجل" : "Registre",
-					tooltip: isAr ? "مستخرجات السجل التجاري" : "Registre Commerce"
-				},
-				{
-					id: "Récépissés",
-					label: isAr ? "وصولات" : "Récépissés",
-					tooltip: isAr ? "وصولات الإيداع الرسمية" : "Récépissés de dépôt"
-				}
-			]
-		};
-		return {
-			title: isAr ? "المستندات" : language === "en" ? "Vault" : "Documents",
-			badge: "AES-256 Chiffré",
-			subtitle: isAr ? "أرشفة أصول العقود، مذكرات الدفاع، محاضر التبليغ وبصمات الإثبات الجنائي" : "Pièces de procédure contradictoires, bordereaux de communication et secret professionnel",
-			catPills: [
-				{
-					id: "All",
-					label: isAr ? "الكل" : language === "fr" ? "Toutes" : "All",
-					tooltip: isAr ? "جميع الوثائق السرية" : "Toutes pièces"
-				},
-				{
-					id: "Contrats",
-					label: isAr ? "عقود" : "Contrats",
-					tooltip: isAr ? "العقود والاتفاقيات" : "Contrats scellés"
-				},
-				{
-					id: "Mémoires",
-					label: isAr ? "مذكرات" : "Mémoires",
-					tooltip: isAr ? "مذكرات الدفاع والمرافعات" : "Mémoires en défense"
-				},
-				{
-					id: "Huissier",
-					label: isAr ? "محضر" : "Huissier",
-					tooltip: isAr ? "محاضر التبليغ القضائي" : "Actes d'huissier"
-				}
-			]
-		};
-	}, [targetScope, isAr, language]);
-	const columns = [
-		{
-			id: "code",
-			header: isAr ? "رمز الوثيقة" : "Code Pièce",
-			accessorKey: "code",
-			sortable: true,
-			minWidth: "140px",
-			cell: (i: any) => /* @__PURE__ */ <div className="flex items-center gap-2">
-<div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0">
-{targetScope === "notaire" ? /* @__PURE__ */ <Scroll size={16} /> : /* @__PURE__ */ <Lock size={16} />}
-</div>
-<div>
-<div className="font-mono font-bold text-xs text-black dark:text-white flex items-center gap-1.5">
-{i.code}
-{pinnedIds.has(i.id) && /* @__PURE__ */ <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />}
-</div>
-<div className="text-[10px] text-black/55 dark:text-white/55">{i.depositDate}</div>
-</div>
-</div>
-		},
-		{
-			id: "title",
-			header: isAr ? "عنوان وتعيين الوثيقة" : "Intitulé & Référence Dossier",
-			accessorKey: "title",
-			sortable: true,
-			minWidth: "240px",
-			cell: (i: any) => /* @__PURE__ */ <div>
-<div className="font-semibold text-xs text-black dark:text-white line-clamp-1">{i.title}</div>
-<div className="text-[11px] text-black/55 dark:text-white/55 font-mono flex items-center gap-2">
-<span>
-{"Dossier: "}
-{i.matterReference}
-</span>
-{i.cadastralVolume && /* @__PURE__ */ <span className="text-[#d4522f] font-bold">
-{"· "}
-{i.cadastralVolume}
-{" "}
-{i.cadastralNumber}
-</span>}
-</div>
-</div>
-		},
-		{
-			id: "category",
-			header: isAr ? "التصنيف" : "Nature",
-			accessorKey: "category",
-			sortable: true,
-			minWidth: "150px",
-			cell: (i: any) => /* @__PURE__ */ <div className="text-xs text-black/70 dark:text-white/75">{i.category}</div>
-		},
-		{
-			id: "status",
-			header: isAr ? "الأصالة والمصادقة" : "Statut Probatoire",
-			accessorKey: "status",
-			sortable: true,
-			minWidth: "140px",
-			cell: (i: any) => /* @__PURE__ */ <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${i.status === "MinuteOfficielle" ? "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300" : i.status === "DossierAudit" ? "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300" : i.status === "Confidential" ? "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300" : "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300"}`}>
-{i.status === "MinuteOfficielle" ? "Minute Inaliénable" : i.status === "DossierAudit" ? "Audit CAC Scellé" : i.status === "Confidential" ? "Confidentiel Défense" : "Original Certifié"}
-</span>
-		}
-	];
-	const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
-		isLoading: isSyncing || networkMode === "force_skeleton",
-		hasCachedData: roleScopedItems.length > 0
-	});
-	if (showSkeleton && (roleScopedItems.length === 0 || networkMode === "force_skeleton")) return /* @__PURE__ */ <SkeletonCollectionScreen kpiCount={3} columns={[
-			{
-				width: "2.5*",
-				minWidth: "180px"
-			},
-			{
-				width: "1.5*",
-				minWidth: "120px"
-			},
-			{
-				width: "1.5*",
-				minWidth: "120px"
-			},
-			{
-				width: "1.2*",
-				minWidth: "100px"
-			},
-			{
-				width: "100px",
-				minWidth: "80px"
-			}
-		]} viewMode={viewMode} isOffline={isOffline} isTimedOut={isTimedOut} onRetry={retryCloudSync || retry} />;
-	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1">
-<div className="flex items-center gap-3">
-<div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shadow-xs">
-{targetScope === "notaire" ? /* @__PURE__ */ <Scroll size={22} /> : /* @__PURE__ */ <Lock size={22} />}
-</div>
-<div>
-<div className="flex items-center gap-2">
-<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">{roleMetadata.title}</h1>
-<span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">{roleMetadata.badge}</span>
-</div>
-</div>
-</div>
-<div className="flex items-center gap-2 flex-wrap">
-<AtriumButton variant="ghost" size="sm" onClick={handleExportBordereau} icon={<Download size={14} />}>{isAr ? "جدول الإرسال" : "Bordereau"}</AtriumButton>
-<AtriumButton variant="primary" onClick={openCreateModal} icon={<Plus size={14} />}>
-{targetScope === "notaire" ? isAr ? "إيداع أصل العقد" : "Déposer une Minute" : isAr ? "إيداع وثيقة بالخزينة" : "Déposer une Pièce"}
-</AtriumButton>
-</div>
-</div>
-<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-<div>
-<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
-{isAr ? "أمان الوثائق والقوة الإثباتية" : "Force Probante & Intégrité des Pièces"}
-</h2>
-</div>
-<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-black/55 dark:text-white/75">{isAr ? "المستندات المودعة بالخزينة" : "Total Pièces au Coffre"}</span>
-<div>
-<div className="text-2xl font-bold tracking-tight text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{roleScopedItems.length}</div>
-<p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">
-{"100% "}
-{isAr ? "أصول مشفرة وممسوحة رقمياً" : "scellées avec empreinte certifiée"}
-</p>
-</div>
-</div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
-{targetScope === "notaire" ? "Minutes Publiées Conservation" : "Documents Haute Sécurité"}
-</span>
-<div>
-<div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-{roleScopedItems.filter((i) => i.cadastralVolume || i.status === "Confidential").length}
-</div>
-<p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 font-medium">{isAr ? "خاضعة للأختام الرسمية المعتمدة" : "Revêtus du sceau officiel"}</p>
-</div>
-</div>
-<div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-<div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-white/80">{isAr ? "الختم الإلكتروني والبصمة" : "Cachet & Horodatage"}</span>
-<span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">{targetScope.toUpperCase()}</span>
-</div>
-<div>
-<div className="text-2xl font-black text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">SHA-256 GCM</div>
-<p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
-<CheckCircle2 size={11} />
-{isAr ? "شهادة إلكترونية سارية المفعول" : "Inviolabilité certifiée"}
-</p>
-</div>
-</div>
-</div>
-</div>
-<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-<div className="flex items-center justify-between">
-<div>
-<h2 className="text-[13.5px] font-semibold text-black dark:text-white">{roleMetadata.title}</h2>
-</div>
-<div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
-{roleMetadata.catPills.map((pill) => /* @__PURE__ */ <button key={pill.id} onClick={() => setCategoryFilter(pill.id)} title={pill.tooltip} className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer" style={{
-								backgroundColor: categoryFilter === pill.id ? "#FCEEE8" : "transparent",
-								color: categoryFilter === pill.id ? "var(--color-accent)" : "#71717A"
-							}}>{pill.label}</button>)}
-</div>
-</div>
-<div className="flex items-start gap-4">
-<div className="flex-1 min-w-0">
-<UniversalDataCollection data={filteredItems} columns={columns} keyExtractor={(i) => i.id} searchQuery={searchQuery} onSearchChange={setSearchQuery} searchPlaceholder={isAr ? "بحث برمز الوثيقة، العنوان، رقم القضية..." : "Rechercher par code pièce, intitulé, dossier..."} filterValue={categoryFilter} onFilterChange={setCategoryFilter} filterOptions={roleMetadata.catPills.map((p) => ({
-								value: p.id,
-								label: p.label,
-								tooltip: p.tooltip
-							}))} viewMode={viewMode} onViewModeChange={setViewMode} selectedIds={selectedIds} onSelectionChange={setSelectedIds} pinnedIds={pinnedIds} onPinToggle={handlePin} sortBy={sortBy} sortDir={sortDir} onSortChange={(field, dir) => {
-								setSortBy(field);
-								setSortDir(dir);
-							}} onItemClick={(item) => setSelectedItem(item)} onEdit={openEditModal} onDelete={handleDelete} customActions={[{
-								id: "certify",
-								label: isAr ? "فحص البصمة SHA-256" : "Empreinte SHA-256",
-								icon: /* @__PURE__ */ <FileCheck size={14} />,
-								onClick: handleCertifyHash
-							}]} renderGridCard={(item) => /* @__PURE__ */ <div className="space-y-3">
-<div className="flex items-center justify-between">
-<span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg border border-[#d4522f]/20">{item.code}</span>
-<span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">{item.status}</span>
-</div>
-<div>
-<h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">{item.title}</h3>
-<div className="text-xs text-black/55 dark:text-white/55 font-mono mt-0.5">
-{"Dossier: "}
-{item.matterReference}
-</div>
-</div>
-</div>} />
-</div>
-{selectedItem && /* @__PURE__ */ <div className="w-[390px] shrink-0 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5 space-y-4 shadow-lg animate-in slide-in-from-right-4 duration-200">
-<div className="flex items-start justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-<div className="flex items-center gap-2.5">
-<div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold">
-{targetScope === "notaire" ? /* @__PURE__ */ <Scroll size={18} /> : /* @__PURE__ */ <Lock size={18} />}
-</div>
-<div>
-<div className="flex items-center gap-1.5">
-<span className="font-mono font-bold text-xs text-black dark:text-white">{selectedItem.code}</span>
-<span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">{selectedItem.status}</span>
-</div>
-<p className="text-xs font-semibold text-black/70 dark:text-white/75 line-clamp-1">{selectedItem.title}</p>
-</div>
-</div>
-<button onClick={() => setSelectedItem(null)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"><X size={16} /></button>
-</div>
-<div className="flex items-center gap-1.5 flex-wrap">
-<button onClick={() => handleCertifyHash(selectedItem)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-orange-50 text-[#d4522f] hover:bg-orange-100 transition-colors">
-<FileCheck size={12} />
-{isAr ? "فحص البصمة" : "Vérifier SHA-256"}
-</button>
-<button onClick={() => openEditModal(selectedItem)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-neutral-100 text-black/70 dark:text-white/75 hover:bg-neutral-200 transition-colors">
-<Edit size={12} />
-{isAr ? "تعديل" : "Modifier"}
-</button>
-<button onClick={() => handleDelete(selectedItem)} className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors ml-auto"><Trash2 size={12} /></button>
-</div>
-<div className="flex border-b border-neutral-100 dark:border-neutral-800 gap-1 text-xs">
-<button onClick={() => setActiveTab("piece")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "piece" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "الوثيقة" : "Fiche"}</button>
-<button onClick={() => setActiveTab("sceau")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "sceau" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "الختم الرسمي" : "Cachet & Sceau"}</button>
-<button onClick={() => setActiveTab("hash")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "hash" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "التشفير" : "SHA-256"}</button>
-<button onClick={() => setActiveTab("notes")} className={`pb-2 px-2 font-medium border-b-2 transition-colors ${activeTab === "notes" ? "border-[#d4522f] text-[#d4522f] font-bold" : "border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}>{isAr ? "الملاحظات" : "Bordereau"}</button>
-</div>
-{activeTab === "piece" && /* @__PURE__ */ <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
-<div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55">Numéro de pièce:</span>
-<span className="font-mono font-bold text-black dark:text-white">{selectedItem.code}</span>
-</div>
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55">Dossier:</span>
-<span className="font-mono font-semibold text-[#d4522f]">{selectedItem.matterReference}</span>
-</div>
-{selectedItem.cadastralVolume && /* @__PURE__ */ <div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55">Conservation Foncière:</span>
-<span className="font-mono font-bold text-emerald-600">
-{selectedItem.cadastralVolume}
-{" "}
-{selectedItem.cadastralNumber}
-</span>
-</div>}
-<div className="flex justify-between items-center">
-<span className="text-black/55 dark:text-white/55">Date d'archivage:</span>
-<span className="font-mono text-black dark:text-white">{selectedItem.depositDate}</span>
-</div>
-</div>
-</div>}
-{activeTab === "sceau" && /* @__PURE__ */ <div className="p-4 bg-white dark:bg-neutral-900 border-2 border-dashed border-[#d4522f]/40 rounded-2xl text-center space-y-3 text-xs animate-in fade-in duration-150">
-<div className="w-12 h-12 rounded-full bg-[#d4522f]/15 text-[#d4522f] mx-auto flex items-center justify-center font-bold"><Stamp size={24} /></div>
-<div>
-<span className="font-bold text-sm text-black dark:text-white block uppercase tracking-wider">الجمهورية الجزائرية الديمقراطية الشعبية</span>
-<span className="text-[10px] text-black/55 dark:text-white/55 block">RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE</span>
-</div>
-<div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 font-mono text-[11px] text-black/70 dark:text-white/75 space-y-1">
-<div>
-{"Sceau N° : "}
-<strong>{selectedItem.officialSealNumber || "DZ-SEAL-2026-99"}</strong>
-</div>
-<div>
-{"Horodatage légal : "}
-{selectedItem.depositDate}
-{" à 11:42:00"}
-</div>
-<div>Juridiction / Étude : Wilaya d'Alger</div>
-</div>
-<div className="flex items-center justify-center gap-1.5 text-emerald-600 font-bold text-[11px]">
-<CheckCircle2 size={13} />
-<span>Original Scellé et Inaltérable</span>
-</div>
-<button onClick={() => {
-											showToast(isAr ? "طباعة شهادة المطابقة والختم" : "Certificat d'authenticité imprimé", "success");
-											window.print();
-										}} className="w-full py-2 rounded-xl bg-[#d4522f] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm">
-<Printer size={13} />
-{isAr ? "طباعة نسخة مع الختم الرسمي" : "Imprimer avec Cachet Légal"}
-</button>
-</div>}
-{activeTab === "hash" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
-<div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-<span className="font-semibold text-black dark:text-white block">Empreinte Numérique Cryptographique :</span>
-<div className="font-mono text-[10px] break-all bg-white dark:bg-neutral-900 p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800 text-black/70 dark:text-white/75">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</div>
-<p className="text-[10px] text-emerald-600 font-medium">✓ Horodatage certifié conforme aux exigences de recevabilité judiciaire.</p>
-</div>
-</div>}
-{activeTab === "notes" && /* @__PURE__ */ <div className="space-y-3 text-xs animate-in fade-in duration-150">
-<p className="text-black/55 dark:text-white/55 text-[11px]">Bordereau de communication de pièces contradictoire et réserves :</p>
-<textarea rows={6} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} placeholder="Mentionner la notification aux parties, récépissé de dépôt..." className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none" />
-<button onClick={() => {
-											setNoteSaved(true);
-											setTimeout(() => setNoteSaved(false), 2e3);
-											showToast(isAr ? "تم حفظ الملاحظات" : "Bordereau enregistré", "success");
-										}} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#d4522f] text-white hover:bg-[#a86246] transition-colors font-medium text-xs shadow-xs">
-{noteSaved ? /* @__PURE__ */ <>
-<Check size={14} />
-{isAr ? "تم الحفظ" : "Bordereau enregistré"}
-</> : /* @__PURE__ */ <>
-<Save size={14} />
-{isAr ? "حفظ" : "Enregistrer"}
-</>}
-</button>
-</div>}
-</div>}
-</div>
-</div>
-{isModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-<div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto">
-<div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-<div className="flex items-center gap-2.5">
-<div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold">
-{targetScope === "notaire" ? /* @__PURE__ */ <Scroll size={20} /> : /* @__PURE__ */ <Lock size={20} />}
-</div>
-<div>
-<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-{vaultToEdit ? isAr ? "تعديل وثيقة بالخزينة" : "Modifier la Pièce du Coffre" : isAr ? "إيداع وثيقة جديدة بالخزينة" : "Déposer une Pièce au Coffre-fort"}
-</h2>
-</div>
-</div>
-<button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"><X size={18} /></button>
-</div>
-<form onSubmit={handleSaveModal} className="space-y-4">
-<div className="grid grid-cols-2 gap-3">
-<LabelInput label={isAr ? "رمز الوثيقة *" : "Code Pièce *"} placeholder="DOC-2026-081" value={code} onChange={(e) => setCode(e.target.value)} required />
-<LabelInput label={isAr ? "رقم الملف / القضية *" : "Réf Dossier *"} placeholder="DOS-2026-0091" value={matterReference} onChange={(e) => setMatterReference(e.target.value)} required />
-</div>
-<LabelInput label={isAr ? "عنوان وتعيين الوثيقة *" : "Intitulé de la Pièce *"} placeholder="Ex: Contrat Commercial Original & Avenants" value={title} onChange={(e) => setTitle(e.target.value)} required />
-<div className="grid grid-cols-2 gap-3">
-<LabelSelect label={isAr ? "طبيعة الوثيقة" : "Nature"} value={category} onChange={(e) => setCategory(e.target.value)} options={roleMetadata.catPills.filter((p) => p.id !== "All").map((p) => ({
-										value: p.id,
-										label: p.label
-									}))} />
-<LabelSelect label={isAr ? "مستوى الحماية" : "Sécurité"} value={status} onChange={(e) => setStatus(e.target.value)} options={[
-										{
-											value: "OriginalScanned",
-											label: "Original Scellé"
-										},
-										{
-											value: "Confidential",
-											label: "Confidentiel Défense"
-										},
-										{
-											value: "MinuteOfficielle",
-											label: "Minute Notariée"
-										},
-										{
-											value: "DossierAudit",
-											label: "Dossier Audit CAC"
-										}
-									]} />
-</div>
-<div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-<AtriumButton variant="ghost" size="sm" onClick={() => setIsModalOpen(false)}>{isAr ? "إلغاء" : "Annuler"}</AtriumButton>
-<AtriumButton variant="primary" size="sm" type="submit">
-{vaultToEdit ? isAr ? "حفظ التعديلات" : "Enregistrer" : isAr ? "إيداع الوثيقة" : "Sceller au Coffre"}
-</AtriumButton>
-</div>
-</form>
-</div>
-</div>}
-</div>;
+  const {
+    language,
+    activeLegalRole,
+    currentBranch,
+    branches,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+  } = useAtriumStore();
+  const isAr = language === 'ar';
+  const isEn = language === 'en';
+
+  const [vaultItems, setVaultItems] = useState<VaultItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_legal_vault_v2');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  });
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('All');
+  const [securityFilter, setSecurityFilter] = useState<string>('All');
+  const [branchFilter, setBranchFilter] = useState<string>('All');
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
+
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const filterButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>());
+  const [sortBy, setSortBy] = useState<string>('depositDate');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [vaultToEdit, setVaultToEdit] = useState<VaultItem | null>(null);
+  const [code, setCode] = useState('');
+  const [title, setTitle] = useState('');
+  const [matterReference, setMatterReference] = useState('');
+  const [category, setCategory] = useState('Contrats');
+  const [status, setStatus] = useState<VaultItem['status']>('OriginalScanned');
+
+  const [selectedItem, setSelectedItem] = useState<VaultItem | null>(null);
+  const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('piece');
+  const [inspectorNotes, setInspectorNotes] = useState('');
+  const [noteSaved, setNoteSaved] = useState(false);
+
+  const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
+
+  const saveVault = useCallback((items: VaultItem[]) => {
+    setVaultItems(items);
+    try {
+      localStorage.setItem('atrium_legal_vault_v2', JSON.stringify(items));
+    } catch {}
+  }, []);
+
+  const targetScope = useMemo<'avocat' | 'notaire' | 'comptable' | 'secretaire'>(() => {
+    if (activeLegalRole === 'notaire_titulaire') return 'notaire';
+    if (activeLegalRole === 'expert_comptable') return 'comptable';
+    if (activeLegalRole === 'secretaire_caisse') return 'secretaire';
+    return 'avocat';
+  }, [activeLegalRole]);
+
+  const roleScopedItems = useMemo(() => {
+    return vaultItems.filter((i) => i.roleScope === targetScope || i.roleScope === 'avocat');
+  }, [vaultItems, targetScope]);
+
+  const activeItem = useMemo(() => {
+    if (!selectedItem) return null;
+    return roleScopedItems.find((i) => i.id === selectedItem.id) || selectedItem;
+  }, [selectedItem, roleScopedItems]);
+
+  const branchCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    roleScopedItems.forEach((item) => {
+      const b = resolveRecordBranch(item, branchesById, currentBranch, language);
+      const key = b.id || b.name;
+      map.set(key, (map.get(key) || 0) + 1);
+    });
+    return map;
+  }, [roleScopedItems, branchesById, currentBranch, language]);
+
+  const branchOptions = useMemo(() => {
+    const opts: Array<{ value: string; label: string; count: number }> = [
+      { value: 'All', label: isAr ? 'الكل' : isEn ? 'All' : 'Toutes', count: roleScopedItems.length },
+    ];
+    const seen = new Set<string>();
+    branches.forEach((b) => {
+      if (!seen.has(b.id)) {
+        seen.add(b.id);
+        opts.push({ value: b.id, label: b.name, count: branchCounts.get(b.id) || 0 });
+      }
+    });
+    if (seen.size === 0 && currentBranch) {
+      opts.push({
+        value: currentBranch.id,
+        label: currentBranch.name,
+        count: branchCounts.get(currentBranch.id) || roleScopedItems.length,
+      });
+    }
+    return opts;
+  }, [branches, currentBranch, branchCounts, roleScopedItems.length, isAr, isEn]);
+
+  const filteredItems = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    const list = roleScopedItems.filter((item) => {
+      if (categoryFilter !== 'All' && item.category !== categoryFilter) return false;
+      if (
+        securityFilter === 'HighSecurity' &&
+        !item.cadastralVolume &&
+        item.status !== 'Confidential'
+      ) {
+        return false;
+      }
+      if (branchFilter !== 'All') {
+        const b = resolveRecordBranch(item, branchesById, currentBranch, language);
+        if ((b.id || b.name) !== branchFilter) return false;
+      }
+      if (q) {
+        const matches =
+          item.title.toLowerCase().includes(q) ||
+          item.code.toLowerCase().includes(q) ||
+          item.matterReference.toLowerCase().includes(q);
+        if (!matches) return false;
+      }
+      return true;
+    });
+
+    return [...list].sort((a, b) => {
+      let cmp = 0;
+      if (sortBy === 'branch') {
+        cmp = resolveRecordBranch(a, branchesById, currentBranch, language).name.localeCompare(
+          resolveRecordBranch(b, branchesById, currentBranch, language).name
+        );
+      } else if (sortBy === 'code') {
+        cmp = a.code.localeCompare(b.code);
+      } else if (sortBy === 'title') {
+        cmp = a.title.localeCompare(b.title);
+      } else {
+        cmp = a.depositDate.localeCompare(b.depositDate);
+      }
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+  }, [
+    roleScopedItems,
+    categoryFilter,
+    securityFilter,
+    branchFilter,
+    searchQuery,
+    sortBy,
+    sortDir,
+    branchesById,
+    currentBranch,
+    language,
+  ]);
+
+  const openCreateModal = () => {
+    setVaultToEdit(null);
+    setCode(
+      `${
+        targetScope === 'notaire'
+          ? 'MIN'
+          : targetScope === 'comptable'
+          ? 'AUD'
+          : targetScope === 'secretaire'
+          ? 'DEP'
+          : 'DOC'
+      }-2026-${Math.floor(100 + Math.random() * 900)}`
+    );
+    setTitle('');
+    setMatterReference('DOS-2026-0091');
+    setCategory(
+      targetScope === 'notaire'
+        ? 'Minutes Notariées'
+        : targetScope === 'comptable'
+        ? 'Rapports CAC'
+        : targetScope === 'secretaire'
+        ? 'Identité NIN/NIF'
+        : 'Contrats'
+    );
+    setStatus(
+      targetScope === 'notaire'
+        ? 'MinuteOfficielle'
+        : targetScope === 'comptable'
+        ? 'DossierAudit'
+        : targetScope === 'secretaire'
+        ? 'PieceClient'
+        : 'OriginalScanned'
+    );
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = useCallback((item: VaultItem) => {
+    setVaultToEdit(item);
+    setCode(item.code);
+    setTitle(item.title);
+    setMatterReference(item.matterReference);
+    setCategory(item.category);
+    setStatus(item.status);
+    setIsModalOpen(true);
+  }, []);
+
+  const handleSaveModal = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim() || !matterReference.trim()) {
+      showToast(
+        isAr ? 'يرجى إدخال عنوان الوثيقة ورقم الملف' : 'Veuillez saisir le titre et dossier',
+        'error'
+      );
+      return;
+    }
+    const payload: VaultItem = {
+      id: vaultToEdit?.id || `v_${Date.now()}`,
+      code: code.trim(),
+      title: title.trim(),
+      matterReference: matterReference.trim(),
+      category: category.trim(),
+      depositDate: vaultToEdit?.depositDate || new Date().toISOString().split('T')[0],
+      status,
+      roleScope: targetScope,
+      branchId: vaultToEdit?.branchId || currentBranch?.id || 'branch_legal_main',
+      officialSealNumber:
+        vaultToEdit?.officialSealNumber || `SEAL-${Math.floor(1000 + Math.random() * 9000)}`,
+    };
+    if (vaultToEdit) {
+      const updated = vaultItems.map((item) => (item.id === payload.id ? payload : item));
+      saveVault(updated);
+      if (selectedItem?.id === payload.id) setSelectedItem(payload);
+      showToast(
+        isAr ? 'تم تحديث بيانات الوثيقة بالخزينة' : 'Pièce mise à jour au coffre-fort',
+        'success'
+      );
+    } else {
+      const updated = [payload, ...vaultItems];
+      saveVault(updated);
+      setSelectedItem(payload);
+      showToast(
+        isAr ? 'تم إيداع الوثيقة بالخزينة الرسمية' : 'Pièce scellée avec succès au coffre-fort',
+        'success'
+      );
+    }
+    setIsModalOpen(false);
+  };
+
+  const togglePin = useCallback((item: VaultItem) => {
+    setPinnedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(item.id)) next.delete(item.id);
+      else next.add(item.id);
+      return next;
+    });
+  }, []);
+
+  const handleDelete = useCallback(
+    (item: VaultItem) => {
+      const updated = vaultItems.filter((i) => i.id !== item.id);
+      saveVault(updated);
+      if (selectedItem?.id === item.id) setSelectedItem(null);
+      showToast(isAr ? 'تم سحب الوثيقة من الخزينة' : 'Pièce retirée du coffre-fort', 'success');
+    },
+    [vaultItems, saveVault, selectedItem, isAr]
+  );
+
+  const handleCertifyHash = useCallback(
+    (item: VaultItem) => {
+      showToast(
+        isAr
+          ? `تم فحص البصمة الرقمية SHA-256 للوثيقة ${item.code}`
+          : `Empreinte cryptographique SHA-256 certifiée pour ${item.code}`,
+        'success'
+      );
+      if (selectedItem?.id === item.id) setActiveTab('hash');
+    },
+    [isAr, selectedItem]
+  );
+
+  const handleExportBordereau = () => {
+    showToast(
+      isAr
+        ? 'تم توليد جدول إرسال المستندات الرسمي'
+        : 'Génération du Bordereau de Communication contradictoire des pièces',
+      'success'
+    );
+    window.print();
+  };
+
+  const roleMetadata = useMemo(() => {
+    if (targetScope === 'notaire') {
+      return {
+        title: isAr ? 'الأرشيف' : 'Archives',
+        badge: 'Actes Authentiques',
+        subtitle: isAr
+          ? 'حفظ الأصول غير القابلة للتصرف وتسليم النسخ التنفيذية'
+          : "Conservation probatoire perpétuelle des minutes d'actes",
+        catPills: [
+          { id: 'All', label: isAr ? 'الكل' : 'Toutes' },
+          { id: 'Minutes Notariées', label: isAr ? 'أصول' : 'Minutes' },
+          { id: 'Grosses Exécutoires', label: isAr ? 'تنفيذية' : 'Grosses' },
+          { id: 'Expéditions', label: isAr ? 'مستخرجات' : 'Expéditions' },
+        ],
+      };
+    }
+    if (targetScope === 'comptable') {
+      return {
+        title: isAr ? 'التدقيق' : 'Audit',
+        badge: 'Certification CAC',
+        subtitle: isAr
+          ? 'أوراق العمل الرقابية وتقارير المصادقة على الحسابات'
+          : "Papiers de travail d'audit légal, diligences fiscales G50",
+        catPills: [
+          { id: 'All', label: isAr ? 'الكل' : 'Tous' },
+          { id: 'Rapports CAC', label: isAr ? 'تقارير' : 'Rapports' },
+          { id: 'Feuilles de Travail', label: isAr ? 'أوراق' : 'Feuilles' },
+          { id: 'Contrôle G50', label: 'G50' },
+        ],
+      };
+    }
+    if (targetScope === 'secretaire') {
+      return {
+        title: isAr ? 'الإيداع' : isEn ? 'Filing' : 'Dépôts',
+        badge: 'Accueil & Dépôt',
+        subtitle: isAr
+          ? 'أرشفة وثائق الهوية والسجلات التجارية'
+          : 'Numérisation des cartes NIN, RC et récépissés de dépôt',
+        catPills: [
+          { id: 'All', label: isAr ? 'الكل' : 'Toutes' },
+          { id: 'Identité NIN/NIF', label: 'NIN/NIF' },
+          { id: 'Registre Commerce', label: isAr ? 'السجل' : 'Registre' },
+          { id: 'Récépissés', label: isAr ? 'وصولات' : 'Récépissés' },
+        ],
+      };
+    }
+    return {
+      title: isAr ? 'المستندات' : isEn ? 'Vault' : 'Documents',
+      badge: 'AES-256 Chiffré',
+      subtitle: isAr
+        ? 'أرشفة أصول العقود ومذكرات الدفاع وبصمات الإثبات'
+        : 'Pièces de procédure contradictoires et secret professionnel',
+      catPills: [
+        { id: 'All', label: isAr ? 'الكل' : 'Toutes' },
+        { id: 'Contrats', label: isAr ? 'عقود' : 'Contrats' },
+        { id: 'Mémoires', label: isAr ? 'مذكرات' : 'Mémoires' },
+        { id: 'Huissier', label: isAr ? 'محضر' : 'Huissier' },
+      ],
+    };
+  }, [targetScope, isAr, isEn]);
+
+  const columns: ColumnDefinition<VaultItem>[] = useMemo(
+    () => [
+      {
+        key: 'code',
+        header: isAr ? 'رمز الوثيقة' : 'Code Pièce',
+        width: '1.8*',
+        sortable: true,
+        renderCell: (i) => (
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0">
+              {targetScope === 'notaire' ? <Scroll size={16} /> : <Lock size={16} />}
+            </div>
+            <div className="min-w-0">
+              <div className="font-mono font-bold text-xs text-black dark:text-white flex items-center gap-1.5 truncate">
+                {i.code}
+                {pinnedIds.has(i.id) && (
+                  <Pin size={10} className="fill-[#d4522f] text-[#d4522f] shrink-0" />
+                )}
+              </div>
+              <div className="text-[10px] text-black/55 dark:text-white/55">{i.depositDate}</div>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'title',
+        header: isAr ? 'عنوان الوثيقة والملف' : 'Intitulé & Référence Dossier',
+        width: '2.8*',
+        sortable: true,
+        renderCell: (i) => (
+          <div className="min-w-0">
+            <div className="font-semibold text-xs text-black dark:text-white truncate">
+              {i.title}
+            </div>
+            <div className="text-[11px] text-black/55 dark:text-white/55 font-mono flex items-center gap-2 truncate">
+              <span>Dossier: {i.matterReference}</span>
+              {i.cadastralVolume && (
+                <span className="text-[#d4522f] font-bold">
+                  · {i.cadastralVolume} {i.cadastralNumber}
+                </span>
+              )}
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'category',
+        header: isAr ? 'التصنيف' : 'Nature',
+        width: '1.5*',
+        sortable: true,
+        renderCell: (i) => (
+          <div className="text-xs text-black/75 dark:text-white/80 truncate">{i.category}</div>
+        ),
+      },
+      {
+        key: 'branch',
+        header: isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
+        width: '1.5*',
+        sortable: true,
+        renderCell: (i) => (
+          <span className="inline-flex items-center gap-1.5 text-xs text-black/75 dark:text-white/80 truncate">
+            <MapPin size={12} className="text-[#d4522f] shrink-0" />
+            <span className="truncate">
+              {resolveRecordBranch(i, branchesById, currentBranch, language).name}
+            </span>
+          </span>
+        ),
+      },
+      {
+        key: 'status',
+        header: isAr ? 'الأصالة والمصادقة' : 'Statut Probatoire',
+        width: '1.6*',
+        renderCell: (i) => (
+          <span
+            className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+              i.status === 'MinuteOfficielle'
+                ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300'
+                : i.status === 'DossierAudit'
+                ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                : i.status === 'Confidential'
+                ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300'
+                : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+            }`}
+          >
+            {i.status === 'MinuteOfficielle'
+              ? 'Minute Inaliénable'
+              : i.status === 'DossierAudit'
+              ? 'Audit CAC Scellé'
+              : i.status === 'Confidential'
+              ? 'Confidentiel Défense'
+              : 'Original Certifié'}
+          </span>
+        ),
+      },
+    ],
+    [isAr, isEn, targetScope, pinnedIds, branchesById, currentBranch, language]
+  );
+
+  const filterSections: KineticFilterSection[] = useMemo(
+    () => [
+      {
+        id: 'category',
+        label: isAr ? 'طبيعة الوثيقة' : 'Nature de Pièce',
+        value: categoryFilter,
+        onChange: setCategoryFilter,
+        resetValue: 'All',
+        kind: 'tiles',
+        columns: 2,
+        options: roleMetadata.catPills.map((p) => ({
+          value: p.id,
+          label: p.label,
+          count:
+            p.id === 'All'
+              ? roleScopedItems.length
+              : roleScopedItems.filter((i) => i.category === p.id).length,
+        })),
+      },
+      {
+        id: 'branch',
+        label: isAr ? 'الفرع / المكتب' : isEn ? 'Branch' : 'Branche / Coffre',
+        value: branchFilter,
+        onChange: setBranchFilter,
+        resetValue: 'All',
+        kind: 'tiles',
+        columns: 2,
+        options: branchOptions,
+      },
+    ],
+    [isAr, isEn, categoryFilter, branchFilter, roleMetadata.catPills, roleScopedItems, branchOptions]
+  );
+
+  const activeChips: ActiveFilterChip[] = useMemo(() => {
+    const chips: ActiveFilterChip[] = [];
+    if (categoryFilter !== 'All') {
+      chips.push({
+        key: 'category',
+        label: categoryFilter,
+        onRemove: () => setCategoryFilter('All'),
+      });
+    }
+    if (securityFilter !== 'All') {
+      chips.push({
+        key: 'security',
+        label: isAr ? 'أمان مشدد' : 'Haute Sécurité',
+        onRemove: () => setSecurityFilter('All'),
+      });
+    }
+    if (branchFilter !== 'All') {
+      const lbl = branchOptions.find((o) => o.value === branchFilter)?.label || branchFilter;
+      chips.push({
+        key: 'branch',
+        label: lbl,
+        onRemove: () => setBranchFilter('All'),
+      });
+    }
+    return chips;
+  }, [categoryFilter, securityFilter, branchFilter, branchOptions, isAr]);
+
+  const activeAdvancedCount =
+    (categoryFilter !== 'All' ? 1 : 0) + (branchFilter !== 'All' ? 1 : 0);
+
+  const resetAllFilters = useCallback(() => {
+    setSearchQuery('');
+    setCategoryFilter('All');
+    setSecurityFilter('All');
+    setBranchFilter('All');
+  }, []);
+
+  const hasAnyFilters = Boolean(searchQuery.trim()) || activeChips.length > 0;
+
+  const highSecurityCount = roleScopedItems.filter(
+    (i) => i.cadastralVolume || i.status === 'Confidential'
+  ).length;
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: roleScopedItems.length > 0,
+  });
+
+  if (
+    showSkeleton &&
+    (roleScopedItems.length === 0 || networkMode === 'force_skeleton')
+  ) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200">
+      <ScreenHeaderBar
+        icon={targetScope === 'notaire' ? <Scroll size={22} /> : <Lock size={22} />}
+        title={roleMetadata.title}
+        subtitle={`${roleMetadata.badge} · ${roleMetadata.subtitle}`}
+        secondaryActions={
+          <AtriumButton
+            variant="ghost"
+            size="sm"
+            onClick={handleExportBordereau}
+            icon={<Download size={14} />}
+          >
+            {isAr ? 'جدول الإرسال' : 'Bordereau'}
+          </AtriumButton>
+        }
+        primaryAction={{
+          label:
+            targetScope === 'notaire'
+              ? isAr
+                ? 'إيداع أصل العقد'
+                : 'Déposer une Minute'
+              : isAr
+              ? 'إيداع وثيقة بالخزينة'
+              : 'Déposer une Pièce',
+          onClick: openCreateModal,
+        }}
+      />
+
+      <ScreenKpiBanner
+        heading={
+          isAr ? 'أمان الوثائق والقوة الإثباتية' : 'Force Probante & Intégrité des Pièces'
+        }
+        language={language}
+        primaryCard={{
+          label: isAr ? 'المستندات المودعة بالخزينة' : 'Total Pièces au Coffre',
+          badgeText: isAr ? 'أصول مشفرة' : '100% Scellées',
+          count: roleScopedItems.length,
+          isActive: securityFilter === 'All' && categoryFilter === 'All',
+          onToggle: () => {
+            setSecurityFilter('All');
+            setCategoryFilter('All');
+          },
+          tone: 'emerald',
+        }}
+        secondaryCard={{
+          label:
+            targetScope === 'notaire'
+              ? 'Minutes Publiées Conservation'
+              : isAr
+              ? 'وثائق عالية السرية'
+              : 'Documents Haute Sécurité',
+          badgeText: isAr ? 'ختم رسمي' : 'sceau officiel',
+          count: highSecurityCount,
+          isActive: securityFilter === 'HighSecurity',
+          onToggle: () =>
+            setSecurityFilter((p) => (p === 'HighSecurity' ? 'All' : 'HighSecurity')),
+          tone: 'terracotta',
+        }}
+        darkCard={{
+          label: isAr ? 'الختم الإلكتروني والبصمة SHA-256' : 'Cachet & Horodatage SHA-256',
+          badgeCount: filteredItems.length,
+          badgePrefix: '',
+          badgeSuffix: targetScope.toUpperCase(),
+          valueCount: 256,
+          valuePrefix: 'SHA-',
+          caption: isAr ? 'شهادة إلكترونية سارية المفعول' : 'Inviolabilité cryptographique certifiée',
+        }}
+      />
+
+      <ScreenPod>
+        <ScreenCollectionToolbar
+          title={roleMetadata.title}
+          liveRegionText={`${filteredItems.length}`}
+          language={language}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder={
+            isAr
+              ? 'بحث برمز الوثيقة، العنوان، رقم القضية...'
+              : 'Rechercher par code pièce, intitulé, dossier...'
+          }
+          statusOptions={roleMetadata.catPills.map((p) => ({
+            value: p.id,
+            label: p.label,
+          }))}
+          statusValue={categoryFilter}
+          onStatusChange={setCategoryFilter}
+          hasActiveAdvancedFilters={activeAdvancedCount > 0}
+          activeFiltersCount={activeAdvancedCount}
+          isFilterModalOpen={isFilterModalOpen}
+          filterButtonRef={filterButtonRef}
+          onToggleFilterModal={() => setIsFilterModalOpen((p) => !p)}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          onExport={() => {
+            downloadCsvSafe(
+              `atrium-legal-vault-${targetScope}.csv`,
+              ['Code Pièce', 'Intitulé', 'Réf Dossier', 'Catégorie', 'Statut', 'Date', 'Branche'],
+              filteredItems.map((i) => [
+                i.code,
+                i.title,
+                i.matterReference,
+                i.category,
+                i.status,
+                i.depositDate,
+                resolveRecordBranch(i, branchesById, currentBranch, language).name,
+              ])
+            );
+            showToast(isAr ? 'تم تصدير قائمة الخزينة' : 'Export coffre-fort généré', 'success');
+          }}
+          activeChips={activeChips}
+          onResetAllFilters={resetAllFilters}
+        />
+
+        <UniversalDataCollection<VaultItem>
+          hideToolbar
+          data={filteredItems}
+          columns={columns}
+          keyExtractor={(i) => i.id}
+          defaultViewMode={viewMode}
+          selectedIds={selectedIds}
+          onSelectionChange={setSelectedIds}
+          onBulkDelete={(ids) => {
+            const updated = vaultItems.filter((i) => !ids.has(i.id));
+            saveVault(updated);
+            setSelectedIds(new Set());
+            showToast(
+              isAr ? 'تم سحب الوثائق المحددة' : `${ids.size} pièce(s) retirée(s) du coffre`,
+              'info'
+            );
+          }}
+          isPinned={(i) => pinnedIds.has(i.id)}
+          onTogglePin={togglePin}
+          sortBy={sortBy}
+          sortDirection={sortDir}
+          onSortChange={(field, dir) => {
+            setSortBy(field);
+            setSortDir(dir);
+          }}
+          openItemId={activeItem?.id ?? null}
+          onItemClick={(item, el) => {
+            setSelectedItem(item);
+            setDrawerOpenerEl(el || null);
+          }}
+          onViewDetails={(item, el) => {
+            setSelectedItem(item);
+            setDrawerOpenerEl(el || null);
+          }}
+          onEdit={openEditModal}
+          onDelete={handleDelete}
+          customActions={(item) => [
+            {
+              id: 'certify',
+              label: isAr ? 'فحص البصمة SHA-256' : 'Empreinte SHA-256',
+              icon: <FileCheck size={14} />,
+              onClick: () => handleCertifyHash(item),
+            },
+          ]}
+          renderCard={(item) => (
+            <div className="space-y-3 text-left rtl:text-right">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg border border-[#d4522f]/20">
+                  {item.code}
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                  {item.status}
+                </span>
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">
+                  {item.title}
+                </h3>
+                <div className="text-xs text-black/55 dark:text-white/55 font-mono mt-0.5">
+                  Dossier: {item.matterReference}
+                </div>
+              </div>
+            </div>
+          )}
+          emptyTitle={isAr ? 'الخزينة فارغة حالياً' : 'Aucune pièce au coffre'}
+          emptyDescription={
+            isAr
+              ? 'قم بإيداع وثيقة رسمية أو أعد ضبط المرشحات.'
+              : 'Déposez une pièce ou modifiez les filtres actifs.'
+          }
+          primaryActionLabel={isAr ? 'إيداع وثيقة' : 'Déposer une Pièce'}
+          onAddFirstItem={openCreateModal}
+          hasActiveFilters={hasAnyFilters}
+          onResetFilters={resetAllFilters}
+        />
+      </ScreenPod>
+
+      <KineticFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        triggerRef={filterButtonRef}
+        language={language}
+        displayCount={filteredItems.length}
+        entityPluralLabel={isAr ? 'وثيقة' : 'pièces'}
+        hasActiveFilters={hasAnyFilters}
+        onResetFilters={resetAllFilters}
+        sections={filterSections}
+      />
+
+      <KineticSlideOverInspector<VaultItem>
+        isOpen={Boolean(activeItem)}
+        item={activeItem}
+        allItems={filteredItems}
+        keyExtractor={(i) => i.id}
+        openerElement={drawerOpenerEl}
+        language={language}
+        title={activeItem?.title || ''}
+        subtitle={`${activeItem?.code || ''} · Dossier ${activeItem?.matterReference || ''}`}
+        avatarText={targetScope === 'notaire' ? 'MN' : 'VL'}
+        branchName={
+          activeItem
+            ? resolveRecordBranch(activeItem, branchesById, currentBranch, language).name
+            : ''
+        }
+        statusLabel={activeItem ? localizeStatus(activeItem.status, language) : undefined}
+        tabs={[
+          { id: 'piece', label: isAr ? 'الوثيقة' : 'Fiche' },
+          { id: 'sceau', label: isAr ? 'الختم الرسمي' : 'Cachet & Sceau' },
+          { id: 'hash', label: isAr ? 'التشفير' : 'SHA-256' },
+          { id: 'notes', label: isAr ? 'الملاحظات' : 'Bordereau' },
+        ]}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onSelectItem={(item) => setSelectedItem(item)}
+        onClose={() => setSelectedItem(null)}
+        onDelete={handleDelete}
+        holdToDelete
+        renderBody={(item, tab) => {
+          if (tab === 'sceau') {
+            return (
+              <div className="p-4 bg-white dark:bg-neutral-900 border-2 border-dashed border-[#d4522f]/40 rounded-2xl text-center space-y-3 text-xs">
+                <div className="w-12 h-12 rounded-full bg-[#d4522f]/15 text-[#d4522f] mx-auto flex items-center justify-center font-bold">
+                  <Stamp size={24} />
+                </div>
+                <div>
+                  <span className="font-bold text-sm text-black dark:text-white block uppercase tracking-wider">
+                    الجمهورية الجزائرية الديمقراطية الشعبية
+                  </span>
+                  <span className="text-[10px] text-black/55 dark:text-white/55 block">
+                    RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 font-mono text-[11px] text-black/75 dark:text-white/80 space-y-1">
+                  <div>
+                    Sceau N° : <strong>{item.officialSealNumber || 'DZ-SEAL-2026-99'}</strong>
+                  </div>
+                  <div>Horodatage légal : {item.depositDate} à 11:42:00</div>
+                  <div>Juridiction / Étude : Wilaya d'Alger</div>
+                </div>
+                <div className="flex items-center justify-center gap-1.5 text-emerald-600 font-bold text-[11px]">
+                  <CheckCircle2 size={13} />
+                  <span>Original Scellé et Inaltérable</span>
+                </div>
+                <button
+                  type="button"
+                  data-no-liquid="true"
+                  onClick={() => {
+                    showToast(
+                      isAr ? 'طباعة شهادة المطابقة والختم' : "Certificat d'authenticité imprimé",
+                      'success'
+                    );
+                    window.print();
+                  }}
+                  className="w-full py-2 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+                >
+                  <Printer size={13} />
+                  {isAr ? 'طباعة نسخة مع الختم الرسمي' : 'Imprimer avec Cachet Légal'}
+                </button>
+              </div>
+            );
+          }
+
+          if (tab === 'hash') {
+            return (
+              <div className="space-y-3 text-xs">
+                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
+                  <span className="font-semibold text-black dark:text-white block">
+                    Empreinte Numérique Cryptographique :
+                  </span>
+                  <div className="font-mono text-[10px] break-all bg-white dark:bg-neutral-900 p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800 text-black/75 dark:text-white/80">
+                    e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+                  </div>
+                  <p className="text-[10px] text-emerald-600 font-medium">
+                    ✓ Horodatage certifié conforme aux exigences de recevabilité judiciaire.
+                  </p>
+                </div>
+              </div>
+            );
+          }
+
+          if (tab === 'notes') {
+            return (
+              <div className="space-y-3 text-xs">
+                <p className="text-black/60 dark:text-white/60 text-[11px]">
+                  Bordereau de communication de pièces contradictoire et réserves :
+                </p>
+                <textarea
+                  rows={6}
+                  value={inspectorNotes}
+                  onChange={(e) => setInspectorNotes(e.target.value)}
+                  placeholder="Mentionner la notification aux parties, récépissé de dépôt..."
+                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none"
+                />
+                <button
+                  type="button"
+                  data-no-liquid="true"
+                  onClick={() => {
+                    setNoteSaved(true);
+                    setTimeout(() => setNoteSaved(false), 2000);
+                    showToast(
+                      isAr ? 'تم حفظ الملاحظات' : 'Bordereau enregistré',
+                      'success'
+                    );
+                  }}
+                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#d4522f] text-white hover:bg-[#b03b1b] transition-colors font-medium text-xs shadow-xs cursor-pointer"
+                >
+                  {noteSaved ? (
+                    <>
+                      <Check size={14} />
+                      {isAr ? 'تم الحفظ' : 'Bordereau enregistré'}
+                    </>
+                  ) : (
+                    <>
+                      <Save size={14} />
+                      {isAr ? 'حفظ' : 'Enregistrer'}
+                    </>
+                  )}
+                </button>
+              </div>
+            );
+          }
+
+          return (
+            <div className="space-y-3.5 text-xs">
+              <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-black/55 dark:text-white/55">Numéro de pièce:</span>
+                  <span className="font-mono font-bold text-black dark:text-white">
+                    {item.code}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-black/55 dark:text-white/55">Dossier:</span>
+                  <span className="font-mono font-semibold text-[#d4522f]">
+                    {item.matterReference}
+                  </span>
+                </div>
+                {item.cadastralVolume && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-black/55 dark:text-white/55">
+                      Conservation Foncière:
+                    </span>
+                    <span className="font-mono font-bold text-emerald-600">
+                      {item.cadastralVolume} {item.cadastralNumber}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center">
+                  <span className="text-black/55 dark:text-white/55">Date d'archivage:</span>
+                  <span className="font-mono text-black dark:text-white">
+                    {item.depositDate}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <AtriumButton
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 justify-center"
+                  icon={<FileCheck size={13} />}
+                  onClick={() => handleCertifyHash(item)}
+                >
+                  {isAr ? 'فحص البصمة' : 'Vérifier SHA-256'}
+                </AtriumButton>
+                <AtriumButton
+                  variant="secondary"
+                  size="sm"
+                  className="flex-1 justify-center"
+                  icon={<Edit size={13} />}
+                  onClick={() => openEditModal(item)}
+                >
+                  {isAr ? 'تعديل' : 'Modifier'}
+                </AtriumButton>
+              </div>
+            </div>
+          );
+        }}
+      />
+
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold">
+                  {targetScope === 'notaire' ? <Scroll size={20} /> : <Lock size={20} />}
+                </div>
+                <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  {vaultToEdit
+                    ? isAr
+                      ? 'تعديل وثيقة بالخزينة'
+                      : 'Modifier la Pièce du Coffre'
+                    : isAr
+                    ? 'إيداع وثيقة جديدة بالخزينة'
+                    : 'Déposer une Pièce au Coffre-fort'}
+                </h2>
+              </div>
+              <button
+                type="button"
+                data-no-liquid="true"
+                aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                onClick={() => setIsModalOpen(false)}
+                className="p-1.5 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveModal} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  label={isAr ? 'رمز الوثيقة *' : 'Code Pièce *'}
+                  placeholder="DOC-2026-081"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  required
+                />
+                <LabelInput
+                  label={isAr ? 'رقم الملف / القضية *' : 'Réf Dossier *'}
+                  placeholder="DOS-2026-0091"
+                  value={matterReference}
+                  onChange={(e) => setMatterReference(e.target.value)}
+                  required
+                />
+              </div>
+
+              <LabelInput
+                label={isAr ? 'عنوان وتعيين الوثيقة *' : 'Intitulé de la Pièce *'}
+                placeholder="Ex: Contrat Commercial Original & Avenants"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+              />
+
+              <div className="grid grid-cols-2 gap-3">
+                <LabelSelect
+                  label={isAr ? 'طبيعة الوثيقة' : 'Nature'}
+                  value={category}
+                  onChange={(v) => setCategory(extractStr(v))}
+                  options={roleMetadata.catPills
+                    .filter((p) => p.id !== 'All')
+                    .map((p) => ({ value: p.id, label: p.label }))}
+                />
+                <LabelSelect
+                  label={isAr ? 'مستوى الحماية' : 'Sécurité'}
+                  value={status}
+                  onChange={(v) => setStatus(extractStr(v) as VaultItem['status'])}
+                  options={[
+                    { value: 'OriginalScanned', label: 'Original Scellé' },
+                    { value: 'Confidential', label: 'Confidentiel Défense' },
+                    { value: 'MinuteOfficielle', label: 'Minute Notariée' },
+                    { value: 'DossierAudit', label: 'Dossier Audit CAC' },
+                  ]}
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                <AtriumButton
+                  variant="ghost"
+                  size="sm"
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  {isAr ? 'إلغاء' : 'Annuler'}
+                </AtriumButton>
+                <AtriumButton variant="primary" size="sm" type="submit">
+                  {vaultToEdit
+                    ? isAr
+                      ? 'حفظ التعديلات'
+                      : 'Enregistrer'
+                    : isAr
+                    ? 'إيداع الوثيقة'
+                    : 'Sceller au Coffre'}
+                </AtriumButton>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };

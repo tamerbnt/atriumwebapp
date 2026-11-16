@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { RentableUnit, RentalBooking } from '../../../types/index';
-import { formatCurrencyAmount } from '../../../utils/rules';
+import { formatCurrencyAmount, localizeStatus } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
 import { VenueCloudSyncModal } from './VenueCloudSyncModal';
@@ -896,7 +896,7 @@ export const VenueTimelineView: React.FC = () => {
             ? resolveRecordBranch(activeBooking, branchesById, currentBranch, language).name
             : undefined
         }
-        statusLabel={activeBooking?.status}
+        statusLabel={activeBooking ? localizeStatus(activeBooking.status, language) : undefined}
         onSelectItem={(b) => setInspectedBooking(b)}
         onClose={() => setInspectedBooking(null)}
         onDelete={(b) => deleteRentalBooking(b.id)}
