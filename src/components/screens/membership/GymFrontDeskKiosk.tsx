@@ -29,6 +29,13 @@ import {
   ScreenHeaderBar,
   ScreenKpiBanner,
   ScreenPod,
+  KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorProgressBar,
+  InspectorListItem,
   buildBranchesByIdMap,
   resolveRecordBranch,
 } from '../../ui/kinetic';
@@ -91,6 +98,8 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
   const [walkInAmount, setWalkInAmount] = useState('500');
   const [walkInPaymentMethod, setWalkInPaymentMethod] = useState('cash');
   const [lastPrintedTicket, setLastPrintedTicket] = useState<any>(null);
+  const [inspectedLogId, setInspectedLogId] = useState<string | null>(null);
+  const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
@@ -287,6 +296,15 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
       visibleLogs: filtered.slice(0, 20),
     };
   }, [members, memberCheckIns, logFilter]);
+
+  const inspectedLog = useMemo(
+    () => (inspectedLogId ? visibleLogs.find((l) => l.id === inspectedLogId) || null : null),
+    [inspectedLogId, visibleLogs]
+  );
+  const inspectedMember = useMemo(
+    () => (inspectedLog ? members.find((m) => m.id === inspectedLog.memberId) || null : null),
+    [inspectedLog, members]
+  );
 
   if (showSkeleton && (members.length === 0 || networkMode === 'force_skeleton')) {
     return (
@@ -534,9 +552,14 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
               </div>
             ) : (
               visibleLogs.map((log) => (
-                <div
+                <button
                   key={log.id}
-                  className="p-3 rounded-2xl bg-white dark:bg-[#262422] border border-[#E6DED6]/80 dark:border-[#3A3734] flex items-center justify-between text-xs shadow-2xs"
+                  type="button"
+                  onClick={(e) => {
+                    setDrawerOpenerEl(e.currentTarget);
+                    setInspectedLogId(log.id);
+                  }}
+                  className="w-full text-left rtl:text-right p-3 rounded-2xl bg-white dark:bg-[#262422] border border-[#E6DED6]/80 dark:border-[#3A3734] hover:border-[#d4522f]/50 flex items-center justify-between text-xs shadow-2xs transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span
@@ -578,12 +601,142 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                       {log.accessStatus}
                     </span>
                   </div>
-                </div>
+                </button>
               ))
             )}
           </div>
         </ScreenPod>
       </div>
+
+      <KineticSlideOverInspector<any>
+        isOpen={inspectedLog !== null}
+        item={inspectedLog}
+        allItems={visibleLogs}
+        keyExtractor={(l) => l.id}
+        openerElement={drawerOpenerEl}
+        language={language}
+        title={inspectedLog?.memberName || ''}
+        subtitle={
+          inspectedLog
+            ? `${inspectedLog.planName} · ${new Date(inspectedLog.timestamp).toLocaleTimeString()}`
+            : undefined
+        }
+        avatarText={inspectedLog ? inspectedLog.memberName.slice(0, 2).toUpperCase() : undefined}
+        categoryLabel={inspectedLog?.planName}
+        branchName={
+          inspectedLog
+            ? resolveRecordBranch(inspectedLog, branchesById, currentBranch, language).name
+            : undefined
+        }
+        statusLabel={
+          inspectedLog
+            ? inspectedLog.accessStatus === 'Granted'
+              ? isRtl ? 'دخول مسموح' : 'Accordé'
+              : inspectedLog.accessStatus === 'Warning_Expiring'
+              ? isRtl ? 'ينتهي قريباً' : 'Expire bientôt'
+              : isRtl ? 'مرفوض' : 'Refusé'
+            : undefined
+        }
+        statusClassName={
+          inspectedLog?.accessStatus === 'Granted'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : inspectedLog?.accessStatus === 'Warning_Expiring'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            : 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+        }
+        tabs={[
+          { id: 'overview', label: isRtl ? 'المرور الحالي' : 'Passage & Accès' },
+          { id: 'plan', label: isRtl ? 'الاشتراك' : 'Forfait & Séances' },
+          { id: 'history', label: isRtl ? 'سجل البوابة' : 'Historique portique' },
+        ]}
+        onClose={() => setInspectedLogId(null)}
+        onSelectItem={(l) => setInspectedLogId(l.id)}
+        renderBody={(log, activeTab) => {
+          const memberLogs = visibleLogs.filter((v) => v.memberId === log.memberId);
+          const remaining = inspectedMember?.remainingSessions ?? log.remainingSessionsAfter ?? 12;
+          const pct = Math.min(100, Math.round((remaining / 30) * 100));
+
+          if (activeTab === 'plan') {
+            return (
+              <InspectorSection index={0} title={isRtl ? 'تفاصيل الاشتراك' : 'Détails du forfait'}>
+                <InspectorCard>
+                  <InspectorKeyValue label={isRtl ? 'الباقة' : 'Formule'} value={log.planName} tone="accent" mono={false} />
+                  <InspectorKeyValue
+                    label={isRtl ? 'الحصص المتبقية' : 'Séances restantes'}
+                    value={`${remaining}`}
+                    tone={remaining <= 3 ? 'danger' : 'ok'}
+                  />
+                  <InspectorKeyValue
+                    label={isRtl ? 'الهاتف' : 'Téléphone'}
+                    value={inspectedMember?.phoneNumber || '—'}
+                    copyText={inspectedMember?.phoneNumber}
+                    isLast
+                  />
+                  <InspectorProgressBar percent={pct} tone={remaining <= 3 ? 'danger' : 'ok'} />
+                </InspectorCard>
+              </InspectorSection>
+            );
+          }
+
+          if (activeTab === 'history') {
+            return (
+              <InspectorSection index={0} title={isRtl ? 'آخر عمليات الدخول' : 'Passages récents'}>
+                <InspectorCard>
+                  {(memberLogs.length > 0 ? memberLogs.slice(0, 5) : [log]).map((entry, idx, arr) => (
+                    <InspectorListItem
+                      key={entry.id}
+                      title={entry.planName}
+                      subtitle={new Date(entry.timestamp).toLocaleString()}
+                      badge={{
+                        label: entry.accessStatus === 'Granted' ? (isRtl ? 'مقبول' : 'Accepté') : (isRtl ? 'تنبيه' : 'Alerte'),
+                        tone: entry.accessStatus === 'Granted' ? 'ok' : 'danger',
+                      }}
+                      isLast={idx === arr.length - 1}
+                    />
+                  ))}
+                </InspectorCard>
+              </InspectorSection>
+            );
+          }
+
+          return (
+            <>
+              <InspectorSection index={0} title={isRtl ? 'إجراءات البوابة' : 'Actions rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 're-checkin',
+                      label: isRtl ? 'تسجيل دخول' : 'Re-pointer',
+                      icon: <UserCheck className="w-[18px] h-[18px]" />,
+                      primary: true,
+                      onClick: () => {
+                        if (inspectedMember) handleValidateCheckIn(inspectedMember);
+                      },
+                    },
+                    {
+                      id: 'walkin',
+                      label: isRtl ? 'تذكرة' : 'Pass séance',
+                      icon: <Ticket className="w-[18px] h-[18px]" />,
+                      onClick: () => {
+                        setInspectedLogId(null);
+                        setIsWalkInModalOpen(true);
+                      },
+                    },
+                  ]}
+                />
+              </InspectorSection>
+
+              <InspectorSection index={1} title={isRtl ? 'تفاصيل المسح' : 'Contrôle d’accès'}>
+                <InspectorCard>
+                  <InspectorKeyValue label="Badge ID" value={inspectedMember?.cardId || log.memberId} />
+                  <InspectorKeyValue label={isRtl ? 'الطريقة' : 'Méthode'} value={log.checkInMethod || 'RFID / Barcode'} mono={false} />
+                  <InspectorKeyValue label={isRtl ? 'التوقيت' : 'Horodatage'} value={new Date(log.timestamp).toLocaleTimeString()} isLast />
+                </InspectorCard>
+              </InspectorSection>
+            </>
+          );
+        }}
+      />
 
       {isWalkInModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1F1D1B]/45 backdrop-blur-xs p-4">

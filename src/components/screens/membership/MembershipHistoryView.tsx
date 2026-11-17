@@ -34,6 +34,16 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -359,6 +369,101 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
     return chips;
   }, [branchFilter, methodFilter, getLocalizedPaymentMethod]);
 
+  const getRowMeta = useCallback(
+    (sale: Sale): Partial<KineticRowData> => {
+      const dateStr = new Date(sale.createdAt).toLocaleDateString();
+      const timeStr = new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const itemsSummary = sale.items.map((it) => `${it.quantity}× ${it.productName}`).join(', ');
+      const isRefunded = sale.status === 'Refunded';
+      return {
+        title: sale.memberName || (language === 'ar' ? 'زائر غير مسجل' : language === 'fr' ? 'Client de passage' : 'Guest Walk-In'),
+        subline: `#${sale.id} · ${dateStr} ${timeStr}`,
+        categoryLabel: getLocalizedPaymentMethod(sale.paymentMethod),
+        statusLabel: isRefunded
+          ? language === 'ar' ? 'مسترجع' : language === 'fr' ? 'Remboursé' : 'Refunded'
+          : language === 'ar' ? 'مسدد' : language === 'fr' ? 'Encaissé' : 'Settled',
+        statusVariant: isRefunded ? 'blocked' : 'active',
+        metricPrimary: formatMoney(sale.totalAmount),
+        metricSecondary: `${sale.items.length} ${language === 'ar' ? 'أصناف' : language === 'fr' ? 'articles' : 'items'}`,
+        detailCol1: {
+          heading: language === 'ar' ? 'العميل والتذكرة' : language === 'fr' ? 'Client & Ticket' : 'Customer & Ticket',
+          primaryText: `#${sale.id}`,
+          secondaryText: sale.customerPhone || dateStr,
+          tertiaryText: timeStr,
+        },
+        detailCol2: {
+          heading: language === 'ar' ? 'الأصناف والمبلغ' : language === 'fr' ? 'Panier & Total' : 'Basket & Total',
+          primaryText: formatMoney(sale.totalAmount),
+          secondaryText: `${sale.items.length} ${language === 'ar' ? 'منتجات' : language === 'fr' ? 'lignes' : 'items'}`,
+          tertiaryText: getLocalizedPaymentMethod(sale.paymentMethod),
+        },
+        detailCol3: {
+          heading: language === 'ar' ? 'تفاصيل الطلب' : language === 'fr' ? 'Articles & Notes' : 'Items & Notes',
+          primaryText: itemsSummary || '—',
+          secondaryText: sale.notes || resolveRecordBranch(sale, branchesById, currentBranch, language).name,
+        },
+      };
+    },
+    [language, getLocalizedPaymentMethod, branchesById, currentBranch]
+  );
+
+  const getFanActions = useCallback(
+    (sale: Sale): KineticRowFanAction[] => [
+      {
+        id: 'print',
+        label: language === 'ar' ? 'طباعة' : language === 'fr' ? 'Imprimer ticket' : 'Print Receipt',
+        icon: <Printer className="w-[15px] h-[15px]" />,
+        onClick: () => window.print(),
+      },
+      ...(sale.status !== 'Refunded'
+        ? [
+            {
+              id: 'refund',
+              label: language === 'ar' ? 'استرجاع' : language === 'fr' ? 'Rembourser' : 'Refund',
+              icon: <RotateCcw className="w-[15px] h-[15px]" />,
+              isDanger: true,
+              onClick: () => {
+                setSelectedSale(sale);
+                setIsRefundModalOpen(true);
+              },
+            },
+          ]
+        : []),
+    ],
+    [language]
+  );
+
+  const getDetailActions = useCallback(
+    (sale: Sale): KineticDetailAction[] => [
+      {
+        id: 'view',
+        label: language === 'ar' ? 'التفاصيل' : language === 'fr' ? 'Fiche ticket' : 'Receipt',
+        icon: <Receipt className="w-3.5 h-3.5" />,
+        onClick: () => setSelectedSale(sale),
+      },
+      {
+        id: 'print',
+        label: language === 'ar' ? 'طباعة' : language === 'fr' ? 'Imprimer' : 'Print',
+        icon: <Printer className="w-3.5 h-3.5" />,
+        onClick: () => window.print(),
+      },
+      ...(sale.status !== 'Refunded'
+        ? [
+            {
+              id: 'refund',
+              label: language === 'ar' ? 'استرجاع' : language === 'fr' ? 'Rembourser' : 'Refund',
+              icon: <RotateCcw className="w-3.5 h-3.5 text-[#c0283d]" />,
+              onClick: () => {
+                setSelectedSale(sale);
+                setIsRefundModalOpen(true);
+              },
+            },
+          ]
+        : []),
+    ],
+    [language]
+  );
+
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: sales.length > 0,
@@ -527,6 +632,9 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
             setDrawerOpenerEl(opener || null);
             setSelectedSale(sale);
           }}
+          getRowMeta={getRowMeta}
+          getFanActions={getFanActions}
+          getDetailActions={getDetailActions}
           columns={saleColumns}
           emptyTitle={language === 'ar' ? 'لا توجد معاملات' : 'No sales transactions found'}
           emptyDescription={
@@ -560,7 +668,7 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
         language={language}
         title={selectedSale?.memberName || (language === 'ar' ? 'زائر غير مسجل' : language === 'fr' ? 'Client de passage' : 'Guest Walk-In')}
         subtitle={selectedSale ? `#${selectedSale.id} · ${new Date(selectedSale.createdAt).toLocaleString()}` : undefined}
-        avatarText={selectedSale ? (selectedSale.memberName || 'G').charAt(0).toUpperCase() : undefined}
+        avatarText={selectedSale ? (selectedSale.memberName || 'GW').slice(0, 2).toUpperCase() : undefined}
         branchName={
           selectedSale
             ? resolveRecordBranch(selectedSale, branchesById, currentBranch, language).name
@@ -573,116 +681,154 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
         }
         statusClassName={
           selectedSale?.status === 'Refunded'
-            ? 'bg-rose-50 text-rose-700 border border-rose-200'
-            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
         }
+        tabs={[
+          { id: 'overview', label: language === 'ar' ? 'ملخص الوصل' : language === 'fr' ? 'Aperçu ticket' : 'Overview' },
+          { id: 'items', label: language === 'ar' ? 'الأصناف' : language === 'fr' ? 'Articles' : 'Line Items' },
+          { id: 'audit', label: language === 'ar' ? 'التدقيق' : language === 'fr' ? 'Audit & Retour' : 'Audit' },
+        ]}
+        holdToDelete={false}
         onClose={() => setSelectedSale(null)}
         onSelectItem={(sale) => setSelectedSale(sale)}
-        renderBody={(sale) => (
-          <div className="space-y-4 text-xs">
-            {sale.status === 'Refunded' && (
-              <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900/60 space-y-1">
-                <div className="flex items-center gap-2 text-rose-800 dark:text-rose-200 font-bold">
-                  <RotateCcw size={14} className="text-rose-600" />
-                  <span>{language === 'ar' ? 'معاملة مسترجعة' : 'TRANSACTION REMBOURSÉE'}</span>
-                </div>
-                <p className="text-[11px] text-rose-700 dark:text-rose-300">{sale.notes}</p>
-              </div>
-            )}
+        renderBody={(sale, activeTab) => {
+          const isRefunded = sale.status === 'Refunded';
+          const methodName = getLocalizedPaymentMethod(sale.paymentMethod);
 
-            <div className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-2">
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">
-                  {language === 'ar' ? 'رقم الوصل:' : language === 'fr' ? 'Réf ticket :' : 'Receipt Ref:'}
-                </span>
-                <span className="font-mono font-bold text-[#d4522f]">#{sale.id}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">
-                  {language === 'ar' ? 'طريقة الدفع:' : language === 'fr' ? 'Règlement :' : 'Payment Method:'}
-                </span>
-                <span className="font-bold text-black dark:text-white">{getLocalizedPaymentMethod(sale.paymentMethod)}</span>
-              </div>
-              {sale.customerPhone && (
-                <div className="flex justify-between">
-                  <span className="text-black/62 dark:text-white/65">
-                    {language === 'ar' ? 'الهاتف:' : language === 'fr' ? 'Téléphone :' : 'Phone:'}
-                  </span>
-                  <span className="font-mono font-semibold text-black dark:text-white tabular-nums">{sale.customerPhone}</span>
-                </div>
+          if (activeTab === 'items') {
+            return (
+              <>
+                <InspectorSection index={0} title={language === 'ar' ? 'قائمة الأصناف' : language === 'fr' ? 'Détail du panier' : 'Purchased Items'}>
+                  <InspectorCard>
+                    {sale.items.map((item, idx) => (
+                      <InspectorListItem
+                        key={idx}
+                        title={item.productName}
+                        subtitle={`${item.quantity} × ${formatMoney(item.unitPrice)}`}
+                        metaRight={formatMoney(item.totalPrice)}
+                        isLast={idx === sale.items.length - 1}
+                      />
+                    ))}
+                  </InspectorCard>
+                </InspectorSection>
+                <InspectorSection index={1}>
+                  <InspectorBigStat
+                    value={formatMoney(sale.totalAmount)}
+                    tone={isRefunded ? 'danger' : 'ok'}
+                    caption={`${sale.items.length} ${language === 'ar' ? 'أصناف' : language === 'fr' ? 'articles' : 'items'} · ${methodName}`}
+                  />
+                </InspectorSection>
+              </>
+            );
+          }
+
+          if (activeTab === 'audit') {
+            return (
+              <>
+                <InspectorSection index={0} title={language === 'ar' ? 'تتبع العملية' : language === 'fr' ? 'Traçabilité POS' : 'Audit Trail'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label={language === 'ar' ? 'رقم الوصل' : 'Ticket Ref'} value={`#${sale.id}`} />
+                    <InspectorKeyValue
+                      label={language === 'ar' ? 'تاريخ الإصدار' : 'Horodatage'}
+                      value={new Date(sale.createdAt).toLocaleString()}
+                    />
+                    <InspectorKeyValue
+                      label={language === 'ar' ? 'الحالة' : 'État'}
+                      value={isRefunded ? 'REMBOURSÉ' : 'VALIDÉ'}
+                      tone={isRefunded ? 'danger' : 'ok'}
+                      isLast={!sale.notes}
+                    />
+                    {sale.notes && (
+                      <InspectorKeyValue label="Notes" value={sale.notes} mono={false} isLast />
+                    )}
+                  </InspectorCard>
+                </InspectorSection>
+                {!isRefunded && (
+                  <InspectorSection index={1}>
+                    <InspectorWideButton
+                      label={
+                        language === 'ar'
+                          ? 'استرجاع الوصل وإعادة للمخزون'
+                          : language === 'fr'
+                          ? 'Rembourser & Réintégrer au stock'
+                          : 'Process Refund & Restock Items'
+                      }
+                      icon={<RotateCcw className="w-4 h-4" />}
+                      tone="dark"
+                      onClick={() => setIsRefundModalOpen(true)}
+                    />
+                  </InspectorSection>
+                )}
+              </>
+            );
+          }
+
+          return (
+            <>
+              <InspectorSection index={0} title={language === 'ar' ? 'إجراءات سريعة' : language === 'fr' ? 'Actions rapides' : 'Quick Actions'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'print',
+                      label: language === 'ar' ? 'طباعة الوصل' : language === 'fr' ? 'Ticket thermique' : 'Print Receipt',
+                      icon: <Printer className="w-[18px] h-[18px]" />,
+                      primary: true,
+                      onClick: () => window.print(),
+                    },
+                    {
+                      id: 'shop',
+                      label: language === 'ar' ? 'نقطة البيع' : language === 'fr' ? 'Nouvelle vente' : 'Open Shop',
+                      icon: <Receipt className="w-[18px] h-[18px]" />,
+                      onClick: () => setScreen('shop'),
+                    },
+                    ...(!isRefunded
+                      ? [
+                          {
+                            id: 'refund',
+                            label: language === 'ar' ? 'استرجاع' : language === 'fr' ? 'Rembourser' : 'Refund',
+                            icon: <RotateCcw className="w-[18px] h-[18px] text-[#c0283d]" />,
+                            onClick: () => setIsRefundModalOpen(true),
+                          },
+                        ]
+                      : []),
+                  ]}
+                />
+              </InspectorSection>
+
+              <InspectorSection index={1}>
+                <InspectorBigStat
+                  value={formatMoney(sale.totalAmount)}
+                  tone={isRefunded ? 'danger' : 'accent'}
+                  caption={`${methodName} · ${new Date(sale.createdAt).toLocaleDateString()}`}
+                />
+              </InspectorSection>
+
+              <InspectorSection index={2} title={language === 'ar' ? 'معلومات العميل' : language === 'fr' ? 'Détails & Coordonnées' : 'Ticket Info'}>
+                <InspectorCard>
+                  <InspectorKeyValue label={language === 'ar' ? 'المرجع' : 'Réf ticket'} value={`#${sale.id}`} />
+                  <InspectorKeyValue label={language === 'ar' ? 'طريقة الدفع' : 'Règlement'} value={methodName} mono={false} />
+                  {sale.customerPhone && (
+                    <InspectorKeyValue label={language === 'ar' ? 'الهاتف' : 'Téléphone'} value={sale.customerPhone} />
+                  )}
+                  <InspectorKeyValue
+                    label={language === 'ar' ? 'الأصناف' : 'Articles'}
+                    value={`${sale.items.length} ${language === 'ar' ? 'صنف' : 'articles'}`}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+
+              {sale.notes && (
+                <InspectorSection index={3} title={language === 'ar' ? 'ملاحظات' : 'Notes'}>
+                  <InspectorCard>
+                    <InspectorListItem title={sale.notes} badge={{ label: 'Note', tone: isRefunded ? 'danger' : 'accent' }} isLast />
+                  </InspectorCard>
+                </InspectorSection>
               )}
-            </div>
-
-            {sale.notes && !sale.notes.includes('REFUNDED') && (
-              <div className="p-3.5 rounded-2xl bg-[#d4522f]/10 border border-[#d4522f]/20 space-y-1">
-                <span className="text-[11px] font-semibold uppercase text-[#d4522f] flex items-center gap-1">
-                  <Scissors size={12} />
-                  <span>Notes</span>
-                </span>
-                <p className="text-xs font-semibold text-black dark:text-white">{sale.notes}</p>
-              </div>
-            )}
-
-            <div className="border border-[#E6DED6] dark:border-[#3A3734] rounded-2xl divide-y divide-[#E6DED6]/60 dark:divide-[#3A3734] overflow-hidden">
-              {sale.items.map((item, idx) => (
-                <div key={idx} className="p-3.5 flex justify-between items-center bg-white dark:bg-[#262422]">
-                  <div>
-                    <div className="font-bold text-black dark:text-white">{item.productName}</div>
-                    <div className="text-[11px] text-black/62 dark:text-white/65 tabular-nums mt-0.5">
-                      {item.quantity} × {formatMoney(item.unitPrice)}
-                    </div>
-                  </div>
-                  <span className="font-bold text-black dark:text-white tabular-nums">
-                    {formatMoney(item.totalPrice)}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex justify-between items-center">
-              <span className="text-xs font-bold text-[#d4522f]">
-                {language === 'ar' ? 'إجمالي المدفوع' : language === 'fr' ? 'Total Encaissé' : 'Total Settled'}
-              </span>
-              <span className="text-2xl font-bold tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans text-[#d4522f]">
-                {formatMoney(sale.totalAmount)}
-              </span>
-            </div>
-
-            <div className="space-y-2 pt-2">
-              {sale.status !== 'Refunded' && (
-                <button
-                  type="button"
-                  onClick={() => setIsRefundModalOpen(true)}
-                  className="w-full h-10 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 text-xs font-bold text-rose-700 dark:text-rose-300 flex items-center justify-center gap-2 cursor-pointer transition-colors"
-                >
-                  <RotateCcw size={14} />
-                  <span>
-                    {language === 'ar'
-                      ? 'استرجاع الوصل وإعادة للمخزون'
-                      : language === 'fr'
-                      ? 'Rembourser & Réintégrer au stock'
-                      : 'Process Refund & Restock Items'}
-                  </span>
-                </button>
-              )}
-              <AtriumButton
-                type="button"
-                variant="secondary"
-                onClick={() => window.print()}
-                icon={<Printer size={15} />}
-                className="w-full justify-center"
-              >
-                <span>
-                  {language === 'ar'
-                    ? 'طباعة الوصل الحراري'
-                    : language === 'fr'
-                    ? 'Imprimer le ticket thermique'
-                    : 'Print Thermal Receipt'}
-                </span>
-              </AtriumButton>
-            </div>
-          </div>
-        )}
+            </>
+          );
+        }}
       />
 
       {isRefundModalOpen && selectedSale && (

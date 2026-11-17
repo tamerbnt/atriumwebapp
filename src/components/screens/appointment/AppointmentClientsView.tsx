@@ -9,7 +9,10 @@ import {
   CheckCircle2,
   Coffee,
   Building2,
-  Award,
+  Eye,
+  Trash2,
+  Phone,
+  Edit2,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -39,6 +42,17 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorNotesField,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -101,9 +115,6 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
     );
     const [inspectingClient, setInspectingClient] = useState<Member | null>(null);
     const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
-    const [drawerTab, setDrawerTab] = useState<'diagnostic' | 'formulas' | 'history' | 'preferences'>(
-      'diagnostic'
-    );
     const [newFormulaText, setNewFormulaText] = useState('');
     const [newFormulaStylist, setNewFormulaStylist] = useState('Sarah Louati');
     const [newFormulaNotes, setNewFormulaNotes] = useState('');
@@ -545,6 +556,96 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
       [isAr, isEn, branchesById, currentBranch, language]
     );
 
+    const getRowMeta = useCallback(
+      (client: Member): Partial<KineticRowData> => {
+        const isVip = Boolean(client.segmentData?.isVip || client.membershipPlanName === 'VIP');
+        const hasAllergies = Boolean(client.segmentData?.allergies && client.segmentData.allergies.length > 0);
+        const branch = resolveRecordBranch(client, branchesById, currentBranch, language);
+        const lastFormula = client.segmentData?.colorFormulas?.[0]?.formula;
+        return {
+          subline: `${client.phoneNumber || '—'} · ${client.segmentData?.preferredStylistName || 'Sarah Louati'}`,
+          categoryLabel: isVip ? 'VIP LOUNGE' : client.segmentData?.hairType || 'Standard',
+          statusLabel: hasAllergies
+            ? isAr ? 'حساسية' : isEn ? 'Allergy Alert' : 'Alerte Allergie'
+            : isVip
+            ? 'VIP'
+            : isAr ? 'نشطة' : isEn ? 'Active' : 'Active',
+          statusVariant: hasAllergies ? 'blocked' : isVip ? 'warning' : 'active',
+          metricPrimary: formatMoney(client.segmentData?.lifetimeSpent || 0),
+          metricSecondary: `${client.segmentData?.totalVisits || 1} ${isAr ? 'زيارات' : 'visites'}`,
+          detailCol1: {
+            heading: isAr ? 'بيانات الاتصال' : isEn ? 'Contact & Branch' : 'Contact & Salon',
+            primaryText: client.phoneNumber || '—',
+            secondaryText: client.email || '—',
+            tertiaryText: branch.name,
+          },
+          detailCol2: {
+            heading: isAr ? 'التشخيص والوصفة' : isEn ? 'Diagnostic & Formula' : 'Diagnostic Capillaire',
+            primaryText: `${client.segmentData?.hairType || 'Ondulé'} · ${client.segmentData?.hairLength || 'Mi-long'}`,
+            secondaryText: lastFormula || client.segmentData?.scalpCondition || 'Cuir chevelu normal',
+          },
+          detailCol3: {
+            heading: isAr ? 'المصففة والتنبيهات' : isEn ? 'Stylist & Alerts' : 'Styliste & Préférences',
+            primaryText: client.segmentData?.preferredStylistName || 'Sarah Louati',
+            secondaryText: hasAllergies
+              ? `⚠️ ${client.segmentData?.allergies?.join(', ')}`
+              : client.segmentData?.preferredDrink || 'Café noir',
+          },
+        };
+      },
+      [branchesById, currentBranch, language, isAr, isEn]
+    );
+
+    const getFanActions = useCallback(
+      (client: Member): KineticRowFanAction[] => [
+        {
+          id: 'book',
+          label: isAr ? 'حجز موعد' : isEn ? 'Book' : 'Prendre RDV',
+          icon: <Calendar className="w-[15px] h-[15px]" />,
+          onClick: () => setIsNewBookingModalOpen(true),
+        },
+        {
+          id: 'view',
+          label: isAr ? 'معاينة' : isEn ? 'Inspect' : 'Dossier',
+          icon: <Eye className="w-[15px] h-[15px]" />,
+          onClick: (e) => {
+            setDrawerOpenerEl(e.currentTarget);
+            setInspectingClient(client);
+          },
+        },
+        {
+          id: 'del',
+          label: isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer',
+          icon: <Trash2 className="w-[15px] h-[15px]" />,
+          isDanger: true,
+          onClick: () => {
+            deleteMember(client.id);
+            if (inspectingClient?.id === client.id) setInspectingClient(null);
+            showToast?.({ type: 'info', title: isAr ? 'تم الحذف' : 'Dossier retiré', message: client.fullName });
+          },
+        },
+      ],
+      [isAr, isEn, deleteMember, inspectingClient?.id]
+    );
+
+    const getDetailActions = useCallback(
+      (client: Member): KineticDetailAction[] => [
+        {
+          id: 'view',
+          label: isAr ? 'فتح الملف' : isEn ? 'Open Dossier' : 'Fiche complète',
+          icon: <Eye className="w-3.5 h-3.5" />,
+          onClick: () => setInspectingClient(client),
+        },
+        {
+          id: 'book',
+          label: isAr ? 'حجز جديد' : isEn ? 'New Booking' : 'Nouveau RDV',
+          icon: <Calendar className="w-3.5 h-3.5 text-[#096b40]" />,
+          onClick: () => setIsNewBookingModalOpen(true),
+        },
+      ],
+      [isAr, isEn]
+    );
+
     const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
       isLoading: isSyncing || networkMode === 'force_skeleton',
       hasCachedData: salonClients.length > 0,
@@ -642,8 +743,11 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
           />
 
           <UniversalDataCollection<Member>
-            data={sortedClients}
+            items={sortedClients}
             columns={columns}
+            getRowMeta={getRowMeta}
+            getFanActions={getFanActions}
+            getDetailActions={getDetailActions}
             keyExtractor={(c) => c.id}
             viewMode={viewMode}
             hideToolbar
@@ -718,7 +822,8 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
           language={language}
           title={inspectingClient?.fullName || ''}
           subtitle={inspectingClient ? `${inspectingClient.phoneNumber || ''} · ${inspectingClient.email || 'Salon'}` : undefined}
-          avatarText={inspectingClient ? inspectingClient.fullName.charAt(0).toUpperCase() : undefined}
+          avatarText={inspectingClient ? inspectingClient.fullName.slice(0, 2).toUpperCase() : undefined}
+          categoryLabel={inspectingClient?.segmentData?.hairType || 'Salon'}
           branchName={
             inspectingClient
               ? resolveRecordBranch(inspectingClient, branchesById, currentBranch, language).name
@@ -727,9 +832,14 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
           statusLabel={inspectingClient?.segmentData?.isVip ? 'VIP LOUNGE' : 'Standard'}
           statusClassName={
             inspectingClient?.segmentData?.isVip
-              ? 'bg-amber-50 text-amber-700 border border-amber-200'
-              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+              ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+              : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
           }
+          tabs={[
+            { id: 'overview', label: isAr ? 'التشخيص' : isEn ? 'Diagnostic' : 'Diagnostic & Accueil' },
+            { id: 'formulas', label: isAr ? 'الوصفات' : isEn ? 'Formulas' : 'Formules Couleur' },
+            { id: 'history', label: isAr ? 'الزيارات' : isEn ? 'Visits' : 'Visites & Notes' },
+          ]}
           onClose={() => setInspectingClient(null)}
           onSelectItem={(c) => setInspectingClient(c)}
           holdToDelete
@@ -738,224 +848,221 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
             deleteMember(c.id);
             setInspectingClient(null);
           }}
-          renderBody={(client) => (
-            <div className="space-y-4 text-xs">
-              <div className="flex items-center gap-1 border-b border-[#E6DED6] dark:border-[#3A3734] pb-2 overflow-x-auto">
-                {[
-                  { id: 'diagnostic', label: 'Diagnostic' },
-                  { id: 'formulas', label: `Formules (${client.segmentData?.colorFormulas?.length || 0})` },
-                  { id: 'history', label: 'Visites' },
-                  { id: 'preferences', label: 'Préférences' },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setDrawerTab(tab.id as any)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer shrink-0 ${
-                      drawerTab === tab.id
-                        ? 'bg-[#d4522f]/12 text-[#d4522f]'
-                        : 'text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
+          renderBody={(client, activeTab) => {
+            const clientAppointments = appointments.filter((a) => a.clientName === client.fullName);
+            const allergies = client.segmentData?.allergies || [];
+            const formulas = client.segmentData?.colorFormulas || [];
+            const branchName = resolveRecordBranch(client, branchesById, currentBranch, language).name;
 
-              {drawerTab === 'diagnostic' && (
-                <div className="space-y-4">
-                  <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-3">
-                    <h3 className="text-[11px] font-bold uppercase tracking-wider text-black dark:text-white">
-                      Fiche Morpho-Capillaire
-                    </h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <span className="text-black/62 dark:text-white/65 block text-[11px]">Nature cheveux</span>
-                        <span className="font-semibold text-black dark:text-white">
-                          {client.segmentData?.hairType || 'Ondulé'}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-black/62 dark:text-white/65 block text-[11px]">Longueur</span>
-                        <span className="font-semibold text-black dark:text-white">
-                          {client.segmentData?.hairLength || 'Long'}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-black/62 dark:text-white/65 block text-[11px]">Cuir Chevelu</span>
-                        <span className="font-semibold text-black dark:text-white">
-                          {client.segmentData?.scalpCondition || 'Sensible'}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-black/62 dark:text-white/65 block text-[11px]">Patch Test</span>
-                        <span className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                          <CheckCircle2 size={13} />
-                          {client.segmentData?.patchTestDate || '2026-09-15'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-4 rounded-2xl bg-rose-500/5 border border-rose-500/20 space-y-2">
-                    <div className="flex items-center gap-2 text-rose-600 font-bold">
-                      <AlertTriangle size={14} />
-                      <span>Alertes & Allergies</span>
-                    </div>
-                    {client.segmentData?.allergies && client.segmentData.allergies.length > 0 ? (
-                      <div className="flex flex-wrap gap-1.5">
-                        {client.segmentData.allergies.map((all: string, i: number) => (
-                          <span key={i} className="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-700 font-semibold">
-                            ⚠️ {all}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-black/62 dark:text-white/65">Aucune allergie déclarée.</p>
-                    )}
-                  </div>
-                </div>
-              )}
+            if (activeTab === 'formulas') {
+              return (
+                <>
+                  <InspectorSection index={0} title={isAr ? 'إضافة وصفة صبغة' : isEn ? 'Add Color Formula' : 'Nouvelle formulation'}>
+                    <InspectorCard className="py-3.5">
+                      <form onSubmit={handleAddFormula} className="space-y-3 py-1">
+                        <LabelInput
+                          field="Formula"
+                          label="Formule exacte (dosages, oxydant, patine)"
+                          value={newFormulaText}
+                          onChange={setNewFormulaText}
+                          placeholder="Ex: Base 6.1 (40g) + Oxy 20vol"
+                          width="100%"
+                          height={42}
+                          corner={12}
+                        />
+                        <div className="grid grid-cols-2 gap-2.5">
+                          <LabelSelect
+                            field="Stylist"
+                            label="Styliste"
+                            value={newFormulaStylist}
+                            onChange={(val) => setNewFormulaStylist(typeof val === 'string' ? val : String(val))}
+                            options={salonStylists.map((s) => ({ value: s.fullName, label: s.fullName }))}
+                            height={42}
+                            corner={12}
+                          />
+                          <LabelInput
+                            field="Notes"
+                            label="Temps de pose"
+                            value={newFormulaNotes}
+                            onChange={setNewFormulaNotes}
+                            placeholder="Pose: 35 min"
+                            width="100%"
+                            height={42}
+                            corner={12}
+                          />
+                        </div>
+                        <AtriumButton type="submit" variant="primary" size="sm">
+                          Enregistrer la Formule
+                        </AtriumButton>
+                      </form>
+                    </InspectorCard>
+                  </InspectorSection>
 
-              {drawerTab === 'formulas' && (
-                <div className="space-y-4">
-                  <form
-                    onSubmit={handleAddFormula}
-                    className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-3"
-                  >
-                    <LabelInput
-                      field="Formula"
-                      label="Formule exacte (dosages, oxydant, patine)"
-                      value={newFormulaText}
-                      onChange={setNewFormulaText}
-                      placeholder="Ex: Base 6.1 (40g) + Oxy 20vol"
-                      width="100%"
-                      height={42}
-                      corner={12}
+                  <InspectorSection index={1} title={`Historique formules (${formulas.length})`}>
+                    <InspectorCard>
+                      {formulas.length === 0 ? (
+                        <InspectorListItem title="Aucune formulation enregistrée" subtitle="Ajoutez le dosage couleur ci-dessus" isLast />
+                      ) : (
+                        formulas.map((f: any, idx: number, arr: any[]) => (
+                          <InspectorListItem
+                            key={f.id}
+                            title={f.formula}
+                            subtitle={`${f.date} · Styliste: ${f.stylist}${f.notes ? ` · ${f.notes}` : ''}`}
+                            badge={{ label: 'Tech', tone: 'warn' }}
+                            isLast={idx === arr.length - 1}
+                          />
+                        ))
+                      )}
+                    </InspectorCard>
+                  </InspectorSection>
+                </>
+              );
+            }
+
+            if (activeTab === 'history') {
+              return (
+                <>
+                  <InspectorSection index={0} title="Cumul Dépenses">
+                    <InspectorBigStat
+                      value={formatMoney(client.segmentData?.lifetimeSpent || 0)}
+                      tone="accent"
+                      actionLabel={isAr ? 'برمجة موعد' : isEn ? 'Schedule Visit' : 'Programmer un Soin'}
+                      onAction={() => {
+                        setInspectingClient(null);
+                        setIsNewBookingModalOpen(true);
+                      }}
                     />
-                    <div className="grid grid-cols-2 gap-2.5">
-                      <LabelSelect
-                        field="Stylist"
-                        label="Styliste"
-                        value={newFormulaStylist}
-                        onChange={(val) => setNewFormulaStylist(typeof val === 'string' ? val : String(val))}
-                        options={salonStylists.map((s) => ({ value: s.fullName, label: s.fullName }))}
-                        height={42}
-                        corner={12}
-                      />
-                      <LabelInput
-                        field="Notes"
-                        label="Temps de pose"
-                        value={newFormulaNotes}
-                        onChange={setNewFormulaNotes}
-                        placeholder="Pose: 35 min"
-                        width="100%"
-                        height={42}
-                        corner={12}
-                      />
-                    </div>
-                    <AtriumButton type="submit" variant="primary" size="sm">
-                      Enregistrer la Formule
-                    </AtriumButton>
-                  </form>
-                  <div className="space-y-2">
-                    {(client.segmentData?.colorFormulas || []).map((f: any) => (
-                      <div
-                        key={f.id}
-                        className="p-3 rounded-xl bg-white dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734]"
-                      >
-                        <div className="flex justify-between font-semibold">
-                          <span className="font-mono text-[#d4522f]">{f.formula}</span>
-                          <span className="font-mono text-black/55 dark:text-white/55">{f.date}</span>
-                        </div>
-                        <div className="text-[11px] text-black/62 dark:text-white/65 mt-1">
-                          Styliste: {f.stylist} {f.notes ? `· ${f.notes}` : ''}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                  </InspectorSection>
 
-              {drawerTab === 'history' && (
-                <div className="space-y-2.5">
-                  <div className="flex justify-between font-bold">
-                    <span className="text-black/62 dark:text-white/65 uppercase">Prestations</span>
-                    <span className="font-mono text-[#d4522f]">
-                      {formatMoney(client.segmentData?.lifetimeSpent || 0)}
-                    </span>
-                  </div>
-                  {appointments
-                    .filter((a) => a.clientName === client.fullName)
-                    .map((apt) => (
-                      <div
-                        key={apt.id}
-                        className="p-3 rounded-xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex justify-between"
-                      >
-                        <div>
-                          <span className="font-semibold block">{apt.serviceName}</span>
-                          <span className="text-[11px] text-black/62 dark:text-white/65">
-                            {apt.date} à {apt.startTime} · {apt.staffName}
-                          </span>
-                        </div>
-                        <span className="font-mono font-bold">{formatMoney(apt.price)}</span>
-                      </div>
-                    ))}
-                </div>
-              )}
+                  <InspectorSection index={1} title={`Historique prestations (${clientAppointments.length})`}>
+                    <InspectorCard>
+                      {clientAppointments.length === 0 ? (
+                        <InspectorListItem title="Aucun rendez-vous récent" subtitle="Premier dossier enregistré" isLast />
+                      ) : (
+                        clientAppointments.slice(0, 6).map((apt, idx, arr) => (
+                          <InspectorListItem
+                            key={apt.id}
+                            title={apt.serviceName}
+                            subtitle={`${apt.date} à ${apt.startTime} · ${apt.staffName}`}
+                            trailing={formatMoney(apt.price)}
+                            isLast={idx === arr.length - 1}
+                          />
+                        ))
+                      )}
+                    </InspectorCard>
+                  </InspectorSection>
 
-              {drawerTab === 'preferences' && (
-                <div className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-2.5">
-                  <div className="flex items-center gap-2">
-                    <Coffee size={15} className="text-amber-600" />
-                    <span className="text-black/62 dark:text-white/65">Boisson:</span>
-                    <span className="font-semibold">{client.segmentData?.preferredDrink || 'Café noir'}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <User size={15} className="text-[#d4522f]" />
-                    <span className="text-black/62 dark:text-white/65">Styliste:</span>
-                    <span className="font-semibold">
-                      {client.segmentData?.preferredStylistName || 'Sarah Louati'}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Building2 size={15} className="text-[#d4522f]" />
-                    <span className="text-black/62 dark:text-white/65">Branche:</span>
-                    <span className="font-semibold">
-                      {resolveRecordBranch(client, branchesById, currentBranch, language).name}
-                    </span>
-                  </div>
-                </div>
-              )}
+                  <InspectorSection index={2} title="Notes & Préférences">
+                    <InspectorNotesField
+                      value={client.notes || ''}
+                      placeholder="Ajouter une préférence boisson, protocole cuir chevelu..."
+                      onSave={(txt) => {
+                        updateMember(client.id, { notes: txt });
+                        showToast?.({ type: 'success', title: 'Notes enregistrées', message: client.fullName });
+                      }}
+                    />
+                  </InspectorSection>
+                </>
+              );
+            }
 
-              <div className="flex flex-col gap-2">
-                {onEditMember && (
-                  <AtriumButton
-                    type="button"
-                    variant="secondary"
-                    className="w-full justify-center"
-                    onClick={() => {
-                      setInspectingClient(null);
-                      onEditMember(client);
-                    }}
-                  >
-                    {isAr ? 'تعديل الملف' : isEn ? 'Edit Client' : 'Modifier la fiche'}
-                  </AtriumButton>
-                )}
-                <AtriumButton
-                  type="button"
-                  variant="primary"
-                  icon={<Calendar size={14} />}
-                  className="w-full justify-center"
-                  onClick={() => {
-                    setInspectingClient(null);
-                    setIsNewBookingModalOpen(true);
-                  }}
-                >
-                  {isAr ? 'برمجة موعد عناية' : isEn ? 'Schedule Treatment' : 'Programmer un Soin'}
-                </AtriumButton>
-              </div>
-            </div>
-          )}
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : isEn ? 'Quick Actions' : 'Actions rapides'}>
+                  <InspectorQuickActions
+                    actions={[
+                      {
+                        id: 'book',
+                        label: isAr ? 'حجز موعد' : isEn ? 'Book Care' : 'Nouveau Soin',
+                        icon: <Calendar className="w-[18px] h-[18px]" />,
+                        primary: true,
+                        onClick: () => {
+                          setInspectingClient(null);
+                          setIsNewBookingModalOpen(true);
+                        },
+                      },
+                      ...(onEditMember
+                        ? [
+                            {
+                              id: 'edit',
+                              label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+                              icon: <Edit2 className="w-[18px] h-[18px]" />,
+                              onClick: () => {
+                                setInspectingClient(null);
+                                onEditMember(client);
+                              },
+                            },
+                          ]
+                        : []),
+                      {
+                        id: 'vip',
+                        label: client.segmentData?.isVip ? 'Retirer VIP' : 'Passer VIP',
+                        icon: <Star className="w-[18px] h-[18px] text-amber-500" />,
+                        onClick: () => {
+                          const nextVip = !client.segmentData?.isVip;
+                          const nextSeg = { ...client.segmentData, isVip: nextVip };
+                          updateMember(client.id, {
+                            membershipPlanName: nextVip ? 'VIP' : 'Standard',
+                            segmentData: nextSeg,
+                          });
+                          setInspectingClient({ ...client, segmentData: nextSeg });
+                        },
+                      },
+                      {
+                        id: 'call',
+                        label: isAr ? 'نسخ الهاتف' : isEn ? 'Copy Phone' : 'Copier Tél.',
+                        icon: <Phone className="w-[18px] h-[18px]" />,
+                        onClick: () => {
+                          navigator.clipboard?.writeText(client.phoneNumber || '');
+                          showToast?.({ type: 'success', title: 'Copié', message: client.phoneNumber || '—' });
+                        },
+                      },
+                    ]}
+                  />
+                </InspectorSection>
+
+                <InspectorSection index={1} title="Fiche Morpho-Capillaire">
+                  <InspectorCard>
+                    <InspectorKeyValue label="Nature cheveux" value={client.segmentData?.hairType || 'Ondulé'} mono={false} />
+                    <InspectorKeyValue label="Longueur" value={client.segmentData?.hairLength || 'Long'} mono={false} />
+                    <InspectorKeyValue label="Cuir chevelu" value={client.segmentData?.scalpCondition || 'Sensible'} mono={false} />
+                    <InspectorKeyValue label="Patch Test" value={client.segmentData?.patchTestDate || '2026-09-15'} tone="ok" isLast />
+                  </InspectorCard>
+                </InspectorSection>
+
+                <InspectorSection index={2} title="Préférences & Alertes">
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label="Styliste attitrée"
+                      value={client.segmentData?.preferredStylistName || 'Sarah Louati'}
+                      mono={false}
+                      tone="accent"
+                    />
+                    <InspectorKeyValue
+                      label="Boisson préférée"
+                      icon={<Coffee className="w-[15px] h-[15px]" />}
+                      value={client.segmentData?.preferredDrink || 'Café noir'}
+                      mono={false}
+                    />
+                    <InspectorKeyValue
+                      label="Allergies"
+                      icon={<AlertTriangle className="w-[15px] h-[15px]" />}
+                      value={allergies.length > 0 ? allergies.join(', ') : 'Aucune déclarée'}
+                      tone={allergies.length > 0 ? 'danger' : 'ok'}
+                      mono={false}
+                    />
+                    <InspectorKeyValue
+                      label="Branche"
+                      icon={<Building2 className="w-[15px] h-[15px]" />}
+                      value={branchName}
+                      mono={false}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }}
         />
 
         {isNewBookingModalOpen && (

@@ -3,7 +3,6 @@ import {
   FileCheck,
   Plus,
   Printer,
-  ClipboardCheck,
   Key,
   Zap,
   Flame,
@@ -11,6 +10,7 @@ import {
   Check,
   Share2,
   MapPin,
+  Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { useRealEstateData } from './realEstateData';
@@ -31,6 +31,15 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -504,11 +513,6 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<FileCheck size={22} />}
         title={isAr ? 'المعاينة' : 'Inspections & Visites'}
-        subtitle={
-          isAr
-            ? `محاضر تسليم الأماكن ووصولات المعاينة (${inspections.length} محضر · ${visits.length} زيارة)`
-            : `États des lieux contradictoires (${inspections.length}) & Bons de visite GPS (${visits.length})`
-        }
         secondaryActions={
           <div className="flex items-center gap-2 flex-wrap">
             <LiveSegmentedControl
@@ -617,9 +621,10 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
         {mainTab === 'inspections' ? (
           <UniversalDataCollection
             hideToolbar
-            data={sortedInspections}
+            items={sortedInspections}
             keyExtractor={(insp) => insp.id}
-            defaultViewMode={viewMode}
+            defaultViewMode="list"
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
             columns={inspectionColumns}
             sortBy={sortBy}
             sortDirection={sortDir}
@@ -642,8 +647,67 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
               setSelectedVisit(null);
               setSelectedInspection(insp);
               setDrawerOpenerEl(el || null);
+              setInspectorTab('constat');
             }}
-            customActions={(insp) => [
+            getRowMeta={(insp): Partial<KineticRowData> => {
+              const bInfo = resolveRecordBranch(insp, branchesById, currentBranch, language);
+              const isEntry = insp.inspectionType === 'MoveIn' || insp.inspectionType === 'Entry';
+              return {
+                title: insp.propertyTitle,
+                subline: `${insp.inspectionDate} · ${insp.inspectorName || ''}`,
+                avatarText: isEntry ? 'EN' : 'SO',
+                avatarColor: '#d4522f',
+                categoryLabel: isEntry ? (isAr ? 'دخول' : 'Entrée') : isAr ? 'خروج' : 'Sortie',
+                branchName: bInfo.name,
+                branchCode: bInfo.code,
+                isPinned: pinnedIds.has(insp.id),
+                statusLabel: insp.generalCondition || 'Conforme',
+                statusVariant: isEntry ? 'active' : 'warning',
+                metricPrimary: `${insp.keysDeliveredCount || insp.keysCount || 4} clés`,
+                metricSecondary: `${insp.meterReadings?.electricKwh || insp.meterElectricityKwh || 0} kWh`,
+                detailCol1: { label: isAr ? 'الخبير' : 'Inspecteur', value: insp.inspectorName || '—' },
+                detailCol2: { label: 'Élec', value: `${insp.meterReadings?.electricKwh || insp.meterElectricityKwh || 0} kWh` },
+                detailCol3: { label: 'Gaz', value: `${insp.meterReadings?.gasM3 || insp.meterGasM3 || 0} m³` },
+              };
+            }}
+            getFanActions={(insp): KineticRowFanAction[] => [
+              {
+                id: 'print',
+                label: isAr ? 'طباعة PV' : 'Imprimer PV',
+                icon: <Printer size={14} />,
+                onClick: (e) => {
+                  e.stopPropagation();
+                  handlePrintInspection(insp.propertyTitle);
+                },
+              },
+              {
+                id: 'validate',
+                label: isAr ? 'التحقق' : 'Valider',
+                icon: <Check size={14} />,
+                onClick: (e) => {
+                  e.stopPropagation();
+                  showToast(
+                    isAr
+                      ? `تم تأكيد مطابقة محضر المعاينة لعقار ${insp.propertyTitle}`
+                      : `État des lieux validé conforme pour ${insp.propertyTitle}`,
+                    'success'
+                  );
+                },
+              },
+              {
+                id: 'inspect',
+                label: isAr ? 'عرض' : 'Détails',
+                icon: <Eye size={14} />,
+                onClick: (e) => {
+                  e.stopPropagation();
+                  setSelectedVisit(null);
+                  setSelectedInspection(insp);
+                  setDrawerOpenerEl(e.currentTarget);
+                  setInspectorTab('constat');
+                },
+              },
+            ]}
+            getDetailActions={(insp): KineticDetailAction[] => [
               {
                 id: 'print',
                 label: isAr ? 'طباعة PV' : 'Imprimer PV',
@@ -673,38 +737,6 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
                   ),
               },
             ]}
-            renderCard={(insp) => {
-              const isEntry = insp.inspectionType === 'MoveIn' || insp.inspectionType === 'Entry';
-              return (
-                <div className="p-1 flex flex-col justify-between h-full space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        isEntry
-                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                          : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                      }`}
-                    >
-                      {isEntry ? 'Constat Entrée' : 'Constat Sortie'}
-                    </span>
-                    <span className="text-xs text-black/55 dark:text-white/55 font-mono">{insp.inspectionDate}</span>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-xs text-black dark:text-white line-clamp-2">{insp.propertyTitle}</h4>
-                    <p className="text-[11px] text-black/55 dark:text-white/55 mt-1">Inspecteur: {insp.inspectorName}</p>
-                  </div>
-                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-1 text-emerald-600 font-medium">
-                      <Key size={12} />
-                      <span>{insp.keysDeliveredCount || insp.keysCount || 4} clés</span>
-                    </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
-                      {insp.generalCondition || 'Conforme'}
-                    </span>
-                  </div>
-                </div>
-              );
-            }}
             emptyTitle={isAr ? 'لا توجد محاضر معاينة' : 'Aucun état des lieux'}
             emptyDescription={isAr ? 'أعد ضبط المرشحات أو أضف معاينة جديدة' : 'Modifiez vos filtres pour afficher les constats'}
             onResetFilters={resetAllFilters}
@@ -713,9 +745,10 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
         ) : (
           <UniversalDataCollection
             hideToolbar
-            data={filteredVisits}
+            items={filteredVisits}
             keyExtractor={(v) => v.id}
-            defaultViewMode={viewMode}
+            defaultViewMode="list"
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
             columns={visitColumns}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
@@ -730,29 +763,53 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
               setSelectedInspection(null);
               setSelectedVisit(v);
               setDrawerOpenerEl(el || null);
+              setVisitTab('visite');
             }}
-            renderCard={(v) => (
-              <div className="p-1 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#d4522f]/12 text-[#d4522f]">
-                    {v.clientImpression || 'Interested'}
-                  </span>
-                  <span className="text-[11px] font-mono text-black/55 dark:text-white/55">
-                    {v.visitTimestamp.slice(0, 10)}
-                  </span>
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs text-black dark:text-white truncate">{v.clientFullName}</h4>
-                  <p className="text-[11px] text-black/60 dark:text-white/60 truncate">{v.propertyTitle}</p>
-                </div>
-                {v.counterOfferDzd && (
-                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex justify-between text-xs">
-                    <span className="text-black/55 dark:text-white/55">Offre client:</span>
-                    <span className="font-mono font-bold text-[#d4522f]">{formatMoney(v.counterOfferDzd, language)}</span>
-                  </div>
-                )}
-              </div>
-            )}
+            getRowMeta={(v): Partial<KineticRowData> => {
+              const bInfo = resolveRecordBranch(v, branchesById, currentBranch, language);
+              return {
+                title: v.clientFullName,
+                subline: `${v.propertyTitle} · ${v.clientPhone}`,
+                avatarText: (v.clientFullName || 'BV').slice(0, 2).toUpperCase(),
+                avatarColor: '#d4522f',
+                categoryLabel: v.negotiatorName,
+                branchName: bInfo.name,
+                branchCode: bInfo.code,
+                statusLabel: v.clientImpression || 'Interested',
+                statusVariant: v.clientImpression === 'OfferSubmitted' ? 'active' : 'info',
+                metricPrimary: v.counterOfferDzd ? formatMoney(v.counterOfferDzd, language) : v.visitTimestamp.slice(0, 10),
+                metricSecondary: `${v.gpsLatitude?.toFixed(3)}°N`,
+                detailCol1: { label: isAr ? 'المفاوض' : 'Négociateur', value: v.negotiatorName },
+                detailCol2: { label: 'GPS', value: `${v.gpsLatitude?.toFixed(4)}°N, ${v.gpsLongitude?.toFixed(4)}°E` },
+                detailCol3: { label: isAr ? 'التاريخ' : 'Date', value: v.visitTimestamp.slice(0, 10) },
+              };
+            }}
+            getFanActions={(v): KineticRowFanAction[] => [
+              {
+                id: 'inspect',
+                label: isAr ? 'عرض' : 'Détails',
+                icon: <Eye size={14} />,
+                onClick: (e) => {
+                  e.stopPropagation();
+                  setSelectedInspection(null);
+                  setSelectedVisit(v);
+                  setDrawerOpenerEl(e.currentTarget);
+                  setVisitTab('visite');
+                },
+              },
+            ]}
+            getDetailActions={(v): KineticDetailAction[] => [
+              {
+                id: 'inspect',
+                label: isAr ? 'تفاصيل الزيارة' : 'Fiche Visite GPS',
+                icon: <Eye size={14} />,
+                onClick: () => {
+                  setSelectedInspection(null);
+                  setSelectedVisit(v);
+                  setVisitTab('visite');
+                },
+              },
+            ]}
             emptyTitle={isAr ? 'لا توجد وصولات معاينة' : 'Aucun bon de visite'}
             emptyDescription={isAr ? 'سجل أول زيارة رقمية موثقة بالـ GPS' : 'Créez un premier bon de visite numérique avec GPS'}
             primaryActionLabel={isAr ? 'وصل معاينة جديد' : 'Nouveau Bon de Visite'}
@@ -788,8 +845,10 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
         title={selectedInspection?.propertyTitle || ''}
         subtitle={selectedInspection ? `${selectedInspection.inspectionDate} · ${selectedInspection.inspectorName}` : ''}
         avatarText="ED"
+        avatarColor="#d4522f"
         branchName={activeInspBranch?.name}
         statusLabel={selectedInspection?.generalCondition || 'Conforme'}
+        statusClassName="bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]"
         tabs={[
           { id: 'constat', label: isAr ? 'المحضر والمفاتيح' : 'Constat & Clés' },
           { id: 'compteurs', label: isAr ? 'العدادات' : 'Compteurs' },
@@ -800,111 +859,92 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
         onSelectItem={(insp) => setSelectedInspection(insp)}
         onClose={() => setSelectedInspection(null)}
         renderBody={(insp, tab) => (
-          <div className="space-y-4 text-xs">
-            <AtriumButton
-              type="button"
-              variant="primary"
-              size="sm"
-              className="w-full justify-center"
-              icon={<Printer size={14} />}
-              onClick={() => handlePrintInspection(insp.propertyTitle)}
-            >
-              {isAr ? 'طباعة محضر المعاينة' : 'Imprimer PV État des Lieux'}
-            </AtriumButton>
+          <div className="space-y-4">
+            <InspectorSection index={0}>
+              <InspectorQuickActions
+                actions={[
+                  {
+                    id: 'print',
+                    label: isAr ? 'طباعة المحضر' : 'Imprimer PV',
+                    icon: <Printer size={16} />,
+                    primary: true,
+                    onClick: () => handlePrintInspection(insp.propertyTitle),
+                  },
+                  {
+                    id: 'share',
+                    label: isAr ? 'مشاركة' : 'Partager',
+                    icon: <Share2 size={16} />,
+                    onClick: () =>
+                      showToast(
+                        isAr ? 'تم نسخ رابط محضر المعاينة الرقمي' : 'Lien du PV d’état des lieux copié',
+                        'success'
+                      ),
+                  },
+                ]}
+              />
+            </InspectorSection>
 
             {tab === 'constat' && (
-              <div className="space-y-4">
-                <div className="p-3.5 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-                  <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
-                    Informations sur le Constat
-                  </span>
-                  <div className="flex items-center justify-between">
-                    <span className="text-black/55 dark:text-white/55">Bien concerné:</span>
-                    <span className="font-bold text-black dark:text-white truncate max-w-[230px]">{insp.propertyTitle}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-black/55 dark:text-white/55">Date de visite:</span>
-                    <span className="font-mono font-bold text-black dark:text-white">{insp.inspectionDate}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-black/55 dark:text-white/55">Inspecteur agence:</span>
-                    <span className="font-medium text-black dark:text-white">{insp.inspectorName}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-black/55 dark:text-white/55">Trousseau de clés:</span>
-                    <span className="font-bold text-emerald-600 flex items-center gap-1 font-mono">
-                      <Key size={12} /> {insp.keysDeliveredCount || insp.keysCount || 4} clés remises
-                    </span>
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold">
-                    Observations & Remarques
-                  </span>
-                  <div className="p-3 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 text-black/70 dark:text-white/75 leading-relaxed">
-                    {insp.notes || 'Appartement en parfait état de propreté. Toutes les serrures fonctionnent correctement.'}
-                  </div>
-                </div>
-              </div>
+              <>
+                <InspectorSection index={1} title={isAr ? 'بيانات المحضر' : 'Informations sur le Constat'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label="Bien concerné" value={insp.propertyTitle} mono={false} />
+                    <InspectorKeyValue label="Date de visite" value={insp.inspectionDate} />
+                    <InspectorKeyValue label="Inspecteur agence" value={insp.inspectorName || '—'} mono={false} />
+                    <InspectorKeyValue
+                      label="Trousseau de clés"
+                      value={`${insp.keysDeliveredCount || insp.keysCount || 4} clés remises`}
+                      tone="ok"
+                      isLast={!insp.notes}
+                    />
+                    {insp.notes && <InspectorKeyValue label="Observations" value={insp.notes} mono={false} isLast />}
+                  </InspectorCard>
+                </InspectorSection>
+              </>
             )}
 
             {tab === 'compteurs' && (
-              <div className="p-3.5 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2.5">
-                <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
-                  Index des Compteurs Énergétiques & Fluides
-                </span>
-                <div className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Zap size={14} className="text-amber-500" />
-                    <span className="font-medium text-black dark:text-white">Électricité (Sonelgaz):</span>
-                  </div>
-                  <span className="font-mono font-bold text-black dark:text-white">
-                    {insp.meterReadings?.electricKwh || insp.meterElectricityKwh || 14200} kWh
-                  </span>
-                </div>
-                <div className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Flame size={14} className="text-orange-500" />
-                    <span className="font-medium text-black dark:text-white">Gaz Naturel:</span>
-                  </div>
-                  <span className="font-mono font-bold text-black dark:text-white">
-                    {insp.meterReadings?.gasM3 || insp.meterGasM3 || 450} m³
-                  </span>
-                </div>
-                <div className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Droplets size={14} className="text-blue-500" />
-                    <span className="font-medium text-black dark:text-white">Eau (Seaal):</span>
-                  </div>
-                  <span className="font-mono font-bold text-black dark:text-white">
-                    {insp.meterReadings?.waterM3 || insp.meterWaterM3 || 88} m³
-                  </span>
-                </div>
-              </div>
+              <InspectorSection index={1} title={isAr ? 'قراءة العدادات' : 'Index Compteurs Énergétiques'}>
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label="Électricité (Sonelgaz)"
+                    icon={<Zap size={14} className="text-amber-500" />}
+                    value={`${insp.meterReadings?.electricKwh || insp.meterElectricityKwh || 14200} kWh`}
+                  />
+                  <InspectorKeyValue
+                    label="Gaz Naturel"
+                    icon={<Flame size={14} className="text-orange-500" />}
+                    value={`${insp.meterReadings?.gasM3 || insp.meterGasM3 || 450} m³`}
+                  />
+                  <InspectorKeyValue
+                    label="Eau (Seaal)"
+                    icon={<Droplets size={14} className="text-blue-500" />}
+                    value={`${insp.meterReadings?.waterM3 || insp.meterWaterM3 || 88} m³`}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
             )}
 
             {tab === 'pieces' && (
-              <div className="space-y-2">
-                <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
-                  État par Pièce & Équipements
-                </span>
-                {[
-                  { room: 'Salon & Salle à Manger', condition: 'Parfait', note: 'Murs et sols sans impact' },
-                  { room: 'Cuisine Équipée', condition: 'Bon', note: 'Hotte et plaques testées fonctionnelles' },
-                  { room: 'Chambre Principale', condition: 'Très Bon', note: 'Placards muraux propres' },
-                  { room: 'Salle de Bain / Sanitaires', condition: 'Bon', note: 'Robinetterie et évacuations sans fuite' },
-                ].map((roomItem, i) => (
-                  <div key={i} className="p-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-black dark:text-white">{roomItem.room}</span>
-                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-full">
-                        {roomItem.condition}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-black/55 dark:text-white/55">{roomItem.note}</p>
-                  </div>
-                ))}
-              </div>
+              <InspectorSection index={1} title={isAr ? 'حالة الغرف' : 'État par Pièce & Équipements'}>
+                <InspectorCard>
+                  {[
+                    { room: 'Salon & Salle à Manger', condition: 'Parfait', note: 'Murs et sols sans impact' },
+                    { room: 'Cuisine Équipée', condition: 'Bon', note: 'Hotte et plaques testées fonctionnelles' },
+                    { room: 'Chambre Principale', condition: 'Très Bon', note: 'Placards muraux propres' },
+                    { room: 'Salle de Bain / Sanitaires', condition: 'Bon', note: 'Robinetterie et évacuations sans fuite' },
+                  ].map((roomItem, i, arr) => (
+                    <InspectorListItem
+                      key={i}
+                      title={roomItem.room}
+                      subtitle={roomItem.note}
+                      badge={{ label: roomItem.condition, tone: 'ok' }}
+                      isLast={i === arr.length - 1}
+                    />
+                  ))}
+                </InspectorCard>
+              </InspectorSection>
             )}
           </div>
         )}
@@ -919,11 +959,14 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
         language={language}
         title={selectedVisit?.clientFullName || ''}
         subtitle={selectedVisit?.propertyTitle}
-        avatarText="BV"
+        avatarText={(selectedVisit?.clientFullName || 'BV').slice(0, 2).toUpperCase()}
+        avatarColor="#d4522f"
         branchName={activeVisitBranch?.name}
         statusLabel={selectedVisit?.clientImpression || 'Interested'}
+        statusClassName="bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]"
         tabs={[
           { id: 'visite', label: 'Bon de Visite' },
+          { id: 'offre', label: 'Offre & Feedback' },
           { id: 'gps', label: 'GPS & Signature' },
         ]}
         activeTab={visitTab}
@@ -931,55 +974,72 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
         onSelectItem={(v) => setSelectedVisit(v)}
         onClose={() => setSelectedVisit(null)}
         renderBody={(v, tab) => (
-          <div className="space-y-4 text-xs">
+          <div className="space-y-4">
+            <InspectorSection index={0}>
+              <InspectorQuickActions
+                actions={[
+                  {
+                    id: 'print',
+                    label: isAr ? 'طباعة الوصل' : 'Imprimer Bon',
+                    icon: <Printer size={16} />,
+                    primary: true,
+                    onClick: () => handlePrintInspection(v.propertyTitle),
+                  },
+                  {
+                    id: 'share',
+                    label: isAr ? 'مشاركة' : 'Partager GPS',
+                    icon: <Share2 size={16} />,
+                    onClick: () => showToast(isAr ? 'تم نسخ إحداثيات الزيارة' : 'Bon de visite GPS partagé', 'success'),
+                  },
+                ]}
+              />
+            </InspectorSection>
+
             {tab === 'visite' && (
-              <div className="p-3.5 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Visiteur:</span>
-                  <span className="font-bold text-black dark:text-white">{v.clientFullName}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">CNI:</span>
-                  <span className="font-mono text-black dark:text-white">{v.clientNationalId}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Négociateur:</span>
-                  <span className="font-medium text-black dark:text-white">{v.negotiatorName}</span>
-                </div>
-                {v.counterOfferDzd && (
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Proposition Client:</span>
-                    <span className="font-mono font-bold text-[#d4522f]">{formatMoney(v.counterOfferDzd, language)}</span>
-                  </div>
-                )}
-                {v.clientFeedbackNotes && (
-                  <div className="pt-2 border-t border-neutral-200 dark:border-neutral-800 text-black/75 dark:text-white/75">
-                    {v.clientFeedbackNotes}
-                  </div>
-                )}
-              </div>
+              <InspectorSection index={1} title={isAr ? 'بيانات الزائر' : 'Identité Visiteur & Bien'}>
+                <InspectorCard>
+                  <InspectorKeyValue label="Visiteur" value={v.clientFullName} mono={false} />
+                  <InspectorKeyValue label="Téléphone" value={v.clientPhone} copyText={v.clientPhone} />
+                  <InspectorKeyValue label="CNI" value={v.clientNationalId} copyText={v.clientNationalId} />
+                  <InspectorKeyValue label="Bien visité" value={v.propertyTitle} mono={false} />
+                  <InspectorKeyValue label="Négociateur" value={v.negotiatorName} mono={false} isLast />
+                </InspectorCard>
+              </InspectorSection>
             )}
+
+            {tab === 'offre' && (
+              <>
+                {v.counterOfferDzd && (
+                  <InspectorSection index={1} title={isAr ? 'العرض المالي' : 'Contre-Offre Client'}>
+                    <InspectorBigStat
+                      value={formatMoney(v.counterOfferDzd, language)}
+                      tone="accent"
+                      caption={v.clientImpression || 'Interested'}
+                    />
+                  </InspectorSection>
+                )}
+                <InspectorSection index={2} title={isAr ? 'الانطباع والملاحظات' : 'Feedback & Notes'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label="Impression" value={v.clientImpression || 'Interested'} mono={false} isLast={!v.clientFeedbackNotes} />
+                    {v.clientFeedbackNotes && <InspectorKeyValue label="Notes" value={v.clientFeedbackNotes} mono={false} isLast />}
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            )}
+
             {tab === 'gps' && (
-              <div className="space-y-3">
-                <div className="p-3.5 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-1.5 font-mono">
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Coordonnées GPS:</span>
-                    <span className="text-emerald-600 font-bold">
-                      {v.gpsLatitude}° N, {v.gpsLongitude}° E
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Horodatage:</span>
-                    <span>{new Date(v.visitTimestamp).toLocaleString()}</span>
-                  </div>
-                </div>
+              <InspectorSection index={1} title={isAr ? 'التوثيق الجغرافي' : 'Géolocalisation & Signature'}>
+                <InspectorCard>
+                  <InspectorKeyValue label="Coordonnées GPS" value={`${v.gpsLatitude}° N, ${v.gpsLongitude}° E`} tone="ok" />
+                  <InspectorKeyValue label="Horodatage" value={new Date(v.visitTimestamp).toLocaleString()} isLast />
+                </InspectorCard>
                 {v.signatureSvgData && (
-                  <div className="p-3 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800">
+                  <div className="mt-3 p-3 bg-white dark:bg-[#1C1B1A] rounded-[18px] border border-[#E6DED6] dark:border-[#3A3734]">
                     <div className="text-[11px] font-semibold text-black/60 dark:text-white/60 mb-2">Signature Certifiée</div>
                     <img src={v.signatureSvgData} alt="Signature acquéreur" className="h-24 mx-auto object-contain" />
                   </div>
                 )}
-              </div>
+              </InspectorSection>
             )}
           </div>
         )}

@@ -11,11 +11,16 @@ import {
   Check,
   Activity,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { AgriParcel, AgriParcelStatus, AgriTreatmentLog, AgriHarvestTicket } from '../../../types';
 import { useAgricultureData } from './agricultureData';
 import { AgricultureParcelModal } from './AgricultureParcelModal';
-import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -28,6 +33,16 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorListItem,
+  InspectorNotesField,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -40,9 +55,19 @@ export const AgricultureParcelsView: React.FC = () => {
     branches,
     isSyncing,
     networkMode,
-    retryCloudSync,
     lastSyncedAt,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -571,6 +596,99 @@ export const AgricultureParcelsView: React.FC = () => {
     [isAr, isEn, pinnedIds, branchesById, currentBranch, language]
   );
 
+  const getRowMeta = useCallback(
+    (p: AgriParcel): Partial<KineticRowData> => {
+      const branchName = resolveRecordBranch(p, branchesById, currentBranch, language).name;
+      const statusVariant =
+        p.status === 'Harvesting' ? 'active' : p.status === 'Fallow' ? 'warning' : 'neutral';
+      const statusLabel =
+        p.status === 'Harvesting'
+          ? isAr ? 'في الحصاد' : isEn ? 'Harvesting' : 'En Récolte'
+          : p.status === 'Fallow'
+          ? isAr ? 'راحة' : isEn ? 'Fallow' : 'Jachère'
+          : isAr ? 'نمو' : isEn ? 'Growing' : 'En Végétation';
+      return {
+        subline: `${p.currentCrop || 'Jachère'} · ${p.soilType}`,
+        categoryLabel:
+          p.irrigationType === 'Drip'
+            ? 'Goutte-à-goutte'
+            : p.irrigationType === 'Pivot'
+            ? 'Pivot'
+            : p.irrigationType,
+        statusLabel,
+        statusVariant,
+        metricPrimary: `${p.surfaceHectares} ha`,
+        metricSecondary: p.expectedHarvestDate || '—',
+        detailCol1: {
+          heading: isAr ? 'القطعة والموقع' : isEn ? 'Parcel & Soil' : 'Parcelle & Sol',
+          primaryText: p.name,
+          secondaryText: `${p.soilType} · ${p.surfaceHectares} ha`,
+          tertiaryText: branchName,
+        },
+        detailCol2: {
+          heading: isAr ? 'المحصول والري' : isEn ? 'Crop & Irrigation' : 'Culture & Irrigation',
+          primaryText: p.currentCrop || 'Aucune culture en terre',
+          secondaryText: `Mode: ${p.irrigationType}`,
+          tertiaryText: `Code ${p.code || 'CAD'}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'مواعيد الحملة' : isEn ? 'Season Dates' : 'Dates campagne',
+          primaryText: p.expectedHarvestDate ? `Récolte ${p.expectedHarvestDate}` : statusLabel,
+          secondaryText: `Semis: ${p.plantingDate || '—'}`,
+        },
+      };
+    },
+    [branchesById, currentBranch, language, isAr, isEn]
+  );
+
+  const getFanActions = useCallback(
+    (p: AgriParcel): KineticRowFanAction[] => [
+      {
+        id: 'treat',
+        label: isAr ? 'معالجة' : 'Phyto',
+        icon: <ShieldCheck className="w-[15px] h-[15px]" />,
+        onClick: () => handleQuickTreatmentLog(p),
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+        icon: <Edit className="w-[15px] h-[15px]" />,
+        onClick: () => handleEdit(p),
+      },
+      {
+        id: 'open',
+        label: isAr ? 'تفاصيل' : isEn ? 'Details' : 'Détails',
+        icon: <Sprout className="w-[15px] h-[15px]" />,
+        onClick: (e) => handleSelectParcel(p, e.currentTarget),
+      },
+    ],
+    [handleQuickTreatmentLog, handleEdit, handleSelectParcel, isAr, isEn]
+  );
+
+  const getDetailActions = useCallback(
+    (p: AgriParcel): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'معاينة القطعة' : isEn ? 'Inspect Parcel' : 'Ouvrir fiche',
+        icon: <Sprout className="w-3.5 h-3.5" />,
+        onClick: () => handleSelectParcel(p),
+      },
+      {
+        id: 'cycle',
+        label: isAr ? 'تغيير الطور' : 'Avancer stade',
+        icon: <Activity className="w-3.5 h-3.5 text-[#096b40]" />,
+        onClick: () => handleQuickCycle(p),
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+        icon: <Edit className="w-3.5 h-3.5" />,
+        onClick: () => handleEdit(p),
+      },
+    ],
+    [handleSelectParcel, handleQuickCycle, handleEdit, isAr, isEn]
+  );
+
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: parcels.length > 0,
@@ -601,13 +719,6 @@ export const AgricultureParcelsView: React.FC = () => {
       <ScreenHeaderBar
         icon={<Sprout size={22} />}
         title={isAr ? 'القطع' : isEn ? 'Parcels' : 'Parcelles'}
-        subtitle={
-          isAr
-            ? `${parcels.length} قطعة فلاحية · ${totalHectares.toFixed(1)} هكتار`
-            : isEn
-            ? `${parcels.length} farm parcels · ${totalHectares.toFixed(1)} ha`
-            : `${parcels.length} parcelles cadastrales · ${totalHectares.toFixed(1)} ha exploités`
-        }
         primaryAction={{
           label: isAr ? 'قطعة جديدة' : isEn ? 'New Parcel' : 'Nouvelle Parcelle',
           onClick: handleOpenAdd,
@@ -694,11 +805,6 @@ export const AgricultureParcelsView: React.FC = () => {
               label: isAr ? 'محوري' : 'Pivot',
               count: parcels.filter((p) => p.irrigationType === 'Pivot').length,
             },
-            {
-              value: 'Gravity',
-              label: isAr ? 'انسيابي' : isEn ? 'Gravity' : 'Gravitaire',
-              count: parcels.filter((p) => p.irrigationType === 'Gravity').length,
-            },
           ]}
           statusValue={filterIrrigation}
           onStatusChange={setFilterIrrigation}
@@ -716,9 +822,10 @@ export const AgricultureParcelsView: React.FC = () => {
 
         <UniversalDataCollection<AgriParcel>
           hideToolbar
-          data={sortedParcels}
+          items={sortedParcels}
           columns={columns}
           keyExtractor={(p) => p.id}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
           defaultViewMode={viewMode}
           selectedIds={selectedIds}
           onSelectionChange={setSelectedIds}
@@ -747,6 +854,9 @@ export const AgricultureParcelsView: React.FC = () => {
           openItemId={activeParcel?.id || null}
           onItemClick={handleSelectParcel}
           onViewDetails={handleSelectParcel}
+          getRowMeta={getRowMeta}
+          getFanActions={getFanActions}
+          getDetailActions={getDetailActions}
           onEdit={handleEdit}
           onDelete={handleDelete}
           emptyTitle={isAr ? 'لا توجد قطع فلاحية' : isEn ? 'No parcels found' : 'Aucune parcelle trouvée'}
@@ -773,54 +883,6 @@ export const AgricultureParcelsView: React.FC = () => {
               onClick: () => handleQuickCycle(p),
             },
           ]}
-          renderCard={(p) => (
-            <div className="space-y-3 w-full">
-              <div className="flex items-center justify-between">
-                <span className="font-mono font-bold text-xs bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 px-2.5 py-1 rounded-lg border border-emerald-500/20">
-                  {p.surfaceHectares} ha
-                </span>
-                <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    p.status === 'Growing'
-                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
-                      : p.status === 'Harvesting'
-                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                      : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                  }`}
-                >
-                  {p.status}
-                </span>
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">
-                  {p.name}
-                </h3>
-                <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">
-                  {p.currentCrop}
-                </div>
-              </div>
-              <div className="text-xs text-black/70 dark:text-white/75 flex items-center justify-between bg-neutral-50 dark:bg-neutral-800/50 p-2 rounded-xl">
-                <div className="flex items-center gap-1.5">
-                  <Droplets size={13} className="shrink-0 text-blue-500" />
-                  <span className="text-[11px]">{p.irrigationType}</span>
-                </div>
-                <span className="text-[10px] text-black/55 dark:text-white/55 truncate max-w-[110px]">
-                  {p.soilType}
-                </span>
-              </div>
-              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-                <div className="text-[11px] text-black/55 dark:text-white/55">
-                  Semis: <span className="font-mono text-black/70 dark:text-white/75">{p.plantingDate || '—'}</span>
-                </div>
-                <div className="text-[11px] text-black/55 dark:text-white/55">
-                  Récolte:{' '}
-                  <span className="font-mono text-black/70 dark:text-white/75">
-                    {p.expectedHarvestDate || '—'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
         />
       </ScreenPod>
 
@@ -846,9 +908,10 @@ export const AgricultureParcelsView: React.FC = () => {
         title={activeParcel?.name || ''}
         subtitle={
           activeParcel
-            ? `${activeParcel.surfaceHectares} ha • ${activeParcel.currentCrop || '—'}`
+            ? `${activeParcel.surfaceHectares} ha · ${activeParcel.currentCrop || '—'}`
             : undefined
         }
+        categoryLabel={activeParcel?.irrigationType}
         avatarText={((activeParcel?.code || '').replace(/[^A-Za-z0-9]/g, '') || activeParcel?.name || 'PA').slice(0, 2).toUpperCase()}
         branchName={
           activeParcel
@@ -866,22 +929,21 @@ export const AgricultureParcelsView: React.FC = () => {
         }
         statusClassName={
           activeParcel?.status === 'Harvesting'
-            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
             : activeParcel?.status === 'Growing'
-            ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
-            : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
+            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
         }
         tabs={[
-          { id: 'agronomy', label: isAr ? 'الزراعة' : 'Agronomie' },
+          { id: 'agronomy', label: isAr ? 'الزراعة' : isEn ? 'Agronomy' : 'Agronomie' },
           {
             id: 'treatments',
-            label: `${isAr ? 'المعالجات' : 'Phyto & DAR'} (${currentTreatments.length})`,
+            label: `${isAr ? 'المعالجات' : 'Phyto DAR'} (${currentTreatments.length})`,
           },
           {
             id: 'harvests',
             label: `${isAr ? 'الحصاد' : 'Récolte'} (${currentHarvests.length})`,
           },
-          { id: 'notes', label: isAr ? 'الكراس' : 'Cahier' },
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -889,209 +951,136 @@ export const AgricultureParcelsView: React.FC = () => {
         onClose={() => setSelectedParcel(null)}
         onDelete={handleDelete}
         holdToDelete
-        renderBody={(item, tab) => (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 flex-wrap">
-              <AtriumButton
-                variant="outline"
-                size="sm"
-                onClick={() => handleQuickTreatmentLog(item)}
-                icon={<ShieldCheck size={13} />}
-              >
-                {isAr ? 'معالجة' : 'Traitement'}
-              </AtriumButton>
-              <AtriumButton
-                variant="outline"
-                size="sm"
-                onClick={() => handleQuickCycle(item)}
-                icon={<Activity size={13} />}
-              >
-                {isAr ? 'الطور التالي' : 'Avancer Cycle'}
-              </AtriumButton>
-              <AtriumButton
-                variant="ghost"
-                size="sm"
-                onClick={() => handleEdit(item)}
-                icon={<Edit size={13} />}
-              >
-                {isAr ? 'تعديل' : 'Modifier'}
-              </AtriumButton>
-            </div>
+        renderBody={(item, tab) => {
+          if (tab === 'treatments') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'السجل النباتي' : isEn ? 'Phytosanitary Log' : 'Traitements & DAR'}>
+                  {currentTreatments.length === 0 ? (
+                    <InspectorCard>
+                      <InspectorListItem
+                        title={isAr ? 'لا توجد معالجات مسجلة' : 'Aucun traitement phytosanitaire consigné'}
+                        subtitle="Historique INPV vierge"
+                        badge={{ label: 'RAS', tone: 'ok' }}
+                        isLast
+                      />
+                    </InspectorCard>
+                  ) : (
+                    <InspectorCard>
+                      {currentTreatments.map((t, idx) => (
+                        <InspectorListItem
+                          key={t.id}
+                          title={t.commercialProductName}
+                          subtitle={`${t.activeIngredient} · ${t.treatmentDate}`}
+                          metaRight={`→ ${t.harvestAllowedDate}`}
+                          badge={{ label: `DAR ${t.darDays}j`, tone: 'warn' }}
+                          isLast={idx === currentTreatments.length - 1}
+                        />
+                      ))}
+                    </InspectorCard>
+                  )}
+                </InspectorSection>
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label={isAr ? '+ قيد معالجة جديدة' : '+ Consigner un traitement phyto'}
+                    onClick={() => handleQuickTreatmentLog(item)}
+                  />
+                </InspectorSection>
+              </>
+            );
+          }
 
-            {tab === 'agronomy' && (
-              <div className="space-y-3 text-xs">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">
-                      {isAr ? 'المساحة:' : 'Surface Cadastrale:'}
-                    </span>
-                    <span className="font-mono font-bold text-black dark:text-white">
-                      {item.surfaceHectares} Hectares
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">
-                      {isAr ? 'المحصول المزروع:' : 'Culture en Place:'}
-                    </span>
-                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                      {item.currentCrop || '—'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">
-                      {isAr ? 'طريقة الري:' : "Système d'Irrigation:"}
-                    </span>
-                    <span className="font-semibold text-black dark:text-white">
-                      {item.irrigationType}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">
-                      {isAr ? 'نوع التربة:' : 'Pédologie / Sol:'}
-                    </span>
-                    <span className="text-black dark:text-white">{item.soilType}</span>
-                  </div>
-                </div>
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">
-                      {isAr ? 'تاريخ الغرس / البذر:' : 'Date de Semis:'}
-                    </span>
-                    <span className="text-black dark:text-white font-mono">
-                      {item.plantingDate || '—'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">
-                      {isAr ? 'تاريخ الحصاد المتوقع:' : 'Récolte Prévisionnelle:'}
-                    </span>
-                    <span className="text-black dark:text-white font-mono">
-                      {item.expectedHarvestDate || '—'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {tab === 'treatments' && (
-              <div className="space-y-3 text-xs">
-                {currentTreatments.length === 0 ? (
-                  <div className="text-center py-8 text-black/55 dark:text-white/55">
-                    <ShieldCheck size={28} className="mx-auto mb-2 opacity-40" />
-                    <p>
-                      {isAr
-                        ? 'لا توجد معالجات مسجلة'
-                        : 'Aucun traitement phytosanitaire consigné'}
-                    </p>
-                    <AtriumButton
-                      variant="ghost"
-                      size="sm"
-                      className="mt-3"
-                      onClick={() => handleQuickTreatmentLog(item)}
-                    >
-                      {isAr ? '+ قيد معالجة جديدة' : '+ Consigner un traitement'}
-                    </AtriumButton>
-                  </div>
-                ) : (
-                  currentTreatments.map((t) => (
-                    <div
-                      key={t.id}
-                      className="p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1.5"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-black dark:text-white text-[11px]">
-                          {t.commercialProductName}
-                        </span>
-                        <span className="font-mono text-[10px] bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300 px-1.5 py-0.5 rounded font-bold">
-                          DAR: {t.darDays}j
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-black/70 dark:text-white/75">
-                        {t.activeIngredient} • {t.dosagePerHa}
-                      </p>
-                      <div className="flex items-center justify-between text-[10px] text-black/55 dark:text-white/55 pt-1 border-t border-neutral-200/50 dark:border-neutral-700/50">
-                        <span>Date: {t.treatmentDate}</span>
-                        <span className="text-emerald-600 font-semibold">
-                          Récolte auto: {t.harvestAllowedDate}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
-
-            {tab === 'harvests' && (
-              <div className="space-y-3 text-xs">
+          if (tab === 'harvests') {
+            return (
+              <InspectorSection index={0} title={isAr ? 'تذاكر الحصاد' : isEn ? 'Harvest Tickets' : 'Bons de récolte'}>
                 {currentHarvests.length === 0 ? (
-                  <div className="text-center py-8 text-black/55 dark:text-white/55">
-                    <Package size={28} className="mx-auto mb-2 opacity-40" />
-                    <p>
-                      {isAr
-                        ? 'لا توجد تذاكر جني مسجلة'
-                        : 'Aucun bon de pesée / récolte consigné'}
-                    </p>
-                  </div>
+                  <InspectorCard>
+                    <InspectorListItem
+                      title={isAr ? 'لا توجد تذاكر جني مسجلة' : 'Aucun bon de pesée consigné'}
+                      subtitle="Aucune expédition rattachée à cette parcelle"
+                      badge={{ label: 'Vide', tone: 'neutral' }}
+                      isLast
+                    />
+                  </InspectorCard>
                 ) : (
-                  currentHarvests.map((h) => (
-                    <div
-                      key={h.id}
-                      className="p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1.5"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono font-bold text-[11px] text-[#d4522f]">
-                          {h.ticketCode || h.ticketNumber}
-                        </span>
-                        <span className="font-mono font-bold text-black dark:text-white">
-                          {h.netWeightKg} Kg
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-black/70 dark:text-white/75">
-                        {h.cropDesignation} • {h.qualityGrade || 'Standard'}
-                      </div>
-                      <div className="text-[10px] text-black/55 dark:text-white/55">
-                        Date: {h.harvestDate || h.date} •{' '}
-                        {h.destinationStorage || h.destinationWholesaleMarket}
-                      </div>
-                    </div>
-                  ))
+                  <InspectorCard>
+                    {currentHarvests.map((h, idx) => (
+                      <InspectorListItem
+                        key={h.id}
+                        title={h.ticketCode || h.ticketNumber}
+                        subtitle={`${h.cropDesignation} · ${h.harvestDate || h.date}`}
+                        metaRight={`${h.netWeightKg} Kg`}
+                        badge={{ label: h.qualityGrade || 'Standard', tone: 'ok' }}
+                        isLast={idx === currentHarvests.length - 1}
+                      />
+                    ))}
+                  </InspectorCard>
                 )}
-              </div>
-            )}
+              </InspectorSection>
+            );
+          }
 
-            {tab === 'notes' && (
-              <div className="space-y-3 text-xs">
-                <p className="text-black/55 dark:text-white/55 text-[11px]">
-                  {isAr
-                    ? 'كراس الحقل والملاحظات الفلاحية وبرامج التسميد والمكافحة:'
-                    : "Cahier d'exploitation agronomique, calendrier d'irrigation et doses d'engrais :"}
-                </p>
-                <textarea
-                  rows={6}
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : isEn ? 'Quick Actions' : 'Actions rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'edit',
+                      label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+                      icon: <Edit className="w-[18px] h-[18px]" />,
+                      primary: true,
+                      onClick: () => handleEdit(item),
+                    },
+                    {
+                      id: 'treat',
+                      label: isAr ? 'معالجة' : 'Traitement',
+                      icon: <ShieldCheck className="w-[18px] h-[18px]" />,
+                      onClick: () => handleQuickTreatmentLog(item),
+                    },
+                    {
+                      id: 'cycle',
+                      label: isAr ? 'الطور التالي' : 'Stade +',
+                      icon: <Activity className="w-[18px] h-[18px]" />,
+                      onClick: () => handleQuickCycle(item),
+                    },
+                    {
+                      id: 'pin',
+                      label: pinnedIds.has(item.id)
+                        ? isAr ? 'إلغاء تثبيت' : 'Désépingler'
+                        : isAr ? 'تثبيت' : 'Épingler',
+                      icon: <Pin className="w-[18px] h-[18px]" />,
+                      onClick: () => handleTogglePin(item),
+                    },
+                  ]}
+                />
+              </InspectorSection>
+
+              <InspectorSection index={1} title={isAr ? 'البيانات الزراعية' : isEn ? 'Parcel Cadastre' : 'Cadastre & Pédologie'}>
+                <InspectorCard>
+                  <InspectorKeyValue label="Surface cadastrale" value={`${item.surfaceHectares} Hectares`} />
+                  <InspectorKeyValue label="Culture en place" value={item.currentCrop || '—'} tone="ok" mono={false} />
+                  <InspectorKeyValue label="Système d'irrigation" value={item.irrigationType} mono={false} />
+                  <InspectorKeyValue label="Pédologie / Sol" value={item.soilType} mono={false} />
+                  <InspectorKeyValue label="Date de semis" value={item.plantingDate || '—'} />
+                  <InspectorKeyValue label="Récolte prévisionnelle" value={item.expectedHarvestDate || '—'} isLast />
+                </InspectorCard>
+              </InspectorSection>
+
+              <InspectorSection index={2} title={isAr ? 'كراس الحقل' : isEn ? 'Agronomy Notebook' : 'Cahier agronomique'}>
+                <InspectorNotesField
                   value={inspectorNotes}
-                  onChange={(e) => setInspectorNotes(e.target.value)}
+                  onSave={handleSaveNotes}
                   placeholder={
                     isAr
                       ? 'سجل ملاحظات التربة، رطوبة الحقل، مكافحة الأعشاب الضارة...'
-                      : 'Noter les analyses de sève, relevés tensiométriques, apports NPK en fertigation...'
+                      : 'Noter les analyses de sève, relevés tensiométriques, apports NPK...'
                   }
-                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none"
                 />
-                <AtriumButton
-                  variant="primary"
-                  size="sm"
-                  className="w-full justify-center"
-                  onClick={handleSaveNotes}
-                  icon={noteSaved ? <Check size={14} /> : <Save size={14} />}
-                >
-                  {noteSaved
-                    ? isAr ? 'تم الحفظ بنجاح' : 'Cahier agronomique mis à jour'
-                    : isAr ? 'حفظ الملاحظات' : 'Enregistrer dans le cahier'}
-                </AtriumButton>
-              </div>
-            )}
-          </div>
-        )}
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       <AgricultureParcelModal

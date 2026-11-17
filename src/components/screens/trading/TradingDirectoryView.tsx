@@ -6,10 +6,7 @@ import {
   FileText,
   Edit,
   Trash2,
-  Clock,
-  ShieldCheck,
   Download,
-  Building2,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { B2bClient, B2bSupplier } from '../../../types';
@@ -30,12 +27,28 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorProgressBar,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorWideButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
 
+const STATUS_PILL_OK =
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+const STATUS_PILL_DANGER =
+  'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]';
+const STATUS_PILL_INFO =
+  'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]';
+
 type DirectoryMode = 'clients' | 'suppliers';
+type DrawerTab = 'fiche' | 'credit' | 'docs';
 
 export const TradingDirectoryView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -68,6 +81,7 @@ export const TradingDirectoryView: React.FC = () => {
 
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState<B2bClient | B2bSupplier | null>(null);
+  const [drawerTab, setDrawerTab] = useState<DrawerTab>('fiche');
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -499,7 +513,6 @@ export const TradingDirectoryView: React.FC = () => {
       <ScreenHeaderBar
         icon={<Users size={22} />}
         title={t('trading_directory_title', 'Partenaires')}
-        subtitle={`${b2bClients.length} ${isAr ? 'عميل' : 'Clients'} · ${b2bSuppliers.length} ${isAr ? 'مورد' : 'Fournisseurs'}`}
         primaryAction={{
           label:
             mode === 'clients'
@@ -607,9 +620,10 @@ export const TradingDirectoryView: React.FC = () => {
         {mode === 'clients' ? (
           <UniversalDataCollection<B2bClient>
             hideToolbar
-            data={filteredClients}
+            items={filteredClients}
             keyExtractor={(c) => c.id}
-            viewMode={viewMode}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+            defaultViewMode="list"
             columns={clientColumns}
             sortBy={sortBy}
             sortDirection={sortDir}
@@ -669,64 +683,73 @@ export const TradingDirectoryView: React.FC = () => {
               setEntityModalOpen(true);
             }}
             onDelete={(c) => setDeleteTarget(c)}
-            customActions={(c) => [
+            getRowMeta={(c) => {
+              const isOver = (c.outstandingBalance || 0) > (c.creditLimit || 0);
+              const branchInfo = resolveRecordBranch(c, branchesById, currentBranch, language);
+              return {
+                title: c.companyName,
+                subline: `NIF: ${c.nif || 'Non renseigné'}${c.city ? ` · ${c.city}` : ''}`,
+                avatarText: c.companyName.slice(0, 2).toUpperCase(),
+                avatarColor: '#d4522f',
+                categoryLabel: c.sector || 'Client B2B',
+                statusLabel: isOver ? 'Hors plafond' : 'Sous plafond',
+                statusVariant: isOver ? 'blocked' : 'active',
+                metricPrimary: formatMoney(c.outstandingBalance || 0),
+                metricSecondary: `Plafond ${formatMoney(c.creditLimit || 0)}`,
+                branchName: branchInfo.name,
+                isPinned: pinnedIds.has(c.id),
+                detailCol1: { label: 'Interlocuteur', value: c.contactName || 'Standard' },
+                detailCol2: { label: 'Téléphone', value: c.phone || c.contactPhone || '—' },
+                detailCol3: { label: 'Wilaya', value: c.city || '—' },
+              };
+            }}
+            getFanActions={(c) => [
               {
                 id: 'doc',
                 label: isAr ? 'إنشاء مستند' : 'Nouveau Document',
-                icon: <FileText size={13} />,
-                variant: 'primary',
+                icon: <FileText size={14} />,
                 onClick: () => {
                   setSelectedEntity(c);
                   setComposerOpen(true);
                 },
               },
+              {
+                id: 'edit',
+                label: t('action_edit', 'Modifier'),
+                icon: <Edit size={14} />,
+                onClick: () => {
+                  setEditingEntity(c);
+                  setEntityModalOpen(true);
+                },
+              },
+              {
+                id: 'delete',
+                label: t('action_delete', 'Supprimer'),
+                icon: <Trash2 size={14} />,
+                isDanger: true,
+                onClick: () => setDeleteTarget(c),
+              },
             ]}
-            renderCard={(c) => {
-              const isOverLimit = (c.outstandingBalance || 0) > (c.creditLimit || 0);
-              const b = resolveRecordBranch(c, branchesById, currentBranch, language);
-              return (
-                <div className="p-4 border border-[#E6DED6] dark:border-neutral-700/70 bg-white dark:bg-neutral-800/80 rounded-2xl flex flex-col justify-between h-full">
-                  <div>
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-base shrink-0 border border-[#F5E2D8] dark:border-neutral-700">
-                        {c.companyName.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 truncate max-w-[140px]">
-                        {b.name}
-                      </span>
-                    </div>
-                    <h3 className="font-bold text-sm text-black dark:text-white line-clamp-1 mb-0.5">{c.companyName}</h3>
-                    <div className="text-[11px] font-mono text-black/55 dark:text-white/55 mb-3">
-                      NIF: {c.nif || 'Non renseigné'} {c.city ? `· ${c.city}` : ''}
-                    </div>
-                    <div className="p-2.5 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl space-y-1 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-black/55 dark:text-white/55">Encours :</span>
-                        <span className={`font-mono font-bold tabular-nums ${isOverLimit ? 'text-rose-600' : 'text-[#d4522f]'}`}>
-                          {formatMoney(c.outstandingBalance || 0)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-3 pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-                    <span className="text-black/70 dark:text-white/75 truncate max-w-[140px]">
-                      {c.contactName || c.phone || 'Contact'}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedEntity(c);
-                        setComposerOpen(true);
-                      }}
-                      className="px-2.5 py-1 rounded-lg bg-[#d4522f]/10 hover:bg-[#d4522f]/20 text-[#d4522f] text-[11px] font-bold cursor-pointer"
-                    >
-                      + Facture/BL
-                    </button>
-                  </div>
-                </div>
-              );
-            }}
+            getDetailActions={(c) => [
+              {
+                id: 'doc',
+                label: '+ Facture/BL',
+                icon: <FileText size={13} />,
+                onClick: () => {
+                  setSelectedEntity(c);
+                  setComposerOpen(true);
+                },
+              },
+              {
+                id: 'edit',
+                label: t('action_edit', 'Modifier'),
+                icon: <Edit size={13} />,
+                onClick: () => {
+                  setEditingEntity(c);
+                  setEntityModalOpen(true);
+                },
+              },
+            ]}
             emptyTitle={isAr ? 'لم يتم العثور على عملاء' : 'Aucun client B2B trouvé'}
             emptyDescription={
               isAr ? 'أضف أول عميل تجاري.' : 'Ajoutez votre premier client commercial en cliquant sur Nouveau Client B2B.'
@@ -735,9 +758,10 @@ export const TradingDirectoryView: React.FC = () => {
         ) : (
           <UniversalDataCollection<B2bSupplier>
             hideToolbar
-            data={filteredSuppliers}
+            items={filteredSuppliers}
             keyExtractor={(s) => s.id}
-            viewMode={viewMode}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+            defaultViewMode="list"
             columns={supplierColumns}
             selectedIds={selectedEntityIds}
             onSelectionChange={setSelectedEntityIds}
@@ -781,20 +805,43 @@ export const TradingDirectoryView: React.FC = () => {
               setEntityModalOpen(true);
             }}
             onDelete={(s) => setDeleteTarget(s)}
-            renderCard={(s) => (
-              <div className="p-4 border border-[#E6DED6] dark:border-neutral-700/70 bg-white dark:bg-neutral-800/80 rounded-2xl flex flex-col justify-between h-full">
-                <div>
-                  <h3 className="font-bold text-sm text-black dark:text-white mb-0.5">{s.supplierName}</h3>
-                  <div className="text-[11px] font-mono text-black/55 dark:text-white/55 mb-2">
-                    NIF: {s.nif || 'N/A'} {s.city ? `· ${s.city}` : ''}
-                  </div>
-                </div>
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex justify-between text-xs font-mono">
-                  <span className="text-black/55 dark:text-white/55">Dette :</span>
-                  <span className="font-bold text-amber-600 tabular-nums">{formatMoney(s.outstandingPayable || 0)}</span>
-                </div>
-              </div>
-            )}
+            getRowMeta={(s) => {
+              const branchInfo = resolveRecordBranch(s, branchesById, currentBranch, language);
+              return {
+                title: s.supplierName,
+                subline: `NIF: ${s.nif || 'N/A'}${s.city ? ` · ${s.city}` : ''}`,
+                avatarText: s.supplierName.slice(0, 2).toUpperCase(),
+                avatarColor: '#d4522f',
+                categoryLabel: s.sector || 'Fournisseur',
+                statusLabel: 'Agréé',
+                statusVariant: 'info',
+                metricPrimary: formatMoney(s.outstandingPayable || 0),
+                metricSecondary: 'Dette fournisseur',
+                branchName: branchInfo.name,
+                isPinned: pinnedIds.has(s.id),
+                detailCol1: { label: 'Contact', value: s.contactName || 'Standard' },
+                detailCol2: { label: 'Téléphone', value: s.phone || '—' },
+                detailCol3: { label: 'Ville', value: s.city || '—' },
+              };
+            }}
+            getFanActions={(s) => [
+              {
+                id: 'edit',
+                label: t('action_edit', 'Modifier'),
+                icon: <Edit size={14} />,
+                onClick: () => {
+                  setEditingEntity(s);
+                  setEntityModalOpen(true);
+                },
+              },
+              {
+                id: 'delete',
+                label: t('action_delete', 'Supprimer'),
+                icon: <Trash2 size={14} />,
+                isDanger: true,
+                onClick: () => setDeleteTarget(s),
+              },
+            ]}
             emptyTitle={isAr ? 'لم يتم العثور على موردين' : 'Aucun fournisseur trouvé'}
             emptyDescription={isAr ? 'أضف أول مورد.' : 'Ajoutez votre premier fournisseur.'}
           />
@@ -834,110 +881,165 @@ export const TradingDirectoryView: React.FC = () => {
         avatarText={
           selectedEntity
             ? ('companyName' in selectedEntity ? selectedEntity.companyName : selectedEntity.supplierName)
-                .charAt(0)
+                .slice(0, 2)
                 .toUpperCase()
-            : 'B2B'
+            : 'B2'
         }
+        avatarColor="#d4522f"
         branchName={
           selectedEntity ? resolveRecordBranch(selectedEntity, branchesById, currentBranch, language).name : undefined
         }
-        statusLabel={mode === 'clients' ? 'Client B2B' : 'Fournisseur'}
+        statusLabel={
+          selectedEntity && 'outstandingBalance' in selectedEntity
+            ? (selectedEntity.outstandingBalance || 0) > (selectedEntity.creditLimit || 0)
+              ? 'Hors plafond'
+              : 'Sous plafond'
+            : 'Fournisseur'
+        }
+        statusClassName={
+          selectedEntity && 'outstandingBalance' in selectedEntity
+            ? (selectedEntity.outstandingBalance || 0) > (selectedEntity.creditLimit || 0)
+              ? STATUS_PILL_DANGER
+              : STATUS_PILL_OK
+            : STATUS_PILL_INFO
+        }
+        tabs={[
+          { id: 'fiche', label: isAr ? 'الملف' : isEn ? 'Profile' : 'Identité' },
+          { id: 'credit', label: isAr ? 'الائتمان' : isEn ? 'Credit' : 'Encours' },
+          { id: 'docs', label: isAr ? 'المستندات' : isEn ? 'Docs' : 'Pièces' },
+        ]}
+        activeTab={drawerTab}
+        onTabChange={(tab) => setDrawerTab(tab as DrawerTab)}
         onClose={() => setSelectedEntity(null)}
         onSelectItem={(e) => setSelectedEntity(e)}
         onDelete={(e) => setDeleteTarget(e)}
         holdToDelete
-        renderBody={(ent) => (
-          <div className="space-y-4 text-xs">
-            <div className="p-3.5 rounded-xl border border-[#E6DED6] dark:border-neutral-700 bg-[#FBF8F5] dark:bg-neutral-800/60 font-mono space-y-1.5">
-              <span className="font-bold font-sans text-[11px] text-black/70 dark:text-white/75 block uppercase">
-                Identifiants Fiscaux Certifiés
-              </span>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">N.I.F. :</span>
-                <span className="font-bold text-black dark:text-white">{ent.nif || 'Non renseigné'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">R.C. N° :</span>
-                <span className="text-black dark:text-white">{ent.rc || 'Non renseigné'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">Art. Imposition :</span>
-                <span className="text-black dark:text-white">{ent.ai || 'Non renseigné'}</span>
-              </div>
-            </div>
+        renderBody={(ent, tab) => {
+          const isClient = 'outstandingBalance' in ent;
+          const balance = isClient ? ent.outstandingBalance || 0 : ent.outstandingPayable || 0;
+          const limit = isClient ? ent.creditLimit || 0 : 0;
+          const ratio = limit > 0 ? Math.min(100, Math.round((balance / limit) * 100)) : 0;
 
-            <div className="space-y-2">
-              <span className="font-bold uppercase tracking-wider text-black/55 dark:text-white/55 text-[10px] block">
-                Contact Direct
-              </span>
-              <div className="flex items-center gap-2 text-black dark:text-white font-semibold">
-                {ent.contactName || 'Standard'}
-              </div>
-              <div className="flex items-center gap-2 text-black/70 dark:text-white/75 font-mono text-[11px]">
-                <Phone size={13} className="text-[#d4522f]" />
-                <span>{ent.phone || 'Non renseigné'}</span>
-              </div>
-            </div>
-
-            {'outstandingBalance' in ent && (
-              <div className="p-3.5 rounded-xl border border-[#E6DED6] dark:border-neutral-700 space-y-2 font-mono">
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Encours Actuel :</span>
-                  <span className="font-bold text-rose-600">{formatMoney(ent.outstandingBalance || 0)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Plafond Autorisé :</span>
-                  <span className="text-black dark:text-white">{formatMoney(ent.creditLimit || 0)}</span>
-                </div>
-              </div>
-            )}
-
-            {mode === 'clients' && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold uppercase tracking-wider text-black/55 dark:text-white/55 text-[10px]">
-                    Historique Pièces ({entityHistory.length})
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setComposerOpen(true)}
-                    className="text-[11px] font-semibold text-[#d4522f] hover:underline cursor-pointer"
-                  >
-                    + Créer document
-                  </button>
-                </div>
-                <div className="space-y-1.5 max-h-44 overflow-y-auto">
-                  {entityHistory.map((d) => (
-                    <div
-                      key={d.id}
-                      className="p-2 rounded-lg border border-neutral-200 dark:border-neutral-700 flex items-center justify-between text-[11px]"
-                    >
-                      <span className="font-mono font-bold text-black dark:text-white">{d.docNumber}</span>
-                      <span className="font-mono font-bold text-[#d4522f]">{formatMoney(d.netToPay)}</span>
-                    </div>
-                  ))}
-                  {entityHistory.length === 0 && (
-                    <p className="text-black/55 dark:text-white/55 text-[11px] italic">
-                      Aucune transaction pour ce client.
-                    </p>
+          if (tab === 'credit') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0} title={isClient ? 'Position Crédit B2B' : 'Dette Fournisseur'}>
+                  <InspectorBigStat
+                    value={formatMoney(balance)}
+                    tone={isClient && limit > 0 && balance > limit ? 'danger' : 'accent'}
+                    caption={isClient ? `Plafond autorisé : ${formatMoney(limit)}` : 'Solde exigible fournisseur'}
+                  />
+                  {isClient && (
+                    <InspectorCard>
+                      <InspectorProgressBar
+                        percent={ratio}
+                        tone={balance > limit ? 'danger' : ratio > 80 ? 'warn' : 'ok'}
+                        animateKey={ent.id}
+                      />
+                      <InspectorKeyValue label="Utilisation plafond" value={`${ratio}%`} mono isLast />
+                    </InspectorCard>
                   )}
-                </div>
+                </InspectorSection>
               </div>
-            )}
+            );
+          }
 
-            <button
-              type="button"
-              onClick={() => {
-                setEditingEntity(ent);
-                setEntityModalOpen(true);
-              }}
-              className="w-full py-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 text-black dark:text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <Edit size={13} />
-              <span>{t('action_edit', 'Modifier la fiche')}</span>
-            </button>
-          </div>
-        )}
+          if (tab === 'docs') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection
+                  index={0}
+                  title={`Historique Pièces (${entityHistory.length})`}
+                  action={
+                    mode === 'clients' ? (
+                      <button
+                        type="button"
+                        onClick={() => setComposerOpen(true)}
+                        className="text-[11px] font-bold text-[#d4522f] hover:underline cursor-pointer"
+                      >
+                        + Créer document
+                      </button>
+                    ) : undefined
+                  }
+                >
+                  <InspectorCard>
+                    {entityHistory.length === 0 ? (
+                      <InspectorKeyValue label="Transactions" value="Aucune pièce enregistrée" isLast />
+                    ) : (
+                      entityHistory.slice(0, 8).map((d, idx) => (
+                        <InspectorListItem
+                          key={d.id}
+                          title={d.docNumber}
+                          subtitle={d.date}
+                          metaRight={formatMoney(d.netToPay)}
+                          isLast={idx === Math.min(entityHistory.length, 8) - 1}
+                        />
+                      ))
+                    )}
+                  </InspectorCard>
+                </InspectorSection>
+              </div>
+            );
+          }
+
+          return (
+            <div className="space-y-4">
+              <InspectorQuickActions
+                actions={[
+                  ...(mode === 'clients'
+                    ? [
+                        {
+                          id: 'doc',
+                          label: '+ Facture/BL',
+                          icon: <FileText size={15} />,
+                          primary: true,
+                          onClick: () => setComposerOpen(true),
+                        },
+                      ]
+                    : []),
+                  {
+                    id: 'edit',
+                    label: t('action_edit', 'Modifier'),
+                    icon: <Edit size={15} />,
+                    onClick: () => {
+                      setEditingEntity(ent);
+                      setEntityModalOpen(true);
+                    },
+                  },
+                ]}
+              />
+              <InspectorSection index={0} title="Identifiants Fiscaux Certifiés">
+                <InspectorCard>
+                  <InspectorKeyValue label="N.I.F." value={ent.nif || 'Non renseigné'} mono copyText={ent.nif} />
+                  <InspectorKeyValue label="R.C. N°" value={ent.rc || 'Non renseigné'} mono copyText={ent.rc} />
+                  <InspectorKeyValue label="Art. Imposition" value={ent.ai || 'Non renseigné'} mono isLast />
+                </InspectorCard>
+              </InspectorSection>
+              <InspectorSection index={1} title="Contact Direct">
+                <InspectorCard>
+                  <InspectorKeyValue label="Interlocuteur" value={ent.contactName || 'Standard'} />
+                  <InspectorKeyValue
+                    label="Téléphone"
+                    value={ent.phone || 'Non renseigné'}
+                    icon={<Phone size={13} className="text-[#d4522f]" />}
+                    mono
+                    copyText={ent.phone}
+                  />
+                  <InspectorKeyValue label="Wilaya" value={ent.city || 'Non renseignée'} isLast />
+                </InspectorCard>
+              </InspectorSection>
+              <InspectorWideButton
+                label={t('action_edit', 'Modifier la fiche')}
+                icon={<Edit size={14} />}
+                tone="neutral"
+                onClick={() => {
+                  setEditingEntity(ent);
+                  setEntityModalOpen(true);
+                }}
+              />
+            </div>
+          );
+        }}
       />
 
       <B2bEntityModal

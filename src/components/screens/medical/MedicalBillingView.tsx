@@ -30,10 +30,29 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
+
+const getInitials2 = (name: string): string => {
+  const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+  return (name || 'FC').slice(0, 2).toUpperCase();
+};
+
+const MEMBER_PILL_OK =
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+const MEMBER_PILL_WARN =
+  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
 
 export const MedicalBillingView: React.FC<any> = () => {
   const {
@@ -235,6 +254,7 @@ export const MedicalBillingView: React.FC<any> = () => {
     (c: MedicalConsultation, opener?: HTMLElement | null) => {
       if (opener) setDrawerOpenerEl(opener);
       setInspectedConsultation(c);
+      setActiveInspectorTab('decompte');
     },
     []
   );
@@ -553,7 +573,6 @@ export const MedicalBillingView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<CreditCard size={22} />}
         title={isAr ? 'الفوترة' : language === 'en' ? 'Billing' : 'Facturation'}
-        subtitle={`CNAS / CASNOS · ${formatMoney(totalFee, 'DZD')}`}
         secondaryActions={
           <div className="flex flex-wrap items-center p-1 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs gap-1">
             {(
@@ -667,9 +686,10 @@ export const MedicalBillingView: React.FC<any> = () => {
 
           <UniversalDataCollection
             hideToolbar
-            data={sortedConsultations}
+            items={sortedConsultations}
             keyExtractor={(c) => c.id}
-            defaultViewMode={viewMode}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+            defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
             columns={columns}
             sortBy={sortBy}
             sortDirection={sortDir}
@@ -689,7 +709,22 @@ export const MedicalBillingView: React.FC<any> = () => {
               icon: <Download size={14} />,
               onClick: handleExportCSV,
             }}
-            customActions={(c) => [
+            getRowMeta={(c): KineticRowMeta => ({
+              title: c.patientName,
+              subtitle: `${c.ticketNumber ? `${c.ticketNumber} · ` : ''}${c.ngapCode || 'C'} · ${
+                c.consultationDate.split('T')[0]
+              }`,
+              avatarText: getInitials2(c.patientName),
+              statusLabel: c.isPaid ? (isAr ? 'مدفوع' : 'Encaissé') : isAr ? 'معلق' : 'En attente',
+              statusClassName: c.isPaid ? MEMBER_PILL_OK : MEMBER_PILL_WARN,
+              primaryStat: formatMoney(c.consultationFeeDzd, 'DZD'),
+              secondaryStat: `TM: ${formatMoney(c.copayAmountDzd || 0, 'DZD')} · Chifa: ${formatMoney(
+                c.insuranceShareDzd || 0,
+                'DZD'
+              )}`,
+              isPinned: pinnedIds.has(c.id),
+            })}
+            getFanActions={(c): KineticRowFanAction<MedicalConsultation>[] => [
               {
                 id: 'pay',
                 label: isAr ? 'تحصيل' : 'Encaisser',
@@ -704,52 +739,32 @@ export const MedicalBillingView: React.FC<any> = () => {
                 icon: <Printer size={13} />,
                 onClick: () => handlePrintReceipt(c),
               },
+              {
+                id: 'pin',
+                label: pinnedIds.has(c.id) ? 'Détacher' : 'Épingler',
+                icon: <Pin size={13} />,
+                onClick: () => handleTogglePin(c.id),
+              },
             ]}
-            renderCard={(c) => {
-              const isPinned = pinnedIds.has(c.id);
-              return (
-                <div className="flex flex-col w-full space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-bold text-black dark:text-white truncate">
-                      {c.patientName} {isPinned && '📌'}
-                    </span>
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
-                        c.isPaid
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          : 'bg-amber-50 text-amber-700 border-amber-200'
-                      }`}
-                    >
-                      {c.isPaid ? 'Encaissé' : 'En attente'}
-                    </span>
-                  </div>
-                  <div className="bg-neutral-50 dark:bg-neutral-900/60 rounded-xl p-3 space-y-1 text-xs">
-                    <div className="flex justify-between items-center text-black/70 dark:text-white/75">
-                      <span>Total:</span>
-                      <span className="font-mono font-bold text-black dark:text-white">
-                        {formatMoney(c.consultationFeeDzd, 'DZD')}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center text-black/55 dark:text-white/55">
-                      <span>Part Chifa:</span>
-                      <span className="font-mono text-blue-600 font-semibold">
-                        {formatMoney(c.insuranceShareDzd || 0, 'DZD')}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center text-black/55 dark:text-white/55">
-                      <span>Part Patient:</span>
-                      <span className="font-mono text-black dark:text-white">
-                        {formatMoney(c.copayAmountDzd || 0, 'DZD')}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-black/55 dark:text-white/55">
-                    <span>{c.consultationDate.split('T')[0]}</span>
-                    <span className="font-mono">{c.ngapCode || 'C'}</span>
-                  </div>
-                </div>
-              );
-            }}
+            getDetailActions={(c): KineticDetailAction[] => [
+              ...(!c.isPaid
+                ? [
+                    {
+                      id: 'pay',
+                      label: isAr ? 'تحصيل' : 'Encaisser',
+                      icon: <CheckCircle2 size={14} />,
+                      variant: 'primary' as const,
+                      onClick: () => handlePay(c),
+                    },
+                  ]
+                : []),
+              {
+                id: 'print',
+                label: isAr ? 'إيصال' : 'Quittance',
+                icon: <Printer size={14} />,
+                onClick: () => handlePrintReceipt(c),
+              },
+            ]}
             emptyTitle={isAr ? 'لا توجد فواتير' : 'Aucune consultation facturée'}
             emptyDescription={
               isAr
@@ -1308,8 +1323,9 @@ export const MedicalBillingView: React.FC<any> = () => {
             ? `Réf: ${activeConsultation.id} · ${activeConsultation.ngapCode || 'C'}`
             : ''
         }
-        avatarText={activeConsultation?.patientName?.charAt(0).toUpperCase() || 'F'}
-        avatarColor="#0D9488"
+        avatarText={activeConsultation ? getInitials2(activeConsultation.patientName) : 'FC'}
+        avatarColor="#d4522f"
+        categoryLabel={isAr ? 'فوترة طبية' : isFr ? 'FACTURATION CLINIQUE' : 'MEDICAL BILLING'}
         branchName={
           activeConsultation
             ? resolveRecordBranch(activeConsultation, branchesById, currentBranch, language).name
@@ -1324,8 +1340,9 @@ export const MedicalBillingView: React.FC<any> = () => {
             ? 'معلق'
             : 'En attente'
         }
+        statusClassName={activeConsultation?.isPaid ? MEMBER_PILL_OK : MEMBER_PILL_WARN}
         tabs={[
-          { id: 'decompte', label: isAr ? 'البيان المالي' : 'Décompte' },
+          { id: 'decompte', label: isAr ? 'البيان المالي' : isFr ? 'Décompte' : 'Breakdown' },
           { id: 'tiers_payant', label: isAr ? 'الشفاء Chifa' : 'Chifa & NGAP' },
           { id: 'actions', label: isAr ? 'الإجراءات' : 'Actions' },
         ]}
@@ -1334,130 +1351,160 @@ export const MedicalBillingView: React.FC<any> = () => {
         onSelectItem={(c) => handleSelectConsultation(c)}
         onClose={() => setInspectedConsultation(null)}
         renderBody={(consultation, tab) => (
-          <div className="space-y-4 text-xs">
+          <div className="space-y-5">
             {tab === 'decompte' && (
-              <div className="space-y-4">
-                <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-2">
-                  <div className="flex justify-between items-center text-black/55 dark:text-white/55">
-                    <span>Montant Total Acte:</span>
-                    <span className="font-bold text-black dark:text-white font-mono">
-                      {formatMoney(consultation.consultationFeeDzd, 'DZD')}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center text-black/55 dark:text-white/55">
-                    <span>Ticket Modérateur (Part Patient):</span>
-                    <span className="font-semibold text-black dark:text-white font-mono">
-                      {formatMoney(consultation.copayAmountDzd || 600, 'DZD')}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center text-blue-600 dark:text-blue-400">
-                    <span>Prise en charge CNAS/CASNOS:</span>
-                    <span className="font-semibold font-mono">
-                      {formatMoney(consultation.insuranceShareDzd || 2400, 'DZD')}
-                    </span>
-                  </div>
-                  <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700 flex justify-between items-center font-bold">
-                    <span>Statut d&apos;encaissement:</span>
-                    <span className={consultation.isPaid ? 'text-emerald-600' : 'text-amber-600'}>
-                      {consultation.isPaid ? 'Règlement effectué ✓' : 'Solde débiteur'}
-                    </span>
-                  </div>
-                </div>
+              <>
+                <InspectorSection
+                  title={isAr ? 'إجراءات سريعة' : 'Actions rapides'}
+                  delayIndex={0}
+                  animateKey={consultation.id}
+                >
+                  <InspectorQuickActions
+                    actions={[
+                      ...(!consultation.isPaid
+                        ? [
+                            {
+                              id: 'pay',
+                              label: isAr ? 'تحصيل' : `Encaisser (${paymentMethod})`,
+                              icon: <CheckCircle2 size={15} />,
+                              onClick: () => handlePay(consultation),
+                            },
+                          ]
+                        : []),
+                      {
+                        id: 'print',
+                        label: isAr ? 'إيصال' : 'Quittance',
+                        icon: <Printer size={15} />,
+                        onClick: () => handlePrintReceipt(consultation),
+                      },
+                      {
+                        id: 'pin',
+                        label: pinnedIds.has(consultation.id) ? 'Détacher' : 'Épingler',
+                        icon: <Pin size={15} />,
+                        onClick: () => handleTogglePin(consultation.id),
+                      },
+                    ]}
+                  />
+                </InspectorSection>
 
-                <div className="space-y-2">
-                  <span className="text-[11px] font-semibold text-black/70 dark:text-white/75">
-                    Mode d&apos;encaissement
-                  </span>
+                <InspectorSection
+                  title={isAr ? 'تفاصيل الأتعاب' : 'Ventilation des Honoraires'}
+                  delayIndex={1}
+                  animateKey={consultation.id}
+                >
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'المبلغ الإجمالي' : 'Montant Total Acte'}
+                      value={formatMoney(consultation.consultationFeeDzd, 'DZD')}
+                      mono
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'حصة المريض' : 'Ticket Modérateur (Part Patient)'}
+                      value={formatMoney(consultation.copayAmountDzd || 600, 'DZD')}
+                      mono
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'تغطية CNAS / Chifa' : 'Prise en charge CNAS/CASNOS'}
+                      value={formatMoney(consultation.insuranceShareDzd || 2400, 'DZD')}
+                      mono
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'حالة التحصيل' : "Statut d'encaissement"}
+                      value={consultation.isPaid ? 'Règlement effectué ✓' : 'Solde débiteur'}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+
+                <InspectorSection
+                  title={isAr ? 'وسيلة الدفع' : "Mode d'encaissement"}
+                  delayIndex={2}
+                  animateKey={consultation.id}
+                >
                   <div className="grid grid-cols-3 gap-2">
                     {['Cash', 'Dahabia', 'BaridiMob'].map((method) => (
                       <button
                         key={method}
                         type="button"
                         onClick={() => setPaymentMethod(method)}
-                        className={`py-2 px-2 text-center rounded-xl font-semibold border transition-all cursor-pointer ${
+                        className={`py-2 px-2 text-center rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
                           paymentMethod === method
                             ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
-                            : 'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black/70 dark:text-white/75'
+                            : 'border-[#E6DED6] dark:border-neutral-700 bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75'
                         }`}
                       >
                         {method}
                       </button>
                     ))}
                   </div>
-                </div>
-
-                {!consultation.isPaid && (
-                  <AtriumButton
-                    variant="primary"
-                    onClick={() => handlePay(consultation)}
-                    className="w-full justify-center"
-                    icon={<CheckCircle2 size={14} />}
-                  >
-                    Encaisser via {paymentMethod}
-                  </AtriumButton>
-                )}
-              </div>
+                  {!consultation.isPaid && (
+                    <div className="mt-3">
+                      <InspectorWideButton
+                        label={`Encaisser via ${paymentMethod}`}
+                        icon={<CheckCircle2 size={15} />}
+                        variant="primary"
+                        onClick={() => handlePay(consultation)}
+                      />
+                    </div>
+                  )}
+                </InspectorSection>
+              </>
             )}
 
             {tab === 'tiers_payant' && (
-              <div className="space-y-3">
-                <div className="p-3 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-900/40 space-y-1.5">
-                  <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300 font-bold">
-                    <ShieldCheck size={16} />
-                    <span>Convention Tiers-Payant Chifa</span>
-                  </div>
-                  <p className="text-[11px] text-blue-600 dark:text-blue-400">
-                    Télétransmission dématérialisée conforme au protocole CNAS Algérie.
-                  </p>
-                </div>
-                <div className="space-y-2 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 font-mono text-[11px]">
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Cotation NGAP:</span>
-                    <span className="text-black dark:text-white font-bold">
-                      {consultation.ngapCode || 'C (Médecine Générale)'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Numéro Ticket Triage:</span>
-                    <span className="text-black dark:text-white font-bold">
-                      {consultation.ticketNumber || 'T-102'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Taux de couverture:</span>
-                    <span className="text-emerald-600 font-bold">
-                      {consultation.copayAmountDzd === 0
+              <InspectorSection
+                title="Convention Tiers-Payant Chifa"
+                delayIndex={0}
+                animateKey={consultation.id}
+              >
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label="Protocole"
+                    value="Télétransmission dématérialisée CNAS Algérie"
+                  />
+                  <InspectorKeyValue
+                    label="Cotation NGAP"
+                    value={consultation.ngapCode || 'C (Médecine Générale)'}
+                    mono
+                  />
+                  <InspectorKeyValue
+                    label="Numéro Ticket Triage"
+                    value={consultation.ticketNumber || 'T-102'}
+                    mono
+                  />
+                  <InspectorKeyValue
+                    label="Taux de couverture"
+                    value={
+                      consultation.copayAmountDzd === 0
                         ? '100% (ALD Exonéré)'
-                        : '80% Régime Standard'}
-                    </span>
-                  </div>
-                </div>
-              </div>
+                        : '80% Régime Standard'
+                    }
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
             )}
 
             {tab === 'actions' && (
-              <div className="space-y-2.5">
-                <button
-                  type="button"
-                  onClick={() => handlePrintReceipt(consultation)}
-                  className="w-full p-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white font-semibold flex items-center justify-between hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
-                >
-                  <span className="flex items-center gap-2">
-                    <Printer size={16} />
-                    Imprimer quittance patient
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleTogglePin(consultation.id)}
-                  className="w-full p-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white font-semibold flex items-center justify-between hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
-                >
-                  <span className="flex items-center gap-2">
-                    <Pin size={16} />
-                    {pinnedIds.has(consultation.id) ? 'Détacher' : 'Épingler la facture'}
-                  </span>
-                </button>
-              </div>
+              <InspectorSection
+                title={isAr ? 'الطباعة والإجراءات' : 'Quittance & Suivi'}
+                delayIndex={0}
+                animateKey={consultation.id}
+              >
+                <div className="space-y-2.5">
+                  <InspectorWideButton
+                    label="Imprimer quittance patient"
+                    icon={<Printer size={15} />}
+                    variant="primary"
+                    onClick={() => handlePrintReceipt(consultation)}
+                  />
+                  <InspectorWideButton
+                    label={pinnedIds.has(consultation.id) ? 'Détacher' : 'Épingler la facture'}
+                    icon={<Pin size={15} />}
+                    onClick={() => handleTogglePin(consultation.id)}
+                  />
+                </div>
+              </InspectorSection>
             )}
           </div>
         )}

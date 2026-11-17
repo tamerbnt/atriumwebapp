@@ -10,12 +10,17 @@ import {
   Pin,
   Download,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { calculateArt317Timbre } from '../../../utils/agriRules';
 import { AgriHarvestTicket } from '../../../types';
 import { useAgricultureData } from './agricultureData';
-import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { AgriWeighbridgePrintModal } from './AgriWeighbridgePrintModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -29,6 +34,15 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -41,9 +55,19 @@ export const AgricultureWholesaleView: React.FC = () => {
     branches,
     isSyncing,
     networkMode,
-    retryCloudSync,
     lastSyncedAt,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -602,6 +626,114 @@ export const AgricultureWholesaleView: React.FC = () => {
     ]
   );
 
+  const getRowMeta = useCallback(
+    (t: AgriHarvestTicket): Partial<KineticRowData> => {
+      const isSettled = settledSet.has(t.id);
+      const branchName = resolveRecordBranch(t, branchesById, currentBranch, language).name;
+      const gross = getTicketGross(t);
+      const feePct = getTicketFeePct(t);
+      const net = getTicketNet(t);
+      return {
+        subline: `${t.ticketNumber} · ${t.destinationWholesaleMarket}`,
+        categoryLabel: t.cropDesignation,
+        statusLabel: isSettled
+          ? isAr ? 'مقبوض' : isEn ? 'Settled' : 'Encaissé'
+          : isAr ? 'في الانتظار' : isEn ? 'Pending' : 'En attente',
+        statusVariant: isSettled ? 'active' : 'warning',
+        metricPrimary: formatMoney(net, language),
+        metricSecondary: `${t.netWeightKg.toLocaleString()} kg`,
+        detailCol1: {
+          heading: isAr ? 'الوصل والسوق' : isEn ? 'Ticket & Market' : 'Bordereau & Criée',
+          primaryText: t.destinationWholesaleMarket,
+          secondaryText: `${t.driverName || 'Mandataire'} · ${t.date}`,
+          tertiaryText: branchName,
+        },
+        detailCol2: {
+          heading: isAr ? 'الوزن والسعر' : isEn ? 'Tonnage & Rate' : 'Poids & Cours Criée',
+          primaryText: `${t.netWeightKg.toLocaleString()} kg net`,
+          secondaryText: `Cours ${t.unitPriceDzdPerKg} DZD/kg · Brut ${formatMoney(gross, language)}`,
+          tertiaryText: `Com. ${feePct}% (-${formatMoney((gross * feePct) / 100, language)})`,
+        },
+        detailCol3: {
+          heading: isAr ? 'التسوية' : isEn ? 'Settlement' : 'Net Domaine',
+          primaryText: formatMoney(net, language),
+          secondaryText: isSettled
+            ? isAr ? 'تم التحصيل بالكامل' : 'Reçu et pointé'
+            : isAr ? 'قيد الانتظار' : 'En attente de versement',
+        },
+      };
+    },
+    [settledSet, branchesById, currentBranch, language, getTicketGross, getTicketFeePct, getTicketNet, isAr, isEn]
+  );
+
+  const getFanActions = useCallback(
+    (t: AgriHarvestTicket): KineticRowFanAction[] => {
+      const isSettled = settledSet.has(t.id);
+      return [
+        ...(!isSettled
+          ? [
+              {
+                id: 'settle',
+                label: isAr ? 'تحصيل' : 'Encaisser',
+                icon: <Send className="w-[15px] h-[15px]" />,
+                onClick: () => handleSettle(t.id, t.ticketNumber, getTicketNet(t)),
+              },
+            ]
+          : []),
+        {
+          id: 'print',
+          label: isAr ? 'طباعة' : 'Imprimer',
+          icon: <Printer className="w-[15px] h-[15px]" />,
+          onClick: () => {
+            setTicketForPrint(t);
+            setIsPrintModalOpen(true);
+          },
+        },
+        {
+          id: 'open',
+          label: isAr ? 'تفاصيل' : 'Détails',
+          icon: <Scale className="w-[15px] h-[15px]" />,
+          onClick: (e) => handleSelectTicket(t, e.currentTarget),
+        },
+      ];
+    },
+    [settledSet, handleSettle, getTicketNet, handleSelectTicket, isAr]
+  );
+
+  const getDetailActions = useCallback(
+    (t: AgriHarvestTicket): KineticDetailAction[] => {
+      const isSettled = settledSet.has(t.id);
+      return [
+        {
+          id: 'inspect',
+          label: isAr ? 'معاينة البيان' : 'Décompte',
+          icon: <Scale className="w-3.5 h-3.5" />,
+          onClick: () => handleSelectTicket(t),
+        },
+        ...(!isSettled
+          ? [
+              {
+                id: 'settle',
+                label: isAr ? 'تأكيد القبض' : 'Encaisser Net',
+                icon: <CheckCircle2 className="w-3.5 h-3.5 text-[#096b40]" />,
+                onClick: () => handleSettle(t.id, t.ticketNumber, getTicketNet(t)),
+              },
+            ]
+          : []),
+        {
+          id: 'print',
+          label: isAr ? 'طباعة' : 'Imprimer BL',
+          icon: <Printer className="w-3.5 h-3.5" />,
+          onClick: () => {
+            setTicketForPrint(t);
+            setIsPrintModalOpen(true);
+          },
+        },
+      ];
+    },
+    [settledSet, handleSelectTicket, handleSettle, getTicketNet, isAr]
+  );
+
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: harvestTickets.length > 0,
@@ -632,13 +764,6 @@ export const AgricultureWholesaleView: React.FC = () => {
       <ScreenHeaderBar
         icon={<Wallet size={22} />}
         title={isAr ? 'الجملة' : isEn ? 'Wholesale' : 'Ventes Gros'}
-        subtitle={
-          isAr
-            ? `${harvestTickets.length} شحنات سوق الجملة · عمولة الوكيل 6%`
-            : isEn
-            ? `${harvestTickets.length} wholesale dispatches · 6% commission`
-            : `${harvestTickets.length} bordereaux de criée · Commission mandataire 6%`
-        }
         primaryAction={{
           label: isAr ? 'طباعة وصل الميزان والتسليم' : isEn ? 'Weighbridge & BL' : 'Bon de Pesée & BL',
           icon: <Printer size={15} />,
@@ -725,9 +850,10 @@ export const AgricultureWholesaleView: React.FC = () => {
 
         <UniversalDataCollection<AgriHarvestTicket>
           hideToolbar
-          data={sortedTickets}
+          items={sortedTickets}
           columns={columns}
           keyExtractor={(t) => t.id}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
           defaultViewMode={viewMode}
           selectedIds={selectedIds}
           onSelectionChange={setSelectedIds}
@@ -756,6 +882,9 @@ export const AgricultureWholesaleView: React.FC = () => {
           openItemId={activeTicket?.id || null}
           onItemClick={handleSelectTicket}
           onViewDetails={handleSelectTicket}
+          getRowMeta={getRowMeta}
+          getFanActions={getFanActions}
+          getDetailActions={getDetailActions}
           onDelete={handleDeleteTicket}
           emptyTitle={isAr ? 'لا توجد وصولات بيع بالجملة' : 'Aucun bordereau de criée'}
           emptyDescription={
@@ -801,55 +930,6 @@ export const AgricultureWholesaleView: React.FC = () => {
               },
             ];
           }}
-          renderCard={(t) => {
-            const isSettled = settledSet.has(t.id);
-            return (
-              <div className="space-y-3 w-full">
-                <div className="flex items-start justify-between gap-2">
-                  <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded border border-[#d4522f]/20">
-                    {t.ticketNumber}
-                  </span>
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      isSettled
-                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                        : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                    }`}
-                  >
-                    {isSettled
-                      ? isAr ? 'مقبوض' : 'Encaissé'
-                      : isAr ? 'في الانتظار' : 'En attente'}
-                  </span>
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs text-black dark:text-white line-clamp-1">
-                    {t.cropDesignation}
-                  </h4>
-                  <p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 truncate">
-                    {t.destinationWholesaleMarket} · {t.driverName || 'Non assigné'}
-                  </p>
-                </div>
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-                  <div>
-                    <span className="text-[10px] text-black/55 dark:text-white/55 block">
-                      Poids Net
-                    </span>
-                    <span className="font-mono font-bold text-black/70 dark:text-white/75 tabular-nums">
-                      {t.netWeightKg.toLocaleString()} kg
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10px] text-black/55 dark:text-white/55 block">
-                      Net Domaine
-                    </span>
-                    <span className="font-mono font-bold text-[#d4522f] text-sm tabular-nums">
-                      {formatMoney(getTicketNet(t), language)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            );
-          }}
         />
       </ScreenPod>
 
@@ -878,6 +958,7 @@ export const AgricultureWholesaleView: React.FC = () => {
             ? `${activeTicket.cropDesignation} · ${activeTicket.destinationWholesaleMarket}`
             : undefined
         }
+        categoryLabel={activeTicket?.cropDesignation}
         avatarText={(activeTicket?.ticketNumber || 'WG').slice(-2).toUpperCase()}
         branchName={
           activeTicket
@@ -893,8 +974,8 @@ export const AgricultureWholesaleView: React.FC = () => {
         }
         statusClassName={
           activeTicket && settledSet.has(activeTicket.id)
-            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-            : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
         }
         tabs={[
           { id: 'decompte', label: isAr ? 'البيان المالي' : 'Décompte' },
@@ -913,273 +994,162 @@ export const AgricultureWholesaleView: React.FC = () => {
           const feePct = getTicketFeePct(item);
           const fee = (gross * feePct) / 100;
           const net = getTicketNet(item);
-          return (
-            <div className="space-y-4 text-xs">
-              <div className="flex items-center gap-2 flex-wrap">
-                {!isSettled && (
-                  <AtriumButton
-                    variant="primary"
-                    size="sm"
-                    onClick={() => handleSettle(item.id, item.ticketNumber, net)}
-                    icon={<Send size={13} />}
-                  >
-                    {isAr ? 'تأكيد القبض' : 'Marquer Encaissé'}
-                  </AtriumButton>
-                )}
-                <AtriumButton
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setTicketForPrint(item);
-                    setIsPrintModalOpen(true);
-                  }}
-                  icon={<Printer size={13} />}
-                >
-                  {isAr ? 'وصل الميزان' : 'Bon de Pesée'}
-                </AtriumButton>
-                <AtriumButton
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    showToast(
-                      isAr
-                        ? `تم نسخ رابط تتبع الشحنة ${item.ticketNumber}`
-                        : `Lien de télé-déclaration mandataire ${item.ticketNumber} copié`,
-                      'success'
-                    )
-                  }
-                  icon={<Share2 size={13} />}
-                >
-                  {isAr ? 'مشاركة' : 'Partager'}
-                </AtriumButton>
-                <AtriumButton
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleExportCsv}
-                  icon={<Download size={13} />}
-                >
-                  CSV
-                </AtriumButton>
-              </div>
+          const timbreVal =
+            item.paymentMethod === 'cash'
+              ? `${
+                  item.timbreFiscalDzd ||
+                  calculateArt317Timbre(item.subtotalProduceDzd || item.totalGrossDzd || 0)
+                } DZD`
+              : '0 DZD (Exonéré)';
 
-              {tab === 'decompte' && (
-                <div className="space-y-4">
-                  <div className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-                    <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
-                      Calcul Décompte Mandataire (Criée)
-                    </span>
-                    <div className="flex items-center justify-between">
-                      <span className="text-black/70 dark:text-white/75">Poids Facturé:</span>
-                      <span className="font-mono font-bold text-black dark:text-white tabular-nums">
-                        {item.netWeightKg.toLocaleString()} kg
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-black/70 dark:text-white/75">Prix Moyen Vente:</span>
-                      <span className="font-mono font-bold text-black dark:text-white tabular-nums">
-                        {item.unitPriceDzdPerKg} DZD/kg
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between pt-1.5 border-t border-neutral-200 dark:border-neutral-800">
-                      <span className="text-black dark:text-white font-medium">
-                        Chiffre d&apos;Affaires Brut:
-                      </span>
-                      <span className="font-mono font-bold text-black dark:text-white tabular-nums">
-                        {formatMoney(gross, language)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-amber-600 dark:text-amber-400">
-                      <span>Commission Mandataire ({feePct}%):</span>
-                      <span className="font-mono font-bold tabular-nums">
-                        -{formatMoney(fee, language)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-4 bg-[#1F1D1B] rounded-xl text-white space-y-2 shadow-sm">
-                    <div className="flex items-center justify-between text-white/80 text-[11px]">
-                      <span>Net Liquide à Verser Domaine</span>
-                      <span className="bg-[#3D2817] text-[#FB923C] text-[10px] font-bold px-2 py-0.5 rounded-full">
-                        Règlement
-                      </span>
-                    </div>
-                    <div className="text-2xl font-black tracking-tight text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                      {formatMoney(net, language)}
-                    </div>
-                    <p className="text-[10px] text-white/75">
-                      Versement direct sur compte d&apos;exploitation agricole après déduction des frais de carreau.
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 rounded-xl border border-neutral-200 dark:border-neutral-800">
-                    <div>
-                      <span className="font-semibold block text-black dark:text-white">
-                        Statut du Règlement
-                      </span>
-                      <span className="text-[10px] text-black/55 dark:text-white/55">
-                        {isSettled
-                          ? 'Reçu et pointé en banque'
-                          : 'En attente de chèque / virement'}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      disabled={isSettled}
-                      onClick={() => handleSettle(item.id, item.ticketNumber, net)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                        isSettled
-                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 cursor-default'
-                          : 'bg-[#d4522f] hover:bg-[#b06a4e] text-white cursor-pointer'
-                      }`}
-                    >
-                      {isSettled ? 'Encaissé ✓' : 'Marquer Encaissé'}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {tab === 'pesee' && (
-                <div className="space-y-4">
-                  <div className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2.5">
-                    <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold flex items-center gap-1.5">
-                      <Scale size={13} className="text-[#d4522f]" />
-                      Ticket Pont-Bascule Électronique
-                    </span>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800">
-                        <span className="text-[10px] text-black/55 dark:text-white/55 block">
-                          Poids Brut (Entrée)
-                        </span>
-                        <span className="font-mono font-bold text-black dark:text-white text-sm tabular-nums">
-                          {item.grossWeightKg.toLocaleString()} kg
-                        </span>
-                      </div>
-                      <div className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800">
-                        <span className="text-[10px] text-black/55 dark:text-white/55 block">
-                          Tare Camion (Sortie)
-                        </span>
-                        <span className="font-mono font-bold text-black/70 dark:text-white/75 text-sm tabular-nums">
-                          {(item.truckTareKg || item.tareWeightKg || 0).toLocaleString()} kg
-                        </span>
-                      </div>
-                    </div>
-
+          if (tab === 'pesee') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'الوزن الصافي' : 'Poids net marchandise'}>
+                  <InspectorBigStat
+                    value={`${item.netWeightKg.toLocaleString()} kg`}
+                    tone="ok"
+                    caption={`${((item.netWeightKg || 0) / 100).toFixed(2)} Qx · ${item.cropDesignation}`}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'قياسات الميزان' : 'Ticket Pont-Bascule'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label="Poids brut (Entrée)" value={`${item.grossWeightKg.toLocaleString()} kg`} />
+                    <InspectorKeyValue label="Tare camion (Sortie)" value={`${(item.truckTareKg || item.tareWeightKg || 0).toLocaleString()} kg`} />
                     {(item.crateCount || 0) > 0 && (
-                      <div className="p-2 bg-neutral-100 dark:bg-neutral-800/70 rounded-lg border border-neutral-200 dark:border-neutral-700/60 flex items-center justify-between">
-                        <span className="text-black/70 dark:text-white/75">
-                          {isAr ? 'خصم وزن الصناديق الفارغة :' : 'Tare Caisses Déduite :'}
-                        </span>
-                        <span className="font-mono font-semibold text-black dark:text-white tabular-nums">
-                          {item.crateCount} × {item.crateUnitTareKg || 1.8} kg = -
-                          {item.totalCrateTareKg || (item.crateCount || 0) * 1.8} kg
-                        </span>
-                      </div>
+                      <InspectorKeyValue
+                        label={isAr ? 'خصم وزن الصناديق' : 'Tare caisses'}
+                        value={`-${item.totalCrateTareKg || (item.crateCount || 0) * 1.8} kg`}
+                      />
                     )}
+                    <InspectorKeyValue
+                      label={isAr ? 'طابع جبائي (Art. 317)' : 'Droit de timbre (Art. 317)'}
+                      value={timbreVal}
+                    />
+                    <InspectorKeyValue label="Qualité d'agréage" value={item.qualityGrade || 'Extra / Grade A'} tone="ok" mono={false} isLast />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
 
-                    <div className="p-2.5 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-lg border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between">
-                      <span className="text-emerald-800 dark:text-emerald-200 font-semibold">
-                        Poids Net Marchandise:
-                      </span>
-                      <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300 text-sm tabular-nums">
-                        {item.netWeightKg.toLocaleString()} kg (
-                        {((item.netWeightKg || 0) / 100).toFixed(2)} Qx)
-                      </span>
-                    </div>
+          if (tab === 'tracabilite') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'بيانات النقل' : "Données d'acheminement"}>
+                  <InspectorCard>
+                    <InspectorKeyValue label="Marché de gros" value={item.destinationWholesaleMarket} mono={false} />
+                    <InspectorKeyValue label="Chauffeur assigné" value={item.driverName || 'Non assigné'} mono={false} />
+                    <InspectorKeyValue label="Matricule camion" value={item.truckPlate || item.vehiclePlate || '—'} />
+                    <InspectorKeyValue label="Date d'expédition" value={item.date} />
+                    <InspectorKeyValue label="Réf. QR Marché" value={`AGRI-PESEE-${item.ticketNumber}`} tone="accent" isLast />
+                  </InspectorCard>
+                </InspectorSection>
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label={isAr ? 'مشاركة رابط التتبع' : 'Partager lien télé-déclaration'}
+                    onClick={() =>
+                      showToast(
+                        isAr
+                          ? `تم نسخ رابط تتبع الشحنة ${item.ticketNumber}`
+                          : `Lien de télé-déclaration mandataire ${item.ticketNumber} copié`,
+                        'success'
+                      )
+                    }
+                  />
+                </InspectorSection>
+              </>
+            );
+          }
 
-                    <div className="p-2.5 bg-neutral-100 dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-black/70 dark:text-white/75 font-medium">
-                          {isAr
-                            ? 'رسم الطابع الجبائي (المادة 317) :'
-                            : 'Droit de Timbre (Art. 317) :'}
-                        </span>
-                        <span className="font-mono font-bold text-black dark:text-white">
-                          {item.paymentMethod === 'cash'
-                            ? `${
-                                item.timbreFiscalDzd ||
-                                calculateArt317Timbre(item.subtotalProduceDzd || item.totalGrossDzd || 0)
-                              } DZD (Plafonné à 2.500)`
-                            : '0 DZD (Exonéré hors espèces)'}
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-black/55 dark:text-white/55">
-                        {isAr
-                          ? '1% على المبالغ النقدية وفق قانون الضرائب المباشرة والرسوم المماثلة الجزائري'
-                          : '1% gradué plafonné à 2.500 DA applicable aux paiements en espèces (Art. 317 CID)'}
-                      </p>
-                    </div>
-                  </div>
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : isEn ? 'Quick Actions' : 'Actions rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    ...(!isSettled
+                      ? [
+                          {
+                            id: 'settle',
+                            label: isAr ? 'تأكيد القبض' : 'Encaisser',
+                            icon: <Send className="w-[18px] h-[18px]" />,
+                            primary: true,
+                            onClick: () => handleSettle(item.id, item.ticketNumber, net),
+                          },
+                        ]
+                      : [
+                          {
+                            id: 'print-p',
+                            label: isAr ? 'وصل الميزان' : 'Bon Pesée',
+                            icon: <Printer className="w-[18px] h-[18px]" />,
+                            primary: true,
+                            onClick: () => {
+                              setTicketForPrint(item);
+                              setIsPrintModalOpen(true);
+                            },
+                          },
+                        ]),
+                    {
+                      id: 'print',
+                      label: isAr ? 'طباعة BL' : 'Imprimer BL',
+                      icon: <Printer className="w-[18px] h-[18px]" />,
+                      onClick: () => {
+                        setTicketForPrint(item);
+                        setIsPrintModalOpen(true);
+                      },
+                    },
+                    {
+                      id: 'share',
+                      label: isAr ? 'مشاركة' : 'Partager',
+                      icon: <Share2 className="w-[18px] h-[18px]" />,
+                      onClick: () =>
+                        showToast(
+                          isAr
+                            ? `تم نسخ رابط تتبع الشحنة ${item.ticketNumber}`
+                            : `Lien de télé-déclaration mandataire ${item.ticketNumber} copié`,
+                          'success'
+                        ),
+                    },
+                    {
+                      id: 'csv',
+                      label: 'CSV',
+                      icon: <Download className="w-[18px] h-[18px]" />,
+                      onClick: handleExportCsv,
+                    },
+                  ]}
+                />
+              </InspectorSection>
 
-                  <div className="space-y-2">
-                    <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
-                      Spécifications Récolte
-                    </span>
-                    <div className="space-y-1 text-black/70 dark:text-white/75">
-                      <div className="flex justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/40">
-                        <span>Désignation:</span>
-                        <strong className="text-black dark:text-white">{item.cropDesignation}</strong>
-                      </div>
-                      <div className="flex justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/40">
-                        <span>Variété & Calibre:</span>
-                        <span className="font-mono">{item.cropVariety || 'Standard Calibre 1'}</span>
-                      </div>
-                      <div className="flex justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/40">
-                        <span>Qualité d&apos;agréage:</span>
-                        <span className="font-semibold text-emerald-600">
-                          {item.qualityGrade || 'Extra / Grade A'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              <InspectorSection index={1} title={isAr ? 'صافي مستحقات المزرعة' : 'Net liquide domaine'}>
+                <InspectorBigStat
+                  value={formatMoney(net, language)}
+                  tone={isSettled ? 'ok' : 'accent'}
+                  caption={isSettled ? 'Règlement encaissé & pointé' : 'En attente de chèque / virement'}
+                  action={
+                    !isSettled
+                      ? {
+                          label: isAr ? 'تأكيد القبض' : 'Marquer Encaissé',
+                          onClick: () => handleSettle(item.id, item.ticketNumber, net),
+                        }
+                      : undefined
+                  }
+                />
+              </InspectorSection>
 
-              {tab === 'tracabilite' && (
-                <div className="space-y-4">
-                  <div className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-                    <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
-                      Données d&apos;Acheminement
-                    </span>
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-black/55 dark:text-white/55">Marché de Gros:</span>
-                        <span className="font-bold text-black dark:text-white">
-                          {item.destinationWholesaleMarket}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-black/55 dark:text-white/55">Chauffeur assigné:</span>
-                        <span className="font-medium text-black dark:text-white">
-                          {item.driverName || 'Non assigné'}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-black/55 dark:text-white/55">Matricule Camion:</span>
-                        <span className="font-mono font-bold text-black dark:text-white">
-                          {item.truckPlate || item.vehiclePlate || '—'}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-black/55 dark:text-white/55">Date d&apos;expédition:</span>
-                        <span className="font-mono text-black dark:text-white">{item.date}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-3 bg-neutral-100 dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 text-center space-y-1">
-                    <span className="text-[10px] text-black/55 dark:text-white/55 font-mono block">
-                      QR Code Sécurisé Bordereau
-                    </span>
-                    <p className="font-bold text-xs text-black dark:text-white">
-                      AGRI-PESEE-{item.ticketNumber}
-                    </p>
-                    <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
-                      Conforme aux règlements de police des marchés
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
+              <InspectorSection index={2} title={isAr ? 'تفاصيل البيع والعمولة' : 'Décompte mandataire (Criée)'}>
+                <InspectorCard>
+                  <InspectorKeyValue label="Poids facturé" value={`${item.netWeightKg.toLocaleString()} kg`} />
+                  <InspectorKeyValue label="Prix moyen criée" value={`${item.unitPriceDzdPerKg} DZD/kg`} />
+                  <InspectorKeyValue label="Chiffre d'affaires brut" value={formatMoney(gross, language)} />
+                  <InspectorKeyValue
+                    label={`Commission mandataire (${feePct}%)`}
+                    value={`-${formatMoney(fee, language)}`}
+                    tone="warn"
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+            </>
           );
         }}
       />

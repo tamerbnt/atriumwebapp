@@ -13,3 +13,5 @@ export * from './KineticCollectionStage';
 export * from './KineticFilterModal';
 export * from './KineticFloatingBulkBar';
 export * from './KineticSlideOverInspector';
+export * from './KineticInspectorBlocks';
+

@@ -30,6 +30,15 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -190,6 +199,141 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
     setSearchQuery('');
     setIsFilterModalOpen(false);
   }, []);
+
+  const getRowMeta = useCallback(
+    (tx: MembershipTransaction): Partial<KineticRowData> => ({
+      subline: `${tx.id} · ${tx.date}`,
+      categoryLabel: tx.plan,
+      statusLabel:
+        tx.status === 'Settled'
+          ? isAr ? 'مسدد' : isEn ? 'Settled' : 'Encaissé'
+          : isAr ? 'متبقي' : isEn ? 'Pending' : 'En attente',
+      statusVariant: tx.status === 'Settled' ? 'active' : 'warning',
+      metricPrimary: formatMoney(tx.amount),
+      metricSecondary:
+        tx.paymentMethod === 'BaridiMob'
+          ? 'BaridiMob'
+          : tx.paymentMethod === 'Card'
+          ? 'CIB / Dahabia'
+          : isAr ? 'نقداً' : 'Espèces',
+      detailCol1: {
+        heading: isAr ? 'المشترك والإيصال' : isEn ? 'Member & Receipt' : 'Adhérent & Reçu',
+        primaryText: tx.id,
+        secondaryText: tx.memberName,
+        tertiaryText: tx.branchName || currentBranch?.name || 'Main',
+      },
+      detailCol2: {
+        heading: isAr ? 'الاشتراك والمبلغ' : isEn ? 'Plan & Settlement' : 'Formule & Règlement',
+        primaryText: formatMoney(tx.amount),
+        secondaryText: tx.plan,
+        tertiaryText:
+          tx.status === 'Settled'
+            ? isAr ? 'تم التحصيل بالكامل' : isEn ? 'Fully settled' : 'Encaissé intégralement'
+            : isAr ? 'في انتظار التحصيل' : isEn ? 'Balance due' : 'Solde en attente',
+      },
+      detailCol3: {
+        heading: isAr ? 'قناة الدفع والتاريخ' : isEn ? 'Channel & Audit' : 'Canal & Traçabilité',
+        primaryText:
+          tx.paymentMethod === 'BaridiMob'
+            ? 'BaridiMob E-Pay'
+            : tx.paymentMethod === 'Card'
+            ? 'CIB / Edahabia'
+            : isAr ? 'دفع نقدي' : isEn ? 'Cash Desk' : 'Caisse Espèces',
+        secondaryText: `${isAr ? 'تاريخ العملية' : isEn ? 'Recorded' : 'Enregistré le'} ${tx.date}`,
+      },
+    }),
+    [isAr, isEn, currentBranch]
+  );
+
+  const handleSettleTx = useCallback(
+    (tx: MembershipTransaction) => {
+      updateMember?.(tx.memberId, { balance: 0 } as any);
+      showToast?.({
+        type: 'success',
+        title: isAr ? 'تم التحصيل' : isEn ? 'Settled' : 'Encaissé',
+        message: `${tx.memberName} (${formatMoney(tx.amount)})`,
+      });
+    },
+    [updateMember, isAr, isEn]
+  );
+
+  const getFanActions = useCallback(
+    (tx: MembershipTransaction): KineticRowFanAction[] => [
+      ...(tx.status === 'Pending'
+        ? [
+            {
+              id: 'settle',
+              label: isAr ? 'تحصيل' : isEn ? 'Settle' : 'Encaisser',
+              icon: <CheckCircle2 className="w-[15px] h-[15px]" />,
+              onClick: () => handleSettleTx(tx),
+            },
+          ]
+        : []),
+      {
+        id: 'print',
+        label: isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer',
+        icon: <Printer className="w-[15px] h-[15px]" />,
+        onClick: () => window.print(),
+      },
+      {
+        id: 'open',
+        label: isAr ? 'تفاصيل' : isEn ? 'Details' : 'Détails',
+        icon: <Receipt className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedTx(tx);
+        },
+      },
+    ],
+    [handleSettleTx, isAr, isEn]
+  );
+
+  const getDetailActions = useCallback(
+    (tx: MembershipTransaction): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'عرض الوصل' : isEn ? 'View Receipt' : 'Fiche complète',
+        icon: <Receipt className="w-3.5 h-3.5" />,
+        onClick: () => setSelectedTx(tx),
+      },
+      ...(tx.status === 'Pending'
+        ? [
+            {
+              id: 'settle',
+              label: isAr ? 'تأكيد التسديد' : isEn ? 'Mark Settled' : 'Encaisser',
+              icon: <CheckCircle2 className="w-3.5 h-3.5 text-[#096b40]" />,
+              onClick: () => handleSettleTx(tx),
+            },
+          ]
+        : []),
+      {
+        id: 'print',
+        label: isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer',
+        icon: <Printer className="w-3.5 h-3.5" />,
+        onClick: () => window.print(),
+      },
+    ],
+    [handleSettleTx, isAr, isEn]
+  );
+
+  const handleBulkSettle = useCallback(
+    (ids: Set<string>) => {
+      let count = 0;
+      transactions.forEach((tx) => {
+        if (ids.has(tx.id) && tx.status === 'Pending') {
+          updateMember?.(tx.memberId, { balance: 0 } as any);
+          count++;
+        }
+      });
+      setSelectedTxIds(new Set());
+      showToast?.({
+        type: 'success',
+        title: isAr ? 'تسوية جماعية' : isEn ? 'Batch Settled' : 'Encaissement groupé',
+        message: `${count || ids.size} ${isAr ? 'معاملة' : isEn ? 'records' : 'règlements'}`,
+      });
+    },
+    [transactions, updateMember, isAr, isEn]
+  );
 
   const hasActiveAdvancedFilters = methodFilter !== 'All' || branchFilter !== 'All';
   const activeFiltersCount = (methodFilter !== 'All' ? 1 : 0) + (branchFilter !== 'All' ? 1 : 0);
@@ -552,6 +696,15 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
             setDrawerOpenerEl(opener || null);
             setSelectedTx(tx);
           }}
+          getRowMeta={getRowMeta}
+          getFanActions={getFanActions}
+          getDetailActions={getDetailActions}
+          bulkSecondaryAction={{
+            label: isAr ? 'تحصيل المحدد' : isEn ? 'Settle Selected' : 'Encaisser sélection',
+            icon: <CheckCircle2 size={14} />,
+            onClick: handleBulkSettle,
+            variant: 'primary',
+          }}
           emptyTitle={isAr ? 'لا توجد معاملات' : isEn ? 'No transactions found' : 'Aucun règlement trouvé'}
           emptyDescription={
             isAr
@@ -586,7 +739,7 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
         language={language}
         title={selectedTx?.memberName || ''}
         subtitle={selectedTx ? `${selectedTx.id} · ${selectedTx.date}` : undefined}
-        avatarText={selectedTx ? selectedTx.memberName.charAt(0).toUpperCase() : undefined}
+        avatarText={selectedTx ? selectedTx.memberName.slice(0, 2).toUpperCase() : undefined}
         branchName={selectedTx?.branchName}
         statusLabel={
           selectedTx?.status === 'Settled'
@@ -595,83 +748,180 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
         }
         statusClassName={
           selectedTx?.status === 'Settled'
-            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-            : 'bg-amber-50 text-amber-700 border border-amber-200'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
         }
+        tabs={[
+          { id: 'overview', label: isAr ? 'نظرة عامة' : isEn ? 'Overview' : 'Aperçu & Montant' },
+          { id: 'receipt', label: isAr ? 'الإيصال والدفع' : isEn ? 'Receipt & Method' : 'Reçu & Règlement' },
+          { id: 'ledger', label: isAr ? 'سجل التدقيق' : isEn ? 'Audit Log' : 'Suivi comptable' },
+        ]}
         onClose={() => setSelectedTx(null)}
         onSelectItem={(tx) => setSelectedTx(tx)}
-        renderBody={(tx) => (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex justify-between items-center">
-              <div>
-                <span className="text-[11px] font-semibold text-[#d4522f] uppercase block">
-                  {isAr ? 'المبلغ المحصل' : isEn ? 'Amount' : 'Montant'}
-                </span>
-                <span className="text-2xl font-bold tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white">
-                  {formatMoney(tx.amount)}
-                </span>
-              </div>
-              <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] font-semibold">
-                {tx.paymentMethod === 'Card' ? 'CIB / Dahabia' : tx.paymentMethod}
-              </span>
-            </div>
+        holdToDelete={false}
+        renderBody={(tx, activeTab) => {
+          const methodLabel =
+            tx.paymentMethod === 'BaridiMob'
+              ? 'BaridiMob'
+              : tx.paymentMethod === 'Card'
+              ? 'CIB / Edahabia'
+              : isAr ? 'نقداً' : isEn ? 'Cash' : 'Espèces';
 
-            <div className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-2.5">
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">
-                  {isAr ? 'نوع الاشتراك:' : isEn ? 'Plan:' : 'Formule :'}
-                </span>
-                <span className="font-semibold text-black dark:text-white">{tx.plan}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">
-                  {isAr ? 'التاريخ:' : isEn ? 'Date:' : 'Date :'}
-                </span>
-                <span className="font-mono font-semibold text-black dark:text-white tabular-nums">{tx.date}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">
-                  {isAr ? 'الفرع:' : isEn ? 'Branch:' : 'Branche :'}
-                </span>
-                <span className="font-semibold text-black dark:text-white flex items-center gap-1">
-                  <Building2 size={12} className="text-[#d4522f]" />
-                  {tx.branchName}
-                </span>
-              </div>
-            </div>
+          if (activeTab === 'receipt') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'تفاصيل الإيصال' : isEn ? 'Receipt Breakdown' : 'Détails du reçu'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'المرجع' : isEn ? 'Reference' : 'Référence'}
+                      value={tx.id}
+                      copyText={tx.id}
+                      onCopied={(v) => showToast?.({ type: 'success', title: isAr ? 'تم النسخ' : 'Copié', message: v })}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'الاشتراك' : isEn ? 'Plan' : 'Formule'}
+                      value={tx.plan}
+                      mono={false}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'طريقة الدفع' : isEn ? 'Method' : 'Règlement'}
+                      value={methodLabel}
+                      tone="accent"
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'التاريخ' : isEn ? 'Date' : 'Date d’écriture'}
+                      value={tx.date}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'ملخص الدفع' : isEn ? 'Settlement Summary' : 'Montant réglé'}>
+                  <InspectorBigStat
+                    value={formatMoney(tx.amount)}
+                    tone={tx.status === 'Settled' ? 'ok' : 'accent'}
+                    caption={`${tx.branchName || ''} · ${methodLabel}`}
+                  />
+                </InspectorSection>
+              </>
+            );
+          }
 
-            <div className="space-y-2 pt-2">
-              {tx.status === 'Pending' && (
-                <AtriumButton
-                  type="button"
-                  variant="primary"
-                  icon={<CheckCircle2 size={15} />}
-                  className="w-full justify-center"
-                  onClick={() => {
-                    updateMember?.(tx.memberId, { balance: 0 } as any);
-                    showToast?.({
-                      type: 'success',
-                      title: isAr ? 'تم التحصيل' : isEn ? 'Settled' : 'Encaissé',
-                      message: `${tx.memberName} (${formatMoney(tx.amount)})`,
-                    });
-                    setSelectedTx(null);
-                  }}
-                >
-                  {isAr ? 'تأكيد التسديد' : isEn ? 'Mark as Settled' : 'Valider le règlement'}
-                </AtriumButton>
-              )}
-              <AtriumButton
-                type="button"
-                variant="secondary"
-                icon={<Printer size={15} />}
-                className="w-full justify-center"
-                onClick={() => window.print()}
-              >
-                {isAr ? 'طباعة الإيصال' : isEn ? 'Print Receipt' : 'Imprimer reçu'}
-              </AtriumButton>
-            </div>
-          </div>
-        )}
+          if (activeTab === 'ledger') {
+            return (
+              <InspectorSection index={0} title={isAr ? 'حركات الحساب' : isEn ? 'Ledger Trail' : 'Journal des écritures'}>
+                <InspectorCard>
+                  <InspectorListItem
+                    title={tx.status === 'Settled' ? (isAr ? 'تأكيد التحصيل' : 'Encaissement validé') : (isAr ? 'إصدار المستحق' : 'Échéance émise')}
+                    subtitle={`${tx.date} · ${methodLabel}`}
+                    metaRight={formatMoney(tx.amount)}
+                    badge={{
+                      label: tx.status === 'Settled' ? (isAr ? 'مسدد' : 'Encaissé') : (isAr ? 'معلق' : 'En attente'),
+                      tone: tx.status === 'Settled' ? 'ok' : 'warn',
+                    }}
+                  />
+                  <InspectorListItem
+                    title={tx.plan}
+                    subtitle={tx.branchName || currentBranch?.name || 'Club Principal'}
+                    badge={{ label: isAr ? 'موثق' : 'Vérifié', tone: 'neutral' }}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+            );
+          }
+
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : isEn ? 'Quick Actions' : 'Actions rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    ...(tx.status === 'Pending'
+                      ? [
+                          {
+                            id: 'settle',
+                            label: isAr ? 'تحصيل' : isEn ? 'Settle' : 'Valider règlement',
+                            icon: <CheckCircle2 className="w-[18px] h-[18px]" />,
+                            primary: true,
+                            onClick: () => {
+                              handleSettleTx(tx);
+                              setSelectedTx(null);
+                            },
+                          },
+                        ]
+                      : [
+                          {
+                            id: 'print-p',
+                            label: isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer reçu',
+                            icon: <Printer className="w-[18px] h-[18px]" />,
+                            primary: true,
+                            onClick: () => window.print(),
+                          },
+                        ]),
+                    {
+                      id: 'print',
+                      label: isAr ? 'نسخة PDF' : isEn ? 'Print Copy' : 'Reçu thermique',
+                      icon: <Receipt className="w-[18px] h-[18px]" />,
+                      onClick: () => window.print(),
+                    },
+                    {
+                      id: 'remind',
+                      label: isAr ? 'تذكير' : isEn ? 'Remind' : 'Relancer',
+                      icon: <Send className="w-[18px] h-[18px]" />,
+                      onClick: () =>
+                        showToast?.({
+                          type: 'success',
+                          title: isAr ? 'تم الإرسال' : 'Relance envoyée',
+                          message: tx.memberName,
+                        }),
+                    },
+                  ]}
+                />
+              </InspectorSection>
+
+              <InspectorSection index={1}>
+                <InspectorBigStat
+                  value={formatMoney(tx.amount)}
+                  tone={tx.status === 'Settled' ? 'ok' : 'accent'}
+                  caption={`${methodLabel} · ${tx.date}`}
+                  action={
+                    tx.status === 'Pending'
+                      ? {
+                          label: isAr ? 'تأكيد التحصيل' : isEn ? 'Mark as Settled' : 'Encaisser le solde',
+                          onClick: () => {
+                            handleSettleTx(tx);
+                            setSelectedTx(null);
+                          },
+                        }
+                      : undefined
+                  }
+                />
+              </InspectorSection>
+
+              <InspectorSection index={2} title={isAr ? 'بيانات الاشتراك' : isEn ? 'Subscription Info' : 'Détails & Branche'}>
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={isAr ? 'الاشتراك' : isEn ? 'Plan' : 'Formule'}
+                    value={tx.plan}
+                    mono={false}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'المرجع' : isEn ? 'Receipt ID' : 'Référence'}
+                    value={tx.id}
+                    copyText={tx.id}
+                    onCopied={(v) => showToast?.({ type: 'success', title: isAr ? 'تم النسخ' : 'Copié', message: v })}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche'}
+                    icon={<Building2 className="w-[15px] h-[15px]" />}
+                    value={tx.branchName || currentBranch?.name || 'Main'}
+                    mono={false}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+            </>
+          );
+        }}
       />
     </div>
   );

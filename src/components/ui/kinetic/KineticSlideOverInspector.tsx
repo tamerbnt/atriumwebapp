@@ -442,7 +442,7 @@ function KineticSlideOverInspectorInner<T>({
         }}
       >
         {/* Header (.ph) */}
-        <div className="ph flex gap-4 items-start p-6 pb-4.5 border-b border-[#E6DED6]/60 dark:border-[#3A3734]">
+        <div className="ph flex gap-4 items-start px-[26px] pt-[26px] pb-[18px]">
           {avatarText && (
             <div
               className="pav w-[68px] h-[68px] rounded-[22px] grid place-items-center text-white font-bold text-[26px] shrink-0 select-none shadow-sm"
@@ -530,12 +530,13 @@ function KineticSlideOverInspectorInner<T>({
           <div
             ref={ptabsRef}
             role="tablist"
-            className="ptabs relative flex mx-6 my-2.5 p-[3px] rounded-[12px] bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734]"
+            className="ptabs relative flex mx-[26px] p-1 rounded-[14px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422]"
           >
             <i
               ref={pindRef}
-              className="pind absolute top-[3px] bottom-[3px] left-0 right-0 rounded-[10px] bg-white dark:bg-[#1C1B1A] shadow-2xs pointer-events-none"
-              style={{ clipPath: 'inset(0 100% 0 0 round 10px)' }}
+              aria-hidden="true"
+              className="pind absolute top-1 bottom-1 left-0 right-0 rounded-[10px] bg-[var(--atr-acc,#d4522f)] pointer-events-none z-0"
+              style={{ clipPath: 'inset(0 100% 0 4px round 10px)' }}
             />
             {tabs.map((tab) => {
               const isSelected = activeTab === tab.id;
@@ -550,10 +551,10 @@ function KineticSlideOverInspectorInner<T>({
                   data-no-liquid="true"
                   aria-selected={isSelected}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative z-10 flex-1 py-2 px-3 rounded-[9px] text-[12.5px] font-semibold transition-colors cursor-pointer whitespace-nowrap truncate ${
+                  className={`relative z-[1] flex-1 h-[38px] border-0 bg-transparent font-semibold text-[13px] rounded-[10px] transition-colors duration-160 cursor-pointer whitespace-nowrap truncate ${
                     isSelected
-                      ? 'text-black dark:text-white'
-                      : 'text-black/62 dark:text-white/68 hover:text-black dark:hover:text-white'
+                      ? 'text-white'
+                      : 'text-[var(--atr-ink,#000000)] dark:text-white/88'
                   }`}
                 >
                   {tab.label}
@@ -566,17 +567,15 @@ function KineticSlideOverInspectorInner<T>({
         {/* Scrollable Staggered Body (.pb) */}
         <div
           role="tabpanel"
-          data-anim={entranceEpoch % 2}
-          className="pb flex-1 overflow-y-auto px-6 py-2 pb-5 space-y-4"
+          data-anim={entranceEpoch & 1}
+          className="pb flex-1 overflow-y-auto px-[26px] pt-1.5 pb-[18px] select-text"
           style={{ scrollbarWidth: 'thin' }}
         >
-          <div key={entranceEpoch} className="space-y-4">
-            {renderBody(activeItem, activeTab, entranceEpoch)}
-          </div>
+          {renderBody(activeItem, activeTab, entranceEpoch)}
         </div>
 
         {/* Footer (.pf) */}
-        <div className="pf flex justify-between items-center px-6 py-4 border-t border-[#E6DED6] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#151413]">
+        <div className="pf flex justify-between items-center px-[26px] py-4 border-t border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
           {onDelete ? (
             holdToDelete ? (
               <button

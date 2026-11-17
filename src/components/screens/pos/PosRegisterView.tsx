@@ -22,6 +22,7 @@ import {
   Coins,
   Split,
   Settings2,
+  Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { Product, ParkedOrder } from '../../../types/index';
@@ -44,6 +45,17 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorProgressBar,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -172,6 +184,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
 
   const [inspectingProduct, setInspectingProduct] = useState<Product | null>(null);
   const [inspectingParked, setInspectingParked] = useState<ParkedOrder | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<string>('overview');
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -1263,9 +1276,10 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                 </div>
               ) : (
                 <UniversalDataCollection<Product>
-                  data={sortedInventory}
+                  items={sortedInventory}
                   keyExtractor={(p) => p.id}
-                  viewMode={viewMode}
+                  defaultViewMode="grid"
+                  viewMode={viewMode === 'grid' ? 'grid' : 'list'}
                   hideToolbar
                   openItemId={inspectingProduct?.id ?? null}
                   columns={registerProductColumns}
@@ -1280,77 +1294,80 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                   }}
                   onViewDetails={(product, opener) => {
                     setDrawerOpenerEl(opener || null);
+                    setInspectorTab('overview');
                     setInspectingProduct(product);
                   }}
-                  renderCard={(product) => {
-                    const isOutOfStock = product.stockQuantity <= 0;
-                    const isLowStock = !isOutOfStock && product.stockQuantity <= (product.reorderLevel || 5);
+                  getRowMeta={(product): Partial<KineticRowData> => {
+                    const isOut = product.stockQuantity <= 0;
+                    const isLow = !isOut && product.stockQuantity <= (product.reorderLevel || 5);
                     const inCartItem = cart.find((c) => c.product.id === product.id);
-                    return (
-                      <div
-                        className={`relative p-1 flex flex-col justify-between h-full group ${
-                          isOutOfStock ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between w-full gap-1 mb-2">
-                          <span className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider truncate max-w-[90px]">
-                            {product.category}
-                          </span>
-                          {inCartItem && (
-                            <span className="px-1.5 py-0.5 rounded-full bg-[#d4522f] text-white text-[10px] font-black">
-                              {t('shop_in_cart_badge', { count: inCartItem.quantity })}
-                            </span>
-                          )}
-                          {!inCartItem && isLowStock && (
-                            <span className="px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400 text-[10px] font-bold">
-                              {t('shop_left_badge', { count: product.stockQuantity })}
-                            </span>
-                          )}
-                          {!inCartItem && isOutOfStock && (
-                            <span className="px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400 text-[10px] font-bold">
-                              {t('shop_sold_out_badge')}
-                            </span>
-                          )}
-                        </div>
-                        <div className="my-1.5">
-                          <div className="text-xs font-bold text-black dark:text-white line-clamp-2 leading-tight group-hover:text-[#d4522f] transition-colors">
-                            {product.name}
-                          </div>
-                          <div className="text-[10px] font-mono text-black/55 dark:text-white/55 mt-0.5">
-                            {product.sku}
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between w-full pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                          <div>
-                            <div className="text-sm font-black text-black dark:text-white font-mono">
-                              {formatMoney(product.price.amount)}
-                            </div>
-                            <div className="text-[10px] font-bold text-black/55 dark:text-white/55">
-                              {product.stockQuantity} {product.unit || t('shop_unit_pcs')}
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            disabled={isOutOfStock}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              addToCart(product);
-                            }}
-                            className={`h-8 px-2.5 rounded-xl text-xs font-bold cursor-pointer transition-colors flex items-center gap-1 ${
-                              isOutOfStock
-                                ? 'bg-neutral-100 dark:bg-neutral-800 text-black/55 dark:text-white/55 cursor-not-allowed'
-                                : inCartItem
-                                ? 'bg-[#d4522f] text-white shadow-2xs'
-                                : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-black dark:text-white'
-                            }`}
-                          >
-                            <Plus size={13} />
-                            <span>{inCartItem ? `(${inCartItem.quantity})` : t('shop_add_btn')}</span>
-                          </button>
-                        </div>
-                      </div>
-                    );
+                    const bInfo = resolveRecordBranch(product, branchesById, currentBranch, language);
+                    return {
+                      title: product.name,
+                      subline: `${product.sku}${product.barcode ? ` · ${product.barcode}` : ''}`,
+                      avatarText: (product.name || 'PR').slice(0, 2).toUpperCase(),
+                      avatarColor: '#d4522f',
+                      categoryLabel: product.category,
+                      branchName: bInfo.name,
+                      branchCode: bInfo.code,
+                      statusLabel: inCartItem
+                        ? t('shop_in_cart_badge', { count: inCartItem.quantity })
+                        : isOut
+                        ? t('shop_sold_out_badge')
+                        : `${product.stockQuantity} ${product.unit || t('shop_unit_pcs')}`,
+                      statusVariant: isOut ? 'expired' : isLow ? 'warning' : inCartItem ? 'info' : 'active',
+                      metricPrimary: formatMoney(product.price.amount),
+                      metricSecondary: `${product.stockQuantity} ${product.unit || t('shop_unit_pcs')}`,
+                      detailCol1: { label: 'SKU', value: product.sku },
+                      detailCol2: {
+                        label: t('shop_col_category'),
+                        value: product.category,
+                      },
+                      detailCol3: {
+                        label: t('shop_col_stock'),
+                        value: `${product.stockQuantity} ${product.unit || t('shop_unit_pcs')}`,
+                      },
+                    };
                   }}
+                  getFanActions={(product): KineticRowFanAction[] => [
+                    {
+                      id: 'add-cart',
+                      label: t('shop_add_btn'),
+                      icon: <Plus size={14} />,
+                      onClick: (e) => {
+                        e.stopPropagation();
+                        addToCart(product);
+                      },
+                    },
+                    {
+                      id: 'inspect',
+                      label: isAr ? 'معاينة' : isEn ? 'Inspect' : 'Détails',
+                      icon: <Eye size={14} />,
+                      onClick: (e) => {
+                        e.stopPropagation();
+                        setDrawerOpenerEl(e.currentTarget);
+                        setInspectorTab('overview');
+                        setInspectingProduct(product);
+                      },
+                    },
+                  ]}
+                  getDetailActions={(product): KineticDetailAction[] => [
+                    {
+                      id: 'add-cart',
+                      label: t('shop_add_btn'),
+                      icon: <Plus size={14} />,
+                      onClick: () => addToCart(product),
+                    },
+                    {
+                      id: 'inspect',
+                      label: isAr ? 'التفاصيل' : isEn ? 'Details' : 'Fiche article',
+                      icon: <Eye size={14} />,
+                      onClick: () => {
+                        setInspectorTab('overview');
+                        setInspectingProduct(product);
+                      },
+                    },
+                  ]}
                 />
               )}
             </ScreenPod>
@@ -1607,73 +1624,80 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
           />
 
           <UniversalDataCollection<ParkedOrder>
-            data={parkedOrders}
+            items={parkedOrders}
             keyExtractor={(po) => po.id}
-            viewMode={viewMode}
+            defaultViewMode="list"
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
             hideToolbar
             openItemId={inspectingParked?.id ?? null}
             columns={parkedOrderColumns}
             onItemClick={(po, opener) => {
               setDrawerOpenerEl(opener || null);
+              setInspectorTab('overview');
               setInspectingParked(po);
             }}
-            renderCard={(po) => (
-              <div className="flex flex-col justify-between h-full space-y-3">
-                <div>
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div>
-                      <div className="text-xs font-black text-black dark:text-white">{po.referenceName}</div>
-                      <div className="text-[10px] text-black/55 dark:text-white/55 mt-0.5">
-                        {t('shop_held_at_time', {
-                          time: new Date(po.createdAt).toLocaleTimeString(),
-                          count: po.items.length,
-                        })}
-                      </div>
-                    </div>
-                    <div className="text-sm font-black font-mono text-[#d4522f]">{formatMoney(po.totalAmount)}</div>
-                  </div>
-                  <div className="text-xs bg-neutral-50 dark:bg-neutral-800/50 p-2.5 rounded-xl space-y-1">
-                    {po.items.map((it, idx) => (
-                      <div key={idx} className="flex justify-between text-[11px] text-black/70 dark:text-white/75">
-                        <span>
-                          {it.quantity}x {it.productName}
-                        </span>
-                        <span className="font-mono">{formatMoney(it.totalPrice)}</span>
-                      </div>
-                    ))}
-                  </div>
-                  {po.notes && (
-                    <div className="text-[11px] text-amber-600 dark:text-amber-400 italic mt-2">
-                      {t('shop_note_prefix', { notes: po.notes })}
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleResumeOrder(po);
-                    }}
-                    className="flex-1 h-9 rounded-xl bg-[#d4522f] text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:opacity-90 cursor-pointer"
-                  >
-                    <PlayCircle size={14} />
-                    <span>{t('shop_resume_in_register')}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteParkedOrder(po.id);
-                    }}
-                    className="h-9 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/55 dark:text-white/55 hover:text-red-500 cursor-pointer"
-                    title={t('shop_discard_order')}
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              </div>
-            )}
+            onViewDetails={(po, opener) => {
+              setDrawerOpenerEl(opener || null);
+              setInspectorTab('overview');
+              setInspectingParked(po);
+            }}
+            getRowMeta={(po): Partial<KineticRowData> => {
+              const bInfo = resolveRecordBranch(po, branchesById, currentBranch, language);
+              return {
+                title: po.referenceName,
+                subline: `${po.items.length} ${isAr ? 'أصناف' : isEn ? 'items' : 'articles'} · ${new Date(po.createdAt).toLocaleTimeString()}`,
+                avatarText: (po.referenceName || 'PK').slice(0, 2).toUpperCase(),
+                avatarColor: '#d4522f',
+                categoryLabel: po.customerName || t('shop_receipt_walkin'),
+                branchName: bInfo.name,
+                branchCode: bInfo.code,
+                statusLabel: isAr ? 'معلق' : isEn ? 'Parked' : 'En pause',
+                statusVariant: 'warning',
+                metricPrimary: formatMoney(po.totalAmount),
+                metricSecondary: `${po.items.length} art.`,
+                detailCol1: { label: isAr ? 'العميل' : isEn ? 'Customer' : 'Client', value: po.customerName || t('shop_receipt_walkin') },
+                detailCol2: { label: isAr ? 'الأصناف' : isEn ? 'Items' : 'Articles', value: String(po.items.length) },
+                detailCol3: { label: isAr ? 'الوقت' : isEn ? 'Time' : 'Heure', value: new Date(po.createdAt).toLocaleTimeString() },
+              };
+            }}
+            getFanActions={(po): KineticRowFanAction[] => [
+              {
+                id: 'resume',
+                label: t('shop_resume_in_register'),
+                icon: <PlayCircle size={14} />,
+                onClick: (e) => {
+                  e.stopPropagation();
+                  handleResumeOrder(po);
+                },
+              },
+              {
+                id: 'delete',
+                label: t('shop_discard_order'),
+                icon: <Trash2 size={14} />,
+                isDanger: true,
+                onClick: (e) => {
+                  e.stopPropagation();
+                  deleteParkedOrder(po.id);
+                },
+              },
+            ]}
+            getDetailActions={(po): KineticDetailAction[] => [
+              {
+                id: 'resume',
+                label: t('shop_resume_in_register'),
+                icon: <PlayCircle size={14} />,
+                onClick: () => handleResumeOrder(po),
+              },
+              {
+                id: 'inspect',
+                label: isAr ? 'التفاصيل' : isEn ? 'Inspect' : 'Détails',
+                icon: <Eye size={14} />,
+                onClick: () => {
+                  setInspectorTab('overview');
+                  setInspectingParked(po);
+                },
+              },
+            ]}
             emptyTitle={t('shop_no_held_title')}
             emptyDescription={t('shop_no_held_desc')}
           />
@@ -1708,8 +1732,9 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
             onResetAllFilters={handleResetFilters}
           />
           <UniversalDataCollection<Product>
-            data={sortedInventory}
+            items={sortedInventory}
             keyExtractor={(p) => p.id}
+            defaultViewMode="list"
             viewMode={viewMode === 'grid' ? 'grid' : 'list'}
             hideToolbar
             columns={productColumns}
@@ -1725,7 +1750,11 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               setInvSortDir(dir);
             }}
             onItemClick={(p) => handleOpenEditProduct(p)}
-            onViewDetails={(p) => handleOpenEditProduct(p)}
+            onViewDetails={(p, opener) => {
+              setDrawerOpenerEl(opener || null);
+              setInspectorTab('overview');
+              setInspectingProduct(p);
+            }}
             onEdit={(p) => handleOpenEditProduct(p)}
             pinnedIds={pinnedProductIds}
             onPinToggle={(idOrItem) => {
@@ -1740,6 +1769,69 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
             onDelete={(p) => deleteProduct(p.id)}
             selectedIds={selectedProductIds}
             onSelectionChange={setSelectedProductIds}
+            getRowMeta={(p): Partial<KineticRowData> => {
+              const isOut = p.stockQuantity <= 0;
+              const isLow = !isOut && p.stockQuantity <= (p.reorderLevel || 5);
+              const bInfo = resolveRecordBranch(p, branchesById, currentBranch, language);
+              return {
+                title: p.name,
+                subline: `${p.sku}${p.barcode ? ` · ${p.barcode}` : ''}`,
+                avatarText: (p.name || 'PR').slice(0, 2).toUpperCase(),
+                avatarColor: '#d4522f',
+                categoryLabel: p.category,
+                branchName: bInfo.name,
+                branchCode: bInfo.code,
+                statusLabel: isOut
+                  ? isAr ? 'نفذ' : isEn ? 'Out' : 'Rupture'
+                  : isLow
+                  ? isAr ? 'منخفض' : isEn ? 'Low' : 'Bas'
+                  : isAr ? 'متوفر' : isEn ? 'In Stock' : 'En stock',
+                statusVariant: isOut ? 'expired' : isLow ? 'warning' : 'active',
+                metricPrimary: formatMoney(p.price.amount),
+                metricSecondary: `${p.stockQuantity} ${p.unit || t('shop_unit_pcs')}`,
+                detailCol1: { label: 'SKU', value: p.sku },
+                detailCol2: { label: t('shop_col_stock'), value: `${p.stockQuantity} ${p.unit || t('shop_unit_pcs')}` },
+                detailCol3: { label: t('shop_col_retail'), value: formatMoney(p.price.amount) },
+              };
+            }}
+            getFanActions={(p): KineticRowFanAction[] => [
+              {
+                id: 'adjust',
+                label: isAr ? 'تعديل المخزون' : isEn ? 'Adjust Stock' : 'Ajuster',
+                icon: <ArrowDownUp size={14} />,
+                onClick: (e) => {
+                  e.stopPropagation();
+                  setSelectedProductForAdjust(p);
+                  setIsAdjustStockModalOpen(true);
+                },
+              },
+              {
+                id: 'edit',
+                label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+                icon: <Settings2 size={14} />,
+                onClick: (e) => {
+                  e.stopPropagation();
+                  handleOpenEditProduct(p);
+                },
+              },
+            ]}
+            getDetailActions={(p): KineticDetailAction[] => [
+              {
+                id: 'adjust',
+                label: isAr ? 'ضبط الكمية' : isEn ? 'Adjust' : 'Ajuster stock',
+                icon: <ArrowDownUp size={14} />,
+                onClick: () => {
+                  setSelectedProductForAdjust(p);
+                  setIsAdjustStockModalOpen(true);
+                },
+              },
+              {
+                id: 'edit',
+                label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+                icon: <Settings2 size={14} />,
+                onClick: () => handleOpenEditProduct(p),
+              },
+            ]}
             emptyTitle={t('shop_table_empty')}
             emptyDescription={t('shop_empty_cat_sub')}
             primaryActionLabel={t('shop_add_product')}
@@ -1975,37 +2067,166 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
         language={language}
         title={inspectingProduct?.name || ''}
         subtitle={inspectingProduct ? `${inspectingProduct.sku} · ${inspectingProduct.category}` : undefined}
+        avatarText={(inspectingProduct?.name || 'PR').slice(0, 2).toUpperCase()}
+        avatarColor="#d4522f"
         branchName={inspectingProduct ? resolveRecordBranch(inspectingProduct, branchesById, currentBranch, language).name : undefined}
-        statusLabel={inspectingProduct ? `${inspectingProduct.stockQuantity} ${inspectingProduct.unit || 'pcs'}` : undefined}
+        statusLabel={
+          inspectingProduct
+            ? inspectingProduct.stockQuantity <= 0
+              ? isAr ? 'نفذ' : isEn ? 'Out of stock' : 'Rupture'
+              : inspectingProduct.stockQuantity <= (inspectingProduct.reorderLevel || 5)
+              ? isAr ? 'مخزون منخفض' : isEn ? 'Low stock' : 'Stock bas'
+              : isAr ? 'متوفر' : isEn ? 'In stock' : 'En stock'
+            : undefined
+        }
+        statusClassName={
+          inspectingProduct && inspectingProduct.stockQuantity <= 0
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            : inspectingProduct && inspectingProduct.stockQuantity <= (inspectingProduct.reorderLevel || 5)
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+        }
+        tabs={[
+          { id: 'overview', label: isAr ? 'المنتج' : isEn ? 'Product' : 'Article' },
+          { id: 'stock', label: isAr ? 'المخزون' : isEn ? 'Stock & Margin' : 'Stock & Marge' },
+          { id: 'actions', label: isAr ? 'الإجراءات' : isEn ? 'Actions' : 'Actions' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={setInspectorTab}
         onClose={() => setInspectingProduct(null)}
-        onSelectItem={(p) => setInspectingProduct(p)}
-        renderBody={(prod) => (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] grid grid-cols-2 gap-3">
-              <div>
-                <span className="text-black/60 dark:text-white/65 block text-[11px]">Prix TTC</span>
-                <span className="font-mono font-black text-base text-[#d4522f]">{formatMoney(prod.price.amount)}</span>
-              </div>
-              <div>
-                <span className="text-black/60 dark:text-white/65 block text-[11px]">Stock</span>
-                <span className="font-mono font-bold text-black dark:text-white">{prod.stockQuantity}</span>
-              </div>
+        onSelectItem={(p) => {
+          setInspectorTab('overview');
+          setInspectingProduct(p);
+        }}
+        renderBody={(prod, tab, epoch) => {
+          const cost = prod.costPrice || prod.cost?.amount || Math.round(prod.price.amount * 0.6);
+          const margin = prod.price.amount - cost;
+          const reorder = prod.reorderLevel || 5;
+          const stockPct = Math.min(100, Math.round((prod.stockQuantity / Math.max(reorder * 4, 20)) * 100));
+          const stockTone = prod.stockQuantity <= 0 ? 'danger' : prod.stockQuantity <= reorder ? 'warn' : 'ok';
+
+          return (
+            <div className="space-y-4">
+              <InspectorSection index={0}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'add',
+                      label: t('shop_add_btn'),
+                      icon: <Plus size={16} />,
+                      primary: true,
+                      disabled: prod.stockQuantity <= 0,
+                      onClick: () => {
+                        addToCart(prod);
+                        setInspectingProduct(null);
+                      },
+                    },
+                    {
+                      id: 'adjust',
+                      label: isAr ? 'تعديل المخزون' : isEn ? 'Adjust' : 'Ajuster',
+                      icon: <ArrowDownUp size={16} />,
+                      onClick: () => {
+                        setSelectedProductForAdjust(prod);
+                        setIsAdjustStockModalOpen(true);
+                      },
+                    },
+                    {
+                      id: 'edit',
+                      label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+                      icon: <Settings2 size={16} />,
+                      onClick: () => handleOpenEditProduct(prod),
+                    },
+                  ]}
+                />
+              </InspectorSection>
+
+              {tab === 'overview' && (
+                <>
+                  <InspectorSection index={1} title={isAr ? 'سعر البيع بالتجزئة' : isEn ? 'Retail Price' : 'Tarif Vente TTC'}>
+                    <InspectorBigStat
+                      value={formatMoney(prod.price.amount)}
+                      tone="accent"
+                      caption={`${prod.category} · ${prod.stockQuantity} ${prod.unit || t('shop_unit_pcs')}`}
+                    />
+                  </InspectorSection>
+                  <InspectorSection index={2} title={isAr ? 'معلومات الصنف' : isEn ? 'Catalog Details' : 'Identification'}>
+                    <InspectorCard>
+                      <InspectorKeyValue label="SKU" value={prod.sku} copyText={prod.sku} />
+                      {prod.barcode && <InspectorKeyValue label={isAr ? 'الباركود' : 'Barcode'} value={prod.barcode} copyText={prod.barcode} />}
+                      <InspectorKeyValue label={t('shop_col_category')} value={prod.category} mono={false} />
+                      <InspectorKeyValue
+                        label={isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche'}
+                        value={resolveRecordBranch(prod, branchesById, currentBranch, language).name}
+                        mono={false}
+                        isLast
+                      />
+                    </InspectorCard>
+                  </InspectorSection>
+                </>
+              )}
+
+              {tab === 'stock' && (
+                <>
+                  <InspectorSection index={1} title={isAr ? 'مستوى المخزون' : isEn ? 'Stock Level' : 'Niveau de Stock'}>
+                    <InspectorCard>
+                      <InspectorKeyValue
+                        label={t('shop_col_stock')}
+                        value={`${prod.stockQuantity} ${prod.unit || t('shop_unit_pcs')}`}
+                        tone={stockTone}
+                      />
+                      <InspectorKeyValue label={isAr ? 'حد التنبيه' : isEn ? 'Reorder Level' : 'Seuil alerte'} value={`${reorder} ${prod.unit || 'pcs'}`} isLast />
+                      <InspectorProgressBar percent={stockPct} tone={stockTone} animateKey={epoch} />
+                    </InspectorCard>
+                  </InspectorSection>
+                  <InspectorSection index={2} title={isAr ? 'الهوامش والتكلفة' : isEn ? 'Cost & Valuation' : 'Coûts & Valorisation'}>
+                    <InspectorCard>
+                      <InspectorKeyValue label={isAr ? 'سعر التكلفة' : isEn ? 'Cost Price' : 'Prix achat'} value={formatMoney(cost)} />
+                      <InspectorKeyValue label={isAr ? 'الهامش الوحدوي' : isEn ? 'Unit Margin' : 'Marge unitaire'} value={formatMoney(margin)} tone="ok" />
+                      <InspectorKeyValue
+                        label={isAr ? 'قيمة المخزون' : isEn ? 'Stock Value' : 'Valeur stock'}
+                        value={formatMoney(prod.price.amount * prod.stockQuantity)}
+                        tone="accent"
+                        isLast
+                      />
+                    </InspectorCard>
+                  </InspectorSection>
+                </>
+              )}
+
+              {tab === 'actions' && (
+                <InspectorSection index={1} title={isAr ? 'إجراءات الصندوق' : isEn ? 'Register Actions' : 'Opérations Caisse'}>
+                  <div className="space-y-2.5">
+                    <InspectorWideButton
+                      label={t('shop_add_btn')}
+                      icon={<Plus size={15} />}
+                      tone="accent"
+                      disabled={prod.stockQuantity <= 0}
+                      onClick={() => {
+                        addToCart(prod);
+                        setInspectingProduct(null);
+                      }}
+                    />
+                    <InspectorWideButton
+                      label={isAr ? 'ضبط المخزون' : isEn ? 'Adjust Stock' : 'Ajuster le stock'}
+                      icon={<ArrowDownUp size={15} />}
+                      tone="dark"
+                      onClick={() => {
+                        setSelectedProductForAdjust(prod);
+                        setIsAdjustStockModalOpen(true);
+                      }}
+                    />
+                    <InspectorWideButton
+                      label={isAr ? 'تعديل البطاقة' : isEn ? 'Edit Product' : 'Modifier la fiche'}
+                      icon={<Settings2 size={15} />}
+                      tone="neutral"
+                      onClick={() => handleOpenEditProduct(prod)}
+                    />
+                  </div>
+                </InspectorSection>
+              )}
             </div>
-            <AtriumButton
-              type="button"
-              variant="primary"
-              icon={<Plus size={14} />}
-              className="w-full justify-center"
-              disabled={prod.stockQuantity <= 0}
-              onClick={() => {
-                addToCart(prod);
-                setInspectingProduct(null);
-              }}
-            >
-              {t('shop_add_btn')}
-            </AtriumButton>
-          </div>
-        )}
+          );
+        }}
       />
 
       <KineticSlideOverInspector<ParkedOrder>
@@ -2017,38 +2238,107 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
         language={language}
         title={inspectingParked?.referenceName || ''}
         subtitle={inspectingParked ? new Date(inspectingParked.createdAt).toLocaleString() : undefined}
+        avatarText={(inspectingParked?.referenceName || 'PK').slice(0, 2).toUpperCase()}
+        avatarColor="#d4522f"
         branchName={inspectingParked ? resolveRecordBranch(inspectingParked, branchesById, currentBranch, language).name : undefined}
-        statusLabel="En pause"
+        statusLabel={isAr ? 'معلق' : isEn ? 'Parked' : 'En pause'}
+        statusClassName="bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]"
+        tabs={[
+          { id: 'overview', label: isAr ? 'التذكرة' : isEn ? 'Ticket' : 'Ticket' },
+          { id: 'items', label: isAr ? 'الأصناف' : isEn ? 'Items' : 'Articles' },
+          { id: 'actions', label: isAr ? 'استئناف' : isEn ? 'Resume' : 'Actions' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={setInspectorTab}
         onClose={() => setInspectingParked(null)}
-        onSelectItem={(po) => setInspectingParked(po)}
+        onSelectItem={(po) => {
+          setInspectorTab('overview');
+          setInspectingParked(po);
+        }}
         holdToDelete
         deleteLabel={isAr ? 'حذف' : 'Supprimer'}
         onDelete={(po) => {
           deleteParkedOrder(po.id);
           setInspectingParked(null);
         }}
-        renderBody={(po) => (
-          <div className="space-y-4 text-xs">
-            <div className="space-y-1.5">
-              {po.items.map((it, idx) => (
-                <div key={idx} className="p-3 rounded-xl border border-[#E6DED6] dark:border-[#3A3734] flex justify-between">
-                  <span>{it.quantity}× {it.productName}</span>
-                  <span className="font-mono font-bold">{formatMoney(it.totalPrice)}</span>
-                </div>
-              ))}
-            </div>
-            <AtriumButton
-              type="button"
-              variant="primary"
-              icon={<PlayCircle size={14} />}
-              className="w-full justify-center"
-              onClick={() => {
-                handleResumeOrder(po);
-                setInspectingParked(null);
-              }}
-            >
-              {t('shop_resume_in_register')}
-            </AtriumButton>
+        renderBody={(po, tab) => (
+          <div className="space-y-4">
+            <InspectorSection index={0}>
+              <InspectorQuickActions
+                actions={[
+                  {
+                    id: 'resume',
+                    label: t('shop_resume_in_register'),
+                    icon: <PlayCircle size={16} />,
+                    primary: true,
+                    onClick: () => {
+                      handleResumeOrder(po);
+                      setInspectingParked(null);
+                    },
+                  },
+                  {
+                    id: 'discard',
+                    label: t('shop_discard_order'),
+                    icon: <Trash2 size={16} />,
+                    onClick: () => {
+                      deleteParkedOrder(po.id);
+                      setInspectingParked(null);
+                    },
+                  },
+                ]}
+              />
+            </InspectorSection>
+
+            {tab === 'overview' && (
+              <>
+                <InspectorSection index={1} title={isAr ? 'إجمالي التذكرة' : isEn ? 'Ticket Total' : 'Montant Total'}>
+                  <InspectorBigStat
+                    value={formatMoney(po.totalAmount)}
+                    tone="accent"
+                    caption={`${po.items.length} ${isAr ? 'أصناف' : isEn ? 'items' : 'articles'} · ${po.customerName || t('shop_receipt_walkin')}`}
+                  />
+                </InspectorSection>
+                <InspectorSection index={2} title={isAr ? 'تفاصيل التذكرة' : isEn ? 'Ticket Metadata' : 'Informations'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label={isAr ? 'المرجع' : isEn ? 'Reference' : 'Référence'} value={po.referenceName} copyText={po.referenceName} />
+                    <InspectorKeyValue label={isAr ? 'العميل' : isEn ? 'Customer' : 'Client'} value={po.customerName || t('shop_receipt_walkin')} mono={false} />
+                    <InspectorKeyValue label={isAr ? 'المجموع الفرعي' : isEn ? 'Subtotal' : 'Sous-total'} value={formatMoney(po.subtotal)} />
+                    <InspectorKeyValue label={isAr ? 'الخصم' : isEn ? 'Discount' : 'Remise'} value={formatMoney(po.discount || 0)} isLast={!po.notes} />
+                    {po.notes && <InspectorKeyValue label={isAr ? 'ملاحظات' : isEn ? 'Notes' : 'Notes'} value={po.notes} mono={false} isLast />}
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            )}
+
+            {tab === 'items' && (
+              <InspectorSection index={1} title={isAr ? 'قائمة الأصناف' : isEn ? 'Line Items' : 'Articles du panier'}>
+                <InspectorCard>
+                  {po.items.map((it, idx) => (
+                    <InspectorListItem
+                      key={idx}
+                      title={it.productName}
+                      subtitle={`${it.quantity} × ${formatMoney(it.unitPrice)}`}
+                      metaRight={formatMoney(it.totalPrice)}
+                      isLast={idx === po.items.length - 1}
+                    />
+                  ))}
+                </InspectorCard>
+              </InspectorSection>
+            )}
+
+            {tab === 'actions' && (
+              <InspectorSection index={1} title={isAr ? 'استئناف الطلب' : isEn ? 'Order Actions' : 'Traitement Caisse'}>
+                <InspectorWideButton
+                  label={t('shop_resume_in_register')}
+                  icon={<PlayCircle size={15} />}
+                  tone="accent"
+                  onClick={() => {
+                    handleResumeOrder(po);
+                    setInspectingParked(null);
+                  }}
+                />
+              </InspectorSection>
+            )}
           </div>
         )}
       />

@@ -9,6 +9,9 @@ import {
   Play,
   CreditCard,
   Building2,
+  Eye,
+  Edit2,
+  Trash2,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -23,7 +26,6 @@ import { Appointment } from '../../../types/index';
 import { AppointmentModal } from '../../modals/AppointmentModal';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { t, getLocalizedServiceName } from '../../../utils/i18n';
-import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCalendarTimeline } from '../../ui/skeleton/StructuralSkeletons';
@@ -36,6 +38,16 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -95,6 +107,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
   const {
     updateAppointmentStatus,
     checkoutAppointment,
+    deleteAppointment,
     batchDeleteAppointments,
     batchUpdateAppointmentStatus,
     retryCloudSync,
@@ -267,8 +280,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
     () => [
       { value: 'All', label: t('common_all', language), count: stats.all },
       { value: 'Confirmed', label: localizeStatus('Confirmed', language), count: stats.confirmed },
-      { value: 'InChair', label: localizeStatus('InChair', language), count: stats.inChair },
-      { value: 'Completed', label: localizeStatus('Completed', language), count: stats.completed },
+      { value: 'InChair', label: t('salon_kpi_in_chair', language), count: stats.inChair },
     ],
     [language, stats]
   );
@@ -303,8 +315,19 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
           ...salonStylists.map((st) => ({ value: st.id, label: st.fullName })),
         ],
       },
+      {
+        id: 'status',
+        label: isAr ? 'الحالة' : isEn ? 'Status' : 'Statut',
+        value: statusFilter,
+        onChange: setStatusFilter,
+        kind: 'segmented',
+        options: [
+          ...statusOptions,
+          { value: 'Completed', label: localizeStatus('Completed', language), count: stats.completed },
+        ],
+      },
     ],
-    [isAr, isEn, branchFilter, stats.all, branchOptionsWithCounts, language, selectedStylistId, salonStylists]
+    [isAr, isEn, branchFilter, stats.all, stats.completed, branchOptionsWithCounts, language, selectedStylistId, salonStylists, statusFilter, statusOptions]
   );
 
   const activeChips = useMemo<ActiveFilterChip[]>(() => {
@@ -318,8 +341,11 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
         onRemove: () => setSelectedStylistId('All'),
       });
     }
+    if (statusFilter === 'Completed') {
+      chips.push({ key: 'status', label: localizeStatus('Completed', language), onRemove: () => setStatusFilter('All') });
+    }
     return chips;
-  }, [branchFilter, selectedStylistId, salonStylists]);
+  }, [branchFilter, selectedStylistId, salonStylists, statusFilter, language]);
 
   const appointmentColumns: ColumnDefinition<Appointment>[] = useMemo(
     () => [
@@ -416,6 +442,113 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
       },
     ],
     [isAr, isEn, language, branchesById, currentBranch]
+  );
+
+  const getRowMeta = useCallback(
+    (apt: Appointment): Partial<KineticRowData> => {
+      const branch = resolveRecordBranch(apt, branchesById, currentBranch, language);
+      const statusVariant: KineticRowData['statusVariant'] =
+        apt.status === 'Completed' ? 'active' : apt.status === 'Cancelled' ? 'blocked' : 'warning';
+      return {
+        subline: `${apt.startTime} – ${apt.endTime} · ${apt.serviceName}`,
+        categoryLabel: apt.staffName,
+        statusLabel: apt.status === 'InChair' ? t('salon_kpi_in_chair', language) : localizeStatus(apt.status, language),
+        statusVariant,
+        metricPrimary: formatMoney(apt.price),
+        metricSecondary: `${apt.durationMinutes} min`,
+        detailCol1: {
+          heading: isAr ? 'بيانات العميل' : 'Client & Créneau',
+          primaryText: apt.clientPhone || apt.clientName,
+          secondaryText: `${apt.date} · ${apt.startTime}-${apt.endTime}`,
+          tertiaryText: branch.name,
+        },
+        detailCol2: {
+          heading: isAr ? 'الخدمة والمصففة' : 'Prestation & Styliste',
+          primaryText: getLocalizedServiceName(apt.serviceId, apt.serviceName, language),
+          secondaryText: apt.staffName,
+        },
+        detailCol3: {
+          heading: isAr ? 'التكلفة والحالة' : 'Tarif & Paiement',
+          primaryText: formatMoney(apt.price),
+          secondaryText: apt.isPaid ? `Payé (${apt.paymentMethod || 'Espèces'})` : 'À encaisser',
+        },
+      };
+    },
+    [branchesById, currentBranch, language, isAr]
+  );
+
+  const getFanActions = useCallback(
+    (apt: Appointment): KineticRowFanAction[] => [
+      ...(apt.status !== 'Completed' && apt.status !== 'Cancelled'
+        ? [
+            {
+              id: 'checkout',
+              label: t('salon_quick_checkout', language) || 'Checkout',
+              icon: <CreditCard className="w-[15px] h-[15px]" />,
+              onClick: () => handleOneClickCheckout(apt),
+            },
+          ]
+        : [
+            {
+              id: 'view',
+              label: 'Fiche',
+              icon: <Eye className="w-[15px] h-[15px]" />,
+              onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
+                setDrawerOpenerEl(e.currentTarget);
+                setInspectingApt(apt);
+              },
+            },
+          ]),
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : 'Modifier',
+        icon: <Edit2 className="w-[15px] h-[15px]" />,
+        onClick: () => handleOpenEditModal(apt),
+      },
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : 'Supprimer',
+        icon: <Trash2 className="w-[15px] h-[15px]" />,
+        isDanger: true,
+        onClick: () => {
+          deleteAppointment(apt.id);
+          if (inspectingApt?.id === apt.id) setInspectingApt(null);
+        },
+      },
+    ],
+    [language, handleOneClickCheckout, handleOpenEditModal, deleteAppointment, inspectingApt?.id, isAr]
+  );
+
+  const getDetailActions = useCallback(
+    (apt: Appointment): KineticDetailAction[] => [
+      ...(apt.status === 'Confirmed'
+        ? [
+            {
+              id: 'start',
+              label: 'Installer fauteuil',
+              icon: <Play className="w-3.5 h-3.5 text-[#096b40]" />,
+              onClick: () => updateAppointmentStatus(apt.id, 'InChair'),
+            },
+          ]
+        : []),
+      ...(apt.status !== 'Completed' && apt.status !== 'Cancelled'
+        ? [
+            {
+              id: 'checkout',
+              label: t('salon_quick_checkout', language) || 'Encaisser',
+              icon: <CreditCard className="w-3.5 h-3.5 text-[#d4522f]" />,
+              onClick: () => handleOneClickCheckout(apt),
+            },
+          ]
+        : []),
+      {
+        id: 'view',
+        label: 'Détails',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => setInspectingApt(apt),
+      },
+    ],
+    [updateAppointmentStatus, handleOneClickCheckout, language]
   );
 
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
@@ -532,8 +665,11 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
         />
 
         <UniversalDataCollection<Appointment>
-          data={sortedDayAppointments}
+          items={sortedDayAppointments}
           columns={appointmentColumns}
+          getRowMeta={getRowMeta}
+          getFanActions={getFanActions}
+          getDetailActions={getDetailActions}
           keyExtractor={(apt) => apt.id}
           viewMode={viewMode}
           hideToolbar
@@ -697,6 +833,10 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
             setInspectingApt(apt);
           }}
           onEdit={(apt) => handleOpenEditModal(apt)}
+          onDelete={(apt) => {
+            deleteAppointment(apt.id);
+            if (inspectingApt?.id === apt.id) setInspectingApt(null);
+          }}
           customActions={(apt) => [
             ...(apt.status !== 'Completed' && apt.status !== 'Cancelled'
               ? [
@@ -749,81 +889,157 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
         language={language}
         title={inspectingApt?.clientName || ''}
         subtitle={inspectingApt ? `${inspectingApt.date} · ${inspectingApt.startTime}-${inspectingApt.endTime}` : undefined}
-        avatarText={inspectingApt ? inspectingApt.clientName.charAt(0).toUpperCase() : undefined}
+        avatarText={inspectingApt ? inspectingApt.clientName.slice(0, 2).toUpperCase() : undefined}
+        categoryLabel={inspectingApt?.serviceName}
         branchName={
           inspectingApt
             ? resolveRecordBranch(inspectingApt, branchesById, currentBranch, language).name
             : undefined
         }
         statusLabel={inspectingApt ? localizeStatus(inspectingApt.status, language) : undefined}
-        statusClassName="bg-amber-50 text-amber-700 border border-amber-200"
+        statusClassName={
+          inspectingApt?.status === 'Completed'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : inspectingApt?.status === 'Cancelled'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+        }
+        tabs={[
+          { id: 'overview', label: isAr ? 'الموعد' : isEn ? 'Overview' : 'Rendez-vous' },
+          { id: 'treatment', label: isAr ? 'العناية والصبغة' : isEn ? 'Care & Stylist' : 'Soin & Styliste' },
+          { id: 'billing', label: isAr ? 'الفاتورة' : isEn ? 'Checkout' : 'Encaissement' },
+        ]}
+        holdToDelete
         onClose={() => setInspectingApt(null)}
         onSelectItem={(a) => setInspectingApt(a)}
-        renderBody={(apt) => (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex justify-between items-center">
-              <div>
-                <span className="text-[11px] font-semibold uppercase text-[#d4522f] block">Prestation</span>
-                <span className="text-sm font-bold text-black dark:text-white">{apt.serviceName}</span>
-              </div>
-              <span className="font-mono font-bold text-lg text-[#d4522f]">{formatMoney(apt.price)}</span>
-            </div>
-            <div className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-2">
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">Styliste:</span>
-                <span className="font-semibold">{apt.staffName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">Branche:</span>
-                <span className="font-semibold flex items-center gap-1">
-                  <Building2 size={12} className="text-[#d4522f]" />
-                  {resolveRecordBranch(apt, branchesById, currentBranch, language).name}
-                </span>
-              </div>
-            </div>
-            <div className="space-y-2">
-              {apt.status === 'Confirmed' && (
-                <AtriumButton
-                  type="button"
-                  variant="primary"
-                  icon={<Play size={14} />}
-                  className="w-full justify-center"
+        onDelete={(a) => {
+          deleteAppointment(a.id);
+          setInspectingApt(null);
+        }}
+        renderBody={(apt, activeTab) => {
+          const branchName = resolveRecordBranch(apt, branchesById, currentBranch, language).name;
+
+          if (activeTab === 'treatment') {
+            return (
+              <InspectorSection index={0} title="Protocole & Styliste">
+                <InspectorCard>
+                  <InspectorKeyValue label="Prestation" value={apt.serviceName} mono={false} tone="accent" />
+                  <InspectorKeyValue label="Styliste" value={apt.staffName} mono={false} />
+                  <InspectorKeyValue label="Durée" value={`${apt.durationMinutes} min`} />
+                  {apt.colorFormula && <InspectorKeyValue label="Formule" value={apt.colorFormula} />}
+                  <InspectorKeyValue label="Branche" icon={<Building2 className="w-[15px] h-[15px]" />} value={branchName} mono={false} isLast />
+                </InspectorCard>
+              </InspectorSection>
+            );
+          }
+
+          if (activeTab === 'billing') {
+            return (
+              <>
+                <InspectorSection index={0} title="Montant prestation">
+                  <InspectorBigStat
+                    value={formatMoney(apt.price)}
+                    tone={apt.isPaid ? 'ok' : 'accent'}
+                    actionLabel={
+                      apt.status !== 'Completed' && apt.status !== 'Cancelled'
+                        ? t('salon_quick_checkout', language)
+                        : undefined
+                    }
+                    onAction={
+                      apt.status !== 'Completed' && apt.status !== 'Cancelled'
+                        ? () => {
+                            handleOneClickCheckout(apt);
+                            setInspectingApt(null);
+                          }
+                        : undefined
+                    }
+                  />
+                </InspectorSection>
+                <InspectorSection index={1} title="Détails règlement">
+                  <InspectorCard>
+                    <InspectorListItem
+                      title={apt.serviceName}
+                      subtitle={`${apt.date} · ${apt.startTime}-${apt.endTime}`}
+                      badge={{ label: apt.isPaid ? 'Réglé' : 'À payer', tone: apt.isPaid ? 'ok' : 'warn' }}
+                      trailing={formatMoney(apt.price)}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
+
+          return (
+            <>
+              <InspectorSection index={0} title="Actions rapides">
+                <InspectorQuickActions
+                  actions={[
+                    ...(apt.status === 'Confirmed'
+                      ? [
+                          {
+                            id: 'chair',
+                            label: 'Au fauteuil',
+                            icon: <Play className="w-[18px] h-[18px]" />,
+                            primary: true,
+                            onClick: () => {
+                              updateAppointmentStatus(apt.id, 'InChair');
+                              setInspectingApt({ ...apt, status: 'InChair' });
+                            },
+                          },
+                        ]
+                      : []),
+                    ...(apt.status !== 'Completed' && apt.status !== 'Cancelled'
+                      ? [
+                          {
+                            id: 'checkout',
+                            label: 'Encaisser',
+                            icon: <CreditCard className="w-[18px] h-[18px]" />,
+                            primary: apt.status === 'InChair',
+                            onClick: () => {
+                              handleOneClickCheckout(apt);
+                              setInspectingApt(null);
+                            },
+                          },
+                        ]
+                      : []),
+                    {
+                      id: 'edit',
+                      label: 'Modifier RDV',
+                      icon: <Edit2 className="w-[18px] h-[18px]" />,
+                      onClick: () => {
+                        setInspectingApt(null);
+                        handleOpenEditModal(apt);
+                      },
+                    },
+                  ]}
+                />
+              </InspectorSection>
+
+              <InspectorSection index={1} title="Informations créneau">
+                <InspectorCard>
+                  <InspectorKeyValue label="Prestation" value={apt.serviceName} tone="accent" mono={false} />
+                  <InspectorKeyValue label="Horaire" value={`${apt.date} · ${apt.startTime}-${apt.endTime}`} />
+                  <InspectorKeyValue label="Styliste" value={apt.staffName} mono={false} />
+                  <InspectorKeyValue label="Tarif" value={formatMoney(apt.price)} tone="ok" />
+                  <InspectorKeyValue label="Branche" icon={<Building2 className="w-[15px] h-[15px]" />} value={branchName} mono={false} isLast />
+                </InspectorCard>
+              </InspectorSection>
+
+              <InspectorSection index={2}>
+                <InspectorWideButton
+                  label={isAr ? 'تعديل الموعد' : isEn ? 'Edit Appointment' : 'Modifier le Rendez-Vous'}
+                  icon={<Edit2 className="w-4 h-4" />}
+                  tone="dark"
                   onClick={() => {
-                    updateAppointmentStatus(apt.id, 'InChair');
-                    setInspectingApt({ ...apt, status: 'InChair' });
-                  }}
-                >
-                  Installer au Fauteuil
-                </AtriumButton>
-              )}
-              {apt.status !== 'Completed' && apt.status !== 'Cancelled' && (
-                <AtriumButton
-                  type="button"
-                  variant="primary"
-                  icon={<CreditCard size={14} />}
-                  className="w-full justify-center"
-                  onClick={() => {
-                    handleOneClickCheckout(apt);
                     setInspectingApt(null);
+                    handleOpenEditModal(apt);
                   }}
-                >
-                  {t('salon_quick_checkout', language)}
-                </AtriumButton>
-              )}
-              <AtriumButton
-                type="button"
-                variant="secondary"
-                className="w-full justify-center"
-                onClick={() => {
-                  setInspectingApt(null);
-                  handleOpenEditModal(apt);
-                }}
-              >
-                {isAr ? 'تعديل الموعد' : isEn ? 'Edit Appointment' : 'Modifier le Rendez-Vous'}
-              </AtriumButton>
-            </div>
-          </div>
-        )}
+                />
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       <AppointmentModal

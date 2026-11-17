@@ -1,6 +1,15 @@
-import React from 'react';
+import React, { useCallback } from 'react';
+import { Clock, Edit, Eye, Trash2, CheckCircle2 } from 'lucide-react';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
-import { ScreenPod } from '../../ui/kinetic';
+import {
+  ScreenPod,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
+  resolveRecordBranch,
+  extractInitials,
+  computeInitialsColor,
+} from '../../ui/kinetic';
 import { StaffHeaderTray } from './StaffHeaderTray';
 import { StaffActionToolbar } from './StaffActionToolbar';
 import { QuickPointageModal } from './QuickPointageModal';
@@ -8,6 +17,9 @@ import { StaffModal } from '../../modals/StaffModal';
 import { StaffInspectorDrawer } from '../StaffInspectorDrawer';
 import { StaffMember, BusinessCategory } from '../../../types/index';
 import { useStaffFoundation } from './useStaffFoundation';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import { formatMoney } from '../../../utils/rules';
 
 export interface StandardStaffScreenProps {
   foundation: ReturnType<typeof useStaffFoundation>;
@@ -29,6 +41,210 @@ export const StandardStaffScreen: React.FC<StandardStaffScreenProps> = React.mem
   newStaffButtonLabel,
 }) => {
   const { isAr, isEn, language } = foundation;
+
+  const { showSkeleton, isOffline, isTimedOut, retry } = useSkeletonLoading({
+    isLoading: foundation.isSyncing || foundation.networkMode === 'force_skeleton',
+    hasCachedData: foundation.facilityStaff.length > 0,
+  });
+
+  const getStaffStatusMeta = useCallback(
+    (status?: string): { label: string; variant: KineticRowData['statusVariant'] } => {
+      switch (status) {
+        case 'frozen':
+          return {
+            label: isAr ? 'موقف مؤقتاً' : isEn ? 'Paused' : 'Suspendu',
+            variant: 'warning',
+          };
+        case 'vacation':
+        case 'on_leave':
+          return {
+            label: isAr ? 'في عطلة' : isEn ? 'On Leave' : 'En congé',
+            variant: 'info',
+          };
+        case 'terminated':
+          return {
+            label: isAr ? 'منتهي' : isEn ? 'Ended' : 'Archivé',
+            variant: 'blocked',
+          };
+        case 'active':
+        default:
+          return {
+            label: isAr ? 'نشط' : isEn ? 'Active' : 'Actif',
+            variant: 'active',
+          };
+      }
+    },
+    [isAr, isEn]
+  );
+
+  const getRowMeta = useCallback(
+    (s: StaffMember): Partial<KineticRowData> => {
+      const branch = resolveRecordBranch(s, foundation.branchesById, foundation.currentBranch, language);
+      const st = getStaffStatusMeta(s.status);
+      const contractType = (s.contractType || s.recruitmentType || 'CDI').toUpperCase();
+      const score = s.performance?.kpiValue || `${s.performance?.scorePercentage ?? 90}%`;
+      const salaryDisplay = foundation.isOwnerViewer
+        ? `${formatMoney(s.salary || 0)} DZD`
+        : s.badgeToken || s.cardId || contractType;
+
+      return {
+        title: s.fullName,
+        subline: s.phoneNumber || s.email || s.role,
+        avatarText: extractInitials(s.fullName),
+        avatarColor: computeInitialsColor(s.fullName),
+        categoryLabel: s.role || contractType,
+        statusLabel: st.label,
+        statusVariant: st.variant,
+        metricPrimary: foundation.isOwnerViewer ? `${formatMoney(s.salary || 0)} DZD` : score,
+        metricSecondary: s.isClockedInToday
+          ? isAr
+            ? `حاضر · ${s.lastClockInTime || '08:00'}`
+            : isEn
+            ? `In · ${s.lastClockInTime || '08:00'}`
+            : `Pointé · ${s.lastClockInTime || '08:00'}`
+          : contractType,
+        branchName: branch.name,
+        branchCode: branch.code,
+        detailCol1: {
+          heading: isAr ? 'بيانات الاتصال والوظيفة' : isEn ? 'Contact & Role' : 'Contact & Poste',
+          primaryText: s.phoneNumber || '—',
+          secondaryText: s.email || s.role || '—',
+          tertiaryText: s.badgeToken ? `RFID: ${s.badgeToken}` : branch.name,
+        },
+        detailCol2: {
+          heading: isAr ? 'العقد والراتب' : isEn ? 'Contract & Pay' : 'Contrat & Paie',
+          primaryText: `${contractType} · ${salaryDisplay}`,
+          secondaryText: s.chairOrStudio
+            ? `${isAr ? 'الموقع:' : isEn ? 'Station:' : 'Poste :'} ${s.chairOrStudio}`
+            : undefined,
+          tertiaryText: s.isClockedInToday
+            ? isAr
+              ? `حاضر (${s.lastClockInTime || '08:00'})`
+              : isEn
+              ? `Present (${s.lastClockInTime || '08:00'})`
+              : `Présent (${s.lastClockInTime || '08:00'})`
+            : isAr
+            ? 'غير مسجل اليوم'
+            : isEn
+            ? 'Not clocked in'
+            : "Non pointé aujourd'hui",
+        },
+        detailCol3: {
+          heading: isAr ? 'الأداء والملاحظات' : isEn ? 'Performance & Notes' : 'Performance & Notes',
+          primaryText: `${isAr ? 'مؤشر الأداء' : isEn ? 'Score' : 'Score'} · ${score}`,
+          secondaryText:
+            s.notes ||
+            (s.address
+              ? s.address
+              : isAr
+              ? 'سجل نشط متوافق مع البصمة'
+              : isEn
+              ? 'Active RFID profile'
+              : 'Profil collaborateur actif'),
+        },
+      };
+    },
+    [foundation.branchesById, foundation.currentBranch, foundation.isOwnerViewer, language, getStaffStatusMeta, isAr, isEn]
+  );
+
+  const getFanActions = useCallback(
+    (s: StaffMember): KineticRowFanAction[] => {
+      const acts: KineticRowFanAction[] = [
+        {
+          id: 'punch',
+          label: isAr ? 'تسجيل الحضور' : isEn ? 'Clock In / Out' : 'Pointer entrée/sortie',
+          icon: <Clock className="w-[15px] h-[15px]" />,
+          onClick: () => foundation.handlePunchPointage(s.id),
+        },
+      ];
+      if (foundation.canCreate) {
+        acts.push({
+          id: 'edit',
+          label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+          icon: <Edit className="w-[15px] h-[15px]" />,
+          onClick: () => foundation.handleOpenEdit(s),
+        });
+        acts.push({
+          id: 'del',
+          label: isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer',
+          icon: <Trash2 className="w-[15px] h-[15px]" />,
+          isDanger: true,
+          onClick: () => foundation.handleDeleteStaff(s),
+        });
+      }
+      return acts;
+    },
+    [foundation, isAr, isEn]
+  );
+
+  const getDetailActions = useCallback(
+    (s: StaffMember): KineticDetailAction[] => {
+      const acts: KineticDetailAction[] = [
+        {
+          id: 'view',
+          label: isAr ? 'عرض الملف' : isEn ? 'Full Profile' : 'Fiche complète',
+          icon: <Eye className="w-3.5 h-3.5" />,
+          onClick: () => foundation.handleOpenDrawer(s),
+        },
+        {
+          id: 'punch',
+          label: s.isClockedInToday
+            ? isAr
+              ? 'خروج'
+              : isEn
+              ? 'Clock Out'
+              : 'Sortie'
+            : isAr
+            ? 'دخول'
+            : isEn
+            ? 'Clock In'
+            : 'Pointer',
+          icon: <CheckCircle2 className="w-3.5 h-3.5" />,
+          onClick: () => foundation.handlePunchPointage(s.id),
+        },
+      ];
+      if (foundation.canCreate) {
+        acts.push({
+          id: 'edit',
+          label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+          icon: <Edit className="w-3.5 h-3.5" />,
+          onClick: () => foundation.handleOpenEdit(s),
+        });
+        acts.push({
+          id: 'del',
+          label: isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer',
+          icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+          onClick: () => foundation.handleDeleteStaff(s),
+        });
+      }
+      return acts;
+    },
+    [foundation, isAr, isEn]
+  );
+
+  if (showSkeleton && (foundation.facilityStaff.length === 0 || foundation.networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        viewMode={foundation.viewMode}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '2*', minWidth: '140px' },
+          { width: '1.5*', minWidth: '110px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn
+        actionBtnWidth={150}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={foundation.retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="w-full space-y-6 animate-in fade-in duration-200 relative">
@@ -101,11 +317,14 @@ export const StandardStaffScreen: React.FC<StandardStaffScreenProps> = React.mem
             else next.add(key);
             foundation.setPinnedStaffIds(next);
           }}
+          getRowMeta={getRowMeta}
+          getFanActions={getFanActions}
+          getDetailActions={getDetailActions}
           onItemClick={(item, openerEl) => foundation.handleOpenDrawer(item, openerEl)}
           onViewDetails={(item, openerEl) => foundation.handleOpenDrawer(item, openerEl)}
-          onEdit={(item) => foundation.handleOpenEdit(item)}
-          onDelete={foundation.handleDeleteStaff}
-          onBulkDelete={foundation.handleBulkDelete}
+          onEdit={foundation.canCreate ? (item) => foundation.handleOpenEdit(item) : undefined}
+          onDelete={foundation.canCreate ? foundation.handleDeleteStaff : undefined}
+          onBulkDelete={foundation.canCreate ? foundation.handleBulkDelete : undefined}
           bulkCustomActions={[
             {
               id: 'punch_in',

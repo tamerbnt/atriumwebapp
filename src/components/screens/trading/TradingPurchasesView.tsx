@@ -3,11 +3,8 @@ import {
   Truck,
   Plus,
   CheckCircle2,
-  Boxes,
-  Clock,
   Printer,
   X,
-  Building2,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { PurchaseDocument, CommercialDocument } from '../../../types';
@@ -29,13 +26,26 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorWideButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
 
+const STATUS_PILL_OK =
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+const STATUS_PILL_WARN =
+  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
+
 type PurchaseTab = 'all' | 'po' | 'br' | 'facture_fournisseur';
 type StatusFilter = 'all' | 'Ordered' | 'Received';
+type DrawerTab = 'commande' | 'lignes' | 'reception';
 
 export const TradingPurchasesView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -73,6 +83,7 @@ export const TradingPurchasesView: React.FC = () => {
   const [isPoModalOpen, setIsPoModalOpen] = useState(false);
   const [printDoc, setPrintDoc] = useState<CommercialDocument | null>(null);
   const [inspectingDoc, setInspectingDoc] = useState<PurchaseDocument | null>(null);
+  const [drawerTab, setDrawerTab] = useState<DrawerTab>('commande');
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -514,7 +525,6 @@ export const TradingPurchasesView: React.FC = () => {
       <ScreenHeaderBar
         icon={<Truck size={22} />}
         title={t('trading_purchases_title', 'Achats')}
-        subtitle={`${purchaseDocs.length} ${isAr ? 'طلب واستلام' : isEn ? 'purchase documents' : 'commandes & réceptions'}`}
         primaryAction={{
           label: t('trading_purchases_new_po', 'Créer Bon de Commande Achat (PO)'),
           icon: <Plus size={15} />,
@@ -596,9 +606,10 @@ export const TradingPurchasesView: React.FC = () => {
 
         <UniversalDataCollection<PurchaseDocument>
           hideToolbar
-          data={sortedDocs}
+          items={sortedDocs}
           keyExtractor={(d) => d.id}
-          viewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode="list"
           columns={columns}
           sortBy={sortBy}
           sortDirection={sortDir}
@@ -632,29 +643,63 @@ export const TradingPurchasesView: React.FC = () => {
             setDrawerOpenerEl(el || null);
             setInspectingDoc(doc);
           }}
-          renderCard={(doc) => {
+          getRowMeta={(doc) => {
+            const isReceived = doc.status === 'Received';
             const branchInfo = resolveRecordBranch(doc, branchesById, currentBranch, language);
-            return (
-              <div className="p-4 border border-[#E6DED6] dark:border-neutral-700/70 bg-white dark:bg-neutral-800/80 rounded-2xl space-y-2 flex flex-col justify-between h-full">
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-mono font-bold text-xs text-black dark:text-white">{doc.docNumber}</span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 uppercase font-bold">
-                      {doc.type}
-                    </span>
-                  </div>
-                  <p className="text-xs font-bold text-black dark:text-white truncate">{doc.supplierName}</p>
-                  <p className="text-[11px] text-black/55 dark:text-white/60 mt-1 flex items-center gap-1.5">
-                    <Building2 size={11} className="text-[#d4522f]" />
-                    <span>{branchInfo.name}</span>
-                  </p>
-                </div>
-                <div className="flex justify-between text-xs font-mono pt-2 border-t border-neutral-100 dark:border-neutral-700">
-                  <span className="text-black/55 dark:text-white/55">{doc.orderDate}</span>
-                  <span className="font-bold text-[#d4522f] tabular-nums">{formatMoney(doc.totalTtc)}</span>
-                </div>
-              </div>
-            );
+            return {
+              title: doc.docNumber,
+              subline: `${doc.supplierName} · ${doc.orderDate}`,
+              avatarText: doc.type === 'po' ? 'PO' : doc.type === 'br' ? 'BR' : 'FF',
+              avatarColor: '#d4522f',
+              categoryLabel: doc.type.toUpperCase(),
+              statusLabel: localizeStatus(doc.status, language),
+              statusVariant: isReceived ? 'active' : 'warning',
+              metricPrimary: formatMoney(doc.totalTtc),
+              metricSecondary: doc.depotName || 'Dépôt Central',
+              branchName: branchInfo.name,
+              isPinned: pinnedIds.has(doc.id),
+              detailCol1: { label: 'Fournisseur', value: doc.supplierName },
+              detailCol2: { label: 'Dépôt', value: doc.depotName || 'Dépôt Central' },
+              detailCol3: { label: 'Date', value: doc.orderDate },
+            };
+          }}
+          getFanActions={(doc) => {
+            const actions = [
+              {
+                id: 'print',
+                label: t('action_print', 'Imprimer'),
+                icon: <Printer size={14} />,
+                onClick: () => setPrintDoc(commercialDocFromPurchase(doc)),
+              },
+            ];
+            if (doc.type === 'po' && doc.status === 'Ordered') {
+              actions.push({
+                id: 'receive',
+                label: t('trading_purchases_receive_stock', 'Réceptionner'),
+                icon: <CheckCircle2 size={14} />,
+                onClick: () => receivePurchaseDoc(doc.id),
+              });
+            }
+            return actions;
+          }}
+          getDetailActions={(doc) => {
+            const actions = [
+              {
+                id: 'print',
+                label: t('action_print', 'Imprimer'),
+                icon: <Printer size={13} />,
+                onClick: () => setPrintDoc(commercialDocFromPurchase(doc)),
+              },
+            ];
+            if (doc.type === 'po' && doc.status === 'Ordered') {
+              actions.push({
+                id: 'receive',
+                label: t('trading_purchases_receive_stock', 'Réceptionner'),
+                icon: <CheckCircle2 size={13} />,
+                onClick: () => receivePurchaseDoc(doc.id),
+              });
+            }
+            return actions;
           }}
           emptyTitle={isAr ? 'لا توجد طلبيات شراء' : "Aucune commande d'achat"}
           emptyDescription={
@@ -689,76 +734,109 @@ export const TradingPurchasesView: React.FC = () => {
         language={language}
         title={inspectingDoc?.docNumber || ''}
         subtitle={inspectingDoc ? `${inspectingDoc.supplierName} · ${inspectingDoc.orderDate}` : undefined}
-        avatarText={inspectingDoc ? inspectingDoc.type.toUpperCase() : 'PO'}
+        avatarText={inspectingDoc ? (inspectingDoc.type === 'po' ? 'PO' : inspectingDoc.type === 'br' ? 'BR' : 'FF') : 'PO'}
+        avatarColor="#d4522f"
         branchName={
           inspectingDoc ? resolveRecordBranch(inspectingDoc, branchesById, currentBranch, language).name : undefined
         }
         statusLabel={inspectingDoc ? localizeStatus(inspectingDoc.status, language) : undefined}
+        statusClassName={inspectingDoc?.status === 'Received' ? STATUS_PILL_OK : STATUS_PILL_WARN}
+        tabs={[
+          { id: 'commande', label: isAr ? 'الطلب' : isEn ? 'Order' : 'Commande' },
+          { id: 'lignes', label: isAr ? 'البنود' : isEn ? 'Items' : 'Articles' },
+          { id: 'reception', label: isAr ? 'الاستلام' : isEn ? 'Receipt' : 'Réception' },
+        ]}
+        activeTab={drawerTab}
+        onTabChange={(tab) => setDrawerTab(tab as DrawerTab)}
         onClose={() => setInspectingDoc(null)}
         onSelectItem={(doc) => setInspectingDoc(doc)}
-        renderBody={(doc) => (
-          <div className="space-y-4">
-            <div className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-neutral-800/50 border border-[#E6DED6] dark:border-neutral-700/60 space-y-2 text-xs">
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/60">Fournisseur :</span>
-                <span className="font-bold text-black dark:text-white">{doc.supplierName}</span>
+        renderBody={(doc, tab) => {
+          if (tab === 'lignes') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0} title={`Articles (${doc.items.length})`}>
+                  <InspectorCard>
+                    {doc.items.map((it, idx) => (
+                      <InspectorListItem
+                        key={it.id}
+                        title={it.description}
+                        subtitle={`${it.orderedQty} ${it.unit} × ${formatMoney(it.unitCostHt)}`}
+                        metaRight={formatMoney(it.totalHt)}
+                        isLast={idx === doc.items.length - 1}
+                      />
+                    ))}
+                  </InspectorCard>
+                </InspectorSection>
               </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/60">Dépôt cible :</span>
-                <span className="font-medium text-black dark:text-white">{doc.depotName || 'Dépôt Central'}</span>
-              </div>
-              <div className="flex justify-between pt-2 border-t border-[#E6DED6] dark:border-neutral-700">
-                <span className="text-black/55 dark:text-white/60">Total HT :</span>
-                <span className="font-mono font-semibold tabular-nums">{formatMoney(doc.totalHt)}</span>
-              </div>
-              <div className="flex justify-between text-sm font-bold text-[#d4522f]">
-                <span>Total TTC :</span>
-                <span className="font-mono tabular-nums">{formatMoney(doc.totalTtc)}</span>
-              </div>
-            </div>
+            );
+          }
 
-            <div className="space-y-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-black/55 dark:text-white/60">
-                Articles ({doc.items.length})
-              </span>
-              {doc.items.map((it) => (
-                <div
-                  key={it.id}
-                  className="p-3 rounded-xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700 flex justify-between items-center text-xs"
-                >
-                  <div className="min-w-0 pr-2">
-                    <p className="font-semibold text-black dark:text-white truncate">{it.description}</p>
-                    <span className="text-[11px] font-mono text-black/55 dark:text-white/60">
-                      {it.orderedQty} {it.unit} × {formatMoney(it.unitCostHt)}
-                    </span>
-                  </div>
-                  <span className="font-mono font-bold tabular-nums">{formatMoney(it.totalHt)}</span>
-                </div>
-              ))}
-            </div>
+          if (tab === 'reception') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0} title="Logistique & Quai">
+                  <InspectorCard>
+                    <InspectorKeyValue label="Dépôt cible" value={doc.depotName || 'Dépôt Central'} />
+                    <InspectorKeyValue label="Date commande" value={doc.orderDate} mono />
+                    <InspectorKeyValue
+                      label="Livraison prévue"
+                      value={doc.deliveryExpectedDate || 'Sous 48h'}
+                      mono
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+                {doc.type === 'po' && doc.status === 'Ordered' && (
+                  <InspectorWideButton
+                    label={t('trading_purchases_receive_stock', 'Réceptionner à quai')}
+                    icon={<CheckCircle2 size={14} />}
+                    tone="accent"
+                    onClick={() => receivePurchaseDoc(doc.id)}
+                  />
+                )}
+              </div>
+            );
+          }
 
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setPrintDoc(commercialDocFromPurchase(doc))}
-                className="flex-1 py-2.5 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white hover:bg-neutral-200 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <Printer size={14} />
-                <span>{t('action_print', 'Imprimer')}</span>
-              </button>
-              {doc.type === 'po' && doc.status === 'Ordered' && (
-                <button
-                  type="button"
-                  onClick={() => receivePurchaseDoc(doc.id)}
-                  className="flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <CheckCircle2 size={14} />
-                  <span>{t('trading_purchases_receive_stock', 'Réceptionner')}</span>
-                </button>
-              )}
+          return (
+            <div className="space-y-4">
+              <InspectorQuickActions
+                actions={[
+                  {
+                    id: 'print',
+                    label: t('action_print', 'Imprimer'),
+                    icon: <Printer size={15} />,
+                    onClick: () => setPrintDoc(commercialDocFromPurchase(doc)),
+                  },
+                  ...(doc.type === 'po' && doc.status === 'Ordered'
+                    ? [
+                        {
+                          id: 'receive',
+                          label: t('trading_purchases_receive_stock', 'Réceptionner'),
+                          icon: <CheckCircle2 size={15} />,
+                          primary: true,
+                          onClick: () => receivePurchaseDoc(doc.id),
+                        },
+                      ]
+                    : []),
+                ]}
+              />
+              <InspectorSection index={0} title="Synthèse Achat">
+                <InspectorBigStat
+                  value={formatMoney(doc.totalTtc)}
+                  tone="accent"
+                  caption={`Total TTC · ${doc.supplierName}`}
+                />
+                <InspectorCard>
+                  <InspectorKeyValue label="Fournisseur" value={doc.supplierName} />
+                  <InspectorKeyValue label="Dépôt cible" value={doc.depotName || 'Dépôt Central'} />
+                  <InspectorKeyValue label="Total HT" value={formatMoney(doc.totalHt)} mono />
+                  <InspectorKeyValue label="TVA" value={formatMoney(doc.totalTva)} mono isLast />
+                </InspectorCard>
+              </InspectorSection>
             </div>
-          </div>
-        )}
+          );
+        }}
       />
 
       {isPoModalOpen && (

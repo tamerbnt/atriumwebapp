@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
-import { History, ArrowDownUp, Printer } from 'lucide-react';
+import { History, ArrowDownUp, Printer, Eye } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { StockMovement } from '../../../types/index';
 import { useTranslation } from '../../../utils/useTranslation';
@@ -15,10 +15,31 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorProgressBar,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
+
+const getInitials2 = (name: string): string => {
+  const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+  return (name || 'MV').slice(0, 2).toUpperCase();
+};
+
+const MEMBER_PILL_OK =
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+const MEMBER_PILL_DANGER =
+  'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]';
 
 export const PosHistoryView: React.FC = () => {
   const { language, isRtl } = useTranslation();
@@ -48,6 +69,7 @@ export const PosHistoryView: React.FC = () => {
   const [movementSortDir, setMovementSortDir] = useState<'asc' | 'desc'>('desc');
 
   const [inspectingMovement, setInspectingMovement] = useState<StockMovement | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<string>('overview');
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -446,9 +468,10 @@ export const PosHistoryView: React.FC = () => {
         />
 
         <UniversalDataCollection<StockMovement>
-          data={sortedMovements}
+          items={sortedMovements}
           keyExtractor={(m) => m.id}
-          viewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode="list"
           hideToolbar
           openItemId={inspectingMovement?.id ?? null}
           isLoading={isSyncing || networkMode === 'force_skeleton'}
@@ -465,42 +488,82 @@ export const PosHistoryView: React.FC = () => {
           }}
           onItemClick={(m, opener) => {
             setDrawerOpenerEl(opener || null);
+            setInspectorTab('overview');
             setInspectingMovement(m);
           }}
           onViewDetails={(m, opener) => {
             setDrawerOpenerEl(opener || null);
+            setInspectorTab('overview');
             setInspectingMovement(m);
           }}
-          renderCard={(m) => (
-            <div className="flex flex-col justify-between h-full space-y-3">
-              <div>
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <span className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase">
-                    {m.type}
-                  </span>
-                  <span
-                    className={`font-mono font-black text-xs tabular-nums ${
-                      m.quantity > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
-                    }`}
-                  >
-                    {m.quantity > 0 ? `+${m.quantity}` : m.quantity}
-                  </span>
-                </div>
-                <div className="font-bold text-xs text-black dark:text-white truncate">
-                  {m.productName}
-                </div>
-                {m.reason && (
-                  <div className="text-[10px] text-black/55 dark:text-white/55 truncate mt-0.5">
-                    {m.reason}
-                  </div>
-                )}
-              </div>
-              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/50 flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
-                <span className="font-mono">{m.previousStock} → {m.newStock}</span>
-                <span>{new Date(m.createdAt).toLocaleDateString()}</span>
-              </div>
-            </div>
-          )}
+          getRowMeta={(m): Partial<KineticRowData> => {
+            const branchInfo = resolveRecordBranch(m, branchesById, currentBranch, language);
+            const isPositive = m.quantity > 0;
+            return {
+              title: m.productName,
+              subline: `${m.reason || 'Mouvement régulier'} · ${new Date(m.createdAt).toLocaleString()}`,
+              avatarText: getInitials2(m.productName),
+              categoryLabel: m.type,
+              statusLabel: isPositive ? `+${m.quantity}` : `${m.quantity}`,
+              statusVariant: isPositive ? 'active' : 'blocked',
+              metricPrimary: `${m.previousStock} → ${m.newStock}`,
+              metricSecondary: m.createdBy || 'Staff',
+              branchName: branchInfo.name,
+              branchCode: branchInfo.code,
+              isPinned: pinnedMovementIds.has(m.id),
+              detailCol1: {
+                heading: isAr ? 'المنتج' : 'Article',
+                primaryText: m.productName,
+                secondaryText: m.type,
+                tertiaryText: m.createdBy || 'Staff',
+              },
+              detailCol2: {
+                heading: isAr ? 'تطور الرصيد' : 'Transition Stock',
+                primaryText: `${m.previousStock} → ${m.newStock}`,
+                secondaryText: `Delta: ${isPositive ? '+' : ''}${m.quantity}`,
+              },
+              detailCol3: {
+                heading: isAr ? 'السبب والتوقيت' : 'Traçabilité',
+                primaryText: m.reason || 'Mouvement régulier',
+                secondaryText: new Date(m.createdAt).toLocaleString(),
+              },
+            };
+          }}
+          getFanActions={(m): KineticRowFanAction[] => [
+            {
+              id: 'inspect',
+              label: isAr ? 'معاينة' : 'Détails',
+              icon: <Eye className="w-[15px] h-[15px]" />,
+              onClick: (e) => {
+                setDrawerOpenerEl(e.currentTarget);
+                setInspectorTab('overview');
+                setInspectingMovement(m);
+              },
+            },
+            {
+              id: 'print',
+              label: isAr ? 'طباعة' : 'Imprimer',
+              icon: <Printer className="w-[15px] h-[15px]" />,
+              onClick: () => window.print(),
+            },
+          ]}
+          getDetailActions={(m): KineticDetailAction[] => [
+            {
+              id: 'inspect',
+              label: isAr ? 'تفاصيل الحركة' : 'Ouvrir fiche',
+              icon: <Eye className="w-3.5 h-3.5" />,
+              onClick: () => {
+                setInspectorTab('overview');
+                setInspectingMovement(m);
+              },
+            },
+            {
+              id: 'print',
+              label: isAr ? 'طباعة' : 'Imprimer',
+              icon: <Printer className="w-3.5 h-3.5" />,
+              onClick: () => window.print(),
+            },
+          ]}
           selectedIds={selectedMovementIds}
           onSelectionChange={setSelectedMovementIds}
           pinnedIds={pinnedMovementIds}
@@ -541,44 +604,98 @@ export const PosHistoryView: React.FC = () => {
         language={language}
         title={inspectingMovement?.productName || ''}
         subtitle={inspectingMovement ? `${inspectingMovement.type} · ${new Date(inspectingMovement.createdAt).toLocaleString()}` : undefined}
+        avatarText={inspectingMovement ? getInitials2(inspectingMovement.productName) : 'MV'}
+        avatarColor="#d4522f"
         branchName={inspectingMovement ? resolveRecordBranch(inspectingMovement, branchesById, currentBranch, language).name : undefined}
         statusLabel={inspectingMovement ? (inspectingMovement.quantity >= 0 ? `+${inspectingMovement.quantity}` : `${inspectingMovement.quantity}`) : undefined}
-        statusClassName={
-          inspectingMovement && inspectingMovement.quantity >= 0
-            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-            : 'bg-rose-50 text-rose-700 border border-rose-200'
-        }
+        statusClassName={inspectingMovement && inspectingMovement.quantity >= 0 ? MEMBER_PILL_OK : MEMBER_PILL_DANGER}
+        tabs={[
+          { id: 'overview', label: isAr ? 'الملخص' : isEn ? 'Overview' : 'Mouvement' },
+          { id: 'trace', label: isAr ? 'الأثر والتدقيق' : isEn ? 'Audit Trail' : 'Traçabilité' },
+          { id: 'actions', label: isAr ? 'إجراءات' : isEn ? 'Actions' : 'Actions' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={setInspectorTab}
         onClose={() => setInspectingMovement(null)}
-        onSelectItem={(m) => setInspectingMovement(m)}
-        renderBody={(m) => (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] grid grid-cols-2 gap-3">
-              <div>
-                <span className="text-black/60 dark:text-white/65 block text-[11px]">Solde Avant</span>
-                <span className="font-mono font-bold text-sm text-black dark:text-white">{m.previousStock}</span>
+        onSelectItem={(m) => {
+          setInspectorTab('overview');
+          setInspectingMovement(m);
+        }}
+        renderBody={(m, tab, epoch) => {
+          const isPositive = m.quantity >= 0;
+          const maxStock = Math.max(m.previousStock, m.newStock, 10);
+          const pct = Math.min(100, Math.round((m.newStock / maxStock) * 100));
+
+          if (tab === 'trace') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0} title={isAr ? 'أثر التدقيق' : 'Piste d’Audit'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label={isAr ? 'الرصيد قبل' : 'Solde Avant'} value={m.previousStock} />
+                    <InspectorKeyValue label={isAr ? 'الرصيد بعد' : 'Solde Après'} value={m.newStock} tone={isPositive ? 'ok' : 'danger'} />
+                    <InspectorProgressBar percent={pct} tone={isPositive ? 'ok' : 'warn'} animateKey={`${m.id}-${epoch}-trace`} />
+                    <InspectorKeyValue label={isAr ? 'المشغل' : 'Opérateur'} value={m.createdBy || 'Staff'} mono={false} />
+                    <InspectorKeyValue label={isAr ? 'التاريخ' : 'Horodatage'} value={new Date(m.createdAt).toLocaleString()} isLast />
+                  </InspectorCard>
+                </InspectorSection>
               </div>
-              <div>
-                <span className="text-black/60 dark:text-white/65 block text-[11px]">Solde Après</span>
-                <span className="font-mono font-bold text-sm text-[#d4522f]">{m.newStock}</span>
+            );
+          }
+
+          if (tab === 'actions') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0}>
+                  <InspectorQuickActions
+                    actions={[
+                      {
+                        id: 'print',
+                        label: isAr ? 'طباعة السجل' : 'Imprimer Journal',
+                        icon: <Printer size={16} />,
+                        primary: true,
+                        onClick: () => window.print(),
+                      },
+                      {
+                        id: 'csv',
+                        label: isAr ? 'تصدير CSV' : 'Exporter CSV',
+                        icon: <ArrowDownUp size={16} />,
+                        onClick: handleExportMovementsCSV,
+                      },
+                    ]}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label={isAr ? 'طباعة بطاقة الحركة' : 'Imprimer Fiche Mouvement'}
+                    icon={<Printer size={15} />}
+                    onClick={() => window.print()}
+                  />
+                </InspectorSection>
               </div>
-              <div>
-                <span className="text-black/60 dark:text-white/65 block text-[11px]">Opérateur</span>
-                <span className="font-semibold text-black dark:text-white">{m.createdBy || 'Staff'}</span>
-              </div>
-              <div>
-                <span className="text-black/60 dark:text-white/65 block text-[11px]">Variation</span>
-                <span className="font-mono font-black flex items-center gap-1">
-                  <ArrowDownUp size={12} className="text-[#d4522f]" />
-                  {m.quantity > 0 ? `+${m.quantity}` : m.quantity}
-                </span>
-              </div>
+            );
+          }
+
+          return (
+            <div className="space-y-4">
+              <InspectorSection index={0}>
+                <InspectorBigStat
+                  value={isPositive ? `+${m.quantity}` : `${m.quantity}`}
+                  tone={isPositive ? 'ok' : 'danger'}
+                  caption={`${m.previousStock} → ${m.newStock} unités`}
+                />
+              </InspectorSection>
+              <InspectorSection index={1} title={isAr ? 'تفاصيل العملية' : 'Détails Mouvement'}>
+                <InspectorCard>
+                  <InspectorKeyValue label={isAr ? 'النوع' : 'Type'} value={m.type} mono={false} />
+                  <InspectorKeyValue label={isAr ? 'قبل' : 'Stock Avant'} value={m.previousStock} />
+                  <InspectorKeyValue label={isAr ? 'بعد' : 'Stock Après'} value={m.newStock} tone="accent" />
+                  <InspectorKeyValue label={isAr ? 'المسؤول' : 'Opérateur'} value={m.createdBy || 'Staff'} mono={false} />
+                  <InspectorKeyValue label={isAr ? 'السبب' : 'Motif'} value={m.reason || 'Mouvement standard POS'} mono={false} isLast />
+                </InspectorCard>
+              </InspectorSection>
             </div>
-            <div className="p-4 rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] bg-white dark:bg-[#1E1C1A]">
-              <span className="text-black/60 dark:text-white/65 block text-[11px] mb-1">Motif enregistré</span>
-              <p className="font-medium text-black dark:text-white">{m.reason || 'Mouvement standard POS'}</p>
-            </div>
-          </div>
-        )}
+          );
+        }}
       />
     </div>
   );

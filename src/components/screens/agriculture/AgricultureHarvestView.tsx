@@ -14,7 +14,13 @@ import {
   Coins,
   Minus,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { calculateWorkerPieceworkWage } from '../../../utils/agriRules';
 import { AgriHarvestTicket, AgriDailyPointage } from '../../../types';
@@ -36,6 +42,15 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorNotesField,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -59,9 +74,21 @@ export const AgricultureHarvestView: React.FC = () => {
     currentUser,
     isSyncing,
     networkMode,
-    retryCloudSync,
     lastSyncedAt,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBusiness: s.currentBusiness,
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      currentUser: s.currentUser,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -725,6 +752,95 @@ export const AgricultureHarvestView: React.FC = () => {
     [isAr, isEn, pinnedIds, branchesById, currentBranch, language]
   );
 
+  const getRowMeta = useCallback(
+    (t: AgriHarvestTicket): Partial<KineticRowData> => {
+      const branchName = resolveRecordBranch(t, branchesById, currentBranch, language).name;
+      const payout = t.netFarmPayoutDzd ?? t.paidAmountDzd ?? 0;
+      const crates = t.cratesCount ?? t.crateCount ?? 0;
+      return {
+        subline: `${t.ticketNumber} · ${t.driverName || t.buyerName || 'Chauffeur'}`,
+        categoryLabel: t.cropDesignation,
+        statusLabel: isAr ? 'معتمد' : isEn ? 'Validated' : 'Pesée Validée',
+        statusVariant: 'active',
+        metricPrimary: `${t.netWeightKg.toLocaleString()} Kg`,
+        metricSecondary: formatMoney(payout, language),
+        detailCol1: {
+          heading: isAr ? 'النقل والشاحنة' : isEn ? 'Transport & Truck' : 'Transport & Camion',
+          primaryText: t.driverName || t.buyerName || 'Mandataire',
+          secondaryText: t.vehiclePlate || t.truckPlate || '—',
+          tertiaryText: branchName,
+        },
+        detailCol2: {
+          heading: isAr ? 'الأوزان والصناديق' : isEn ? 'Weighbridge & Crates' : 'Tonnage & Caisses',
+          primaryText: `${t.netWeightKg.toLocaleString()} Kg net`,
+          secondaryText: `Brut ${t.grossWeightKg.toLocaleString()} Kg · ${crates} caisses`,
+          tertiaryText: `PU ${t.unitPriceDzdPerKg} DZD/Kg`,
+        },
+        detailCol3: {
+          heading: isAr ? 'الوجهة والعائد' : isEn ? 'Market & Payout' : 'Marché & Recette',
+          primaryText: formatMoney(payout, language),
+          secondaryText: t.destinationWholesaleMarket,
+        },
+      };
+    },
+    [branchesById, currentBranch, language, isAr, isEn]
+  );
+
+  const getFanActions = useCallback(
+    (t: AgriHarvestTicket): KineticRowFanAction[] => [
+      {
+        id: 'print',
+        label: isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer',
+        icon: <Printer className="w-[15px] h-[15px]" />,
+        onClick: () => handlePrintTicket(t),
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+        icon: <Edit className="w-[15px] h-[15px]" />,
+        onClick: () => openEditModal(t),
+      },
+      {
+        id: 'open',
+        label: isAr ? 'تفاصيل' : isEn ? 'Details' : 'Détails',
+        icon: <Scale className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedTicket(t);
+          setActiveTab('ticket');
+        },
+      },
+    ],
+    [handlePrintTicket, openEditModal, isAr, isEn]
+  );
+
+  const getDetailActions = useCallback(
+    (t: AgriHarvestTicket): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'معاينة الوصل' : isEn ? 'View Ticket' : 'Ouvrir bon',
+        icon: <Scale className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedTicket(t);
+          setActiveTab('ticket');
+        },
+      },
+      {
+        id: 'print',
+        label: isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer',
+        icon: <Printer className="w-3.5 h-3.5" />,
+        onClick: () => handlePrintTicket(t),
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+        icon: <Edit className="w-3.5 h-3.5" />,
+        onClick: () => openEditModal(t),
+      },
+    ],
+    [handlePrintTicket, openEditModal, isAr, isEn]
+  );
+
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: harvestTickets.length > 0 || pointages.length > 0,
@@ -770,11 +886,6 @@ export const AgricultureHarvestView: React.FC = () => {
             : isEn
             ? 'Attendance'
             : 'Pointage'
-        }
-        subtitle={
-          activeMode === 'tickets'
-            ? `${sortedTickets.length} ${isAr ? 'وصولات وزن' : 'bons pont-bascule'}`
-            : `${pointages.length} ${isAr ? 'عمال موسميين' : 'tâcherons actifs'}`
         }
         primaryAction={{
           label:
@@ -948,9 +1059,10 @@ export const AgricultureHarvestView: React.FC = () => {
         {activeMode === 'tickets' ? (
           <UniversalDataCollection<AgriHarvestTicket>
             hideToolbar
-            data={sortedTickets}
+            items={sortedTickets}
             columns={columns}
             keyExtractor={(t) => t.id}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
             defaultViewMode={viewMode}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
@@ -984,6 +1096,9 @@ export const AgricultureHarvestView: React.FC = () => {
               setSelectedTicket(t);
               setActiveTab('ticket');
             }}
+            getRowMeta={getRowMeta}
+            getFanActions={getFanActions}
+            getDetailActions={getDetailActions}
             onEdit={openEditModal}
             onDelete={handleDelete}
             emptyTitle={isAr ? 'لا توجد وصولات وزن' : 'Aucun bon de pesée trouvé'}
@@ -1008,44 +1123,6 @@ export const AgricultureHarvestView: React.FC = () => {
                 onClick: () => handlePrintTicket(t),
               },
             ]}
-            renderCard={(t) => (
-              <div className="space-y-3 w-full">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg border border-[#d4522f]/20">
-                    {t.ticketNumber}
-                  </span>
-                  <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                    {t.netWeightKg.toLocaleString()} Kg
-                  </span>
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">
-                    {t.cropDesignation}
-                  </h3>
-                  <div className="text-xs text-black/55 dark:text-white/55 font-medium mt-0.5">
-                    {t.vehiclePlate || t.truckPlate} • {t.driverName}
-                  </div>
-                </div>
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-                  <div>
-                    <div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">
-                      Net Domaine
-                    </div>
-                    <div className="font-mono font-bold text-black dark:text-white mt-0.5">
-                      {formatMoney(t.netFarmPayoutDzd ?? t.paidAmountDzd ?? 0, language)}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">
-                      Date
-                    </div>
-                    <div className="font-mono text-black/70 dark:text-white/75 mt-0.5">
-                      {t.date}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -1191,6 +1268,7 @@ export const AgricultureHarvestView: React.FC = () => {
         language={language}
         title={activeTicket?.ticketNumber || ''}
         subtitle={activeTicket?.cropDesignation}
+        categoryLabel={activeTicket?.destinationWholesaleMarket}
         avatarText={(activeTicket?.ticketNumber || 'PB').slice(-2)}
         branchName={
           activeTicket
@@ -1198,12 +1276,11 @@ export const AgricultureHarvestView: React.FC = () => {
             : undefined
         }
         statusLabel={isAr ? 'وزن معتمد' : 'Pesée Validée'}
-        statusClassName="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+        statusClassName="bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]"
         tabs={[
-          { id: 'ticket', label: isAr ? 'البيانات' : 'Fiche Pesée' },
-          { id: 'pesee', label: isAr ? 'الأوزان' : 'Tonnage' },
-          { id: 'finance', label: isAr ? 'المالية' : 'Finance' },
-          { id: 'notes', label: isAr ? 'الملاحظات' : 'Mentions' },
+          { id: 'ticket', label: isAr ? 'البيانات' : isEn ? 'Overview' : 'Fiche Pesée' },
+          { id: 'pesee', label: isAr ? 'الأوزان' : isEn ? 'Tonnage' : 'Tonnage' },
+          { id: 'finance', label: isAr ? 'المالية' : isEn ? 'Finance' : 'Finance' },
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -1211,155 +1288,147 @@ export const AgricultureHarvestView: React.FC = () => {
         onClose={() => setSelectedTicket(null)}
         onDelete={handleDelete}
         holdToDelete
-        renderBody={(ticket, tab) => (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 flex-wrap">
-              <AtriumButton
-                variant="outline"
-                size="sm"
-                onClick={() => handlePrintTicket(ticket)}
-                icon={<Printer size={13} />}
-              >
-                {isAr ? 'طباعة الوصل' : 'Imprimer'}
-              </AtriumButton>
-              <AtriumButton
-                variant="ghost"
-                size="sm"
-                onClick={() => openEditModal(ticket)}
-                icon={<Edit size={13} />}
-              >
-                {isAr ? 'تعديل' : 'Modifier'}
-              </AtriumButton>
-            </div>
+        renderBody={(ticket, tab) => {
+          const grossTotal = ticket.totalGrossDzd ?? ticket.subtotalProduceDzd ?? 0;
+          const feeAmount = (grossTotal * (ticket.mandataireFeePercent || 0)) / 100;
+          const netPayout = ticket.netFarmPayoutDzd ?? ticket.paidAmountDzd ?? 0;
 
-            {tab === 'ticket' && (
-              <div className="space-y-3 text-xs">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Chauffeur:</span>
-                    <span className="font-semibold text-black dark:text-white">
-                      {ticket.driverName}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Véhicule:</span>
-                    <span className="font-mono font-bold text-[#d4522f]">
-                      {ticket.vehiclePlate || ticket.truckPlate}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Destination:</span>
-                    <span className="font-semibold text-black dark:text-white truncate max-w-[200px]">
-                      {ticket.destinationWholesaleMarket}
-                    </span>
-                  </div>
-                </div>
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Date d&apos;émission:</span>
-                    <span className="font-mono text-black dark:text-white">{ticket.date}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Nombre de caisses:</span>
-                    <span className="font-mono text-black dark:text-white font-semibold">
-                      {ticket.cratesCount ?? ticket.crateCount ?? 0} unités
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
+          if (tab === 'pesee') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'الوزن الصافي' : isEn ? 'Net Tonnage' : 'Poids net marchandise'}>
+                  <InspectorBigStat
+                    value={`${ticket.netWeightKg.toLocaleString()} Kg`}
+                    tone="ok"
+                    caption={`${ticket.cratesCount ?? ticket.crateCount ?? 0} caisses · ${((ticket.netWeightKg || 0) / 100).toFixed(1)} Qx`}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'قياسات القبان' : isEn ? 'Weighbridge Readings' : 'Relevé pont-bascule'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'الوزن الإجمالي' : isEn ? 'Gross Weight' : 'Poids brut camion'}
+                      value={`${ticket.grossWeightKg.toLocaleString()} Kg`}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'وزن الشاحنة الفارغة' : isEn ? 'Truck Tare' : 'Tare à vide'}
+                      value={`${(ticket.tareWeightKg ?? ticket.truckTareKg ?? 0).toLocaleString()} Kg`}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'عدد الصناديق' : isEn ? 'Crates' : 'Nombre de caisses'}
+                      value={`${ticket.cratesCount ?? ticket.crateCount ?? 0} unités`}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
 
-            {tab === 'pesee' && (
-              <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl space-y-2 text-xs">
-                <div className="flex justify-between items-center">
-                  <span className="text-black/55 dark:text-white/55">
-                    Poids Brut (Camion + Charge):
-                  </span>
-                  <span className="font-mono font-semibold text-black dark:text-white">
-                    {ticket.grossWeightKg.toLocaleString()} Kg
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-black/55 dark:text-white/55">Tare Camion à vide:</span>
-                  <span className="font-mono font-semibold text-black dark:text-white">
-                    {(ticket.tareWeightKg ?? ticket.truckTareKg ?? 0).toLocaleString()} Kg
-                  </span>
-                </div>
-                <div className="flex justify-between items-center pt-1.5 border-t border-neutral-200 dark:border-neutral-700">
-                  <span className="text-black/70 dark:text-white/75 font-bold">
-                    Poids Net Marchandise:
-                  </span>
-                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">
-                    {ticket.netWeightKg.toLocaleString()} Kg
-                  </span>
-                </div>
-              </div>
-            )}
+          if (tab === 'finance') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'صافي العائد' : isEn ? 'Net Farm Payout' : 'Net à verser domaine'}>
+                  <InspectorBigStat
+                    value={formatMoney(netPayout, language)}
+                    tone="accent"
+                    caption={`${ticket.unitPriceDzdPerKg} DZD/Kg · Com. ${ticket.mandataireFeePercent || 0}%`}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'تفاصيل الحساب' : isEn ? 'Settlement Breakdown' : 'Décompte financier'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'سعر الكيلوغرام' : isEn ? 'Unit Price' : 'Prix unitaire'}
+                      value={`${ticket.unitPriceDzdPerKg} DZD / Kg`}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'المبلغ الإجمالي' : isEn ? 'Gross Value' : 'Total brut gros'}
+                      value={formatMoney(grossTotal, language)}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'عمولة الوكيل' : isEn ? 'Broker Fee' : `Commission (${ticket.mandataireFeePercent || 0}%)`}
+                      value={`-${formatMoney(feeAmount, language)}`}
+                      tone="warn"
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
 
-            {tab === 'finance' && (
-              <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl space-y-2 text-xs">
-                <div className="flex justify-between items-center">
-                  <span className="text-black/55 dark:text-white/55">Prix unitaire au Kg:</span>
-                  <span className="font-mono font-semibold text-black dark:text-white">
-                    {ticket.unitPriceDzdPerKg} DZD / Kg
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-black/55 dark:text-white/55">Total Brut Gros:</span>
-                  <span className="font-mono text-black dark:text-white font-semibold">
-                    {formatMoney(ticket.totalGrossDzd ?? ticket.subtotalProduceDzd ?? 0, language)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-black/55 dark:text-white/55">
-                    Commission Mandataire ({ticket.mandataireFeePercent || 0}%):
-                  </span>
-                  <span className="font-mono text-amber-600 dark:text-amber-400 font-semibold">
-                    -{' '}
-                    {formatMoney(
-                      ((ticket.totalGrossDzd ?? ticket.subtotalProduceDzd ?? 0) *
-                        (ticket.mandataireFeePercent || 0)) /
-                        100,
-                      language
-                    )}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center pt-1.5 border-t border-neutral-200 dark:border-neutral-700">
-                  <span className="text-black/70 dark:text-white/75 font-bold">
-                    Net à Payer Domaine:
-                  </span>
-                  <span className="font-mono font-bold text-[#d4522f] text-sm">
-                    {formatMoney(ticket.netFarmPayoutDzd ?? ticket.paidAmountDzd ?? 0, language)}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {tab === 'notes' && (
-              <div className="space-y-3 text-xs">
-                <p className="text-black/55 dark:text-white/55 text-[11px]">
-                  Observations qualité (degré Brix, fermeté, triage) et décharge de livraison :
-                </p>
-                <textarea
-                  rows={6}
-                  value={inspectorNotes}
-                  onChange={(e) => setInspectorNotes(e.target.value)}
-                  placeholder="Noter le calibre des fruits, l'heure de départ du domaine..."
-                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none"
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : isEn ? 'Quick Actions' : 'Actions rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'print',
+                      label: isAr ? 'طباعة الوصل' : isEn ? 'Print' : 'Imprimer',
+                      icon: <Printer className="w-[18px] h-[18px]" />,
+                      primary: true,
+                      onClick: () => handlePrintTicket(ticket),
+                    },
+                    {
+                      id: 'edit',
+                      label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+                      icon: <Edit className="w-[18px] h-[18px]" />,
+                      onClick: () => openEditModal(ticket),
+                    },
+                    {
+                      id: 'pin',
+                      label: pinnedIds.has(ticket.id)
+                        ? isAr ? 'إلغاء تثبيت' : 'Désépingler'
+                        : isAr ? 'تثبيت' : 'Épingler',
+                      icon: <Pin className="w-[18px] h-[18px]" />,
+                      onClick: () => handlePin(ticket),
+                    },
+                    {
+                      id: 'export',
+                      label: 'CSV',
+                      icon: <Download className="w-[18px] h-[18px]" />,
+                      onClick: handleExportCsv,
+                    },
+                  ]}
                 />
-                <AtriumButton
-                  variant="primary"
-                  size="sm"
-                  className="w-full justify-center"
-                  onClick={handleSaveNotes}
-                  icon={noteSaved ? <Check size={14} /> : <Save size={14} />}
-                >
-                  {noteSaved ? (isAr ? 'تم الحفظ' : 'Mentions enregistrées') : isAr ? 'حفظ' : 'Enregistrer'}
-                </AtriumButton>
-              </div>
-            )}
-          </div>
-        )}
+              </InspectorSection>
+
+              <InspectorSection index={1} title={isAr ? 'الشحن والنقل' : isEn ? 'Dispatch & Transport' : 'Expédition & Transport'}>
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={isAr ? 'السائق' : isEn ? 'Driver' : 'Chauffeur'}
+                    value={ticket.driverName || '—'}
+                    mono={false}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'المركبة' : isEn ? 'Vehicle' : 'Matricule véhicule'}
+                    value={ticket.vehiclePlate || ticket.truckPlate || '—'}
+                    tone="accent"
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'سوق الجملة' : isEn ? 'Destination' : 'Destination'}
+                    value={ticket.destinationWholesaleMarket}
+                    mono={false}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'التاريخ' : isEn ? 'Issue Date' : "Date d'émission"}
+                    value={ticket.date}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+
+              <InspectorSection index={2} title={isAr ? 'ملاحظات الجودة' : isEn ? 'Quality Notes' : 'Observations qualité'}>
+                <InspectorNotesField
+                  value={inspectorNotes}
+                  onChange={setInspectorNotes}
+                  onSave={handleSaveNotes}
+                  placeholder="Noter le calibre des fruits, le degré Brix ou l'heure de départ..."
+                  savedLabel={noteSaved ? (isAr ? 'تم الحفظ' : 'Mentions enregistrées') : undefined}
+                />
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       {isModalOpen && (

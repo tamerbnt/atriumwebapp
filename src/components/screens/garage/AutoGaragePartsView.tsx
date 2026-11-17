@@ -2,17 +2,21 @@ import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   Boxes,
   Plus,
-  CheckCircle2,
   Package,
   MapPin,
   Edit,
   Pin,
   X,
-  Save,
   Check,
   AlertTriangle,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { useGarageData, SparePart } from './garageData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -30,6 +34,17 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorProgressBar,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorNotesField,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -57,8 +72,20 @@ export const AutoGaragePartsView: React.FC<any> = () => {
     isSyncing,
     networkMode,
     isSyncTimeout,
-    retryCloudSync,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBusiness: s.currentBusiness,
+      currentBranch: selectCurrentBranchFromState(s),
+      currentUser: s.currentUser,
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode,
+      isSyncTimeout: s.isSyncTimeout,
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -99,7 +126,6 @@ export const AutoGaragePartsView: React.FC<any> = () => {
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [activeTab, setActiveTab] = useState<string>('fiche');
   const [inspectorNotes, setInspectorNotes] = useState('');
-  const [noteSaved, setNoteSaved] = useState(false);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -352,16 +378,71 @@ export const AutoGaragePartsView: React.FC<any> = () => {
     });
   }, [sortedParts, branchesById, currentBranch, language, isAr]);
 
-  const handleSaveNotes = () => {
-    if (!activePart) return;
-    setNoteSaved(true);
-    setTimeout(() => setNoteSaved(false), 2000);
-    showToast({
-      type: 'success',
-      title: activePart.sku,
-      message: isAr ? 'تم حفظ تعليمات التخزين' : 'Consignes de stockage enregistrées',
-    });
-  };
+  const handleSaveNotes = useCallback(
+    (next: string) => {
+      if (!activePart) return;
+      setInspectorNotes(next);
+      showToast({
+        type: 'success',
+        title: activePart.sku,
+        message: isAr ? 'تم حفظ تعليمات التخزين' : 'Consignes de stockage enregistrées',
+      });
+    },
+    [activePart, isAr]
+  );
+
+  const getRowMeta = useCallback(
+    (p: SparePart): KineticRowData => {
+      const isLow = p.stockQuantity <= p.minThreshold;
+      const br = resolveRecordBranch(p, branchesById, currentBranch, language);
+      return {
+        primary: p.name,
+        secondary: `${p.sku} · ${p.category} · ${p.locationBin}`,
+        meta: `${formatMoney(p.sellingPriceDzd, language)} · ${br.name}`,
+        badge: {
+          label: `${p.stockQuantity} u.`,
+          tone: isLow ? 'warn' : 'ok',
+        },
+      };
+    },
+    [branchesById, currentBranch, language]
+  );
+
+  const getFanActions = useCallback(
+    (p: SparePart): KineticRowFanAction[] => [
+      {
+        id: 'addStock',
+        label: '+5',
+        icon: <Plus size={14} />,
+        onClick: () => handleQuickAddStock(p),
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : 'Éditer',
+        icon: <Edit size={14} />,
+        onClick: () => openEditModal(p),
+      },
+    ],
+    [handleQuickAddStock, openEditModal, isAr]
+  );
+
+  const getDetailActions = useCallback(
+    (p: SparePart): KineticDetailAction[] => [
+      {
+        id: 'addStock',
+        label: isAr ? 'إضافة +5 مخزون' : 'Réappro +5',
+        icon: <Plus size={14} />,
+        onClick: () => handleQuickAddStock(p),
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : 'Modifier',
+        icon: <Edit size={14} />,
+        onClick: () => openEditModal(p),
+      },
+    ],
+    [handleQuickAddStock, openEditModal, isAr]
+  );
 
   const columns: ColumnDefinition<SparePart>[] = useMemo(
     () => [
@@ -579,11 +660,6 @@ export const AutoGaragePartsView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<Boxes size={26} />}
         title={isAr ? 'قطع الغيار' : isEn ? 'Parts' : 'Pièces'}
-        subtitle={
-          isAr
-            ? `${parts.length} مرجع مفهرس · ${totalStockUnits} وحدة بالمخزن`
-            : `${parts.length} références · ${totalStockUnits} unités en rayon`
-        }
         secondaryActions={
           <AtriumButton
             variant="secondary"
@@ -673,9 +749,10 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 
         <UniversalDataCollection
           hideToolbar
-          data={sortedParts}
+          items={sortedParts}
           columns={columns}
           keyExtractor={(p) => p.id}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
           defaultViewMode={viewMode}
           sortBy={sortBy}
           sortDirection={sortDir}
@@ -717,6 +794,9 @@ export const AutoGaragePartsView: React.FC<any> = () => {
             setDrawerOpenerEl(el || null);
             setInspectedPart(p);
           }}
+          getRowMeta={getRowMeta}
+          getFanActions={getFanActions}
+          getDetailActions={getDetailActions}
           onEdit={openEditModal}
           onDelete={handleDelete}
           customActions={(p) => [
@@ -727,47 +807,6 @@ export const AutoGaragePartsView: React.FC<any> = () => {
               onClick: () => handleQuickAddStock(p),
             },
           ]}
-          renderCard={(p) => {
-            const isLow = p.stockQuantity <= p.minThreshold;
-            return (
-              <div className="space-y-3 text-left rtl:text-right w-full">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg border border-[#d4522f]/20">
-                    {p.sku}
-                  </span>
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      isLow
-                        ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                        : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                    }`}
-                  >
-                    {p.stockQuantity} en stock
-                  </span>
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">{p.name}</h3>
-                  <div className="text-xs text-black/55 dark:text-white/55 font-medium mt-0.5">
-                    {p.category} • {p.locationBin}
-                  </div>
-                </div>
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-                  <div>
-                    <div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">Prix Vente</div>
-                    <div className="font-mono font-bold text-black dark:text-white mt-0.5">
-                      {formatMoney(p.sellingPriceDzd, language)}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">Seuil Min</div>
-                    <div className="font-mono font-semibold text-black/70 dark:text-white/75 mt-0.5">
-                      {p.minThreshold} u.
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          }}
         />
       </ScreenPod>
 
@@ -792,8 +831,8 @@ export const AutoGaragePartsView: React.FC<any> = () => {
         language={language}
         title={activePart?.name || ''}
         subtitle={activePart ? `${activePart.sku} · ${activePart.category}` : ''}
-        avatarText={activePart?.sku.slice(-3) || 'PR'}
-        avatarColor="#d4522f"
+        categoryLabel={activePart?.category || (isAr ? 'قطع الغيار' : 'Pièce')}
+        avatarText={activePart?.sku.slice(-2) || 'PR'}
         branchName={
           activePart ? resolveRecordBranch(activePart, branchesById, currentBranch, language).name : ''
         }
@@ -804,11 +843,15 @@ export const AutoGaragePartsView: React.FC<any> = () => {
               : 'Seuil Bas'
             : `${activePart?.stockQuantity || 0} u.`
         }
+        statusClassName={
+          activePart && activePart.stockQuantity <= activePart.minThreshold
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+        }
         tabs={[
           { id: 'fiche', label: isAr ? 'المواصفات' : 'Fiche Pièce' },
           { id: 'stock', label: isAr ? 'الأسعار' : 'Prix & Marges' },
-          { id: 'mouvements', label: isAr ? 'التوافق' : 'Compatibilité' },
-          { id: 'notes', label: isAr ? 'الملاحظات' : 'Consignes' },
+          { id: 'compat', label: isAr ? 'التوافق' : 'Compatibilité' },
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -816,152 +859,112 @@ export const AutoGaragePartsView: React.FC<any> = () => {
         onClose={() => setInspectedPart(null)}
         onDelete={handleDelete}
         holdToDelete
-        renderBody={(part) => (
-          <div className="space-y-4 text-xs">
-            <div className="flex items-center gap-2">
-              <AtriumButton
-                variant="primary"
-                size="sm"
-                className="flex-1"
-                icon={<Plus size={13} />}
-                onClick={() => handleQuickAddStock(part)}
-              >
-                {isAr ? '+5 مخزون' : '+5 Stock'}
-              </AtriumButton>
-              <AtriumButton
-                variant="secondary"
-                size="sm"
-                icon={<Edit size={13} />}
-                onClick={() => openEditModal(part)}
-              >
-                {isAr ? 'تعديل' : 'Modifier'}
-              </AtriumButton>
-            </div>
+        renderBody={(part, tab) => {
+          const isLow = part.stockQuantity <= part.minThreshold;
+          const stockRatio = Math.min(100, Math.round((part.stockQuantity / Math.max(1, part.minThreshold * 3)) * 100));
 
-            {activeTab === 'fiche' && (
-              <div className="space-y-3">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Code SKU Atelier:</span>
-                    <span className="font-mono font-bold text-black dark:text-white">{part.sku}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Catégorie:</span>
-                    <span className="font-semibold text-black dark:text-white">{part.category}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Emplacement Rayon:</span>
-                    <span className="font-semibold text-[#d4522f]">{part.locationBin}</span>
-                  </div>
-                </div>
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Quantité en Stock:</span>
-                    <span className="font-mono font-bold text-black dark:text-white">{part.stockQuantity} unités</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Seuil d’Alerte Min:</span>
-                    <span className="font-mono text-amber-600 dark:text-amber-400 font-semibold">
-                      {part.minThreshold} unités
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
+          if (tab === 'stock') {
+            return (
+              <>
+                <InspectorSection index={0}>
+                  <InspectorBigStat
+                    value={formatMoney(part.stockQuantity * part.sellingPriceDzd, language)}
+                    tone="accent"
+                    caption={`Valeur totale en rayon (${part.stockQuantity} unités)`}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'الأسعار والهامش' : 'Tarification & Seuil'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label="Prix Achat Fournisseur" value={formatMoney(part.buyingPriceDzd, language)} />
+                    <InspectorKeyValue label="Prix Vente Client" value={formatMoney(part.sellingPriceDzd, language)} tone="ok" />
+                    <InspectorKeyValue
+                      label="Marge Brute Unitaire"
+                      value={formatMoney(part.sellingPriceDzd - part.buyingPriceDzd, language)}
+                      tone="accent"
+                    />
+                    <InspectorKeyValue label="Couverture Stock" value={`${part.stockQuantity} / ${part.minThreshold * 3} u.`} isLast />
+                    <InspectorProgressBar percent={stockRatio} tone={isLow ? 'warn' : 'ok'} animateKey={part.id} />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
 
-            {activeTab === 'stock' && (
-              <div className="space-y-3">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Prix d’Achat Fournisseur:</span>
-                    <span className="font-mono font-semibold text-black dark:text-white">
-                      {formatMoney(part.buyingPriceDzd, language)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Prix de Vente Client:</span>
-                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                      {formatMoney(part.sellingPriceDzd, language)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center pt-1 border-t border-neutral-200 dark:border-neutral-700">
-                    <span className="text-black/55 dark:text-white/55">Marge Brute Unitaire:</span>
-                    <span className="font-mono font-bold text-[#d4522f]">
-                      {formatMoney(part.sellingPriceDzd - part.buyingPriceDzd, language)}
-                    </span>
-                  </div>
-                </div>
-                <div className="p-3 rounded-xl bg-orange-50/50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30">
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/70 dark:text-white/75">Valeur totale en rayon:</span>
-                    <span className="font-mono font-bold text-black dark:text-white">
-                      {formatMoney(part.stockQuantity * part.sellingPriceDzd, language)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'mouvements' && (
-              <div className="space-y-3">
-                <p className="text-black/55 dark:text-white/55 text-[11px]">
-                  Modèles et motorisations compatibles avec cette référence :
-                </p>
-                <div className="space-y-1.5">
-                  {part.compatibility && part.compatibility.length > 0 ? (
-                    part.compatibility.map((c, i) => (
-                      <div
+          if (tab === 'compat') {
+            return (
+              <InspectorSection index={0} title={isAr ? 'المركبات المتوافقة' : 'Modèles & Motorisations Compatibles'}>
+                {part.compatibility && part.compatibility.length > 0 ? (
+                  <InspectorCard>
+                    {part.compatibility.map((c, i) => (
+                      <InspectorListItem
                         key={i}
-                        className="p-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 text-black dark:text-white flex items-center gap-2"
-                      >
-                        <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
-                        <span>{c}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-black/55 dark:text-white/55 text-center py-4">
-                      Référence universelle / adaptable standard
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+                        title={c}
+                        badge={{ label: 'OE', tone: 'ok' }}
+                        isLast={i === (part.compatibility?.length || 1) - 1}
+                      />
+                    ))}
+                  </InspectorCard>
+                ) : (
+                  <InspectorCard>
+                    <InspectorKeyValue label="Compatibilité" value="Référence universelle / adaptable" mono={false} isLast />
+                  </InspectorCard>
+                )}
+              </InspectorSection>
+            );
+          }
 
-            {activeTab === 'notes' && (
-              <div className="space-y-3">
-                <p className="text-black/55 dark:text-white/55 text-[11px]">
-                  {isAr
-                    ? 'تعليمات التخزين، المورد المفضل، وشروط الضمان:'
-                    : 'Conditions de stockage, fournisseur référent et consignes magasinier :'}
-                </p>
-                <textarea
-                  rows={5}
-                  value={inspectorNotes}
-                  onChange={(e) => setInspectorNotes(e.target.value)}
-                  placeholder="Noter les détails de conditionnement, références équivalentes OE..."
-                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none"
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : 'Actions rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'addStock',
+                      label: isAr ? '+5 مخزون' : '+5 Stock',
+                      icon: <Plus className="w-[18px] h-[18px]" />,
+                      primary: true,
+                      onClick: () => handleQuickAddStock(part),
+                    },
+                    {
+                      id: 'edit',
+                      label: isAr ? 'تعديل' : 'Modifier',
+                      icon: <Edit className="w-[18px] h-[18px]" />,
+                      onClick: () => openEditModal(part),
+                    },
+                    {
+                      id: 'pin',
+                      label: pinnedIds.has(part.id) ? 'Désépingler' : 'Épingler',
+                      icon: <Pin className="w-[18px] h-[18px]" />,
+                      onClick: () => handlePin(part),
+                    },
+                  ]}
                 />
-                <button
-                  type="button"
-                  onClick={handleSaveNotes}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#d4522f] text-white hover:bg-[#b03b1b] transition-colors font-medium text-xs shadow-xs cursor-pointer"
-                >
-                  {noteSaved ? (
-                    <>
-                      <Check size={14} />
-                      <span>{isAr ? 'تم الحفظ' : 'Consignes enregistrées'}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Save size={14} />
-                      <span>{isAr ? 'حفظ' : 'Enregistrer'}</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+              </InspectorSection>
+
+              <InspectorSection index={1} title={isAr ? 'المواصفات المخزنية' : 'Fiche Magasin'}>
+                <InspectorCard>
+                  <InspectorKeyValue label="Code SKU Atelier" value={part.sku} />
+                  <InspectorKeyValue label="Catégorie" value={part.category} mono={false} />
+                  <InspectorKeyValue label="Emplacement Rayon" value={part.locationBin} tone="accent" mono={false} />
+                  <InspectorKeyValue label="Quantité Stock" value={`${part.stockQuantity} unités`} tone={isLow ? 'warn' : 'ok'} />
+                  <InspectorKeyValue label="Seuil d’Alerte Min" value={`${part.minThreshold} unités`} isLast />
+                </InspectorCard>
+              </InspectorSection>
+
+              <InspectorSection index={2} title={isAr ? 'التعليمات' : 'Consignes de stockage'}>
+                <InspectorNotesField
+                  value={inspectorNotes}
+                  onSave={handleSaveNotes}
+                  placeholder={
+                    isAr
+                      ? 'تعليمات التخزين، المورد المفضل...'
+                      : 'Noter les détails de conditionnement, références équivalentes OE...'
+                  }
+                />
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       {isModalOpen && (

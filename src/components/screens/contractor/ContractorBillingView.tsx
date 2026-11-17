@@ -11,7 +11,13 @@ import {
   Cloud,
   MapPin,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { useContractorData } from './contractorData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -34,6 +40,15 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -55,9 +70,21 @@ export const ContractorBillingView: React.FC<any> = () => {
     currentUser,
     isSyncing,
     networkMode,
-    retryCloudSync,
     lastSyncedAt,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBusiness: s.currentBusiness,
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      currentUser: s.currentUser,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -384,6 +411,101 @@ export const ContractorBillingView: React.FC<any> = () => {
     [isAr, isEn, billingStatus, branchFilter, projectDgps.length, betApprovedCount, paidCount, branchOptions]
   );
 
+  const getRowMeta = useCallback(
+    (d: ContractorDgp): Partial<KineticRowData> => {
+      const b = resolveRecordBranch(d, branchesById, currentBranch, language);
+      const isPaid = d.status === 'Paid';
+      return {
+        subline: `${d.periodLabel} · ${d.issuedDate || '—'}`,
+        categoryLabel: isPaid ? (isAr ? 'مدفوع' : 'Réglé') : 'BET Validé',
+        statusLabel: isPaid ? (isAr ? 'مدفوع' : isEn ? 'Paid' : 'Réglé') : isAr ? 'معتمد BET' : 'Approuvé BET',
+        statusVariant: isPaid ? 'active' : 'warning',
+        metricPrimary: formatMoney(d.netPayableDzd, language),
+        metricSecondary: `Ret. 5%: ${formatMoney(d.retentionGuaranteeDzd, language)}`,
+        detailCol1: {
+          heading: isAr ? 'الوضعية والفرع' : isEn ? 'Situation & Branch' : 'Situation & Agence',
+          primaryText: d.dgpNumber,
+          secondaryText: d.periodLabel,
+          tertiaryText: b.name,
+        },
+        detailCol2: {
+          heading: isAr ? 'التقييم المالي' : isEn ? 'Valuation' : 'Montants HT / Retenue',
+          primaryText: formatMoney(d.periodGrossDzd, language),
+          secondaryText: `Retenue 5%: -${formatMoney(d.retentionGuaranteeDzd, language)}`,
+          tertiaryText: `TVA ${d.tvaPercent || 19}%: +${formatMoney(d.tvaAmountDzd || 0, language)}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'الصافي للدفع' : isEn ? 'Net Payable' : 'Mandatement TTC',
+          primaryText: formatMoney(d.netPayableDzd, language),
+          secondaryText: `${isAr ? 'بتاريخ' : 'Émis le'} ${d.issuedDate || '—'}`,
+        },
+      };
+    },
+    [branchesById, currentBranch, language, isAr, isEn]
+  );
+
+  const getFanActions = useCallback(
+    (d: ContractorDgp): KineticRowFanAction[] => [
+      {
+        id: 'print',
+        label: isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer',
+        icon: <Printer className="w-[15px] h-[15px]" />,
+        onClick: () => handlePrintDgp(d),
+      },
+      ...(d.status !== 'Paid'
+        ? [
+            {
+              id: 'mark-paid',
+              label: isAr ? 'تسديد' : isEn ? 'Settle' : 'Régler',
+              icon: <CheckCircle2 className="w-[15px] h-[15px]" />,
+              onClick: () => {
+                updateDgpStatus(d.id, 'Paid');
+                showToast('Situation enregistrée comme réglée', 'success');
+              },
+            },
+          ]
+        : []),
+      {
+        id: 'open',
+        label: isAr ? 'تفاصيل' : isEn ? 'Details' : 'Détails',
+        icon: <ShieldCheck className="w-[15px] h-[15px]" />,
+        onClick: (e) => handleSelectDgp(d, e.currentTarget),
+      },
+    ],
+    [handlePrintDgp, updateDgpStatus, handleSelectDgp, isAr, isEn]
+  );
+
+  const getDetailActions = useCallback(
+    (d: ContractorDgp): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'معاينة الكشف' : isEn ? 'Inspect' : 'Ouvrir fiche',
+        icon: <ShieldCheck className="w-3.5 h-3.5" />,
+        onClick: () => handleSelectDgp(d),
+      },
+      {
+        id: 'print',
+        label: isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer',
+        icon: <Printer className="w-3.5 h-3.5" />,
+        onClick: () => handlePrintDgp(d),
+      },
+      ...(d.status !== 'Paid'
+        ? [
+            {
+              id: 'settle',
+              label: isAr ? 'تأكيد الدفع' : isEn ? 'Mark Paid' : 'Marquer réglée',
+              icon: <CheckCircle2 className="w-3.5 h-3.5 text-[#096b40]" />,
+              onClick: () => {
+                updateDgpStatus(d.id, 'Paid');
+                showToast('Situation enregistrée comme réglée', 'success');
+              },
+            },
+          ]
+        : []),
+    ],
+    [handleSelectDgp, handlePrintDgp, updateDgpStatus, isAr, isEn]
+  );
+
   const columns: ColumnDefinition<ContractorDgp>[] = useMemo(
     () => [
       {
@@ -508,11 +630,6 @@ export const ContractorBillingView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<Wallet size={22} />}
         title={isAr ? 'الفواتير' : isEn ? 'Billings' : 'Décomptes'}
-        subtitle={
-          selectedProject
-            ? `${selectedProject.projectCode} · ${projectDgps.length} situations`
-            : `${projectDgps.length} situations`
-        }
         primaryAction={{
           label: isAr ? 'كشف جديد (DGP)' : isEn ? 'New DGP' : 'Nouvelle Situation DGP',
           onClick: () => setIsModalOpen(true),
@@ -605,10 +722,11 @@ export const ContractorBillingView: React.FC<any> = () => {
 
         <UniversalDataCollection<ContractorDgp>
           hideToolbar
-          data={sortedDgps}
-          keyExtractor={(d) => d.id}
-          defaultViewMode={viewMode}
+          items={sortedDgps}
           columns={columns}
+          keyExtractor={(d) => d.id}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode={viewMode}
           sortBy={sortBy}
           sortDirection={sortDir}
           onSortChange={(key, dir) => {
@@ -622,6 +740,9 @@ export const ContractorBillingView: React.FC<any> = () => {
           openItemId={activeDgp?.id || null}
           onItemClick={handleSelectDgp}
           onViewDetails={handleSelectDgp}
+          getRowMeta={getRowMeta}
+          getFanActions={getFanActions}
+          getDetailActions={getDetailActions}
           customActions={(d) => [
             {
               id: 'print',
@@ -637,43 +758,6 @@ export const ContractorBillingView: React.FC<any> = () => {
               onClick: () => handleSelectDgp(d),
             },
           ]}
-          renderCard={(d) => {
-            const isPinned = pinnedIds.has(d.id);
-            return (
-              <div className="flex flex-col w-full space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-black dark:text-white flex items-center gap-1.5 truncate">
-                    {d.dgpNumber}
-                    {isPinned && <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />}
-                  </span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                    {d.status === 'Paid' ? 'Réglé' : 'Approuvé BET'}
-                  </span>
-                </div>
-                <div className="text-xs text-black/55 dark:text-white/55 line-clamp-1">
-                  {d.periodLabel}
-                </div>
-                <div className="bg-neutral-50 dark:bg-neutral-900/60 rounded-xl p-3 space-y-1.5 font-mono text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Montant Brut HT:</span>
-                    <span>{formatMoney(d.periodGrossDzd, language)}</span>
-                  </div>
-                  <div className="flex justify-between text-amber-600 dark:text-amber-400">
-                    <span>Retenue (5%):</span>
-                    <span>-{formatMoney(d.retentionGuaranteeDzd, language)}</span>
-                  </div>
-                  <div className="flex justify-between font-bold text-black dark:text-white pt-1 border-t border-neutral-200 dark:border-neutral-700">
-                    <span>Net TTC:</span>
-                    <span className="text-[#d4522f]">{formatMoney(d.netPayableDzd, language)}</span>
-                  </div>
-                </div>
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-black/55 dark:text-white/55">
-                  <span>Date: {d.issuedDate}</span>
-                  <span>TVA 19%</span>
-                </div>
-              </div>
-            );
-          }}
           emptyTitle={isAr ? 'لا توجد كشوفات' : 'Aucune situation DGP'}
           emptyDescription={
             isAr ? 'قم بتحرير أول كشف أشغال للمشروع' : 'Créez votre première situation de travaux'
@@ -705,8 +789,9 @@ export const ContractorBillingView: React.FC<any> = () => {
         openerElement={drawerOpenerEl}
         language={language}
         title={activeDgp?.dgpNumber || ''}
-        subtitle={activeDgp ? `Date: ${activeDgp.issuedDate}` : undefined}
-        avatarText="DGP"
+        subtitle={activeDgp ? `${activeDgp.periodLabel} · ${activeDgp.issuedDate}` : undefined}
+        categoryLabel={selectedProject?.projectCode || 'BTP DGP'}
+        avatarText="DG"
         branchName={
           activeDgp
             ? resolveRecordBranch(activeDgp, branchesById, currentBranch, language).name
@@ -715,112 +800,138 @@ export const ContractorBillingView: React.FC<any> = () => {
         statusLabel={
           activeDgp?.status === 'Paid' ? (isAr ? 'مدفوع' : 'Réglé') : isAr ? 'معتمد BET' : 'Approuvé BET'
         }
+        statusClassName={
+          activeDgp?.status === 'Paid'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+        }
         tabs={[
-          { id: 'decompte', label: isAr ? 'البيان المالي' : 'Décompte' },
-          { id: 'certificat', label: isAr ? 'الشهادة والضمان' : 'Certificat' },
-          { id: 'actions', label: isAr ? 'الإجراءات' : 'Actions' },
+          { id: 'decompte', label: isAr ? 'البيان المالي' : isEn ? 'Breakdown' : 'Décompte' },
+          { id: 'certificat', label: isAr ? 'الشهادة والضمان' : isEn ? 'Certificate' : 'Certificat' },
+          { id: 'actions', label: isAr ? 'السجل' : isEn ? 'Audit' : 'Traçabilité' },
         ]}
         activeTab={activeInspectorTab}
         onTabChange={setActiveInspectorTab}
         onSelectItem={(d) => handleSelectDgp(d)}
         onClose={() => setSelectedDgp(null)}
-        renderBody={(d, tab) => (
-          <div className="space-y-4 text-xs">
-            {tab === 'decompte' && (
-              <div className="space-y-3">
-                <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-2 font-mono">
-                  <div className="flex justify-between items-center text-black/70 dark:text-white/75">
-                    <span>Cumul précédent:</span>
-                    <span>{formatMoney(d.previousCumulDzd || 0, language)}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm font-bold text-black dark:text-white">
-                    <span>Montant du mois HT:</span>
-                    <span>{formatMoney(d.periodGrossDzd, language)}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-amber-600 dark:text-amber-400">
-                    <span>Retenue garantie (5%):</span>
-                    <span>-{formatMoney(d.retentionGuaranteeDzd, language)}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-black/55 dark:text-white/55">
-                    <span>Amortissement avances:</span>
-                    <span>-{formatMoney(d.advanceAmortizationDzd || 0, language)}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-blue-600 dark:text-blue-400">
-                    <span>TVA (19%):</span>
-                    <span>+{formatMoney(d.tvaAmountDzd || 0, language)}</span>
-                  </div>
-                  <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700 flex justify-between items-center font-bold text-sm">
-                    <span>Net à Mandater TTC:</span>
-                    <span className="text-[#d4522f]">{formatMoney(d.netPayableDzd, language)}</span>
-                  </div>
-                </div>
-                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 text-emerald-800 dark:text-emerald-300 space-y-1">
-                  <span className="font-bold">Attachement des travaux validé</span>
-                  <p className="text-[11px] text-emerald-600 dark:text-emerald-400">
-                    Métrés contradictoires signés sur chantier avec le conducteur de travaux et le Maître d'Œuvre.
-                  </p>
-                </div>
-              </div>
-            )}
+        renderBody={(d, tab) => {
+          if (tab === 'certificat') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'شهادة الدفع' : isEn ? 'Payment Certificate' : 'Certificat de Paiement BTP'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label="Marché" value={selectedProject?.projectCode || '—'} />
+                    <InspectorKeyValue label="Maître d’Ouvrage" value={selectedProject?.clientName || 'Ministère / Promoteur'} mono={false} />
+                    <InspectorKeyValue label="Bureau d’Études" value="BET Technique & Architecture" mono={false} />
+                    <InspectorKeyValue label="Caution bancaire" value={d.hasBankCautionReplacement ? 'Oui (Art. 99)' : 'Retenue 5%'} mono={false} isLast />
+                  </InspectorCard>
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'اقتطاع الضمان' : 'Libération de la caution'}>
+                  <InspectorBigStat
+                    value={formatMoney(totalRetention, language)}
+                    tone="default"
+                    caption="Retenue de garantie cumulée (déblocable 12 mois après réception provisoire)"
+                  />
+                </InspectorSection>
+              </>
+            );
+          }
 
-            {tab === 'certificat' && (
-              <div className="space-y-3">
-                <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-2">
-                  <div className="flex items-center gap-2 font-bold text-black dark:text-white">
-                    <ShieldCheck size={16} className="text-[#d4522f]" />
-                    <span>Certificat de Paiement BTP</span>
-                  </div>
-                  <div className="space-y-1.5 font-mono text-[11px] text-black/70 dark:text-white/75">
-                    <div>Marché: {selectedProject?.projectCode}</div>
-                    <div>Maître d'Ouvrage: {selectedProject?.clientName || 'Ministère / Promoteur'}</div>
-                    <div>Bureau d'Études: BET Technique & Architecture</div>
-                  </div>
-                </div>
-                <div className="p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 text-amber-800 dark:text-amber-300 space-y-1">
-                  <span className="font-bold">Libération de la caution</span>
-                  <p className="text-[11px]">
-                    La retenue de garantie cumulée ({formatMoney(totalRetention, language)}) sera débloquée 12 mois après la réception provisoire.
-                  </p>
-                </div>
-              </div>
-            )}
+          if (tab === 'actions') {
+            return (
+              <InspectorSection index={0} title={isAr ? 'سجل الاعتماد' : isEn ? 'Validation Trail' : 'Étapes de mandatement'}>
+                <InspectorCard>
+                  <InspectorListItem
+                    title="Attachements contradictoires signés"
+                    subtitle={`Conducteur travaux & BET · ${d.issuedDate || '—'}`}
+                    badge={{ label: 'Validé', tone: 'ok' }}
+                  />
+                  <InspectorListItem
+                    title={d.status === 'Paid' ? 'Virement Trésorerie exécuté' : 'En attente de mandatement'}
+                    subtitle={`${d.dgpNumber} · TVA ${d.tvaPercent || 19}%`}
+                    metaRight={formatMoney(d.netPayableDzd, language)}
+                    badge={{ label: d.status === 'Paid' ? 'Réglé' : 'BET OK', tone: d.status === 'Paid' ? 'ok' : 'warn' }}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+            );
+          }
 
-            {tab === 'actions' && (
-              <div className="space-y-2.5">
-                <AtriumButton
-                  variant="primary"
-                  size="sm"
-                  icon={<Printer size={15} />}
-                  onClick={() => handlePrintDgp(d)}
-                >
-                  Imprimer décompte provisoire
-                </AtriumButton>
-                <AtriumButton
-                  variant="outline"
-                  size="sm"
-                  icon={<Pin size={15} />}
-                  onClick={() => handleTogglePin(d)}
-                >
-                  {pinnedIds.has(d.id) ? 'Détacher' : 'Épingler la situation'}
-                </AtriumButton>
-                {d.status !== 'Paid' && (
-                  <AtriumButton
-                    variant="secondary"
-                    size="sm"
-                    icon={<CheckCircle2 size={15} />}
-                    onClick={() => {
-                      updateDgpStatus(d.id, 'Paid');
-                      setSelectedDgp({ ...d, status: 'Paid' });
-                      showToast('Situation enregistrée comme réglée', 'success');
-                    }}
-                  >
-                    Marquer comme réglée
-                  </AtriumButton>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : isEn ? 'Quick Actions' : 'Actions rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'print',
+                      label: isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer DGP',
+                      icon: <Printer className="w-[18px] h-[18px]" />,
+                      primary: true,
+                      onClick: () => handlePrintDgp(d),
+                    },
+                    ...(d.status !== 'Paid'
+                      ? [
+                          {
+                            id: 'settle',
+                            label: isAr ? 'تأكيد الدفع' : isEn ? 'Mark Paid' : 'Marquer réglée',
+                            icon: <CheckCircle2 className="w-[18px] h-[18px]" />,
+                            onClick: () => {
+                              updateDgpStatus(d.id, 'Paid');
+                              setSelectedDgp({ ...d, status: 'Paid' });
+                              showToast('Situation enregistrée comme réglée', 'success');
+                            },
+                          },
+                        ]
+                      : []),
+                    {
+                      id: 'pin',
+                      label: pinnedIds.has(d.id) ? 'Désépingler' : 'Épingler',
+                      icon: <Pin className="w-[18px] h-[18px]" />,
+                      onClick: () => handleTogglePin(d),
+                    },
+                    {
+                      id: 'cacobatph',
+                      label: 'CACOBATPH',
+                      icon: <Cloud className="w-[18px] h-[18px]" />,
+                      onClick: () => setIsCacobatphModalOpen(true),
+                    },
+                  ]}
+                />
+              </InspectorSection>
+
+              <InspectorSection index={1}>
+                <InspectorBigStat
+                  value={formatMoney(d.netPayableDzd, language)}
+                  tone={d.status === 'Paid' ? 'ok' : 'accent'}
+                  caption={`${d.periodLabel} · TVA ${d.tvaPercent || 19}% incluse`}
+                  action={
+                    d.status !== 'Paid'
+                      ? {
+                          label: isAr ? 'تأكيد التسديد' : 'Marquer comme réglée',
+                          onClick: () => {
+                            updateDgpStatus(d.id, 'Paid');
+                            setSelectedDgp({ ...d, status: 'Paid' });
+                            showToast('Situation enregistrée comme réglée', 'success');
+                          },
+                        }
+                      : undefined
+                  }
+                />
+              </InspectorSection>
+
+              <InspectorSection index={2} title={isAr ? 'تفاصيل الكشف' : isEn ? 'Calculation Details' : 'Détail du décompte'}>
+                <InspectorCard>
+                  <InspectorKeyValue label="Cumul précédent" value={formatMoney(d.previousCumulDzd || 0, language)} />
+                  <InspectorKeyValue label="Montant du mois HT" value={formatMoney(d.periodGrossDzd, language)} />
+                  <InspectorKeyValue label="Retenue garantie (5%)" value={`-${formatMoney(d.retentionGuaranteeDzd, language)}`} tone="warn" />
+                  <InspectorKeyValue label="Amortissement avances" value={`-${formatMoney(d.advanceAmortizationDzd || 0, language)}`} />
+                  <InspectorKeyValue label={`TVA (${d.tvaPercent || 19}%)`} value={`+${formatMoney(d.tvaAmountDzd || 0, language)}`} tone="accent" isLast />
+                </InspectorCard>
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       {isModalOpen && (

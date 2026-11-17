@@ -32,6 +32,14 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -277,6 +285,90 @@ export const EducationTimetableView: React.FC = () => {
 
   const activeFiltersCount = (branchFilter !== 'All' ? 1 : 0) + (selectedClassroomId !== 'all' ? 1 : 0);
 
+  const getSessionRowMeta = useCallback(
+    (s: EduSession): KineticRowMeta => {
+      const hasConflict = conflicts.has(s.id);
+      return {
+        avatarText: (s.cohortName || 'SE').slice(0, 2).toUpperCase(),
+        subtitle: `${s.topic || 'Séance de cours'} · ${s.instructorName || 'Formateur'}`,
+        categoryLabel: s.classroomName || 'Salle',
+        statusTone: hasConflict ? 'danger' : 'ok',
+        statusLabel: hasConflict ? 'Conflit' : 'Planifiée',
+        metricPrimary: `${s.startTime} - ${s.endTime}`,
+        metricSecondary: s.date,
+      };
+    },
+    [conflicts]
+  );
+
+  const getSessionFanActions = useCallback(
+    (s: EduSession): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'تفاصيل' : isEn ? 'Details' : 'Détails',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedSession(s);
+          setInspectorTab('seance');
+        },
+      },
+      {
+        id: 'rollcall',
+        label: isAr ? 'مناداة الحضور' : isEn ? 'Roll Call' : 'Émargement',
+        icon: <ClipboardList className="w-[15px] h-[15px]" />,
+        onClick: () => {
+          setRollCallSession(s);
+          setIsRollCallOpen(true);
+        },
+      },
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer',
+        icon: <Trash2 className="w-[15px] h-[15px]" />,
+        isDanger: true,
+        onClick: () => {
+          deleteEduSession(s.id);
+          if (selectedSession?.id === s.id) setSelectedSession(null);
+        },
+      },
+    ],
+    [isAr, isEn, deleteEduSession, selectedSession?.id]
+  );
+
+  const getSessionDetailActions = useCallback(
+    (s: EduSession): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'فتح' : isEn ? 'Open' : 'Ouvrir',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedSession(s);
+          setInspectorTab('seance');
+        },
+      },
+      {
+        id: 'rollcall',
+        label: isAr ? 'مناداة الحضور' : 'Émargement',
+        icon: <ClipboardList className="w-3.5 h-3.5 text-[#d4522f]" />,
+        onClick: () => {
+          setRollCallSession(s);
+          setIsRollCallOpen(true);
+        },
+      },
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer',
+        icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+        onClick: () => {
+          deleteEduSession(s.id);
+          if (selectedSession?.id === s.id) setSelectedSession(null);
+        },
+      },
+    ],
+    [isAr, isEn, deleteEduSession, selectedSession?.id]
+  );
+
   const sessionColumns: ColumnDefinition<EduSession>[] = useMemo(
     () => [
       {
@@ -479,7 +571,6 @@ export const EducationTimetableView: React.FC = () => {
       <ScreenHeaderBar
         icon={<CalendarIcon size={22} />}
         title={t('edu_timetable_title')}
-        subtitle={`${eduSessions.length} ${isAr ? 'حصة مبرمجة' : isEn ? 'scheduled sessions' : 'séances planifiées'}`}
         secondaryActions={
           conflicts.size > 0 ? (
             <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400 text-xs font-semibold">
@@ -555,9 +646,10 @@ export const EducationTimetableView: React.FC = () => {
 
         <UniversalDataCollection<EduSession>
           hideToolbar
-          data={sortedSessions}
+          items={sortedSessions}
           keyExtractor={(s) => s.id}
           viewMode={viewMode}
+          defaultViewMode="calendar"
           showCalendarToggle
           onViewModeChange={(m: 'list' | 'grid' | 'calendar') => setViewMode(m)}
           renderCalendarView={renderCalendarGrid}
@@ -589,11 +681,16 @@ export const EducationTimetableView: React.FC = () => {
           onItemClick={(s, el) => {
             setDrawerOpenerEl(el || null);
             setSelectedSession(s);
+            setInspectorTab('seance');
           }}
           onViewDetails={(s, el) => {
             setDrawerOpenerEl(el || null);
             setSelectedSession(s);
+            setInspectorTab('seance');
           }}
+          getRowMeta={getSessionRowMeta}
+          getFanActions={getSessionFanActions}
+          getDetailActions={getSessionDetailActions}
           onDelete={(s) => {
             deleteEduSession(s.id);
             if (selectedSession?.id === s.id) setSelectedSession(null);
@@ -652,39 +749,6 @@ export const EducationTimetableView: React.FC = () => {
               message: isAr ? 'تم حذف الحصص المحددة' : 'Séances supprimées du planning',
             });
           }}
-          renderCard={(s) => {
-            const hasConflict = conflicts.has(s.id);
-            return (
-              <div className="p-4 flex flex-col justify-between h-full space-y-3 w-full">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="font-mono text-xs font-bold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded">
-                    {s.startTime} - {s.endTime}
-                  </div>
-                  {hasConflict ? (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">
-                      Conflit
-                    </span>
-                  ) : (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                      Planifiée
-                    </span>
-                  )}
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs text-black dark:text-white line-clamp-1">{s.cohortName}</h4>
-                  <p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5 line-clamp-1">
-                    {s.topic || 'Séance de cours'}
-                  </p>
-                </div>
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-black/55 dark:text-white/55">
-                  <span>{s.classroomName || 'Salle'}</span>
-                  <span className="font-medium text-black/70 dark:text-white/75 truncate max-w-[120px]">
-                    {s.instructorName}
-                  </span>
-                </div>
-              </div>
-            );
-          }}
         />
       </ScreenPod>
 
@@ -712,12 +776,18 @@ export const EducationTimetableView: React.FC = () => {
         language={language}
         title={activeSession ? `${activeSession.date} · ${activeSession.startTime}` : ''}
         subtitle={activeSession?.cohortName || ''}
-        avatarText={(activeSession?.cohortName || 'S').charAt(0).toUpperCase()}
+        categoryLabel={activeSession?.classroomName || 'Salle'}
+        avatarText={(activeSession?.cohortName || 'SE').slice(0, 2).toUpperCase()}
         avatarColor="#d4522f"
         branchName={
           activeSession ? resolveRecordBranch(activeSession, branchesById, currentBranch, language).name : undefined
         }
         statusLabel={activeSession && conflicts.has(activeSession.id) ? 'Conflit' : 'Planifiée'}
+        statusClassName={
+          activeSession && conflicts.has(activeSession.id)
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+        }
         tabs={[
           { id: 'seance', label: isAr ? 'تفاصيل الحصة' : 'Séance & Cours' },
           { id: 'salle', label: isAr ? 'القاعة والتجهيزات' : 'Salle & Capacité' },
@@ -725,99 +795,120 @@ export const EducationTimetableView: React.FC = () => {
         ]}
         activeTab={inspectorTab}
         onTabChange={(id) => setInspectorTab(id as 'seance' | 'salle' | 'emargement')}
-        onSelectItem={(s) => setSelectedSession(s)}
+        onSelectItem={(s) => {
+          setSelectedSession(s);
+          setInspectorTab('seance');
+        }}
         onClose={() => setSelectedSession(null)}
         onDelete={(s) => {
           deleteEduSession(s.id);
           setSelectedSession(null);
         }}
-        renderBody={(sess, tab) => (
-          <div className="space-y-4 text-xs">
-            {tab === 'seance' && (
-              <div className="space-y-4">
-                <div className="p-3.5 bg-[#F3EDE7] dark:bg-neutral-900/60 rounded-xl border border-[#E6DED6] dark:border-neutral-800 space-y-2">
-                  <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
-                    Fiche Pédagogique
-                  </span>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Promotion / Cohorte:</span>
-                    <span className="font-bold text-black dark:text-white">{sess.cohortName}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Date & Créneau:</span>
-                    <span className="font-mono font-bold text-black dark:text-white">
-                      {sess.date} ({sess.startTime} - {sess.endTime})
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Formateur:</span>
-                    <span className="font-medium text-black dark:text-white">{sess.instructorName}</span>
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
-                    Sujet / Module Traité
-                  </span>
-                  <div className="p-3 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 text-black dark:text-white">
-                    {sess.topic || 'Séance magistrale et travaux pratiques dirigés selon le syllabus de la formation.'}
-                  </div>
-                </div>
-              </div>
-            )}
+        renderBody={(sess, tab) => {
+          if (tab === 'salle') {
+            return (
+              <InspectorSection index={0} title="Espace Pédagogique Assigné">
+                <InspectorCard>
+                  <InspectorKeyValue label="Salle de cours" value={sess.classroomName || 'Salle A1'} mono={false} />
+                  <InspectorKeyValue
+                    label="Équipements"
+                    value="Vidéoprojecteur HD, Tableau blanc, Wi-Fi"
+                    mono={false}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+            );
+          }
 
-            {tab === 'salle' && (
-              <div className="p-3.5 bg-[#F3EDE7] dark:bg-neutral-900/60 rounded-xl border border-[#E6DED6] dark:border-neutral-800 space-y-2">
-                <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
-                  Espace Pédagogique Assigné
-                </span>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Salle de cours:</span>
-                  <span className="font-bold text-black dark:text-white">{sess.classroomName || 'Salle A1'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Équipements:</span>
-                  <span className="text-black/70 dark:text-white/75">Vidéoprojecteur HD, Tableau blanc, Wi-Fi</span>
-                </div>
-              </div>
-            )}
+          if (tab === 'emargement') {
+            return (
+              <>
+                <InspectorSection index={0} title="Appel & Présences Étudiants">
+                  <InspectorCard>
+                    <InspectorKeyValue label="Cohorte" value={sess.cohortName || '—'} mono={false} />
+                    <InspectorKeyValue label="Créneau" value={`${sess.date} · ${sess.startTime} - ${sess.endTime}`} isLast />
+                  </InspectorCard>
+                </InspectorSection>
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label="Lancer l'Appel des Présences"
+                    icon={<ClipboardList size={15} />}
+                    tone="accent"
+                    onClick={() => {
+                      setRollCallSession(sess);
+                      setIsRollCallOpen(true);
+                    }}
+                  />
+                </InspectorSection>
+                <InspectorSection index={2}>
+                  <InspectorWideButton
+                    label={isAr ? 'طباعة ورقة الحضور' : 'Imprimer Feuille d’Émargement'}
+                    icon={<Printer size={15} />}
+                    tone="neutral"
+                    onClick={() =>
+                      showToast({
+                        type: 'success',
+                        title: isAr ? 'طباعة ورقة الحضور' : 'Impression lancée',
+                        message: isAr ? 'جاري طباعة ورقة الحضور' : "Impression de la feuille d'émargement",
+                      })
+                    }
+                  />
+                </InspectorSection>
+              </>
+            );
+          }
 
-            {tab === 'emargement' && (
-              <div className="p-3.5 bg-[#F3EDE7] dark:bg-neutral-900/60 rounded-xl border border-[#E6DED6] dark:border-neutral-800 space-y-3">
-                <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
-                  Appel & Présences Étudiants
-                </span>
-                <p className="text-[11px] text-black/70 dark:text-white/75">
-                  Feuille d'émargement officielle de la séance. Les absences non justifiées sont transmises à l'administration.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRollCallSession(sess);
-                    setIsRollCallOpen(true);
-                  }}
-                  className="w-full py-2.5 rounded-xl text-xs font-bold bg-[#d4522f] hover:opacity-90 text-white transition-opacity cursor-pointer"
-                >
-                  Lancer l'Appel des Présences
-                </button>
-              </div>
-            )}
-
-            <AtriumButton
-              variant="outline"
-              className="w-full justify-center"
-              icon={<Printer size={14} />}
-              onClick={() => {
-                showToast({
-                  type: 'success',
-                  title: isAr ? 'طباعة ورقة الحضور' : 'Impression lancée',
-                  message: isAr ? 'جاري طباعة ورقة الحضور' : "Impression de la feuille d'émargement",
-                });
-              }}
-            >
-              {isAr ? 'طباعة ورقة الحضور' : 'Imprimer Feuille d’Émargement'}
-            </AtriumButton>
-          </div>
-        )}
+          return (
+            <>
+              <InspectorSection index={0}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'rollcall',
+                      label: isAr ? 'مناداة الحضور' : 'Faire l’Appel',
+                      icon: <ClipboardList size={16} />,
+                      primary: true,
+                      onClick: () => {
+                        setRollCallSession(sess);
+                        setIsRollCallOpen(true);
+                      },
+                    },
+                    {
+                      id: 'print',
+                      label: isAr ? 'طباعة المحضر' : 'Imprimer',
+                      icon: <Printer size={16} />,
+                      onClick: () =>
+                        showToast({
+                          type: 'success',
+                          title: isAr ? 'طباعة ورقة الحضور' : 'Impression lancée',
+                          message: isAr ? 'جاري طباعة ورقة الحضور' : "Impression de la feuille d'émargement",
+                        }),
+                    },
+                  ]}
+                />
+              </InspectorSection>
+              <InspectorSection index={1} title="Fiche Pédagogique">
+                <InspectorCard>
+                  <InspectorKeyValue label="Promotion / Cohorte" value={sess.cohortName || '—'} mono={false} />
+                  <InspectorKeyValue label="Date" value={sess.date} />
+                  <InspectorKeyValue label="Créneau" value={`${sess.startTime} - ${sess.endTime}`} />
+                  <InspectorKeyValue label="Formateur" value={sess.instructorName || '—'} mono={false} isLast />
+                </InspectorCard>
+              </InspectorSection>
+              <InspectorSection index={2} title="Sujet / Module Traité">
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label="Thème"
+                    value={sess.topic || 'Séance magistrale et travaux pratiques dirigés.'}
+                    mono={false}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       {isAddSessionModalOpen && (

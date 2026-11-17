@@ -7,9 +7,9 @@ import {
   Edit,
   Pin,
   X,
-  Save,
-  Check,
   MapPin,
+  Eye,
+  Trash2,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
@@ -32,6 +32,16 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorNotesField,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -91,7 +101,6 @@ export const LogisticsManifestsView: React.FC<any> = () => {
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [activeTab, setActiveTab] = useState<string>('manifest');
   const [inspectorNotes, setInspectorNotes] = useState('');
-  const [noteSaved, setNoteSaved] = useState(false);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -330,8 +339,84 @@ export const LogisticsManifestsView: React.FC<any> = () => {
     if (originEl) setDrawerOpenerEl(originEl);
     setSelectedManifest(m);
     setActiveTab('manifest');
-    setNoteSaved(false);
   }, []);
+
+  const getManifestRowMeta = useCallback(
+    (m: LogisticsManifest): KineticRowMeta => {
+      const isCompleted = m.status === 'Completed' || m.status === 'Reconciled';
+      return {
+        avatarText: (m.driverName || 'TR').slice(0, 2).toUpperCase(),
+        subtitle: `${m.manifestNumber} · ${m.vehiclePlate}`,
+        categoryLabel: m.zoneWilaya || 'Alger',
+        statusTone: isCompleted ? 'ok' : 'info',
+        statusLabel: isCompleted ? (isAr ? 'مكتملة' : 'Clôturée') : isAr ? 'في التوزيع' : 'En Tournée',
+        metricPrimary: formatMoney(m.totalCodExpectedDzd || 0, language),
+        metricSecondary: `${m.totalShipmentsCount} ${isAr ? 'طرد' : 'colis'}`,
+      };
+    },
+    [isAr, language]
+  );
+
+  const getManifestFanActions = useCallback(
+    (m: LogisticsManifest): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'تفاصيل' : 'Détails',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => handleSelectManifest(m, e.currentTarget),
+      },
+      {
+        id: 'print',
+        label: '05-468',
+        icon: <Printer className="w-[15px] h-[15px]" />,
+        onClick: () => {
+          setManifestToPrint(m);
+          setIsPrintModalOpen(true);
+        },
+      },
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : 'Supprimer',
+        icon: <Trash2 className="w-[15px] h-[15px]" />,
+        isDanger: true,
+        onClick: () => handleDelete(m),
+      },
+    ],
+    [isAr, handleSelectManifest, handleDelete]
+  );
+
+  const getManifestDetailActions = useCallback(
+    (m: LogisticsManifest): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'فتح الورقة' : 'Ouvrir Feuille',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => handleSelectManifest(m),
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : 'Modifier',
+        icon: <Edit className="w-3.5 h-3.5" />,
+        onClick: () => openEditModal(m),
+      },
+      {
+        id: 'discharge',
+        label: isAr ? 'تصفية الصندوق' : 'Décharge',
+        icon: <ShieldCheck className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setManifestToDischarge(m);
+          setIsDischargeModalOpen(true);
+        },
+      },
+      {
+        id: 'delete',
+        label: isAr ? 'حذف' : 'Supprimer',
+        icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+        onClick: () => handleDelete(m),
+      },
+    ],
+    [isAr, handleSelectManifest, openEditModal, handleDelete]
+  );
 
   const handleExportCsv = useCallback(() => {
     const headers = [
@@ -368,13 +453,6 @@ export const LogisticsManifestsView: React.FC<any> = () => {
     );
     showToast(isAr ? 'تم تصدير أوراق الطريق CSV' : 'Export CSV des manifestes généré', 'info');
   }, [sortedManifests, branchesById, currentBranch, language, isAr]);
-
-  const handleSaveNotes = useCallback(() => {
-    if (!activeManifest) return;
-    setNoteSaved(true);
-    setTimeout(() => setNoteSaved(false), 2000);
-    showToast(isAr ? 'تم حفظ تعليمات المسار' : 'Consignes de tournée enregistrées', 'success');
-  }, [activeManifest, isAr]);
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -566,13 +644,6 @@ export const LogisticsManifestsView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<Truck size={22} />}
         title={isAr ? 'المسارات' : isEn ? 'Manifests' : 'Tournées'}
-        subtitle={
-          isAr
-            ? `${manifests.length} ورقة طريق · ${totalParcelsInManifests} طرد محمل`
-            : isEn
-            ? `${manifests.length} manifests · ${totalParcelsInManifests} parcels loaded`
-            : `${manifests.length} feuilles de route · ${totalParcelsInManifests} colis en tournée`
-        }
         primaryAction={{
           label: isAr ? 'ورقة طريق جديدة' : isEn ? 'New Manifest' : 'Nouveau Manifeste',
           onClick: openCreateModal,
@@ -654,10 +725,11 @@ export const LogisticsManifestsView: React.FC<any> = () => {
 
         <UniversalDataCollection<LogisticsManifest>
           hideToolbar
-          data={sortedManifests}
+          items={sortedManifests}
           columns={columns}
           keyExtractor={(m) => m.id}
-          defaultViewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
           selectedIds={selectedIds}
           onSelectionChange={setSelectedIds}
           bulkSecondaryAction={{
@@ -689,6 +761,9 @@ export const LogisticsManifestsView: React.FC<any> = () => {
           openItemId={activeManifest?.id || null}
           onItemClick={handleSelectManifest}
           onViewDetails={handleSelectManifest}
+          getRowMeta={getManifestRowMeta}
+          getFanActions={getManifestFanActions}
+          getDetailActions={getManifestDetailActions}
           onEdit={openEditModal}
           onDelete={handleDelete}
           emptyTitle={isAr ? 'لا توجد أوراق طريق' : 'Aucun manifeste trouvé'}
@@ -727,53 +802,6 @@ export const LogisticsManifestsView: React.FC<any> = () => {
               onClick: () => handleCloseTournee(m),
             },
           ]}
-          renderCard={(m) => (
-            <div className="space-y-3 w-full">
-              <div className="flex items-center justify-between">
-                <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg border border-[#d4522f]/20">
-                  {m.manifestNumber}
-                </span>
-                <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    m.status === 'Completed'
-                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                      : 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
-                  }`}
-                >
-                  {m.status === 'Completed' ? 'Clôturée' : 'En Tournée'}
-                </span>
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">
-                  {m.driverName}
-                </h3>
-                <div className="text-xs text-black/55 dark:text-white/55 font-medium mt-0.5 flex items-center gap-1">
-                  <MapPin size={12} className="text-[#d4522f] shrink-0" />
-                  <span className="truncate">
-                    {m.zoneWilaya} • {m.vehiclePlate}
-                  </span>
-                </div>
-              </div>
-              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-                <div>
-                  <div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">
-                    COD Attendu
-                  </div>
-                  <div className="font-mono font-bold text-black dark:text-white mt-0.5">
-                    {formatMoney(m.totalCodExpectedDzd)}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">
-                    Colis
-                  </div>
-                  <div className="font-mono font-semibold text-black/70 dark:text-white/75 mt-0.5">
-                    {m.totalShipmentsCount} unités
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         />
       </ScreenPod>
 
@@ -802,6 +830,7 @@ export const LogisticsManifestsView: React.FC<any> = () => {
             ? `${activeManifest.driverName} (${activeManifest.vehiclePlate})`
             : undefined
         }
+        categoryLabel={activeManifest?.zoneWilaya || 'Dispatch'}
         avatarText={(activeManifest?.driverName || 'TR').slice(0, 2).toUpperCase()}
         branchName={
           activeManifest
@@ -813,11 +842,15 @@ export const LogisticsManifestsView: React.FC<any> = () => {
             ? isAr ? 'مكتملة' : 'Clôturée'
             : isAr ? 'في التوزيع' : 'En Tournée'
         }
+        statusClassName={
+          activeManifest?.status === 'Completed'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+        }
         tabs={[
-          { id: 'manifest', label: isAr ? 'المسار' : 'Détails' },
+          { id: 'manifest', label: isAr ? 'المسار' : 'Tournée' },
           { id: 'colis', label: isAr ? 'الطرود' : 'Colisage' },
           { id: 'cod', label: isAr ? 'التحصيل' : 'Finance COD' },
-          { id: 'notes', label: isAr ? 'التعليمات' : 'Consignes' },
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -825,141 +858,133 @@ export const LogisticsManifestsView: React.FC<any> = () => {
         onClose={() => setSelectedManifest(null)}
         onDelete={handleDelete}
         holdToDelete
-        renderBody={(m, tab) => (
-          <div className="space-y-4">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <AtriumButton
-                variant="primary"
-                size="sm"
-                icon={<CheckCircle2 size={13} />}
-                onClick={() => handleCloseTournee(m)}
-              >
-                {m.status === 'Completed' ? 'Réouvrir' : 'Clôturer'}
-              </AtriumButton>
-              <AtriumButton
-                variant="outline"
-                size="sm"
-                icon={<Printer size={13} />}
-                onClick={() => {
-                  setManifestToPrint(m);
-                  setIsPrintModalOpen(true);
-                }}
-              >
-                {isAr ? '05-468' : 'Lettre 05-468'}
-              </AtriumButton>
-              <AtriumButton
-                variant="secondary"
-                size="sm"
-                icon={<ShieldCheck size={13} />}
-                onClick={() => {
-                  setManifestToDischarge(m);
-                  setIsDischargeModalOpen(true);
-                }}
-              >
-                {isAr ? 'تصفية الصندوق' : 'Décharge Caisse'}
-              </AtriumButton>
-              <AtriumButton
-                variant="ghost"
-                size="sm"
-                icon={<Edit size={13} />}
-                onClick={() => openEditModal(m)}
-              >
-                {isAr ? 'تعديل' : 'Modifier'}
-              </AtriumButton>
-            </div>
-
-            {tab === 'manifest' && (
-              <div className="space-y-3 text-xs">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl space-y-2 border border-neutral-100 dark:border-neutral-800">
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Chauffeur assigné:</span>
-                    <span className="font-semibold text-black dark:text-white">{m.driverName}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Contact:</span>
-                    <span className="font-mono text-black dark:text-white">{m.driverPhone}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Véhicule:</span>
-                    <span className="font-mono font-bold text-[#d4522f]">{m.vehiclePlate}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Zone de livraison:</span>
-                    <span className="font-semibold text-black dark:text-white">{m.zoneWilaya}</span>
-                  </div>
-                </div>
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl space-y-2 border border-neutral-100 dark:border-neutral-800">
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Date d'expédition:</span>
-                    <span className="font-mono text-black dark:text-white">{m.dispatchDate}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Nombre de colis:</span>
-                    <span className="font-mono font-bold text-black dark:text-white">
-                      {m.totalShipmentsCount} colis
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {tab === 'colis' && (
-              <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl space-y-2 text-xs border border-neutral-100 dark:border-neutral-800">
-                <div className="flex justify-between items-center">
-                  <span className="text-black/55 dark:text-white/55">Colis chargés sur feuille:</span>
-                  <span className="font-mono font-bold text-black dark:text-white">
-                    {m.totalShipmentsCount}
-                  </span>
-                </div>
-                <p className="text-[11px] text-black/55 dark:text-white/55">
-                  Bordereau de chargement scellé au départ du hub. Tous les scans codes-barres sont confirmés.
-                </p>
-              </div>
-            )}
-
-            {tab === 'cod' && (
-              <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl space-y-2 text-xs border border-neutral-100 dark:border-neutral-800">
-                <div className="flex justify-between items-center">
-                  <span className="text-black/55 dark:text-white/55">Total COD à encaisser:</span>
-                  <span className="font-mono font-bold text-black dark:text-white">
-                    {formatMoney(m.totalCodExpectedDzd)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-black/55 dark:text-white/55">Montant reversé en caisse:</span>
-                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                    {formatMoney(m.totalCodCollectedDzd || 0)}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {tab === 'notes' && (
-              <div className="space-y-3 text-xs">
-                <p className="text-black/55 dark:text-white/55 text-[11px]">
-                  Ordre de tournée, consignes de sécurité et instructions pour colis fragiles :
-                </p>
-                <textarea
-                  rows={6}
-                  value={inspectorNotes}
-                  onChange={(e) => setInspectorNotes(e.target.value)}
-                  placeholder="Noter les points relais à livrer en priorité, numéros urgents..."
-                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none"
+        renderBody={(m, tab) => {
+          if (tab === 'colis') {
+            return (
+              <>
+                <InspectorSection index={0}>
+                  <InspectorBigStat
+                    value={`${m.totalShipmentsCount} colis`}
+                    tone="accent"
+                    caption={isAr ? 'Bordereau de chargement scellé' : 'Bordereau de chargement scellé au départ du hub'}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label={isAr ? 'طباعة بيان الشحن (05-468)' : 'Imprimer Lettre de Voiture 05-468'}
+                    icon={<Printer size={14} />}
+                    tone="dark"
+                    onClick={() => {
+                      setManifestToPrint(m);
+                      setIsPrintModalOpen(true);
+                    }}
+                  />
+                </InspectorSection>
+              </>
+            );
+          }
+          if (tab === 'cod') {
+            return (
+              <>
+                <InspectorSection index={0}>
+                  <InspectorBigStat
+                    value={formatMoney(m.totalCodExpectedDzd, language)}
+                    tone="accent"
+                    caption={isAr ? 'مجموع مبالغ COD المطلوبة' : 'Total COD Attendu'}
+                    action={{
+                      label: isAr ? 'تصفية الصندوق وتبرئة الذمة' : 'Décharge Caisse Chauffeur',
+                      onClick: () => {
+                        setManifestToDischarge(m);
+                        setIsDischargeModalOpen(true);
+                      },
+                    }}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'التسوية النقدية' : 'Encaissement Chauffeur'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'المبلغ المطلوب' : 'COD Attendu'}
+                      value={formatMoney(m.totalCodExpectedDzd, language)}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'المبلغ المحصّل بالصندوق' : 'Montant Reversé'}
+                      value={formatMoney(m.totalCodCollectedDzd || 0, language)}
+                      tone="ok"
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : 'Actions Rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'toggle',
+                      label: m.status === 'Completed' ? 'Réouvrir' : 'Clôturer',
+                      icon: <CheckCircle2 size={16} />,
+                      primary: true,
+                      onClick: () => handleCloseTournee(m),
+                    },
+                    {
+                      id: 'print',
+                      label: 'Lettre 05-468',
+                      icon: <Printer size={16} />,
+                      onClick: () => {
+                        setManifestToPrint(m);
+                        setIsPrintModalOpen(true);
+                      },
+                    },
+                    {
+                      id: 'discharge',
+                      label: isAr ? 'تبرئة الذمة' : 'Décharge',
+                      icon: <ShieldCheck size={16} />,
+                      onClick: () => {
+                        setManifestToDischarge(m);
+                        setIsDischargeModalOpen(true);
+                      },
+                    },
+                    {
+                      id: 'edit',
+                      label: isAr ? 'تعديل' : 'Modifier',
+                      icon: <Edit size={16} />,
+                      onClick: () => openEditModal(m),
+                    },
+                  ]}
                 />
-                <AtriumButton
-                  variant="primary"
-                  size="sm"
-                  icon={noteSaved ? <Check size={14} /> : <Save size={14} />}
-                  onClick={handleSaveNotes}
-                >
-                  {noteSaved
-                    ? isAr ? 'تم الحفظ' : 'Consignes enregistrées'
-                    : isAr ? 'حفظ' : 'Enregistrer'}
-                </AtriumButton>
-              </div>
-            )}
-          </div>
-        )}
+              </InspectorSection>
+
+              <InspectorSection index={1} title={isAr ? 'معلومات السائق والمركبة' : 'Chauffeur & Acheminement'}>
+                <InspectorCard>
+                  <InspectorKeyValue label={isAr ? 'السائق' : 'Chauffeur'} value={m.driverName} mono={false} />
+                  <InspectorKeyValue
+                    label={isAr ? 'الهاتف' : 'Contact'}
+                    value={m.driverPhone}
+                    copyText={m.driverPhone}
+                    onCopied={() => showToast('Téléphone copié', 'info')}
+                  />
+                  <InspectorKeyValue label={isAr ? 'المركبة' : 'Véhicule'} value={m.vehiclePlate} tone="accent" />
+                  <InspectorKeyValue label={isAr ? 'المنطقة' : 'Secteur'} value={m.zoneWilaya || 'Alger'} mono={false} />
+                  <InspectorKeyValue label={isAr ? 'التاريخ' : "Date d'expédition"} value={m.dispatchDate} isLast />
+                </InspectorCard>
+              </InspectorSection>
+
+              <InspectorSection index={2} title={isAr ? 'تعليمات المسار' : 'Consignes de Tournée'}>
+                <InspectorNotesField
+                  value={inspectorNotes}
+                  onSave={(next) => {
+                    setInspectorNotes(next);
+                    showToast(isAr ? 'تم حفظ تعليمات المسار' : 'Consignes de tournée enregistrées', 'success');
+                  }}
+                  placeholder="Noter les points relais prioritaires, numéros urgents..."
+                />
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       {isModalOpen && (

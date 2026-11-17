@@ -6,14 +6,12 @@ import {
   Gavel,
   FileText,
   CheckCircle2,
-  Pin,
-  Trash2,
   X,
   Check,
   ArrowRight,
   MapPin,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import { useAtriumSelector, showToast } from '../../../services/store';
 import { LegalHearing } from '../../../types';
 import { useLegalData } from './legalData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -33,6 +31,14 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -49,17 +55,15 @@ const extractStr = (v: unknown): string => {
 };
 
 export const LegalHearingsView: React.FC<any> = () => {
-  const {
-    language,
-    activeLegalRole,
-    currentBusiness,
-    currentBranch,
-    currentUser,
-    branches,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-  } = useAtriumStore();
+  const language = useAtriumSelector((s) => s.language);
+  const activeLegalRole = useAtriumSelector((s) => s.activeLegalRole);
+  const currentBusiness = useAtriumSelector((s) => s.currentBusiness);
+  const currentBranch = useAtriumSelector((s) => s.currentBranch);
+  const currentUser = useAtriumSelector((s) => s.currentUser);
+  const branches = useAtriumSelector((s) => s.branches);
+  const isSyncing = useAtriumSelector((s) => s.isSyncing);
+  const networkMode = useAtriumSelector((s) => s.networkMode);
+  const retryCloudSync = useAtriumSelector((s) => s.retryCloudSync);
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -371,6 +375,129 @@ export const LegalHearingsView: React.FC<any> = () => {
     [isAr, isEn, pinnedIds, branchesById, currentBranch, language]
   );
 
+  const getRowMeta = useCallback(
+    (h: LegalHearing): KineticRowMeta => {
+      const isDone = Boolean(h.isCompleted);
+      const isPostponed = h.status === 'Postponed';
+      return {
+        avatarText: (h.postponementCode || 'AU').slice(0, 2).toUpperCase(),
+        subtitle: `${h.matterNumber} · ${h.courtName}`,
+        categoryLabel: h.postponementCode || h.chamber || 'Rôle',
+        statusTone: isDone ? 'ok' : isPostponed ? 'warn' : 'accent',
+        statusLabel: isDone ? (isAr ? 'تمت' : 'Plaidée') : isPostponed ? (isAr ? 'مؤجلة' : 'Renvoi') : isAr ? 'مبرمجة' : 'Fixée',
+        metricPrimary: `${h.hearingDate}${h.hearingTime ? ` · ${h.hearingTime}` : ''}`,
+        metricSecondary: h.courtRoom || undefined,
+      };
+    },
+    [isAr]
+  );
+
+  const getFanActions = useCallback(
+    (h: LegalHearing): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'تفاصيل الجلسة' : 'Fiche Audience',
+        icon: <FileText className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedHearing(h);
+          setActiveInspectorTab('audience');
+        },
+      },
+      {
+        id: 'plead',
+        label: isAr ? 'تمت المرافعة' : 'Plaidée',
+        icon: <Gavel className="w-[15px] h-[15px]" />,
+        onClick: () => {
+          updateHearing({
+            ...h,
+            isCompleted: true,
+            status: 'Attended',
+            resultSummary: 'Plaidée sur le fond. En attente de délibéré.',
+          });
+          showToast(isAr ? 'تم تسجيل مرافعة القضية' : 'Audience plaidée avec succès', 'success');
+        },
+      },
+      {
+        id: 'renvoi',
+        label: isAr ? 'تأجيل RPP' : 'Renvoi RPP',
+        icon: <Clock className="w-[15px] h-[15px]" />,
+        onClick: () => {
+          updateHearing({
+            ...h,
+            postponementCode: 'RPP',
+            status: 'Postponed',
+            resultSummary: 'Renvoi accordé pour production de pièces adverses',
+          });
+          showToast(
+            isAr ? 'تم تسجيل تأجيل الجلسة (RPP)' : 'Renvoi pour pièces (RPP) enregistré',
+            'info'
+          );
+        },
+      },
+    ],
+    [isAr, updateHearing]
+  );
+
+  const getDetailActions = useCallback(
+    (h: LegalHearing): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'تفاصيل الجلسة' : 'Fiche Audience',
+        icon: <FileText className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedHearing(h);
+          setActiveInspectorTab('audience');
+        },
+      },
+      {
+        id: 'plead',
+        label: isAr ? 'تمت المرافعة' : 'Déclarer Plaidée',
+        icon: <Gavel className="w-3.5 h-3.5 text-[#096b40]" />,
+        onClick: () => {
+          updateHearing({
+            ...h,
+            isCompleted: true,
+            status: 'Attended',
+            resultSummary: 'Plaidée sur le fond. En attente de délibéré.',
+          });
+          showToast(isAr ? 'تم تسجيل مرافعة القضية' : 'Audience plaidée avec succès', 'success');
+        },
+      },
+      {
+        id: 'renvoi',
+        label: isAr ? 'تأجيل (RPP)' : 'Reporter (RPP)',
+        icon: <Clock className="w-3.5 h-3.5 text-amber-600" />,
+        onClick: () => {
+          updateHearing({
+            ...h,
+            postponementCode: 'RPP',
+            status: 'Postponed',
+            resultSummary: 'Renvoi accordé pour production de pièces adverses',
+          });
+          showToast(
+            isAr ? 'تم تسجيل تأجيل الجلسة (RPP)' : 'Renvoi pour pièces (RPP) enregistré',
+            'info'
+          );
+        },
+      },
+      {
+        id: 'delibere',
+        label: isAr ? 'حجز للمداولة' : 'Mise en Délibéré',
+        icon: <CheckCircle2 className="w-3.5 h-3.5" />,
+        onClick: () => {
+          updateHearing({
+            ...h,
+            postponementCode: 'DELIB',
+            resultSummary: 'Affaire mise en délibéré pour prononcé de jugement',
+          });
+          showToast(isAr ? 'تم حجز القضية للمداولة' : 'Affaire mise en délibéré', 'success');
+        },
+      },
+    ],
+    [isAr, updateHearing]
+  );
+
   const getCustomActions = useCallback(
     (h: LegalHearing) => [
       {
@@ -572,11 +699,6 @@ export const LegalHearingsView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<Scale size={22} />}
         title={screenTitle}
-        subtitle={
-          isAr
-            ? 'رول الجلسات اليومي ومتابعة الآجال الإجرائية CPCA'
-            : 'Rôle des audiences judiciaires & délais péremptoires CPCA'
-        }
         secondaryActions={
           <AtriumButton
             variant="outline"
@@ -804,10 +926,11 @@ export const LegalHearingsView: React.FC<any> = () => {
         ) : (
           <UniversalDataCollection<LegalHearing>
             hideToolbar
-            data={filteredHearings}
+            items={filteredHearings}
             keyExtractor={(h) => h.id}
             columns={hearingColumns}
-            defaultViewMode={viewMode}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+            defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
             onBulkDelete={(ids) => {
@@ -835,39 +958,15 @@ export const LegalHearingsView: React.FC<any> = () => {
               setSelectedHearing(h);
               setDrawerOpenerEl(el || null);
             }}
+            getRowMeta={getRowMeta}
+            getFanActions={getFanActions}
+            getDetailActions={getDetailActions}
             onDelete={(h) => {
               deleteHearing(h.id);
               if (activeHearing?.id === h.id) setSelectedHearing(null);
               showToast(isAr ? 'تم حذف الجلسة' : 'Audience retirée du rôle', 'info');
             }}
             customActions={getCustomActions}
-            renderCard={(h) => (
-              <div className="space-y-2 text-left rtl:text-right">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-bold text-[#d4522f] font-mono">
-                    {h.matterNumber}
-                  </span>
-                  <span
-                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
-                      h.isCompleted
-                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
-                        : 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
-                    }`}
-                  >
-                    {h.isCompleted ? (isAr ? 'تمت' : 'Plaidée') : isAr ? 'مبرمجة' : 'Fixée'}
-                  </span>
-                </div>
-                <h3 className="text-xs font-bold text-black dark:text-white truncate">
-                  {isAr && h.matterTitleAr ? h.matterTitleAr : h.matterTitle}
-                </h3>
-                <div className="text-[11px] text-black/55 dark:text-white/55 pt-1 flex items-center justify-between">
-                  <span>{h.hearingDate}</span>
-                  <span className="font-mono text-black/55 dark:text-white/55">
-                    {h.courtRoom}
-                  </span>
-                </div>
-              </div>
-            )}
             emptyTitle={isAr ? 'لا توجد جلسات' : 'Aucune audience enregistrée'}
             emptyDescription={
               isAr
@@ -911,7 +1010,8 @@ export const LegalHearingsView: React.FC<any> = () => {
         subtitle={`${activeHearing?.matterNumber || ''} · ${activeHearing?.hearingDate || ''} ${
           activeHearing?.hearingTime ? `à ${activeHearing.hearingTime}` : ''
         }`}
-        avatarText={activeHearing?.postponementCode || 'AU'}
+        categoryLabel={activeHearing?.courtName || 'Juridiction'}
+        avatarText={(activeHearing?.postponementCode || 'AU').slice(0, 2).toUpperCase()}
         branchName={
           activeHearing
             ? resolveRecordBranch(activeHearing, branchesById, currentBranch, language).name
@@ -922,15 +1022,25 @@ export const LegalHearingsView: React.FC<any> = () => {
             ? isAr
               ? 'تمت المرافعة'
               : 'Plaidée'
+            : activeHearing?.status === 'Postponed'
+            ? isAr
+              ? 'مؤجلة'
+              : 'Renvoi'
             : isAr
             ? 'مبرمجة'
             : 'Fixée'
         }
+        statusClassName={
+          activeHearing?.isCompleted
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : activeHearing?.status === 'Postponed'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+        }
         tabs={[
           { id: 'audience', label: isAr ? 'الجلسة' : 'Audience' },
-          { id: 'procedure', label: isAr ? 'الدعوى' : 'Dossier' },
-          { id: 'delais', label: isAr ? 'المواعيد' : 'Délais CPCA' },
-          { id: 'notes', label: isAr ? 'القرارات' : 'Renvoi' },
+          { id: 'procedure', label: isAr ? 'الدعوى والقرار' : 'Dossier & Renvoi' },
+          { id: 'delais', label: isAr ? 'المواعيد CPCA' : 'Délais CPCA' },
         ]}
         activeTab={activeInspectorTab}
         onTabChange={setActiveInspectorTab}
@@ -942,170 +1052,180 @@ export const LegalHearingsView: React.FC<any> = () => {
         }}
         holdToDelete
         renderBody={(h, tab) => {
+          const renvoiLabel =
+            h.postponementCode === 'RPP'
+              ? isAr
+                ? 'تأجيل لتبادل الوثائق'
+                : 'Renvoi pour pièces'
+              : h.postponementCode === 'RPO'
+              ? isAr
+                ? 'تأجيل للإدلاء بالملاحظات'
+                : 'Renvoi pour observations'
+              : isAr
+              ? 'مداولة'
+              : 'En délibéré';
+
           if (tab === 'procedure') {
             return (
-              <div className="space-y-4 text-xs">
-                <div>
-                  <div className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase">
-                    {isAr ? 'رقم القضية والموضوع' : 'N° Dossier & Intitulé'}
-                  </div>
-                  <div className="font-mono font-bold text-[#d4522f] mt-1">{h.matterNumber}</div>
-                  <div className="font-semibold text-black dark:text-white mt-1">
-                    {isAr && h.matterTitleAr ? h.matterTitleAr : h.matterTitle}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase">
-                    {isAr ? 'الهدف من الجلسة' : 'Démarche Procédurale'}
-                  </div>
-                  <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-[#E6DED6] dark:border-neutral-700 mt-1 text-black/75 dark:text-white/80">
-                    {h.purpose || 'Plaidoirie sur le fond'}
-                  </div>
-                </div>
-              </div>
+              <>
+                <InspectorSection index={0} title={isAr ? 'الدعوى والموضوع' : 'Dossier & Démarche'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'رقم القضية' : 'N° Dossier'}
+                      value={h.matterNumber}
+                      tone="accent"
+                      copyText={h.matterNumber}
+                      onCopied={() => showToast(isAr ? 'تم النسخ' : 'Référence copiée', 'info')}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'الموضوع' : 'Intitulé'}
+                      value={isAr && h.matterTitleAr ? h.matterTitleAr : h.matterTitle}
+                      mono={false}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'الهدف الإجرائي' : 'Démarche'}
+                      value={h.purpose || 'Plaidoirie sur le fond'}
+                      mono={false}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+
+                <InspectorSection index={1} title={isAr ? 'قرار المحكمة والتأجيل' : 'Décision & Renvoi'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'رمز التأجيل' : 'Code Renvoi'}
+                      value={`${h.postponementCode || 'RPP'} · ${renvoiLabel}`}
+                      tone="warn"
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'ملخص الجلسة' : 'Compte-rendu'}
+                      value={h.resultSummary || "En attente d'audience."}
+                      mono={false}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
             );
           }
+
           if (tab === 'delais') {
             return (
-              <div className="space-y-4 text-xs">
-                <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-800 dark:text-amber-300">
-                  <div className="flex items-center gap-1.5 font-bold">
-                    <Clock size={14} />
-                    <span>{isAr ? 'رادار المواعيد القانونية CPCA' : 'Régime Péremptoire CPCA'}</span>
-                  </div>
-                  <p className="text-[11px] mt-1 leading-relaxed">
-                    {isAr
-                      ? 'طبقا للمادة 336 من قانون الإجراءات المدنية والإدارية، ميعاد الاستئناف محدد بـ 30 يوما مع مراعاة أيام العطل.'
-                      : 'Sous réserve de notification par huissier selon CPCA Art. 336 (30 jours) avec prorogation Art. 405.'}
-                  </p>
-                </div>
-                <AtriumButton
-                  variant="outline"
-                  onClick={() => setIsCpcaModalOpen(true)}
-                  className="w-full text-xs flex items-center justify-center gap-2"
-                >
-                  <Scale size={14} />
-                  <span>{isAr ? 'فتح حاسبة الآجال' : "Calculer Délai d'Appel"}</span>
-                </AtriumButton>
-              </div>
-            );
-          }
-          if (tab === 'notes') {
-            return (
-              <div className="space-y-4 text-xs">
-                <div>
-                  <div className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase">
-                    {isAr ? 'قرار المحكمة ورمز التأجيل' : 'Décision / Code Renvoi'}
-                  </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="font-mono font-bold text-sm bg-neutral-200 dark:bg-neutral-800 px-2 py-0.5 rounded text-black dark:text-white">
-                      {h.postponementCode || 'RPP'}
-                    </span>
-                    <span className="text-black/60 dark:text-white/65">
-                      {h.postponementCode === 'RPP'
-                        ? isAr
-                          ? 'تأجيل لتبادل الوثائق'
-                          : 'Renvoi pour pièces'
-                        : h.postponementCode === 'RPO'
-                        ? isAr
-                          ? 'تأجيل للإدلاء بالملاحظات'
-                          : 'Renvoi pour observations'
-                        : isAr
-                        ? 'مداولة'
-                        : 'En délibéré'}
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase">
-                    {isAr ? 'ملاحظات المحامي' : 'Consignes & Compte-rendu'}
-                  </div>
-                  <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-[#E6DED6] dark:border-neutral-700 mt-1 text-black/75 dark:text-white/80">
-                    {h.resultSummary || "En attente d'audience."}
-                  </div>
-                </div>
-              </div>
+              <>
+                <InspectorSection index={0} title={isAr ? 'الآجال الإجرائية CPCA' : 'Régime Péremptoire CPCA'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'المرجع القانوني' : 'Base Légale'}
+                      value="CPCA Art. 336 & Art. 405"
+                      tone="warn"
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'المهلة القانونية' : "Délai d'Appel"}
+                      value={isAr ? '30 يوماً (مع تمديد العطل)' : '30 jours + prorogation'}
+                      mono={false}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label={isAr ? 'فتح حاسبة الآجال CPCA' : "Calculer Délai d'Appel CPCA"}
+                    icon={<Scale size={15} />}
+                    onClick={() => setIsCpcaModalOpen(true)}
+                  />
+                </InspectorSection>
+              </>
             );
           }
 
           return (
-            <div className="space-y-4 text-xs">
-              <div>
-                <div className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase">
-                  {isAr ? 'المحكمة والهيئة القضائية' : 'Juridiction & Siège'}
-                </div>
-                <div className="font-bold text-black dark:text-white mt-1">{h.courtName}</div>
-                <div className="text-black/55 dark:text-white/55 mt-0.5">
-                  {h.chamber} · {h.courtRoom}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-2 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-[#E6DED6] dark:border-neutral-700">
-                <div>
-                  <div className="text-[10px] text-black/55 dark:text-white/55">
-                    {isAr ? 'تاريخ الجلسة' : "Date d'Audience"}
-                  </div>
-                  <div className="font-bold font-mono text-black dark:text-white mt-0.5">
-                    {h.hearingDate}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[10px] text-black/55 dark:text-white/55">
-                    {isAr ? 'ساعة النداء' : "Heure d'Appel"}
-                  </div>
-                  <div className="font-bold font-mono text-[#d4522f] mt-0.5">
-                    {h.hearingTime || '09:30'}
-                  </div>
-                </div>
-              </div>
-              <div>
-                <div className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase">
-                  {isAr ? 'القاضي رئيس الجلسة' : 'Magistrat du Siège'}
-                </div>
-                <div className="font-semibold text-black dark:text-white mt-1">
-                  {h.benchJudge || 'Président de Chambre'}
-                </div>
-              </div>
-              <div className="pt-2 border-t border-[#E6DED6] dark:border-neutral-800 flex items-center gap-2">
-                <AtriumButton
-                  variant="primary"
-                  onClick={() => {
-                    updateHearing({
-                      ...h,
-                      isCompleted: true,
-                      status: 'Attended',
-                      resultSummary: 'Audience plaidée. Cause entendue.',
-                    });
-                    showToast(
-                      isAr ? 'تم تسجيل مرافعة القضية' : 'Audience validée plaidée',
-                      'success'
-                    );
-                  }}
-                  className="flex-1 text-xs"
-                  icon={<Check size={14} />}
-                >
-                  {isAr ? 'تمت المرافعة' : 'Plaidée'}
-                </AtriumButton>
-                <AtriumButton
-                  variant="outline"
-                  onClick={() => {
-                    updateHearing({
-                      ...h,
-                      postponementCode: 'RPP',
-                      status: 'Postponed',
-                      resultSummary: 'Renvoi sollicité pour communication de nouvelles pièces',
-                    });
-                    showToast(
-                      isAr ? 'تم تسجيل التأجيل (RPP)' : 'Renvoi RPP accordé',
-                      'info'
-                    );
-                  }}
-                  className="flex-1 text-xs"
-                  icon={<Clock size={14} />}
-                >
-                  {isAr ? 'تأجيل RPP' : 'Renvoi RPP'}
-                </AtriumButton>
-              </div>
-            </div>
+            <>
+              <InspectorSection index={0}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'plead',
+                      label: isAr ? 'تمت المرافعة' : 'Plaidée',
+                      icon: <Check size={16} />,
+                      primary: true,
+                      onClick: () => {
+                        updateHearing({
+                          ...h,
+                          isCompleted: true,
+                          status: 'Attended',
+                          resultSummary: 'Audience plaidée. Cause entendue.',
+                        });
+                        showToast(
+                          isAr ? 'تم تسجيل مرافعة القضية' : 'Audience validée plaidée',
+                          'success'
+                        );
+                      },
+                    },
+                    {
+                      id: 'rpp',
+                      label: isAr ? 'تأجيل RPP' : 'Renvoi RPP',
+                      icon: <Clock size={16} />,
+                      onClick: () => {
+                        updateHearing({
+                          ...h,
+                          postponementCode: 'RPP',
+                          status: 'Postponed',
+                          resultSummary: 'Renvoi sollicité pour communication de nouvelles pièces',
+                        });
+                        showToast(isAr ? 'تم تسجيل التأجيل (RPP)' : 'Renvoi RPP accordé', 'info');
+                      },
+                    },
+                    {
+                      id: 'delib',
+                      label: isAr ? 'مداولة' : 'Délibéré',
+                      icon: <Gavel size={16} />,
+                      onClick: () => {
+                        updateHearing({
+                          ...h,
+                          postponementCode: 'DELIB',
+                          resultSummary: 'Affaire mise en délibéré pour prononcé de jugement',
+                        });
+                        showToast(isAr ? 'تم حجز القضية للمداولة' : 'Affaire mise en délibéré', 'success');
+                      },
+                    },
+                    {
+                      id: 'cpca',
+                      label: isAr ? 'حاسبة CPCA' : 'Délai CPCA',
+                      icon: <Scale size={16} />,
+                      onClick: () => setIsCpcaModalOpen(true),
+                    },
+                  ]}
+                />
+              </InspectorSection>
+
+              <InspectorSection index={1} title={isAr ? 'المحكمة والهيئة القضائية' : 'Juridiction & Siège'}>
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={isAr ? 'المحكمة' : 'Juridiction'}
+                    value={h.courtName}
+                    mono={false}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'الغرفة والقاعة' : 'Chambre & Salle'}
+                    value={`${h.chamber || 'Chambre'} · ${h.courtRoom || 'Salle'}`}
+                    mono={false}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'تاريخ وساعة النداء' : "Date & Heure d'Appel"}
+                    value={`${h.hearingDate} · ${h.hearingTime || '09:30'}`}
+                    tone="accent"
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'القاضي رئيس الجلسة' : 'Magistrat du Siège'}
+                    value={h.benchJudge || 'Président de Chambre'}
+                    mono={false}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+            </>
           );
         }}
       />

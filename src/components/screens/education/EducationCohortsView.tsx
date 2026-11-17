@@ -4,9 +4,11 @@ import {
   GraduationCap,
   Plus,
   X,
-  CheckCircle2,
   Check,
   Play,
+  Eye,
+  Trash2,
+  CheckCircle2,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { CohortStatus, EduCohort } from '../../../types';
@@ -26,6 +28,17 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorProgressBar,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -66,6 +79,7 @@ export const EducationCohortsView: React.FC = () => {
 
   const [selectedCohort, setSelectedCohort] = useState<EduCohort | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<'overview' | 'syllabus' | 'roster'>('overview');
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const [isAddCohortModalOpen, setIsAddCohortModalOpen] = useState(false);
@@ -283,6 +297,95 @@ export const EducationCohortsView: React.FC = () => {
 
   const activeFiltersCount = (branchFilter !== 'All' ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0);
 
+  const getCohortRowMeta = useCallback(
+    (cohort: EduCohort): KineticRowMeta => {
+      const pct = Math.min(100, Math.round((cohort.enrolledCount / Math.max(1, cohort.maxStudents)) * 100));
+      return {
+        avatarText: cohort.name.slice(0, 2).toUpperCase(),
+        subtitle: `${cohort.courseTitle} · ${cohort.instructorName}`,
+        categoryLabel: cohort.classroomName || 'Campus',
+        statusTone:
+          cohort.status === 'InProgress'
+            ? 'ok'
+            : cohort.status === 'Enrolling'
+            ? 'info'
+            : cohort.status === 'Completed'
+            ? 'neutral'
+            : 'warn',
+        statusLabel: localizeStatus(cohort.status, language),
+        metricPrimary: formatMoney(cohort.tuitionFee),
+        metricSecondary: `${cohort.enrolledCount}/${cohort.maxStudents} (${pct}%)`,
+      };
+    },
+    [language]
+  );
+
+  const getCohortFanActions = useCallback(
+    (cohort: EduCohort): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'تفاصيل' : isEn ? 'Details' : 'Détails',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedCohort(cohort);
+          setInspectorTab('overview');
+        },
+      },
+      {
+        id: 'start',
+        label: isAr ? 'تفعيل' : isEn ? 'Launch' : 'Lancer',
+        icon: <Play className="w-[15px] h-[15px]" />,
+        onClick: () => updateEduCohort(cohort.id, { status: 'InProgress' }),
+      },
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer',
+        icon: <Trash2 className="w-[15px] h-[15px]" />,
+        isDanger: true,
+        onClick: () => {
+          deleteEduCohort(cohort.id);
+          if (selectedCohort?.id === cohort.id) setSelectedCohort(null);
+        },
+      },
+    ],
+    [isAr, isEn, updateEduCohort, deleteEduCohort, selectedCohort?.id]
+  );
+
+  const getCohortDetailActions = useCallback(
+    (cohort: EduCohort): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'فتح' : isEn ? 'Open' : 'Ouvrir',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedCohort(cohort);
+          setInspectorTab('overview');
+        },
+      },
+      ...(cohort.status !== 'InProgress'
+        ? [
+            {
+              id: 'start',
+              label: isAr ? 'تفعيل الفوج' : isEn ? 'Start Cycle' : 'Lancer Cycle',
+              icon: <Play className="w-3.5 h-3.5 text-[#d4522f]" />,
+              onClick: () => updateEduCohort(cohort.id, { status: 'InProgress' }),
+            },
+          ]
+        : []),
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer',
+        icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+        onClick: () => {
+          deleteEduCohort(cohort.id);
+          if (selectedCohort?.id === cohort.id) setSelectedCohort(null);
+        },
+      },
+    ],
+    [isAr, isEn, updateEduCohort, deleteEduCohort, selectedCohort?.id]
+  );
+
   const cohortColumns: ColumnDefinition<EduCohort>[] = useMemo(
     () => [
       {
@@ -432,7 +535,6 @@ export const EducationCohortsView: React.FC = () => {
       <ScreenHeaderBar
         icon={<GraduationCap size={22} />}
         title={t('edu_cohorts_title')}
-        subtitle={`${eduCohorts.length} ${isAr ? 'أفواج دراسية' : isEn ? 'academic cohorts' : 'cohortes académiques'}`}
         primaryAction={{
           label: t('edu_modal_add_cohort'),
           icon: <Plus size={15} />,
@@ -510,9 +612,10 @@ export const EducationCohortsView: React.FC = () => {
 
         <UniversalDataCollection<EduCohort>
           hideToolbar
-          data={sortedCohorts}
+          items={sortedCohorts}
           keyExtractor={(c) => c.id}
-          viewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
           columns={cohortColumns}
           isLoading={isSyncing || networkMode === 'force_skeleton'}
           isOffline={networkMode === 'offline'}
@@ -541,11 +644,16 @@ export const EducationCohortsView: React.FC = () => {
           onItemClick={(cohort, el) => {
             setDrawerOpenerEl(el || null);
             setSelectedCohort(cohort);
+            setInspectorTab('overview');
           }}
           onViewDetails={(cohort, el) => {
             setDrawerOpenerEl(el || null);
             setSelectedCohort(cohort);
+            setInspectorTab('overview');
           }}
+          getRowMeta={getCohortRowMeta}
+          getFanActions={getCohortFanActions}
+          getDetailActions={getCohortDetailActions}
           onDelete={(cohort) => {
             deleteEduCohort(cohort.id);
             if (selectedCohort?.id === cohort.id) setSelectedCohort(null);
@@ -565,51 +673,6 @@ export const EducationCohortsView: React.FC = () => {
             setSelectedCohortIds(new Set<string>());
             if (selectedCohort && ids.has(selectedCohort.id)) setSelectedCohort(null);
             showToast({ type: 'info', title: 'Suppression', message: `${ids.size} cohortes supprimées.` });
-          }}
-          renderCard={(cohort) => {
-            const occupancyPercent = Math.min(
-              100,
-              Math.round((cohort.enrolledCount / Math.max(1, cohort.maxStudents)) * 100)
-            );
-            const completedMilestones = cohort.syllabusMilestones?.filter((m) => m.completed).length || 0;
-            const totalMilestones = cohort.syllabusMilestones?.length || 0;
-            const b = resolveRecordBranch(cohort, branchesById, currentBranch, language);
-            return (
-              <div className="flex flex-col items-center justify-center w-full">
-                <div className="w-20 h-20 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-[28px] font-bold shadow-md mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
-                  <BookOpen size={28} />
-                </div>
-                <h3 className="text-[16px] font-bold text-black dark:text-white truncate max-w-[210px] mb-1 tracking-tight text-center">
-                  {cohort.name}
-                </h3>
-                <span className="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 mb-2 truncate max-w-[200px]">
-                  {cohort.courseTitle} · {b.name}
-                </span>
-                <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-2">
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-black/55 dark:text-white/55">{cohort.instructorName}</span>
-                    <span className="font-bold text-black dark:text-white tabular-nums">
-                      {formatMoney(cohort.tuitionFee)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-black/55 dark:text-white/55 font-medium">
-                      {cohort.enrolledCount} / {cohort.maxStudents} seats
-                    </span>
-                    <span className="font-bold text-[#d4522f] tabular-nums">{occupancyPercent}%</span>
-                  </div>
-                  <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
-                    <div className="h-full bg-[#d4522f] rounded-full transition-all" style={{ width: `${occupancyPercent}%` }} />
-                  </div>
-                  <div className="flex items-center justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800/80 text-[11px]">
-                    <span className="text-black/55 dark:text-white/55">
-                      {totalMilestones > 0 ? `${completedMilestones}/${totalMilestones} Milestones` : cohort.scheduleSummary}
-                    </span>
-                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">{cohort.status}</span>
-                  </div>
-                </div>
-              </div>
-            );
           }}
           emptyTitle={t('edu_no_cohorts_found')}
           emptyDescription={t('edu_no_cohorts_found')}
@@ -642,125 +705,199 @@ export const EducationCohortsView: React.FC = () => {
         language={language}
         title={activeCohort?.name || ''}
         subtitle={`${activeCohort?.courseTitle || ''} · ${activeCohort?.scheduleSummary || ''}`}
-        avatarText={(activeCohort?.name || 'C').charAt(0).toUpperCase()}
+        categoryLabel={activeCohort?.classroomName || 'Campus'}
+        avatarText={(activeCohort?.name || 'CO').slice(0, 2).toUpperCase()}
         avatarColor="#d4522f"
         branchName={
           activeCohort ? resolveRecordBranch(activeCohort, branchesById, currentBranch, language).name : undefined
         }
         statusLabel={activeCohort ? localizeStatus(activeCohort.status, language) : undefined}
-        onSelectItem={(c) => setSelectedCohort(c)}
+        statusClassName={
+          activeCohort?.status === 'InProgress'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : activeCohort?.status === 'Enrolling'
+            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+        }
+        tabs={[
+          { id: 'overview', label: isAr ? 'البرنامج' : isEn ? 'Overview' : 'Programme' },
+          { id: 'syllabus', label: isAr ? 'المنهاج' : isEn ? 'Syllabus' : 'Syllabus' },
+          { id: 'roster', label: isAr ? 'المسجلون' : isEn ? 'Roster' : 'Inscrits' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={(id) => setInspectorTab(id as 'overview' | 'syllabus' | 'roster')}
+        onSelectItem={(c) => {
+          setSelectedCohort(c);
+          setInspectorTab('overview');
+        }}
         onClose={() => setSelectedCohort(null)}
         onDelete={(c) => {
           deleteEduCohort(c.id);
           setSelectedCohort(null);
         }}
-        renderBody={(cohort) => (
-          <div className="space-y-6 text-xs">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800">
-                <span className="text-[10px] text-black/55 dark:text-white/55 block uppercase font-medium">
-                  {isAr ? 'المدرّب / الأستاذ' : isEn ? 'Instructor' : 'Formateur'}
-                </span>
-                <span className="font-semibold text-black dark:text-white">{cohort.instructorName}</span>
-              </div>
-              <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800">
-                <span className="text-[10px] text-black/55 dark:text-white/55 block uppercase font-medium">
-                  {isAr ? 'القاعة الدراسية' : isEn ? 'Classroom' : 'Salle'}
-                </span>
-                <span className="font-semibold text-black dark:text-white">{cohort.classroomName || 'Room 1'}</span>
-              </div>
-              <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800">
-                <span className="text-[10px] text-black/55 dark:text-white/55 block uppercase font-medium">
-                  {isAr ? 'رسوم الدورة' : isEn ? 'Tuition Fee' : "Frais d'inscription"}
-                </span>
-                <span className="font-semibold text-black dark:text-white">{formatMoney(cohort.tuitionFee)}</span>
-              </div>
-              <div className="p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800">
-                <span className="text-[10px] text-black/55 dark:text-white/55 block uppercase font-medium">
-                  {isAr ? 'المقاعد المحجوزة' : isEn ? 'Seats Filled' : 'Places occupées'}
-                </span>
-                <span className="font-semibold text-[#d4522f]">
-                  {cohort.enrolledCount} / {cohort.maxStudents} (
-                  {Math.round((cohort.enrolledCount / Math.max(1, cohort.maxStudents)) * 100)}%)
-                </span>
-              </div>
-            </div>
+        renderBody={(cohort, tab) => {
+          const occupancyPct = Math.min(100, Math.round((cohort.enrolledCount / Math.max(1, cohort.maxStudents)) * 100));
+          const completedMilestones = cohort.syllabusMilestones?.filter((m) => m.completed).length || 0;
+          const totalMilestones = cohort.syllabusMilestones?.length || 0;
 
-            <div>
-              <h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider mb-2.5">
-                {isAr ? 'مراحل ومحاور المنهاج' : isEn ? 'Syllabus Milestones & Progress' : 'Progression du programme'}
-              </h3>
-              <div className="space-y-2">
-                {cohort.syllabusMilestones?.map((milestone, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => handleToggleMilestone(cohort.id, idx)}
-                    className={`w-full text-left rtl:text-right flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                      milestone.completed
-                        ? 'border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/30 dark:bg-emerald-950/20'
-                        : 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900'
-                    }`}
-                  >
-                    <span
-                      className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 ${
-                        milestone.completed ? 'bg-emerald-600 text-white' : 'border border-neutral-300 dark:border-neutral-700'
-                      }`}
-                    >
-                      {milestone.completed && <Check size={12} />}
-                    </span>
-                    <div className="min-w-0">
-                      <span
-                        className={`font-semibold text-xs block ${
-                          milestone.completed ? 'text-black/55 dark:text-white/75 line-through' : 'text-black dark:text-white'
+          if (tab === 'syllabus') {
+            return (
+              <>
+                <InspectorSection index={0}>
+                  <InspectorBigStat
+                    value={`${completedMilestones} / ${totalMilestones}`}
+                    tone="accent"
+                    caption={isAr ? 'مراحل المنهاج المنجزة' : isEn ? 'Completed Milestones' : 'Jalons complétés'}
+                  />
+                </InspectorSection>
+                <InspectorSection
+                  index={1}
+                  title={isAr ? 'مراحل ومحاور المنهاج' : isEn ? 'Syllabus Milestones' : 'Progression du programme'}
+                >
+                  <div className="space-y-2">
+                    {cohort.syllabusMilestones?.map((milestone, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleToggleMilestone(cohort.id, idx)}
+                        className={`w-full text-left rtl:text-right flex items-start gap-3 p-3 rounded-[14px] border transition-all cursor-pointer ${
+                          milestone.completed
+                            ? 'border-emerald-200 dark:border-emerald-900/50 bg-[#DDF5E8]/40 dark:bg-emerald-950/20'
+                            : 'border-[#E6DED6] dark:border-[#3A3734] bg-[#F3EDE7] dark:bg-[#262422]'
                         }`}
                       >
-                        {milestone.title}
-                      </span>
-                      <span className="text-[10px] text-black/55 dark:text-white/55">
-                        {milestone.completed ? 'Milestone Cleared' : 'In Progress'}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider mb-2.5">
-                Enrolled Students Roster ({cohortEnrolledStudents.length})
-              </h3>
-              {cohortEnrolledStudents.length === 0 ? (
-                <p className="text-black/55 dark:text-white/55 italic">No students enrolled yet in this cohort.</p>
-              ) : (
-                <div className="space-y-1.5">
-                  {cohortEnrolledStudents.map(({ enrollment, student }) => (
-                    <div
-                      key={enrollment.id}
-                      className="flex items-center justify-between p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900"
-                    >
-                      <div>
-                        <span className="font-semibold text-black dark:text-white block">{enrollment.studentName}</span>
-                        <span className="text-[10px] text-black/55 dark:text-white/55">
-                          {student?.phone || 'No phone'} · Paid: {formatMoney(enrollment.paidAmount)}
+                        <span
+                          className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 ${
+                            milestone.completed ? 'bg-emerald-600 text-white' : 'border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900'
+                          }`}
+                        >
+                          {milestone.completed && <Check size={12} />}
                         </span>
-                      </div>
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                          enrollment.paymentStatus === 'Paid'
-                            ? 'bg-emerald-50 text-emerald-700'
-                            : 'bg-amber-50 text-amber-700'
-                        }`}
-                      >
-                        {enrollment.paymentStatus}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                        <div className="min-w-0">
+                          <span
+                            className={`font-semibold text-[13px] block ${
+                              milestone.completed ? 'text-black/55 dark:text-white/75 line-through' : 'text-black dark:text-white'
+                            }`}
+                          >
+                            {milestone.title}
+                          </span>
+                          <span className="text-[11px] text-black/55 dark:text-white/55">
+                            {milestone.completed ? 'Milestone Cleared' : 'In Progress'}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </InspectorSection>
+              </>
+            );
+          }
+
+          if (tab === 'roster') {
+            return (
+              <InspectorSection
+                index={0}
+                title={`${isAr ? 'الطلبة المسجلون' : isEn ? 'Enrolled Roster' : 'Étudiants Inscrits'} (${cohortEnrolledStudents.length})`}
+              >
+                <InspectorCard>
+                  {cohortEnrolledStudents.length === 0 ? (
+                    <InspectorListItem title={isAr ? 'لا يوجد طلبة مسجلون' : 'No students enrolled yet'} isLast />
+                  ) : (
+                    cohortEnrolledStudents.map(({ enrollment, student }, idx) => (
+                      <InspectorListItem
+                        key={enrollment.id}
+                        title={enrollment.studentName}
+                        subtitle={`${student?.phone || '—'} · ${formatMoney(enrollment.paidAmount)}`}
+                        badge={{
+                          label: enrollment.paymentStatus,
+                          tone: enrollment.paymentStatus === 'Paid' ? 'ok' : enrollment.paymentStatus === 'Overdue' ? 'danger' : 'warn',
+                        }}
+                        isLast={idx === cohortEnrolledStudents.length - 1}
+                      />
+                    ))
+                  )}
+                </InspectorCard>
+              </InspectorSection>
+            );
+          }
+
+          return (
+            <>
+              <InspectorSection index={0}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'start',
+                      label: isAr ? 'بدء الدورة' : isEn ? 'Mark In Progress' : 'Démarrer',
+                      icon: <Play size={16} />,
+                      primary: cohort.status !== 'InProgress',
+                      onClick: () => updateEduCohort(cohort.id, { status: 'InProgress' }),
+                    },
+                    {
+                      id: 'complete',
+                      label: isAr ? 'إنهاء الفوج' : isEn ? 'Mark Completed' : 'Clôturer',
+                      icon: <CheckCircle2 size={16} />,
+                      onClick: () => updateEduCohort(cohort.id, { status: 'Completed' }),
+                    },
+                  ]}
+                />
+              </InspectorSection>
+
+              <InspectorSection index={1} title={isAr ? 'طاقة الاستيعاب' : isEn ? 'Capacity' : 'Remplissage'}>
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={isAr ? 'المقاعد المحجوزة' : isEn ? 'Seats Filled' : 'Places occupées'}
+                    value={`${cohort.enrolledCount} / ${cohort.maxStudents} (${occupancyPct}%)`}
+                    tone="accent"
+                    isLast
+                  />
+                  <InspectorProgressBar percent={occupancyPct} tone="accent" animateKey={cohort.id} />
+                </InspectorCard>
+              </InspectorSection>
+
+              <InspectorSection index={2} title={isAr ? 'بطاقة الفوج' : isEn ? 'Cohort Details' : 'Fiche Cohorte'}>
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={isAr ? 'الأستاذ' : isEn ? 'Instructor' : 'Formateur'}
+                    value={cohort.instructorName}
+                    mono={false}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'القاعة' : isEn ? 'Classroom' : 'Salle'}
+                    value={cohort.classroomName || 'Room 1'}
+                    mono={false}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'البرنامج الزمني' : isEn ? 'Schedule' : 'Horaires'}
+                    value={cohort.scheduleSummary}
+                    mono={false}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'الفترة' : isEn ? 'Dates' : 'Période'}
+                    value={`${cohort.startDate} → ${cohort.endDate}`}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'رسوم التسجيل' : isEn ? 'Tuition Fee' : "Frais d'inscription"}
+                    value={formatMoney(cohort.tuitionFee)}
+                    tone="accent"
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+
+              {cohort.status !== 'Completed' && (
+                <InspectorSection index={3}>
+                  <InspectorWideButton
+                    label={isAr ? 'تبديل حالة الفوج إلى مكتمل' : isEn ? 'Complete Cohort Cycle' : 'Clôturer la Cohorte'}
+                    icon={<CheckCircle2 size={15} />}
+                    tone="dark"
+                    onClick={() => updateEduCohort(cohort.id, { status: 'Completed' })}
+                  />
+                </InspectorSection>
               )}
-            </div>
-          </div>
-        )}
+            </>
+          );
+        }}
       />
 
       {isAddCohortModalOpen && (

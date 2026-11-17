@@ -5,6 +5,7 @@ import {
   Building2,
   Printer,
   CheckCircle2,
+  Eye,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -16,7 +17,6 @@ import {
 } from '../../../services/store';
 import { StylistPayout } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
-import { AtriumButton } from '../../ui/AtriumButton';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -29,6 +29,15 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -210,10 +219,9 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
     () => [
       { value: 'All', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous', count: stylistPayouts.length },
       { value: 'Pending', label: isAr ? 'معلق' : isEn ? 'Pending' : 'En attente', count: metrics.pendingCount },
-      { value: 'Approved', label: isAr ? 'معتمد' : isEn ? 'Approved' : 'Approuvés', count: metrics.approvedCount },
       { value: 'Paid', label: isAr ? 'مدفوع' : isEn ? 'Paid' : 'Payés', count: metrics.paidCount },
     ],
-    [isAr, isEn, stylistPayouts.length, metrics.pendingCount, metrics.approvedCount, metrics.paidCount]
+    [isAr, isEn, stylistPayouts.length, metrics.pendingCount, metrics.paidCount]
   );
 
   const filterSections = useMemo<KineticFilterSection[]>(
@@ -240,17 +248,23 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
         value: selectedStatusFilter,
         onChange: (val) => setSelectedStatusFilter(val as any),
         kind: 'segmented',
-        options: statusOptions,
+        options: [
+          ...statusOptions,
+          { value: 'Approved', label: isAr ? 'معتمد' : isEn ? 'Approved' : 'Approuvés', count: metrics.approvedCount },
+        ],
       },
     ],
-    [isAr, isEn, branchFilter, stylistPayouts.length, metrics.branchOptionsWithCounts, selectedStatusFilter, statusOptions]
+    [isAr, isEn, branchFilter, stylistPayouts.length, metrics.branchOptionsWithCounts, selectedStatusFilter, statusOptions, metrics.approvedCount]
   );
 
   const activeChips = useMemo<ActiveFilterChip[]>(() => {
     const chips: ActiveFilterChip[] = [];
     if (branchFilter !== 'All') chips.push({ key: 'branch', label: branchFilter, onRemove: () => setBranchFilter('All') });
+    if (selectedStatusFilter === 'Approved') {
+      chips.push({ key: 'status', label: 'Approuvés', onRemove: () => setSelectedStatusFilter('All') });
+    }
     return chips;
-  }, [branchFilter]);
+  }, [branchFilter, selectedStatusFilter]);
 
   const columns: ColumnDefinition<StylistPayout>[] = useMemo(
     () => [
@@ -343,6 +357,104 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
       },
     ],
     [isAr, isEn, branchesById, currentBranch, language]
+  );
+
+  const getRowMeta = useCallback(
+    (payout: StylistPayout): Partial<KineticRowData> => {
+      const isPaid = payout.status === 'Paid';
+      const isApproved = payout.status === 'Approved';
+      const branch = resolveRecordBranch(payout, branchesById, currentBranch, language);
+      return {
+        subline: `${payout.periodStart} → ${payout.periodEnd}`,
+        categoryLabel: `${payout.commissionRate}% comm.`,
+        statusLabel: isPaid ? 'Payé' : isApproved ? 'Approuvé' : 'En Attente',
+        statusVariant: isPaid ? 'active' : 'warning',
+        metricPrimary: formatMoney(payout.totalPayout),
+        metricSecondary: `${payout.totalServicesCount} soins`,
+        detailCol1: {
+          heading: isAr ? 'المصففة والفرع' : isEn ? 'Stylist & Branch' : 'Styliste & Agence',
+          primaryText: payout.staffName,
+          secondaryText: `${payout.periodStart} → ${payout.periodEnd}`,
+          tertiaryText: branch.name,
+        },
+        detailCol2: {
+          heading: isAr ? 'إيراد الخدمات' : isEn ? 'Service Revenue' : 'Chiffre Prestations',
+          primaryText: formatMoney(payout.totalServiceRevenue),
+          secondaryText: `${payout.totalServicesCount} soins (${payout.commissionRate}%)`,
+        },
+        detailCol3: {
+          heading: isAr ? 'صافي العمولة' : isEn ? 'Net Commission' : 'Règlement Net',
+          primaryText: formatMoney(payout.totalPayout),
+          secondaryText: payout.paymentMethod ? `Via ${payout.paymentMethod}` : 'À régler',
+        },
+      };
+    },
+    [branchesById, currentBranch, language, isAr, isEn]
+  );
+
+  const getFanActions = useCallback(
+    (payout: StylistPayout): KineticRowFanAction[] => [
+      ...(payout.status === 'Pending'
+        ? [
+            {
+              id: 'approve',
+              label: isAr ? 'اعتماد' : isEn ? 'Approve' : 'Valider',
+              icon: <Check className="w-[15px] h-[15px]" />,
+              onClick: () => updateStylistPayoutStatus(payout.id, 'Approved'),
+            },
+          ]
+        : payout.status === 'Approved'
+        ? [
+            {
+              id: 'pay',
+              label: isAr ? 'دفع' : isEn ? 'Settle' : 'Régler',
+              icon: <CheckCircle2 className="w-[15px] h-[15px]" />,
+              onClick: () => updateStylistPayoutStatus(payout.id, 'Paid', 'BaridiMob'),
+            },
+          ]
+        : []),
+      {
+        id: 'view',
+        label: isAr ? 'معاينة' : isEn ? 'View' : 'Bordereau',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setInspectingPayout(payout);
+        },
+      },
+    ],
+    [isAr, isEn, updateStylistPayoutStatus]
+  );
+
+  const getDetailActions = useCallback(
+    (payout: StylistPayout): KineticDetailAction[] => [
+      {
+        id: 'view',
+        label: isAr ? 'معاينة' : isEn ? 'Inspect' : 'Bordereau',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => setInspectingPayout(payout),
+      },
+      ...(payout.status === 'Pending'
+        ? [
+            {
+              id: 'approve',
+              label: 'Valider',
+              icon: <Check className="w-3.5 h-3.5 text-[#096b40]" />,
+              onClick: () => updateStylistPayoutStatus(payout.id, 'Approved'),
+            },
+          ]
+        : payout.status === 'Approved'
+        ? [
+            {
+              id: 'pay',
+              label: 'Régler',
+              icon: <CheckCircle2 className="w-3.5 h-3.5 text-[#096b40]" />,
+              onClick: () => updateStylistPayoutStatus(payout.id, 'Paid', 'BaridiMob'),
+            },
+          ]
+        : []),
+    ],
+    [isAr, isEn, updateStylistPayoutStatus]
   );
 
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
@@ -443,12 +555,25 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
         />
 
         <UniversalDataCollection<StylistPayout>
-          data={sortedPayouts}
+          items={sortedPayouts}
           columns={columns}
+          getRowMeta={getRowMeta}
+          getFanActions={getFanActions}
+          getDetailActions={getDetailActions}
           keyExtractor={(p) => p.id}
           viewMode={viewMode}
           hideToolbar
           openItemId={inspectingPayout?.id ?? null}
+          bulkSecondaryAction={{
+            label: isAr ? 'دفع الكل' : isEn ? 'Mark Paid' : 'Régler Sélection',
+            icon: <CheckCircle2 size={13} />,
+            onClick: (ids) => {
+              ids.forEach((id) => updateStylistPayoutStatus(id, 'Paid', 'BaridiMob'));
+              setSelectedPayoutIds(new Set());
+              showToast?.({ type: 'success', title: 'Bordereaux réglés', message: `${ids.size} paiements` });
+            },
+            variant: 'primary',
+          }}
           isLoading={isSyncing || networkMode === 'force_skeleton'}
           isOffline={networkMode === 'offline'}
           isTimedOut={isSyncTimeout}
@@ -529,7 +654,8 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
         language={language}
         title={inspectingPayout?.staffName || ''}
         subtitle={inspectingPayout ? `${inspectingPayout.periodStart} → ${inspectingPayout.periodEnd}` : undefined}
-        avatarText={inspectingPayout ? inspectingPayout.staffName.charAt(0).toUpperCase() : undefined}
+        avatarText={inspectingPayout ? inspectingPayout.staffName.slice(0, 2).toUpperCase() : undefined}
+        categoryLabel={inspectingPayout ? `${inspectingPayout.commissionRate}% soins` : undefined}
         branchName={
           inspectingPayout
             ? resolveRecordBranch(inspectingPayout, branchesById, currentBranch, language).name
@@ -538,108 +664,136 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
         statusLabel={inspectingPayout ? localizeStatus(inspectingPayout.status, language) : undefined}
         statusClassName={
           inspectingPayout?.status === 'Paid'
-            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
             : inspectingPayout?.status === 'Approved'
-            ? 'bg-blue-50 text-blue-700 border border-blue-200'
-            : 'bg-amber-50 text-amber-700 border border-amber-200'
+            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
         }
+        tabs={[
+          { id: 'overview', label: isAr ? 'العمولة' : isEn ? 'Overview' : 'Bordereau Net' },
+          { id: 'breakdown', label: isAr ? 'التفاصيل' : isEn ? 'Breakdown' : 'Ventilation Soins' },
+          { id: 'register', label: isAr ? 'الصندوق' : isEn ? 'Register' : 'Caisse Salon' },
+        ]}
         onClose={() => setInspectingPayout(null)}
         onSelectItem={(p) => setInspectingPayout(p)}
-        renderBody={(payout) => (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex justify-between items-center">
-              <div>
-                <span className="text-[11px] font-semibold uppercase text-[#d4522f] block">Net Commission</span>
-                <span className="text-2xl font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums text-black dark:text-white">
-                  {formatMoney(payout.totalPayout)}
-                </span>
-              </div>
-              <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] font-semibold">
-                {payout.commissionRate}% soins
-              </span>
-            </div>
+        renderBody={(payout, activeTab) => {
+          const branchName = resolveRecordBranch(payout, branchesById, currentBranch, language).name;
 
-            <div className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-2 font-mono">
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">Recette Prestations :</span>
-                <span className="font-bold">{formatMoney(payout.totalServiceRevenue)}</span>
-              </div>
-              <div className="flex justify-between text-emerald-600">
-                <span>Part Soins ({payout.commissionRate}%) :</span>
-                <span className="font-bold">+{formatMoney(payout.commissionAmount)}</span>
-              </div>
-              <div className="flex justify-between text-blue-600">
-                <span>Part Revente ({payout.retailCommissionRate}%) :</span>
-                <span className="font-bold">+{formatMoney(payout.retailCommissionAmount)}</span>
-              </div>
-              <div className="flex justify-between pt-2 border-t border-[#E6DED6] dark:border-[#3A3734]">
-                <span className="text-black/62 dark:text-white/65 font-sans">Branche :</span>
-                <span className="font-sans font-semibold flex items-center gap-1">
-                  <Building2 size={12} className="text-[#d4522f]" />
-                  {resolveRecordBranch(payout, branchesById, currentBranch, language).name}
-                </span>
-              </div>
-            </div>
+          if (activeTab === 'breakdown') {
+            return (
+              <InspectorSection index={0} title="Calcul des commissions">
+                <InspectorCard>
+                  <InspectorKeyValue label="Soins réalisés" value={`${payout.totalServicesCount} soins`} />
+                  <InspectorKeyValue label="Recette prestations" value={formatMoney(payout.totalServiceRevenue)} />
+                  <InspectorKeyValue label={`Part Soins (${payout.commissionRate}%)`} value={`+${formatMoney(payout.commissionAmount)}`} tone="ok" />
+                  <InspectorKeyValue label={`Part Revente (${payout.retailCommissionRate}%)`} value={`+${formatMoney(payout.retailCommissionAmount)}`} tone="ok" isLast />
+                </InspectorCard>
+              </InspectorSection>
+            );
+          }
 
-            <div className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-1.5">
-              <span className="text-[11px] font-bold uppercase text-black/62 dark:text-white/65 block">
-                Ventilation Caisse Salon
-              </span>
-              <div className="flex justify-between">
-                <span>Espèces :</span>
-                <span className="font-mono font-bold">{formatMoney(metrics.cash)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>BaridiMob :</span>
-                <span className="font-mono font-bold">{formatMoney(metrics.baridiMob)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>CIB / Edahabia :</span>
-                <span className="font-mono font-bold">{formatMoney(metrics.cib)}</span>
-              </div>
-            </div>
+          if (activeTab === 'register') {
+            return (
+              <>
+                <InspectorSection index={0} title="Ventilation Caisse Salon">
+                  <InspectorCard>
+                    <InspectorKeyValue label="Espèces" value={formatMoney(metrics.cash)} />
+                    <InspectorKeyValue label="BaridiMob" value={formatMoney(metrics.baridiMob)} />
+                    <InspectorKeyValue label="CIB / Edahabia" value={formatMoney(metrics.cib)} isLast />
+                  </InspectorCard>
+                </InspectorSection>
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label="Imprimer le bordereau"
+                    icon={<Printer className="w-4 h-4" />}
+                    tone="dark"
+                    onClick={() => window.print()}
+                  />
+                </InspectorSection>
+              </>
+            );
+          }
 
-            <div className="space-y-2">
-              {payout.status === 'Pending' && (
-                <AtriumButton
-                  type="button"
-                  variant="primary"
-                  icon={<Check size={14} />}
-                  className="w-full justify-center"
-                  onClick={() => {
-                    updateStylistPayoutStatus(payout.id, 'Approved');
-                    setInspectingPayout({ ...payout, status: 'Approved' });
-                  }}
-                >
-                  Approuver le Bordereau
-                </AtriumButton>
-              )}
-              {payout.status === 'Approved' && (
-                <AtriumButton
-                  type="button"
-                  variant="primary"
-                  icon={<CheckCircle2 size={14} />}
-                  className="w-full justify-center"
-                  onClick={() => {
-                    updateStylistPayoutStatus(payout.id, 'Paid', 'BaridiMob');
-                    setInspectingPayout({ ...payout, status: 'Paid', paymentMethod: 'BaridiMob' });
-                  }}
-                >
-                  Régler via BaridiMob
-                </AtriumButton>
-              )}
-              <AtriumButton
-                type="button"
-                variant="secondary"
-                icon={<Printer size={14} />}
-                className="w-full justify-center"
-                onClick={() => window.print()}
-              >
-                Imprimer Bordereau
-              </AtriumButton>
-            </div>
-          </div>
-        )}
+          return (
+            <>
+              <InspectorSection index={0} title="Actions rapides">
+                <InspectorQuickActions
+                  actions={[
+                    ...(payout.status === 'Pending'
+                      ? [
+                          {
+                            id: 'approve',
+                            label: 'Approuver',
+                            icon: <Check className="w-[18px] h-[18px]" />,
+                            primary: true,
+                            onClick: () => {
+                              updateStylistPayoutStatus(payout.id, 'Approved');
+                              setInspectingPayout({ ...payout, status: 'Approved' });
+                            },
+                          },
+                        ]
+                      : payout.status === 'Approved'
+                      ? [
+                          {
+                            id: 'pay',
+                            label: 'Régler BaridiMob',
+                            icon: <CheckCircle2 className="w-[18px] h-[18px]" />,
+                            primary: true,
+                            onClick: () => {
+                              updateStylistPayoutStatus(payout.id, 'Paid', 'BaridiMob');
+                              setInspectingPayout({ ...payout, status: 'Paid', paymentMethod: 'BaridiMob' });
+                            },
+                          },
+                        ]
+                      : []),
+                    {
+                      id: 'print',
+                      label: 'Imprimer',
+                      icon: <Printer className="w-[18px] h-[18px]" />,
+                      onClick: () => window.print(),
+                    },
+                  ]}
+                />
+              </InspectorSection>
+
+              <InspectorSection index={1} title="Net à reverser">
+                <InspectorBigStat
+                  value={formatMoney(payout.totalPayout)}
+                  tone={payout.status === 'Paid' ? 'ok' : 'accent'}
+                  actionLabel={
+                    payout.status === 'Pending'
+                      ? 'Approuver le bordereau'
+                      : payout.status === 'Approved'
+                      ? 'Régler via BaridiMob'
+                      : undefined
+                  }
+                  onAction={
+                    payout.status === 'Pending'
+                      ? () => {
+                          updateStylistPayoutStatus(payout.id, 'Approved');
+                          setInspectingPayout({ ...payout, status: 'Approved' });
+                        }
+                      : payout.status === 'Approved'
+                      ? () => {
+                          updateStylistPayoutStatus(payout.id, 'Paid', 'BaridiMob');
+                          setInspectingPayout({ ...payout, status: 'Paid', paymentMethod: 'BaridiMob' });
+                        }
+                      : undefined
+                  }
+                />
+              </InspectorSection>
+
+              <InspectorSection index={2} title="Récapitulatif">
+                <InspectorCard>
+                  <InspectorKeyValue label="Période" value={`${payout.periodStart} → ${payout.periodEnd}`} />
+                  <InspectorKeyValue label="Recette brute" value={formatMoney(payout.totalServiceRevenue)} />
+                  <InspectorKeyValue label="Mode" value={payout.paymentMethod || 'À définir'} mono={false} />
+                  <InspectorKeyValue label="Branche" icon={<Building2 className="w-[15px] h-[15px]" />} value={branchName} mono={false} isLast />
+                </InspectorCard>
+              </InspectorSection>
+            </>
+          );
+        }}
       />
     </div>
   );

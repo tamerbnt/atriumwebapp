@@ -7,6 +7,8 @@ import {
   Trash2,
   X,
   Building2,
+  Eye,
+  Copy,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -34,6 +36,16 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorProgressBar,
+  InspectorBigStat,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -456,6 +468,84 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
     [isAr, isEn, branchesById, currentBranch, language]
   );
 
+  const getRowMeta = useCallback(
+    (service: ServiceItem): Partial<KineticRowData> => {
+      const branch = resolveRecordBranch(service, branchesById, currentBranch, language);
+      const margin = service.price > 0 ? Math.round(((service.price - (service.costPrice || 0)) / service.price) * 100) : 100;
+      return {
+        subline: `${CATEGORY_LABELS[service.category] || service.category} · ${service.durationMinutes} min`,
+        categoryLabel: CATEGORY_LABELS[service.category] || service.category,
+        statusLabel: `${service.commissionRate || 40}% comm.`,
+        statusVariant: service.price >= 4500 ? 'warning' : 'active',
+        metricPrimary: formatMoney(service.price),
+        metricSecondary: `${margin}% marge`,
+        detailCol1: {
+          heading: isAr ? 'التصنيف والمدة' : 'Protocole & Durée',
+          primaryText: `${service.durationMinutes} min`,
+          secondaryText: service.bufferMinutes ? `+${service.bufferMinutes} min tampon` : 'Sans tampon',
+          tertiaryText: branch.name,
+        },
+        detailCol2: {
+          heading: isAr ? 'التكلفة والهامش' : 'Rentabilité',
+          primaryText: `${margin}% marge brute`,
+          secondaryText: `Coût: ${formatMoney(service.costPrice || 0)}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'العمولة' : 'Commission',
+          primaryText: `${service.commissionRate || 40}% styliste`,
+          secondaryText: formatMoney(Math.round((service.price * (service.commissionRate || 40)) / 100)),
+        },
+      };
+    },
+    [branchesById, currentBranch, language, isAr]
+  );
+
+  const getFanActions = useCallback(
+    (service: ServiceItem): KineticRowFanAction[] => [
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : 'Modifier',
+        icon: <Edit2 className="w-[15px] h-[15px]" />,
+        onClick: () => handleOpenEditModal(service),
+      },
+      {
+        id: 'view',
+        label: isAr ? 'معاينة' : 'Fiche',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setInspectingService(service);
+        },
+      },
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : 'Supprimer',
+        icon: <Trash2 className="w-[15px] h-[15px]" />,
+        isDanger: true,
+        onClick: () => setServiceToDelete(service),
+      },
+    ],
+    [isAr, handleOpenEditModal]
+  );
+
+  const getDetailActions = useCallback(
+    (service: ServiceItem): KineticDetailAction[] => [
+      {
+        id: 'view',
+        label: 'Détails',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => setInspectingService(service),
+      },
+      {
+        id: 'edit',
+        label: 'Modifier',
+        icon: <Edit2 className="w-3.5 h-3.5 text-[#096b40]" />,
+        onClick: () => handleOpenEditModal(service),
+      },
+    ],
+    [handleOpenEditModal]
+  );
+
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: servicesCatalog.length > 0,
@@ -548,8 +638,11 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
         />
 
         <UniversalDataCollection<ServiceItem>
-          data={sortedServices}
+          items={sortedServices}
           columns={columns}
+          getRowMeta={getRowMeta}
+          getFanActions={getFanActions}
+          getDetailActions={getDetailActions}
           keyExtractor={(s) => s.id}
           viewMode={viewMode}
           hideToolbar
@@ -618,14 +711,20 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
         language={language}
         title={inspectingService?.name || ''}
         subtitle={inspectingService ? `${CATEGORY_LABELS[inspectingService.category] || inspectingService.category} · ${inspectingService.durationMinutes} min` : undefined}
-        avatarText={inspectingService ? inspectingService.name.charAt(0).toUpperCase() : undefined}
+        avatarText={inspectingService ? inspectingService.name.slice(0, 2).toUpperCase() : undefined}
+        categoryLabel={inspectingService ? (CATEGORY_LABELS[inspectingService.category] || inspectingService.category) : undefined}
         branchName={
           inspectingService
             ? resolveRecordBranch(inspectingService, branchesById, currentBranch, language).name
             : undefined
         }
         statusLabel={`${inspectingService?.commissionRate || 40}% comm.`}
-        statusClassName="bg-emerald-50 text-emerald-700 border border-emerald-200"
+        statusClassName="bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]"
+        tabs={[
+          { id: 'overview', label: isAr ? 'التسعيرة' : isEn ? 'Pricing' : 'Tarif & Cabine' },
+          { id: 'economics', label: isAr ? 'الربحية' : isEn ? 'Margins' : 'Marges & Coûts' },
+          { id: 'protocol', label: isAr ? 'البروتوكول' : isEn ? 'Protocol' : 'Protocole Soin' },
+        ]}
         onClose={() => setInspectingService(null)}
         onSelectItem={(s) => setInspectingService(s)}
         holdToDelete
@@ -634,55 +733,102 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
           deleteServiceItem(s.id);
           setInspectingService(null);
         }}
-        renderBody={(service) => (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex justify-between items-center">
-              <div>
-                <span className="text-[11px] font-semibold uppercase text-[#d4522f] block">Tarif Client</span>
-                <span className="text-2xl font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums text-black dark:text-white">
-                  {formatMoney(service.price)}
-                </span>
-              </div>
-              <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] font-semibold">
-                {service.durationMinutes} min
-              </span>
-            </div>
-            <div className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-2.5">
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">Coût consommables:</span>
-                <span className="font-mono font-semibold">{formatMoney(service.costPrice || 0)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">Temps tampon:</span>
-                <span className="font-mono font-semibold">{service.bufferMinutes || 0} min</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">Branche:</span>
-                <span className="font-semibold flex items-center gap-1">
-                  <Building2 size={12} className="text-[#d4522f]" />
-                  {resolveRecordBranch(service, branchesById, currentBranch, language).name}
-                </span>
-              </div>
-              {service.description && (
-                <p className="pt-2 border-t border-[#E6DED6] dark:border-[#3A3734] text-black/75 dark:text-white/80">
-                  {service.description}
-                </p>
-              )}
-            </div>
-            <AtriumButton
-              type="button"
-              variant="primary"
-              icon={<Edit2 size={14} />}
-              className="w-full justify-center"
-              onClick={() => {
-                setInspectingService(null);
-                handleOpenEditModal(service);
-              }}
-            >
-              Modifier le Tarif / Protocole
-            </AtriumButton>
-          </div>
-        )}
+        renderBody={(service, activeTab) => {
+          const branchName = resolveRecordBranch(service, branchesById, currentBranch, language).name;
+          const cost = service.costPrice || 0;
+          const marginPct = service.price > 0 ? Math.round(((service.price - cost) / service.price) * 100) : 100;
+
+          if (activeTab === 'economics') {
+            return (
+              <>
+                <InspectorSection index={0} title="Rentabilité nette">
+                  <InspectorBigStat value={formatMoney(service.price)} tone="accent" />
+                </InspectorSection>
+                <InspectorSection index={1} title="Décomposition financière">
+                  <InspectorCard>
+                    <InspectorKeyValue label="Coût consommables" value={formatMoney(cost)} />
+                    <InspectorKeyValue label="Marge brute" value={`${marginPct}%`} tone="ok" />
+                    <InspectorKeyValue label="Part styliste" value={`${service.commissionRate || 40}%`} tone="accent" isLast />
+                    <InspectorProgressBar percent={marginPct} tone="ok" />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
+
+          if (activeTab === 'protocol') {
+            return (
+              <>
+                <InspectorSection index={0} title="Paramètres cabine">
+                  <InspectorCard>
+                    <InspectorKeyValue label="Durée active" icon={<Clock className="w-[15px] h-[15px]" />} value={`${service.durationMinutes} min`} />
+                    <InspectorKeyValue label="Temps tampon" value={`${service.bufferMinutes || 0} min`} />
+                    <InspectorKeyValue label="Branche" icon={<Building2 className="w-[15px] h-[15px]" />} value={branchName} mono={false} isLast />
+                  </InspectorCard>
+                </InspectorSection>
+                {service.description && (
+                  <InspectorSection index={1} title="Description technique">
+                    <InspectorCard className="py-3.5 text-[13px] text-black/75 dark:text-white/80">
+                      <p className="py-1 leading-relaxed">{service.description}</p>
+                    </InspectorCard>
+                  </InspectorSection>
+                )}
+              </>
+            );
+          }
+
+          return (
+            <>
+              <InspectorSection index={0} title="Actions rapides">
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'edit',
+                      label: 'Modifier tarif',
+                      icon: <Edit2 className="w-[18px] h-[18px]" />,
+                      primary: true,
+                      onClick: () => {
+                        setInspectingService(null);
+                        handleOpenEditModal(service);
+                      },
+                    },
+                    {
+                      id: 'copy',
+                      label: 'Copier barème',
+                      icon: <Copy className="w-[18px] h-[18px]" />,
+                      onClick: () => {
+                        const txt = `${service.name} · ${formatMoney(service.price)} (${service.durationMinutes} min)`;
+                        navigator.clipboard?.writeText(txt);
+                        showToast?.({ type: 'success', title: 'Copié', message: txt });
+                      },
+                    },
+                  ]}
+                />
+              </InspectorSection>
+
+              <InspectorSection index={1} title="Grille & Commission">
+                <InspectorCard>
+                  <InspectorKeyValue label="Tarif Client" value={formatMoney(service.price)} tone="accent" />
+                  <InspectorKeyValue label="Durée cabine" value={`${service.durationMinutes} min`} />
+                  <InspectorKeyValue label="Commission" value={`${service.commissionRate || 40}%`} tone="ok" />
+                  <InspectorKeyValue label="Coût matière" value={formatMoney(cost)} isLast />
+                </InspectorCard>
+              </InspectorSection>
+
+              <InspectorSection index={2}>
+                <InspectorWideButton
+                  label="Modifier le Tarif / Protocole"
+                  icon={<Edit2 className="w-4 h-4" />}
+                  tone="dark"
+                  onClick={() => {
+                    setInspectingService(null);
+                    handleOpenEditModal(service);
+                  }}
+                />
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       {isServiceModalOpen && (

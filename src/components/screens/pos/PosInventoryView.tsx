@@ -11,6 +11,7 @@ import {
   Truck,
   Clock,
   Printer,
+  Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { Product, PurchaseDocument } from '../../../types/index';
@@ -34,10 +35,36 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorProgressBar,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
+
+const getInitials2 = (name: string): string => {
+  const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+  return (name || 'PR').slice(0, 2).toUpperCase();
+};
+
+const MEMBER_PILL_OK =
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+const MEMBER_PILL_WARN =
+  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
+const MEMBER_PILL_DANGER =
+  'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]';
+const MEMBER_PILL_INFO =
+  'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]';
 
 export const PosInventoryView: React.FC<any> = () => {
   const { t, language, isRtl } = useTranslation();
@@ -83,6 +110,7 @@ export const PosInventoryView: React.FC<any> = () => {
 
   const [inspectingProduct, setInspectingProduct] = useState<Product | null>(null);
   const [inspectingPurchase, setInspectingPurchase] = useState<PurchaseDocument | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<string>('overview');
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -1006,9 +1034,10 @@ export const PosInventoryView: React.FC<any> = () => {
             />
 
             <UniversalDataCollection<Product>
-              data={sortedInventory}
+              items={sortedInventory}
               keyExtractor={(p) => p.id}
-              viewMode={viewMode}
+              viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+              defaultViewMode="list"
               hideToolbar
               openItemId={inspectingProduct?.id ?? null}
               columns={productColumns}
@@ -1034,10 +1063,12 @@ export const PosInventoryView: React.FC<any> = () => {
               }}
               onItemClick={(p, opener) => {
                 setDrawerOpenerEl(opener || null);
+                setInspectorTab('overview');
                 setInspectingProduct(p);
               }}
               onViewDetails={(p, opener) => {
                 setDrawerOpenerEl(opener || null);
+                setInspectorTab('overview');
                 setInspectingProduct(p);
               }}
               onEdit={(p) => handleOpenEditProduct(p)}
@@ -1045,73 +1076,108 @@ export const PosInventoryView: React.FC<any> = () => {
                 deleteProduct(p.id);
                 if (inspectingProduct?.id === p.id) setInspectingProduct(null);
               }}
-              renderCard={(p) => {
+              getRowMeta={(p): Partial<KineticRowData> => {
                 const isOut = p.stockQuantity <= 0;
                 const isLow = !isOut && p.stockQuantity <= (p.reorderLevel || 5);
                 const costAmt = p.costPrice || p.cost?.amount || Math.round(p.price.amount * 0.6);
-                return (
-                  <div className="flex flex-col justify-between w-full h-full">
-                    <div>
-                      <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="text-[10px] font-bold text-black/55 dark:text-white/55">{p.category}</span>
-                        <span
-                          className={`text-[10px] font-bold tabular-nums ${
-                            isOut ? 'text-red-600 font-black' : isLow ? 'text-amber-600 font-bold' : 'text-black/70 dark:text-white/75'
-                          }`}
-                        >
-                          {p.stockQuantity} {p.unit || t('shop_unit_pcs')}
-                        </span>
-                      </div>
-                      <h3 className="font-bold text-sm text-black dark:text-white line-clamp-1 mb-1">{p.name}</h3>
-                      <p className="text-[11px] text-black/55 dark:text-white/55 line-clamp-2 mb-3">
-                        {p.description || t('shop_standard_article')}
-                      </p>
-                      <div className="grid grid-cols-2 gap-2 p-2.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl text-xs mb-3">
-                        {!isStaff && (
-                          <div>
-                            <span className="text-black/55 dark:text-white/55 block text-[10px] uppercase font-medium">
-                              {t('shop_col_cost')}
-                            </span>
-                            <span className="font-mono text-black/70 dark:text-white/75 tabular-nums">
-                              {formatMoney(costAmt)}
-                            </span>
-                          </div>
-                        )}
-                        <div>
-                          <span className="text-black/55 dark:text-white/55 block text-[10px] uppercase font-medium">
-                            {t('shop_col_retail')}
-                          </span>
-                          <span className="font-mono font-bold text-black dark:text-white tabular-nums">
-                            {formatMoney(p.price.amount)}
-                          </span>
-                        </div>
-                        <div className="col-span-2 pt-1 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
-                          <span className="text-black/55 dark:text-white/55 text-[10px] font-mono">{p.sku}</span>
-                          <span className="font-mono font-bold text-[#d4522f] text-xs tabular-nums">
-                            {formatMoney(p.price.amount * p.stockQuantity)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedProductForAdjust(p);
-                          setAdjustQuantity(10);
-                          setAdjustMode('add');
-                          setIsAdjustStockModalOpen(true);
-                        }}
-                        className="w-full py-1.5 px-3 rounded-xl bg-orange-50 dark:bg-orange-950/40 hover:bg-orange-100 dark:hover:bg-orange-900/60 text-[#d4522f] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                      >
-                        <ArrowDownUp size={13} />
-                        <span>{t('shop_adjust_tooltip') || 'Ajuster Stock'}</span>
-                      </button>
-                    </div>
-                  </div>
-                );
+                const branchInfo = resolveRecordBranch(p, branchesById, currentBranch, language);
+                return {
+                  title: p.name,
+                  subline: `${p.sku}${p.barcode ? ` · ${p.barcode}` : ''}`,
+                  avatarText: getInitials2(p.name),
+                  categoryLabel: p.category || 'Catalogue',
+                  statusLabel: isOut
+                    ? isAr ? 'نفذت الكمية' : 'Rupture'
+                    : isLow
+                    ? isAr ? 'مخزون منخفض' : 'Stock Bas'
+                    : isAr ? 'متوفر' : 'Disponible',
+                  statusVariant: isOut ? 'blocked' : isLow ? 'warning' : 'active',
+                  metricPrimary: formatMoney(p.price.amount),
+                  metricSecondary: `${p.stockQuantity} ${p.unit || t('shop_unit_pcs')}`,
+                  branchName: branchInfo.name,
+                  branchCode: branchInfo.code,
+                  isPinned: pinnedProductIds.has(p.id),
+                  detailCol1: {
+                    heading: isAr ? 'المنتج' : 'Article',
+                    primaryText: p.name,
+                    secondaryText: `SKU ${p.sku}`,
+                    tertiaryText: p.barcode || branchInfo.name,
+                  },
+                  detailCol2: {
+                    heading: isAr ? 'التسعير والهامش' : 'Tarification',
+                    primaryText: formatMoney(p.price.amount),
+                    secondaryText: !isStaff ? `Coût: ${formatMoney(costAmt)}` : undefined,
+                    tertiaryText: `TVA ${p.taxRate || 19}%`,
+                  },
+                  detailCol3: {
+                    heading: isAr ? 'المخزون' : 'Stock & Seuil',
+                    primaryText: `${p.stockQuantity} ${p.unit || 'pcs'}`,
+                    secondaryText: `Seuil min: ${p.reorderLevel || 5}`,
+                    tertiaryText: `Val: ${formatMoney(p.price.amount * p.stockQuantity)}`,
+                  },
+                };
               }}
+              getFanActions={(p): KineticRowFanAction[] => [
+                {
+                  id: 'adjust',
+                  label: isAr ? 'تعديل الرصيد' : 'Ajuster stock',
+                  icon: <ArrowDownUp className="w-[15px] h-[15px]" />,
+                  onClick: (e) => {
+                    e.stopPropagation();
+                    setSelectedProductForAdjust(p);
+                    setAdjustQuantity(10);
+                    setAdjustMode('add');
+                    setIsAdjustStockModalOpen(true);
+                  },
+                },
+                {
+                  id: 'edit',
+                  label: isAr ? 'تعديل' : 'Modifier',
+                  icon: <Edit2 className="w-[15px] h-[15px]" />,
+                  onClick: (e) => {
+                    e.stopPropagation();
+                    handleOpenEditProduct(p);
+                  },
+                },
+                {
+                  id: 'del',
+                  label: isAr ? 'حذف' : 'Supprimer',
+                  icon: <Trash2 className="w-[15px] h-[15px]" />,
+                  isDanger: true,
+                  onClick: () => {
+                    deleteProduct(p.id);
+                    if (inspectingProduct?.id === p.id) setInspectingProduct(null);
+                  },
+                },
+              ]}
+              getDetailActions={(p): KineticDetailAction[] => [
+                {
+                  id: 'inspect',
+                  label: isAr ? 'فتح البطاقة' : 'Ouvrir fiche',
+                  icon: <Eye className="w-3.5 h-3.5" />,
+                  onClick: () => {
+                    setInspectorTab('overview');
+                    setInspectingProduct(p);
+                  },
+                },
+                {
+                  id: 'adjust',
+                  label: isAr ? 'تعديل المخزون' : 'Ajuster Stock',
+                  icon: <ArrowDownUp className="w-3.5 h-3.5" />,
+                  onClick: () => {
+                    setSelectedProductForAdjust(p);
+                    setAdjustQuantity(10);
+                    setAdjustMode('add');
+                    setIsAdjustStockModalOpen(true);
+                  },
+                },
+                {
+                  id: 'edit',
+                  label: isAr ? 'تعديل' : 'Modifier',
+                  icon: <Edit2 className="w-3.5 h-3.5" />,
+                  onClick: () => handleOpenEditProduct(p),
+                },
+              ]}
               pinnedIds={pinnedProductIds}
               onPinToggle={(idOrItem) => {
                 const id = typeof idOrItem === 'string' ? idOrItem : idOrItem.id;
@@ -1191,10 +1257,11 @@ export const PosInventoryView: React.FC<any> = () => {
             />
 
             <UniversalDataCollection<PurchaseDocument>
-              data={filteredPurchases}
+              items={filteredPurchases}
               columns={purchaseColumns}
               keyExtractor={(p) => p.id}
-              viewMode={viewMode}
+              viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+              defaultViewMode="list"
               hideToolbar
               openItemId={inspectingPurchase?.id ?? null}
               isLoading={isSyncing || networkMode === 'force_skeleton'}
@@ -1204,47 +1271,75 @@ export const PosInventoryView: React.FC<any> = () => {
               onRetrySync={retryCloudSync}
               onItemClick={(doc, opener) => {
                 setDrawerOpenerEl(opener || null);
+                setInspectorTab('overview');
                 setInspectingPurchase(doc);
               }}
-              renderCard={(doc) => (
-                <div className="p-1 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white">
-                      {doc.docNumber}
-                    </span>
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        doc.status === 'Received' || doc.type === 'br'
-                          ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700'
-                          : 'bg-amber-100 dark:bg-amber-950/60 text-amber-700'
-                      }`}
-                    >
-                      {doc.status === 'Received' || doc.type === 'br' ? 'Réceptionné' : 'En commande'}
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-sm text-black dark:text-white truncate">{doc.supplierName}</h3>
-                    <p className="text-[11px] text-black/55 dark:text-white/55 font-mono">
-                      {doc.orderDate} · {doc.items.length} articles
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                    <span className="font-mono font-bold text-sm text-[#d4522f]">{formatMoney(doc.totalTtc)}</span>
-                    {doc.type === 'po' && doc.status === 'Ordered' && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
+              onViewDetails={(doc, opener) => {
+                setDrawerOpenerEl(opener || null);
+                setInspectorTab('overview');
+                setInspectingPurchase(doc);
+              }}
+              getRowMeta={(doc): Partial<KineticRowData> => {
+                const isReceived = doc.status === 'Received' || doc.type === 'br';
+                const branchInfo = resolveRecordBranch(doc, branchesById, currentBranch, language);
+                return {
+                  title: doc.supplierName,
+                  subline: `${doc.docNumber} · ${doc.orderDate}`,
+                  avatarText: doc.type === 'br' ? 'BR' : 'PO',
+                  categoryLabel: doc.type === 'br' ? 'Bon Réception' : 'Bon Commande',
+                  statusLabel: isReceived ? (isAr ? 'تم الاستلام' : 'Réceptionné') : isAr ? 'قيد التوريد' : 'En commande',
+                  statusVariant: isReceived ? 'active' : 'info',
+                  metricPrimary: formatMoney(doc.totalTtc),
+                  metricSecondary: `${doc.items.length} ${isAr ? 'أصناف' : 'articles'}`,
+                  branchName: branchInfo.name,
+                  branchCode: branchInfo.code,
+                };
+              }}
+              getFanActions={(doc): KineticRowFanAction[] => [
+                ...(doc.type === 'po' && doc.status === 'Ordered'
+                  ? [
+                      {
+                        id: 'receive',
+                        label: isAr ? 'استلام البضاعة' : 'Réceptionner',
+                        icon: <CheckCircle2 className="w-[15px] h-[15px]" />,
+                        onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
                           e.stopPropagation();
                           handleReceiveRetailPo(doc.id);
-                        }}
-                        className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer"
-                      >
-                        Réceptionner
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
+                        },
+                      },
+                    ]
+                  : []),
+                {
+                  id: 'print',
+                  label: isAr ? 'طباعة' : 'Imprimer',
+                  icon: <Printer className="w-[15px] h-[15px]" />,
+                  onClick: (e) => {
+                    e.stopPropagation();
+                    window.print();
+                  },
+                },
+              ]}
+              getDetailActions={(doc): KineticDetailAction[] => [
+                {
+                  id: 'open',
+                  label: isAr ? 'عرض السند' : 'Consulter bon',
+                  icon: <Eye className="w-3.5 h-3.5" />,
+                  onClick: () => {
+                    setInspectorTab('overview');
+                    setInspectingPurchase(doc);
+                  },
+                },
+                ...(doc.type === 'po' && doc.status === 'Ordered'
+                  ? [
+                      {
+                        id: 'receive',
+                        label: isAr ? 'استلام' : 'Réceptionner',
+                        icon: <CheckCircle2 className="w-3.5 h-3.5" />,
+                        onClick: () => handleReceiveRetailPo(doc.id),
+                      },
+                    ]
+                  : []),
+              ]}
               emptyTitle={isAr ? 'لا توجد طلبيات شراء حالياً' : 'Aucune commande fournisseur'}
               emptyDescription={
                 isAr
@@ -1319,90 +1414,215 @@ export const PosInventoryView: React.FC<any> = () => {
         openerElement={drawerOpenerEl}
         language={language}
         title={inspectingProduct?.name || ''}
-        subtitle={inspectingProduct ? `${inspectingProduct.sku} · ${inspectingProduct.category}` : undefined}
+        subtitle={inspectingProduct ? `${inspectingProduct.sku}${inspectingProduct.barcode ? ` · ${inspectingProduct.barcode}` : ''}` : undefined}
+        avatarText={inspectingProduct ? getInitials2(inspectingProduct.name) : 'PR'}
+        avatarColor="#d4522f"
         branchName={inspectingProduct ? resolveRecordBranch(inspectingProduct, branchesById, currentBranch, language).name : undefined}
+        headerPills={
+          inspectingProduct?.category ? (
+            <span className="pill inline-flex items-center gap-1 px-2.5 py-[3px] rounded-md text-[12px] font-medium bg-[#F3EDE7] dark:bg-[#262422] text-black dark:text-white border border-[#E6DED6] dark:border-[#3A3734]">
+              {inspectingProduct.category}
+            </span>
+          ) : undefined
+        }
         statusLabel={
           inspectingProduct
             ? inspectingProduct.stockQuantity <= 0
-              ? 'Rupture'
+              ? isAr ? 'نفذت الكمية' : 'Rupture'
               : inspectingProduct.stockQuantity <= (inspectingProduct.reorderLevel || 5)
-              ? 'Stock Bas'
-              : 'Disponible'
+              ? isAr ? 'مخزون منخفض' : 'Stock Bas'
+              : isAr ? 'متوفر' : 'Disponible'
             : undefined
         }
         statusClassName={
           inspectingProduct && inspectingProduct.stockQuantity <= 0
-            ? 'bg-rose-50 text-rose-700 border border-rose-200'
+            ? MEMBER_PILL_DANGER
             : inspectingProduct && inspectingProduct.stockQuantity <= (inspectingProduct.reorderLevel || 5)
-            ? 'bg-amber-50 text-amber-700 border border-amber-200'
-            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+            ? MEMBER_PILL_WARN
+            : MEMBER_PILL_OK
         }
+        tabs={[
+          { id: 'overview', label: isAr ? 'البطاقة' : isEn ? 'Overview' : 'Fiche' },
+          { id: 'stock', label: isAr ? 'المخزون والهامش' : isEn ? 'Stock & Margin' : 'Stock & Marge' },
+          { id: 'actions', label: isAr ? 'إجراءات' : isEn ? 'Actions' : 'Actions' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={setInspectorTab}
         onClose={() => setInspectingProduct(null)}
-        onSelectItem={(p) => setInspectingProduct(p)}
+        onSelectItem={(p) => {
+          setInspectorTab('overview');
+          setInspectingProduct(p);
+        }}
         holdToDelete
         deleteLabel={isAr ? 'حذف' : 'Supprimer'}
         onDelete={(p) => {
           deleteProduct(p.id);
           setInspectingProduct(null);
         }}
-        renderBody={(prod) => (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] grid grid-cols-2 gap-3">
-              <div>
-                <span className="text-black/60 dark:text-white/65 block text-[11px]">Prix de vente</span>
-                <span className="font-mono font-black text-base text-[#d4522f]">{formatMoney(prod.price.amount)}</span>
-              </div>
-              {!isStaff && (
-                <div>
-                  <span className="text-black/60 dark:text-white/65 block text-[11px]">Coût d’achat</span>
-                  <span className="font-mono font-bold text-black dark:text-white">
-                    {formatMoney(prod.costPrice || prod.cost?.amount || Math.round(prod.price.amount * 0.6))}
-                  </span>
-                </div>
-              )}
-              <div>
-                <span className="text-black/60 dark:text-white/65 block text-[11px]">Stock actuel</span>
-                <span className="font-mono font-bold text-black dark:text-white">
-                  {prod.stockQuantity} {prod.unit || 'pcs'}
-                </span>
-              </div>
-              <div>
-                <span className="text-black/60 dark:text-white/65 block text-[11px]">Seuil alerte</span>
-                <span className="font-mono font-bold text-black dark:text-white">{prod.reorderLevel || 5}</span>
-              </div>
-            </div>
+        renderBody={(prod, tab, epoch) => {
+          const costAmt = prod.costPrice || prod.cost?.amount || Math.round(prod.price.amount * 0.6);
+          const unitMargin = prod.price.amount - costAmt;
+          const marginPct = prod.price.amount > 0 ? Math.round((unitMargin / prod.price.amount) * 100) : 0;
+          const reorder = prod.reorderLevel || 5;
+          const targetCap = Math.max(reorder * 3, prod.stockQuantity, 10);
+          const stockPct = Math.min(100, Math.round((prod.stockQuantity / targetCap) * 100));
+          const stockTone = prod.stockQuantity <= 0 ? 'danger' : prod.stockQuantity <= reorder ? 'warn' : 'ok';
 
-            <div className="flex flex-col gap-2">
-              <AtriumButton
-                type="button"
-                variant="primary"
-                icon={<ArrowDownUp size={14} />}
-                className="w-full justify-center"
-                onClick={() => {
-                  setSelectedProductForAdjust(prod);
-                  setAdjustQuantity(10);
-                  setAdjustMode('add');
-                  setInspectingProduct(null);
-                  setIsAdjustStockModalOpen(true);
-                }}
-              >
-                {isAr ? 'تعديل رصيد المخزون' : 'Ajuster le Stock'}
-              </AtriumButton>
-              <AtriumButton
-                type="button"
-                variant="secondary"
-                icon={<Edit2 size={14} />}
-                className="w-full justify-center"
-                onClick={() => {
-                  setInspectingProduct(null);
-                  handleOpenEditProduct(prod);
-                }}
-              >
-                {isAr ? 'تعديل بيانات المنتج' : 'Modifier l’Article'}
-              </AtriumButton>
+          if (tab === 'stock') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0} title={isAr ? 'تقييم المخزون والربحية' : 'Valorisation & Marge'}>
+                  <InspectorBigStat
+                    value={formatMoney(prod.price.amount * prod.stockQuantity)}
+                    tone={stockTone === 'danger' ? 'danger' : 'accent'}
+                    caption={`${prod.stockQuantity} ${prod.unit || 'pcs'} × ${formatMoney(prod.price.amount)}`}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'مستوى التموين' : 'Niveau de couverture'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'الرصيد الفعلي' : 'Stock actuel'}
+                      value={`${prod.stockQuantity} ${prod.unit || 'pcs'}`}
+                      tone={stockTone}
+                    />
+                    <InspectorProgressBar
+                      percent={stockPct}
+                      tone={stockTone}
+                      animateKey={`${prod.id}-${epoch}-stock`}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'حد التنبيه' : 'Seuil réassort'}
+                      value={`${reorder} ${prod.unit || 'pcs'}`}
+                    />
+                    {!isStaff && (
+                      <InspectorKeyValue
+                        label={isAr ? 'الهامش الصافي للوحدة' : 'Marge unitaire'}
+                        value={`+${formatMoney(unitMargin)} (${marginPct}%)`}
+                        tone="ok"
+                        isLast
+                      />
+                    )}
+                  </InspectorCard>
+                </InspectorSection>
+              </div>
+            );
+          }
+
+          if (tab === 'actions') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0} title={isAr ? 'العمليات السريعة' : 'Opérations Rapides'}>
+                  <InspectorQuickActions
+                    actions={[
+                      {
+                        id: 'adjust',
+                        label: isAr ? 'تعديل الرصيد' : 'Ajuster stock',
+                        icon: <ArrowDownUp size={16} />,
+                        primary: true,
+                        onClick: () => {
+                          setSelectedProductForAdjust(prod);
+                          setAdjustQuantity(10);
+                          setAdjustMode('add');
+                          setInspectingProduct(null);
+                          setIsAdjustStockModalOpen(true);
+                        },
+                      },
+                      {
+                        id: 'edit',
+                        label: isAr ? 'تعديل' : 'Modifier',
+                        icon: <Edit2 size={16} />,
+                        onClick: () => {
+                          setInspectingProduct(null);
+                          handleOpenEditProduct(prod);
+                        },
+                      },
+                      {
+                        id: 'po',
+                        label: isAr ? 'طلب تموين' : 'Commander PO',
+                        icon: <Truck size={16} />,
+                        onClick: () => {
+                          setInspectingProduct(null);
+                          handlePreFillLowStockPo();
+                        },
+                      },
+                    ]}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label={isAr ? 'تعديل رصيد المخزون' : 'Ajuster le Stock Manuellement'}
+                    icon={<ArrowDownUp size={15} />}
+                    onClick={() => {
+                      setSelectedProductForAdjust(prod);
+                      setAdjustQuantity(10);
+                      setAdjustMode('add');
+                      setInspectingProduct(null);
+                      setIsAdjustStockModalOpen(true);
+                    }}
+                  />
+                </InspectorSection>
+              </div>
+            );
+          }
+
+          return (
+            <div className="space-y-4">
+              <InspectorSection index={0}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'adjust',
+                      label: isAr ? 'تعديل الرصيد' : 'Ajuster stock',
+                      icon: <ArrowDownUp size={16} />,
+                      primary: true,
+                      onClick: () => {
+                        setSelectedProductForAdjust(prod);
+                        setAdjustQuantity(10);
+                        setAdjustMode('add');
+                        setInspectingProduct(null);
+                        setIsAdjustStockModalOpen(true);
+                      },
+                    },
+                    {
+                      id: 'edit',
+                      label: isAr ? 'تعديل' : 'Modifier',
+                      icon: <Edit2 size={16} />,
+                      onClick: () => {
+                        setInspectingProduct(null);
+                        handleOpenEditProduct(prod);
+                      },
+                    },
+                  ]}
+                />
+              </InspectorSection>
+              <InspectorSection index={1} title={isAr ? 'التفاصيل والتسعير' : 'Tarification & Références'}>
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={isAr ? 'سعر البيع TTC' : 'Prix de vente TTC'}
+                    value={formatMoney(prod.price.amount)}
+                    tone="accent"
+                  />
+                  {!isStaff && (
+                    <InspectorKeyValue
+                      label={isAr ? 'تكلفة الشراء' : 'Coût d’achat HT'}
+                      value={formatMoney(costAmt)}
+                    />
+                  )}
+                  <InspectorKeyValue label="SKU" value={prod.sku} copyText={prod.sku} />
+                  {prod.barcode && (
+                    <InspectorKeyValue label="EAN-13" value={prod.barcode} copyText={prod.barcode} />
+                  )}
+                  <InspectorKeyValue
+                    label={isAr ? 'المخزون المتوفر' : 'Stock actuel'}
+                    value={`${prod.stockQuantity} ${prod.unit || 'pcs'}`}
+                    tone={stockTone}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
             </div>
-          </div>
-        )}
+          );
+        }}
       />
 
       <KineticSlideOverInspector<PurchaseDocument>
@@ -1414,47 +1634,131 @@ export const PosInventoryView: React.FC<any> = () => {
         language={language}
         title={inspectingPurchase?.docNumber || ''}
         subtitle={inspectingPurchase ? `${inspectingPurchase.supplierName} · ${inspectingPurchase.orderDate}` : undefined}
+        avatarText={inspectingPurchase?.type === 'br' ? 'BR' : 'PO'}
+        avatarColor="#d4522f"
         branchName={inspectingPurchase ? resolveRecordBranch(inspectingPurchase, branchesById, currentBranch, language).name : undefined}
         statusLabel={inspectingPurchase ? localizeStatus(inspectingPurchase.status, language) : undefined}
-        statusClassName="bg-blue-50 text-blue-700 border border-blue-200"
+        statusClassName={
+          inspectingPurchase && (inspectingPurchase.status === 'Received' || inspectingPurchase.type === 'br')
+            ? MEMBER_PILL_OK
+            : MEMBER_PILL_INFO
+        }
+        tabs={[
+          { id: 'overview', label: isAr ? 'الملخص' : isEn ? 'Overview' : 'Synthèse' },
+          { id: 'items', label: isAr ? 'السلع' : isEn ? 'Items' : 'Lignes' },
+          { id: 'actions', label: isAr ? 'إجراءات' : isEn ? 'Actions' : 'Actions' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={setInspectorTab}
         onClose={() => setInspectingPurchase(null)}
-        onSelectItem={(d) => setInspectingPurchase(d)}
-        renderBody={(doc) => (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] grid grid-cols-2 gap-3">
-              <div>
-                <span className="text-black/60 dark:text-white/65 block text-[11px]">Total TTC</span>
-                <span className="font-mono font-black text-base text-[#d4522f]">{formatMoney(doc.totalTtc)}</span>
+        onSelectItem={(d) => {
+          setInspectorTab('overview');
+          setInspectingPurchase(d);
+        }}
+        renderBody={(doc, tab) => {
+          if (tab === 'items') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0} title={`${doc.items.length} ${isAr ? 'أصناف' : 'articles commandés'}`}>
+                  <InspectorCard>
+                    {doc.items.map((it, idx) => (
+                      <InspectorListItem
+                        key={it.id || idx}
+                        title={it.description}
+                        subtitle={`${it.orderedQty} ${it.unit || 'pcs'} × ${formatMoney(it.unitCostHt)}`}
+                        metaRight={formatMoney(it.totalHt)}
+                        isLast={idx === doc.items.length - 1}
+                      />
+                    ))}
+                  </InspectorCard>
+                </InspectorSection>
               </div>
-              <div>
-                <span className="text-black/60 dark:text-white/65 block text-[11px]">Statut</span>
-                <span className="font-bold text-black dark:text-white">{doc.status}</span>
+            );
+          }
+
+          if (tab === 'actions') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0}>
+                  <InspectorQuickActions
+                    actions={[
+                      {
+                        id: 'print',
+                        label: isAr ? 'طباعة' : 'Imprimer',
+                        icon: <Printer size={16} />,
+                        onClick: () => window.print(),
+                      },
+                      ...(doc.type === 'po' && doc.status === 'Ordered'
+                        ? [
+                            {
+                              id: 'receive',
+                              label: isAr ? 'استلام' : 'Réceptionner',
+                              icon: <CheckCircle2 size={16} />,
+                              primary: true,
+                              onClick: () => {
+                                handleReceiveRetailPo(doc.id);
+                                setInspectingPurchase(null);
+                              },
+                            },
+                          ]
+                        : []),
+                    ]}
+                  />
+                </InspectorSection>
+                {doc.type === 'po' && doc.status === 'Ordered' && (
+                  <InspectorSection index={1}>
+                    <InspectorWideButton
+                      label={isAr ? 'تأكيد الاستلام في المخزون' : 'Valider la Réception en Stock'}
+                      icon={<CheckCircle2 size={15} />}
+                      onClick={() => {
+                        handleReceiveRetailPo(doc.id);
+                        setInspectingPurchase(null);
+                      }}
+                    />
+                  </InspectorSection>
+                )}
               </div>
+            );
+          }
+
+          return (
+            <div className="space-y-4">
+              <InspectorSection index={0}>
+                <InspectorBigStat
+                  value={formatMoney(doc.totalTtc)}
+                  tone="accent"
+                  caption={`${doc.supplierName} · ${doc.items.length} article(s)`}
+                />
+              </InspectorSection>
+              <InspectorSection index={1} title={isAr ? 'تفاصيل الطلبية' : 'Informations Document'}>
+                <InspectorCard>
+                  <InspectorKeyValue label={isAr ? 'المورد' : 'Fournisseur'} value={doc.supplierName} mono={false} />
+                  <InspectorKeyValue label={isAr ? 'المبلغ HT' : 'Total HT'} value={formatMoney(doc.totalHt)} />
+                  <InspectorKeyValue label="TVA 19%" value={formatMoney(doc.totalTva)} />
+                  <InspectorKeyValue label={isAr ? 'التاريخ' : 'Date'} value={doc.orderDate} />
+                  <InspectorKeyValue
+                    label={isAr ? 'الحالة' : 'Statut'}
+                    value={localizeStatus(doc.status, language)}
+                    tone={doc.status === 'Received' || doc.type === 'br' ? 'ok' : 'warn'}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+              {doc.type === 'po' && doc.status === 'Ordered' && (
+                <InspectorSection index={2}>
+                  <InspectorWideButton
+                    label={isAr ? 'تأكيد الاستلام' : 'Valider la Réception en Stock'}
+                    icon={<CheckCircle2 size={15} />}
+                    onClick={() => {
+                      handleReceiveRetailPo(doc.id);
+                      setInspectingPurchase(null);
+                    }}
+                  />
+                </InspectorSection>
+              )}
             </div>
-            <div className="space-y-1.5">
-              {doc.items.map((it, idx) => (
-                <div key={idx} className="p-3 rounded-xl border border-[#E6DED6] dark:border-[#3A3734] flex justify-between">
-                  <span>{it.orderedQty}× {it.description}</span>
-                  <span className="font-mono font-bold">{formatMoney(it.totalHt)}</span>
-                </div>
-              ))}
-            </div>
-            {doc.type === 'po' && doc.status === 'Ordered' && (
-              <AtriumButton
-                type="button"
-                variant="primary"
-                icon={<CheckCircle2 size={14} />}
-                className="w-full justify-center"
-                onClick={() => {
-                  handleReceiveRetailPo(doc.id);
-                  setInspectingPurchase(null);
-                }}
-              >
-                {isAr ? 'تأكيد الاستلام' : 'Valider la Réception en Stock'}
-              </AtriumButton>
-            )}
-          </div>
-        )}
+          );
+        }}
       />
 
       <Modal

@@ -2,16 +2,12 @@ import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   UserCheck,
   UserPlus,
-  Phone,
   AlertCircle,
-  HeartPulse,
   Edit,
   Pin,
   Download,
   Stethoscope,
   ShieldAlert,
-  Save,
-  Check,
   Plus,
   Microscope,
   Activity,
@@ -19,7 +15,6 @@ import {
 import { useAtriumStore, showToast } from '../../../services/store';
 import { MedicalPatient } from '../../../types';
 import { useMedicalData } from './medicalData';
-import { AtriumButton } from '../../ui/AtriumButton';
 import { MedicalPatientModal } from './MedicalPatientModal';
 import { MedicalConsultationModal } from './MedicalConsultationModal';
 import { MedicalLabViewerModal } from './MedicalLabViewerModal';
@@ -35,10 +30,31 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorListItem,
+  InspectorNotesField,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
+
+const getInitials2 = (name: string): string => {
+  const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+  return (name || 'PT').slice(0, 2).toUpperCase();
+};
+
+const MEMBER_PILL_OK =
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+const MEMBER_PILL_DANGER =
+  'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]';
 
 export const MedicalPatientsView: React.FC<any> = () => {
   const {
@@ -87,8 +103,6 @@ export const MedicalPatientsView: React.FC<any> = () => {
   const [inspectedPatient, setInspectedPatient] = useState<MedicalPatient | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [activeTab, setActiveTab] = useState<string>('dossier');
-  const [inspectorNotes, setInspectorNotes] = useState('');
-  const [noteSaved, setNoteSaved] = useState(false);
 
   // Vitals capture form inside inspector
   const [showAddVitals, setShowAddVitals] = useState(false);
@@ -230,24 +244,9 @@ export const MedicalPatientsView: React.FC<any> = () => {
   const handleSelectPatient = useCallback((p: MedicalPatient, opener?: HTMLElement | null) => {
     if (opener) setDrawerOpenerEl(opener);
     setInspectedPatient(p);
-    setInspectorNotes(p.notes || '');
-    setNoteSaved(false);
+    setActiveTab('dossier');
     setShowAddVitals(false);
   }, []);
-
-  const handleSaveNotes = () => {
-    if (!activePatient) return;
-    const updated = { ...activePatient, notes: inspectorNotes };
-    updatePatient(updated);
-    setInspectedPatient(updated);
-    setNoteSaved(true);
-    setTimeout(() => setNoteSaved(false), 2000);
-    showToast({
-      type: 'success',
-      title: isAr ? 'تم الحفظ' : isFr ? 'Notes enregistrées' : 'Notes Saved',
-      message: isAr ? 'تم حفظ الملاحظات السريرية' : 'Observations cliniques enregistrées',
-    });
-  };
 
   const handleOpenConsultation = useCallback((p: MedicalPatient) => {
     setConsultPatient(p);
@@ -563,7 +562,6 @@ export const MedicalPatientsView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<UserCheck size={22} />}
         title={isAr ? 'المرضى' : 'Patients'}
-        subtitle={`${patients.length} ${isAr ? 'ملفات طبية' : isFr ? 'dossiers médicaux EHR' : 'EHR records'}`}
         primaryAction={{
           label: isAr ? 'مريض جديد' : isFr ? 'Nouveau Patient' : 'New Patient',
           onClick: handleOpenAdd,
@@ -646,9 +644,10 @@ export const MedicalPatientsView: React.FC<any> = () => {
 
         <UniversalDataCollection
           hideToolbar
-          data={sortedPatients}
+          items={sortedPatients}
           keyExtractor={(p) => p.id}
-          defaultViewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
           columns={columns}
           sortBy={sortBy}
           sortDirection={sortDir}
@@ -680,7 +679,30 @@ export const MedicalPatientsView: React.FC<any> = () => {
               message: isAr ? 'تم حذف المرضى المحددين' : 'Patients sélectionnés supprimés',
             });
           }}
-          customActions={(p) => [
+          getRowMeta={(p): KineticRowMeta => {
+            const hasVigilance =
+              (p.allergies && p.allergies.length > 0) ||
+              (p.chronicConditions && p.chronicConditions.length > 0);
+            const visitCount = consultations.filter((c) => c.patientId === p.id).length;
+            const branchName = resolveRecordBranch(p, branchesById, currentBranch, language).name;
+            return {
+              title: p.fullName,
+              subtitle: `NSS: ${p.nationalId || 'CHIFA-OK'} · ${p.bloodGroup || 'O+'}`,
+              avatarText: getInitials2(p.fullName),
+              statusLabel: hasVigilance
+                ? isAr
+                  ? 'حساسية/مزمن'
+                  : 'Vigilance Active'
+                : isAr
+                ? 'سجل سليم'
+                : 'Dossier Standard',
+              statusClassName: hasVigilance ? MEMBER_PILL_DANGER : MEMBER_PILL_OK,
+              primaryStat: `${visitCount} ${isAr ? 'فحوصات' : 'visites'}`,
+              secondaryStat: `${p.phone} · ${branchName}`,
+              isPinned: pinnedIds.has(p.id),
+            };
+          }}
+          getFanActions={(p): KineticRowFanAction<MedicalPatient>[] => [
             {
               id: 'consult',
               label: isAr ? 'فحص سريري' : 'Consultation',
@@ -688,46 +710,40 @@ export const MedicalPatientsView: React.FC<any> = () => {
               variant: 'primary',
               onClick: () => handleOpenConsultation(p),
             },
+            {
+              id: 'edit',
+              label: isAr ? 'تعديل' : 'Modifier',
+              icon: <Edit size={13} />,
+              onClick: () => handleOpenEdit(p),
+            },
+            {
+              id: 'pin',
+              label: pinnedIds.has(p.id)
+                ? isAr
+                  ? 'إلغاء التثبيت'
+                  : 'Détacher'
+                : isAr
+                ? 'تثبيت'
+                : 'Épingler VIP',
+              icon: <Pin size={13} />,
+              onClick: () => handleTogglePin(p.id),
+            },
           ]}
-          renderCard={(p) => {
-            const isPinned = pinnedIds.has(p.id);
-            const hasVigilance =
-              (p.allergies && p.allergies.length > 0) ||
-              (p.chronicConditions && p.chronicConditions.length > 0);
-            return (
-              <div className="flex flex-col items-center justify-center w-full">
-                <div className="w-16 h-16 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
-                  {p.fullName.charAt(0).toUpperCase()}
-                </div>
-                <div className="flex items-center gap-1.5 max-w-[210px] mb-0.5">
-                  <h3 className="text-sm font-bold text-black dark:text-white truncate tracking-tight">
-                    {p.fullName}
-                  </h3>
-                  {isPinned && <span className="text-xs text-amber-500">VIP</span>}
-                </div>
-                <div className="flex items-center gap-1.5 mb-2.5">
-                  <span className="px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold text-xs font-mono">
-                    {p.bloodGroup || 'O+'}
-                  </span>
-                  <span className="text-[11px] font-semibold text-black/55 dark:text-white/55">
-                    {p.gender === 'Male' ? (isAr ? 'ذكر' : 'Homme') : isAr ? 'أنثى' : 'Femme'}
-                  </span>
-                </div>
-                <div className="w-full pt-2.5 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1 text-center">
-                  <div className="font-mono text-black/70 dark:text-white/75 text-[11px]">{p.phone}</div>
-                  <div className="truncate text-black/55 dark:text-white/55 text-[11px]">
-                    {hasVigilance ? (
-                      <span className="text-rose-500 font-medium">
-                        {p.allergies?.[0] || p.chronicConditions?.[0]}
-                      </span>
-                    ) : (
-                      <span>{isAr ? 'سجل طبي سليم' : 'Sans contre-indication'}</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          }}
+          getDetailActions={(p): KineticDetailAction[] => [
+            {
+              id: 'consult',
+              label: isAr ? 'فحص سريري' : 'Consulter',
+              icon: <Stethoscope size={14} />,
+              variant: 'primary',
+              onClick: () => handleOpenConsultation(p),
+            },
+            {
+              id: 'edit',
+              label: isAr ? 'تعديل' : 'Modifier',
+              icon: <Edit size={14} />,
+              onClick: () => handleOpenEdit(p),
+            },
+          ]}
           emptyTitle={isAr ? 'لا يوجد مرضى مطابقون' : 'Aucun dossier patient'}
           emptyDescription={
             isAr
@@ -766,8 +782,9 @@ export const MedicalPatientsView: React.FC<any> = () => {
             ? `NSS: ${activePatient.nationalId || 'CHIFA-VALIDE'} · ${activePatient.bloodGroup || 'O+'}`
             : ''
         }
-        avatarText={activePatient?.fullName?.charAt(0).toUpperCase() || 'P'}
+        avatarText={activePatient ? getInitials2(activePatient.fullName) : 'PT'}
         avatarColor="#d4522f"
+        categoryLabel={isAr ? 'ملف مريض EHR' : isFr ? 'DOSSIER PATIENT EHR' : 'PATIENT EHR'}
         branchName={
           activePatient
             ? resolveRecordBranch(activePatient, branchesById, currentBranch, language).name
@@ -784,13 +801,17 @@ export const MedicalPatientsView: React.FC<any> = () => {
             ? 'سجل سليم'
             : 'Dossier Standard'
         }
+        statusClassName={
+          activePatient &&
+          ((activePatient.allergies && activePatient.allergies.length > 0) ||
+            (activePatient.chronicConditions && activePatient.chronicConditions.length > 0))
+            ? MEMBER_PILL_DANGER
+            : MEMBER_PILL_OK
+        }
         tabs={[
-          { id: 'dossier', label: isAr ? 'الملف' : 'Dossier' },
-          { id: 'vitals', label: isAr ? 'المؤشرات' : 'Constantes' },
-          { id: 'allergies', label: isAr ? 'الحساسيات' : 'Vigilances' },
-          { id: 'labs', label: isAr ? 'المخابر' : 'Biologie' },
-          { id: 'history', label: isAr ? 'الفحوصات' : 'Historique' },
-          { id: 'notes', label: isAr ? 'الملاحظات' : 'Notes' },
+          { id: 'dossier', label: isAr ? 'الملف' : isFr ? 'Dossier' : 'Overview' },
+          { id: 'vitals', label: isAr ? 'المؤشرات والمخابر' : isFr ? 'Constantes & Labo' : 'Vitals & Labs' },
+          { id: 'history', label: isAr ? 'الفحوصات' : isFr ? 'Consultations' : 'Visits' },
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -798,169 +819,217 @@ export const MedicalPatientsView: React.FC<any> = () => {
         onClose={() => setInspectedPatient(null)}
         onDelete={handleDelete}
         holdToDelete
-        renderBody={(patient, tab) => (
-          <div className="space-y-4">
-            {/* Quick Clinical Action Bar */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => handleOpenConsultation(patient)}
-                className="flex-1 py-2 px-3 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
-              >
-                <Stethoscope size={13} />
-                <span>{isAr ? 'فحص سريري' : 'Consulter'}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleOpenEdit(patient)}
-                className="p-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-neutral-100 text-xs font-semibold transition-colors cursor-pointer"
-                title={isAr ? 'تعديل' : 'Modifier'}
-                aria-label={isAr ? 'تعديل' : 'Modifier'}
-              >
-                <Edit size={14} />
-              </button>
-              <button
-                type="button"
-                onClick={() => handleTogglePin(patient.id)}
-                className={`p-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold transition-colors cursor-pointer ${
-                  pinnedIds.has(patient.id)
-                    ? 'text-amber-500'
-                    : 'text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white'
-                }`}
-                title={isAr ? 'تثبيت' : 'Épingler'}
-                aria-label={isAr ? 'تثبيت' : 'Épingler'}
-              >
-                <Pin size={14} />
-              </button>
-            </div>
+        renderBody={(patient, tab) => {
+          const patientLabs = labRecords.filter((l) => l.patientId === patient.id);
+          const patientConsults = consultations.filter((c) => c.patientId === patient.id);
+          const hasVigilance =
+            (patient.allergies && patient.allergies.length > 0) ||
+            (patient.chronicConditions && patient.chronicConditions.length > 0);
+          return (
+            <div className="space-y-5">
+              {tab === 'dossier' && (
+                <>
+                  <InspectorSection
+                    title={isAr ? 'إجراءات سريعة' : isFr ? 'Actions cliniques' : 'Quick Actions'}
+                    delayIndex={0}
+                    animateKey={patient.id}
+                  >
+                    <InspectorQuickActions
+                      actions={[
+                        {
+                          id: 'consult',
+                          label: isAr ? 'فحص سريري' : 'Consulter',
+                          icon: <Stethoscope size={15} />,
+                          onClick: () => handleOpenConsultation(patient),
+                        },
+                        {
+                          id: 'edit',
+                          label: isAr ? 'تعديل الملف' : 'Modifier',
+                          icon: <Edit size={15} />,
+                          onClick: () => handleOpenEdit(patient),
+                        },
+                        {
+                          id: 'pin',
+                          label: pinnedIds.has(patient.id)
+                            ? isAr
+                              ? 'إلغاء VIP'
+                              : 'Retirer VIP'
+                            : isAr
+                            ? 'تثبيت VIP'
+                            : 'Épingler VIP',
+                          icon: <Pin size={15} />,
+                          onClick: () => handleTogglePin(patient.id),
+                        },
+                      ]}
+                    />
+                  </InspectorSection>
 
-            {tab === 'dossier' && (
-              <div className="space-y-3 text-xs">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-                  <div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">
-                    {isAr ? 'بيانات المريض' : 'État Civil & Contact'}
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                    <span className="text-black/55 dark:text-white/55">
-                      {isAr ? 'تاريخ الميلاد' : 'Date de naissance'}
-                    </span>
-                    <span className="font-semibold text-black dark:text-white font-mono">
-                      {patient.dateOfBirth || '—'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                    <span className="text-black/55 dark:text-white/55">
-                      {isAr ? 'الهاتف' : 'Téléphone'}
-                    </span>
-                    <span className="font-semibold text-black dark:text-white font-mono">
-                      {patient.phone}
-                    </span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                    <span className="text-black/55 dark:text-white/55">
-                      {isAr ? 'بطاقة الشفاء / الهوية' : 'NSS / Chifa'}
-                    </span>
-                    <span className="font-semibold text-black dark:text-white font-mono">
-                      {patient.nationalId || patient.chifaCardNumber || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between py-1">
-                    <span className="text-black/55 dark:text-white/55">
-                      {isAr ? 'تاريخ التسجيل' : "Date d'inscription"}
-                    </span>
-                    <span className="font-semibold text-black dark:text-white font-mono">
-                      {patient.createdAt ? new Date(patient.createdAt).toLocaleDateString() : '2026-05-01'}
-                    </span>
-                  </div>
-                </div>
+                  <InspectorSection
+                    title={isAr ? 'بيانات المريض' : 'État Civil & Contact'}
+                    delayIndex={1}
+                    animateKey={patient.id}
+                  >
+                    <InspectorCard>
+                      <InspectorKeyValue
+                        label={isAr ? 'تاريخ الميلاد' : 'Date de naissance'}
+                        value={patient.dateOfBirth || '—'}
+                        mono
+                      />
+                      <InspectorKeyValue
+                        label={isAr ? 'الهاتف' : 'Téléphone'}
+                        value={patient.phone}
+                        mono
+                      />
+                      <InspectorKeyValue
+                        label={isAr ? 'بطاقة الشفاء / الهوية' : 'NSS / Chifa'}
+                        value={patient.nationalId || patient.chifaCardNumber || 'N/A'}
+                        mono
+                      />
+                      <InspectorKeyValue
+                        label={isAr ? 'فصيلة الدم' : 'Groupe sanguin'}
+                        value={patient.bloodGroup || 'O+'}
+                        mono
+                      />
+                      <InspectorKeyValue
+                        label={isAr ? 'تاريخ التسجيل' : "Date d'inscription"}
+                        value={
+                          patient.createdAt
+                            ? new Date(patient.createdAt).toLocaleDateString()
+                            : '2026-05-01'
+                        }
+                        mono
+                        isLast
+                      />
+                    </InspectorCard>
+                  </InspectorSection>
 
-                {patient.emergencyContact && (
-                  <div className="bg-amber-50 dark:bg-amber-950/20 p-3 rounded-xl border border-amber-200/60 dark:border-amber-900/40 space-y-1">
-                    <div className="text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <Phone size={12} />
-                      <span>
-                        {isAr
-                          ? 'جهة الاتصال في حالات الطوارئ'
-                          : 'Personne à contacter en urgence'}
-                      </span>
-                    </div>
-                    <div className="font-semibold text-black dark:text-white pt-1">
-                      {patient.emergencyContact}
-                    </div>
-                    <div className="text-black/70 dark:text-white/75 font-mono text-xs">
-                      {patient.emergencyPhone || '—'}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+                  {patient.emergencyContact && (
+                    <InspectorSection
+                      title={isAr ? 'طوارئ' : "Contact d'urgence"}
+                      delayIndex={2}
+                      animateKey={patient.id}
+                    >
+                      <InspectorCard>
+                        <InspectorKeyValue
+                          label={isAr ? 'الاسم' : 'Personne à contacter'}
+                          value={patient.emergencyContact}
+                        />
+                        <InspectorKeyValue
+                          label={isAr ? 'الهاتف' : 'Téléphone urgence'}
+                          value={patient.emergencyPhone || '—'}
+                          mono
+                          isLast
+                        />
+                      </InspectorCard>
+                    </InspectorSection>
+                  )}
 
-            {tab === 'vitals' && (
-              <div className="space-y-4 text-xs">
-                {(() => {
-                  const history = patient.vitalsHistory || [];
-                  const latest = history.length > 0 ? history[history.length - 1] : null;
-                  const weight = latest?.weightKg || 72;
-                  const heightM = (latest?.heightCm || 172) / 100;
-                  const bmi = heightM > 0 ? (weight / (heightM * heightM)).toFixed(1) : '24.3';
-                  const bmiNum = parseFloat(bmi);
-                  let bmiLabel = 'Poids normal';
-                  let bmiColor =
-                    'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800';
-                  if (bmiNum < 18.5) {
-                    bmiLabel = 'Insuffisance pondérale';
-                    bmiColor =
-                      'text-blue-700 bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800';
-                  } else if (bmiNum >= 25 && bmiNum < 30) {
-                    bmiLabel = 'Surpoids';
-                    bmiColor =
-                      'text-amber-700 bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800';
-                  } else if (bmiNum >= 30) {
-                    bmiLabel = 'Obésité';
-                    bmiColor =
-                      'text-rose-700 bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800';
-                  }
-
-                  return (
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800">
-                          <span className="text-[10px] font-semibold text-black/55 dark:text-white/55 block uppercase">
-                            Indice de Masse Corporelle
-                          </span>
-                          <div className="flex items-baseline gap-1.5 mt-0.5">
-                            <span className="text-xl font-bold font-mono text-black dark:text-white">
-                              {bmi}
-                            </span>
-                            <span className="text-[10px] text-black/55 dark:text-white/55">kg/m²</span>
-                          </div>
-                          <span
-                            className={`inline-block mt-1 px-1.5 py-0.5 rounded text-[10px] font-semibold border ${bmiColor}`}
-                          >
-                            {bmiLabel}
-                          </span>
-                        </div>
-                        <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800">
-                          <span className="text-[10px] font-semibold text-black/55 dark:text-white/55 block uppercase">
-                            Saturation O₂ & Pouls
-                          </span>
-                          <div className="flex items-baseline gap-1.5 mt-0.5">
-                            <span className="text-xl font-bold font-mono text-black dark:text-white">
-                              {latest?.spO2Percent ?? latest?.spO2 ?? 98}%
-                            </span>
-                            <span className="text-[10px] text-black/55 dark:text-white/55">SpO₂</span>
-                          </div>
-                          <div className="text-[11px] font-mono text-black/55 dark:text-white/55 mt-1">
-                            FC:{' '}
-                            <strong className="text-black dark:text-white">
-                              {latest?.pulseBpm ?? latest?.heartRateBpm ?? 74}
-                            </strong>{' '}
-                            bpm
-                          </div>
-                        </div>
+                  <InspectorSection
+                    title={isAr ? 'الحساسيات والأمراض المزمنة' : 'Vigilances & Antécédents'}
+                    delayIndex={3}
+                    animateKey={patient.id}
+                  >
+                    <InspectorCard>
+                      <InspectorKeyValue
+                        label={isAr ? 'الحساسيات الدوائية' : 'Allergies'}
+                        value={
+                          patient.allergies && patient.allergies.length > 0
+                            ? patient.allergies.join(', ')
+                            : isAr
+                            ? 'لا توجد'
+                            : 'Aucune déclarée'
+                        }
+                      />
+                      <InspectorKeyValue
+                        label={isAr ? 'الأمراض المزمنة' : 'Pathologies chroniques'}
+                        value={
+                          patient.chronicConditions && patient.chronicConditions.length > 0
+                            ? patient.chronicConditions.join(', ')
+                            : isAr
+                            ? 'لا توجد'
+                            : 'Aucun antécédent'
+                        }
+                        isLast
+                      />
+                    </InspectorCard>
+                    {hasVigilance && (
+                      <div className="mt-2 px-3 py-2 rounded-xl bg-[#FDE4DF]/60 dark:bg-[#3D1E1A]/40 border border-[#F5BDB3] dark:border-[#5C2B24] text-[11px] font-semibold text-[#B8321C] dark:text-[#FF8D7A] flex items-center gap-2">
+                        <ShieldAlert size={13} className="shrink-0" />
+                        <span>
+                          {isAr
+                            ? 'تنبيه دوائي نشط عند تحرير الوصفات'
+                            : 'Contrôle pharmacologique actif lors des prescriptions'}
+                        </span>
                       </div>
+                    )}
+                  </InspectorSection>
 
-                      <div className="p-3 rounded-xl bg-white dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700 shadow-2xs">
+                  <InspectorSection
+                    title={isAr ? 'الملاحظات السريرية' : 'Observations Cliniques'}
+                    delayIndex={4}
+                    animateKey={patient.id}
+                  >
+                    <InspectorNotesField
+                      value={patient.notes || ''}
+                      onSave={(next) => {
+                        const updated = { ...patient, notes: next };
+                        updatePatient(updated);
+                        setInspectedPatient(updated);
+                        showToast({
+                          type: 'success',
+                          title: isAr ? 'تم الحفظ' : isFr ? 'Notes enregistrées' : 'Notes Saved',
+                          message: isAr
+                            ? 'تم حفظ الملاحظات السريرية'
+                            : 'Observations cliniques enregistrées',
+                        });
+                      }}
+                      placeholder={
+                        isAr
+                          ? 'أدخل ملاحظات الطبيب...'
+                          : 'Saisir les remarques médicales, consignes, suivi...'
+                      }
+                      ariaLabel={isAr ? 'الملاحظات السريرية' : 'Observations Cliniques'}
+                    />
+                  </InspectorSection>
+                </>
+              )}
+
+              {tab === 'vitals' && (() => {
+                const history = patient.vitalsHistory || [];
+                const latest = history.length > 0 ? history[history.length - 1] : null;
+                const weight = latest?.weightKg || 72;
+                const heightM = (latest?.heightCm || 172) / 100;
+                const bmi = heightM > 0 ? (weight / (heightM * heightM)).toFixed(1) : '24.3';
+                const bmiNum = parseFloat(bmi);
+                let bmiLabel = 'Poids normal';
+                if (bmiNum < 18.5) bmiLabel = 'Insuffisance pondérale';
+                else if (bmiNum >= 25 && bmiNum < 30) bmiLabel = 'Surpoids';
+                else if (bmiNum >= 30) bmiLabel = 'Obésité';
+
+                return (
+                  <>
+                    <InspectorSection
+                      title={isAr ? 'المؤشرات الحيوية الحالية' : 'Constantes Vitales'}
+                      delayIndex={0}
+                      animateKey={patient.id}
+                    >
+                      <InspectorCard>
+                        <InspectorKeyValue
+                          label="IMC (kg/m²)"
+                          value={`${bmi} · ${bmiLabel}`}
+                          mono
+                        />
+                        <InspectorKeyValue
+                          label="SpO₂ / Pouls"
+                          value={`${latest?.spO2Percent ?? latest?.spO2 ?? 98}% · ${
+                            latest?.pulseBpm ?? latest?.heartRateBpm ?? 74
+                          } bpm`}
+                          mono
+                          isLast
+                        />
+                      </InspectorCard>
+
+                      <div className="mt-3 p-3 rounded-xl bg-white dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700 shadow-2xs">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-1.5">
                             <Activity size={13} className="text-[#d4522f]" />
@@ -1077,16 +1146,15 @@ export const MedicalPatientsView: React.FC<any> = () => {
                       </div>
 
                       {!showAddVitals ? (
-                        <button
-                          type="button"
-                          onClick={() => setShowAddVitals(true)}
-                          className="w-full py-2 px-3 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:border-[#d4522f] flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                        >
-                          <Plus size={13} />
-                          <span>{isAr ? 'تسجيل قراءة جديدة' : 'Prendre de nouvelles constantes'}</span>
-                        </button>
+                        <div className="mt-3">
+                          <InspectorWideButton
+                            label={isAr ? 'تسجيل قراءة جديدة' : 'Prendre de nouvelles constantes'}
+                            icon={<Plus size={14} />}
+                            onClick={() => setShowAddVitals(true)}
+                          />
+                        </div>
                       ) : (
-                        <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 space-y-2.5">
+                        <div className="mt-3 p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700 space-y-2.5 text-xs">
                           <div className="text-[11px] font-bold text-black/70 dark:text-white/75 uppercase">
                             Nouvelle Prise de Constantes
                           </div>
@@ -1207,200 +1275,105 @@ export const MedicalPatientsView: React.FC<any> = () => {
                           </div>
                         </div>
                       )}
-                    </div>
-                  );
-                })()}
-              </div>
-            )}
+                    </InspectorSection>
 
-            {tab === 'allergies' && (
-              <div className="space-y-3 text-xs">
-                <div className="bg-rose-50 dark:bg-rose-950/20 p-3.5 rounded-xl border border-rose-200/60 dark:border-rose-900/40 space-y-2">
-                  <div className="text-[11px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <ShieldAlert size={12} />
-                    <span>{isAr ? 'الحساسيات الدوائية' : 'Allergies Médicamenteuses'}</span>
-                  </div>
-                  {patient.allergies && patient.allergies.length > 0 ? (
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {patient.allergies.map((allergy, i) => (
-                        <span
-                          key={i}
-                          className="px-2.5 py-1 rounded-md bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300 font-bold text-xs"
-                        >
-                          {allergy}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-black/55 dark:text-white/55 italic pt-1">
-                      {isAr ? 'لا توجد حساسيات دوائية مسجلة' : 'Aucune allergie médicamenteuse déclarée.'}
-                    </p>
-                  )}
-                </div>
-
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-                  <div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider flex items-center gap-1.5">
-                    <HeartPulse size={12} />
-                    <span>{isAr ? 'الأمراض المزمنة' : 'Pathologies Chroniques'}</span>
-                  </div>
-                  {patient.chronicConditions && patient.chronicConditions.length > 0 ? (
-                    <div className="space-y-1.5 pt-1">
-                      {patient.chronicConditions.map((cond, i) => (
-                        <div
-                          key={i}
-                          className="p-2 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 font-medium text-black dark:text-white"
-                        >
-                          {cond}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-black/55 dark:text-white/55 italic pt-1">
-                      {isAr ? 'لا توجد أمراض مزمنة' : 'Aucun antécédent chronique signalé.'}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {tab === 'labs' && (
-              <div className="space-y-3 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">
-                    {isAr ? 'التحاليل البيولوجية' : 'Bilans Biologiques'}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setIsLabModalOpen(true)}
-                    className="px-2.5 py-1 rounded-lg bg-[#d4522f] text-white text-[11px] font-semibold flex items-center gap-1 shadow-2xs cursor-pointer"
-                  >
-                    <Plus size={11} />
-                    <span>{isAr ? 'تحليل جديد' : 'Nouveau Bilan'}</span>
-                  </button>
-                </div>
-                {labRecords.filter((l) => l.patientId === patient.id).length > 0 ? (
-                  <div className="space-y-2">
-                    {labRecords
-                      .filter((l) => l.patientId === patient.id)
-                      .map((record) => {
-                        const abnormalCount = record.parameters.filter((prm) => prm.isAbnormal).length;
-                        return (
-                          <button
-                            key={record.id}
-                            type="button"
-                            onClick={() => setIsLabModalOpen(true)}
-                            className="w-full text-left p-3 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-[#d4522f] cursor-pointer transition-all shadow-2xs block"
-                          >
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="font-bold text-black dark:text-white">
-                                {record.panelName || record.testCategory}
-                              </span>
-                              {abnormalCount > 0 ? (
-                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-600 border border-rose-200 dark:border-rose-800">
-                                  {abnormalCount} anomalie{abnormalCount > 1 ? 's' : ''}
-                                </span>
-                              ) : (
-                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 border border-emerald-200">
-                                  Normal
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-[11px] text-black/55 dark:text-white/55 font-mono flex items-center justify-between">
-                              <span>
-                                {record.testDate || record.date} · {record.orderingDoctor || record.doctorName}
-                              </span>
-                              <span className="text-[#d4522f] font-semibold">Voir le bilan →</span>
-                            </div>
-                          </button>
-                        );
-                      })}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-black/55 dark:text-white/55">
-                    <Microscope size={28} className="mx-auto mb-2 opacity-40" />
-                    <p>
-                      {isAr ? 'لا توجد تحاليل بيولوجية مسجلة' : 'Aucun bilan biologique pour ce patient.'}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {tab === 'history' && (
-              <div className="space-y-2.5 text-xs">
-                {consultations.filter((c) => c.patientId === patient.id).length > 0 ? (
-                  consultations
-                    .filter((c) => c.patientId === patient.id)
-                    .map((c) => (
-                      <div
-                        key={c.id}
-                        className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-1.5"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-black dark:text-white">
-                            {c.diagnosis || c.chiefComplaint}
-                          </span>
-                          <span className="text-[10px] font-mono text-black/55 dark:text-white/55">
-                            {c.consultationDate?.split('T')[0]}
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-black/70 dark:text-white/75">{c.chiefComplaint}</div>
-                        {c.vitals && (
-                          <div className="flex items-center gap-3 text-[10px] font-mono text-black/55 dark:text-white/55 pt-1 border-t border-neutral-200/50 dark:border-neutral-700/50">
-                            <span>TA: {c.vitals.bloodPressure || '120/80'}</span>
-                            <span>T: {c.vitals.temperatureCelsius ?? 37}°C</span>
-                            <span>FC: {c.vitals.heartRateBpm ?? 75} bpm</span>
+                    <InspectorSection
+                      title={isAr ? 'التحاليل البيولوجية' : 'Bilans Biologiques'}
+                      delayIndex={1}
+                      animateKey={patient.id}
+                    >
+                      {patientLabs.length > 0 ? (
+                        <InspectorCard>
+                          {patientLabs.map((record, idx) => {
+                            const abnormalCount = record.parameters.filter((prm) => prm.isAbnormal).length;
+                            return (
+                              <InspectorListItem
+                                key={record.id}
+                                title={record.panelName || record.testCategory}
+                                subtitle={`${record.testDate || record.date} · ${record.orderingDoctor || record.doctorName}`}
+                                badge={{
+                                  label:
+                                    abnormalCount > 0
+                                      ? `${abnormalCount} anomalie${abnormalCount > 1 ? 's' : ''}`
+                                      : 'Normal',
+                                  tone: abnormalCount > 0 ? 'danger' : 'ok',
+                                }}
+                                onClick={() => setIsLabModalOpen(true)}
+                                isLast={idx === patientLabs.length - 1}
+                              />
+                            );
+                          })}
+                        </InspectorCard>
+                      ) : (
+                        <InspectorCard>
+                          <div className="py-4 text-center text-xs text-black/55 dark:text-white/55">
+                            <Microscope size={22} className="mx-auto mb-1.5 opacity-40" />
+                            <p>
+                              {isAr ? 'لا توجد تحاليل بيولوجية مسجلة' : 'Aucun bilan biologique pour ce patient.'}
+                            </p>
                           </div>
-                        )}
+                        </InspectorCard>
+                      )}
+                      <div className="mt-3">
+                        <InspectorWideButton
+                          label={isAr ? 'تحليل مخبري جديد' : 'Ouvrir / Nouveau Bilan Labo'}
+                          icon={<Microscope size={14} />}
+                          variant="primary"
+                          onClick={() => setIsLabModalOpen(true)}
+                        />
                       </div>
-                    ))
-                ) : (
-                  <div className="text-center py-8 text-black/55 dark:text-white/55">
-                    <Stethoscope size={28} className="mx-auto mb-2 opacity-40" />
-                    <p>{isAr ? 'لا توجد فحوصات سابقة لهذا المريض' : 'Aucune consultation enregistrée.'}</p>
-                  </div>
-                )}
-              </div>
-            )}
+                    </InspectorSection>
+                  </>
+                );
+              })()}
 
-            {tab === 'notes' && (
-              <div className="space-y-3 text-xs">
-                <label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase">
-                  {isAr ? 'الملاحظات السريرية والتوصيات' : 'Observations Cliniques & Suivi'}
-                </label>
-                <textarea
-                  value={inspectorNotes}
-                  onChange={(e) => setInspectorNotes(e.target.value)}
-                  rows={8}
-                  placeholder={
-                    isAr
-                      ? 'أدخل ملاحظات الطبيب...'
-                      : 'Saisir les remarques médicales, consignes, prescriptions spécifiques...'
-                  }
-                  className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-2 focus:ring-[#d4522f] outline-none"
-                />
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-[11px] text-black/55 dark:text-white/55">
-                    {noteSaved && (
-                      <span className="text-emerald-600 font-bold flex items-center gap-1">
-                        <Check size={12} /> {isAr ? 'تم الحفظ' : 'Enregistré'}
-                      </span>
-                    )}
-                  </span>
-                  <AtriumButton
-                    type="button"
-                    variant="primary"
-                    size="sm"
-                    icon={<Save size={13} />}
-                    onClick={handleSaveNotes}
-                  >
-                    <span>{isAr ? 'حفظ الملاحظات' : 'Enregistrer'}</span>
-                  </AtriumButton>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+              {tab === 'history' && (
+                <InspectorSection
+                  title={isAr ? 'سجل الفحوصات الطبية' : 'Historique des Consultations'}
+                  delayIndex={0}
+                  animateKey={patient.id}
+                >
+                  {patientConsults.length > 0 ? (
+                    <InspectorCard>
+                      {patientConsults.map((c, idx) => (
+                        <InspectorListItem
+                          key={c.id}
+                          title={c.diagnosis || c.chiefComplaint}
+                          subtitle={
+                            c.vitals
+                              ? `${c.chiefComplaint} · TA ${c.vitals.bloodPressure || '120/80'} · ${c.vitals.temperatureCelsius ?? 37}°C`
+                              : c.chiefComplaint
+                          }
+                          metaRight={c.consultationDate?.split('T')[0]}
+                          badge={{
+                            label: c.status === 'Completed' ? (isAr ? 'مكتمل' : 'Clôturé') : c.status,
+                            tone: c.status === 'Completed' ? 'ok' : 'warn',
+                          }}
+                          isLast={idx === patientConsults.length - 1}
+                        />
+                      ))}
+                    </InspectorCard>
+                  ) : (
+                    <InspectorCard>
+                      <div className="py-6 text-center text-xs text-black/55 dark:text-white/55">
+                        <Stethoscope size={24} className="mx-auto mb-2 opacity-40" />
+                        <p>{isAr ? 'لا توجد فحوصات سابقة لهذا المريض' : 'Aucune consultation enregistrée.'}</p>
+                      </div>
+                    </InspectorCard>
+                  )}
+                  <div className="mt-3">
+                    <InspectorWideButton
+                      label={isAr ? 'إضافة فحص سريري' : 'Nouvelle Consultation'}
+                      icon={<Stethoscope size={14} />}
+                      variant="primary"
+                      onClick={() => handleOpenConsultation(patient)}
+                    />
+                  </div>
+                </InspectorSection>
+              )}
+            </div>
+          );
+        }}
       />
 
       {isPatientModalOpen && (

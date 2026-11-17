@@ -145,6 +145,8 @@ export interface UniversalDataCollectionProps<T> {
 
   // Optional Kinetic Slot Overrides
   getRowMeta?: (item: T) => Partial<KineticRowData>;
+  getFanActions?: (item: T) => KineticRowFanAction[] | undefined;
+  getDetailActions?: (item: T) => KineticDetailAction[];
 
   // Empty State
   emptyTitle?: string;
@@ -284,6 +286,8 @@ export function UniversalDataCollection<T>({
   activeChips = [],
   openItemId = null,
   getRowMeta,
+  getFanActions: getFanActionsOverride,
+  getDetailActions: getDetailActionsOverride,
   emptyTitle,
   emptyDescription,
   emptyIcon,
@@ -821,6 +825,10 @@ export function UniversalDataCollection<T>({
 
   const getFanActions = useCallback(
     (item: T): KineticRowFanAction[] | undefined => {
+      if (getFanActionsOverride) {
+        const overridden = getFanActionsOverride(item);
+        if (overridden) return overridden;
+      }
       const id = String(keyExtractor(item));
       const titleLabel = pickRecordTitle(item);
       const custom = getCustomActions(item);
@@ -884,6 +892,9 @@ export function UniversalDataCollection<T>({
 
   const getDetailActions = useCallback(
     (item: T): KineticDetailAction[] => {
+      if (getDetailActionsOverride) {
+        return getDetailActionsOverride(item);
+      }
       const actionsList: KineticDetailAction[] = [];
       if (onViewDetails || onItemClick) {
         actionsList.push({

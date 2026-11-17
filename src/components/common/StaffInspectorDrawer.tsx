@@ -5,11 +5,13 @@ import {
   PauseCircle,
   Plane,
   AlertTriangle,
-  TrendingUp,
   Mail,
   Phone,
   MapPin,
   ShieldCheck,
+  Clock,
+  BadgeCheck,
+  Briefcase,
 } from 'lucide-react';
 import { StaffMember, BusinessCategory } from '../../types/index';
 import {
@@ -24,9 +26,19 @@ import {
   getEffectiveUserRole,
   canCreateStaff,
 } from '../../utils/staffRules';
+import { formatMoney } from '../../utils/rules';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import {
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorProgressBar,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorNotesField,
+  InspectorWideButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
   extractInitials,
@@ -82,11 +94,10 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
     terminateStaffMember,
     deleteStaffMember,
     punchStaffAttendance,
+    updateStaffMember,
   } = useAtriumActions();
 
-  const [confirmAction, setConfirmAction] = useState<
-    'freeze' | 'vacation' | 'terminate' | null
-  >(null);
+  const [confirmAction, setConfirmAction] = useState<'freeze' | 'vacation' | 'terminate' | null>(null);
 
   const isAr = storeSlice.language === 'ar';
   const isEn = storeSlice.language === 'en';
@@ -140,7 +151,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
         return 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
       case 'vacation':
       case 'on_leave':
-        return 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/50';
+        return 'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC] border border-[#BAE6FD] dark:border-[#164E63]';
       case 'terminated':
         return 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]';
       case 'active':
@@ -179,6 +190,14 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
     } finally {
       setConfirmAction(null);
     }
+  };
+
+  const handleCopyToast = (text: string) => {
+    showToast({
+      type: 'success',
+      title: isAr ? 'تم النسخ' : isEn ? 'Copied' : 'Copié',
+      message: text,
+    });
   };
 
   const tabs = useMemo(
@@ -237,249 +256,369 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
               }
             : undefined
         }
-        holdToDelete
-        renderBody={(activeStaff, activeTab) => {
-          if (activeTab === 'access') {
-            return (
-              <div className="space-y-4">
-                <div className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`w-2.5 h-2.5 rounded-full ${
-                          activeStaff.isClockedInToday ? 'bg-emerald-500' : 'bg-[#8A8178]'
-                        }`}
-                      />
-                      <span className="font-semibold text-[13px] text-black dark:text-white">
-                        {activeStaff.isClockedInToday
-                          ? isAr
-                            ? `حاضر الآن (دخول ${activeStaff.lastClockInTime || '08:00'})`
-                            : isEn
-                            ? `Clocked In (${activeStaff.lastClockInTime || '08:00'})`
-                            : `Présent sur site (${activeStaff.lastClockInTime || '08:00'})`
-                          : isAr
-                          ? 'غير مسجل حضور اليوم'
-                          : isEn
-                          ? 'Not Clocked In Today'
-                          : "Non pointé aujourd'hui"}
-                      </span>
-                    </div>
-                    <p className="text-[11px] font-mono text-black/65 dark:text-white/70 mt-1 tabular-nums">
-                      Badge: {activeStaff.badgeToken || activeStaff.cardId || 'NON-ATTRIBUÉ'}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    data-no-liquid="true"
-                    onClick={() => punchStaffAttendance(activeStaff.id)}
-                    className={`px-3.5 py-2 rounded-xl font-semibold text-xs shadow-xs transition-colors cursor-pointer ${
-                      activeStaff.isClockedInToday
-                        ? 'bg-[#E6DED6] dark:bg-[#3A3734] text-black dark:text-white hover:bg-[#D4C8BC]'
-                        : 'bg-[#d4522f] text-white hover:bg-[#b03b1b]'
-                    }`}
-                  >
-                    {activeStaff.isClockedInToday
-                      ? isAr
-                        ? 'تسجيل خروج'
-                        : isEn
-                        ? 'Clock Out'
-                        : 'Pointer Sortie'
-                      : isAr
-                      ? 'تسجيل حضور'
-                      : isEn
-                      ? 'Clock In'
-                      : 'Pointer Entrée'}
-                  </button>
-                </div>
+        holdToDelete={canEdit}
+        renderBody={(activeStaff, activeTab, entranceEpoch) => {
+          const perfScore = activeStaff.performance?.scorePercentage ?? 88;
+          const perfLabel = isAr ? metricLabel.labelAr : isEn ? metricLabel.labelEn : metricLabel.labelFr;
+          const contractLabel = (activeStaff.contractType || activeStaff.recruitmentType || 'CDI').toUpperCase();
 
-                <div className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734]">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-black dark:text-white flex items-center gap-1.5">
-                      <TrendingUp className="w-4 h-4 text-[#d4522f]" />
-                      {isAr ? metricLabel.labelAr : isEn ? metricLabel.labelEn : metricLabel.labelFr}
-                    </span>
-                    <span className="font-bold text-sm font-mono text-[#d4522f] tabular-nums">
-                      {activeStaff.performance?.kpiValue ?? '92%'}
-                    </span>
-                  </div>
-                  <div className="w-full bg-[#E6DED6] dark:bg-[#3A3734] h-2 rounded-full overflow-hidden">
-                    <div
-                      className="bg-[#d4522f] h-full rounded-full transition-all duration-500"
-                      style={{ width: `${activeStaff.performance?.scorePercentage ?? 85}%` }}
+          if (activeTab === 'access') {
+            const recentLogs = (activeStaff.attendanceLogs || []).slice(0, 4);
+            return (
+              <>
+                <InspectorSection
+                  index={0}
+                  title={isAr ? 'البصمة والبادج' : isEn ? 'Badge & Check-In' : 'Badge & Pointage'}
+                >
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'رقم البادج' : isEn ? 'RFID Badge' : 'Badge'}
+                      value={activeStaff.badgeToken || activeStaff.cardId || `RFID-${activeStaff.id.slice(0, 8).toUpperCase()}`}
+                      copyText={activeStaff.badgeToken || activeStaff.cardId}
+                      onCopied={handleCopyToast}
                     />
-                  </div>
-                </div>
-              </div>
+                    <InspectorKeyValue
+                      label={isAr ? 'حالة الحضور' : isEn ? 'Attendance Today' : 'Statut du jour'}
+                      value={
+                        activeStaff.isClockedInToday
+                          ? `${isAr ? 'حاضر' : isEn ? 'Clocked In' : 'Présent'} · ${activeStaff.lastClockInTime || '08:00'}`
+                          : isAr
+                          ? 'غير مسجل'
+                          : isEn
+                          ? 'Not Clocked In'
+                          : 'Non pointé'
+                      }
+                      tone={activeStaff.isClockedInToday ? 'ok' : 'default'}
+                    />
+                    <InspectorKeyValue
+                      label={perfLabel}
+                      value={`${activeStaff.performance?.kpiValue ?? `${perfScore}%`}`}
+                      tone="ok"
+                      isLast
+                    />
+                    <InspectorProgressBar
+                      percent={perfScore}
+                      tone="ok"
+                      animateKey={`${activeStaff.id}-${entranceEpoch}`}
+                    />
+                  </InspectorCard>
+                  <div className="h-2.5" />
+                  <InspectorWideButton
+                    label={
+                      activeStaff.isClockedInToday
+                        ? isAr
+                          ? 'تسجيل الخروج الآن'
+                          : isEn
+                          ? 'Clock Out Now'
+                          : 'Pointer la sortie'
+                        : isAr
+                        ? 'تسجيل الحضور الآن'
+                        : isEn
+                        ? 'Clock In Now'
+                        : "Pointer l'entrée"
+                    }
+                    icon={<Clock className="w-4 h-4" />}
+                    tone={activeStaff.isClockedInToday ? 'dark' : 'accent'}
+                    onClick={() => punchStaffAttendance(activeStaff.id)}
+                  />
+                </InspectorSection>
+
+                <InspectorSection
+                  index={1}
+                  title={isAr ? 'سجل الحضور الأخير' : isEn ? 'Recent Punches' : 'Pointages récents'}
+                >
+                  <InspectorCard>
+                    {(recentLogs.length > 0
+                      ? recentLogs.map((log, i) => ({
+                          title: log.type === 'in'
+                            ? isAr ? 'تسجيل دخول' : isEn ? 'Check-In' : 'Entrée poste'
+                            : isAr ? 'تسجيل خروج' : isEn ? 'Check-Out' : 'Sortie poste',
+                          time: (log.timestamp || '').replace('T', ' · ').slice(0, 18) || 'Aujourd’hui',
+                          ok: log.type === 'in',
+                          key: log.id || String(i),
+                        }))
+                      : [
+                          {
+                            title: isAr ? 'نوبة الصباح' : isEn ? 'Morning Shift' : 'Prise de poste',
+                            time: activeStaff.lastClockInTime ? `Aujourd’hui · ${activeStaff.lastClockInTime}` : 'Aujourd’hui · 08:00',
+                            ok: activeStaff.isClockedInToday,
+                            key: 'default-0',
+                          },
+                          {
+                            title: isAr ? 'نوبة الأمس' : isEn ? 'Previous Shift' : 'Clôture de service',
+                            time: 'Hier · 17:30',
+                            ok: true,
+                            key: 'default-1',
+                          },
+                        ]
+                    ).map((item, idx, arr) => (
+                      <InspectorListItem
+                        key={item.key}
+                        title={item.title}
+                        subtitle={item.time}
+                        badge={{
+                          label: item.ok
+                            ? isAr ? 'مسجل' : isEn ? 'Logged' : 'Validé'
+                            : isAr ? 'معلق' : isEn ? 'Pending' : 'En attente',
+                          tone: item.ok ? 'ok' : 'warn',
+                        }}
+                        isLast={idx === arr.length - 1}
+                      />
+                    ))}
+                  </InspectorCard>
+                </InspectorSection>
+              </>
             );
           }
 
           if (activeTab === 'payroll') {
             return (
-              <div className="space-y-4">
-                {isOwnerViewer ? (
-                  <div className="space-y-2.5 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] p-4 border border-[#E6DED6] dark:border-[#3A3734] text-[13px]">
-                    <div className="flex items-center justify-between">
-                      <span className="text-black/65 dark:text-white/70">
-                        {isAr ? 'العقد' : isEn ? 'Contract' : 'Contrat'}
-                      </span>
-                      <span className="font-semibold uppercase text-[#d4522f]">
-                        {activeStaff.contractType || activeStaff.recruitmentType || 'CDI'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-black/65 dark:text-white/70">
-                        {isAr ? 'الراتب القاعدي' : isEn ? 'Base Salary' : 'Salaire de base'}
-                      </span>
-                      <span className="font-bold font-mono text-black dark:text-white tabular-nums">
-                        {(activeStaff.salary || 0).toLocaleString()} DZD
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-black/65 dark:text-white/70">
-                        {isAr ? 'يوم الدفع' : isEn ? 'Payday' : 'Échéance'}
-                      </span>
-                      <span className="font-medium font-mono text-black dark:text-white tabular-nums">
-                        {activeStaff.paymentDay || 28}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-black/65 dark:text-white/70">
-                        {isAr ? 'طريقة الدفع' : isEn ? 'Payment' : 'Règlement'}
-                      </span>
-                      <span className="font-medium text-black dark:text-white">
-                        {activeStaff.paymentMethod === 'ccp'
-                          ? `${activeStaff.ccpNumber || 'CCP'}`
+              <>
+                <InspectorSection
+                  index={0}
+                  title={isAr ? 'التعويض الشهري' : isEn ? 'Monthly Compensation' : 'Rémunération mensuelle'}
+                >
+                  {isOwnerViewer ? (
+                    <InspectorBigStat
+                      value={`${formatMoney(activeStaff.salary || 0)} DZD`}
+                      tone="accent"
+                      caption={`${contractLabel} · ${isAr ? 'يوم الدفع' : isEn ? 'Payday' : 'Versement le'} ${activeStaff.paymentDay || 28}`}
+                    />
+                  ) : (
+                    <InspectorCard>
+                      <div className="py-5 text-center">
+                        <Lock className="w-5 h-5 text-black/62 dark:text-white/65 mx-auto mb-1.5" />
+                        <p className="text-xs font-semibold text-black/85 dark:text-white/85 m-0">
+                          {isAr ? 'بيانات مقيدة للإدارة' : isEn ? 'Restricted Compensation Data' : 'Données salariales restreintes'}
+                        </p>
+                      </div>
+                    </InspectorCard>
+                  )}
+                </InspectorSection>
+
+                <InspectorSection
+                  index={1}
+                  title={isAr ? 'تفاصيل العقد والدفع' : isEn ? 'Contract & Payment Details' : 'Contrat & Règlement'}
+                >
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'نوع العقد' : isEn ? 'Contract Type' : 'Type de contrat'}
+                      value={contractLabel}
+                      tone="accent"
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'طريقة الدفع' : isEn ? 'Payment Method' : 'Mode de règlement'}
+                      value={
+                        activeStaff.paymentMethod === 'ccp'
+                          ? activeStaff.ccpNumber || 'CCP'
                           : activeStaff.paymentMethod === 'bank_transfer'
-                          ? `${activeStaff.bankRib || 'RIB'}`
+                          ? activeStaff.bankRib || 'RIB'
                           : isAr
                           ? 'نقداً'
                           : isEn
                           ? 'Cash'
-                          : 'Espèces'}
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-5 rounded-2xl bg-[#F3EDE7]/70 dark:bg-[#262422]/60 border border-dashed border-[#D4C8BC] dark:border-[#3A3734] text-center">
-                    <Lock className="w-5 h-5 text-black/62 dark:text-white/65 mx-auto mb-1.5" />
-                    <p className="text-xs font-semibold text-black/85 dark:text-white/85">
-                      {isAr ? 'بيانات مقيدة للإدارة' : isEn ? 'Restricted Compensation Data' : 'Données salariales restreintes'}
-                    </p>
-                  </div>
-                )}
+                          : 'Espèces'
+                      }
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'الموقع المخصص' : isEn ? 'Assigned Station' : 'Poste assigné'}
+                      value={activeStaff.chairOrStudio || staffBranch?.name || '—'}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
 
                 {canEdit && (
-                  <div className="grid grid-cols-3 gap-2 pt-1">
-                    <button
-                      type="button"
-                      data-no-liquid="true"
-                      onClick={() => setConfirmAction('freeze')}
-                      disabled={activeStaff.status === 'frozen'}
-                      className="py-2.5 px-2 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 font-semibold text-xs flex items-center justify-center gap-1 transition-colors disabled:opacity-40 cursor-pointer"
-                    >
-                      <PauseCircle className="w-3.5 h-3.5" />
-                      <span>{isAr ? 'تجميد' : isEn ? 'Pause' : 'Geler'}</span>
-                    </button>
-                    <button
-                      type="button"
-                      data-no-liquid="true"
-                      onClick={() => setConfirmAction('vacation')}
-                      disabled={activeStaff.status === 'vacation' || activeStaff.status === 'on_leave'}
-                      className="py-2.5 px-2 rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-700 dark:text-blue-400 font-semibold text-xs flex items-center justify-center gap-1 transition-colors disabled:opacity-40 cursor-pointer"
-                    >
-                      <Plane className="w-3.5 h-3.5" />
-                      <span>{isAr ? 'عطلة' : isEn ? 'Leave' : 'Congé'}</span>
-                    </button>
-                    <button
-                      type="button"
-                      data-no-liquid="true"
-                      onClick={() => setConfirmAction('terminate')}
-                      disabled={activeStaff.status === 'terminated'}
-                      className="py-2.5 px-2 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-700 dark:text-red-400 font-semibold text-xs flex items-center justify-center gap-1 transition-colors disabled:opacity-40 cursor-pointer"
-                    >
-                      <AlertTriangle className="w-3.5 h-3.5" />
-                      <span>{isAr ? 'إنهاء' : isEn ? 'End' : 'Arrêter'}</span>
-                    </button>
-                  </div>
+                  <InspectorSection
+                    index={2}
+                    title={isAr ? 'إجراءات العقد' : isEn ? 'Lifecycle Actions' : 'Gestion du contrat'}
+                  >
+                    <InspectorQuickActions
+                      actions={[
+                        {
+                          id: 'freeze',
+                          label: isAr ? 'تجميد' : isEn ? 'Pause' : 'Suspendre accès',
+                          icon: <PauseCircle className="w-[18px] h-[18px] text-amber-500" />,
+                          disabled: activeStaff.status === 'frozen',
+                          onClick: () => setConfirmAction('freeze'),
+                        },
+                        {
+                          id: 'leave',
+                          label: isAr ? 'عطلة' : isEn ? 'Leave' : 'Mettre en congé',
+                          icon: <Plane className="w-[18px] h-[18px] text-blue-500" />,
+                          disabled: activeStaff.status === 'vacation' || activeStaff.status === 'on_leave',
+                          onClick: () => setConfirmAction('vacation'),
+                        },
+                        {
+                          id: 'end',
+                          label: isAr ? 'إنهاء العقد' : isEn ? 'Terminate' : 'Fin de contrat',
+                          icon: <AlertTriangle className="w-[18px] h-[18px] text-[#c0283d]" />,
+                          disabled: activeStaff.status === 'terminated',
+                          onClick: () => setConfirmAction('terminate'),
+                        },
+                      ]}
+                    />
+                  </InspectorSection>
                 )}
-              </div>
+              </>
             );
           }
 
+          const quickActions = [
+            {
+              id: 'punch',
+              label: isAr ? 'تسجيل الحضور' : isEn ? 'Clock In' : 'Pointer présence',
+              icon: <Clock className="w-[18px] h-[18px]" />,
+              primary: true,
+              onClick: () => punchStaffAttendance(activeStaff.id),
+            },
+            ...(canEdit
+              ? [
+                  {
+                    id: 'edit',
+                    label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+                    icon: <Edit className="w-[18px] h-[18px]" />,
+                    onClick: () => onEdit(activeStaff),
+                  },
+                  {
+                    id: 'leave',
+                    label: isAr ? 'عطلة' : isEn ? 'Set Leave' : 'Congé',
+                    icon: <Plane className="w-[18px] h-[18px] text-blue-500" />,
+                    disabled: activeStaff.status === 'vacation' || activeStaff.status === 'on_leave',
+                    onClick: () => setConfirmAction('vacation'),
+                  },
+                  {
+                    id: 'freeze',
+                    label: isAr ? 'تجميد' : isEn ? 'Pause' : 'Suspendre',
+                    icon: <PauseCircle className="w-[18px] h-[18px] text-amber-500" />,
+                    disabled: activeStaff.status === 'frozen',
+                    onClick: () => setConfirmAction('freeze'),
+                  },
+                ]
+              : [
+                  {
+                    id: 'badge',
+                    label: isAr ? 'البادج' : isEn ? 'Verified' : 'Badge actif',
+                    icon: <BadgeCheck className="w-[18px] h-[18px] text-[#096b40]" />,
+                    onClick: () =>
+                      handleCopyToast(
+                        activeStaff.badgeToken || activeStaff.cardId || activeStaff.id.slice(0, 8)
+                      ),
+                  },
+                ]),
+          ];
+
           return (
-            <div className="space-y-4 text-[13px]">
-              <div className="space-y-2.5 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] p-4 border border-[#E6DED6] dark:border-[#3A3734]">
-                <div className="flex items-center justify-between">
-                  <span className="text-black/65 dark:text-white/70 flex items-center gap-1.5">
-                    <Mail className="w-3.5 h-3.5" /> {isAr ? 'البريد' : isEn ? 'Email' : 'Email'}
-                  </span>
-                  <span className="font-medium text-black dark:text-white font-mono text-xs">
-                    {activeStaff.email || '—'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-black/65 dark:text-white/70 flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5" /> {isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone'}
-                  </span>
-                  <span className="font-medium text-black dark:text-white font-mono text-xs tabular-nums">
-                    {activeStaff.phoneNumber || '—'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-black/65 dark:text-white/70 flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5" /> {isAr ? 'العنوان' : isEn ? 'Address' : 'Adresse'}
-                  </span>
-                  <span className="font-medium text-black dark:text-white text-right">
-                    {activeStaff.address || '—'}
-                  </span>
-                </div>
-                {activeStaff.chairOrStudio && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-black/65 dark:text-white/70">
-                      {isAr ? 'الموقع المخصص' : isEn ? 'Assigned Station' : 'Poste assigné'}
-                    </span>
-                    <span className="font-semibold text-[#d4522f]">
-                      {activeStaff.chairOrStudio}
-                    </span>
-                  </div>
-                )}
-              </div>
+            <>
+              <InspectorSection
+                index={0}
+                title={isAr ? 'إجراءات سريعة' : isEn ? 'Quick Actions' : 'Actions rapides'}
+              >
+                <InspectorQuickActions actions={quickActions} />
+              </InspectorSection>
 
-              {(activeStaff.bloodGroup || activeStaff.emergencyContactName) && (
-                <div className="space-y-2 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] p-4 border border-[#E6DED6] dark:border-[#3A3734]">
-                  {activeStaff.bloodGroup && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-black/65 dark:text-white/70">
-                        {isAr ? 'فصيلة الدم' : isEn ? 'Blood Group' : 'Groupe sanguin'}
-                      </span>
-                      <span className="font-bold text-red-500">{activeStaff.bloodGroup}</span>
-                    </div>
-                  )}
+              <InspectorSection index={1}>
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={isAr ? 'الوظيفة' : isEn ? 'Role' : 'Poste / Fonction'}
+                    icon={<Briefcase className="w-[15px] h-[15px]" />}
+                    value={activeStaff.role || 'Staff'}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'العقد' : isEn ? 'Contract' : 'Contrat'}
+                    value={contractLabel}
+                    tone="accent"
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'حضور اليوم' : isEn ? 'Today' : 'Présence du jour'}
+                    value={
+                      activeStaff.isClockedInToday
+                        ? `${isAr ? 'حاضر' : isEn ? 'Clocked In' : 'Présent'} · ${activeStaff.lastClockInTime || '08:00'}`
+                        : isAr
+                        ? 'غير مسجل'
+                        : isEn
+                        ? 'Pending'
+                        : 'Non pointé'
+                    }
+                    tone={activeStaff.isClockedInToday ? 'ok' : 'default'}
+                  />
+                  <InspectorKeyValue
+                    label={perfLabel}
+                    value={`${activeStaff.performance?.kpiValue ?? `${perfScore}%`}`}
+                    tone="ok"
+                    isLast
+                  />
+                  <InspectorProgressBar
+                    percent={perfScore}
+                    tone="ok"
+                    animateKey={`${activeStaff.id}-${entranceEpoch}`}
+                  />
+                </InspectorCard>
+              </InspectorSection>
+
+              <InspectorSection
+                index={2}
+                title={isAr ? 'الاتصال والطوارئ' : isEn ? 'Contact & Emergency' : 'Contact & Coordonnées'}
+              >
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone'}
+                    icon={<Phone className="w-[15px] h-[15px]" />}
+                    value={activeStaff.phoneNumber || '—'}
+                    copyText={activeStaff.phoneNumber}
+                    onCopied={handleCopyToast}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'البريد' : isEn ? 'Email' : 'E-mail'}
+                    icon={<Mail className="w-[15px] h-[15px]" />}
+                    value={activeStaff.email || '—'}
+                    copyText={activeStaff.email}
+                    onCopied={handleCopyToast}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'العنوان' : isEn ? 'Address' : 'Adresse'}
+                    icon={<MapPin className="w-[15px] h-[15px]" />}
+                    value={activeStaff.address || staffBranch?.name || '—'}
+                    mono={false}
+                    isLast={!activeStaff.emergencyContactName}
+                  />
                   {activeStaff.emergencyContactName && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-black/65 dark:text-white/70">
-                        {isAr ? 'الطوارئ' : isEn ? 'Emergency' : 'Contact urgence'}
-                      </span>
-                      <span className="font-medium text-black dark:text-white">
-                        {activeStaff.emergencyContactName} ({activeStaff.emergencyContactPhone || '—'})
-                      </span>
-                    </div>
+                    <InspectorKeyValue
+                      label={isAr ? 'الطوارئ' : isEn ? 'Emergency' : 'Contact urgence'}
+                      value={`${activeStaff.emergencyContactName} (${activeStaff.emergencyContactPhone || '—'})`}
+                      mono={false}
+                      tone="danger"
+                      isLast
+                    />
                   )}
-                </div>
-              )}
+                </InspectorCard>
+              </InspectorSection>
 
-              {canEdit && (
-                <button
-                  type="button"
-                  data-no-liquid="true"
-                  onClick={() => onEdit(activeStaff)}
-                  className="w-full h-10 rounded-xl border border-[#E6DED6] dark:border-[#3A3734] bg-white dark:bg-[#262422] text-xs font-semibold text-black dark:text-white hover:bg-[#F3EDE7] dark:hover:bg-[#3A3734] flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                >
-                  <Edit className="w-3.5 h-3.5 text-[#d4522f]" />
-                  <span>{isAr ? 'تعديل الملف المهني' : isEn ? 'Edit Staff Profile' : 'Modifier la fiche'}</span>
-                </button>
-              )}
-            </div>
+              <InspectorSection
+                index={3}
+                title={isAr ? 'ملاحظات الموارد البشرية' : isEn ? 'HR Notes' : 'Notes RH & suivi'}
+              >
+                <InspectorNotesField
+                  ariaLabel={isAr ? 'ملاحظات الموارد البشرية' : isEn ? 'HR Notes' : 'Notes RH'}
+                  value={activeStaff.notes || ''}
+                  placeholder={
+                    isAr
+                      ? 'أضف ملاحظة إدارية حول هذا الموظف…'
+                      : isEn
+                      ? 'Add internal note for this staff member…'
+                      : 'Ajouter une note RH relative à ce collaborateur…'
+                  }
+                  onSave={(nextNotes) => {
+                    updateStaffMember(activeStaff.id, { notes: nextNotes });
+                    showToast({
+                      type: 'success',
+                      title: isAr ? 'تم الحفظ' : isEn ? 'Notes saved' : 'Notes enregistrées',
+                      message: activeStaff.fullName,
+                    });
+                  }}
+                />
+              </InspectorSection>
+            </>
           );
         }}
       />

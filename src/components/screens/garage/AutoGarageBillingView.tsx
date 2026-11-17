@@ -9,7 +9,13 @@ import {
   FileText,
   Wallet,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import {
   useGarageData,
@@ -30,6 +36,15 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -43,8 +58,18 @@ export const AutoGarageBillingView: React.FC<any> = () => {
     isSyncing,
     networkMode,
     isSyncTimeout,
-    retryCloudSync,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode,
+      isSyncTimeout: s.isSyncTimeout,
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -66,6 +91,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
 
   const [inspectedOrder, setInspectedOrder] = useState<RepairOrder | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<string>('facturation');
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [orderToSettle, setOrderToSettle] = useState<RepairOrder | null>(null);
@@ -304,6 +330,92 @@ export const AutoGarageBillingView: React.FC<any> = () => {
       message: isAr ? 'تم تصدير البيانات المحاسبية' : 'Export comptable généré',
     });
   }, [activeScreenTab, filteredInvoices, sortedBillingOrders, branchesById, currentBranch, language, isAr]);
+
+  const getOrderRowMeta = useCallback(
+    (o: RepairOrder): KineticRowData => {
+      const settled = o.status === 'Delivered' || Boolean(o.isPaid);
+      const br = resolveRecordBranch(o, branchesById, currentBranch, language);
+      return {
+        primary: `${o.orderNumber} · ${o.vehiclePlate}`,
+        secondary: `${o.clientName} · ${o.vehicleModel}`,
+        meta: `${formatMoney(o.finalCostDzd || o.estimatedCostDzd, language)} · ${br.name}`,
+        badge: settled
+          ? { label: isAr ? 'مسوى' : 'Réglé', tone: 'ok' }
+          : { label: isAr ? 'قيد التحصيل' : 'À Encaisser', tone: 'warn' },
+      };
+    },
+    [branchesById, currentBranch, language, isAr]
+  );
+
+  const getOrderFanActions = useCallback(
+    (o: RepairOrder): KineticRowFanAction[] => [
+      {
+        id: 'settle',
+        label: o.isPaid || o.status === 'Delivered' ? 'Facturer' : 'Encaisser',
+        icon: <CreditCard size={14} />,
+        onClick: () => openSettlementModal(o),
+      },
+    ],
+    [openSettlementModal]
+  );
+
+  const getOrderDetailActions = useCallback(
+    (o: RepairOrder): KineticDetailAction[] => [
+      {
+        id: 'settle',
+        label: o.isPaid || o.status === 'Delivered' ? 'Rééditer Facture DGI' : 'Encaisser & Facturer',
+        icon: <CreditCard size={14} />,
+        onClick: () => openSettlementModal(o),
+      },
+    ],
+    [openSettlementModal]
+  );
+
+  const getInvoiceRowMeta = useCallback(
+    (inv: GarageInvoice): KineticRowData => {
+      const br = resolveRecordBranch(inv, branchesById, currentBranch, language);
+      return {
+        primary: `${inv.invoiceNumber} · ${inv.clientName}`,
+        secondary: `${inv.vehiclePlate} · ${inv.orderNumber}`,
+        meta: `${formatMoney(inv.netToPayDzd, language)} · ${br.name}`,
+        badge:
+          inv.billingType === 'facture_dgi'
+            ? { label: 'DGI 19%', tone: 'info' }
+            : { label: 'Bon Caisse', tone: 'neutral' },
+      };
+    },
+    [branchesById, currentBranch, language]
+  );
+
+  const getInvoiceFanActions = useCallback(
+    (inv: GarageInvoice): KineticRowFanAction[] => [
+      {
+        id: 'print',
+        label: 'Imprimer',
+        icon: <Printer size={14} />,
+        onClick: () => {
+          setActivePrintInvoice(inv);
+          setIsPrintModalOpen(true);
+        },
+      },
+    ],
+    []
+  );
+
+  const getInvoiceDetailActions = useCallback(
+    (inv: GarageInvoice): KineticDetailAction[] => [
+      {
+        id: 'print',
+        label: isAr ? 'طباعة الفاتورة' : 'Imprimer Facture',
+        icon: <Printer size={14} />,
+        onClick: () => {
+          setActivePrintInvoice(inv);
+          setIsPrintModalOpen(true);
+        },
+      },
+    ],
+    [isAr]
+  );
 
   const orderColumns: ColumnDefinition<RepairOrder>[] = useMemo(
     () => [
@@ -574,11 +686,6 @@ export const AutoGarageBillingView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<CreditCard size={26} />}
         title={isAr ? 'الفوترة' : isEn ? 'Billing' : 'Caisse'}
-        subtitle={
-          isAr
-            ? `${invoices.length} فاتورة صادرة · ${pendingOrdersCount} بانتظار التحصيل`
-            : `${invoices.length} factures émises · ${pendingOrdersCount} OR à encaisser`
-        }
         secondaryActions={
           <div className="flex items-center gap-1 p-1 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-2xs">
             <button
@@ -693,8 +800,9 @@ export const AutoGarageBillingView: React.FC<any> = () => {
 
           <UniversalDataCollection
             hideToolbar
-            data={sortedBillingOrders}
+            items={sortedBillingOrders}
             keyExtractor={(o) => o.id}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
             defaultViewMode={viewMode}
             columns={orderColumns}
             sortBy={sortBy}
@@ -709,11 +817,16 @@ export const AutoGarageBillingView: React.FC<any> = () => {
             onItemClick={(order, el) => {
               setDrawerOpenerEl(el || null);
               setInspectedOrder(order);
+              setInspectorTab('facturation');
             }}
             onViewDetails={(order, el) => {
               setDrawerOpenerEl(el || null);
               setInspectedOrder(order);
+              setInspectorTab('facturation');
             }}
+            getRowMeta={getOrderRowMeta}
+            getFanActions={getOrderFanActions}
+            getDetailActions={getOrderDetailActions}
             customActions={(order) => [
               {
                 id: 'settle',
@@ -723,37 +836,6 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                 onClick: () => openSettlementModal(order),
               },
             ]}
-            renderCard={(o) => {
-              const settled = o.status === 'Delivered' || Boolean(o.isPaid);
-              return (
-                <div className="space-y-3 text-left rtl:text-right w-full">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono font-bold text-xs text-[#d4522f]">{o.orderNumber}</span>
-                    <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                        settled ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
-                      }`}
-                    >
-                      {settled ? 'Réglé & Livré' : 'À Encaisser'}
-                    </span>
-                  </div>
-                  <div>
-                    <div className="font-bold font-mono text-sm text-black dark:text-white">{o.vehiclePlate}</div>
-                    <div className="text-xs text-black/55 dark:text-white/55 truncate">
-                      {o.clientName} · {o.vehicleModel}
-                    </div>
-                  </div>
-                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between font-mono text-xs">
-                    <span className="text-[10px] text-black/55 dark:text-white/55">
-                      {o.clientType === 'corporate_fleet' ? 'Flotte B2B' : 'Particulier'}
-                    </span>
-                    <span className="font-black text-black dark:text-white">
-                      {formatMoney(o.finalCostDzd || o.estimatedCostDzd, language)}
-                    </span>
-                  </div>
-                </div>
-              );
-            }}
           />
         </ScreenPod>
       )}
@@ -877,14 +959,18 @@ export const AutoGarageBillingView: React.FC<any> = () => {
 
           <UniversalDataCollection
             hideToolbar
-            data={filteredInvoices}
+            items={filteredInvoices}
             keyExtractor={(inv) => inv.id}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
             defaultViewMode={viewMode}
             columns={invoiceColumns}
             onItemClick={(inv) => {
               setActivePrintInvoice(inv);
               setIsPrintModalOpen(true);
             }}
+            getRowMeta={getInvoiceRowMeta}
+            getFanActions={getInvoiceFanActions}
+            getDetailActions={getInvoiceDetailActions}
             customActions={(inv) => [
               {
                 id: 'print',
@@ -897,28 +983,6 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                 },
               },
             ]}
-            renderCard={(inv) => (
-              <div className="space-y-3 text-left rtl:text-right w-full">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-xs text-black dark:text-white">{inv.invoiceNumber}</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold">
-                    {inv.billingType === 'facture_dgi' ? 'DGI 19%' : 'Bon Caisse'}
-                  </span>
-                </div>
-                <div>
-                  <div className="font-semibold text-xs text-black dark:text-white truncate">{inv.clientName}</div>
-                  <div className="text-[11px] font-mono text-black/55 dark:text-white/55">
-                    {inv.vehiclePlate} · {inv.orderNumber}
-                  </div>
-                </div>
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between font-mono text-xs">
-                  <span className="text-[10px] text-black/55 dark:text-white/55">
-                    {new Date(inv.issuedAt).toLocaleDateString()}
-                  </span>
-                  <span className="font-black text-[#d4522f]">{formatMoney(inv.netToPayDzd, language)}</span>
-                </div>
-              </div>
-            )}
           />
         </ScreenPod>
       )}
@@ -944,8 +1008,14 @@ export const AutoGarageBillingView: React.FC<any> = () => {
         language={language}
         title={activeOrder ? `${activeOrder.orderNumber} · ${activeOrder.vehiclePlate}` : ''}
         subtitle={activeOrder ? `${activeOrder.clientName} · ${activeOrder.vehicleModel}` : ''}
-        avatarText={activeOrder?.orderNumber.slice(-3) || 'OR'}
-        avatarColor="#d4522f"
+        categoryLabel={
+          activeOrder?.clientType === 'corporate_fleet'
+            ? activeOrder.fleetName || 'Flotte B2B'
+            : isAr
+            ? 'زبون فردي'
+            : 'Particulier'
+        }
+        avatarText={activeOrder?.orderNumber.slice(-2) || 'OR'}
         branchName={activeOrder ? resolveRecordBranch(activeOrder, branchesById, currentBranch, language).name : ''}
         statusLabel={
           activeOrder?.isPaid || activeOrder?.status === 'Delivered'
@@ -956,81 +1026,170 @@ export const AutoGarageBillingView: React.FC<any> = () => {
             ? 'قيد التحصيل'
             : 'À Encaisser'
         }
+        statusClassName={
+          activeOrder?.isPaid || activeOrder?.status === 'Delivered'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+        }
+        tabs={[
+          { id: 'facturation', label: isAr ? 'الفوترة' : 'Facturation' },
+          { id: 'client', label: isAr ? 'الزبون' : 'Client & Atelier' },
+          { id: 'actions', label: isAr ? 'التسوية' : 'Règlement' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={setInspectorTab}
         onSelectItem={(item) => setInspectedOrder(item)}
         onClose={() => setInspectedOrder(null)}
-        renderBody={(o) => {
+        renderBody={(o, tab) => {
           const settled = o.status === 'Delivered' || Boolean(o.isPaid);
           const labor = o.laborCostDzd || 3750;
           const partsCost = o.partsCostDzd || 15500;
           const existingInv = o.invoiceId ? invoices.find((i) => i.id === o.invoiceId) : null;
+
+          if (tab === 'client') {
+            return (
+              <InspectorSection index={0} title={isAr ? 'معلومات الحساب والورشة' : 'Compte Client & Atelier'}>
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label="Compte Client"
+                    value={o.clientType === 'corporate_fleet' ? `Flotte B2B (${o.fleetName})` : 'Particulier'}
+                    mono={false}
+                  />
+                  <InspectorKeyValue label="Nom Client" value={o.clientName} mono={false} />
+                  <InspectorKeyValue label="Téléphone" value={o.clientPhone} />
+                  <InspectorKeyValue label="Véhicule" value={`${o.vehiclePlate} · ${o.vehicleModel}`} />
+                  <InspectorKeyValue label="Technicien" value={o.technicianName} mono={false} isLast />
+                </InspectorCard>
+              </InspectorSection>
+            );
+          }
+
+          if (tab === 'actions') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'إجراءات التحصيل' : 'Actions de Caisse'}>
+                  <InspectorQuickActions
+                    actions={[
+                      {
+                        id: 'settle',
+                        label: settled ? 'Rééditer DGI' : 'Encaisser DGI',
+                        icon: <CreditCard className="w-[18px] h-[18px]" />,
+                        primary: true,
+                        onClick: () => openSettlementModal(o),
+                      },
+                      ...(existingInv
+                        ? [
+                            {
+                              id: 'print',
+                              label: 'Imprimer',
+                              icon: <Printer className="w-[18px] h-[18px]" />,
+                              onClick: () => {
+                                setActivePrintInvoice(existingInv);
+                                setIsPrintModalOpen(true);
+                              },
+                            },
+                          ]
+                        : []),
+                    ]}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'تأكيد الفاتورة' : 'Document Fiscal'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label="Régime"
+                      value={existingInv?.billingType === 'bon_caisse' ? 'Bon de Caisse' : 'Facture DGI (19% TVA)'}
+                      mono={false}
+                    />
+                    <InspectorKeyValue
+                      label="N° Facture"
+                      value={existingInv?.invoiceNumber || 'Non émise'}
+                      tone={existingInv ? 'ok' : 'warn'}
+                      isLast
+                    />
+                  </InspectorCard>
+                  <div className="mt-3">
+                    {!settled ? (
+                      <InspectorWideButton
+                        variant="accent"
+                        icon={<CreditCard className="w-4 h-4" />}
+                        onClick={() => openSettlementModal(o)}
+                      >
+                        {isAr ? 'تحصيل وإصدار الفاتورة DGI' : 'Encaisser & Facturer (DGI)'}
+                      </InspectorWideButton>
+                    ) : existingInv ? (
+                      <InspectorWideButton
+                        icon={<Printer className="w-4 h-4" />}
+                        onClick={() => {
+                          setActivePrintInvoice(existingInv);
+                          setIsPrintModalOpen(true);
+                        }}
+                      >
+                        {isAr ? 'طباعة الفاتورة' : `Imprimer (${existingInv.invoiceNumber})`}
+                      </InspectorWideButton>
+                    ) : (
+                      <InspectorWideButton
+                        icon={<CreditCard className="w-4 h-4" />}
+                        onClick={() => openSettlementModal(o)}
+                      >
+                        {isAr ? 'إعادة إصدار فاتورة' : 'Émettre Facture DGI'}
+                      </InspectorWideButton>
+                    )}
+                  </div>
+                </InspectorSection>
+              </>
+            );
+          }
+
           return (
-            <div className="space-y-4 text-xs">
-              <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200/70 dark:border-neutral-700 space-y-2.5 font-mono">
-                <div className="flex justify-between text-black/55 dark:text-white/55">
-                  <span>Main d'œuvre HT :</span>
-                  <span className="font-semibold text-black dark:text-white">{formatMoney(labor, language)}</span>
-                </div>
-                <div className="flex justify-between text-black/55 dark:text-white/55">
-                  <span>Pièces utilisées HT :</span>
-                  <span className="font-semibold text-black dark:text-white">{formatMoney(partsCost, language)}</span>
-                </div>
-                <div className="flex justify-between pt-2 border-t border-neutral-200 dark:border-neutral-700 text-sm font-black text-[#d4522f]">
-                  <span>Total Atelier :</span>
-                  <span>{formatMoney(o.finalCostDzd || o.estimatedCostDzd, language)}</span>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/70 dark:border-neutral-800 space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Compte Client :</span>
-                  <span className="font-bold text-black dark:text-white">
-                    {o.clientType === 'corporate_fleet' ? `Flotte B2B (${o.fleetName})` : 'Particulier'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Téléphone :</span>
-                  <span className="font-mono">{o.clientPhone}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Technicien :</span>
-                  <span>{o.technicianName}</span>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
+            <>
+              <InspectorSection index={0}>
+                <InspectorBigStat
+                  value={formatMoney(o.finalCostDzd || o.estimatedCostDzd, language)}
+                  tone={settled ? 'ok' : 'accent'}
+                  caption={settled ? 'Règlement soldé & livré' : 'Montant atelier TTC en attente d’encaissement'}
+                />
+              </InspectorSection>
+              <InspectorSection index={1} title={isAr ? 'تفصيل الفاتورة' : 'Décompte Atelier HT'}>
+                <InspectorCard>
+                  <InspectorKeyValue label="Main d'œuvre HT" value={formatMoney(labor, language)} />
+                  <InspectorKeyValue label="Pièces utilisées HT" value={formatMoney(partsCost, language)} />
+                  <InspectorKeyValue
+                    label="Total Atelier"
+                    value={formatMoney(o.finalCostDzd || o.estimatedCostDzd, language)}
+                    tone="accent"
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+              <InspectorSection index={2}>
                 {!settled ? (
-                  <AtriumButton
-                    variant="primary"
-                    className="w-full"
-                    icon={<CreditCard size={14} />}
+                  <InspectorWideButton
+                    variant="accent"
+                    icon={<CreditCard className="w-4 h-4" />}
                     onClick={() => openSettlementModal(o)}
                   >
                     {isAr ? 'تحصيل وإصدار الفاتورة DGI' : 'Encaisser & Facturer (DGI)'}
-                  </AtriumButton>
+                  </InspectorWideButton>
                 ) : existingInv ? (
-                  <AtriumButton
-                    variant="secondary"
-                    className="w-full"
-                    icon={<Printer size={14} />}
+                  <InspectorWideButton
+                    icon={<Printer className="w-4 h-4" />}
                     onClick={() => {
                       setActivePrintInvoice(existingInv);
                       setIsPrintModalOpen(true);
                     }}
                   >
                     {isAr ? 'طباعة الفاتورة' : `Imprimer (${existingInv.invoiceNumber})`}
-                  </AtriumButton>
+                  </InspectorWideButton>
                 ) : (
-                  <AtriumButton
-                    variant="secondary"
-                    className="w-full"
-                    icon={<CreditCard size={14} />}
+                  <InspectorWideButton
+                    icon={<CreditCard className="w-4 h-4" />}
                     onClick={() => openSettlementModal(o)}
                   >
                     {isAr ? 'إعادة إصدار فاتورة' : 'Émettre Facture DGI'}
-                  </AtriumButton>
+                  </InspectorWideButton>
                 )}
-              </div>
-            </div>
+              </InspectorSection>
+            </>
           );
         }}
       />

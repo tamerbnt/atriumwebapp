@@ -11,7 +11,7 @@ import {
   Edit2,
   Trash2,
   AlertTriangle,
-  Pin,
+  Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatDuration, formatCurrencyAmount } from '../../../utils/rules';
@@ -32,6 +32,15 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -86,6 +95,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
 
   const [selectedLog, setSelectedLog] = useState<TimeLogEntry | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<string>('session');
 
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
   const [manualForm, setManualForm] = useState({
@@ -459,6 +469,104 @@ export const FreelanceTimeTrackerView: React.FC = () => {
     });
   }, []);
 
+  const getTimeLogRowMeta = useCallback(
+    (entry: TimeLogEntry): KineticRowMeta => {
+      const val = Math.round((entry.durationSeconds / 3600) * entry.rateAtMoment);
+      return {
+        avatarText: entry.clientName.slice(0, 2).toUpperCase(),
+        subtitle: `${entry.clientName} · ${entry.projectTitle}`,
+        categoryLabel: entry.currency,
+        statusTone: entry.isInvoiced ? 'ok' : entry.isBillable ? 'warn' : 'info',
+        statusLabel: entry.isInvoiced
+          ? t('free_kanban_invoiced', language)
+          : entry.isBillable
+          ? t('free_time_unbilled_badge', language)
+          : t('free_time_non_billable', language),
+        metricPrimary: formatDuration(entry.durationSeconds),
+        metricSecondary: formatCurrencyAmount(val, entry.currency),
+      };
+    },
+    [language, t]
+  );
+
+  const getTimeLogFanActions = useCallback(
+    (entry: TimeLogEntry): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'تفاصيل' : isFr ? 'Détails' : 'Details',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedLog(entry);
+          setInspectorTab('session');
+        },
+      },
+      ...(!entry.isInvoiced
+        ? [
+            {
+              id: 'edit',
+              label: t('free_time_edit_log_tt', language),
+              icon: <Edit2 className="w-[15px] h-[15px]" />,
+              onClick: () => openEditFromEntry(entry),
+            },
+            {
+              id: 'del',
+              label: isAr ? 'حذف' : isFr ? 'Supprimer' : 'Delete',
+              icon: <Trash2 className="w-[15px] h-[15px]" />,
+              isDanger: true,
+              onClick: () => setLogToDelete(entry),
+            },
+          ]
+        : []),
+    ],
+    [isAr, isFr, language, t, openEditFromEntry]
+  );
+
+  const getTimeLogDetailActions = useCallback(
+    (entry: TimeLogEntry): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'فتح' : isFr ? 'Ouvrir' : 'Open',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedLog(entry);
+          setInspectorTab('session');
+        },
+      },
+      ...(!entry.isInvoiced
+        ? [
+            {
+              id: 'edit',
+              label: t('free_time_edit_log_tt', language),
+              icon: <Edit2 className="w-3.5 h-3.5" />,
+              onClick: () => openEditFromEntry(entry),
+            },
+          ]
+        : []),
+      ...(entry.isBillable && !entry.isInvoiced
+        ? [
+            {
+              id: 'bill',
+              label: t('free_clients_quick_bill', language),
+              icon: <FileText className="w-3.5 h-3.5" />,
+              onClick: () => handleBillClientUnbilled(entry.clientId),
+            },
+          ]
+        : []),
+      ...(!entry.isInvoiced
+        ? [
+            {
+              id: 'del',
+              label: isAr ? 'حذف' : isFr ? 'Supprimer' : 'Delete',
+              icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+              onClick: () => setLogToDelete(entry),
+            },
+          ]
+        : []),
+    ],
+    [isAr, isFr, language, t, openEditFromEntry, handleBillClientUnbilled]
+  );
+
   const timeLogColumns: ColumnDefinition<TimeLogEntry>[] = useMemo(
     () => [
       {
@@ -727,10 +835,6 @@ export const FreelanceTimeTrackerView: React.FC = () => {
       <ScreenHeaderBar
         icon={<Clock size={22} />}
         title={t('free_time_title', language)}
-        subtitle={`${(totalSecondsAll / 3600).toFixed(1)}h · ${timeLogs.length} ${t(
-          'free_time_tracked_sessions_unit',
-          language
-        )}`}
         primaryAction={{
           label: t('free_time_btn_manual', language),
           onClick: handleOpenManualModal,
@@ -740,7 +844,8 @@ export const FreelanceTimeTrackerView: React.FC = () => {
       />
 
       {/* Live Focus Timer Hero Widget */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-neutral-900 dark:bg-black text-white border border-neutral-800 shadow-xl relative overflow-hidden">
+      <ScreenPod>
+        <div className="p-6 sm:p-8 rounded-3xl bg-neutral-900 dark:bg-black text-white border border-neutral-800 shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#d4522f]/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
           <div className="space-y-3 text-center lg:text-left">
@@ -899,7 +1004,8 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
+        </div>
+      </ScreenPod>
 
       <ScreenKpiBanner
         heading={
@@ -1032,9 +1138,10 @@ export const FreelanceTimeTrackerView: React.FC = () => {
 
         <UniversalDataCollection<TimeLogEntry>
           hideToolbar
-          data={sortedLogs}
+          items={sortedLogs}
           keyExtractor={(entry) => entry.id}
-          viewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
           columns={timeLogColumns}
           isLoading={isSyncing || networkMode === 'force_skeleton'}
           isOffline={networkMode === 'offline'}
@@ -1063,11 +1170,16 @@ export const FreelanceTimeTrackerView: React.FC = () => {
           onItemClick={(entry, el) => {
             setDrawerOpenerEl(el || null);
             setSelectedLog(entry);
+            setInspectorTab('session');
           }}
           onViewDetails={(entry, el) => {
             setDrawerOpenerEl(el || null);
             setSelectedLog(entry);
+            setInspectorTab('session');
           }}
+          getRowMeta={getTimeLogRowMeta}
+          getFanActions={getTimeLogFanActions}
+          getDetailActions={getTimeLogDetailActions}
           onEdit={(entry) => {
             if (!entry.isInvoiced) openEditFromEntry(entry);
           }}
@@ -1078,87 +1190,6 @@ export const FreelanceTimeTrackerView: React.FC = () => {
           emptyDescription={t('free_time_empty_logs_desc', language)}
           primaryActionLabel={t('free_time_btn_manual', language)}
           onAddFirstItem={handleOpenManualModal}
-          renderCard={(entry) => {
-            const isPinned = pinnedLogIds.has(entry.id);
-            return (
-              <div className="p-4 rounded-[20px] border border-[#E6DED6] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 shadow-2xs relative space-y-3 w-full">
-                {isPinned && (
-                  <div className="absolute top-3 left-3 text-[#d4522f]">
-                    <Pin size={12} className="fill-[#d4522f]" />
-                  </div>
-                )}
-                <div className="flex items-center justify-between pl-4">
-                  <span className="font-mono text-base font-black text-[#d4522f] tabular-nums">
-                    {formatDuration(entry.durationSeconds)}
-                  </span>
-                  <span className="text-xs text-black/55 dark:text-white/55 tabular-nums">
-                    {entry.date}
-                  </span>
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-black dark:text-white truncate">
-                    {entry.clientName}
-                  </h4>
-                  <p className="text-xs text-black/55 dark:text-white/55 truncate">
-                    {entry.projectTitle}
-                  </p>
-                </div>
-                <p className="text-xs text-black/70 dark:text-white/75 line-clamp-2">
-                  {entry.taskDescription}
-                </p>
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
-                  <div>
-                    {entry.isInvoiced ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        {t('free_kanban_invoiced', language)}
-                      </span>
-                    ) : entry.isBillable ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                        {t('free_time_unbilled_badge', language)}
-                      </span>
-                    ) : (
-                      <span className="text-[11px] text-black/55 dark:text-white/55">
-                        {t('free_time_non_billable', language)}
-                      </span>
-                    )}
-                  </div>
-                  <div
-                    className="flex items-center gap-1"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <button
-                      type="button"
-                      disabled={entry.isInvoiced}
-                      onClick={() => openEditFromEntry(entry)}
-                      aria-label={t('free_time_edit_log_tt', language)}
-                      className={`p-1.5 rounded-lg transition-colors ${
-                        entry.isInvoiced
-                          ? 'opacity-30 cursor-not-allowed text-black/55 dark:text-white/55'
-                          : 'text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer'
-                      }`}
-                    >
-                      <Edit2 size={13} />
-                    </button>
-                    <button
-                      type="button"
-                      disabled={entry.isInvoiced}
-                      onClick={() => setLogToDelete(entry)}
-                      aria-label={t('free_time_delete_log_tt', language)}
-                      className={`p-1.5 rounded-lg transition-colors ${
-                        entry.isInvoiced
-                          ? 'opacity-30 cursor-not-allowed text-black/55 dark:text-white/55'
-                          : 'text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer'
-                      }`}
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          }}
         />
       </ScreenPod>
 
@@ -1187,7 +1218,8 @@ export const FreelanceTimeTrackerView: React.FC = () => {
         language={language}
         title={activeLog?.taskDescription || ''}
         subtitle={activeLog ? `${activeLog.clientName} · ${activeLog.projectTitle}` : ''}
-        avatarText={activeLog ? activeLog.clientName.charAt(0).toUpperCase() : 'T'}
+        categoryLabel={activeLog?.currency || 'EUR'}
+        avatarText={activeLog ? activeLog.clientName.slice(0, 2).toUpperCase() : 'TL'}
         avatarColor="#d4522f"
         branchName={
           activeLog
@@ -1203,89 +1235,146 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               : t('free_time_non_billable', language)
             : undefined
         }
-        onSelectItem={(l) => setSelectedLog(l)}
+        statusClassName={
+          activeLog?.isInvoiced
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : activeLog?.isBillable
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+        }
+        tabs={[
+          { id: 'session', label: isAr ? 'الجلسة' : isFr ? 'Session' : 'Session' },
+          { id: 'billing', label: isAr ? 'الفوترة' : isFr ? 'Facturation' : 'Billing' },
+          { id: 'actions', label: isAr ? 'إجراءات' : 'Actions' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={setInspectorTab}
+        onSelectItem={(l) => {
+          setSelectedLog(l);
+          setInspectorTab('session');
+        }}
         onClose={() => setSelectedLog(null)}
         onDelete={(l) => {
           if (!l.isInvoiced) setLogToDelete(l);
         }}
         holdToDelete={false}
-        renderBody={(entry) => {
+        renderBody={(entry, tab) => {
           const val = Math.round((entry.durationSeconds / 3600) * entry.rateAtMoment);
-          return (
-            <div className="space-y-5 text-xs">
-              <div className="flex items-center gap-2 flex-wrap">
+          if (tab === 'billing') {
+            return (
+              <>
+                <InspectorSection index={0}>
+                  <InspectorBigStat
+                    value={formatCurrencyAmount(val, entry.currency)}
+                    tone={entry.isInvoiced ? 'ok' : entry.isBillable ? 'accent' : 'default'}
+                    caption={`${formatCurrencyAmount(entry.rateAtMoment, entry.currency)}/h · ${formatDuration(entry.durationSeconds)}`}
+                    action={
+                      entry.isBillable && !entry.isInvoiced
+                        ? {
+                            label: t('free_clients_quick_bill', language),
+                            onClick: () => handleBillClientUnbilled(entry.clientId),
+                          }
+                        : undefined
+                    }
+                  />
+                </InspectorSection>
+                <InspectorSection
+                  index={1}
+                  title={isAr ? 'حالة الفوترة' : isFr ? 'Statut de Facturation' : 'Billing Breakdown'}
+                >
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={t('free_time_billable', language)}
+                      value={entry.isBillable ? (isAr ? 'نعم' : isFr ? 'Oui' : 'Yes') : isAr ? 'لا' : 'No'}
+                      tone={entry.isBillable ? 'ok' : 'warn'}
+                    />
+                    <InspectorKeyValue
+                      label={t('common_status', language)}
+                      value={
+                        entry.isInvoiced
+                          ? t('free_kanban_invoiced', language)
+                          : entry.isBillable
+                          ? t('free_time_unbilled_badge', language)
+                          : t('free_time_non_billable', language)
+                      }
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
+          if (tab === 'actions') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : isFr ? 'Actions Rapides' : 'Quick Actions'}>
+                  <InspectorQuickActions
+                    actions={[
+                      ...(!entry.isInvoiced
+                        ? [
+                            {
+                              id: 'edit',
+                              label: t('free_time_edit_log_tt', language),
+                              icon: <Edit2 size={16} />,
+                              primary: true,
+                              onClick: () => openEditFromEntry(entry),
+                            },
+                          ]
+                        : []),
+                      ...(entry.isBillable && !entry.isInvoiced
+                        ? [
+                            {
+                              id: 'bill',
+                              label: t('free_clients_quick_bill', language),
+                              icon: <FileText size={16} />,
+                              onClick: () => handleBillClientUnbilled(entry.clientId),
+                            },
+                          ]
+                        : []),
+                    ]}
+                  />
+                </InspectorSection>
                 {!entry.isInvoiced && (
-                  <AtriumButton
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    icon={<Edit2 size={13} />}
-                    onClick={() => openEditFromEntry(entry)}
-                  >
-                    {t('free_time_edit_log_tt', language)}
-                  </AtriumButton>
+                  <InspectorSection index={1}>
+                    <InspectorWideButton
+                      label={t('common_delete', language)}
+                      icon={<Trash2 size={14} />}
+                      tone="neutral"
+                      onClick={() => setLogToDelete(entry)}
+                    />
+                  </InspectorSection>
                 )}
-                {entry.isBillable && !entry.isInvoiced && (
-                  <AtriumButton
-                    type="button"
-                    variant="primary"
-                    size="sm"
-                    icon={<FileText size={13} />}
-                    onClick={() => handleBillClientUnbilled(entry.clientId)}
-                  >
-                    {t('free_clients_quick_bill', language)}
-                  </AtriumButton>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900/40">
-                  <span className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider block">
-                    {t('free_time_duration', language)}
-                  </span>
-                  <span className="text-lg font-mono font-bold text-[#d4522f] tabular-nums">
-                    {formatDuration(entry.durationSeconds)}
-                  </span>
-                </div>
-                <div className="p-3 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900/40">
-                  <span className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider block">
-                    {t('free_time_rate', language)}
-                  </span>
-                  <span className="text-lg font-mono font-bold text-black dark:text-white tabular-nums">
-                    {formatCurrencyAmount(val, entry.currency)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800 space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">
-                    {t('common_date', language)}:
-                  </span>
-                  <span className="font-semibold text-black dark:text-white tabular-nums">
-                    {entry.date}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">
-                    {t('free_time_project_label', language)}:
-                  </span>
-                  <span className="font-semibold text-black dark:text-white">
-                    {entry.projectTitle}
-                  </span>
-                </div>
-                {entry.deliverableTitle && (
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">
-                      {t('free_time_milestone_prefix', language)}:
-                    </span>
-                    <span className="font-semibold text-[#d4522f]">
-                      {entry.deliverableTitle}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
+              </>
+            );
+          }
+          return (
+            <>
+              <InspectorSection index={0}>
+                <InspectorBigStat
+                  value={formatDuration(entry.durationSeconds)}
+                  tone="accent"
+                  caption={`${entry.date} · ${formatCurrencyAmount(val, entry.currency)}`}
+                />
+              </InspectorSection>
+              <InspectorSection
+                index={1}
+                title={isAr ? 'تفاصيل الجلسة' : isFr ? 'Détails de la Session' : 'Session Metadata'}
+              >
+                <InspectorCard>
+                  <InspectorKeyValue label={t('free_invoice_client', language)} value={entry.clientName} />
+                  <InspectorKeyValue label={t('free_time_project_label', language)} value={entry.projectTitle} />
+                  <InspectorKeyValue label={t('common_date', language)} value={entry.date} mono isLast={!entry.deliverableTitle} />
+                  {entry.deliverableTitle && (
+                    <InspectorKeyValue
+                      label={t('free_time_milestone_prefix', language)}
+                      value={entry.deliverableTitle}
+                      tone="accent"
+                      isLast
+                    />
+                  )}
+                </InspectorCard>
+              </InspectorSection>
+            </>
           );
         }}
       />

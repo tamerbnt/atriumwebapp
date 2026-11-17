@@ -11,12 +11,10 @@ import {
   Building2,
   X,
   FileCheck,
-  Plus,
-  AlertTriangle,
   Key,
   MapPin,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import { useAtriumSelector, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { useLegalData } from './legalData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -46,6 +44,16 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -62,17 +70,15 @@ const extractStr = (v: unknown): string => {
 };
 
 export const LegalTrustView: React.FC<any> = () => {
-  const {
-    language,
-    activeLegalRole,
-    currentBusiness,
-    currentBranch,
-    currentUser,
-    branches,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-  } = useAtriumStore();
+  const language = useAtriumSelector((s) => s.language);
+  const activeLegalRole = useAtriumSelector((s) => s.activeLegalRole);
+  const currentBusiness = useAtriumSelector((s) => s.currentBusiness);
+  const currentBranch = useAtriumSelector((s) => s.currentBranch);
+  const currentUser = useAtriumSelector((s) => s.currentUser);
+  const branches = useAtriumSelector((s) => s.branches);
+  const isSyncing = useAtriumSelector((s) => s.isSyncing);
+  const networkMode = useAtriumSelector((s) => s.networkMode);
+  const retryCloudSync = useAtriumSelector((s) => s.retryCloudSync);
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -414,6 +420,283 @@ export const LegalTrustView: React.FC<any> = () => {
     [isAr, language, selectedMatter, updateMatter]
   );
 
+  const getEscrowRowMeta = useCallback(
+    (a: EscrowAccount): KineticRowMeta => ({
+      avatarText: 'SQ',
+      subtitle: `${a.clientName} ➔ ${a.beneficiaryName}`,
+      categoryLabel: isAr ? 'حساب حراسة' : 'Séquestre',
+      statusTone: a.isLocked ? 'danger' : 'ok',
+      statusLabel: a.isLocked ? (isAr ? 'مقفل' : 'Verrouillé') : isAr ? 'محرر' : 'Libéré',
+      metricPrimary: formatMoney(a.currentBalanceDzd, language),
+    }),
+    [isAr, language]
+  );
+
+  const getEscrowFanActions = useCallback(
+    (a: EscrowAccount): KineticRowFanAction[] => [
+      {
+        id: 'double_lock',
+        label: isAr ? 'فك القفل المزدوج' : 'Double-Verrou',
+        icon: <Unlock className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedEscrow(a);
+          setEscrowTab('double_lock');
+        },
+      },
+      {
+        id: 'virement',
+        label: isAr ? 'أمر التحويل' : 'Ordre Virement',
+        icon: <Printer className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedEscrow(a);
+          setEscrowTab('virement');
+        },
+      },
+    ],
+    [isAr]
+  );
+
+  const getEscrowDetailActions = useCallback(
+    (a: EscrowAccount): KineticDetailAction[] => [
+      {
+        id: 'double_lock',
+        label: isAr ? 'القفل المزدوج' : 'Double-Verrou',
+        icon: <Unlock className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedEscrow(a);
+          setEscrowTab('double_lock');
+        },
+      },
+      {
+        id: 'transactions',
+        label: isAr ? 'المعاملات' : 'Historique',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedEscrow(a);
+          setEscrowTab('transactions');
+        },
+      },
+      {
+        id: 'virement',
+        label: isAr ? 'أمر التحويل' : 'Ordre Virement',
+        icon: <Printer className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedEscrow(a);
+          setEscrowTab('virement');
+        },
+      },
+    ],
+    [isAr]
+  );
+
+  const getScfRowMeta = useCallback(
+    (e: SCFJournalEntry): KineticRowMeta => ({
+      avatarText: (e.journalCode || 'EC').slice(0, 2).toUpperCase(),
+      subtitle: `${e.libelle} · Réf ${e.pieceJustificativeRef}`,
+      categoryLabel: `Journal ${e.journalCode}`,
+      statusTone: 'ok',
+      statusLabel: isAr ? 'متوازن' : 'Équilibré',
+      metricPrimary: formatMoney(e.totalDebitDzd, language),
+      metricSecondary: e.date,
+    }),
+    [isAr, language]
+  );
+
+  const getScfFanActions = useCallback(
+    (e: SCFJournalEntry): KineticRowFanAction[] => [
+      {
+        id: 'lignes',
+        label: isAr ? 'تفصيل الأسطر' : 'Ventilation SCF',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (ev) => {
+          setDrawerOpenerEl(ev.currentTarget);
+          setSelectedSCFEntry(e);
+          setScfTab('lignes');
+        },
+      },
+      {
+        id: 'justif',
+        label: isAr ? 'المرجع' : 'Justificatif',
+        icon: <FileCheck className="w-[15px] h-[15px]" />,
+        onClick: (ev) => {
+          setDrawerOpenerEl(ev.currentTarget);
+          setSelectedSCFEntry(e);
+          setScfTab('justif');
+        },
+      },
+    ],
+    [isAr]
+  );
+
+  const getScfDetailActions = useCallback(
+    (e: SCFJournalEntry): KineticDetailAction[] => [
+      {
+        id: 'lignes',
+        label: isAr ? 'تفصيل الأسطر' : 'Ventilation SCF',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedSCFEntry(e);
+          setScfTab('lignes');
+        },
+      },
+      {
+        id: 'justif',
+        label: isAr ? 'المرجع' : 'Justificatif',
+        icon: <FileCheck className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedSCFEntry(e);
+          setScfTab('justif');
+        },
+      },
+    ],
+    [isAr]
+  );
+
+  const getReceiptRowMeta = useCallback(
+    (r: CashReceipt): KineticRowMeta => ({
+      avatarText: 'RC',
+      subtitle: `${r.clientName} · ${r.matterTitle}`,
+      categoryLabel: 'Art. 317',
+      statusTone: 'ok',
+      statusLabel: isAr ? 'مقبوض' : 'Encaissé',
+      metricPrimary: formatMoney(r.netCollectedDzd, language),
+      metricSecondary: `+${formatMoney(r.timbreFiscalDzd, language)}`,
+    }),
+    [isAr, language]
+  );
+
+  const getReceiptFanActions = useCallback(
+    (r: CashReceipt): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'الوصل' : 'Quittance',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedReceipt(r);
+          setReceiptTab('quittance');
+        },
+      },
+      {
+        id: 'print',
+        label: isAr ? 'طباعة' : 'Imprimer',
+        icon: <Printer className="w-[15px] h-[15px]" />,
+        onClick: () => {
+          showToast(isAr ? 'طباعة الوصل الرسمي للزبون' : 'Quittance officielle imprimée', 'success');
+          window.print();
+        },
+      },
+    ],
+    [isAr]
+  );
+
+  const getReceiptDetailActions = useCallback(
+    (r: CashReceipt): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'الوصل الرسمي' : 'Quittance Art. 317',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedReceipt(r);
+          setReceiptTab('quittance');
+        },
+      },
+      {
+        id: 'timbre',
+        label: isAr ? 'طابع م 317' : 'Calcul Timbre',
+        icon: <CreditCard className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedReceipt(r);
+          setReceiptTab('timbre');
+        },
+      },
+      {
+        id: 'print',
+        label: isAr ? 'طباعة' : 'Imprimer',
+        icon: <Printer className="w-3.5 h-3.5" />,
+        onClick: () => {
+          showToast(isAr ? 'طباعة الوصل الرسمي للزبون' : 'Quittance officielle imprimée', 'success');
+          window.print();
+        },
+      },
+    ],
+    [isAr]
+  );
+
+  const getCarpaRowMeta = useCallback(
+    (m: LegalMatter): KineticRowMeta => {
+      const hasEscrow = (m.trustEscrowBalanceDzd || 0) > 0;
+      return {
+        avatarText: 'CA',
+        subtitle: `${m.clientName} · ${m.title}`,
+        categoryLabel: m.category,
+        statusTone: hasEscrow ? 'accent' : 'ok',
+        statusLabel: hasEscrow ? (isAr ? 'تحت الحراسة' : 'Sous Séquestre') : isAr ? 'مصفى' : 'Soldé',
+        metricPrimary: formatMoney(m.trustEscrowBalanceDzd || 0, language),
+        metricSecondary: formatMoney(m.retainerAmountDzd, language),
+      };
+    },
+    [isAr, language]
+  );
+
+  const getCarpaFanActions = useCallback(
+    (m: LegalMatter): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'معاينة الحساب' : 'Consulter Compte',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedMatter(m);
+          setCarpaTab('sequestre');
+        },
+      },
+      {
+        id: 'release',
+        label: isAr ? 'إفراج' : 'Débloquer',
+        icon: <Unlock className="w-[15px] h-[15px]" />,
+        onClick: () => handleReleaseTrustFunds(m),
+      },
+    ],
+    [isAr, handleReleaseTrustFunds]
+  );
+
+  const getCarpaDetailActions = useCallback(
+    (m: LegalMatter): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'الوديعة' : 'Séquestre',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedMatter(m);
+          setCarpaTab('sequestre');
+        },
+      },
+      {
+        id: 'release',
+        label: isAr ? 'إفراج عن الوديعة' : 'Débloquer Séquestre',
+        icon: <Unlock className="w-3.5 h-3.5 text-[#096b40]" />,
+        onClick: () => handleReleaseTrustFunds(m),
+      },
+      {
+        id: 'statement',
+        label: isAr ? 'كشف CARPA' : 'Relevé CARPA',
+        icon: <Printer className="w-3.5 h-3.5" />,
+        onClick: () => {
+          showToast(
+            isAr
+              ? `طباعة كشف حساب الوديعة للقضية ${m.matterNumber}`
+              : `Génération du relevé officiel CARPA (${m.matterNumber})`,
+            'info'
+          );
+        },
+      },
+    ],
+    [isAr, handleReleaseTrustFunds]
+  );
+
   const resetAllFilters = useCallback(() => {
     setSearchQuery('');
     setBranchFilter('All');
@@ -649,11 +932,6 @@ export const LegalTrustView: React.FC<any> = () => {
         <ScreenHeaderBar
           icon={<Lock size={22} />}
           title={isAr ? 'الودائع' : isEn ? 'Escrow' : 'Séquestre'}
-          subtitle={
-            isAr
-              ? 'حسابات الودائع العقارية مع نظام القفل المزدوج الإلزامي'
-              : 'Séquestre notarial · Double-Verrou Obligatoire (Cadastre + PIN)'
-          }
           secondaryActions={
             <AtriumButton
               variant="outline"
@@ -758,9 +1036,10 @@ export const LegalTrustView: React.FC<any> = () => {
 
           <UniversalDataCollection<EscrowAccount>
             hideToolbar
-            data={filteredEscrows}
+            items={filteredEscrows}
             keyExtractor={(a) => a.id}
-            defaultViewMode={viewMode}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+            defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
             columns={escrowColumns}
             sortBy={sortBy}
             sortDirection={sortDir}
@@ -779,6 +1058,9 @@ export const LegalTrustView: React.FC<any> = () => {
               setSelectedEscrow(a);
               setDrawerOpenerEl(el || null);
             }}
+            getRowMeta={getEscrowRowMeta}
+            getFanActions={getEscrowFanActions}
+            getDetailActions={getEscrowDetailActions}
             customActions={(a) => [
               {
                 id: 'double_lock',
@@ -799,33 +1081,6 @@ export const LegalTrustView: React.FC<any> = () => {
                 },
               },
             ]}
-            renderCard={(a) => (
-              <div className="space-y-2.5 text-left rtl:text-right">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-xs text-[#d4522f]">
-                    {a.matterReference}
-                  </span>
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                      a.isLocked
-                        ? 'bg-red-100 text-red-700'
-                        : 'bg-emerald-100 text-emerald-700'
-                    }`}
-                  >
-                    {a.isLocked ? 'Verrouillé' : 'Libéré'}
-                  </span>
-                </div>
-                <div className="text-xs font-bold text-black dark:text-white truncate">
-                  {a.clientName}
-                </div>
-                <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
-                  ➔ {a.beneficiaryName}
-                </div>
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700 font-mono text-xs font-bold text-[#d4522f]">
-                  {formatMoney(a.currentBalanceDzd, language)}
-                </div>
-              </div>
-            )}
             emptyTitle={isAr ? 'لا توجد حسابات حراسة' : 'Aucun compte séquestre'}
             emptyDescription={
               isAr ? 'أعد ضبط المرشحات لعرض جميع الحسابات.' : 'Réinitialisez les filtres actifs.'
@@ -856,13 +1111,19 @@ export const LegalTrustView: React.FC<any> = () => {
           language={language}
           title={activeEscrow?.matterReference || ''}
           subtitle={`${activeEscrow?.clientName || ''} ➔ ${activeEscrow?.beneficiaryName || ''}`}
+          categoryLabel={isAr ? 'حراسة عقارية' : 'Séquestre Notarial'}
           avatarText="SQ"
           branchName={
             activeEscrow
               ? resolveRecordBranch(activeEscrow, branchesById, currentBranch, language).name
               : ''
           }
-          statusLabel={activeEscrow?.isLocked ? 'Verrouillé 🔒' : 'Libéré 🔓'}
+          statusLabel={activeEscrow?.isLocked ? 'Verrouillé' : 'Libéré'}
+          statusClassName={
+            activeEscrow?.isLocked
+              ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+              : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+          }
           tabs={[
             { id: 'double_lock', label: isAr ? 'القفل المزدوج' : 'Double-Verrou' },
             { id: 'transactions', label: isAr ? 'المعاملات' : 'Historique' },
@@ -875,140 +1136,107 @@ export const LegalTrustView: React.FC<any> = () => {
           renderBody={(esc, tab) => {
             if (tab === 'transactions') {
               return (
-                <div className="space-y-3 text-xs">
-                  <span className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider block">
-                    Mouvements Bancaires & Trésor
-                  </span>
-                  {esc.transactions.map((tx) => (
-                    <div
-                      key={tx.id}
-                      className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 space-y-1 bg-white dark:bg-neutral-900"
-                    >
-                      <div className="flex items-center justify-between font-mono">
-                        <span className="text-[10px] text-black/55 dark:text-white/55">
-                          {tx.date}
-                        </span>
-                        <span
-                          className={`text-xs font-bold ${
-                            tx.type === 'deposit_received'
-                              ? 'text-emerald-600'
-                              : 'text-blue-600'
-                          }`}
-                        >
-                          {tx.type === 'deposit_received' ? '+' : '-'}{' '}
-                          {formatMoney(tx.amountDzd, language)}
-                        </span>
-                      </div>
-                      <p className="text-xs text-black dark:text-white font-medium">{tx.notes}</p>
-                      <div className="text-[10px] text-black/55 dark:text-white/55 flex items-center justify-between">
-                        <span>Mode : {tx.paymentMode}</span>
-                        <span className="font-mono">{tx.bankReference}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <InspectorSection index={0} title={isAr ? 'الحركات المصرفية والخزينة' : 'Mouvements Bancaires & Trésor'}>
+                  {esc.transactions.length > 0 ? (
+                    <InspectorCard>
+                      {esc.transactions.map((tx, idx) => (
+                        <InspectorListItem
+                          key={tx.id}
+                          title={tx.notes}
+                          subtitle={`${tx.date} · ${tx.paymentMode} · ${tx.bankReference || ''}`}
+                          metaRight={`${tx.type === 'deposit_received' ? '+' : '-'}${formatMoney(
+                            tx.amountDzd,
+                            language
+                          )}`}
+                          badge={{
+                            label: tx.type === 'deposit_received' ? 'Crédit' : 'Virement',
+                            tone: tx.type === 'deposit_received' ? 'ok' : 'accent',
+                          }}
+                          isLast={idx === esc.transactions.length - 1}
+                        />
+                      ))}
+                    </InspectorCard>
+                  ) : (
+                    <InspectorCard>
+                      <InspectorKeyValue label="Historique" value="Aucun mouvement" mono={false} isLast />
+                    </InspectorCard>
+                  )}
+                </InspectorSection>
               );
             }
 
             if (tab === 'virement') {
               return (
-                <div className="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl space-y-3 text-xs">
-                  <div className="text-center pb-2 border-b border-neutral-200 dark:border-neutral-800">
-                    <span className="font-bold uppercase tracking-wider text-[#d4522f] block">
-                      Étude Notariale · Ordre de Virement Séquestre
-                    </span>
-                    <span className="text-[10px] text-black/55 dark:text-white/55">
-                      République Algérienne Démocratique et Populaire
-                    </span>
-                  </div>
-                  <div className="space-y-1.5 text-black/75 dark:text-white/80">
-                    <div>
-                      <strong>Donneur d'ordre :</strong> Maître Notaire Titulaire
-                    </div>
-                    <div>
-                      <strong>Compte débité :</strong> Compte Séquestre Trésor BNA N° 0010 0987 6543
-                    </div>
-                    <div>
-                      <strong>Bénéficiaire :</strong> {esc.beneficiaryName}
-                    </div>
-                    <div>
-                      <strong>Montant :</strong>{' '}
-                      <span className="font-mono font-bold text-black dark:text-white">
-                        {formatMoney(esc.currentBalanceDzd, language)}
-                      </span>
-                    </div>
-                    <div>
-                      <strong>Motif :</strong> Vente immobilière dossier {esc.matterReference}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    data-no-liquid="true"
-                    onClick={() => {
-                      showToast(
-                        isAr
-                          ? 'جاري طباعة أمر التحويل الرسمي'
-                          : 'Ordre de virement officiel imprimé',
-                        'info'
-                      );
-                      window.print();
-                    }}
-                    className="w-full mt-2 py-2.5 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <Printer size={13} />
-                    {isAr ? 'طباعة أمر التحويل' : 'Imprimer le Virement'}
-                  </button>
-                </div>
+                <>
+                  <InspectorSection index={0} title="Ordre de Virement Séquestre">
+                    <InspectorCard>
+                      <InspectorKeyValue label="Donneur d'ordre" value="Maître Notaire Titulaire" mono={false} />
+                      <InspectorKeyValue label="Compte débité" value="Trésor BNA 0010 0987 6543" />
+                      <InspectorKeyValue label="Bénéficiaire" value={esc.beneficiaryName} mono={false} />
+                      <InspectorKeyValue
+                        label="Montant"
+                        value={formatMoney(esc.currentBalanceDzd, language)}
+                        tone="accent"
+                      />
+                      <InspectorKeyValue label="Motif" value={`Dossier ${esc.matterReference}`} mono={false} isLast />
+                    </InspectorCard>
+                  </InspectorSection>
+                  <InspectorSection index={1}>
+                    <InspectorWideButton
+                      label={isAr ? 'طباعة أمر التحويل' : 'Imprimer le Virement'}
+                      icon={<Printer size={14} />}
+                      onClick={() => {
+                        showToast(
+                          isAr
+                            ? 'جاري طباعة أمر التحويل الرسمي'
+                            : 'Ordre de virement officiel imprimé',
+                          'info'
+                        );
+                        window.print();
+                      }}
+                    />
+                  </InspectorSection>
+                </>
               );
             }
 
             return (
-              <div className="space-y-4 text-xs">
-                <div className="p-4 bg-[#1F1D1B] rounded-xl text-white space-y-2">
-                  <div className="flex items-center justify-between text-white/80 text-[11px]">
-                    <span>Solde Sous Séquestre Notarial</span>
-                    <span className="bg-[#3D2817] text-[#FB923C] text-[10px] font-bold px-2 py-0.5 rounded-md">
-                      {esc.isLocked ? 'Verrouillé 🔒' : 'Prêt / Libéré 🔓'}
-                    </span>
-                  </div>
-                  <div className="text-2xl font-black text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
-                    {formatMoney(esc.currentBalanceDzd, language)}
-                  </div>
-                  <p className="text-[10px] text-white/75">
-                    Bénéficiaire désigné : {esc.beneficiaryName}
-                  </p>
-                </div>
+              <>
+                <InspectorSection index={0}>
+                  <InspectorBigStat
+                    value={formatMoney(esc.currentBalanceDzd, language)}
+                    tone={esc.isLocked ? 'accent' : 'ok'}
+                    caption={`Bénéficiaire : ${esc.beneficiaryName}`}
+                  />
+                </InspectorSection>
 
-                <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-200 dark:border-neutral-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-black dark:text-white flex items-center gap-1.5">
-                      <Building2 size={14} className="text-[#d4522f]" />
-                      {isAr
-                        ? 'الشرط الأول: الإشهار بالمحافظة العقارية'
-                        : 'Verrou 1 : Publicité Foncière'}
-                    </span>
-                    {esc.cadastralClearanceProof?.volume ? (
-                      <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
+                <InspectorSection
+                  index={1}
+                  title={isAr ? 'الشرط الأول: الإشهار العقاري' : 'Verrou 1 : Publicité Foncière'}
+                  action={
+                    esc.cadastralClearanceProof?.volume ? (
+                      <span className="text-[10px] font-bold text-[#096b40] dark:text-[#5BE3A3] flex items-center gap-1">
                         <CheckCircle2 size={12} />
                         {isAr ? 'تم التحقق' : 'Conforme'}
                       </span>
-                    ) : (
-                      <span className="text-[10px] font-bold text-amber-600">En attente</span>
-                    )}
-                  </div>
-
+                    ) : undefined
+                  }
+                >
                   {esc.cadastralClearanceProof?.volume ? (
-                    <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 space-y-1">
-                      <div className="font-mono text-xs font-bold">
-                        Volume : {esc.cadastralClearanceProof.volume} · Numéro :{' '}
-                        {esc.cadastralClearanceProof.number}
-                      </div>
-                      <div className="text-[10px]">
-                        Date d'enregistrement : {esc.cadastralClearanceProof.recordedAt}
-                      </div>
-                    </div>
+                    <InspectorCard>
+                      <InspectorKeyValue
+                        label="Volume / Numéro"
+                        value={`${esc.cadastralClearanceProof.volume} · N° ${esc.cadastralClearanceProof.number}`}
+                        tone="ok"
+                      />
+                      <InspectorKeyValue
+                        label="Enregistrement"
+                        value={esc.cadastralClearanceProof.recordedAt}
+                        isLast
+                      />
+                    </InspectorCard>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="p-3.5 bg-[#F3EDE7] dark:bg-[#262422] rounded-[18px] border border-[#E6DED6] dark:border-[#3A3734] space-y-2.5">
                       <div className="grid grid-cols-2 gap-2">
                         <LabelInput
                           label={isAr ? 'رقم المجلد *' : 'Volume *'}
@@ -1023,26 +1251,17 @@ export const LegalTrustView: React.FC<any> = () => {
                           onChange={(e) => setCadastralNumber(e.target.value)}
                         />
                       </div>
-                      <button
-                        type="button"
-                        data-no-liquid="true"
+                      <InspectorWideButton
+                        label={isAr ? 'تأكيد الإشهار العقاري' : 'Valider la Publicité'}
+                        icon={<Building2 size={14} />}
                         onClick={handleVerifyCadastre}
-                        className="w-full py-2 rounded-lg bg-[#d4522f] text-white font-bold text-xs hover:bg-[#b03b1b] transition-colors cursor-pointer"
-                      >
-                        {isAr ? 'تأكيد الإشهار العقاري' : 'Valider la Publicité'}
-                      </button>
+                      />
                     </div>
                   )}
-                </div>
+                </InspectorSection>
 
-                <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-200 dark:border-neutral-800 space-y-3">
-                  <span className="text-xs font-bold text-black dark:text-white flex items-center gap-1.5">
-                    <Key size={14} className="text-[#d4522f]" />
-                    {isAr
-                      ? 'الشرط الثاني: رمز الأمان للموثق Titulaire'
-                      : 'Verrou 2 : Code PIN Notaire Titulaire'}
-                  </span>
-                  <div className="space-y-2">
+                <InspectorSection index={2} title={isAr ? 'الشرط الثاني: رمز الأمان PIN' : 'Verrou 2 : Code PIN Notaire'}>
+                  <div className="p-3.5 bg-[#F3EDE7] dark:bg-[#262422] rounded-[18px] border border-[#E6DED6] dark:border-[#3A3734] space-y-2.5">
                     <LabelInput
                       label={
                         isAr
@@ -1065,21 +1284,16 @@ export const LegalTrustView: React.FC<any> = () => {
                       value={releaseAmount || ''}
                       onChange={(e) => setReleaseAmount(Number(e.target.value))}
                     />
+                    <InspectorWideButton
+                      label={isAr ? 'فك القفل المزدوج وإصدار أمر التحويل' : 'Débloquer & Émettre Virement'}
+                      icon={<Key size={14} />}
+                      tone="dark"
+                      disabled={esc.currentBalanceDzd <= 0}
+                      onClick={handleExecuteDoubleLockRelease}
+                    />
                   </div>
-                  <button
-                    type="button"
-                    data-no-liquid="true"
-                    onClick={handleExecuteDoubleLockRelease}
-                    disabled={esc.currentBalanceDzd <= 0}
-                    className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 disabled:opacity-50 transition-colors shadow-sm cursor-pointer"
-                  >
-                    <Unlock size={14} />
-                    {isAr
-                      ? 'فك القفل المزدوج وإصدار أمر التحويل'
-                      : 'Débloquer & Émettre Virement'}
-                  </button>
-                </div>
-              </div>
+                </InspectorSection>
+              </>
             );
           }}
         />
@@ -1225,11 +1439,6 @@ export const LegalTrustView: React.FC<any> = () => {
         <ScreenHeaderBar
           icon={<Scale size={22} />}
           title={isAr ? 'المحاسبة' : isEn ? 'Ledger' : 'Comptabilité'}
-          subtitle={
-            isAr
-              ? 'النظام المحاسبي المالي SCF · القيد المزدوج المتوازن'
-              : 'Plan Comptable National SCF 07-11 · Partie Double Équilibrée'
-          }
           primaryAction={{
             label: isAr ? 'قيد محاسبي جديد' : 'Nouvelle Écriture SCF',
             onClick: () => setIsSCFModalOpen(true),
@@ -1290,7 +1499,6 @@ export const LegalTrustView: React.FC<any> = () => {
               { value: 'VE', label: 'VE' },
               { value: 'CA', label: 'CA' },
               { value: 'BQ', label: 'BQ' },
-              { value: 'OD', label: 'OD' },
             ]}
             statusValue={scfJournalFilter}
             onStatusChange={setScfJournalFilter}
@@ -1324,9 +1532,10 @@ export const LegalTrustView: React.FC<any> = () => {
 
           <UniversalDataCollection<SCFJournalEntry>
             hideToolbar
-            data={filteredEntries}
+            items={filteredEntries}
             keyExtractor={(e) => e.id}
-            defaultViewMode={viewMode}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+            defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
             columns={scfColumns}
             sortBy={sortBy}
             sortDirection={sortDir}
@@ -1345,25 +1554,9 @@ export const LegalTrustView: React.FC<any> = () => {
               setSelectedSCFEntry(e);
               setDrawerOpenerEl(el || null);
             }}
-            renderCard={(e) => (
-              <div className="space-y-2 text-left rtl:text-right">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-xs text-[#d4522f]">
-                    {e.entryNumber}
-                  </span>
-                  <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-700">
-                    {e.journalCode}
-                  </span>
-                </div>
-                <div className="text-xs font-bold text-black dark:text-white line-clamp-2">
-                  {e.libelle}
-                </div>
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700 flex justify-between font-mono text-xs font-bold">
-                  <span>{e.date}</span>
-                  <span className="text-[#d4522f]">{formatMoney(e.totalDebitDzd, language)}</span>
-                </div>
-              </div>
-            )}
+            getRowMeta={getScfRowMeta}
+            getFanActions={getScfFanActions}
+            getDetailActions={getScfDetailActions}
             emptyTitle={isAr ? 'لا توجد قيود مطابقة' : 'Aucune écriture comptable'}
             emptyDescription={
               isAr ? 'سجل قيداً جديداً أو عدّل المرشحات.' : 'Saisissez une écriture ou réinitialisez les filtres.'
@@ -1396,16 +1589,19 @@ export const LegalTrustView: React.FC<any> = () => {
           language={language}
           title={activeScfEntry?.entryNumber || ''}
           subtitle={`Journal ${activeScfEntry?.journalCode || ''} · ${activeScfEntry?.date || ''}`}
-          avatarText={activeScfEntry?.journalCode || 'EC'}
+          categoryLabel={`Journal ${activeScfEntry?.journalCode || 'SCF'}`}
+          avatarText={(activeScfEntry?.journalCode || 'EC').slice(0, 2).toUpperCase()}
           branchName={
             activeScfEntry
               ? resolveRecordBranch(activeScfEntry, branchesById, currentBranch, language).name
               : ''
           }
-          statusLabel="Équilibré ✓"
+          statusLabel="Équilibré"
+          statusClassName="bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]"
           tabs={[
             { id: 'lignes', label: isAr ? 'تفصيل الأسطر' : 'Ventilation SCF' },
             { id: 'justif', label: isAr ? 'المرجع' : 'Justificatif' },
+            { id: 'audit', label: isAr ? 'المطابقة' : 'Conformité' },
           ]}
           activeTab={scfTab}
           onTabChange={setScfTab}
@@ -1414,54 +1610,61 @@ export const LegalTrustView: React.FC<any> = () => {
           renderBody={(entry, tab) => {
             if (tab === 'justif') {
               return (
-                <div className="space-y-3 text-xs">
-                  <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-200 dark:border-neutral-800 space-y-1.5">
-                    <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block">
-                      Objet & Pièce Justificative
-                    </span>
-                    <p className="font-semibold text-black dark:text-white">{entry.libelle}</p>
-                    <p className="text-[11px] text-black/55 dark:text-white/55 font-mono">
-                      Pièce: {entry.pieceJustificativeRef}
-                    </p>
-                  </div>
-                </div>
+                <InspectorSection index={0} title={isAr ? 'البيان والمرجع' : 'Objet & Pièce Justificative'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label="Libellé" value={entry.libelle} mono={false} />
+                    <InspectorKeyValue
+                      label="Pièce Justificative"
+                      value={entry.pieceJustificativeRef}
+                      copyText={entry.pieceJustificativeRef}
+                      onCopied={() => showToast('Référence copiée', 'info')}
+                    />
+                    <InspectorKeyValue label="Date" value={entry.date} isLast />
+                  </InspectorCard>
+                </InspectorSection>
+              );
+            }
+            if (tab === 'audit') {
+              return (
+                <InspectorSection index={0} title={isAr ? 'مراقبة التوازن SCF 07-11' : 'Contrôle Partie Double SCF 07-11'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label="Total Débit" value={formatMoney(entry.totalDebitDzd, language)} />
+                    <InspectorKeyValue label="Total Crédit" value={formatMoney(entry.totalCreditDzd, language)} />
+                    <InspectorKeyValue label="Écart" value="0 DZD" tone="ok" isLast />
+                  </InspectorCard>
+                </InspectorSection>
               );
             }
             return (
-              <div className="space-y-3 text-xs">
-                <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block">
-                  Ventilation des Lignes Comptables
-                </span>
-                {entry.lines.map((l) => (
-                  <div
-                    key={l.id}
-                    className="p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 space-y-1"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono font-bold text-xs text-[#d4522f]">
-                        {l.accountNumber}
-                      </span>
-                      <div className="font-mono text-xs font-bold">
-                        {l.debitDzd > 0 ? (
-                          <span className="text-black dark:text-white">
-                            D: {formatMoney(l.debitDzd, language)}
-                          </span>
-                        ) : (
-                          <span className="text-black/60 dark:text-white/65">
-                            C: {formatMoney(l.creditDzd, language)}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <p className="text-[11px] text-black/70 dark:text-white/75 truncate">
-                      {l.accountLabel}
-                    </p>
-                  </div>
-                ))}
-                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800/40 text-emerald-800 dark:text-emerald-300 text-center font-bold font-mono">
-                  Total Débit = Total Crédit = {formatMoney(entry.totalDebitDzd, language)}
-                </div>
-              </div>
+              <>
+                <InspectorSection index={0}>
+                  <InspectorBigStat
+                    value={formatMoney(entry.totalDebitDzd, language)}
+                    tone="ok"
+                    caption={`Total Débit = Total Crédit · Journal ${entry.journalCode}`}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'أسطر القيد المحاسبي' : 'Ventilation des Lignes Comptables'}>
+                  <InspectorCard>
+                    {entry.lines.map((l, idx) => (
+                      <InspectorListItem
+                        key={l.id}
+                        title={`${l.accountNumber} · ${l.accountLabel}`}
+                        metaRight={
+                          l.debitDzd > 0
+                            ? `D: ${formatMoney(l.debitDzd, language)}`
+                            : `C: ${formatMoney(l.creditDzd, language)}`
+                        }
+                        badge={{
+                          label: l.debitDzd > 0 ? 'Débit' : 'Crédit',
+                          tone: l.debitDzd > 0 ? 'accent' : 'neutral',
+                        }}
+                        isLast={idx === entry.lines.length - 1}
+                      />
+                    ))}
+                  </InspectorCard>
+                </InspectorSection>
+              </>
             );
           }}
         />
@@ -1695,11 +1898,6 @@ export const LegalTrustView: React.FC<any> = () => {
         <ScreenHeaderBar
           icon={<CreditCard size={22} />}
           title={isAr ? 'الصندوق' : isEn ? 'Closing' : 'Caisse'}
-          subtitle={
-            isAr
-              ? 'وصولات القبض النقدية وحساب طابع المادة 317'
-              : 'Espèces & Droit de Timbre Fiscal Progressif (Art. 317)'
-          }
           secondaryActions={
             <AtriumButton
               variant="outline"
@@ -1795,9 +1993,10 @@ export const LegalTrustView: React.FC<any> = () => {
 
           <UniversalDataCollection<CashReceipt>
             hideToolbar
-            data={filteredReceipts}
+            items={filteredReceipts}
             keyExtractor={(r) => r.id}
-            defaultViewMode={viewMode}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+            defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
             columns={receiptColumns}
             sortBy={sortBy}
             sortDirection={sortDir}
@@ -1816,27 +2015,9 @@ export const LegalTrustView: React.FC<any> = () => {
               setSelectedReceipt(r);
               setDrawerOpenerEl(el || null);
             }}
-            renderCard={(r) => (
-              <div className="space-y-2 text-left rtl:text-right">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-xs text-[#d4522f]">
-                    {r.receiptNumber}
-                  </span>
-                  <span className="text-[10px] font-mono text-amber-600 font-bold">
-                    +{formatMoney(r.timbreFiscalDzd, language)}
-                  </span>
-                </div>
-                <div className="text-xs font-bold text-black dark:text-white truncate">
-                  {r.clientName}
-                </div>
-                <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
-                  {r.matterTitle}
-                </div>
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700 font-mono text-xs font-bold text-emerald-600">
-                  {formatMoney(r.netCollectedDzd, language)}
-                </div>
-              </div>
-            )}
+            getRowMeta={getReceiptRowMeta}
+            getFanActions={getReceiptFanActions}
+            getDetailActions={getReceiptDetailActions}
             emptyTitle={isAr ? 'لا توجد وصولات نقدية' : 'Aucune quittance enregistrée'}
             emptyDescription={
               isAr ? 'قم بتسجيل قبض نقدي جديد.' : 'Enregistrez un nouvel encaissement.'
@@ -1869,77 +2050,95 @@ export const LegalTrustView: React.FC<any> = () => {
           language={language}
           title={activeReceipt?.receiptNumber || ''}
           subtitle={activeReceipt?.clientName}
+          categoryLabel="Quittance Art. 317"
           avatarText="RC"
           branchName={
             activeReceipt
               ? resolveRecordBranch(activeReceipt, branchesById, currentBranch, language).name
               : ''
           }
-          statusLabel="Encaissé ✓"
-          tabs={[{ id: 'quittance', label: isAr ? 'الوصل الرسمي' : 'Quittance Art. 317' }]}
+          statusLabel="Encaissé"
+          statusClassName="bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]"
+          tabs={[
+            { id: 'quittance', label: isAr ? 'الوصل الرسمي' : 'Quittance' },
+            { id: 'timbre', label: isAr ? 'طابع م 317' : 'Timbre Art. 317' },
+            { id: 'actions', label: isAr ? 'الطباعة والصندوق' : 'Caisse & Print' },
+          ]}
           activeTab={receiptTab}
           onTabChange={setReceiptTab}
           onSelectItem={(r) => setSelectedReceipt(r)}
           onClose={() => setSelectedReceipt(null)}
-          renderBody={(rc) => (
-            <div className="space-y-4 text-xs">
-              <div className="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl space-y-3">
-                <div className="text-center pb-2 border-b border-neutral-200 dark:border-neutral-800">
-                  <span className="font-bold text-sm text-[#d4522f] block">
-                    وصل تسليم نقدية رسمي
-                  </span>
-                  <span className="text-[10px] text-black/55 dark:text-white/55">
-                    Quittance de Versement en Espèces
-                  </span>
-                </div>
-                <div className="space-y-2 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Reçu de :</span>
-                    <span className="font-bold text-black dark:text-white">{rc.clientName}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Motif :</span>
-                    <span className="font-medium text-black dark:text-white">{rc.matterTitle}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Montant HT :</span>
-                    <span className="font-mono">{formatMoney(rc.totalHtDzd, language)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">TVA 19% :</span>
-                    <span className="font-mono">{formatMoney(rc.tvaDzd, language)}</span>
-                  </div>
-                  <div className="flex justify-between text-amber-600 font-bold">
-                    <span>Droit de Timbre (Art. 317) :</span>
-                    <span className="font-mono">+{formatMoney(rc.timbreFiscalDzd, language)}</span>
-                  </div>
-                  <div className="flex justify-between pt-2 border-t border-neutral-200 dark:border-neutral-800 font-bold text-sm text-emerald-600">
-                    <span>Net Encaissé :</span>
-                    <span className="font-mono">{formatMoney(rc.netCollectedDzd, language)}</span>
-                  </div>
-                </div>
-                <div className="pt-2 text-[10px] text-black/55 dark:text-white/55 border-t border-neutral-100 dark:border-neutral-800 flex justify-between">
-                  <span>Caissier : {rc.cashierName}</span>
-                  <span className="font-mono">{rc.createdAt.slice(0, 10)}</span>
-                </div>
-              </div>
-              <button
-                type="button"
-                data-no-liquid="true"
-                onClick={() => {
-                  showToast(
-                    isAr ? 'طباعة الوصل الرسمي للزبون' : 'Quittance officielle imprimée',
-                    'success'
-                  );
-                  window.print();
-                }}
-                className="w-full py-2.5 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
-              >
-                <Printer size={14} />
-                {isAr ? 'طباعة وصل الموكل' : 'Imprimer Quittance Client'}
-              </button>
-            </div>
-          )}
+          renderBody={(rc, tab) => {
+            if (tab === 'timbre') {
+              return (
+                <InspectorSection index={0} title={isAr ? 'تفصيل طابع المادة 317' : 'Calcul Timbre Progressif (Art. 317)'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label="Montant HT" value={formatMoney(rc.totalHtDzd, language)} />
+                    <InspectorKeyValue label="TVA 19%" value={formatMoney(rc.tvaDzd, language)} />
+                    <InspectorKeyValue label="Timbre Art. 317" value={`+${formatMoney(rc.timbreFiscalDzd, language)}`} tone="warn" />
+                    <InspectorKeyValue label="Net Encaissé" value={formatMoney(rc.netCollectedDzd, language)} tone="ok" isLast />
+                  </InspectorCard>
+                </InspectorSection>
+              );
+            }
+            if (tab === 'actions') {
+              return (
+                <>
+                  <InspectorSection index={0} title={isAr ? 'بيانات أمين الصندوق' : 'Traçabilité Caissier'}>
+                    <InspectorCard>
+                      <InspectorKeyValue label="Caissier" value={rc.cashierName} mono={false} />
+                      <InspectorKeyValue label="Date" value={rc.createdAt.slice(0, 10)} isLast />
+                    </InspectorCard>
+                  </InspectorSection>
+                  <InspectorSection index={1}>
+                    <InspectorWideButton
+                      label={isAr ? 'طباعة وصل الموكل' : 'Imprimer Quittance Client'}
+                      icon={<Printer size={14} />}
+                      onClick={() => {
+                        showToast(
+                          isAr ? 'طباعة الوصل الرسمي للزبون' : 'Quittance officielle imprimée',
+                          'success'
+                        );
+                        window.print();
+                      }}
+                    />
+                  </InspectorSection>
+                </>
+              );
+            }
+            return (
+              <>
+                <InspectorSection index={0}>
+                  <InspectorBigStat
+                    value={formatMoney(rc.netCollectedDzd, language)}
+                    tone="ok"
+                    caption={`Net Encaissé · Timbre Art. 317 : +${formatMoney(rc.timbreFiscalDzd, language)}`}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'وصل تسليم نقدية رسمي' : 'Quittance de Versement'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label="Reçu de" value={rc.clientName} mono={false} />
+                    <InspectorKeyValue label="Motif" value={rc.matterTitle} mono={false} />
+                    <InspectorKeyValue label="Caissier" value={rc.cashierName} mono={false} />
+                    <InspectorKeyValue label="Date" value={rc.createdAt.slice(0, 10)} isLast />
+                  </InspectorCard>
+                </InspectorSection>
+                <InspectorSection index={2}>
+                  <InspectorWideButton
+                    label={isAr ? 'طباعة وصل الموكل' : 'Imprimer Quittance Client'}
+                    icon={<Printer size={14} />}
+                    onClick={() => {
+                      showToast(
+                        isAr ? 'طباعة الوصل الرسمي للزبون' : 'Quittance officielle imprimée',
+                        'success'
+                      );
+                      window.print();
+                    }}
+                  />
+                </InspectorSection>
+              </>
+            );
+          }}
         />
 
         {isNewReceiptModalOpen && (
@@ -2185,11 +2384,6 @@ export const LegalTrustView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<CreditCard size={22} />}
         title={isAr ? 'الأتعاب' : isEn ? 'Fees' : 'Honoraires'}
-        subtitle={
-          isAr
-            ? 'إدارة الأتعاب وحسابات الحراسة القضائية CARPA · نقابة المحامين'
-            : 'Comptabilité des Fonds Mandants · Ordre des Avocats (CARPA)'
-        }
         secondaryActions={
           <AtriumButton
             variant="outline"
@@ -2294,9 +2488,10 @@ export const LegalTrustView: React.FC<any> = () => {
 
         <UniversalDataCollection<LegalMatter>
           hideToolbar
-          data={filteredCarpaMatters}
+          items={filteredCarpaMatters}
           keyExtractor={(m) => m.id}
-          defaultViewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
           columns={carpaColumns}
           sortBy={sortBy}
           sortDirection={sortDir}
@@ -2315,6 +2510,9 @@ export const LegalTrustView: React.FC<any> = () => {
             setSelectedMatter(m);
             setDrawerOpenerEl(el || null);
           }}
+          getRowMeta={getCarpaRowMeta}
+          getFanActions={getCarpaFanActions}
+          getDetailActions={getCarpaDetailActions}
           customActions={(m) => [
             {
               id: 'inspect',
@@ -2342,30 +2540,6 @@ export const LegalTrustView: React.FC<any> = () => {
               },
             },
           ]}
-          renderCard={(m) => (
-            <div className="space-y-2.5 text-left rtl:text-right">
-              <div className="flex items-center justify-between">
-                <span className="font-mono font-bold text-xs text-[#d4522f]">
-                  {m.matterNumber}
-                </span>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-700">
-                  Conforme
-                </span>
-              </div>
-              <div className="text-xs font-bold text-black dark:text-white line-clamp-2">
-                {m.title}
-              </div>
-              <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
-                {m.clientName}
-              </div>
-              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700 flex justify-between font-mono text-xs font-bold">
-                <span>{formatMoney(m.retainerAmountDzd, language)}</span>
-                <span className="text-blue-600">
-                  CARPA: {formatMoney(m.trustEscrowBalanceDzd || 0, language)}
-                </span>
-              </div>
-            </div>
-          )}
           emptyTitle={isAr ? 'لا توجد حسابات CARPA' : 'Aucun compte CARPA'}
           emptyDescription={
             isAr ? 'أعد ضبط المرشحات لعرض كافة الحسابات.' : 'Réinitialisez les filtres actifs.'
@@ -2396,13 +2570,19 @@ export const LegalTrustView: React.FC<any> = () => {
         language={language}
         title={activeCarpaMatter?.matterNumber || ''}
         subtitle={activeCarpaMatter?.clientName}
+        categoryLabel="CARPA Séquestre"
         avatarText="CA"
         branchName={
           activeCarpaMatter
             ? resolveRecordBranch(activeCarpaMatter, branchesById, currentBranch, language).name
             : ''
         }
-        statusLabel="Conforme CARPA"
+        statusLabel={(activeCarpaMatter?.trustEscrowBalanceDzd || 0) > 0 ? 'Sous Séquestre' : 'Soldé'}
+        statusClassName={
+          (activeCarpaMatter?.trustEscrowBalanceDzd || 0) > 0
+            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+        }
         tabs={[
           { id: 'sequestre', label: isAr ? 'الودائع Séquestre' : 'Séquestre' },
           { id: 'honoraires', label: isAr ? 'الأتعاب والمصاريف' : 'Honoraires' },
@@ -2415,88 +2595,82 @@ export const LegalTrustView: React.FC<any> = () => {
         renderBody={(m, tab) => {
           if (tab === 'honoraires') {
             return (
-              <div className="space-y-4 text-xs">
-                <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-                  <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
-                    Décompte d'Honoraires & Diligences
-                  </span>
-                  <div className="flex items-center justify-between">
-                    <span className="text-black/55 dark:text-white/55">
-                      Convention d'honoraires:
-                    </span>
-                    <span className="font-mono font-bold text-black dark:text-white">
-                      {formatMoney(m.retainerAmountDzd, language)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-black/55 dark:text-white/55">
-                      Droits de plaidoirie & timbres:
-                    </span>
-                    <span className="font-mono text-black/75 dark:text-white/80">12 000 DZD</span>
-                  </div>
-                </div>
-              </div>
+              <InspectorSection index={0} title={isAr ? 'تفصيل الأتعاب والمصاريف' : "Décompte d'Honoraires & Diligences"}>
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label="Convention d'honoraires"
+                    value={formatMoney(m.retainerAmountDzd, language)}
+                    tone="accent"
+                  />
+                  <InspectorKeyValue label="Droits de plaidoirie & timbres" value="12 000 DZD" isLast />
+                </InspectorCard>
+              </InspectorSection>
             );
           }
 
           if (tab === 'deontologie') {
             return (
-              <div className="space-y-4 text-xs">
-                <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-                  <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
-                    Conformité Déontologique Ordre des Avocats
-                  </span>
-                  <div className="space-y-1.5 text-black/75 dark:text-white/80">
-                    <div className="flex items-center gap-2">
-                      <FileCheck size={14} className="text-emerald-500" />
-                      <span>Séparation hermétique des comptes de cabinet</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <FileCheck size={14} className="text-emerald-500" />
-                      <span>Contrôle périodique du Conseil de l'Ordre</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <InspectorSection index={0} title="Conformité Ordre des Avocats">
+                <InspectorCard>
+                  <InspectorKeyValue label="Séparation des comptes" value="Hermétique" tone="ok" mono={false} />
+                  <InspectorKeyValue label="Contrôle Conseil de l'Ordre" value="Périodique" tone="ok" mono={false} isLast />
+                </InspectorCard>
+              </InspectorSection>
             );
           }
 
           return (
-            <div className="space-y-4 text-xs">
-              <div className="p-4 bg-[#1F1D1B] rounded-xl text-white space-y-2 shadow-sm">
-                <div className="flex items-center justify-between text-white/80 text-[11px]">
-                  <span>Fonds Mandant Sous Séquestre</span>
-                  <span className="bg-[#3D2817] text-[#FB923C] text-[10px] font-bold px-2 py-0.5 rounded-md">
-                    Inaliénable
-                  </span>
-                </div>
-                <div className="text-2xl font-black tracking-tight text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
-                  {formatMoney(m.trustEscrowBalanceDzd || 0, language)}
-                </div>
-                <p className="text-[10px] text-white/75">
-                  Montant bloqué sur sous-compte CARPA jusqu'à décision judiciaire exécutoire.
-                </p>
-              </div>
-              <div className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-                <div>
-                  <span className="font-semibold block text-black dark:text-white">
-                    Déblocage de Séquestre
-                  </span>
-                  <span className="text-[10px] text-black/55 dark:text-white/55">
-                    Sur présentation du jugement définitif
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  data-no-liquid="true"
-                  onClick={() => handleReleaseTrustFunds(m)}
-                  disabled={!m.trustEscrowBalanceDzd || m.trustEscrowBalanceDzd === 0}
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#d4522f] hover:bg-[#b03b1b] text-white disabled:opacity-50 transition-colors cursor-pointer"
-                >
-                  Débloquer
-                </button>
-              </div>
-            </div>
+            <>
+              <InspectorSection index={0}>
+                <InspectorBigStat
+                  value={formatMoney(m.trustEscrowBalanceDzd || 0, language)}
+                  tone={(m.trustEscrowBalanceDzd || 0) > 0 ? 'accent' : 'ok'}
+                  caption="Fonds Mandant Sous Séquestre CARPA (Inaliénable)"
+                  action={
+                    (m.trustEscrowBalanceDzd || 0) > 0
+                      ? {
+                          label: isAr ? 'الإفراج عن الوديعة' : 'Débloquer Séquestre',
+                          onClick: () => handleReleaseTrustFunds(m),
+                          tone: 'accent',
+                        }
+                      : undefined
+                  }
+                />
+              </InspectorSection>
+              <InspectorSection index={1}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'release',
+                      label: isAr ? 'إفراج' : 'Débloquer',
+                      icon: <Unlock size={16} />,
+                      primary: true,
+                      disabled: !m.trustEscrowBalanceDzd || m.trustEscrowBalanceDzd === 0,
+                      onClick: () => handleReleaseTrustFunds(m),
+                    },
+                    {
+                      id: 'statement',
+                      label: isAr ? 'كشف CARPA' : 'Relevé CARPA',
+                      icon: <Printer size={16} />,
+                      onClick: () => {
+                        showToast(
+                          isAr
+                            ? `طباعة كشف حساب الوديعة للقضية ${m.matterNumber}`
+                            : `Génération du relevé officiel CARPA (${m.matterNumber})`,
+                          'info'
+                        );
+                      },
+                    },
+                  ]}
+                />
+              </InspectorSection>
+              <InspectorSection index={2} title={isAr ? 'بيانات الحساب' : 'Détails Séquestre'}>
+                <InspectorCard>
+                  <InspectorKeyValue label="Mandant" value={m.clientName} mono={false} />
+                  <InspectorKeyValue label="Honoraires" value={formatMoney(m.retainerAmountDzd, language)} isLast />
+                </InspectorCard>
+              </InspectorSection>
+            </>
           );
         }}
       />

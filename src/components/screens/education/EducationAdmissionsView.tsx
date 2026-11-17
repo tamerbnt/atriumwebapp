@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   LayoutGrid,
   Columns,
+  Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { AdmissionStage, EduAdmissionLead } from '../../../types';
@@ -30,6 +31,15 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -75,6 +85,7 @@ export const EducationAdmissionsView: React.FC = () => {
 
   const [selectedLead, setSelectedLead] = useState<EduAdmissionLead | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<'profile' | 'pipeline' | 'notes'>('profile');
 
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(() => new Set<string>());
   const [pinnedLeadIds, setPinnedLeadIds] = useState<Set<string>>(() => new Set<string>());
@@ -304,6 +315,94 @@ export const EducationAdmissionsView: React.FC = () => {
 
   const activeFiltersCount = (branchFilter !== 'All' ? 1 : 0) + (stageFilter !== 'All' ? 1 : 0);
 
+  const getLeadRowMeta = useCallback(
+    (lead: EduAdmissionLead): KineticRowMeta => ({
+      avatarText: lead.studentName.slice(0, 2).toUpperCase(),
+      subtitle: `${lead.desiredCourseTitle} · ${lead.phone}`,
+      categoryLabel: lead.source || (isAr ? 'مترشح' : 'Prospect'),
+      statusTone:
+        lead.stage === 'Enrolled'
+          ? 'ok'
+          : lead.stage === 'Admitted'
+          ? 'info'
+          : 'warn',
+      statusLabel: stages.find((s) => s.id === lead.stage)?.title || lead.stage,
+      metricPrimary: lead.placementScore || lead.stage,
+      metricSecondary: lead.guardianName || undefined,
+    }),
+    [stages, isAr]
+  );
+
+  const getLeadFanActions = useCallback(
+    (lead: EduAdmissionLead): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'تفاصيل' : isEn ? 'Details' : 'Détails',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedLead(lead);
+          setInspectorTab('profile');
+        },
+      },
+      ...(lead.stage !== 'Enrolled'
+        ? [
+            {
+              id: 'convert',
+              label: t('edu_btn_convert_student'),
+              icon: <UserCheck className="w-[15px] h-[15px]" />,
+              onClick: () => setConversionLead(lead),
+            },
+          ]
+        : []),
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer',
+        icon: <Trash2 className="w-[15px] h-[15px]" />,
+        isDanger: true,
+        onClick: () => {
+          deleteEduAdmissionLead(lead.id);
+          if (selectedLead?.id === lead.id) setSelectedLead(null);
+        },
+      },
+    ],
+    [isAr, isEn, t, deleteEduAdmissionLead, selectedLead?.id]
+  );
+
+  const getLeadDetailActions = useCallback(
+    (lead: EduAdmissionLead): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'فتح' : isEn ? 'Open' : 'Ouvrir',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedLead(lead);
+          setInspectorTab('profile');
+        },
+      },
+      ...(lead.stage !== 'Enrolled'
+        ? [
+            {
+              id: 'convert',
+              label: t('edu_btn_convert_student'),
+              icon: <UserCheck className="w-3.5 h-3.5 text-[#d4522f]" />,
+              onClick: () => setConversionLead(lead),
+            },
+          ]
+        : []),
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer',
+        icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+        onClick: () => {
+          deleteEduAdmissionLead(lead.id);
+          if (selectedLead?.id === lead.id) setSelectedLead(null);
+        },
+      },
+    ],
+    [isAr, isEn, t, deleteEduAdmissionLead, selectedLead?.id]
+  );
+
   const leadColumns: ColumnDefinition<EduAdmissionLead>[] = useMemo(
     () => [
       {
@@ -474,7 +573,6 @@ export const EducationAdmissionsView: React.FC = () => {
       <ScreenHeaderBar
         icon={<ClipboardList size={22} />}
         title={t('edu_admissions_title')}
-        subtitle={`${totalLeads} ${isAr ? 'طلب قبول في المسار' : isEn ? 'prospects in pipeline' : 'candidats dans le pipeline'}`}
         secondaryActions={
           <div className="flex items-center p-1 bg-[#F4EFEA] dark:bg-neutral-800 rounded-xl border border-[#E8DFD8] dark:border-neutral-700 shadow-2xs">
             <button
@@ -654,9 +752,10 @@ export const EducationAdmissionsView: React.FC = () => {
         {viewLayout === 'collection' && (
           <UniversalDataCollection<EduAdmissionLead>
             hideToolbar
-            data={sortedLeads}
+            items={sortedLeads}
             keyExtractor={(l) => l.id}
-            viewMode={collectionViewMode}
+            viewMode={collectionViewMode === 'grid' ? 'grid' : 'list'}
+            defaultViewMode={collectionViewMode === 'grid' ? 'grid' : 'list'}
             columns={leadColumns}
             isLoading={isSyncing || networkMode === 'force_skeleton'}
             isOffline={networkMode === 'offline'}
@@ -690,45 +789,26 @@ export const EducationAdmissionsView: React.FC = () => {
             onItemClick={(lead, el) => {
               setDrawerOpenerEl(el || null);
               setSelectedLead(lead);
+              setInspectorTab('profile');
             }}
             onViewDetails={(lead, el) => {
               setDrawerOpenerEl(el || null);
               setSelectedLead(lead);
+              setInspectorTab('profile');
             }}
+            getRowMeta={getLeadRowMeta}
+            getFanActions={getLeadFanActions}
+            getDetailActions={getLeadDetailActions}
             onEdit={(lead) => {
               if (lead.stage === 'Admitted') setConversionLead(lead);
-              else setSelectedLead(lead);
+              else {
+                setSelectedLead(lead);
+                setInspectorTab('pipeline');
+              }
             }}
             onDelete={(lead) => {
               deleteEduAdmissionLead(lead.id);
               if (selectedLead?.id === lead.id) setSelectedLead(null);
-            }}
-            renderCard={(lead) => {
-              const b = resolveRecordBranch(lead, branchesById, currentBranch, language);
-              return (
-                <div className="flex flex-col items-center justify-center w-full">
-                  <div className="w-20 h-20 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-[28px] font-bold shadow-md mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
-                    {lead.studentName.charAt(0)}
-                  </div>
-                  <h3 className="text-[16px] font-bold text-black dark:text-white truncate max-w-[210px] mb-1 tracking-tight text-center">
-                    {lead.studentName}
-                  </h3>
-                  <span className="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700 mb-2 truncate max-w-[200px]">
-                    {lead.desiredCourseTitle}
-                  </span>
-                  <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1.5 text-center">
-                    <div className="font-mono text-black/70 dark:text-white/75 text-[11px]">{lead.phone}</div>
-                    <div className="text-black/55 dark:text-white/55 text-[11px]">{b.name}</div>
-                    {lead.placementScore && (
-                      <div className="text-[11px] font-semibold text-[#d4522f]">{lead.placementScore}</div>
-                    )}
-                    <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                      <span className="text-[11px] text-black/55 dark:text-white/55">Stage:</span>
-                      <span className="font-semibold text-black dark:text-white">{lead.stage}</span>
-                    </div>
-                  </div>
-                </div>
-              );
             }}
             emptyTitle="No admission prospects"
             emptyDescription="No student leads match the current filters"
@@ -865,97 +945,153 @@ export const EducationAdmissionsView: React.FC = () => {
         language={language}
         title={activeLead?.studentName || ''}
         subtitle={activeLead ? `${activeLead.desiredCourseTitle} · ${activeLead.phone}` : ''}
-        avatarText={(activeLead?.studentName || 'L').charAt(0).toUpperCase()}
+        categoryLabel={activeLead?.source || (isAr ? 'مترشح' : 'Prospect')}
+        avatarText={(activeLead?.studentName || 'LD').slice(0, 2).toUpperCase()}
         avatarColor="#d4522f"
         branchName={
           activeLead ? resolveRecordBranch(activeLead, branchesById, currentBranch, language).name : undefined
         }
-        statusLabel={activeLead?.stage}
-        onSelectItem={(l) => setSelectedLead(l)}
+        statusLabel={activeLead ? stages.find((s) => s.id === activeLead.stage)?.title || activeLead.stage : undefined}
+        statusClassName={
+          activeLead?.stage === 'Enrolled'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : activeLead?.stage === 'Admitted'
+            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+        }
+        tabs={[
+          { id: 'profile', label: isAr ? 'الملف' : isEn ? 'Profile' : 'Profil' },
+          { id: 'pipeline', label: isAr ? 'المسار' : isEn ? 'Pipeline' : 'Parcours' },
+          { id: 'notes', label: isAr ? 'ملاحظات' : 'Notes' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={(id) => setInspectorTab(id as 'profile' | 'pipeline' | 'notes')}
+        onSelectItem={(l) => {
+          setSelectedLead(l);
+          setInspectorTab('profile');
+        }}
         onClose={() => setSelectedLead(null)}
         onDelete={(l) => {
           deleteEduAdmissionLead(l.id);
           setSelectedLead(null);
         }}
-        renderBody={(lead) => (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-2">
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">{t('edu_field_phone')}:</span>
-                <span className="font-mono font-semibold text-black dark:text-white">{lead.phone}</span>
-              </div>
-              {lead.email && (
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">{t('edu_field_email')}:</span>
-                  <span className="font-medium text-black dark:text-white">{lead.email}</span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">{t('edu_field_guardian_name')}:</span>
-                <span className="font-medium text-black dark:text-white">
-                  {lead.guardianName || (isAr ? 'مترشح راشد' : 'Adult / Self')}
-                </span>
-              </div>
-              {lead.source && (
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Source:</span>
-                  <span className="font-medium text-black dark:text-white">{lead.source}</span>
-                </div>
-              )}
-              {lead.placementScore && (
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Placement Score:</span>
-                  <span className="font-bold text-[#d4522f]">{lead.placementScore}</span>
-                </div>
-              )}
-            </div>
+        renderBody={(lead, tab) => {
+          if (tab === 'pipeline') {
+            return (
+              <>
+                <InspectorSection index={0}>
+                  <InspectorBigStat
+                    value={stages.find((s) => s.id === lead.stage)?.title || lead.stage}
+                    tone="accent"
+                    caption={lead.desiredCourseTitle}
+                  />
+                </InspectorSection>
+                <InspectorSection
+                  index={1}
+                  title={isAr ? 'تغيير مرحلة القبول' : isEn ? 'Pipeline Stage' : 'Progression Pipeline'}
+                >
+                  <div className="flex flex-wrap gap-2">
+                    {stages.map((st) => (
+                      <button
+                        key={st.id}
+                        type="button"
+                        onClick={() => updateAdmissionStage(lead.id, st.id)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
+                          lead.stage === st.id
+                            ? 'bg-[#d4522f] text-white border-[#d4522f]'
+                            : 'bg-[#F3EDE7] dark:bg-[#262422] border-[#E6DED6] dark:border-[#3A3734] text-black/80 dark:text-white/80 hover:border-[#d4522f]/50'
+                        }`}
+                      >
+                        {st.title}
+                      </button>
+                    ))}
+                  </div>
+                </InspectorSection>
+                {lead.stage !== 'Enrolled' && (
+                  <InspectorSection index={2}>
+                    <InspectorWideButton
+                      label={t('edu_btn_convert_student')}
+                      icon={<UserCheck size={15} />}
+                      tone="accent"
+                      onClick={() => {
+                        setConversionLead(lead);
+                        setSelectedLead(null);
+                      }}
+                    />
+                  </InspectorSection>
+                )}
+              </>
+            );
+          }
 
-            {lead.notes && (
-              <div className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
-                <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-bold block mb-1">
-                  Notes
-                </span>
-                <p className="text-black/80 dark:text-white/80 leading-relaxed">{lead.notes}</p>
-              </div>
-            )}
+          if (tab === 'notes') {
+            return (
+              <InspectorSection index={0} title="Notes">
+                <InspectorCard>
+                  <InspectorKeyValue label="Source" value={lead.source || '—'} mono={false} />
+                  <InspectorKeyValue
+                    label={isAr ? 'ملاحظات' : 'Remarques'}
+                    value={lead.notes || (isAr ? 'لا توجد ملاحظات' : 'Aucune note enregistrée')}
+                    mono={false}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+            );
+          }
 
-            <div className="space-y-2">
-              <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-bold block">
-                {isAr ? 'تغيير مرحلة القبول' : isEn ? 'Pipeline Stage' : 'Progression Pipeline'}
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {stages.map((st) => (
-                  <button
-                    key={st.id}
-                    type="button"
-                    onClick={() => updateAdmissionStage(lead.id, st.id)}
-                    className={`px-2.5 py-1.5 rounded-lg text-[11px] font-semibold border transition-colors cursor-pointer ${
-                      lead.stage === st.id
-                        ? 'bg-[#d4522f] text-white border-[#d4522f]'
-                        : 'bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-black/75 dark:text-white/75 hover:border-[#d4522f]/50'
-                    }`}
-                  >
-                    {st.title}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {lead.stage !== 'Enrolled' && (
-              <button
-                type="button"
-                onClick={() => {
-                  setConversionLead(lead);
-                  setSelectedLead(null);
-                }}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#d4522f] text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 cursor-pointer shadow-xs"
-              >
-                <UserCheck size={15} />
-                <span>{t('edu_btn_convert_student')}</span>
-              </button>
-            )}
-          </div>
-        )}
+          return (
+            <>
+              <InspectorSection index={0}>
+                <InspectorQuickActions
+                  actions={[
+                    ...(lead.stage !== 'Enrolled'
+                      ? [
+                          {
+                            id: 'convert',
+                            label: t('edu_btn_convert_student'),
+                            icon: <UserCheck size={16} />,
+                            primary: true,
+                            onClick: () => {
+                              setConversionLead(lead);
+                              setSelectedLead(null);
+                            },
+                          },
+                        ]
+                      : []),
+                    {
+                      id: 'advance',
+                      label: isAr ? 'المرحلة التالية' : isEn ? 'Move Next' : 'Étape Suivante',
+                      icon: <ArrowRight size={16} className="rtl:rotate-180" />,
+                      disabled: lead.stage === 'Enrolled',
+                      onClick: () => {
+                        const nextIdx = stages.findIndex((s) => s.id === lead.stage) + 1;
+                        if (nextIdx < stages.length) updateAdmissionStage(lead.id, stages[nextIdx].id);
+                      },
+                    },
+                  ]}
+                />
+              </InspectorSection>
+              <InspectorSection index={1} title={isAr ? 'بيانات المترشح' : isEn ? 'Candidate Info' : 'Coordonnées'}>
+                <InspectorCard>
+                  <InspectorKeyValue label={t('edu_field_phone')} value={lead.phone} copyText={lead.phone} />
+                  {lead.email && (
+                    <InspectorKeyValue label={t('edu_field_email')} value={lead.email} mono={false} copyText={lead.email} />
+                  )}
+                  <InspectorKeyValue
+                    label={t('edu_field_guardian_name')}
+                    value={lead.guardianName || (isAr ? 'مترشح راشد' : 'Adult / Self')}
+                    mono={false}
+                  />
+                  <InspectorKeyValue label="Source" value={lead.source || '—'} mono={false} isLast={!lead.placementScore} />
+                  {lead.placementScore && (
+                    <InspectorKeyValue label="Placement Score" value={lead.placementScore} tone="accent" isLast />
+                  )}
+                </InspectorCard>
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       {conversionLead && (

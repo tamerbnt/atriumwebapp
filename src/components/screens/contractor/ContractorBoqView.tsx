@@ -4,14 +4,18 @@ import {
   X,
   Edit,
   Pin,
-  Save,
-  Check,
   AlertTriangle,
   TrendingUp,
   Calculator,
   MapPin,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { useContractorData } from './contractorData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -31,6 +35,16 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorProgressBar,
+  InspectorBigStat,
+  InspectorNotesField,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -52,8 +66,21 @@ export const ContractorBoqView: React.FC<any> = () => {
     currentUser,
     isSyncing,
     networkMode,
-    retryCloudSync,
-  } = useAtriumStore();
+    lastSyncedAt,
+  } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBusiness: s.currentBusiness,
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      currentUser: s.currentUser,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -89,7 +116,6 @@ export const ContractorBoqView: React.FC<any> = () => {
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [activeTab, setActiveTab] = useState<string>('poste');
   const [inspectorNotes, setInspectorNotes] = useState('');
-  const [noteSaved, setNoteSaved] = useState(false);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -360,19 +386,20 @@ export const ContractorBoqView: React.FC<any> = () => {
     showToast(isAr ? 'تم تصدير ملف BOQ CSV' : 'Export CSV du bordereau généré', 'info');
   }, [sortedItems, branchesById, currentBranch, language, isAr]);
 
-  const handleSaveNotes = useCallback(() => {
-    if (!activeItem) return;
-    setNoteSaved(true);
-    setTimeout(() => setNoteSaved(false), 2000);
-    showToast(isAr ? 'تم حفظ ملاحظات البند' : 'Notes de métré enregistrées', 'success');
-  }, [activeItem, isAr]);
+  const handleSaveNotes = useCallback(
+    (next: string) => {
+      if (!activeItem) return;
+      setInspectorNotes(next);
+      showToast(isAr ? 'تم حفظ ملاحظات البند' : 'Notes de métré enregistrées', 'success');
+    },
+    [activeItem, isAr]
+  );
 
   const handleSelectItem = useCallback(
     (item: ContractorBoqItem, originEl?: HTMLElement | null) => {
       if (originEl) setDrawerOpenerEl(originEl);
       setSelectedItem(item);
       setActiveTab('poste');
-      setNoteSaved(false);
     },
     []
   );
@@ -474,6 +501,89 @@ export const ContractorBoqView: React.FC<any> = () => {
       completedCount,
       branchOptions,
     ]
+  );
+
+  const getRowMeta = useCallback(
+    (item: ContractorBoqItem): Partial<KineticRowData> => {
+      const b = resolveRecordBranch(item, branchesById, currentBranch, language);
+      const pct = item.plannedQty > 0 ? Math.round((item.executedQty / item.plannedQty) * 100) : 0;
+      const isOverrun = item.executedQty > item.plannedQty;
+      const isDone = pct >= 100 && !isOverrun;
+      return {
+        subline: `${item.designation} · ${item.unit}`,
+        categoryLabel: `Poste ${item.itemCode}`,
+        statusLabel: isOverrun ? `+${pct - 100}% Avenant` : isDone ? 'Achevé' : `${pct}% exécuté`,
+        statusVariant: isOverrun ? 'danger' : isDone ? 'active' : 'warning',
+        metricPrimary: formatMoney(item.totalExecutedDzd, language),
+        metricSecondary: `${item.executedQty}/${item.plannedQty} ${item.unit}`,
+        detailCol1: {
+          heading: isAr ? 'البند والفرع' : isEn ? 'Item & Branch' : 'Article & Agence',
+          primaryText: `${item.itemCode} · ${item.unit}`,
+          secondaryText: item.lotTitle || 'Travaux Principaux',
+          tertiaryText: b.name,
+        },
+        detailCol2: {
+          heading: isAr ? 'الكميات والتسعير' : isEn ? 'Quantities & Unit Price' : 'Métrés & PU',
+          primaryText: `${item.executedQty} / ${item.plannedQty} ${item.unit} (${pct}%)`,
+          secondaryText: `PU: ${formatMoney(item.unitPriceDzd, language)}`,
+          tertiaryText: `Prévu: ${formatMoney(item.totalPlannedDzd, language)}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'المبلغ المنجز' : isEn ? 'Executed Value' : 'Valeur Exécutée',
+          primaryText: formatMoney(item.totalExecutedDzd, language),
+          secondaryText: isOverrun ? 'Dépassement (Art. 136)' : 'Attachement conforme',
+        },
+      };
+    },
+    [branchesById, currentBranch, language, isAr, isEn]
+  );
+
+  const getFanActions = useCallback(
+    (item: ContractorBoqItem): KineticRowFanAction[] => [
+      {
+        id: 'advance',
+        label: '+10%',
+        icon: <TrendingUp className="w-[15px] h-[15px]" />,
+        onClick: () => handleAdvanceExecution(item),
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+        icon: <Edit className="w-[15px] h-[15px]" />,
+        onClick: () => openEditModal(item),
+      },
+      {
+        id: 'open',
+        label: isAr ? 'تفاصيل' : isEn ? 'Details' : 'Détails',
+        icon: <ClipboardList className="w-[15px] h-[15px]" />,
+        onClick: (e) => handleSelectItem(item, e.currentTarget),
+      },
+    ],
+    [handleAdvanceExecution, openEditModal, handleSelectItem, isAr, isEn]
+  );
+
+  const getDetailActions = useCallback(
+    (item: ContractorBoqItem): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'معاينة البند' : isEn ? 'Inspect' : 'Ouvrir fiche',
+        icon: <ClipboardList className="w-3.5 h-3.5" />,
+        onClick: () => handleSelectItem(item),
+      },
+      {
+        id: 'advance',
+        label: isAr ? '+10% إنجاز' : '+10% Métré',
+        icon: <TrendingUp className="w-3.5 h-3.5 text-[#096b40]" />,
+        onClick: () => handleAdvanceExecution(item),
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+        icon: <Edit className="w-3.5 h-3.5" />,
+        onClick: () => openEditModal(item),
+      },
+    ],
+    [handleSelectItem, handleAdvanceExecution, openEditModal, isAr, isEn]
   );
 
   const columns: ColumnDefinition<ContractorBoqItem>[] = useMemo(
@@ -615,11 +725,6 @@ export const ContractorBoqView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<ClipboardList size={22} />}
         title={isAr ? 'الكميات' : isEn ? 'Quantities' : 'Devis'}
-        subtitle={
-          isAr
-            ? `${filteredItems.length} بند مقايسة`
-            : `${filteredItems.length} postes au bordereau BOQ`
-        }
         primaryAction={{
           label: isAr ? 'إضافة بند' : isEn ? 'New Item' : 'Nouveau Poste',
           onClick: openCreateModal,
@@ -709,9 +814,10 @@ export const ContractorBoqView: React.FC<any> = () => {
 
         <UniversalDataCollection<ContractorBoqItem>
           hideToolbar
-          data={sortedItems}
+          items={sortedItems}
           columns={columns}
           keyExtractor={(item) => item.id}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
           defaultViewMode={viewMode}
           selectedIds={selectedIds}
           onSelectionChange={setSelectedIds}
@@ -737,6 +843,9 @@ export const ContractorBoqView: React.FC<any> = () => {
           openItemId={activeItem?.id || null}
           onItemClick={handleSelectItem}
           onViewDetails={handleSelectItem}
+          getRowMeta={getRowMeta}
+          getFanActions={getFanActions}
+          getDetailActions={getDetailActions}
           onEdit={openEditModal}
           onDelete={handleDelete}
           emptyTitle={isAr ? 'لا توجد بنود' : 'Aucun poste BOQ trouvé'}
@@ -757,58 +866,6 @@ export const ContractorBoqView: React.FC<any> = () => {
               onClick: () => handleAdvanceExecution(item),
             },
           ]}
-          renderCard={(item) => {
-            const pct = item.plannedQty > 0 ? Math.round((item.executedQty / item.plannedQty) * 100) : 0;
-            const isOverrun = item.executedQty > item.plannedQty;
-            return (
-              <div className="space-y-3 w-full">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg border border-[#d4522f]/20">
-                    {item.itemCode}
-                  </span>
-                  <span
-                    className={`font-mono text-xs font-bold ${
-                      isOverrun ? 'text-rose-600 dark:text-rose-400' : 'text-[#d4522f]'
-                    }`}
-                  >
-                    {pct}% réalisé
-                  </span>
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-black dark:text-white line-clamp-2">
-                    {item.designation}
-                  </h3>
-                  <div className="text-xs text-black/55 dark:text-white/55 font-medium mt-0.5">
-                    {item.executedQty} / {item.plannedQty} {item.unit}
-                  </div>
-                  {isOverrun && (
-                    <div className="mt-1 flex items-center gap-1 text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded w-fit">
-                      <AlertTriangle size={10} className="shrink-0" />
-                      <span>Dépassement (+{pct - 100}%) · Avenant obligatoire</span>
-                    </div>
-                  )}
-                </div>
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-                  <div>
-                    <div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">
-                      Prix Unitaire
-                    </div>
-                    <div className="font-mono font-bold text-black dark:text-white mt-0.5">
-                      {formatMoney(item.unitPriceDzd, language)}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">
-                      Montant Exécuté
-                    </div>
-                    <div className="font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
-                      {formatMoney(item.totalExecutedDzd, language)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          }}
         />
       </ScreenPod>
 
@@ -833,7 +890,8 @@ export const ContractorBoqView: React.FC<any> = () => {
         language={language}
         title={activeItem ? `Poste ${activeItem.itemCode}` : ''}
         subtitle={activeItem?.designation}
-        avatarText={(activeItem?.itemCode || 'BOQ').slice(0, 4)}
+        categoryLabel={activeItem?.lotTitle || 'Bordereau BOQ'}
+        avatarText={(activeItem?.itemCode || 'BQ').replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase() || 'BQ'}
         branchName={
           activeItem
             ? resolveRecordBranch(activeItem, branchesById, currentBranch, language).name
@@ -843,6 +901,13 @@ export const ContractorBoqView: React.FC<any> = () => {
           activeItem && activeItem.plannedQty > 0
             ? `${Math.round((activeItem.executedQty / activeItem.plannedQty) * 100)}%`
             : '0%'
+        }
+        statusClassName={
+          activeItem && activeItem.executedQty > activeItem.plannedQty
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            : activeItem && activeItem.executedQty >= activeItem.plannedQty
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
         }
         tabs={[
           { id: 'poste', label: isAr ? 'البند' : 'Fiche Poste' },
@@ -855,128 +920,107 @@ export const ContractorBoqView: React.FC<any> = () => {
         onClose={() => setSelectedItem(null)}
         onDelete={handleDelete}
         holdToDelete
-        renderBody={(item, tab) => (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 flex-wrap">
-              <AtriumButton
-                variant="primary"
-                size="sm"
-                icon={<TrendingUp size={13} />}
-                onClick={() => handleAdvanceExecution(item)}
-              >
-                {isAr ? 'قيد إنجاز (+10%)' : '+10% Avancement'}
-              </AtriumButton>
-              <AtriumButton
-                variant="outline"
-                size="sm"
-                icon={<Edit size={13} />}
-                onClick={() => openEditModal(item)}
-              >
-                {isAr ? 'تعديل' : 'Modifier'}
-              </AtriumButton>
-            </div>
+        renderBody={(item, tab) => {
+          const pct = item.plannedQty > 0 ? Math.round((item.executedQty / item.plannedQty) * 100) : 0;
+          const isOverrun = item.executedQty > item.plannedQty;
 
-            {tab === 'poste' && (
-              <div className="space-y-3 text-xs">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl space-y-2 border border-neutral-100 dark:border-neutral-800">
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Numéro d'article:</span>
-                    <span className="font-mono font-bold text-black dark:text-white">
-                      {item.itemCode}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Unité de mesure:</span>
-                    <span className="font-semibold text-black dark:text-white">{item.unit}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Prix unitaire bordereau:</span>
-                    <span className="font-mono font-bold text-[#d4522f]">
-                      {formatMoney(item.unitPriceDzd, language)}
-                    </span>
-                  </div>
-                </div>
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl space-y-1 border border-neutral-100 dark:border-neutral-800">
-                  <span className="text-black/55 dark:text-white/55 block">Désignation complète :</span>
-                  <p className="text-black dark:text-white leading-relaxed font-medium">
-                    {item.designation}
-                  </p>
-                </div>
-              </div>
-            )}
+          if (tab === 'quantites') {
+            return (
+              <>
+                <InspectorSection index={0}>
+                  <InspectorBigStat
+                    value={formatMoney(item.totalExecutedDzd, language)}
+                    tone={isOverrun ? 'danger' : pct >= 100 ? 'ok' : 'accent'}
+                    caption={`Prévu contractuel: ${formatMoney(item.totalPlannedDzd, language)}`}
+                    action={{
+                      label: isAr ? 'قيد إنجاز (+10%)' : 'Enregistrer +10% métré',
+                      onClick: () => handleAdvanceExecution(item),
+                    }}
+                  />
+                </InspectorSection>
 
-            {tab === 'quantites' && (
-              <div className="space-y-3 text-xs">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl space-y-2 border border-neutral-100 dark:border-neutral-800">
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Quantité prévue:</span>
-                    <span className="font-mono font-bold text-black dark:text-white">
-                      {item.plannedQty} {item.unit}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Quantité constatée:</span>
-                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                      {item.executedQty} {item.unit}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Montant total prévu:</span>
-                    <span className="font-mono font-semibold text-black dark:text-white">
-                      {formatMoney(item.totalPlannedDzd, language)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Montant exécuté validé:</span>
-                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                      {formatMoney(item.totalExecutedDzd, language)}
-                    </span>
-                  </div>
-                </div>
-                {item.executedQty > item.plannedQty && (
-                  <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 space-y-1">
-                    <div className="flex items-center gap-1.5 font-bold text-xs">
-                      <AlertTriangle size={13} className="text-rose-600 shrink-0" />
-                      <span>
-                        Dépassement de Quantité (+
-                        {Math.round(((item.executedQty - item.plannedQty) / item.plannedQty) * 100)}
-                        %)
-                      </span>
-                    </div>
-                    <p className="text-[10px] leading-tight text-rose-700 dark:text-rose-300">
-                      Conformément au Décret 15-247 (Art. 136), tout volume supérieur à la prévision contractuelle requiert un Avenant validé en Commission des Marchés avant mandatement.
-                    </p>
-                  </div>
+                <InspectorSection index={1} title={isAr ? 'تقدم الكميات' : 'Avancement Quantitatif'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label="Quantité prévue" value={`${item.plannedQty} ${item.unit}`} />
+                    <InspectorKeyValue label="Quantité constatée" value={`${item.executedQty} ${item.unit}`} tone={isOverrun ? 'danger' : 'ok'} />
+                    <InspectorKeyValue label="Taux d'exécution" value={`${pct}%`} tone={isOverrun ? 'danger' : 'accent'} isLast />
+                    <InspectorProgressBar
+                      percent={Math.min(100, pct)}
+                      tone={isOverrun ? 'danger' : pct >= 100 ? 'ok' : 'accent'}
+                      animateKey={item.id}
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+
+                {isOverrun && (
+                  <InspectorSection index={2} title="Alerte Décret 15-247 (Art. 136)">
+                    <InspectorCard>
+                      <InspectorKeyValue label="Dépassement" value={`+${pct - 100}%`} tone="danger" />
+                      <InspectorKeyValue label="Action requise" value="Avenant Commission Marchés" mono={false} isLast />
+                    </InspectorCard>
+                  </InspectorSection>
                 )}
-              </div>
-            )}
+              </>
+            );
+          }
 
-            {tab === 'notes' && (
-              <div className="space-y-3 text-xs">
-                <p className="text-black/55 dark:text-white/55 text-[11px]">
-                  Observations de métré, réserves contradictoires et bordereaux d'attachement :
-                </p>
-                <textarea
-                  rows={6}
+          if (tab === 'notes') {
+            return (
+              <InspectorSection index={0} title={isAr ? 'ملاحظات المتر' : 'Observations & Relevés Géomètre'}>
+                <InspectorNotesField
                   value={inspectorNotes}
-                  onChange={(e) => setInspectorNotes(e.target.value)}
+                  onSave={handleSaveNotes}
                   placeholder="Noter les relevés géomètre, tolérances d'épaisseur, validation maître d'œuvre..."
-                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none"
                 />
-                <AtriumButton
-                  variant="primary"
-                  size="sm"
-                  icon={noteSaved ? <Check size={14} /> : <Save size={14} />}
-                  onClick={handleSaveNotes}
-                >
-                  {noteSaved
-                    ? isAr ? 'تم الحفظ' : 'Observations enregistrées'
-                    : isAr ? 'حفظ' : 'Enregistrer'}
-                </AtriumButton>
-              </div>
-            )}
-          </div>
-        )}
+              </InspectorSection>
+            );
+          }
+
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : 'Actions rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'advance',
+                      label: '+10% Métré',
+                      icon: <TrendingUp className="w-[18px] h-[18px]" />,
+                      primary: true,
+                      onClick: () => handleAdvanceExecution(item),
+                    },
+                    {
+                      id: 'edit',
+                      label: isAr ? 'تعديل' : 'Modifier',
+                      icon: <Edit className="w-[18px] h-[18px]" />,
+                      onClick: () => openEditModal(item),
+                    },
+                    {
+                      id: 'pin',
+                      label: pinnedIds.has(item.id) ? 'Désépingler' : 'Épingler',
+                      icon: <Pin className="w-[18px] h-[18px]" />,
+                      onClick: () => handleTogglePin(item),
+                    },
+                    {
+                      id: 'revision',
+                      label: 'Révision CCAG',
+                      icon: <Calculator className="w-[18px] h-[18px]" />,
+                      onClick: () => setIsPriceRevisionModalOpen(true),
+                    },
+                  ]}
+                />
+              </InspectorSection>
+
+              <InspectorSection index={1} title={isAr ? 'بطاقة البند' : 'Caractéristiques du Poste'}>
+                <InspectorCard>
+                  <InspectorKeyValue label="Numéro d’article" value={item.itemCode} copyText={item.itemCode} />
+                  <InspectorKeyValue label="Désignation" value={item.designation} mono={false} />
+                  <InspectorKeyValue label="Unité de mesure" value={item.unit} />
+                  <InspectorKeyValue label="Prix unitaire bordereau" value={formatMoney(item.unitPriceDzd, language)} tone="accent" isLast />
+                </InspectorCard>
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       {isModalOpen && (

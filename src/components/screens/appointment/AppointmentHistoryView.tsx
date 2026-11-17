@@ -3,6 +3,9 @@ import {
   Printer,
   History,
   Building2,
+  Eye,
+  Trash2,
+  Copy,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -14,7 +17,6 @@ import {
 } from '../../../services/store';
 import { Appointment } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
-import { AtriumButton } from '../../ui/AtriumButton';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -27,6 +29,16 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -327,6 +339,89 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
     [isAr, isEn, branchesById, currentBranch, language]
   );
 
+  const getRowMeta = useCallback(
+    (apt: Appointment): Partial<KineticRowData> => {
+      const isCompleted = apt.status === 'Completed';
+      const isInChair = apt.status === 'InChair';
+      const branch = resolveRecordBranch(apt, branchesById, currentBranch, language);
+      return {
+        subline: `${apt.date} · ${apt.startTime} · ${apt.serviceName}`,
+        categoryLabel: apt.paymentMethod || 'Espèces',
+        statusLabel: isCompleted ? 'Terminé' : isInChair ? 'En Fauteuil' : 'Confirmé',
+        statusVariant: isCompleted ? 'active' : 'warning',
+        metricPrimary: formatMoney(apt.price),
+        metricSecondary: `${apt.durationMinutes} min`,
+        detailCol1: {
+          heading: isAr ? 'الخدمة والتوقيت' : 'Soin & Horaire',
+          primaryText: apt.serviceName,
+          secondaryText: `${apt.date} · ${apt.startTime} (${apt.durationMinutes}m)`,
+          tertiaryText: branch.name,
+        },
+        detailCol2: {
+          heading: isAr ? 'المصففة والوصفة' : 'Styliste & Formule',
+          primaryText: apt.staffName,
+          secondaryText: apt.colorFormula || 'Protocole standard',
+        },
+        detailCol3: {
+          heading: isAr ? 'الدفع والوصول' : 'Règlement',
+          primaryText: formatMoney(apt.price),
+          secondaryText: apt.paymentMethod || 'Non payé',
+        },
+      };
+    },
+    [branchesById, currentBranch, language, isAr]
+  );
+
+  const getFanActions = useCallback(
+    (apt: Appointment): KineticRowFanAction[] => [
+      {
+        id: 'print',
+        label: isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer',
+        icon: <Printer className="w-[15px] h-[15px]" />,
+        onClick: () => window.print(),
+      },
+      {
+        id: 'view',
+        label: isAr ? 'معاينة' : isEn ? 'View' : 'Reçu 80mm',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setReceiptAppointment(apt);
+        },
+      },
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer',
+        icon: <Trash2 className="w-[15px] h-[15px]" />,
+        isDanger: true,
+        onClick: () => {
+          deleteAppointment(apt.id);
+          if (receiptAppointment?.id === apt.id) setReceiptAppointment(null);
+          showToast?.({ type: 'info', title: 'Rendez-vous supprimé', message: apt.clientName });
+        },
+      },
+    ],
+    [isAr, isEn, deleteAppointment, receiptAppointment?.id]
+  );
+
+  const getDetailActions = useCallback(
+    (apt: Appointment): KineticDetailAction[] => [
+      {
+        id: 'view',
+        label: isAr ? 'عرض الوصل' : isEn ? 'Receipt' : 'Voir Ticket',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => setReceiptAppointment(apt),
+      },
+      {
+        id: 'print',
+        label: isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer',
+        icon: <Printer className="w-3.5 h-3.5 text-[#096b40]" />,
+        onClick: () => window.print(),
+      },
+    ],
+    [isAr, isEn]
+  );
+
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: appointments.length > 0,
@@ -424,8 +519,11 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
         />
 
         <UniversalDataCollection<Appointment>
-          data={sortedAppointments}
+          items={sortedAppointments}
           columns={columns}
+          getRowMeta={getRowMeta}
+          getFanActions={getFanActions}
+          getDetailActions={getDetailActions}
           keyExtractor={(a) => a.id}
           viewMode={viewMode}
           hideToolbar
@@ -498,7 +596,8 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
         language={language}
         title={receiptAppointment?.clientName || ''}
         subtitle={receiptAppointment ? `${receiptAppointment.date} · ${receiptAppointment.startTime}` : undefined}
-        avatarText={receiptAppointment ? receiptAppointment.clientName.charAt(0).toUpperCase() : undefined}
+        avatarText={receiptAppointment ? receiptAppointment.clientName.slice(0, 2).toUpperCase() : undefined}
+        categoryLabel={receiptAppointment?.serviceName}
         branchName={
           receiptAppointment
             ? resolveRecordBranch(receiptAppointment, branchesById, currentBranch, language).name
@@ -507,9 +606,14 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
         statusLabel={receiptAppointment ? localizeStatus(receiptAppointment.status, language) : undefined}
         statusClassName={
           receiptAppointment?.status === 'Completed'
-            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-            : 'bg-amber-50 text-amber-700 border border-amber-200'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
         }
+        tabs={[
+          { id: 'overview', label: isAr ? 'التفاصيل' : isEn ? 'Overview' : 'Prestation & Soin' },
+          { id: 'receipt', label: isAr ? 'الوصل' : isEn ? 'Receipt 80mm' : 'Ticket 80mm' },
+          { id: 'audit', label: isAr ? 'التدقيق' : isEn ? 'Audit Log' : 'Journal Audit' },
+        ]}
         onClose={() => setReceiptAppointment(null)}
         onSelectItem={(a) => setReceiptAppointment(a)}
         holdToDelete
@@ -518,48 +622,97 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
           deleteAppointment(a.id);
           setReceiptAppointment(null);
         }}
-        renderBody={(apt) => (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] border border-dashed border-[#D4C8BC] dark:border-[#3A3734] font-mono space-y-2">
-              <div className="text-center border-b border-dashed border-[#D4C8BC] dark:border-[#3A3734] pb-2">
-                <span className="font-bold uppercase block text-black dark:text-white">
-                  {resolveRecordBranch(apt, branchesById, currentBranch, language).name}
-                </span>
-                <span className="text-[11px] text-black/62 dark:text-white/65">Ticket Thermique 80mm</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">Soin :</span>
-                <span className="font-bold text-black dark:text-white">{apt.serviceName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">Styliste :</span>
-                <span>{apt.staffName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">Paiement :</span>
-                <span>{apt.paymentMethod || 'Espèces'}</span>
-              </div>
-              {apt.colorFormula && (
-                <div className="p-2 rounded-lg bg-[#F3EDE7] dark:bg-[#1C1B1A] text-[11px]">
-                  Formule: {apt.colorFormula}
-                </div>
-              )}
-              <div className="pt-2 border-t border-dashed border-[#D4C8BC] dark:border-[#3A3734] flex justify-between font-bold text-sm text-[#d4522f]">
-                <span>TOTAL :</span>
-                <span>{formatMoney(apt.price)}</span>
-              </div>
-            </div>
-            <AtriumButton
-              type="button"
-              variant="primary"
-              icon={<Printer size={14} />}
-              className="w-full justify-center"
-              onClick={() => window.print()}
-            >
-              Imprimer Ticket 80mm
-            </AtriumButton>
-          </div>
-        )}
+        renderBody={(apt, activeTab) => {
+          const branchName = resolveRecordBranch(apt, branchesById, currentBranch, language).name;
+
+          if (activeTab === 'receipt') {
+            return (
+              <>
+                <InspectorSection index={0} title="Montant encaissé">
+                  <InspectorBigStat
+                    value={formatMoney(apt.price)}
+                    tone={apt.status === 'Completed' ? 'ok' : 'accent'}
+                    actionLabel="Imprimer Ticket 80mm"
+                    onAction={() => window.print()}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1} title="Détail ticket thermique">
+                  <InspectorCard>
+                    <InspectorKeyValue label="Établissement" value={branchName} mono={false} />
+                    <InspectorKeyValue label="Soin" value={apt.serviceName} mono={false} />
+                    <InspectorKeyValue label="Styliste" value={apt.staffName} mono={false} />
+                    <InspectorKeyValue label="Règlement" value={apt.paymentMethod || 'Espèces'} mono={false} isLast />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
+
+          if (activeTab === 'audit') {
+            return (
+              <InspectorSection index={0} title="Traçabilité prestation">
+                <InspectorCard>
+                  <InspectorListItem
+                    title={`${apt.serviceName} (${apt.durationMinutes} min)`}
+                    subtitle={`${apt.date} à ${apt.startTime} · ${apt.staffName}`}
+                    badge={{ label: localizeStatus(apt.status, language), tone: apt.status === 'Completed' ? 'ok' : 'warn' }}
+                    isLast={!apt.colorFormula}
+                  />
+                  {apt.colorFormula && (
+                    <InspectorListItem title={`Formule : ${apt.colorFormula}`} subtitle="Protocole technique appliqué" isLast />
+                  )}
+                </InspectorCard>
+              </InspectorSection>
+            );
+          }
+
+          return (
+            <>
+              <InspectorSection index={0} title="Actions rapides">
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'print',
+                      label: 'Imprimer Ticket',
+                      icon: <Printer className="w-[18px] h-[18px]" />,
+                      primary: true,
+                      onClick: () => window.print(),
+                    },
+                    {
+                      id: 'copy',
+                      label: 'Copier Réf.',
+                      icon: <Copy className="w-[18px] h-[18px]" />,
+                      onClick: () => {
+                        const ref = `${apt.clientName} · ${apt.serviceName} (${formatMoney(apt.price)})`;
+                        navigator.clipboard?.writeText(ref);
+                        showToast?.({ type: 'success', title: 'Copié', message: ref });
+                      },
+                    },
+                  ]}
+                />
+              </InspectorSection>
+
+              <InspectorSection index={1} title="Fiche Prestation">
+                <InspectorCard>
+                  <InspectorKeyValue label="Soin" value={apt.serviceName} tone="accent" mono={false} />
+                  <InspectorKeyValue label="Styliste" value={apt.staffName} mono={false} />
+                  <InspectorKeyValue label="Horaire" value={`${apt.date} · ${apt.startTime} (${apt.durationMinutes}m)`} />
+                  <InspectorKeyValue label="Tarif" value={formatMoney(apt.price)} tone="ok" />
+                  <InspectorKeyValue label="Branche" icon={<Building2 className="w-[15px] h-[15px]" />} value={branchName} mono={false} isLast />
+                </InspectorCard>
+              </InspectorSection>
+
+              <InspectorSection index={2}>
+                <InspectorWideButton
+                  label="Imprimer Ticket 80mm"
+                  icon={<Printer className="w-4 h-4" />}
+                  tone="dark"
+                  onClick={() => window.print()}
+                />
+              </InspectorSection>
+            </>
+          );
+        }}
       />
     </div>
   );

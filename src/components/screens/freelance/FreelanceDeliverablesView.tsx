@@ -13,6 +13,7 @@ import {
   Edit2,
   Trash2,
   CheckCircle,
+  Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import {
@@ -42,6 +43,16 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorProgressBar,
+  InspectorBigStat,
+  InspectorNotesField,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -123,6 +134,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
   const [selectedDeliverableItem, setSelectedDeliverableItem] =
     useState<FlatDeliverableItem | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<string>('details');
 
   const [selectedDeliverableIds, setSelectedDeliverableIds] = useState<Set<string>>(
     () => new Set<string>()
@@ -359,6 +371,108 @@ export const FreelanceDeliverablesView: React.FC = () => {
       });
     },
     [startTimer, t, language]
+  );
+
+  const getDeliverableRowMeta = useCallback(
+    (item: FlatDeliverableItem): KineticRowMeta => {
+      const isCreep = item.loggedHours > item.estimatedHours;
+      return {
+        avatarText: item.title.slice(0, 2).toUpperCase(),
+        subtitle: `${item.projectTitle} · ${item.clientName}`,
+        categoryLabel: item.projectTitle,
+        statusTone: isCreep
+          ? 'danger'
+          : item.stage === 'Approved'
+          ? 'ok'
+          : item.stage === 'InProgress'
+          ? 'warn'
+          : 'info',
+        statusLabel: t(STAGE_KEYS[item.stage], language),
+        metricPrimary: `${item.loggedHours}h / ${item.estimatedHours}h`,
+        metricSecondary: item.dueDate,
+      };
+    },
+    [language, t]
+  );
+
+  const getDeliverableFanActions = useCallback(
+    (item: FlatDeliverableItem): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'تفاصيل' : isFr ? 'Détails' : 'Details',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedDeliverableItem(item);
+          setInspectorTab('details');
+        },
+      },
+      {
+        id: 'timer',
+        label: t('free_timer_start', language),
+        icon: <Play className="w-[15px] h-[15px]" />,
+        onClick: () => handleStartTimerForDeliverable(item.project, item.deliverable),
+      },
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : isFr ? 'Supprimer' : 'Delete',
+        icon: <Trash2 className="w-[15px] h-[15px]" />,
+        isDanger: true,
+        onClick: () =>
+          setDeliverableToDelete({
+            projectId: item.projectId,
+            deliverableId: item.id,
+            title: item.title,
+          }),
+      },
+    ],
+    [isAr, isFr, language, t, handleStartTimerForDeliverable]
+  );
+
+  const getDeliverableDetailActions = useCallback(
+    (item: FlatDeliverableItem): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'فتح' : isFr ? 'Ouvrir' : 'Open',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedDeliverableItem(item);
+          setInspectorTab('details');
+        },
+      },
+      {
+        id: 'timer',
+        label: t('free_timer_start', language),
+        icon: <Play className="w-3.5 h-3.5" />,
+        onClick: () => handleStartTimerForDeliverable(item.project, item.deliverable),
+      },
+      {
+        id: 'edit',
+        label: t('free_deliv_edit', language),
+        icon: <Edit2 className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setDeliverableToEdit({ project: item.project, deliverable: item.deliverable });
+          setEditDeliverableForm({
+            title: item.title,
+            description: item.description || '',
+            estimatedHours: item.estimatedHours,
+            dueDate: item.dueDate,
+          });
+        },
+      },
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : isFr ? 'Supprimer' : 'Delete',
+        icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+        onClick: () =>
+          setDeliverableToDelete({
+            projectId: item.projectId,
+            deliverableId: item.id,
+            title: item.title,
+          }),
+      },
+    ],
+    [isAr, isFr, language, t, handleStartTimerForDeliverable]
   );
 
   const deliverableColumns: ColumnDefinition<FlatDeliverableItem>[] = useMemo(
@@ -708,7 +822,6 @@ export const FreelanceDeliverablesView: React.FC = () => {
       <ScreenHeaderBar
         icon={<Kanban size={22} />}
         title={t('free_deliv_title', language)}
-        subtitle={`${flatDeliverablesList.length} ${isAr ? 'مهام' : isFr ? 'livrables' : 'deliverables'} · ${freelanceProjects.length} ${isAr ? 'مشاريع' : isFr ? 'projets' : 'projects'}`}
         secondaryActions={
           <div className="flex items-center gap-2 flex-wrap">
             <AtriumButton
@@ -931,9 +1044,10 @@ export const FreelanceDeliverablesView: React.FC = () => {
         ) : viewLayout === 'collection' ? (
           <UniversalDataCollection<FlatDeliverableItem>
             hideToolbar
-            data={sortedDeliverables}
+            items={sortedDeliverables}
             keyExtractor={(item) => item.id}
-            viewMode={collectionViewMode}
+            viewMode={collectionViewMode === 'grid' ? 'grid' : 'list'}
+            defaultViewMode={collectionViewMode === 'grid' ? 'grid' : 'list'}
             columns={deliverableColumns}
             isLoading={isSyncing || networkMode === 'force_skeleton'}
             isOffline={networkMode === 'offline'}
@@ -947,96 +1061,19 @@ export const FreelanceDeliverablesView: React.FC = () => {
               setDeliverableSortDir(dir);
             }}
             openItemId={activeInspectorItem?.id ?? null}
-            renderCard={(item) => {
-              const isCreep = item.loggedHours > item.estimatedHours;
-              const pct = Math.min(
-                100,
-                Math.round((item.loggedHours / (item.estimatedHours || 1)) * 100)
-              );
-              return (
-                <div className="flex flex-col justify-between w-full h-full space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 truncate max-w-[130px]">
-                      {item.projectTitle}
-                    </span>
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0 ${
-                        item.stage === 'Approved'
-                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                          : item.stage === 'InProgress'
-                          ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
-                          : item.stage === 'ClientReview'
-                          ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
-                          : 'bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75'
-                      }`}
-                    >
-                      {t(STAGE_KEYS[item.stage], language)}
-                    </span>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-black dark:text-white leading-snug truncate">
-                      {item.title}
-                    </h4>
-                    <div className="text-[11px] text-[#d4522f] font-medium mt-0.5 truncate">
-                      {item.clientName}
-                    </div>
-                    {item.description && (
-                      <p className="text-[11px] text-black/55 dark:text-white/75 mt-1 line-clamp-2">
-                        {item.description}
-                      </p>
-                    )}
-                  </div>
-                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-black/55 dark:text-white/55 flex items-center gap-1 text-[11px]">
-                        <Clock size={11} />
-                        {t('free_clients_ph_hours_label', language)}
-                      </span>
-                      <span
-                        className={`tabular-nums font-semibold text-xs ${
-                          isCreep ? 'text-rose-600 font-bold' : 'text-black/70 dark:text-white/75'
-                        }`}
-                      >
-                        {item.loggedHours}h / {item.estimatedHours}h ({pct}%)
-                      </span>
-                    </div>
-                    <div className="w-full h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all ${
-                          isCreep ? 'bg-rose-500' : pct >= 100 ? 'bg-emerald-500' : 'bg-[#d4522f]'
-                        }`}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55 pt-1">
-                      <span className="flex items-center gap-1">
-                        <Calendar size={11} />
-                        {item.dueDate}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleStartTimerForDeliverable(item.project, item.deliverable);
-                        }}
-                        className="px-2 py-0.5 rounded-md bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-semibold text-[10px] flex items-center gap-1 hover:bg-[#F8DFD4] cursor-pointer"
-                      >
-                        <Play size={10} />
-                        <span>{t('free_timer_start', language)}</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            }}
             onItemClick={(item, el) => {
               setDrawerOpenerEl(el || null);
               setSelectedDeliverableItem(item);
+              setInspectorTab('details');
             }}
             onViewDetails={(item, el) => {
               setDrawerOpenerEl(el || null);
               setSelectedDeliverableItem(item);
+              setInspectorTab('details');
             }}
+            getRowMeta={getDeliverableRowMeta}
+            getFanActions={getDeliverableFanActions}
+            getDetailActions={getDeliverableDetailActions}
             onEdit={(item) => {
               setDeliverableToEdit({ project: item.project, deliverable: item.deliverable });
               setEditDeliverableForm({
@@ -1287,7 +1324,10 @@ export const FreelanceDeliverablesView: React.FC = () => {
             ? `${activeInspectorItem.projectTitle} · ${activeInspectorItem.clientName}`
             : ''
         }
-        avatarText={activeInspectorItem ? activeInspectorItem.title.charAt(0).toUpperCase() : 'D'}
+        categoryLabel={activeInspectorItem?.projectTitle || 'Deliverable'}
+        avatarText={
+          activeInspectorItem ? activeInspectorItem.title.slice(0, 2).toUpperCase() : 'DL'
+        }
         avatarColor="#d4522f"
         branchName={
           activeInspectorItem
@@ -1298,7 +1338,26 @@ export const FreelanceDeliverablesView: React.FC = () => {
         statusLabel={
           activeInspectorItem ? t(STAGE_KEYS[activeInspectorItem.stage], language) : undefined
         }
-        onSelectItem={(item) => setSelectedDeliverableItem(item)}
+        statusClassName={
+          activeInspectorItem?.stage === 'Approved'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : activeInspectorItem && activeInspectorItem.loggedHours > activeInspectorItem.estimatedHours
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            : activeInspectorItem?.stage === 'InProgress'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+        }
+        tabs={[
+          { id: 'details', label: isAr ? 'التفاصيل' : isFr ? 'Détails' : 'Details' },
+          { id: 'hours', label: isAr ? 'الساعات' : isFr ? 'Heures' : 'Hours & Scope' },
+          { id: 'stage', label: isAr ? 'المرحلة' : isFr ? 'Étape' : 'Workflow' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={setInspectorTab}
+        onSelectItem={(item) => {
+          setSelectedDeliverableItem(item);
+          setInspectorTab('details');
+        }}
         onClose={() => setSelectedDeliverableItem(null)}
         onDelete={(item) =>
           setDeliverableToDelete({
@@ -1308,74 +1367,49 @@ export const FreelanceDeliverablesView: React.FC = () => {
           })
         }
         holdToDelete={false}
-        renderBody={(item) => {
+        renderBody={(item, tab) => {
           const isCreep = item.loggedHours > item.estimatedHours;
           const pct = Math.min(100, Math.round((item.loggedHours / (item.estimatedHours || 1)) * 100));
-          return (
-            <div className="space-y-5 text-xs">
-              <div className="flex items-center gap-2 flex-wrap">
-                <AtriumButton
-                  type="button"
-                  variant="primary"
-                  size="sm"
-                  icon={<Play size={13} />}
-                  onClick={() => handleStartTimerForDeliverable(item.project, item.deliverable)}
-                >
-                  {t('free_timer_start', language)}
-                </AtriumButton>
-                <AtriumButton
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  icon={<Edit2 size={13} />}
-                  onClick={() => {
-                    setDeliverableToEdit({ project: item.project, deliverable: item.deliverable });
-                    setEditDeliverableForm({
-                      title: item.title,
-                      description: item.description || '',
-                      estimatedHours: item.estimatedHours,
-                      dueDate: item.dueDate,
-                    });
-                  }}
-                >
-                  {t('free_deliv_edit', language)}
-                </AtriumButton>
-              </div>
-
-              {item.description && (
-                <div className="p-4 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800 text-black/80 dark:text-white/80 leading-relaxed">
-                  {item.description}
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900/40">
-                  <span className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider block">
-                    {isAr ? 'الساعات المسجلة / المقدرة' : isFr ? 'Heures' : 'Hours'}
-                  </span>
-                  <span
-                    className={`text-base font-bold tabular-nums ${
-                      isCreep ? 'text-rose-600' : 'text-black dark:text-white'
-                    }`}
-                  >
-                    {item.loggedHours}h / {item.estimatedHours}h ({pct}%)
-                  </span>
-                </div>
-                <div className="p-3 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900/40">
-                  <span className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider block">
-                    {t('free_deliv_field_due_date', language)}
-                  </span>
-                  <span className="text-base font-bold text-black dark:text-white tabular-nums">
-                    {item.dueDate}
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="font-semibold text-black dark:text-white block">
-                  {t('free_deliv_field_stage', language)}
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          if (tab === 'hours') {
+            return (
+              <>
+                <InspectorSection index={0}>
+                  <InspectorBigStat
+                    value={`${item.loggedHours}h / ${item.estimatedHours}h`}
+                    tone={isCreep ? 'danger' : pct >= 100 ? 'ok' : 'accent'}
+                    caption={`${pct}% ${isAr ? 'مستنفد من الميزانية' : isFr ? 'du budget horaire' : 'of estimated budget'}`}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'مؤشر الإنجاز' : isFr ? 'Progression' : 'Hours Progress'}>
+                  <InspectorCard>
+                    <InspectorProgressBar
+                      percent={pct}
+                      tone={isCreep ? 'danger' : pct >= 100 ? 'ok' : 'accent'}
+                      animateKey={item.id}
+                    />
+                    <div className="mt-3">
+                      <InspectorKeyValue
+                        label={t('free_deliv_field_est_hours', language)}
+                        value={`${item.estimatedHours}h`}
+                        mono
+                      />
+                      <InspectorKeyValue
+                        label={t('free_dash_logged_label', language)}
+                        value={`${item.loggedHours}h`}
+                        mono
+                        tone={isCreep ? 'danger' : 'default'}
+                        isLast
+                      />
+                    </div>
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
+          if (tab === 'stage') {
+            return (
+              <InspectorSection index={0} title={t('free_deliv_field_stage', language)}>
+                <div className="grid grid-cols-2 gap-2">
                   {STAGES.map((st) => {
                     const active = item.stage === st.id;
                     return (
@@ -1383,10 +1417,10 @@ export const FreelanceDeliverablesView: React.FC = () => {
                         key={st.id}
                         type="button"
                         onClick={() => updateDeliverableStage(item.projectId, item.id, st.id)}
-                        className={`px-3 py-2 rounded-xl border text-xs font-semibold cursor-pointer transition-colors ${
+                        className={`px-3 py-2.5 rounded-xl border text-xs font-semibold cursor-pointer transition-colors ${
                           active
-                            ? 'bg-[#d4522f]/12 text-[#d4522f] border-[#d4522f]/40'
-                            : 'bg-white dark:bg-neutral-900 border-[#E6DED6] dark:border-neutral-800 text-black/70 dark:text-white/75 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800'
+                            ? 'bg-[#d4522f] text-white border-[#d4522f]'
+                            : 'bg-[#F3EDE7] dark:bg-neutral-900 border-[#E6DED6] dark:border-neutral-800 text-black/75 dark:text-white/75 hover:border-[#d4522f]/50'
                         }`}
                       >
                         {t(STAGE_KEYS[st.id], language)}
@@ -1394,8 +1428,54 @@ export const FreelanceDeliverablesView: React.FC = () => {
                     );
                   })}
                 </div>
-              </div>
-            </div>
+              </InspectorSection>
+            );
+          }
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : isFr ? 'Actions Rapides' : 'Quick Actions'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'timer',
+                      label: t('free_timer_start', language),
+                      icon: <Play size={16} />,
+                      primary: true,
+                      onClick: () => handleStartTimerForDeliverable(item.project, item.deliverable),
+                    },
+                    {
+                      id: 'edit',
+                      label: t('free_deliv_edit', language),
+                      icon: <Edit2 size={16} />,
+                      onClick: () => {
+                        setDeliverableToEdit({ project: item.project, deliverable: item.deliverable });
+                        setEditDeliverableForm({
+                          title: item.title,
+                          description: item.description || '',
+                          estimatedHours: item.estimatedHours,
+                          dueDate: item.dueDate,
+                        });
+                      },
+                    },
+                  ]}
+                />
+              </InspectorSection>
+              <InspectorSection index={1} title={isAr ? 'معلومات التسليمة' : isFr ? 'Détails Livrable' : 'Deliverable Details'}>
+                <InspectorCard>
+                  <InspectorKeyValue label={t('free_deliv_field_project', language)} value={item.projectTitle} />
+                  <InspectorKeyValue label={t('free_invoice_client', language)} value={item.clientName} />
+                  <InspectorKeyValue label={t('free_deliv_field_due_date', language)} value={item.dueDate} mono isLast />
+                </InspectorCard>
+              </InspectorSection>
+              <InspectorSection index={2} title={t('free_deliv_field_tags', language)}>
+                <InspectorNotesField
+                  value={item.description || ''}
+                  onSave={(next) =>
+                    updateDeliverable(item.projectId, item.id, { description: next })
+                  }
+                />
+              </InspectorSection>
+            </>
           );
         }}
       />

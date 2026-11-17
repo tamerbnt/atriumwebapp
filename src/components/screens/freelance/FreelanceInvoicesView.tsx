@@ -10,7 +10,6 @@ import {
   Trash2,
   AlertTriangle,
   Eye,
-  Calendar,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatCurrencyAmount } from '../../../utils/rules';
@@ -32,6 +31,16 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -81,6 +90,7 @@ export const FreelanceInvoicesView: React.FC = () => {
 
   const [selectedInvoice, setSelectedInvoice] = useState<FreelanceInvoice | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<string>('summary');
   const [previewInvoice, setPreviewInvoice] = useState<FreelanceInvoice | null>(null);
   const [invoiceToDelete, setInvoiceToDelete] = useState<FreelanceInvoice | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -290,6 +300,99 @@ export const FreelanceInvoicesView: React.FC = () => {
       });
     }
   }, [freelanceClients, timeLogs, billUnbilledHours, isAr]);
+
+  const getInvoiceRowMeta = useCallback(
+    (inv: FreelanceInvoice): KineticRowMeta => ({
+      avatarText: inv.clientName.slice(0, 2).toUpperCase(),
+      subtitle: `${inv.clientName}${inv.clientCompany ? ` · ${inv.clientCompany}` : ''}`,
+      categoryLabel: inv.currency,
+      statusTone:
+        inv.status === 'Paid'
+          ? 'ok'
+          : inv.status === 'Overdue'
+          ? 'danger'
+          : inv.status === 'Sent'
+          ? 'info'
+          : 'warn',
+      statusLabel:
+        inv.status === 'Paid'
+          ? t('free_invoice_status_paid', language)
+          : inv.status === 'Overdue'
+          ? t('free_invoice_status_overdue', language)
+          : inv.status === 'Sent'
+          ? t('free_invoice_status_sent', language)
+          : t('free_invoice_status_draft', language),
+      metricPrimary: formatCurrencyAmount(inv.totalAmount, inv.currency),
+      metricSecondary: inv.dueDate,
+    }),
+    [language, t]
+  );
+
+  const getInvoiceFanActions = useCallback(
+    (inv: FreelanceInvoice): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'تفاصيل' : isFr ? 'Détails' : 'Details',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedInvoice(inv);
+          setInspectorTab('summary');
+        },
+      },
+      {
+        id: 'print',
+        label: t('free_inv_doc_print', language),
+        icon: <Printer className="w-[15px] h-[15px]" />,
+        onClick: () => setPreviewInvoice(inv),
+      },
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : isFr ? 'Supprimer' : 'Delete',
+        icon: <Trash2 className="w-[15px] h-[15px]" />,
+        isDanger: true,
+        onClick: () => setInvoiceToDelete(inv),
+      },
+    ],
+    [isAr, isFr, language, t]
+  );
+
+  const getInvoiceDetailActions = useCallback(
+    (inv: FreelanceInvoice): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'فتح' : isFr ? 'Ouvrir' : 'Open',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedInvoice(inv);
+          setInspectorTab('summary');
+        },
+      },
+      {
+        id: 'print',
+        label: t('free_inv_doc_print', language),
+        icon: <Printer className="w-3.5 h-3.5" />,
+        onClick: () => setPreviewInvoice(inv),
+      },
+      ...(inv.status !== 'Paid'
+        ? [
+            {
+              id: 'mark_paid',
+              label: t('free_inv_doc_mark_paid_btn', language),
+              icon: <CheckCircle className="w-3.5 h-3.5" />,
+              onClick: () => updateInvoiceStatus(inv.id, 'Paid'),
+            },
+          ]
+        : []),
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : isFr ? 'Supprimer' : 'Delete',
+        icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+        onClick: () => setInvoiceToDelete(inv),
+      },
+    ],
+    [isAr, isFr, language, t, updateInvoiceStatus]
+  );
 
   const invoiceColumns: ColumnDefinition<FreelanceInvoice>[] = useMemo(
     () => [
@@ -638,7 +741,6 @@ export const FreelanceInvoicesView: React.FC = () => {
       <ScreenHeaderBar
         icon={<FileText size={22} />}
         title={t('free_inv_title', language)}
-        subtitle={`${freelanceInvoices.length} ${t('free_inv_title', language).toLowerCase()}`}
         secondaryActions={
           <AtriumButton
             type="button"
@@ -794,9 +896,10 @@ export const FreelanceInvoicesView: React.FC = () => {
 
         <UniversalDataCollection<FreelanceInvoice>
           hideToolbar
-          data={sortedInvoices}
+          items={sortedInvoices}
           keyExtractor={(inv) => inv.id}
-          viewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
           columns={invoiceColumns}
           isLoading={isSyncing || networkMode === 'force_skeleton'}
           isOffline={networkMode === 'offline'}
@@ -810,87 +913,19 @@ export const FreelanceInvoicesView: React.FC = () => {
             setInvoiceSortDir(dir);
           }}
           openItemId={activeInspectorInvoice?.id ?? null}
-          renderCard={(inv) => (
-            <div className="flex flex-col justify-between w-full h-full space-y-3">
-              <div className="flex items-start justify-between gap-2">
-                <span className="font-mono font-bold text-black dark:text-white text-sm">
-                  {inv.invoiceNumber}
-                </span>
-                <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0 ${
-                    inv.status === 'Paid'
-                      ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200'
-                      : inv.status === 'Overdue'
-                      ? 'text-rose-700 bg-rose-50 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200'
-                      : inv.status === 'Sent'
-                      ? 'text-blue-700 bg-blue-50 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-200'
-                      : 'text-black/70 bg-neutral-100 dark:bg-neutral-800 dark:text-white/75'
-                  }`}
-                >
-                  {inv.status === 'Paid'
-                    ? t('free_invoice_status_paid', language)
-                    : inv.status === 'Overdue'
-                    ? t('free_invoice_status_overdue', language)
-                    : inv.status === 'Sent'
-                    ? t('free_invoice_status_sent', language)
-                    : t('free_invoice_status_draft', language)}
-                </span>
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-black dark:text-white leading-snug truncate">
-                  {inv.clientName}
-                </h4>
-                <div className="text-[11px] text-black/55 dark:text-white/55 truncate mt-0.5">
-                  {inv.clientCompany || t('free_inv_direct_client', language)}
-                </div>
-              </div>
-              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-black/55 dark:text-white/55 text-[11px] flex items-center gap-1">
-                    <Calendar size={11} />
-                    {t('free_inv_table_due', language)}: {inv.dueDate}
-                  </span>
-                  <span className="font-mono font-black text-sm text-[#d4522f] tabular-nums">
-                    {formatCurrencyAmount(inv.totalAmount, inv.currency)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-end gap-1.5 pt-1">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setPreviewInvoice(inv);
-                    }}
-                    className="px-2.5 py-1 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-black/70 dark:text-white/75 text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
-                  >
-                    <Eye size={11} />
-                    <span>{t('free_inv_doc_print', language)}</span>
-                  </button>
-                  {inv.status !== 'Paid' && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        updateInvoiceStatus(inv.id, 'Paid');
-                      }}
-                      className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 hover:bg-emerald-100 text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
-                    >
-                      <CheckCircle size={11} />
-                      <span>{t('free_inv_doc_mark_paid_btn', language)}</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
           onItemClick={(inv, el) => {
             setDrawerOpenerEl(el || null);
             setSelectedInvoice(inv);
+            setInspectorTab('summary');
           }}
           onViewDetails={(inv, el) => {
             setDrawerOpenerEl(el || null);
             setSelectedInvoice(inv);
+            setInspectorTab('summary');
           }}
+          getRowMeta={getInvoiceRowMeta}
+          getFanActions={getInvoiceFanActions}
+          getDetailActions={getInvoiceDetailActions}
           onPinToggle={(idOrItem) => {
             const id = typeof idOrItem === 'string' ? idOrItem : idOrItem.id;
             const target = freelanceInvoices.find((i) => i.id === id);
@@ -971,7 +1006,12 @@ export const FreelanceInvoicesView: React.FC = () => {
               }`
             : ''
         }
-        avatarText="F"
+        categoryLabel={activeInspectorInvoice?.currency || 'EUR'}
+        avatarText={
+          activeInspectorInvoice
+            ? activeInspectorInvoice.clientName.slice(0, 2).toUpperCase()
+            : 'IN'
+        }
         avatarColor="#d4522f"
         branchName={
           activeInspectorInvoice
@@ -989,87 +1029,181 @@ export const FreelanceInvoicesView: React.FC = () => {
               : t('free_invoice_status_draft', language)
             : undefined
         }
-        onSelectItem={(inv) => setSelectedInvoice(inv)}
+        statusClassName={
+          activeInspectorInvoice?.status === 'Paid'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : activeInspectorInvoice?.status === 'Overdue'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            : activeInspectorInvoice?.status === 'Sent'
+            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+        }
+        tabs={[
+          { id: 'summary', label: isAr ? 'الملخص' : isFr ? 'Synthèse' : 'Summary' },
+          { id: 'items', label: isAr ? 'البنود' : isFr ? 'Lignes' : 'Line Items' },
+          { id: 'payment', label: isAr ? 'الدفع' : isFr ? 'Paiement' : 'Settlement' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={setInspectorTab}
+        onSelectItem={(inv) => {
+          setSelectedInvoice(inv);
+          setInspectorTab('summary');
+        }}
         onClose={() => setSelectedInvoice(null)}
         onDelete={(inv) => setInvoiceToDelete(inv)}
         holdToDelete={false}
-        renderBody={(inv) => (
-          <div className="space-y-5 text-xs">
-            <div className="flex items-center gap-2 flex-wrap">
-              <AtriumButton
-                type="button"
-                variant="primary"
-                size="sm"
-                icon={<Printer size={13} />}
-                onClick={() => setPreviewInvoice(inv)}
-              >
-                {t('free_inv_doc_print', language)}
-              </AtriumButton>
-              {inv.status !== 'Paid' && (
-                <AtriumButton
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  icon={<CheckCircle size={13} />}
-                  onClick={() => updateInvoiceStatus(inv.id, 'Paid')}
+        renderBody={(inv, tab) => {
+          if (tab === 'items') {
+            return (
+              <>
+                <InspectorSection index={0}>
+                  <InspectorBigStat
+                    value={formatCurrencyAmount(inv.totalAmount, inv.currency)}
+                    tone="accent"
+                    caption={`${inv.items.length} ${t('free_deliv_title', language)} · ${t('free_inv_table_due', language)} ${inv.dueDate}`}
+                  />
+                </InspectorSection>
+                <InspectorSection
+                  index={1}
+                  title={`${t('free_deliv_title', language)} (${inv.items.length})`}
                 >
-                  {t('free_inv_doc_mark_paid_btn', language)}
-                </AtriumButton>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900/40">
-                <span className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider block">
-                  {t('free_inv_table_amount', language)}
-                </span>
-                <span className="text-lg font-mono font-bold text-[#d4522f] tabular-nums">
-                  {formatCurrencyAmount(inv.totalAmount, inv.currency)}
-                </span>
-              </div>
-              <div className="p-3 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900/40">
-                <span className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider block">
-                  {t('free_inv_table_due', language)}
-                </span>
-                <span className="text-base font-bold text-black dark:text-white tabular-nums">
-                  {inv.dueDate}
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <span className="font-semibold text-black dark:text-white block">
-                {t('free_deliv_title', language)} ({inv.items.length})
-              </span>
-              <div className="space-y-1.5">
-                {inv.items.map((item) => (
-                  <div
-                    key={item.id}
-                    className="p-2.5 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between gap-2"
-                  >
-                    <div className="min-w-0">
-                      <div className="font-medium text-black dark:text-white truncate">
-                        {item.description}
-                      </div>
-                      <div className="text-[10px] text-black/55 dark:text-white/55 tabular-nums">
-                        {item.quantity} × {formatCurrencyAmount(item.unitRate, inv.currency)}
-                      </div>
-                    </div>
-                    <span className="font-mono font-bold text-black dark:text-white shrink-0 tabular-nums">
-                      {formatCurrencyAmount(item.total, inv.currency)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {inv.notes && (
-              <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-[11px] text-black/70 dark:text-white/75">
-                {inv.notes}
-              </div>
-            )}
-          </div>
-        )}
+                  <InspectorCard>
+                    {inv.items.map((item, idx) => (
+                      <InspectorListItem
+                        key={item.id}
+                        title={item.description}
+                        subtitle={`${item.quantity} × ${formatCurrencyAmount(item.unitRate, inv.currency)}`}
+                        metaRight={formatCurrencyAmount(item.total, inv.currency)}
+                        isLast={idx === inv.items.length - 1}
+                      />
+                    ))}
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
+          if (tab === 'payment') {
+            return (
+              <>
+                <InspectorSection
+                  index={0}
+                  title={isAr ? 'بيانات التحويل البنكي' : isFr ? 'Coordonnées Bancaires' : 'Bank & Settlement Details'}
+                >
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'البنك' : isFr ? 'Banque' : 'Bank'}
+                      value={inv.paymentDetails?.bankName || 'BEA / Euro Wire'}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'صاحب الحساب' : isFr ? 'Titulaire' : 'Account Holder'}
+                      value={inv.paymentDetails?.accountHolder || inv.clientName}
+                    />
+                    <InspectorKeyValue
+                      label="RIB / IBAN"
+                      value={inv.paymentDetails?.ribOrIban || '—'}
+                      mono
+                      copyText={inv.paymentDetails?.ribOrIban}
+                    />
+                    <InspectorKeyValue
+                      label="SWIFT / BIC"
+                      value={inv.paymentDetails?.swift || 'BEXADZAL'}
+                      mono
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+                {inv.status !== 'Paid' && (
+                  <InspectorSection index={1}>
+                    <InspectorWideButton
+                      label={t('free_inv_doc_mark_paid_btn', language)}
+                      icon={<CheckCircle size={14} />}
+                      tone="accent"
+                      onClick={() => updateInvoiceStatus(inv.id, 'Paid')}
+                    />
+                  </InspectorSection>
+                )}
+              </>
+            );
+          }
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : isFr ? 'Actions Rapides' : 'Quick Actions'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'print',
+                      label: t('free_inv_doc_print', language),
+                      icon: <Printer size={16} />,
+                      primary: true,
+                      onClick: () => setPreviewInvoice(inv),
+                    },
+                    ...(inv.status !== 'Paid'
+                      ? [
+                          {
+                            id: 'paid',
+                            label: t('free_inv_doc_mark_paid_btn', language),
+                            icon: <CheckCircle size={16} />,
+                            onClick: () => updateInvoiceStatus(inv.id, 'Paid'),
+                          },
+                        ]
+                      : []),
+                    ...(inv.status === 'Draft'
+                      ? [
+                          {
+                            id: 'sent',
+                            label: t('free_invoice_status_sent', language),
+                            icon: <Send size={16} />,
+                            onClick: () => updateInvoiceStatus(inv.id, 'Sent'),
+                          },
+                        ]
+                      : []),
+                  ]}
+                />
+              </InspectorSection>
+              <InspectorSection index={1}>
+                <InspectorBigStat
+                  value={formatCurrencyAmount(inv.totalAmount, inv.currency)}
+                  tone={inv.status === 'Paid' ? 'ok' : inv.status === 'Overdue' ? 'danger' : 'accent'}
+                  caption={`${t('free_inv_table_due', language)}: ${inv.dueDate}`}
+                />
+              </InspectorSection>
+              <InspectorSection
+                index={2}
+                title={isAr ? 'ملخص الفاتورة' : isFr ? 'Détails Facture' : 'Invoice Breakdown'}
+              >
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={t('free_invoice_client', language)}
+                    value={inv.clientName}
+                  />
+                  <InspectorKeyValue
+                    label={t('free_inv_table_date', language)}
+                    value={inv.issueDate}
+                    mono
+                  />
+                  <InspectorKeyValue
+                    label={t('free_inv_table_due', language)}
+                    value={inv.dueDate}
+                    mono
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'الضريبة' : isFr ? 'TVA' : 'Tax'}
+                    value={`${inv.taxPercent}% (${formatCurrencyAmount(inv.taxAmount, inv.currency)})`}
+                    mono
+                    isLast={!inv.notes}
+                  />
+                  {inv.notes && (
+                    <InspectorKeyValue
+                      label={t('free_inv_notes_terms', language)}
+                      value={inv.notes}
+                      isLast
+                    />
+                  )}
+                </InspectorCard>
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       {/* Create Invoice Modal */}

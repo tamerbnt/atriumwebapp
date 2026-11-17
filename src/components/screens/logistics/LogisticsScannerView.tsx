@@ -10,6 +10,7 @@ import {
   Volume2,
   Boxes,
   MapPin,
+  Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { LogisticsShipment } from '../../../types';
@@ -28,6 +29,15 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -352,6 +362,82 @@ export const LogisticsScannerView: React.FC = () => {
     showToast(isAr ? 'تم تصدير قائمة الفرز' : 'Export quai de tri généré', 'info');
   }, [sortedShipments, branchesById, currentBranch, language, isAr]);
 
+  const getScannerRowMeta = useCallback(
+    (s: LogisticsShipment): KineticRowMeta => ({
+      avatarText: (s.recipientName || 'AW').slice(0, 2).toUpperCase(),
+      subtitle: `${s.trackingCode} · ${s.destinationWilaya}`,
+      categoryLabel: s.deliveryMode === 'StopDesk' ? 'Stop-Desk' : isAr ? 'منزلي' : 'Domicile',
+      statusTone: s.status === 'Delivered' || s.status === 'Sorted' ? 'ok' : 'warn',
+      statusLabel: localizeStatus(s.status, language),
+      metricPrimary: `${s.weightKg} kg`,
+      metricSecondary: resolveRecordBranch(s, branchesById, currentBranch, language).name,
+    }),
+    [isAr, language, branchesById, currentBranch]
+  );
+
+  const getScannerFanActions = useCallback(
+    (s: LogisticsShipment): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'تفاصيل' : 'Détails',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedShipment(s);
+          setInspectorTab('colis');
+        },
+      },
+      {
+        id: 'sort',
+        label: isAr ? 'فرز' : 'Aiguiller',
+        icon: <Check className="w-[15px] h-[15px]" />,
+        onClick: () => handleScanCode(s.trackingCode),
+      },
+      {
+        id: 'barcode',
+        label: 'Barcode',
+        icon: <Printer className="w-[15px] h-[15px]" />,
+        onClick: () =>
+          showToast(
+            isAr ? `طباعة ملصق الباركود للطرد ${s.trackingCode}` : `Étiquette AWB générée pour ${s.trackingCode}`,
+            'info'
+          ),
+      },
+    ],
+    [isAr, handleScanCode]
+  );
+
+  const getScannerDetailActions = useCallback(
+    (s: LogisticsShipment): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'فتح البطاقة' : 'Ouvrir Colis',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedShipment(s);
+          setInspectorTab('colis');
+        },
+      },
+      {
+        id: 'sort',
+        label: isAr ? 'فرز وتوجيه' : 'Aiguiller Quai',
+        icon: <Check className="w-3.5 h-3.5" />,
+        onClick: () => handleScanCode(s.trackingCode),
+      },
+      {
+        id: 'share',
+        label: isAr ? 'مشاركة' : 'Partager',
+        icon: <Share2 className="w-3.5 h-3.5" />,
+        onClick: () =>
+          showToast(
+            isAr ? 'تم نسخ رابط تتبع الشحنة' : `Lien de tracking ${s.trackingCode} copié`,
+            'success'
+          ),
+      },
+    ],
+    [isAr, handleScanCode]
+  );
+
   const columns: ColumnDefinition<LogisticsShipment>[] = useMemo(
     () => [
       {
@@ -461,11 +547,6 @@ export const LogisticsScannerView: React.FC = () => {
       <ScreenHeaderBar
         icon={<ScanLine size={22} />}
         title={isAr ? 'الماسح' : 'Scanner'}
-        subtitle={
-          isAr
-            ? 'الفرز السريع والأكياس المختومة · إشارة صوتية مفعلة'
-            : 'Tri haute vitesse & scellés sacs-navette · Audio Chime Active'
-        }
         secondaryActions={
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 flex items-center gap-1">
@@ -496,156 +577,159 @@ export const LogisticsScannerView: React.FC = () => {
       />
 
       <ScreenKpiBanner
-        title={isAr ? 'مؤشرات الفرز والأكياس' : isEn ? 'Hub Sorting & Bags Overview' : 'Indicateurs Tri Quai & Sacs-Navette'}
-        cards={[
-          {
-            id: 'sorted',
-            label: isAr ? 'طرود مفرزة' : isEn ? 'Sorted Shipments' : 'Colis Triés Quai',
-            value: shipments.filter((s) => s.status === 'Sorted').length,
-            badgeText: `${shipments.length} ${isAr ? 'إجمالي' : isEn ? 'total' : 'colis'}`,
-            sublabel: isAr ? 'جاهزة للتوجيه في الأكياس' : isEn ? 'Ready for shuttle bags' : 'Aiguillés sur lignes wilayas',
-            tone: 'primary',
-          },
-          {
-            id: 'hub',
-            label: isAr ? 'طرود قيد الانتظار' : isEn ? 'Pending Hub Intake' : 'En Attente de Tri',
-            value: shipments.filter((s) => s.status === 'ReceivedAtHub').length,
-            badgeText: `${scanHistory.filter((h) => h.status === 'success').length} scans`,
-            sublabel: isAr ? 'طرود مسجلة عند الاستقبال' : isEn ? 'Awaiting barcode sort' : 'Réceptionnés au hub central',
-            tone: 'neutral',
-          },
-          {
-            id: 'bags',
-            label: isAr ? 'الأكياس المختومة' : isEn ? 'Sealed Bags' : 'Sacs-Navette Scellés',
-            value: `${bags.filter((b) => b.status === 'Sealed').length}/${bags.length}`,
-            badgeText: activeBag ? `${activeBag.totalWeightKg} kg` : '25 kg max',
-            sublabel: isAr ? 'نسبة إحكام الأكياس الأمنية' : isEn ? 'Sealed shuttle bags ratio' : 'Scellés de sécurité apposés',
-            tone: 'dark',
-          },
-        ]}
+        heading={isAr ? 'مؤشرات الفرز والأكياس' : isEn ? 'Hub Sorting & Bags Overview' : 'Indicateurs Tri Quai & Sacs-Navette'}
+        language={language}
+        primaryCard={{
+          label: isAr ? 'طرود مفرزة' : isEn ? 'Sorted Shipments' : 'Colis Triés Quai',
+          badgeText: isAr ? 'مفرز' : isEn ? 'Sorted' : 'Triés',
+          count: shipments.filter((s) => s.status === 'Sorted').length,
+          tone: 'emerald',
+          isActive: statusFilter === 'Sorted',
+          onToggle: () => setStatusFilter((prev) => (prev === 'Sorted' ? 'All' : 'Sorted')),
+        }}
+        secondaryCard={{
+          label: isAr ? 'طرود قيد الانتظار' : isEn ? 'Pending Hub Intake' : 'En Attente de Tri',
+          badgeText: isAr ? 'بالمستودع' : isEn ? 'At Hub' : 'Au Hub',
+          count: shipments.filter((s) => s.status === 'ReceivedAtHub').length,
+          tone: 'terracotta',
+          isActive: statusFilter === 'ReceivedAtHub',
+          onToggle: () => setStatusFilter((prev) => (prev === 'ReceivedAtHub' ? 'All' : 'ReceivedAtHub')),
+        }}
+        darkCard={{
+          label: isAr ? 'الأكياس المختومة' : isEn ? 'Sealed Bags' : 'Sacs-Navette Scellés',
+          badgeCount: activeBag ? Math.round(activeBag.totalWeightKg) : 0,
+          badgeSuffix: ' kg',
+          valueCount: bags.filter((b) => b.status === 'Sealed').length,
+          formatValue: (v) => `${Math.round(v)} / ${bags.length}`,
+          caption: isAr ? 'نسبة إحكام الأكياس الأمنية' : isEn ? 'Sealed shuttle bags ratio' : 'Scellés de sécurité apposés',
+        }}
       />
 
-      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-        {scanMode === 'Bagging' && activeBag && (
-          <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
-                <Boxes size={22} />
+      <ScreenPod>
+        <div className="space-y-4">
+          {scanMode === 'Bagging' && activeBag && (
+            <div className="p-4 rounded-2xl bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+                  <Boxes size={22} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-bold text-sm text-black dark:text-white">
+                      {activeBag.bagCode}
+                    </span>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        activeBag.status === 'Sealed'
+                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                          : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                      }`}
+                    >
+                      {localizeStatus(activeBag.status, language)}
+                    </span>
+                  </div>
+                  <div className="text-xs text-black/55 dark:text-white/55 mt-0.5">
+                    Destination: Wilaya {activeBag.destinationHubWilaya} • Poids:{' '}
+                    <span className="font-mono font-bold">{activeBag.totalWeightKg} kg / 25 kg</span>
+                  </div>
+                </div>
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono font-bold text-sm text-black dark:text-white">
-                    {activeBag.bagCode}
-                  </span>
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      activeBag.status === 'Sealed'
-                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                        : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                    }`}
+
+              <div className="flex items-center gap-2">
+                <select
+                  value={selectedBagId}
+                  onChange={(e) => setSelectedBagId(e.target.value)}
+                  aria-label={isAr ? 'اختر كيس الشحن' : 'Sélectionner un sac-navette'}
+                  className="px-3 py-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-700 text-xs font-mono font-bold border-none"
+                >
+                  {bags.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.bagCode} (W{b.destinationHubWilaya})
+                    </option>
+                  ))}
+                </select>
+
+                {activeBag.status === 'Open' && (
+                  <AtriumButton
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setIsSealModalOpen(true)}
+                    icon={<ShieldCheck size={14} />}
                   >
-                    {localizeStatus(activeBag.status, language)}
-                  </span>
-                </div>
-                <div className="text-xs text-black/55 dark:text-white/55 mt-0.5">
-                  Destination: Wilaya {activeBag.destinationHubWilaya} • Poids:{' '}
-                  <span className="font-mono font-bold">{activeBag.totalWeightKg} kg / 25 kg</span>
-                </div>
+                    {isAr ? 'ختم الكيس الأمني' : 'Poser Scellé & Fermer'}
+                  </AtriumButton>
+                )}
               </div>
             </div>
+          )}
 
-            <div className="flex items-center gap-2">
-              <select
-                value={selectedBagId}
-                onChange={(e) => setSelectedBagId(e.target.value)}
-                aria-label={isAr ? 'اختر كيس الشحن' : 'Sélectionner un sac-navette'}
-                className="px-3 py-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-700 text-xs font-mono font-bold border-none"
-              >
-                {bags.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.bagCode} (W{b.destinationHubWilaya})
-                  </option>
-                ))}
-              </select>
+          <form onSubmit={handleScanSubmit} className="relative">
+            <input
+              ref={inputRef}
+              type="text"
+              value={scannedCode}
+              onChange={(e) => setScannedCode(e.target.value)}
+              placeholder={
+                isAr
+                  ? 'امسح باركود الشحنة بواسطة قارئ الباركود (Ex: ATR-EXP-88912)...'
+                  : 'Scannez le code-barres AWB (Lecteur HID ou caméra, ex: ATR-EXP-88912)...'
+              }
+              className="w-full pl-12 pr-28 py-4 rounded-2xl bg-white dark:bg-[#1C1B1A] border-2 border-[#E6DED6] dark:border-[#3A3734] focus:border-[#d4522f] text-sm font-mono font-bold text-black dark:text-white shadow-xs outline-hidden tracking-wider"
+            />
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-black/55 dark:text-white/55">
+              <Barcode size={22} />
+            </div>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <AtriumButton variant="primary" size="sm" type="submit">
+                {isAr ? 'تأكيد المسح' : 'Valider'}
+              </AtriumButton>
+            </div>
+          </form>
+        </div>
+      </ScreenPod>
 
-              {activeBag.status === 'Open' && (
-                <AtriumButton
-                  variant="primary"
-                  size="sm"
-                  onClick={() => setIsSealModalOpen(true)}
-                  icon={<ShieldCheck size={14} />}
-                >
-                  {isAr ? 'ختم الكيس الأمني' : 'Poser Scellé & Fermer'}
-                </AtriumButton>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+        <ScreenPod>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
+                {isAr ? 'سجل المسح الصوتي المباشر' : 'Journal des Scans en Direct'}
+              </h3>
+              <span className="text-[10px] font-mono text-black/55 dark:text-white/55">
+                {scanHistory.length} scans
+              </span>
+            </div>
+
+            <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
+              {scanHistory.length === 0 ? (
+                <div className="p-6 text-center text-xs text-black/55 dark:text-white/55">
+                  {isAr ? 'في انتظار أول مسح ضوئي...' : 'En attente de lecture code-barres...'}
+                </div>
+              ) : (
+                scanHistory.map((h, i) => (
+                  <div
+                    key={`${h.code}_${i}`}
+                    className={`p-2.5 rounded-xl border text-xs flex items-center justify-between gap-2 ${
+                      h.status === 'success'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/50'
+                        : 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800/50'
+                    }`}
+                  >
+                    <div className="space-y-0.5 truncate">
+                      <div className="font-mono font-bold text-black dark:text-white">{h.code}</div>
+                      <div className="text-[11px] text-black/70 dark:text-white/75 truncate">
+                        {h.message}
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-mono text-black/55 dark:text-white/55 shrink-0">
+                      {h.timestamp}
+                    </span>
+                  </div>
+                ))
               )}
             </div>
           </div>
-        )}
-
-        <form onSubmit={handleScanSubmit} className="relative">
-          <input
-            ref={inputRef}
-            type="text"
-            value={scannedCode}
-            onChange={(e) => setScannedCode(e.target.value)}
-            placeholder={
-              isAr
-                ? 'امسح باركود الشحنة بواسطة قارئ الباركود (Ex: ATR-EXP-88912)...'
-                : 'Scannez le code-barres AWB (Lecteur HID ou caméra, ex: ATR-EXP-88912)...'
-            }
-            className="w-full pl-12 pr-28 py-4 rounded-2xl bg-white dark:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-700 focus:border-[#d4522f] text-sm font-mono font-bold text-black dark:text-white shadow-xs outline-hidden tracking-wider"
-          />
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-black/55 dark:text-white/55">
-            <Barcode size={22} />
-          </div>
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-            <AtriumButton variant="primary" size="sm" type="submit">
-              {isAr ? 'تأكيد المسح' : 'Valider'}
-            </AtriumButton>
-          </div>
-        </form>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
-        <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-3 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
-              {isAr ? 'سجل المسح الصوتي المباشر' : 'Journal des Scans en Direct'}
-            </h3>
-            <span className="text-[10px] font-mono text-black/55 dark:text-white/55">
-              {scanHistory.length} scans
-            </span>
-          </div>
-
-          <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
-            {scanHistory.length === 0 ? (
-              <div className="p-6 text-center text-xs text-black/55 dark:text-white/55">
-                {isAr ? 'في انتظار أول مسح ضوئي...' : 'En attente de lecture code-barres...'}
-              </div>
-            ) : (
-              scanHistory.map((h, i) => (
-                <div
-                  key={`${h.code}_${i}`}
-                  className={`p-2.5 rounded-xl border text-xs flex items-center justify-between gap-2 ${
-                    h.status === 'success'
-                      ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/50'
-                      : 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800/50'
-                  }`}
-                >
-                  <div className="space-y-0.5 truncate">
-                    <div className="font-mono font-bold text-black dark:text-white">{h.code}</div>
-                    <div className="text-[11px] text-black/70 dark:text-white/75 truncate">
-                      {h.message}
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-mono text-black/55 dark:text-white/55 shrink-0">
-                    {h.timestamp}
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+        </ScreenPod>
 
         <div className="lg:col-span-2">
           <ScreenPod>
@@ -663,11 +747,13 @@ export const LogisticsScannerView: React.FC = () => {
               ]}
               statusValue={statusFilter}
               onStatusChange={setStatusFilter}
+              hasActiveAdvancedFilters={activeFiltersCount > 0}
+              activeFiltersCount={activeFiltersCount}
+              isFilterModalOpen={isFilterModalOpen}
               filterButtonRef={filterButtonRef}
-              activeFilterCount={activeFiltersCount}
-              onOpenFilters={() => setIsFilterModalOpen(true)}
+              onToggleFilterModal={() => setIsFilterModalOpen((prev) => !prev)}
               activeChips={activeChips}
-              onClearAllFilters={resetAllFilters}
+              onResetAllFilters={resetAllFilters}
               viewMode={viewMode}
               onViewModeChange={setViewMode}
               onExport={handleExportQuai}
@@ -675,9 +761,10 @@ export const LogisticsScannerView: React.FC = () => {
 
             <UniversalDataCollection<LogisticsShipment>
               hideToolbar
-              data={sortedShipments}
+              items={sortedShipments}
               keyExtractor={(s) => s.id}
-              defaultViewMode={viewMode}
+              viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+              defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
               columns={columns}
               sortBy={sortBy}
               sortDirection={sortDir}
@@ -696,6 +783,9 @@ export const LogisticsScannerView: React.FC = () => {
                 if (el) setDrawerOpenerEl(el);
                 setSelectedShipment(s);
               }}
+              getRowMeta={getScannerRowMeta}
+              getFanActions={getScannerFanActions}
+              getDetailActions={getScannerDetailActions}
               customActions={(s) => [
                 {
                   id: 'sort',
@@ -763,7 +853,10 @@ export const LogisticsScannerView: React.FC = () => {
             ? `${activeShipment.recipientName} · ${activeShipment.destinationWilaya}`
             : undefined
         }
-        avatarText={(activeShipment?.recipientName || 'AWB').slice(0, 2).toUpperCase()}
+        categoryLabel={
+          activeShipment?.deliveryMode === 'StopDesk' ? 'Stop-Desk' : isAr ? 'منزلي' : 'Domicile'
+        }
+        avatarText={(activeShipment?.recipientName || 'AW').slice(0, 2).toUpperCase()}
         branchName={
           activeShipment
             ? resolveRecordBranch(activeShipment, branchesById, currentBranch, language).name
@@ -782,68 +875,124 @@ export const LogisticsScannerView: React.FC = () => {
             ? isAr ? 'في المستودع' : isEn ? 'At Hub' : 'Au Hub'
             : undefined
         }
+        statusClassName={
+          activeShipment?.status === 'Delivered' || activeShipment?.status === 'Sorted'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : activeShipment?.status === 'Returned'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+        }
         tabs={[
           { id: 'colis', label: isAr ? 'بيانات الطرد' : 'Colis & Tri' },
-          { id: 'quai', label: isAr ? 'التوجيه' : 'Aiguillage Quai' },
+          { id: 'quai', label: isAr ? 'التوجيه' : 'Aiguillage' },
+          { id: 'actions', label: isAr ? 'الطباعة' : 'Étiquette' },
         ]}
         activeTab={inspectorTab}
         onTabChange={setInspectorTab}
         onSelectItem={(s) => setSelectedShipment(s)}
         onClose={() => setSelectedShipment(null)}
-        renderBody={(s, tab) => (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 flex-wrap">
-              <AtriumButton
-                variant="primary"
-                size="sm"
-                icon={<Check size={13} />}
-                onClick={() => handleScanCode(s.trackingCode)}
-              >
-                {isAr ? 'فرز وتوجيه' : 'Aiguiller Quai'}
-              </AtriumButton>
-              <AtriumButton
-                variant="outline"
-                size="sm"
-                icon={<Printer size={13} />}
-                onClick={() =>
-                  showToast(
-                    isAr ? `طباعة ملصق ${s.trackingCode}` : `Étiquette ${s.trackingCode} générée`,
-                    'info'
-                  )
-                }
-              >
-                {isAr ? 'باركود' : 'Barcode'}
-              </AtriumButton>
-            </div>
-            {tab === 'colis' ? (
-              <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2 text-xs">
-                <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                  <span className="text-black/55 dark:text-white/55">Destinataire</span>
-                  <span className="font-bold text-black dark:text-white">{s.recipientName}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                  <span className="text-black/55 dark:text-white/55">Wilaya</span>
-                  <span className="font-medium">{s.destinationWilaya}</span>
-                </div>
-                <div className="flex justify-between py-1">
-                  <span className="text-black/55 dark:text-white/55">Poids</span>
-                  <span className="font-mono font-bold">{s.weightKg} kg</span>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2 text-xs">
-                <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                  <span className="text-black/55 dark:text-white/55">Mode</span>
-                  <span className="font-bold text-[#d4522f]">{s.deliveryMode}</span>
-                </div>
-                <div className="flex justify-between py-1">
-                  <span className="text-black/55 dark:text-white/55">{isAr ? 'حالة الفرز' : isEn ? 'Sorting Status' : 'Statut Tri'}</span>
-                  <span className="font-mono font-bold">{localizeStatus(s.status, language)}</span>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+        renderBody={(s, tab) => {
+          if (tab === 'quai') {
+            return (
+              <>
+                <InspectorSection index={0}>
+                  <InspectorBigStat
+                    value={localizeStatus(s.status, language)}
+                    tone={s.status === 'Sorted' || s.status === 'Delivered' ? 'ok' : 'accent'}
+                    caption={isAr ? 'حالة الفرز على الرصيف' : 'Statut Actuel Quai de Tri'}
+                    action={{
+                      label: isAr ? 'فرز وتوجيه الطرد الآن' : 'Aiguiller sur Ligne',
+                      onClick: () => handleScanCode(s.trackingCode),
+                    }}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'توجيه الشحنة' : 'Aiguillage & Mode'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label="Mode" value={s.deliveryMode} tone="accent" mono={false} />
+                    <InspectorKeyValue label="Wilaya" value={s.destinationWilaya} mono={false} isLast />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
+          if (tab === 'actions') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'أدوات الرصيف' : 'Outils Quai & Scan'}>
+                  <InspectorQuickActions
+                    actions={[
+                      {
+                        id: 'sort',
+                        label: isAr ? 'فرز وتوجيه' : 'Aiguiller Quai',
+                        icon: <Check size={16} />,
+                        primary: true,
+                        onClick: () => handleScanCode(s.trackingCode),
+                      },
+                      {
+                        id: 'barcode',
+                        label: isAr ? 'باركود' : 'Étiquette AWB',
+                        icon: <Printer size={16} />,
+                        onClick: () =>
+                          showToast(
+                            isAr ? `طباعة ملصق ${s.trackingCode}` : `Étiquette ${s.trackingCode} générée`,
+                            'info'
+                          ),
+                      },
+                      {
+                        id: 'share',
+                        label: isAr ? 'مشاركة' : 'Partager',
+                        icon: <Share2 size={16} />,
+                        onClick: () =>
+                          showToast(
+                            isAr ? 'تم نسخ رابط تتبع الشحنة' : `Lien de tracking ${s.trackingCode} copié`,
+                            'success'
+                          ),
+                      },
+                    ]}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label={isAr ? 'طباعة ملصق الباركود الحراري' : 'Imprimer Étiquette Thermique AWB'}
+                    icon={<Printer size={14} />}
+                    tone="dark"
+                    onClick={() =>
+                      showToast(
+                        isAr ? `طباعة ملصق ${s.trackingCode}` : `Étiquette ${s.trackingCode} générée`,
+                        'info'
+                      )
+                    }
+                  />
+                </InspectorSection>
+              </>
+            );
+          }
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'بطاقة المسح' : 'Identification Colis'}>
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label="AWB"
+                    value={s.trackingCode}
+                    copyText={s.trackingCode}
+                    onCopied={() => showToast('AWB copié', 'info')}
+                  />
+                  <InspectorKeyValue label={isAr ? 'المستلم' : 'Destinataire'} value={s.recipientName} mono={false} />
+                  <InspectorKeyValue label="Wilaya" value={s.destinationWilaya} mono={false} />
+                  <InspectorKeyValue label={isAr ? 'الوزن' : 'Poids'} value={`${s.weightKg} kg`} isLast />
+                </InspectorCard>
+              </InspectorSection>
+              <InspectorSection index={1}>
+                <InspectorWideButton
+                  label={isAr ? 'تأكيد الفرز الفوري' : 'Valider Scan & Aiguiller'}
+                  icon={<ScanLine size={14} />}
+                  tone="accent"
+                  onClick={() => handleScanCode(s.trackingCode)}
+                />
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       {isSealModalOpen && activeBag && (

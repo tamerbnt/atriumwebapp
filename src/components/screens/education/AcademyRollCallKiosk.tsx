@@ -6,7 +6,6 @@ import {
   Search,
   Users,
   Send,
-  Lock,
   Unlock,
   Check,
   MessageCircle,
@@ -20,7 +19,11 @@ import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonKioskGrid } from '../../ui/skeleton/StructuralSkeletons';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
-import { ScreenHeaderBar, buildBranchesByIdMap, resolveRecordBranch } from '../../ui/kinetic';
+import {
+  ScreenHeaderBar,
+  ScreenKpiBanner,
+  ScreenPod,
+} from '../../ui/kinetic';
 
 type QuickStatus = 'present' | 'absent' | 'late' | 'excused';
 type AttendanceMapState = Record<string, { status: QuickStatus }>;
@@ -36,8 +39,6 @@ export const AcademyRollCallKiosk: React.FC = () => {
     eduQuickAttendance,
     recordQuickAttendance,
     currentUser,
-    currentBranch,
-    branches,
     isSyncing,
     networkMode,
     retryCloudSync,
@@ -49,8 +50,6 @@ export const AcademyRollCallKiosk: React.FC = () => {
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: eduStudents.length > 0 || eduSessions.length > 0,
   });
-
-  const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
   const [selectedSessionId, setSelectedSessionId] = useState<string>(() => eduSessions[0]?.id || '');
 
@@ -225,13 +224,9 @@ export const AcademyRollCallKiosk: React.FC = () => {
     setNotifyingStudent(null);
   };
 
-  const activeBranchName = activeSession
-    ? resolveRecordBranch(activeSession, branchesById, currentBranch, language).name
-    : currentBranch?.name || '';
-
   if (showSkeleton && (eduSessions.length === 0 || networkMode === 'force_skeleton')) {
     return (
-      <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6" dir={isRtl ? 'rtl' : 'ltr'}>
+      <div className="space-y-6 animate-in fade-in duration-200" dir={isRtl ? 'rtl' : 'ltr'}>
         <OfflineRetryBanner
           isOffline={isOffline}
           isTimedOut={isTimedOut}
@@ -246,7 +241,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6" dir={isRtl ? 'rtl' : 'ltr'}>
+    <div className="space-y-6 animate-in fade-in duration-200" dir={isRtl ? 'rtl' : 'ltr'}>
       <OfflineRetryBanner
         isOffline={isOffline}
         isTimedOut={isTimedOut}
@@ -257,7 +252,6 @@ export const AcademyRollCallKiosk: React.FC = () => {
       <ScreenHeaderBar
         icon={<GraduationCap size={22} />}
         title={isRtl ? 'الحضور السريع' : isEn ? 'Roll Call Kiosk' : 'Appel Rapide'}
-        subtitle={`${activeBranchName}${isSessionLocked && lockedTimestamp ? ` · ${isRtl ? `مغلق (${lockedTimestamp})` : `Verrouillé à ${lockedTimestamp}`}` : ''}`}
         secondaryActions={
           <div className="flex items-center gap-2.5 flex-wrap">
             <div className="min-w-[230px]">
@@ -297,89 +291,82 @@ export const AcademyRollCallKiosk: React.FC = () => {
         }
       />
 
-      {activeSession && (
-        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-4 shadow-2xs grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-          <div className="flex items-center gap-2">
-            <BookOpen size={16} className="text-[#d4522f] shrink-0" />
-            <div>
-              <span className="text-2xs text-black/55 dark:text-white/55 block">
-                {isRtl ? 'الفوج / الدورة' : 'Promotion'}
-              </span>
-              <span className="font-bold text-black dark:text-white truncate block">
-                {activeCohort?.name || activeSession.cohortName}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <MapPin size={16} className="text-emerald-600 shrink-0" />
-            <div>
-              <span className="text-2xs text-black/55 dark:text-white/55 block">
-                {isRtl ? 'القاعة' : 'Salle'}
-              </span>
-              <span className="font-bold text-black dark:text-white">
-                {activeSession.classroomName || 'Salle Polyvalente'}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Clock size={16} className="text-blue-600 shrink-0" />
-            <div>
-              <span className="text-2xs text-black/55 dark:text-white/55 block">
-                {isRtl ? 'التوقيت' : 'Horaires'}
-              </span>
-              <span className="font-mono font-bold text-black dark:text-white">
-                {activeSession.startTime} — {activeSession.endTime}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Users size={16} className="text-indigo-600 shrink-0" />
-            <div>
-              <span className="text-2xs text-black/55 dark:text-white/55 block">
-                {isRtl ? 'الأستاذ المعين' : 'Formateur'}
-              </span>
-              <span className="font-bold text-black dark:text-white truncate block">
-                {activeSession.instructorName || currentUser?.fullName || 'Professeur Titulaire'}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
+      <ScreenKpiBanner
+        heading={isRtl ? 'مؤشرات الحضور والانضباط الفوري' : isEn ? 'Live Roll Call Indicators' : 'Indicateurs Appel & Assiduité'}
+        language={language}
+        primaryCard={{
+          label: isRtl ? 'نسبة الحضور' : isEn ? 'Attendance Rate' : 'Taux de Présence',
+          count: stats.ratePercent,
+          formatValue: (v) => `${v}%`,
+          badgeText: `${stats.present} ${isRtl ? 'حاضر' : 'présents'}`,
+          tone: 'emerald',
+        }}
+        secondaryCard={{
+          label: isRtl ? 'إجمالي الطلبة' : isEn ? 'Enrolled Roster' : 'Effectif Séance',
+          count: stats.total,
+          badgeText: isSessionLocked && lockedTimestamp ? `${isRtl ? 'مغلق' : 'Verrouillé'} ${lockedTimestamp}` : `${stats.excused} ${isRtl ? 'مبرر' : 'excusés'}`,
+          tone: 'terracotta',
+        }}
+        darkCard={{
+          label: isRtl ? 'الغياب والتأخر' : isEn ? 'Absences & Late' : 'Absences & Retards',
+          valueCount: stats.absent,
+          valueSuffix: isRtl ? ' غائب' : ' absents',
+          badgeCount: stats.late,
+          badgeSuffix: isRtl ? ' متأخر' : ' retards',
+          caption: isRtl ? 'متابعة فورية مع الأولياء' : 'Suivi disciplinaire & alertes parents',
+        }}
+      />
 
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs">
-          <span className="text-2xs text-black/55 dark:text-white/55 font-bold uppercase tracking-wider block">
-            {isRtl ? 'إجمالي الطلبة' : 'Effectif Total'}
-          </span>
-          <div className="text-xl font-black text-black dark:text-white mt-1">
-            {stats.total} {isRtl ? 'طالب' : 'étudiants'}
-          </div>
-        </div>
-        <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/50 shadow-2xs">
-          <span className="text-2xs text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider block">
-            {isRtl ? 'الحاضرون (P)' : 'Présents (P)'}
-          </span>
-          <div className="text-xl font-black text-emerald-700 dark:text-emerald-300 mt-1">{stats.present}</div>
-        </div>
-        <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 shadow-2xs">
-          <span className="text-2xs text-rose-700 dark:text-rose-400 font-bold uppercase tracking-wider block">
-            {isRtl ? 'الغائبون (A)' : 'Absents (A)'}
-          </span>
-          <div className="text-xl font-black text-rose-700 dark:text-rose-300 mt-1">{stats.absent}</div>
-        </div>
-        <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 shadow-2xs">
-          <span className="text-2xs text-amber-700 dark:text-amber-400 font-bold uppercase tracking-wider block">
-            {isRtl ? 'المتأخرون (R)' : 'En Retard (R)'}
-          </span>
-          <div className="text-xl font-black text-amber-700 dark:text-amber-300 mt-1">{stats.late}</div>
-        </div>
-        <div className="p-4 rounded-2xl bg-[#d4522f]/10 border border-[#d4522f]/25 shadow-2xs col-span-2 sm:col-span-1">
-          <span className="text-2xs text-[#d4522f] font-bold uppercase tracking-wider block">
-            {isRtl ? 'نسبة الحضور' : 'Taux de Présence'}
-          </span>
-          <div className="text-xl font-black font-mono text-[#d4522f] mt-1">{stats.ratePercent}%</div>
-        </div>
-      </div>
+      <ScreenPod>
+        <div className="space-y-5">
+          {activeSession && (
+            <div className="bg-[#F3EDE7]/65 dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-800 rounded-2xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div className="flex items-center gap-2">
+                <BookOpen size={16} className="text-[#d4522f] shrink-0" />
+                <div>
+                  <span className="text-2xs text-black/55 dark:text-white/55 block">
+                    {isRtl ? 'الفوج / الدورة' : 'Promotion'}
+                  </span>
+                  <span className="font-bold text-black dark:text-white truncate block">
+                    {activeCohort?.name || activeSession.cohortName}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin size={16} className="text-emerald-600 shrink-0" />
+                <div>
+                  <span className="text-2xs text-black/55 dark:text-white/55 block">
+                    {isRtl ? 'القاعة' : 'Salle'}
+                  </span>
+                  <span className="font-bold text-black dark:text-white">
+                    {activeSession.classroomName || 'Salle Polyvalente'}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock size={16} className="text-blue-600 shrink-0" />
+                <div>
+                  <span className="text-2xs text-black/55 dark:text-white/55 block">
+                    {isRtl ? 'التوقيت' : 'Horaires'}
+                  </span>
+                  <span className="font-mono font-bold text-black dark:text-white">
+                    {activeSession.startTime} — {activeSession.endTime}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users size={16} className="text-indigo-600 shrink-0" />
+                <div>
+                  <span className="text-2xs text-black/55 dark:text-white/55 block">
+                    {isRtl ? 'الأستاذ المعين' : 'Formateur'}
+                  </span>
+                  <span className="font-bold text-black dark:text-white truncate block">
+                    {activeSession.instructorName || currentUser?.fullName || 'Professeur Titulaire'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F3EDE7] dark:bg-[#141312] p-4 rounded-2xl border border-neutral-200 dark:border-[#33302D]">
         <div className="flex items-center gap-2">
@@ -564,7 +551,8 @@ export const AcademyRollCallKiosk: React.FC = () => {
             />
           </div>
         </div>
-      </div>
+        </div>
+      </ScreenPod>
 
       {notifyingStudent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">

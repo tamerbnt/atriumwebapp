@@ -8,7 +8,13 @@ import {
   Edit,
   Pin,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { AgriTreatmentLog, AgriCropCycle, AgriCyclePhase } from '../../../types';
 import { useAgricultureData } from './agricultureData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -29,6 +35,16 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorProgressBar,
+  InspectorBigStat,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -41,9 +57,19 @@ export const AgricultureCyclesView: React.FC = () => {
     branches,
     isSyncing,
     networkMode,
-    retryCloudSync,
     lastSyncedAt,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -85,6 +111,7 @@ export const AgricultureCyclesView: React.FC = () => {
   const [selectedTreatment, setSelectedTreatment] = useState<AgriTreatmentLog | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [inspectorTab, setInspectorTab] = useState<string>('details');
+  const [treatmentInspectorTab, setTreatmentInspectorTab] = useState<string>('overview');
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -756,6 +783,182 @@ export const AgricultureCyclesView: React.FC = () => {
     []
   );
 
+  const getCycleRowMeta = useCallback(
+    (c: AgriCropCycle): Partial<KineticRowData> => {
+      const conf = getPhaseConfig(c.currentPhase);
+      const branchName = resolveRecordBranch(c, branchesById, currentBranch, language).name;
+      const parcelName = parcelNameMap.get(c.parcelId) || c.parcelId;
+      const statusVariant =
+        c.currentPhase === 'ready_harvest' || c.currentPhase === 'vegetative'
+          ? 'active'
+          : c.currentPhase === 'treatment_locked'
+          ? 'warning'
+          : 'neutral';
+      return {
+        subline: `${c.variety} · ${parcelName}`,
+        categoryLabel: `Campagne ${c.campaignYear}`,
+        statusLabel: conf.label,
+        statusVariant,
+        metricPrimary: `${c.projectedYieldQtx} Qtx`,
+        metricSecondary: `${c.surfaceAllocatedHa} ha`,
+        detailCol1: {
+          heading: isAr ? 'القطعة والموسم' : isEn ? 'Parcel & Campaign' : 'Parcelle & Campagne',
+          primaryText: parcelName,
+          secondaryText: `${c.surfaceAllocatedHa} ha alloués`,
+          tertiaryText: branchName,
+        },
+        detailCol2: {
+          heading: isAr ? 'توقعات المحصول' : isEn ? 'Yield Outlook' : 'Objectif Rendement',
+          primaryText: `${c.actualYieldQtx ? `${c.actualYieldQtx} / ` : ''}${c.projectedYieldQtx} Qtx`,
+          secondaryText: `${Math.round(c.projectedYieldQtx / (c.surfaceAllocatedHa || 1))} Qtx/ha`,
+          tertiaryText: `Lot ${c.seedLotNumber || 'Standard'}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'الرزنامة والأمان' : isEn ? 'Schedule & DAR' : 'Calendrier & DAR',
+          primaryText: `${c.sowingDate} → ${c.projectedHarvestDate}`,
+          secondaryText: c.activeDarLockoutUntil
+            ? `DAR jusqu'au ${c.activeDarLockoutUntil}`
+            : conf.label,
+        },
+      };
+    },
+    [getPhaseConfig, branchesById, currentBranch, language, parcelNameMap, isAr, isEn]
+  );
+
+  const getCycleFanActions = useCallback(
+    (c: AgriCropCycle): KineticRowFanAction[] => [
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+        icon: <Edit className="w-[15px] h-[15px]" />,
+        onClick: () => handleOpenEditCycle(c),
+      },
+      {
+        id: 'pin',
+        label: isAr ? 'تثبيت' : isEn ? 'Pin' : 'Épingler',
+        icon: <Pin className="w-[15px] h-[15px]" />,
+        onClick: () => handleTogglePin(c),
+      },
+      {
+        id: 'open',
+        label: isAr ? 'تفاصيل' : isEn ? 'Details' : 'Détails',
+        icon: <Sprout className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedTreatment(null);
+          setSelectedCycle(c);
+          setInspectorTab('details');
+        },
+      },
+    ],
+    [handleOpenEditCycle, handleTogglePin, isAr, isEn]
+  );
+
+  const getCycleDetailActions = useCallback(
+    (c: AgriCropCycle): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'معاينة الدورة' : isEn ? 'Inspect Cycle' : 'Ouvrir fiche',
+        icon: <Sprout className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedTreatment(null);
+          setSelectedCycle(c);
+          setInspectorTab('details');
+        },
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+        icon: <Edit className="w-3.5 h-3.5" />,
+        onClick: () => handleOpenEditCycle(c),
+      },
+    ],
+    [handleOpenEditCycle, isAr, isEn]
+  );
+
+  const getTreatmentRowMeta = useCallback(
+    (t: AgriTreatmentLog): Partial<KineticRowData> => {
+      const safety = evaluateDarSafety(t.treatmentDate, t.darDays);
+      const branchName = resolveRecordBranch(t, branchesById, currentBranch, language).name;
+      const parcelName = parcelNameMap.get(t.parcelId) || t.parcelId;
+      return {
+        subline: `${t.activeIngredient} · ${parcelName}`,
+        categoryLabel: t.targetPestDisease,
+        statusLabel: `${t.darDays}j DAR`,
+        statusVariant: safety.isLocked ? 'warning' : 'active',
+        metricPrimary: t.dosagePerHa,
+        metricSecondary: t.treatmentDate,
+        detailCol1: {
+          heading: isAr ? 'القطعة والمادة' : isEn ? 'Parcel & Active' : 'Parcelle & Substance',
+          primaryText: parcelName,
+          secondaryText: t.activeIngredient,
+          tertiaryText: branchName,
+        },
+        detailCol2: {
+          heading: isAr ? 'الاستهداف والجرعة' : isEn ? 'Target & Dosage' : 'Cible & Dosage',
+          primaryText: t.targetPestDisease,
+          secondaryText: `Dose: ${t.dosagePerHa}`,
+          tertiaryText: t.operatorName,
+        },
+        detailCol3: {
+          heading: isAr ? 'فترة الأمان DAR' : isEn ? 'DAR Release' : 'Délai DAR',
+          primaryText: safety.isLocked
+            ? `${safety.daysRemaining}j restants`
+            : isAr
+            ? 'آمن للجني'
+            : 'Récolte autorisée',
+          secondaryText: `Autorisé dès ${t.harvestAllowedDate}`,
+        },
+      };
+    },
+    [branchesById, currentBranch, language, parcelNameMap, isAr, isEn]
+  );
+
+  const getTreatmentFanActions = useCallback(
+    (t: AgriTreatmentLog): KineticRowFanAction[] => [
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+        icon: <Edit className="w-[15px] h-[15px]" />,
+        onClick: () => handleOpenEditTreatment(t),
+      },
+      {
+        id: 'open',
+        label: isAr ? 'تفاصيل' : isEn ? 'Details' : 'Détails',
+        icon: <ShieldCheck className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedCycle(null);
+          setSelectedTreatment(t);
+          setTreatmentInspectorTab('overview');
+        },
+      },
+    ],
+    [handleOpenEditTreatment, isAr, isEn]
+  );
+
+  const getTreatmentDetailActions = useCallback(
+    (t: AgriTreatmentLog): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'معاينة السجل' : isEn ? 'Inspect Log' : 'Ouvrir fiche',
+        icon: <ShieldCheck className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedCycle(null);
+          setSelectedTreatment(t);
+          setTreatmentInspectorTab('overview');
+        },
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+        icon: <Edit className="w-3.5 h-3.5" />,
+        onClick: () => handleOpenEditTreatment(t),
+      },
+    ],
+    [handleOpenEditTreatment, isAr, isEn]
+  );
+
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: cropCycles.length > 0 || treatmentLogs.length > 0,
@@ -790,13 +993,6 @@ export const AgricultureCyclesView: React.FC = () => {
       <ScreenHeaderBar
         icon={<Sprout size={22} />}
         title={isAr ? 'المحاصيل' : isEn ? 'Crops' : 'Cultures'}
-        subtitle={
-          isAr
-            ? `${cropCycles.length} دورات موسمية · ${treatmentLogs.length} معالجات صحية`
-            : isEn
-            ? `${cropCycles.length} crop cycles · ${treatmentLogs.length} phytosanitary logs`
-            : `${cropCycles.length} cycles culturaux · ${treatmentLogs.length} traitements INPV`
-        }
         secondaryActions={
           <AtriumButton
             variant="outline"
@@ -922,6 +1118,17 @@ export const AgricultureCyclesView: React.FC = () => {
               ? 'بحث بالمبيد، المادة الفعالة، الآفة...'
               : 'Rechercher produit, substance, cible...'
           }
+          statusOptions={
+            activeTabMode === 'cycles'
+              ? [
+                  { value: 'All', label: isAr ? 'الكل' : 'Tous', count: cropCycles.length },
+                  { value: 'ready_harvest', label: isAr ? 'جاهز للحصاد' : 'Prêt Récolte', count: readyHarvestCount },
+                  { value: 'treatment_locked', label: isAr ? 'حظر DAR' : 'DAR Actifs', count: activeDarCyclesCount },
+                ]
+              : undefined
+          }
+          statusValue={activeTabMode === 'cycles' ? phaseFilter : undefined}
+          onStatusChange={activeTabMode === 'cycles' ? setPhaseFilter : undefined}
           extraTrailingControls={
             <LiveSegmentedControl
               value={activeTabMode}
@@ -961,9 +1168,10 @@ export const AgricultureCyclesView: React.FC = () => {
         {activeTabMode === 'cycles' ? (
           <UniversalDataCollection<AgriCropCycle>
             hideToolbar
-            data={sortedCycles}
+            items={sortedCycles}
             columns={cycleColumns}
             keyExtractor={(c) => c.id}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
             defaultViewMode={viewMode}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
@@ -999,6 +1207,9 @@ export const AgricultureCyclesView: React.FC = () => {
               setSelectedCycle(c);
               setInspectorTab('details');
             }}
+            getRowMeta={getCycleRowMeta}
+            getFanActions={getCycleFanActions}
+            getDetailActions={getCycleDetailActions}
             onEdit={handleOpenEditCycle}
             onDelete={handleDeleteCycle}
             emptyTitle={
@@ -1008,59 +1219,14 @@ export const AgricultureCyclesView: React.FC = () => {
             onAddFirstItem={handleOpenCreateCycle}
             onResetFilters={resetAllFilters}
             hasActiveFilters={searchQuery.length > 0 || activeFiltersCount > 0}
-            renderCard={(c) => (
-              <div className="space-y-3 w-full">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shrink-0">
-                      <Sprout size={16} />
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="text-xs font-bold text-black dark:text-white truncate">
-                        {c.cropName}
-                      </h3>
-                      <p className="text-[10px] text-black/55 dark:text-white/55 truncate">
-                        {c.variety} • Campagne {c.campaignYear}
-                      </p>
-                    </div>
-                  </div>
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
-                      getPhaseConfig(c.currentPhase).bg
-                    }`}
-                  >
-                    {getPhaseConfig(c.currentPhase).label}
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                  <div>
-                    <span className="text-black/55 dark:text-white/55">Surface: </span>
-                    <span className="font-mono font-bold text-black/70 dark:text-white/75">
-                      {c.surfaceAllocatedHa} ha
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-black/55 dark:text-white/55">Prévu: </span>
-                    <span className="font-mono font-bold text-black/70 dark:text-white/75">
-                      {c.projectedYieldQtx} Qtx
-                    </span>
-                  </div>
-                </div>
-                {c.activeDarLockoutUntil && (
-                  <div className="text-[10px] text-amber-600 bg-amber-500/10 px-2 py-1 rounded-lg flex items-center gap-1 font-medium">
-                    <AlertTriangle size={12} />
-                    DAR actif jusqu’au {c.activeDarLockoutUntil}
-                  </div>
-                )}
-              </div>
-            )}
           />
         ) : (
           <UniversalDataCollection<AgriTreatmentLog>
             hideToolbar
-            data={sortedTreatments}
+            items={sortedTreatments}
             columns={treatmentColumns}
             keyExtractor={(t) => t.id}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
             defaultViewMode={viewMode}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
@@ -1091,12 +1257,17 @@ export const AgricultureCyclesView: React.FC = () => {
               if (el) setDrawerOpenerEl(el);
               setSelectedCycle(null);
               setSelectedTreatment(t);
+              setTreatmentInspectorTab('overview');
             }}
             onViewDetails={(t, el) => {
               if (el) setDrawerOpenerEl(el);
               setSelectedCycle(null);
               setSelectedTreatment(t);
+              setTreatmentInspectorTab('overview');
             }}
+            getRowMeta={getTreatmentRowMeta}
+            getFanActions={getTreatmentFanActions}
+            getDetailActions={getTreatmentDetailActions}
             onEdit={handleOpenEditTreatment}
             onDelete={handleDeleteTreatment}
             emptyTitle={
@@ -1106,43 +1277,6 @@ export const AgricultureCyclesView: React.FC = () => {
             onAddFirstItem={handleOpenCreateTreatment}
             onResetFilters={resetAllFilters}
             hasActiveFilters={searchQuery.length > 0 || activeFiltersCount > 0}
-            renderCard={(t) => {
-              const safety = evaluateDarSafety(t.treatmentDate, t.darDays);
-              return (
-                <div className="space-y-2.5 w-full">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <h3 className="text-xs font-bold text-black dark:text-white truncate">
-                        {t.commercialProductName}
-                      </h3>
-                      <p className="text-[10px] text-black/55 dark:text-white/55 truncate">
-                        {t.activeIngredient}
-                      </p>
-                    </div>
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
-                        safety.isLocked
-                          ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                          : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                      }`}
-                    >
-                      {t.darDays}j DAR
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-black/70 dark:text-white/75 truncate">
-                    {t.targetPestDisease} ({t.dosagePerHa})
-                  </div>
-                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-[11px]">
-                    <span className="font-mono text-black/60 dark:text-white/65">
-                      {t.treatmentDate}
-                    </span>
-                    <span className="font-mono font-semibold text-emerald-600">
-                      → {t.harvestAllowedDate}
-                    </span>
-                  </div>
-                </div>
-              );
-            }}
           />
         )}
       </ScreenPod>
@@ -1169,9 +1303,10 @@ export const AgricultureCyclesView: React.FC = () => {
         title={activeCycle?.cropName || ''}
         subtitle={
           activeCycle
-            ? `${activeCycle.variety} • Campagne ${activeCycle.campaignYear}`
+            ? `${activeCycle.variety} · Campagne ${activeCycle.campaignYear}`
             : undefined
         }
+        categoryLabel={activeCycle ? parcelNameMap.get(activeCycle.parcelId) || activeCycle.parcelId : undefined}
         avatarText={(activeCycle?.cropName || 'CY').slice(0, 2).toUpperCase()}
         branchName={
           activeCycle
@@ -1179,11 +1314,17 @@ export const AgricultureCyclesView: React.FC = () => {
             : undefined
         }
         statusLabel={activeCycle ? getPhaseConfig(activeCycle.currentPhase).label : undefined}
-        statusClassName={activeCycle ? getPhaseConfig(activeCycle.currentPhase).bg : undefined}
+        statusClassName={
+          activeCycle?.currentPhase === 'treatment_locked'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            : activeCycle?.currentPhase === 'ready_harvest' || activeCycle?.currentPhase === 'vegetative'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+        }
         tabs={[
-          { id: 'details', label: isAr ? 'البيانات' : 'Détails' },
-          { id: 'rendement', label: isAr ? 'المردود' : 'Rendement' },
-          { id: 'couts', label: isAr ? 'التكاليف' : 'Coûts' },
+          { id: 'details', label: isAr ? 'نظرة عامة' : isEn ? 'Overview' : 'Détails' },
+          { id: 'rendement', label: isAr ? 'المردود' : isEn ? 'Yield' : 'Rendement' },
+          { id: 'couts', label: isAr ? 'التكاليف' : isEn ? 'Costs' : 'Coûts' },
         ]}
         activeTab={inspectorTab}
         onTabChange={setInspectorTab}
@@ -1191,137 +1332,152 @@ export const AgricultureCyclesView: React.FC = () => {
         onClose={() => setSelectedCycle(null)}
         onDelete={handleDeleteCycle}
         holdToDelete
-        renderBody={(cycle, tab) => (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <AtriumButton
-                variant="outline"
-                size="sm"
-                onClick={() => handleOpenEditCycle(cycle)}
-                icon={<Edit size={13} />}
-              >
-                {isAr ? 'تعديل الدورة' : 'Modifier le Cycle'}
-              </AtriumButton>
-            </div>
+        renderBody={(cycle, tab) => {
+          const yieldPct = Math.min(
+            100,
+            Math.round(((cycle.actualYieldQtx || 0) / (cycle.projectedYieldQtx || 1)) * 100)
+          );
+          const totalCost =
+            (cycle.totalInputCostDzd || 0) +
+            (cycle.totalLaborCostDzd || 0) +
+            (cycle.totalMachineryCostDzd || 0);
 
-            {tab === 'details' && (
-              <div className="space-y-3 text-xs">
-                <div className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Parcelle:</span>
-                    <span className="font-semibold text-black dark:text-white">
-                      {parcelNameMap.get(cycle.parcelId) || cycle.parcelId}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Surface Allouée:</span>
-                    <span className="font-mono font-bold text-black dark:text-white">
-                      {cycle.surfaceAllocatedHa} ha
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Lot Semence:</span>
-                    <span className="font-mono text-black/70 dark:text-white/75">
-                      {cycle.seedLotNumber || 'CCLS-Standard'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Date Semis:</span>
-                    <span className="font-mono text-black/70 dark:text-white/75">
-                      {cycle.sowingDate}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Récolte Prévue:</span>
-                    <span className="font-mono text-black/70 dark:text-white/75">
-                      {cycle.projectedHarvestDate}
-                    </span>
-                  </div>
-                </div>
-                {cycle.activeDarLockoutUntil && (
-                  <div className="p-3 bg-amber-500/10 border border-amber-500/25 rounded-xl text-amber-800 dark:text-amber-300 text-xs flex items-start gap-2">
-                    <AlertTriangle size={15} className="text-amber-600 shrink-0 mt-0.5" />
-                    <div>
-                      <div className="font-bold">Interdiction de récolte active</div>
-                      <div className="text-[11px] opacity-80 mt-0.5">
-                        {cycle.activePestWarning || `DAR jusqu'au ${cycle.activeDarLockoutUntil}`}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {tab === 'rendement' && (
-              <div className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-2.5 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Objectif Prévu:</span>
-                  <span className="font-mono font-bold text-black dark:text-white">
-                    {cycle.projectedYieldQtx} Qtx
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Réalisé:</span>
-                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                    {cycle.actualYieldQtx || 0} Qtx
-                  </span>
-                </div>
-                <div className="w-full bg-neutral-200 dark:bg-neutral-700 h-2 rounded-full overflow-hidden">
-                  <div
-                    className="bg-[#d4522f] h-full"
-                    style={{
-                      width: `${Math.min(
-                        100,
-                        Math.round(
-                          ((cycle.actualYieldQtx || 0) / (cycle.projectedYieldQtx || 1)) * 100
-                        )
-                      )}%`,
-                    }}
+          if (tab === 'rendement') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'مؤشر المردود' : isEn ? 'Yield Progress' : 'Rendement réalisé'}>
+                  <InspectorProgressBar
+                    label={`${cycle.actualYieldQtx || 0} / ${cycle.projectedYieldQtx} Qtx`}
+                    value={`${yieldPct}%`}
+                    percent={yieldPct}
                   />
-                </div>
-                <div className="text-[10.5px] text-black/55 dark:text-white/55 text-right">
-                  Taux de réalisation :{' '}
-                  {Math.round(((cycle.actualYieldQtx || 0) / (cycle.projectedYieldQtx || 1)) * 100)}
-                  %
-                </div>
-              </div>
-            )}
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'تفاصيل الحصاد' : isEn ? 'Production Targets' : 'Objectifs de récolte'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'الهدف المتوقع' : isEn ? 'Projected Yield' : 'Objectif prévu'}
+                      value={`${cycle.projectedYieldQtx} Qtx`}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'المردود الفعلي' : isEn ? 'Actual Yield' : 'Rendement réalisé'}
+                      value={`${cycle.actualYieldQtx || 0} Qtx`}
+                      tone="ok"
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'الكثافة' : isEn ? 'Density' : 'Rendement / ha'}
+                      value={`${Math.round(cycle.projectedYieldQtx / (cycle.surfaceAllocatedHa || 1))} Qtx/ha`}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
 
-            {tab === 'couts' && (
-              <div className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Intrants & Semences:</span>
-                  <span className="font-mono text-black dark:text-white">
-                    {formatMoney(cycle.totalInputCostDzd || 0, language)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Main d&apos;œuvre Tâcherons:</span>
-                  <span className="font-mono text-black dark:text-white">
-                    {formatMoney(cycle.totalLaborCostDzd || 0, language)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Matériel & Carburant:</span>
-                  <span className="font-mono text-black dark:text-white">
-                    {formatMoney(cycle.totalMachineryCostDzd || 0, language)}
-                  </span>
-                </div>
-                <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700 flex justify-between font-bold">
-                  <span>Total Coûts Engagés:</span>
-                  <span className="font-mono text-[#d4522f]">
-                    {formatMoney(
-                      (cycle.totalInputCostDzd || 0) +
-                        (cycle.totalLaborCostDzd || 0) +
-                        (cycle.totalMachineryCostDzd || 0),
-                      language
-                    )}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+          if (tab === 'couts') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'إجمالي التكاليف' : isEn ? 'Total Engaged Cost' : 'Coûts engagés'}>
+                  <InspectorBigStat
+                    value={formatMoney(totalCost, language)}
+                    tone="accent"
+                    caption={`${cycle.surfaceAllocatedHa} ha · ${cycle.variety}`}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'توزيع النفقات' : isEn ? 'Cost Breakdown' : 'Ventilation des charges'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'البذور والمدخلات' : isEn ? 'Inputs & Seeds' : 'Intrants & Semences'}
+                      value={formatMoney(cycle.totalInputCostDzd || 0, language)}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'اليد العاملة' : isEn ? 'Seasonal Labor' : "Main d'œuvre tâcherons"}
+                      value={formatMoney(cycle.totalLaborCostDzd || 0, language)}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'الآلات والوقود' : isEn ? 'Machinery & Fuel' : 'Matériel & Carburant'}
+                      value={formatMoney(cycle.totalMachineryCostDzd || 0, language)}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
+
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : isEn ? 'Quick Actions' : 'Actions rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'edit',
+                      label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+                      icon: <Edit className="w-[18px] h-[18px]" />,
+                      primary: true,
+                      onClick: () => handleOpenEditCycle(cycle),
+                    },
+                    {
+                      id: 'treat',
+                      label: isAr ? 'معالجة DAR' : isEn ? 'Log DAR' : 'Traiter DAR',
+                      icon: <ShieldCheck className="w-[18px] h-[18px]" />,
+                      onClick: handleOpenCreateTreatment,
+                    },
+                    {
+                      id: 'pin',
+                      label: pinnedIds.has(cycle.id)
+                        ? isAr ? 'إلغاء تثبيت' : 'Désépingler'
+                        : isAr ? 'تثبيت' : 'Épingler',
+                      icon: <Pin className="w-[18px] h-[18px]" />,
+                      onClick: () => handleTogglePin(cycle),
+                    },
+                    {
+                      id: 'export',
+                      label: 'CSV',
+                      icon: <Download className="w-[18px] h-[18px]" />,
+                      onClick: handleExportCsv,
+                    },
+                  ]}
+                />
+              </InspectorSection>
+
+              <InspectorSection index={1} title={isAr ? 'بطاقة الموسم' : isEn ? 'Cycle Sheet' : 'Fiche culturale'}>
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={isAr ? 'القطعة' : isEn ? 'Parcel' : 'Parcelle'}
+                    value={parcelNameMap.get(cycle.parcelId) || cycle.parcelId}
+                    mono={false}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'المساحة المخصصة' : isEn ? 'Allocated Area' : 'Surface allouée'}
+                    value={`${cycle.surfaceAllocatedHa} ha`}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'حصة البذور' : isEn ? 'Seed Lot' : 'Lot semence'}
+                    value={cycle.seedLotNumber || 'CCLS-Standard'}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'تاريخ البذر' : isEn ? 'Sowing Date' : 'Date semis'}
+                    value={cycle.sowingDate}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'الحصاد المتوقع' : isEn ? 'Expected Harvest' : 'Récolte prévue'}
+                    value={cycle.projectedHarvestDate}
+                    isLast={!cycle.activeDarLockoutUntil}
+                  />
+                  {cycle.activeDarLockoutUntil && (
+                    <InspectorKeyValue
+                      label={isAr ? 'حظر DAR حتى' : isEn ? 'DAR Lockout' : 'Verrouillage DAR'}
+                      value={cycle.activeDarLockoutUntil}
+                      tone="warn"
+                      isLast
+                    />
+                  )}
+                </InspectorCard>
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       <KineticSlideOverInspector<AgriTreatmentLog>
@@ -1333,6 +1489,7 @@ export const AgricultureCyclesView: React.FC = () => {
         language={language}
         title={activeTreatment?.commercialProductName || ''}
         subtitle={activeTreatment?.activeIngredient}
+        categoryLabel={activeTreatment?.targetPestDisease}
         avatarText={(activeTreatment?.commercialProductName || 'PH').slice(0, 2).toUpperCase()}
         branchName={
           activeTreatment
@@ -1340,63 +1497,127 @@ export const AgricultureCyclesView: React.FC = () => {
             : undefined
         }
         statusLabel={activeTreatment ? `${activeTreatment.darDays}j DAR` : undefined}
-        statusClassName="bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300"
+        statusClassName={
+          activeTreatment && evaluateDarSafety(activeTreatment.treatmentDate, activeTreatment.darDays).isLocked
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+        }
+        tabs={[
+          { id: 'overview', label: isAr ? 'نظرة عامة' : isEn ? 'Overview' : 'Aperçu' },
+          { id: 'dar', label: isAr ? 'فترة الأمان' : isEn ? 'DAR Safety' : 'Délai DAR' },
+          { id: 'notes', label: isAr ? 'التعليمات' : isEn ? 'Notes' : 'Consignes' },
+        ]}
+        activeTab={treatmentInspectorTab}
+        onTabChange={setTreatmentInspectorTab}
         onSelectItem={(t) => setSelectedTreatment(t)}
         onClose={() => setSelectedTreatment(null)}
         onDelete={handleDeleteTreatment}
         holdToDelete
-        renderBody={(treat) => (
-          <div className="space-y-4 text-xs">
-            <AtriumButton
-              variant="outline"
-              size="sm"
-              onClick={() => handleOpenEditTreatment(treat)}
-              icon={<Edit size={13} />}
-            >
-              {isAr ? 'تعديل المعالجة' : 'Modifier le Traitement'}
-            </AtriumButton>
-            <div className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-2">
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">Cible / Maladie:</span>
-                <span className="font-semibold text-black dark:text-white">
-                  {treat.targetPestDisease}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">Parcelle:</span>
-                <span className="text-black dark:text-white">
-                  {parcelNameMap.get(treat.parcelId) || treat.parcelId}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">Dose appliquée:</span>
-                <span className="font-mono font-semibold">{treat.dosagePerHa}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">Date Application:</span>
-                <span className="font-mono">{treat.treatmentDate}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">Récolte Autorisée:</span>
-                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                  {treat.harvestAllowedDate}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">Applicateur:</span>
-                <span>{treat.operatorName}</span>
-              </div>
-            </div>
-            <div className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-1">
-              <span className="text-black/55 dark:text-white/55 font-medium">
-                Consignes &amp; Météo:
-              </span>
-              <p className="text-black/70 dark:text-white/75 italic text-[11px]">
-                &ldquo;{treat.notes || 'Aucune observation particulière.'}&rdquo;
-              </p>
-            </div>
-          </div>
-        )}
+        renderBody={(treat, tab) => {
+          const safety = evaluateDarSafety(treat.treatmentDate, treat.darDays);
+
+          if (tab === 'dar') {
+            const elapsedPct = safety.isLocked
+              ? Math.max(10, Math.min(95, Math.round(((treat.darDays - safety.daysRemaining) / (treat.darDays || 1)) * 100)))
+              : 100;
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'حالة فترة الأمان' : isEn ? 'DAR Status' : 'Rémanence INPV'}>
+                  <InspectorBigStat
+                    value={safety.isLocked ? `${safety.daysRemaining}j` : '0j'}
+                    tone={safety.isLocked ? 'warn' : 'ok'}
+                    caption={`Récolte autorisée : ${treat.harvestAllowedDate}`}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'تقدم مدة الأمان' : isEn ? 'Safety Window' : 'Progression DAR'}>
+                  <InspectorProgressBar
+                    label={`${treat.darDays} jours réglementaires`}
+                    value={`${elapsedPct}%`}
+                    percent={elapsedPct}
+                  />
+                </InspectorSection>
+              </>
+            );
+          }
+
+          if (tab === 'notes') {
+            return (
+              <InspectorSection index={0} title={isAr ? 'توصيات الطقس والمعالجة' : isEn ? 'Field Notes' : 'Consignes & Météo'}>
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={isAr ? 'المطبق' : isEn ? 'Operator' : 'Applicateur'}
+                    value={treat.operatorName}
+                    mono={false}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'الملاحظات' : isEn ? 'Notes' : 'Observations'}
+                    value={treat.notes || 'Aucune observation particulière.'}
+                    mono={false}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+            );
+          }
+
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : isEn ? 'Quick Actions' : 'Actions rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'edit',
+                      label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+                      icon: <Edit className="w-[18px] h-[18px]" />,
+                      primary: true,
+                      onClick: () => handleOpenEditTreatment(treat),
+                    },
+                    {
+                      id: 'export',
+                      label: 'CSV',
+                      icon: <Download className="w-[18px] h-[18px]" />,
+                      onClick: handleExportCsv,
+                    },
+                  ]}
+                />
+              </InspectorSection>
+              <InspectorSection index={1} title={isAr ? 'تفاصيل التطبيق' : isEn ? 'Application Details' : 'Détails phytosanitaires'}>
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={isAr ? 'الآفة المستهدفة' : isEn ? 'Target Pest' : 'Cible / Maladie'}
+                    value={treat.targetPestDisease}
+                    mono={false}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'القطعة' : isEn ? 'Parcel' : 'Parcelle'}
+                    value={parcelNameMap.get(treat.parcelId) || treat.parcelId}
+                    mono={false}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'الجرعة' : isEn ? 'Dosage' : 'Dose appliquée'}
+                    value={treat.dosagePerHa}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'تاريخ التطبيق' : isEn ? 'Applied Date' : 'Date application'}
+                    value={treat.treatmentDate}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'تاريخ الجني المسموح' : isEn ? 'Harvest Allowed' : 'Récolte autorisée'}
+                    value={treat.harvestAllowedDate}
+                    tone="ok"
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+              <InspectorSection index={2}>
+                <InspectorWideButton
+                  label={isAr ? 'تعديل سجل المعالجة' : isEn ? 'Edit Treatment Log' : 'Modifier ce traitement'}
+                  onClick={() => handleOpenEditTreatment(treat)}
+                />
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       <AgriCropCycleModal

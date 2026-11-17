@@ -10,7 +10,8 @@ import {
   Barcode,
   Zap,
   Eye,
-  X,
+  Copy,
+  Package,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -34,6 +35,17 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorProgressBar,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -422,6 +434,83 @@ export const MembershipShopView: React.FC = React.memo(() => {
     [isAr, isEn, branchesById, currentBranch, language]
   );
 
+  const getRowMeta = useCallback(
+    (p: Product): Partial<KineticRowData> => {
+      const reorder = p.reorderLevel || 5;
+      const isOut = p.stockQuantity <= 0;
+      const isLow = p.stockQuantity <= reorder;
+      const branch = resolveRecordBranch(p, branchesById, currentBranch, language);
+      return {
+        subline: `${p.sku} · ${p.category || 'Pro-Shop'}`,
+        categoryLabel: p.category || 'Pro-Shop',
+        statusLabel: isOut
+          ? isAr ? 'نفد' : isEn ? 'Out' : 'Rupture'
+          : isLow
+          ? isAr ? 'منخفض' : isEn ? 'Low' : 'Stock faible'
+          : isAr ? 'متوفر' : isEn ? 'In stock' : 'Disponible',
+        statusVariant: isOut ? 'blocked' : isLow ? 'warning' : 'active',
+        metricPrimary: formatMoney(p.price.amount),
+        metricSecondary: `${p.stockQuantity} ${isAr ? 'قطعة' : isEn ? 'units' : 'unités'}`,
+        detailCol1: {
+          heading: isAr ? 'تفاصيل الصنف' : isEn ? 'Catalog SKU' : 'Référence SKU',
+          primaryText: p.sku,
+          secondaryText: p.category || 'Nutrition & Équipement',
+          tertiaryText: branch.name,
+        },
+        detailCol2: {
+          heading: isAr ? 'حالة المخزون' : isEn ? 'Stock Level' : 'Niveau de stock',
+          primaryText: `${p.stockQuantity} ${isAr ? 'قطعة' : 'unités'}`,
+          secondaryText: `${isAr ? 'حد التنبيه:' : 'Seuil alerte:'} ${reorder}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'التسعير' : isEn ? 'Pricing' : 'Valorisation',
+          primaryText: formatMoney(p.price.amount),
+          secondaryText: formatMoney(p.price.amount * p.stockQuantity),
+        },
+      };
+    },
+    [branchesById, currentBranch, language, isAr, isEn]
+  );
+
+  const getFanActions = useCallback(
+    (p: Product): KineticRowFanAction[] => [
+      {
+        id: 'cart',
+        label: isAr ? 'إضافة للسلة' : isEn ? '+ Cart' : '+ Panier',
+        icon: <Plus className="w-[15px] h-[15px]" />,
+        onClick: () => handleAddToCart(p),
+      },
+      {
+        id: 'view',
+        label: isAr ? 'معاينة' : isEn ? 'View' : 'Fiche',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedProduct(p);
+        },
+      },
+    ],
+    [isAr, isEn, handleAddToCart]
+  );
+
+  const getDetailActions = useCallback(
+    (p: Product): KineticDetailAction[] => [
+      {
+        id: 'cart',
+        label: isAr ? 'إضافة للسلة' : isEn ? 'Add to Cart' : 'Ajouter au panier',
+        icon: <ShoppingBag className="w-3.5 h-3.5 text-[#d4522f]" />,
+        onClick: () => handleAddToCart(p),
+      },
+      {
+        id: 'view',
+        label: isAr ? 'تفاصيل المنتج' : isEn ? 'Product Details' : 'Fiche article',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => setSelectedProduct(p),
+      },
+    ],
+    [isAr, isEn, handleAddToCart]
+  );
+
   if (showSkeleton && (products.length === 0 || networkMode === 'force_skeleton')) {
     return (
       <SkeletonPosRegister
@@ -533,6 +622,9 @@ export const MembershipShopView: React.FC = React.memo(() => {
               lastSyncedAt={lastSyncedAt}
               onRetrySync={retryCloudSync}
               columns={columns}
+              getRowMeta={getRowMeta}
+              getFanActions={getFanActions}
+              getDetailActions={getDetailActions}
               selectedIds={selectedProductIds}
               onSelectionChange={setSelectedProductIds}
               pinnedIds={pinnedProductIds}
@@ -558,6 +650,27 @@ export const MembershipShopView: React.FC = React.memo(() => {
               onViewDetails={(p, opener) => {
                 setDrawerOpenerEl(opener || null);
                 setSelectedProduct(p);
+              }}
+              bulkSecondaryAction={{
+                label: isAr ? 'إضافة للسلة' : isEn ? 'Add to Cart' : 'Ajouter au panier',
+                icon: <ShoppingBag size={13} />,
+                onClick: (ids) => {
+                  let added = 0;
+                  ids.forEach((id) => {
+                    const prod = products.find((item) => item.id === id);
+                    if (prod && prod.stockQuantity > 0) {
+                      handleAddToCart(prod);
+                      added++;
+                    }
+                  });
+                  setSelectedProductIds(new Set());
+                  showToast?.({
+                    type: 'success',
+                    title: isAr ? 'السلة' : 'Panier',
+                    message: `${added} ${isAr ? 'منتجات أضيفت' : 'article(s) ajouté(s)'}`,
+                  });
+                },
+                variant: 'primary',
               }}
               customActions={(p) => [
                 {
@@ -719,7 +832,8 @@ export const MembershipShopView: React.FC = React.memo(() => {
         language={language}
         title={selectedProduct?.name || ''}
         subtitle={selectedProduct ? `SKU: ${selectedProduct.sku} · ${selectedProduct.category || 'Pro-Shop'}` : undefined}
-        avatarText={selectedProduct ? selectedProduct.name.charAt(0).toUpperCase() : undefined}
+        avatarText={selectedProduct ? selectedProduct.name.slice(0, 2).toUpperCase() : undefined}
+        categoryLabel={selectedProduct?.category || 'Pro-Shop'}
         branchName={
           selectedProduct
             ? resolveRecordBranch(selectedProduct, branchesById, currentBranch, language).name
@@ -735,69 +849,160 @@ export const MembershipShopView: React.FC = React.memo(() => {
             : undefined
         }
         statusClassName={
-          selectedProduct && selectedProduct.stockQuantity <= (selectedProduct.reorderLevel || 5)
-            ? 'bg-amber-50 text-amber-700 border border-amber-200'
-            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+          selectedProduct && selectedProduct.stockQuantity <= 0
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            : selectedProduct && selectedProduct.stockQuantity <= (selectedProduct.reorderLevel || 5)
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
         }
+        tabs={[
+          { id: 'overview', label: isAr ? 'المنتج والتسعير' : isEn ? 'Overview' : 'Fiche & Prix' },
+          { id: 'stock', label: isAr ? 'المخزون' : isEn ? 'Inventory' : 'Stock & Seuils' },
+          { id: 'cart', label: isAr ? 'السلة والفوترة' : isEn ? 'POS Cart' : 'Panier POS' },
+        ]}
         onClose={() => setSelectedProduct(null)}
         onSelectItem={(p) => setSelectedProduct(p)}
-        renderBody={(p) => (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 bg-[#1F1D1B] border border-white/[0.08] rounded-2xl text-white space-y-2 shadow-sm">
-              <span className="text-[11px] text-white/75 font-mono">SKU: {p.sku}</span>
-              <h3 className="text-base font-bold text-white">{p.name}</h3>
-              <div className="text-2xl font-bold text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                {formatMoney(p.price.amount)}
-              </div>
-            </div>
+        renderBody={(p, activeTab) => {
+          const reorder = p.reorderLevel || 5;
+          const maxStock = Math.max(reorder * 4, p.stockQuantity, 20);
+          const stockPct = Math.round((p.stockQuantity / maxStock) * 100);
+          const inCartQty = cart.find((c) => c.product.id === p.id)?.quantity || 0;
+          const branchName = resolveRecordBranch(p, branchesById, currentBranch, language).name;
 
-            <div className="p-4 bg-[#FBF8F5] dark:bg-[#262422] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] space-y-2.5">
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">{isAr ? 'الفئة:' : 'Catégorie:'}</span>
-                <span className="font-semibold text-black dark:text-white">{p.category || 'Nutrition'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">{isAr ? 'المخزون المتاح:' : 'Stock disponible:'}</span>
-                <span className="font-mono font-bold text-black dark:text-white tabular-nums">
-                  {p.stockQuantity} pcs
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">{isAr ? 'حد التنبيه:' : 'Seuil réappro:'}</span>
-                <span className="font-mono text-black/72 dark:text-white/75 tabular-nums">
-                  {p.reorderLevel || 5} pcs
-                </span>
-              </div>
-            </div>
+          if (activeTab === 'stock') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'مستوى المخزون' : isEn ? 'Stock Level' : 'Disponibilité en rayon'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'الكمية المتاحة' : 'Stock disponible'}
+                      value={`${p.stockQuantity} ${isAr ? 'قطعة' : 'unités'}`}
+                      tone={p.stockQuantity <= reorder ? 'danger' : 'ok'}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'حد التنبيه' : 'Seuil réappro'}
+                      value={`${reorder} ${isAr ? 'قطعة' : 'unités'}`}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'قيمة المخزون' : 'Valorisation'}
+                      value={formatMoney(p.price.amount * p.stockQuantity)}
+                      tone="accent"
+                      isLast
+                    />
+                    <InspectorProgressBar
+                      percent={stockPct}
+                      tone={p.stockQuantity <= 0 ? 'danger' : p.stockQuantity <= reorder ? 'accent' : 'ok'}
+                    />
+                  </InspectorCard>
+                </InspectorSection>
 
-            <div className="space-y-2 pt-2">
-              <AtriumButton
-                type="button"
-                variant="primary"
-                className="w-full justify-center"
-                icon={<Plus size={14} />}
-                onClick={() => handleAddToCart(p)}
-              >
-                {isAr ? 'إضافة إلى السلة' : isEn ? 'Add to Cart' : 'Ajouter au Panier'}
-              </AtriumButton>
-              <AtriumButton
-                type="button"
-                variant="secondary"
-                className="w-full justify-center"
-                icon={<Barcode size={14} />}
-                onClick={() =>
-                  showToast?.({
-                    type: 'info',
-                    title: 'Barcode',
-                    message: `${p.sku} (${p.name})`,
-                  })
-                }
-              >
-                {isAr ? 'طباعة الباركود' : isEn ? 'Print Barcode' : 'Étiquette Code-Barres'}
-              </AtriumButton>
-            </div>
-          </div>
-        )}
+                <InspectorSection index={1} title={isAr ? 'التخزين' : isEn ? 'Warehouse' : 'Emplacement'}>
+                  <InspectorCard>
+                    <InspectorListItem
+                      title={branchName}
+                      subtitle={`SKU ${p.sku} · ${p.category || 'Pro-Shop'}`}
+                      badge={{ label: p.stockQuantity > reorder ? 'OK' : 'Réappro', tone: p.stockQuantity > reorder ? 'ok' : 'warn' }}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
+
+          if (activeTab === 'cart') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'السلة الحالية' : isEn ? 'Current POS Cart' : 'Statut dans le panier'}>
+                  <InspectorBigStat
+                    value={formatMoney(cartTotal)}
+                    tone={cart.length > 0 ? 'accent' : 'ok'}
+                    actionLabel={cart.length > 0 ? (isAr ? 'إتمام البيع الآن' : 'Encaisser maintenant') : undefined}
+                    onAction={cart.length > 0 ? handleCheckout : undefined}
+                  />
+                </InspectorSection>
+
+                <InspectorSection index={1} title={isAr ? 'كمية هذا المنتج بالسلة' : 'Quantité sélectionnée'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label={isAr ? 'في السلة' : 'Dans le panier'} value={`${inCartQty}x`} tone="accent" />
+                    <InspectorKeyValue label={isAr ? 'سعر الوحدة' : 'Prix unitaire'} value={formatMoney(p.price.amount)} isLast />
+                  </InspectorCard>
+                </InspectorSection>
+
+                <InspectorSection index={2}>
+                  <InspectorWideButton
+                    label={isAr ? 'إضافة إلى السلة' : isEn ? 'Add to Cart' : 'Ajouter au Panier'}
+                    icon={<Plus className="w-4 h-4" />}
+                    tone="accent"
+                    onClick={() => handleAddToCart(p)}
+                  />
+                </InspectorSection>
+              </>
+            );
+          }
+
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : isEn ? 'Quick Actions' : 'Actions rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'add-cart',
+                      label: isAr ? 'إضافة للسلة' : isEn ? 'Add to Cart' : 'Ajouter au panier',
+                      icon: <Plus className="w-[18px] h-[18px]" />,
+                      primary: true,
+                      onClick: () => handleAddToCart(p),
+                    },
+                    {
+                      id: 'copy-sku',
+                      label: isAr ? 'نسخ الرمز' : isEn ? 'Copy SKU' : 'Copier SKU',
+                      icon: <Copy className="w-[18px] h-[18px]" />,
+                      onClick: () => {
+                        navigator.clipboard?.writeText(p.sku);
+                        showToast?.({ type: 'success', title: 'SKU Copié', message: p.sku });
+                      },
+                    },
+                    {
+                      id: 'barcode',
+                      label: isAr ? 'باركود' : isEn ? 'Barcode' : 'Code-Barres',
+                      icon: <Barcode className="w-[18px] h-[18px]" />,
+                      onClick: () =>
+                        showToast?.({ type: 'info', title: 'Barcode', message: `${p.sku} (${p.name})` }),
+                    },
+                    {
+                      id: 'checkout',
+                      label: isAr ? 'تحصيل' : isEn ? 'Checkout' : 'Encaisser',
+                      icon: <Receipt className="w-[18px] h-[18px] text-[#096b40]" />,
+                      onClick: () => {
+                        if (cart.length === 0) handleAddToCart(p);
+                        else handleCheckout();
+                      },
+                    },
+                  ]}
+                />
+              </InspectorSection>
+
+              <InspectorSection index={1} title={isAr ? 'السعر والمواصفات' : isEn ? 'Pricing & Specs' : 'Tarification & Référence'}>
+                <InspectorCard>
+                  <InspectorKeyValue label={isAr ? 'سعر البيع' : 'Prix de vente'} value={formatMoney(p.price.amount)} tone="accent" />
+                  <InspectorKeyValue label="SKU" value={p.sku} copyText={p.sku} onCopied={(v) => showToast?.({ type: 'success', title: 'Copié', message: v })} />
+                  <InspectorKeyValue label={isAr ? 'الفئة' : 'Catégorie'} value={p.category || 'Nutrition & Sport'} mono={false} />
+                  <InspectorKeyValue
+                    label={isAr ? 'الكمية المتوفرة' : 'Stock dispo'}
+                    icon={<Package className="w-[15px] h-[15px]" />}
+                    value={`${p.stockQuantity} ${isAr ? 'قطعة' : 'unités'}`}
+                    tone={p.stockQuantity <= reorder ? 'danger' : 'ok'}
+                    isLast
+                  />
+                  <InspectorProgressBar
+                    percent={stockPct}
+                    tone={p.stockQuantity <= 0 ? 'danger' : p.stockQuantity <= reorder ? 'accent' : 'ok'}
+                  />
+                </InspectorCard>
+              </InspectorSection>
+            </>
+          );
+        }}
       />
     </div>
   );

@@ -4,6 +4,7 @@ import {
   shallowEqualObjects,
   useAtriumActions,
   selectCurrentBranchFromState,
+  retryCloudSyncAction,
   showToast,
 } from '../../../services/store';
 import { StaffMember, StaffLifecycleStatus, BusinessCategory } from '../../../types/index';
@@ -48,6 +49,8 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
       activeAppointmentRole: s.activeAppointmentRole,
       activePosRole: s.activePosRole,
       activeEducationRole: s.activeEducationRole,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
     }),
     shallowEqualObjects
   );
@@ -91,6 +94,8 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
     activeAppointmentRole,
     activePosRole,
     activeEducationRole,
+    isSyncing,
+    networkMode,
   } = storeSlice;
 
   const isAr = language === 'ar';
@@ -496,6 +501,10 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
     approveStaffPayrollRun,
     markStaffPayrollSlipPaid,
     logStaffAttendanceManual,
+    updateStaffMember,
+    isSyncing,
+    networkMode,
+    retryCloudSync: retryCloudSyncAction,
     isAr,
     isEn,
     language,

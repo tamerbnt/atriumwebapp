@@ -7,12 +7,13 @@ import {
   Gavel,
   Printer,
   MapPin,
+  Eye,
+  Trash2,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import { useAtriumSelector, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { LegalMatter, NotaryDeed } from '../../../types';
 import { useLegalData } from './legalData';
-import { AtriumButton } from '../../ui/AtriumButton';
 import { LegalMatterModal } from './LegalMatterModal';
 import { NotaryDeedModal } from '../../modals/NotaryDeedModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -27,21 +28,29 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorNotesField,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
 
 export const LegalMattersView: React.FC<any> = () => {
-  const {
-    language,
-    activeLegalRole,
-    currentBranch,
-    branches,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-  } = useAtriumStore();
+  const language = useAtriumSelector((s) => s.language);
+  const activeLegalRole = useAtriumSelector((s) => s.activeLegalRole);
+  const currentBranch = useAtriumSelector((s) => s.currentBranch);
+  const branches = useAtriumSelector((s) => s.branches);
+  const isSyncing = useAtriumSelector((s) => s.isSyncing);
+  const networkMode = useAtriumSelector((s) => s.networkMode);
+  const retryCloudSync = useAtriumSelector((s) => s.retryCloudSync);
   const isAr = language === 'ar';
   const isEn = language === 'en';
   const isNotary = activeLegalRole === 'notaire_titulaire';
@@ -428,6 +437,202 @@ export const LegalMattersView: React.FC<any> = () => {
     [language, isAr, isEn, pinnedIds, branchesById, currentBranch]
   );
 
+  const getDeedRowMeta = useCallback(
+    (d: NotaryDeed): KineticRowMeta => {
+      const isPublished = d.status === 'publie_conservation';
+      return {
+        avatarText: d.repertoireNumber.slice(-2).toUpperCase(),
+        subtitle: `${d.parties.vendorName} ➔ ${d.parties.purchaserName}`,
+        categoryLabel: d.actType.replace('_', ' ').toUpperCase(),
+        statusTone: isPublished ? 'ok' : 'warn',
+        statusLabel: isPublished
+          ? `Publié (${d.conservationVolume || 'Vol.'})`
+          : isAr
+          ? 'في انتظار النشر'
+          : 'En attente',
+        metricPrimary: formatMoney(d.transactionValueDzd, language),
+        metricSecondary: `HT: ${formatMoney(d.financials.honorairesHtDzd, language)}`,
+      };
+    },
+    [isAr, language]
+  );
+
+  const getDeedFanActions = useCallback(
+    (d: NotaryDeed): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'معاينة العقد' : 'Consulter Acte',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedMatter(null);
+          setSelectedDeed(d);
+          setActiveTab('decompte');
+        },
+      },
+      {
+        id: 'print_grosse',
+        label: isAr ? 'طباعة النسخة الرسمية' : 'Imprimer Grosse',
+        icon: <Printer className="w-[15px] h-[15px]" />,
+        onClick: () => {
+          showToast(
+            isAr
+              ? `جاري طباعة النسخة الرسمية للعقد ${d.repertoireNumber}`
+              : `Impression Grosse Authentique (${d.repertoireNumber})`,
+            'info'
+          );
+        },
+      },
+    ],
+    [isAr]
+  );
+
+  const getDeedDetailActions = useCallback(
+    (d: NotaryDeed): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'التفاصيل والتعريفة' : 'Décompte 08-243',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedMatter(null);
+          setSelectedDeed(d);
+          setActiveTab('decompte');
+        },
+      },
+      {
+        id: 'parties',
+        label: isAr ? 'الأطراف' : 'Parties',
+        icon: <BookOpen className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedMatter(null);
+          setSelectedDeed(d);
+          setActiveTab('parties');
+        },
+      },
+      {
+        id: 'print_grosse',
+        label: isAr ? 'طباعة النسخة الرسمية' : 'Imprimer Grosse',
+        icon: <Printer className="w-3.5 h-3.5" />,
+        onClick: () => {
+          showToast(
+            isAr
+              ? `جاري طباعة النسخة الرسمية للعقد ${d.repertoireNumber}`
+              : `Impression Grosse Authentique (${d.repertoireNumber})`,
+            'info'
+          );
+        },
+      },
+    ],
+    [isAr]
+  );
+
+  const getMatterRowMeta = useCallback(
+    (m: LegalMatter): KineticRowMeta => {
+      const isActive = m.status === 'Active';
+      return {
+        avatarText: (m.clientName || 'LG').slice(0, 2).toUpperCase(),
+        subtitle: `${m.matterNumber} · ${m.clientName}`,
+        categoryLabel: m.category,
+        statusTone: isActive ? 'ok' : m.status === 'PendingHearing' ? 'warn' : 'neutral',
+        statusLabel:
+          m.status === 'Active'
+            ? isAr
+              ? 'جارية'
+              : 'Actif'
+            : m.status === 'PendingHearing'
+            ? isAr
+              ? 'جلسة قادمة'
+              : 'Audience'
+            : m.status,
+        metricPrimary: formatMoney(m.retainerAmountDzd, language),
+        metricSecondary: `CARPA: ${formatMoney(m.trustEscrowBalanceDzd || 0, language)}`,
+      };
+    },
+    [isAr, language]
+  );
+
+  const getMatterFanActions = useCallback(
+    (m: LegalMatter): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'فتح الملف' : 'Ouvrir Dossier',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedDeed(null);
+          setSelectedMatter(m);
+          setActiveTab('fiche');
+        },
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : 'Modifier',
+        icon: <Edit className="w-[15px] h-[15px]" />,
+        onClick: () => {
+          setMatterToEdit(m);
+          setIsMatterModalOpen(true);
+        },
+      },
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : 'Supprimer',
+        icon: <Trash2 className="w-[15px] h-[15px]" />,
+        isDanger: true,
+        onClick: () => {
+          deleteMatter(m.id);
+          if (activeMatter?.id === m.id) setSelectedMatter(null);
+          showToast(isAr ? 'تم حذف ملف القضية' : 'Dossier supprimé', 'info');
+        },
+      },
+    ],
+    [isAr, deleteMatter, activeMatter]
+  );
+
+  const getMatterDetailActions = useCallback(
+    (m: LegalMatter): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'ملف القضية' : 'Ouvrir Fiche',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedDeed(null);
+          setSelectedMatter(m);
+          setActiveTab('fiche');
+        },
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : 'Modifier',
+        icon: <Edit className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setMatterToEdit(m);
+          setIsMatterModalOpen(true);
+        },
+      },
+      {
+        id: 'carpa',
+        label: 'CARPA',
+        icon: <Scale className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedDeed(null);
+          setSelectedMatter(m);
+          setActiveTab('carpa');
+        },
+      },
+      {
+        id: 'delete',
+        label: isAr ? 'حذف' : 'Supprimer',
+        icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+        onClick: () => {
+          deleteMatter(m.id);
+          if (activeMatter?.id === m.id) setSelectedMatter(null);
+          showToast(isAr ? 'تم حذف ملف القضية' : 'Dossier supprimé', 'info');
+        },
+      },
+    ],
+    [isAr, deleteMatter, activeMatter]
+  );
+
   const handleExportCsv = useCallback(() => {
     if (isNotary) {
       downloadCsvSafe(
@@ -682,15 +887,6 @@ export const LegalMattersView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={isNotary ? <BookOpen size={22} /> : <Scale size={22} />}
         title={headerTitle}
-        subtitle={`${activeLegalRole.replace('_', ' ').toUpperCase()} · ${
-          isNotary
-            ? isAr
-              ? 'فهرس العقود الرسمية والتعريفة الموثقة'
-              : 'Répertoire des Actes & Décret 08-243'
-            : isAr
-            ? 'متابعة القضايا، المحاكم، والودائع CARPA'
-            : 'Contentieux, Juridictions & Séquestre CARPA'
-        }`}
         primaryAction={{
           label: isNotary
             ? isAr
@@ -813,7 +1009,6 @@ export const LegalMattersView: React.FC<any> = () => {
                   { value: 'Commercial', label: isAr ? 'تجاري' : 'Commercial' },
                   { value: 'Civil', label: isAr ? 'مدني' : 'Civil' },
                   { value: 'Labor', label: isAr ? 'عمالي' : 'Social' },
-                  { value: 'Penal', label: isAr ? 'جزائي' : 'Pénal' },
                 ]
           }
           statusValue={filterCategory}
@@ -833,9 +1028,10 @@ export const LegalMattersView: React.FC<any> = () => {
         {isNotary ? (
           <UniversalDataCollection<NotaryDeed>
             hideToolbar
-            data={filteredDeeds}
+            items={filteredDeeds}
             keyExtractor={(d) => d.id}
-            defaultViewMode={viewMode}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+            defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
             columns={notaryColumns}
             sortBy={sortBy}
             sortDirection={sortDir}
@@ -860,6 +1056,9 @@ export const LegalMattersView: React.FC<any> = () => {
               setDrawerOpenerEl(el || null);
               setActiveTab('decompte');
             }}
+            getRowMeta={getDeedRowMeta}
+            getFanActions={getDeedFanActions}
+            getDetailActions={getDeedDetailActions}
             customActions={(d) => [
               {
                 id: 'print_grosse',
@@ -875,29 +1074,6 @@ export const LegalMattersView: React.FC<any> = () => {
                 },
               },
             ]}
-            renderCard={(d) => (
-              <div className="space-y-3 text-left rtl:text-right">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono font-bold text-xs text-[#d4522f]">
-                    {d.repertoireNumber}
-                  </span>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
-                    {d.status === 'publie_conservation' ? 'Publié' : 'Signé'}
-                  </span>
-                </div>
-                <h4 className="text-xs font-bold text-black dark:text-white line-clamp-2">
-                  {isAr && d.titleAr ? d.titleAr : d.title}
-                </h4>
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700 flex items-center justify-between text-xs">
-                  <span className="text-[10px] text-black/55 dark:text-white/55">
-                    {resolveRecordBranch(d, branchesById, currentBranch, language).name}
-                  </span>
-                  <span className="font-bold font-mono text-black dark:text-white tabular-nums">
-                    {formatMoney(d.transactionValueDzd, language)}
-                  </span>
-                </div>
-              </div>
-            )}
             emptyTitle={isAr ? 'لا توجد عقود مطابقة' : 'Aucun acte répertorié'}
             emptyDescription={
               isAr
@@ -912,9 +1088,10 @@ export const LegalMattersView: React.FC<any> = () => {
         ) : (
           <UniversalDataCollection<LegalMatter>
             hideToolbar
-            data={filteredMatters}
+            items={filteredMatters}
             keyExtractor={(m) => m.id}
-            defaultViewMode={viewMode}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+            defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
             columns={matterColumns}
             sortBy={sortBy}
             sortDirection={sortDir}
@@ -947,6 +1124,9 @@ export const LegalMattersView: React.FC<any> = () => {
               setDrawerOpenerEl(el || null);
               setActiveTab('fiche');
             }}
+            getRowMeta={getMatterRowMeta}
+            getFanActions={getMatterFanActions}
+            getDetailActions={getMatterDetailActions}
             onEdit={(m) => {
               setMatterToEdit(m);
               setIsMatterModalOpen(true);
@@ -956,29 +1136,6 @@ export const LegalMattersView: React.FC<any> = () => {
               if (activeMatter?.id === m.id) setSelectedMatter(null);
               showToast(isAr ? 'تم حذف ملف القضية' : 'Dossier supprimé', 'info');
             }}
-            renderCard={(m) => (
-              <div className="space-y-3 text-left rtl:text-right">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono font-bold text-xs text-[#d4522f]">
-                    {m.matterNumber}
-                  </span>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[#d4522f]/15 text-[#d4522f]">
-                    {m.category}
-                  </span>
-                </div>
-                <h4 className="text-xs font-bold text-black dark:text-white line-clamp-2">
-                  {isAr && m.titleAr ? m.titleAr : m.title}
-                </h4>
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700 flex items-center justify-between text-xs gap-2">
-                  <span className="text-[10px] text-black/55 dark:text-white/55 truncate">
-                    {m.clientName}
-                  </span>
-                  <span className="font-bold font-mono text-black dark:text-white shrink-0 tabular-nums">
-                    {formatMoney(m.retainerAmountDzd, language)}
-                  </span>
-                </div>
-              </div>
-            )}
             emptyTitle={isAr ? 'لا توجد قضايا مطابقة' : 'Aucun dossier juridique'}
             emptyDescription={
               isAr
@@ -1028,7 +1185,8 @@ export const LegalMattersView: React.FC<any> = () => {
             activeDeed ? (isAr && activeDeed.titleAr ? activeDeed.titleAr : activeDeed.title) : ''
           }
           subtitle={activeDeed?.repertoireNumber}
-          avatarText={activeDeed ? activeDeed.repertoireNumber.slice(-2) : 'AC'}
+          categoryLabel={activeDeed ? activeDeed.actType.replace('_', ' ').toUpperCase() : 'Acte'}
+          avatarText={activeDeed ? activeDeed.repertoireNumber.slice(-2).toUpperCase() : 'AC'}
           branchName={
             activeDeed
               ? resolveRecordBranch(activeDeed, branchesById, currentBranch, language).name
@@ -1038,6 +1196,11 @@ export const LegalMattersView: React.FC<any> = () => {
             activeDeed?.status === 'publie_conservation'
               ? 'Publié Conservation'
               : 'En attente publication'
+          }
+          statusClassName={
+            activeDeed?.status === 'publie_conservation'
+              ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+              : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
           }
           tabs={[
             { id: 'decompte', label: isAr ? 'التعريفة 08-243' : 'Décompte 08-243' },
@@ -1051,119 +1214,100 @@ export const LegalMattersView: React.FC<any> = () => {
           renderBody={(d, tab) => {
             if (tab === 'parties') {
               return (
-                <div className="space-y-3 text-xs">
-                  <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200/70 dark:border-neutral-700/70 space-y-1">
-                    <span className="text-[10px] text-black/55 dark:text-white/55 block">
-                      {isAr ? 'البائع / المتنازل' : 'Vendeur / Cédant'}
-                    </span>
-                    <span className="font-semibold text-black dark:text-white block">
-                      {d.parties.vendorName}
-                    </span>
-                    <span className="text-[10px] font-mono text-black/55 dark:text-white/55 block">
-                      NIN: {d.parties.vendorNin}
-                    </span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200/70 dark:border-neutral-700/70 space-y-1">
-                    <span className="text-[10px] text-black/55 dark:text-white/55 block">
-                      {isAr ? 'المشتري / المستفيد' : 'Acquéreur / Bénéficiaire'}
-                    </span>
-                    <span className="font-semibold text-black dark:text-white block">
-                      {d.parties.purchaserName}
-                    </span>
-                    <span className="text-[10px] font-mono text-black/55 dark:text-white/55 block">
-                      NIN: {d.parties.purchaserNin}
-                    </span>
-                  </div>
-                </div>
+                <>
+                  <InspectorSection index={0} title={isAr ? 'البائع / المتنازل' : 'Vendeur / Cédant'}>
+                    <InspectorCard>
+                      <InspectorKeyValue label={isAr ? 'الاسم' : 'Identité'} value={d.parties.vendorName} mono={false} />
+                      <InspectorKeyValue label="NIN" value={d.parties.vendorNin} copyText={d.parties.vendorNin} onCopied={() => showToast('NIN copié', 'info')} isLast />
+                    </InspectorCard>
+                  </InspectorSection>
+                  <InspectorSection index={1} title={isAr ? 'المشتري / المستفيد' : 'Acquéreur / Bénéficiaire'}>
+                    <InspectorCard>
+                      <InspectorKeyValue label={isAr ? 'الاسم' : 'Identité'} value={d.parties.purchaserName} mono={false} />
+                      <InspectorKeyValue label="NIN" value={d.parties.purchaserNin} copyText={d.parties.purchaserNin} onCopied={() => showToast('NIN copié', 'info')} isLast />
+                    </InspectorCard>
+                  </InspectorSection>
+                </>
               );
             }
             if (tab === 'cadastre') {
               return (
-                <div className="space-y-3 text-xs">
-                  <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-900/40 border border-[#E6DED6] dark:border-neutral-700/60 space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-black/60 dark:text-white/60">Volume Conservation</span>
-                      <span className="font-mono font-bold text-black dark:text-white">
-                        {d.conservationVolume || 'En instance'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-black/60 dark:text-white/60">Numéro</span>
-                      <span className="font-mono font-bold text-black dark:text-white">
-                        {d.conservationNumber || '—'}
-                      </span>
-                    </div>
+                <InspectorSection index={0} title={isAr ? 'الشهر العقاري والمسح' : 'Publicité Foncière & Cadastre'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label="Volume Conservation"
+                      value={d.conservationVolume || 'En instance'}
+                      tone={d.conservationVolume ? 'ok' : 'warn'}
+                    />
+                    <InspectorKeyValue
+                      label="Numéro"
+                      value={d.conservationNumber || '—'}
+                      isLast={!d.cadastralReference}
+                    />
                     {d.cadastralReference && (
-                      <div className="flex justify-between">
-                        <span className="text-black/60 dark:text-white/60">Commune / Section</span>
-                        <span className="font-semibold text-black dark:text-white">
-                          {d.cadastralReference.commune} · Sec {d.cadastralReference.section}
-                        </span>
-                      </div>
+                      <InspectorKeyValue
+                        label="Commune / Section"
+                        value={`${d.cadastralReference.commune} · Sec ${d.cadastralReference.section}`}
+                        mono={false}
+                        isLast
+                      />
                     )}
-                  </div>
-                </div>
+                  </InspectorCard>
+                </InspectorSection>
               );
             }
             return (
-              <div className="space-y-4 text-xs">
-                <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-900/40 border border-[#E6DED6] dark:border-neutral-700/60 space-y-2">
-                  <span className="font-bold text-black dark:text-white block">
-                    {isAr
-                      ? 'التعريفة الرسمية (المرسوم 08-243):'
-                      : 'Décompte Légal Décret 08-243 :'}
-                  </span>
-                  <div className="flex justify-between text-black/70 dark:text-white/75">
-                    <span>{isAr ? 'مبلغ المعاملة' : 'Valeur Transaction'}</span>
-                    <span className="font-bold font-mono text-black dark:text-white">
-                      {formatMoney(d.transactionValueDzd, language)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-black/70 dark:text-white/75">
-                    <span>{isAr ? 'أتعاب التوثيق الخام' : 'Honoraires Notaire HT'}</span>
-                    <span className="font-bold font-mono text-black dark:text-white">
-                      {formatMoney(d.financials.honorairesHtDzd, language)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-black/70 dark:text-white/75">
-                    <span>{isAr ? 'الرسم 19% TVA' : 'TVA (19%)'}</span>
-                    <span className="font-bold font-mono text-[#d4522f]">
-                      +{formatMoney(d.financials.tvaAmountDzd, language)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-black/70 dark:text-white/75">
-                    <span>{isAr ? 'حقوق التسجيل والشهر' : 'Enregistrement & Publicité'}</span>
-                    <span className="font-bold font-mono text-black dark:text-white">
-                      +
-                      {formatMoney(
+              <>
+                <InspectorSection index={0}>
+                  <InspectorBigStat
+                    value={formatMoney(d.financials.totalProvisionClientDzd, language)}
+                    tone="accent"
+                    caption={isAr ? 'إجمالي الوديعة المطلوبة' : 'Total Provision Due (Décret 08-243)'}
+                  />
+                </InspectorSection>
+
+                <InspectorSection index={1} title={isAr ? 'تفصيل التعريفة 08-243' : 'Décompte Légal 08-243'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'مبلغ المعاملة' : 'Valeur Transaction'}
+                      value={formatMoney(d.transactionValueDzd, language)}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'أتعاب التوثيق الخام' : 'Honoraires Notaire HT'}
+                      value={formatMoney(d.financials.honorairesHtDzd, language)}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'الرسم 19% TVA' : 'TVA (19%)'}
+                      value={`+${formatMoney(d.financials.tvaAmountDzd, language)}`}
+                      tone="accent"
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'حقوق التسجيل والشهر' : 'Enregistrement & Publicité'}
+                      value={`+${formatMoney(
                         d.financials.droitsEnregistrementDzd + d.financials.droitsPubliciteDzd,
                         language
-                      )}
-                    </span>
-                  </div>
-                  <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700 flex justify-between font-bold text-black dark:text-white">
-                    <span>{isAr ? 'إجمالي الوديعة المطلوبة' : 'Total Provision Due'}</span>
-                    <span className="text-[#d4522f] font-mono">
-                      {formatMoney(d.financials.totalProvisionClientDzd, language)}
-                    </span>
-                  </div>
-                </div>
-                <AtriumButton
-                  variant="secondary"
-                  className="w-full justify-center"
-                  icon={<Printer size={14} />}
-                  onClick={() => {
-                    showToast(
-                      isAr
-                        ? 'جاري طباعة النسخة الرسمية للعقد'
-                        : "Impression de la Grosse d'Acte Authentique",
-                      'info'
-                    );
-                  }}
-                >
-                  {isAr ? 'طباعة النسخة الرسمية' : 'Imprimer Grosse Authentique'}
-                </AtriumButton>
-              </div>
+                      )}`}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+
+                <InspectorSection index={2}>
+                  <InspectorWideButton
+                    label={isAr ? 'طباعة النسخة الرسمية' : 'Imprimer Grosse Authentique'}
+                    icon={<Printer size={14} />}
+                    tone="dark"
+                    onClick={() => {
+                      showToast(
+                        isAr
+                          ? 'جاري طباعة النسخة الرسمية للعقد'
+                          : "Impression de la Grosse d'Acte Authentique",
+                        'info'
+                      );
+                    }}
+                  />
+                </InspectorSection>
+              </>
             );
           }}
         />
@@ -1183,18 +1327,35 @@ export const LegalMattersView: React.FC<any> = () => {
               : ''
           }
           subtitle={`${activeMatter?.matterNumber || ''} · ${activeMatter?.courtJurisdiction || ''}`}
+          categoryLabel={activeMatter?.category || 'Contentieux'}
           avatarText={activeMatter ? activeMatter.clientName.slice(0, 2).toUpperCase() : 'LG'}
           branchName={
             activeMatter
               ? resolveRecordBranch(activeMatter, branchesById, currentBranch, language).name
               : ''
           }
-          statusLabel={activeMatter?.category}
+          statusLabel={
+            activeMatter?.status === 'Active'
+              ? isAr
+                ? 'جارية'
+                : 'Actif'
+              : activeMatter?.status === 'PendingHearing'
+              ? isAr
+                ? 'جلسة قادمة'
+                : 'Audience'
+              : activeMatter?.status
+          }
+          statusClassName={
+            activeMatter?.status === 'Active'
+              ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+              : activeMatter?.status === 'PendingHearing'
+              ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+              : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+          }
           tabs={[
             { id: 'fiche', label: isAr ? 'الملف' : 'Dossier' },
             { id: 'parties', label: isAr ? 'الأطراف' : 'Parties' },
             { id: 'carpa', label: 'CARPA' },
-            { id: 'strategie', label: isAr ? 'الاستراتيجية' : 'Stratégie' },
           ]}
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -1208,123 +1369,144 @@ export const LegalMattersView: React.FC<any> = () => {
           renderBody={(m, tab) => {
             if (tab === 'parties') {
               return (
-                <div className="space-y-3 text-xs">
-                  <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-900/40 border border-[#E6DED6] dark:border-neutral-700/60 space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-black/55 dark:text-white/55">
-                        {isAr ? 'الموكل' : 'Client'}
-                      </span>
-                      <span className="font-bold text-black dark:text-white">{m.clientName}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-black/55 dark:text-white/55">
-                        {isAr ? 'الهاتف' : 'Téléphone'}
-                      </span>
-                      <span className="font-mono text-black dark:text-white">
-                        {m.clientPhone || '—'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-black/55 dark:text-white/55">NIN/NIF</span>
-                      <span className="font-mono text-black dark:text-white">
-                        {m.clientNinOrNif || '—'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-black/55 dark:text-white/55">
-                        {isAr ? 'الطرف الخصم' : 'Partie Adverse'}
-                      </span>
-                      <span className="font-semibold text-black dark:text-white">
-                        {m.adversePartyName || 'N/A'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                <>
+                  <InspectorSection index={0} title={isAr ? 'أطراف الدعوى' : 'Parties au Litige'}>
+                    <InspectorCard>
+                      <InspectorKeyValue
+                        label={isAr ? 'الموكل' : 'Client'}
+                        value={m.clientName}
+                        mono={false}
+                      />
+                      <InspectorKeyValue
+                        label={isAr ? 'الهاتف' : 'Téléphone'}
+                        value={m.clientPhone || '—'}
+                        copyText={m.clientPhone || undefined}
+                        onCopied={() => showToast(isAr ? 'تم النسخ' : 'Téléphone copié', 'info')}
+                      />
+                      <InspectorKeyValue
+                        label="NIN/NIF"
+                        value={m.clientNinOrNif || '—'}
+                        copyText={m.clientNinOrNif || undefined}
+                        onCopied={() => showToast(isAr ? 'تم النسخ' : 'NIN/NIF copié', 'info')}
+                      />
+                      <InspectorKeyValue
+                        label={isAr ? 'الطرف الخصم' : 'Partie Adverse'}
+                        value={m.adversePartyName || 'N/A'}
+                        mono={false}
+                        isLast
+                      />
+                    </InspectorCard>
+                  </InspectorSection>
+                </>
               );
             }
             if (tab === 'carpa') {
               return (
-                <div className="space-y-3 text-xs">
-                  <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-900/40 border border-[#E6DED6] dark:border-neutral-700/60 space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-black/55 dark:text-white/55">
-                        {isAr ? 'الأتعاب المتفق عليها' : 'Convention Retainer'}
-                      </span>
-                      <span className="font-bold font-mono text-[#d4522f]">
-                        {formatMoney(m.retainerAmountDzd, language)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-black/55 dark:text-white/55">
-                        {isAr ? 'رصيد حساب الحراسة' : 'Solde CARPA'}
-                      </span>
-                      <span className="font-bold font-mono text-emerald-600">
-                        {formatMoney(m.trustEscrowBalanceDzd || 0, language)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            }
-            if (tab === 'strategie') {
-              return (
-                <div className="space-y-3 text-xs">
-                  <span className="font-bold text-black/70 dark:text-white/75 block">
-                    {isAr ? 'ملاحظات المحامي والاستراتيجية:' : 'Stratégie du Cabinet :'}
-                  </span>
-                  <p className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-700 text-black/75 dark:text-white/80 leading-relaxed">
-                    {m.notes ||
-                      (isAr ? 'لا توجد ملاحظات مسجلة حالياً.' : 'Aucune note stratégique enregistrée.')}
-                  </p>
-                </div>
+                <>
+                  <InspectorSection index={0}>
+                    <InspectorBigStat
+                      value={formatMoney(m.trustEscrowBalanceDzd || 0, language)}
+                      tone="ok"
+                      caption={isAr ? 'رصيد حساب الحراسة CARPA' : 'Solde Séquestre CARPA Protégé'}
+                    />
+                  </InspectorSection>
+                  <InspectorSection index={1} title={isAr ? 'اتفاقية الأتعاب' : 'Honoraires & CARPA'}>
+                    <InspectorCard>
+                      <InspectorKeyValue
+                        label={isAr ? 'الأتعاب المتفق عليها' : 'Convention Retainer'}
+                        value={formatMoney(m.retainerAmountDzd, language)}
+                        tone="accent"
+                      />
+                      <InspectorKeyValue
+                        label={isAr ? 'رصيد حساب الحراسة' : 'Solde CARPA'}
+                        value={formatMoney(m.trustEscrowBalanceDzd || 0, language)}
+                        tone="ok"
+                        isLast
+                      />
+                    </InspectorCard>
+                  </InspectorSection>
+                </>
               );
             }
             return (
-              <div className="space-y-4 text-xs">
-                <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-900/40 border border-[#E6DED6] dark:border-neutral-700/60 space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">
-                      {isAr ? 'الموكل' : 'Client'}
-                    </span>
-                    <span className="font-bold text-black dark:text-white">{m.clientName}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">
-                      {isAr ? 'المحكمة المختصة' : 'Juridiction'}
-                    </span>
-                    <span className="font-semibold text-black dark:text-white">
-                      {m.courtJurisdiction}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">
-                      {isAr ? 'الجلسة القادمة' : 'Prochaine Audience'}
-                    </span>
-                    <span className="font-mono font-bold text-[#d4522f]">
-                      {m.nextHearingDate || '—'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">
-                      {isAr ? 'الأتعاب' : 'Honoraires'}
-                    </span>
-                    <span className="font-bold font-mono text-black dark:text-white">
-                      {formatMoney(m.retainerAmountDzd, language)}
-                    </span>
-                  </div>
-                </div>
-                <AtriumButton
-                  variant="secondary"
-                  className="w-full justify-center"
-                  icon={<Edit size={14} />}
-                  onClick={() => {
-                    setMatterToEdit(m);
-                    setIsMatterModalOpen(true);
-                  }}
-                >
-                  {isAr ? 'تعديل ملف القضية' : 'Modifier le Dossier'}
-                </AtriumButton>
-              </div>
+              <>
+                <InspectorSection index={0}>
+                  <InspectorQuickActions
+                    actions={[
+                      {
+                        id: 'edit',
+                        label: isAr ? 'تعديل' : 'Modifier',
+                        icon: <Edit size={16} />,
+                        primary: true,
+                        onClick: () => {
+                          setMatterToEdit(m);
+                          setIsMatterModalOpen(true);
+                        },
+                      },
+                      {
+                        id: 'carpa',
+                        label: 'CARPA',
+                        icon: <Scale size={16} />,
+                        onClick: () => setActiveTab('carpa'),
+                      },
+                      {
+                        id: 'parties',
+                        label: isAr ? 'الأطراف' : 'Parties',
+                        icon: <BookOpen size={16} />,
+                        onClick: () => setActiveTab('parties'),
+                      },
+                    ]}
+                  />
+                </InspectorSection>
+
+                <InspectorSection index={1} title={isAr ? 'معلومات القضية' : 'Informations Dossier'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'الموكل' : 'Client'}
+                      value={m.clientName}
+                      mono={false}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'المحكمة المختصة' : 'Juridiction'}
+                      value={m.courtJurisdiction || '—'}
+                      mono={false}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'الجلسة القادمة' : 'Prochaine Audience'}
+                      value={m.nextHearingDate || '—'}
+                      tone="accent"
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'الأتعاب' : 'Honoraires'}
+                      value={formatMoney(m.retainerAmountDzd, language)}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+
+                <InspectorSection index={2} title={isAr ? 'استراتيجية المكتب وملاحظات' : 'Stratégie & Notes du Cabinet'}>
+                  <InspectorNotesField
+                    value={m.notes || ''}
+                    placeholder={isAr ? 'ملاحظات المحامي والاستراتيجية...' : 'Stratégie du cabinet, consignes...'}
+                    onSave={(next) => {
+                      updateMatter({ ...m, notes: next });
+                      showToast(isAr ? 'تم حفظ الملاحظات' : 'Notes enregistrées', 'success');
+                    }}
+                  />
+                </InspectorSection>
+
+                <InspectorSection index={3}>
+                  <InspectorWideButton
+                    label={isAr ? 'تعديل ملف القضية' : 'Modifier le Dossier'}
+                    icon={<Edit size={14} />}
+                    tone="neutral"
+                    onClick={() => {
+                      setMatterToEdit(m);
+                      setIsMatterModalOpen(true);
+                    }}
+                  />
+                </InspectorSection>
+              </>
             );
           }}
         />

@@ -10,6 +10,7 @@ import {
   CreditCard,
   Banknote,
   Coins,
+  Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { Sale, ParkedOrder } from '../../../types/index';
@@ -31,10 +32,33 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
+
+const getInitials2 = (name: string): string => {
+  const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+  return (name || 'TK').slice(0, 2).toUpperCase();
+};
+
+const MEMBER_PILL_OK =
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+const MEMBER_PILL_WARN =
+  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
+const MEMBER_PILL_DANGER =
+  'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]';
 
 type SalesStatusFilter = 'all' | 'completed' | 'refunded';
 
@@ -79,6 +103,7 @@ export const PosOrdersView: React.FC = () => {
 
   const [inspectingSale, setInspectingSale] = useState<Sale | null>(null);
   const [inspectingParked, setInspectingParked] = useState<ParkedOrder | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<string>('overview');
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -777,10 +802,11 @@ export const PosOrdersView: React.FC = () => {
 
         {activeSubTab === 'sales' ? (
           <UniversalDataCollection<Sale>
-            data={sortedSales}
+            items={sortedSales}
             columns={salesColumns}
             keyExtractor={(s) => s.id}
-            viewMode={viewMode}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+            defaultViewMode="list"
             hideToolbar
             openItemId={inspectingSale?.id ?? null}
             isLoading={isSyncing || networkMode === 'force_skeleton'}
@@ -796,69 +822,114 @@ export const PosOrdersView: React.FC = () => {
             }}
             onItemClick={(s, opener) => {
               setDrawerOpenerEl(opener || null);
+              setInspectorTab('overview');
               setInspectingSale(s);
             }}
             onViewDetails={(s, opener) => {
               setDrawerOpenerEl(opener || null);
+              setInspectorTab('overview');
               setInspectingSale(s);
             }}
             onDelete={(s) => {
               batchDeleteSales([s.id]);
               if (inspectingSale?.id === s.id) setInspectingSale(null);
             }}
-            renderCard={(s) => {
+            getRowMeta={(s): Partial<KineticRowData> => {
               const isRefunded = s.status === 'Refunded';
-              return (
-                <div className="flex flex-col justify-between h-full space-y-3">
-                  <div>
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div>
-                        <span className="font-mono font-bold text-xs text-black dark:text-white block">
-                          #{s.id.slice(-6).toUpperCase()}
-                        </span>
-                        <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
-                          {new Date(s.createdAt).toLocaleString()}
-                        </span>
-                      </div>
-                      <span
-                        className={`text-[10px] font-bold uppercase tracking-wider ${
-                          isRefunded ? 'text-rose-600' : 'text-emerald-600'
-                        }`}
-                      >
-                        {isRefunded ? 'Remboursé' : 'Encaissé'}
-                      </span>
-                    </div>
-                    <div className="text-xs font-bold text-black dark:text-white mb-1">
-                      {s.memberName || 'Client de Passage'}
-                    </div>
-                    <div className="text-xs bg-neutral-50 dark:bg-neutral-800/50 p-2 rounded-xl space-y-0.5 text-black/70 dark:text-white/75">
-                      {s.items.slice(0, 3).map((it, idx) => (
-                        <div key={idx} className="flex justify-between text-[11px]">
-                          <span>{it.quantity}x {it.productName}</span>
-                          <span className="font-mono">{formatMoney(it.totalPrice)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                    <span className="font-mono font-black text-sm text-[#d4522f] tabular-nums">
-                      {formatMoney(s.totalAmount)}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedSaleForReceipt(s);
-                      }}
-                      className="h-7 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-xs font-bold flex items-center gap-1 cursor-pointer"
-                    >
-                      <Printer size={12} className="text-[#d4522f]" />
-                      <span>Reçu</span>
-                    </button>
-                  </div>
-                </div>
-              );
+              const branchInfo = resolveRecordBranch(s, branchesById, currentBranch, language);
+              const customerLabel = s.memberName || t('shop_receipt_walkin');
+              return {
+                title: `#${s.id.slice(-6).toUpperCase()} · ${customerLabel}`,
+                subline: `${new Date(s.createdAt).toLocaleString()} · ${s.cashierName || 'Caisse'}`,
+                avatarText: s.memberName ? getInitials2(s.memberName) : 'TK',
+                categoryLabel: s.paymentMethod === 'Cash' ? (isAr ? 'نقداً' : 'Espèces') : s.paymentMethod === 'Card' ? 'CIB / Edahabia' : s.paymentMethod,
+                statusLabel: isRefunded ? (isAr ? 'مسترجع' : 'Remboursé') : isAr ? 'مسدد' : 'Encaissé',
+                statusVariant: isRefunded ? 'blocked' : 'active',
+                metricPrimary: formatMoney(s.totalAmount),
+                metricSecondary: `${s.items.length} article(s)`,
+                branchName: branchInfo.name,
+                branchCode: branchInfo.code,
+                isPinned: pinnedSaleIds.has(s.id),
+                detailCol1: {
+                  heading: isAr ? 'التذكرة' : 'Ticket',
+                  primaryText: `#${s.id.slice(-8).toUpperCase()}`,
+                  secondaryText: customerLabel,
+                  tertiaryText: s.customerPhone || branchInfo.name,
+                },
+                detailCol2: {
+                  heading: isAr ? 'التسوية' : 'Règlement',
+                  primaryText: formatMoney(s.totalAmount),
+                  secondaryText: s.paymentMethod,
+                  tertiaryText: s.cashierName || currentUser?.fullName || 'Caisse',
+                },
+                detailCol3: {
+                  heading: isAr ? 'المحتويات' : 'Articles',
+                  primaryText: `${s.items.length} ligne(s)`,
+                  secondaryText: s.items.slice(0, 2).map((it) => `${it.quantity}× ${it.productName}`).join(', '),
+                },
+              };
             }}
+            getFanActions={(s): KineticRowFanAction[] => [
+              {
+                id: 'receipt',
+                label: isAr ? 'طباعة الوصل' : 'Ticket 80mm',
+                icon: <Printer className="w-[15px] h-[15px]" />,
+                onClick: (e) => {
+                  e.stopPropagation();
+                  setSelectedSaleForReceipt(s);
+                },
+              },
+              ...(s.status !== 'Refunded'
+                ? [
+                    {
+                      id: 'refund',
+                      label: isAr ? 'استرجاع' : 'Avoir',
+                      icon: <RotateCcw className="w-[15px] h-[15px]" />,
+                      onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
+                        e.stopPropagation();
+                        setSelectedSaleForRefund(s);
+                      },
+                    },
+                  ]
+                : []),
+              {
+                id: 'archive',
+                label: isAr ? 'أرشفة' : 'Archiver',
+                icon: <Trash2 className="w-[15px] h-[15px]" />,
+                isDanger: true,
+                onClick: () => {
+                  batchDeleteSales([s.id]);
+                  if (inspectingSale?.id === s.id) setInspectingSale(null);
+                },
+              },
+            ]}
+            getDetailActions={(s): KineticDetailAction[] => [
+              {
+                id: 'inspect',
+                label: isAr ? 'تفاصيل الوصل' : 'Ouvrir ticket',
+                icon: <Eye className="w-3.5 h-3.5" />,
+                onClick: () => {
+                  setInspectorTab('overview');
+                  setInspectingSale(s);
+                },
+              },
+              {
+                id: 'receipt',
+                label: isAr ? 'وصل 80 مم' : 'Reçu 80mm',
+                icon: <Printer className="w-3.5 h-3.5" />,
+                onClick: () => setSelectedSaleForReceipt(s),
+              },
+              ...(s.status !== 'Refunded'
+                ? [
+                    {
+                      id: 'refund',
+                      label: isAr ? 'استرجاع' : 'Rembourser',
+                      icon: <RotateCcw className="w-3.5 h-3.5" />,
+                      onClick: () => setSelectedSaleForRefund(s),
+                    },
+                  ]
+                : []),
+            ]}
             selectedIds={selectedSaleIds}
             onSelectionChange={setSelectedSaleIds}
             bulkSecondaryAction={{
@@ -899,10 +970,11 @@ export const PosOrdersView: React.FC = () => {
           />
         ) : (
           <UniversalDataCollection<ParkedOrder>
-            data={sortedParkedOrders}
+            items={sortedParkedOrders}
             columns={parkedColumns}
             keyExtractor={(po) => po.id}
-            viewMode={viewMode}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+            defaultViewMode="list"
             hideToolbar
             openItemId={inspectingParked?.id ?? null}
             isLoading={isSyncing || networkMode === 'force_skeleton'}
@@ -918,19 +990,69 @@ export const PosOrdersView: React.FC = () => {
             }}
             onItemClick={(po, opener) => {
               setDrawerOpenerEl(opener || null);
+              setInspectorTab('overview');
               setInspectingParked(po);
             }}
-            renderCard={(po) => (
-              <div className="p-1 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-black dark:text-white">{po.referenceName}</span>
-                  <span className="font-mono font-bold text-xs text-[#d4522f]">{formatMoney(po.totalAmount)}</span>
-                </div>
-                <div className="text-[11px] text-black/55 dark:text-white/55">
-                  {po.items.length} article(s) · {new Date(po.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </div>
-              </div>
-            )}
+            onViewDetails={(po, opener) => {
+              setDrawerOpenerEl(opener || null);
+              setInspectorTab('overview');
+              setInspectingParked(po);
+            }}
+            getRowMeta={(po): Partial<KineticRowData> => {
+              const branchInfo = resolveRecordBranch(po, branchesById, currentBranch, language);
+              return {
+                title: po.referenceName,
+                subline: `${new Date(po.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · ${(po as any).cashierName || 'Caisse'}`,
+                avatarText: getInitials2(po.referenceName),
+                categoryLabel: isAr ? 'سلة معلقة' : 'En attente',
+                statusLabel: isAr ? 'معلق' : 'En pause',
+                statusVariant: 'warning',
+                metricPrimary: formatMoney(po.totalAmount),
+                metricSecondary: `${po.items.length} article(s)`,
+                branchName: branchInfo.name,
+                branchCode: branchInfo.code,
+                isPinned: pinnedParkedIds.has(po.id),
+              };
+            }}
+            getFanActions={(po): KineticRowFanAction[] => [
+              {
+                id: 'resume',
+                label: isAr ? 'استئناف في الكاشير' : 'Reprendre en caisse',
+                icon: <PlayCircle className="w-[15px] h-[15px]" />,
+                onClick: (e) => {
+                  e.stopPropagation();
+                  resumeParkedOrder(po.id);
+                  setScreen('shop');
+                },
+              },
+              {
+                id: 'del',
+                label: isAr ? 'حذف' : 'Supprimer',
+                icon: <Trash2 className="w-[15px] h-[15px]" />,
+                isDanger: true,
+                onClick: () => deleteParkedOrder(po.id),
+              },
+            ]}
+            getDetailActions={(po): KineticDetailAction[] => [
+              {
+                id: 'resume',
+                label: isAr ? 'استئناف' : 'Reprendre',
+                icon: <PlayCircle className="w-3.5 h-3.5" />,
+                onClick: () => {
+                  resumeParkedOrder(po.id);
+                  setScreen('shop');
+                },
+              },
+              {
+                id: 'inspect',
+                label: isAr ? 'معاينة' : 'Détails',
+                icon: <Eye className="w-3.5 h-3.5" />,
+                onClick: () => {
+                  setInspectorTab('overview');
+                  setInspectingParked(po);
+                },
+              },
+            ]}
             selectedIds={selectedParkedIds}
             onSelectionChange={setSelectedParkedIds}
             bulkSecondaryAction={{
@@ -986,88 +1108,120 @@ export const PosOrdersView: React.FC = () => {
         language={language}
         title={inspectingSale ? `Ticket #${inspectingSale.id.slice(-8).toUpperCase()}` : ''}
         subtitle={inspectingSale ? `${inspectingSale.memberName || t('shop_receipt_walkin')} · ${new Date(inspectingSale.createdAt).toLocaleString()}` : undefined}
+        avatarText={inspectingSale?.memberName ? getInitials2(inspectingSale.memberName) : 'TK'}
+        avatarColor="#d4522f"
         branchName={inspectingSale ? resolveRecordBranch(inspectingSale, branchesById, currentBranch, language).name : undefined}
-        statusLabel={inspectingSale?.status === 'Refunded' ? 'Remboursé' : 'Encaissé'}
-        statusClassName={
-          inspectingSale?.status === 'Refunded'
-            ? 'bg-rose-50 text-rose-700 border border-rose-200'
-            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-        }
+        statusLabel={inspectingSale?.status === 'Refunded' ? (isAr ? 'مسترجع' : 'Remboursé') : isAr ? 'مسدد' : 'Encaissé'}
+        statusClassName={inspectingSale?.status === 'Refunded' ? MEMBER_PILL_DANGER : MEMBER_PILL_OK}
+        tabs={[
+          { id: 'overview', label: isAr ? 'الملخص' : isEn ? 'Overview' : 'Ticket' },
+          { id: 'items', label: isAr ? 'المحتويات' : isEn ? 'Items' : 'Articles' },
+          { id: 'actions', label: isAr ? 'إجراءات' : isEn ? 'Actions' : 'Actions' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={setInspectorTab}
         onClose={() => setInspectingSale(null)}
-        onSelectItem={(s) => setInspectingSale(s)}
+        onSelectItem={(s) => {
+          setInspectorTab('overview');
+          setInspectingSale(s);
+        }}
         holdToDelete
         deleteLabel={isAr ? 'أرشفة' : 'Archiver'}
         onDelete={(s) => {
           batchDeleteSales([s.id]);
           setInspectingSale(null);
         }}
-        renderBody={(sale) => (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] grid grid-cols-2 gap-3">
-              <div>
-                <span className="text-black/60 dark:text-white/65 block text-[11px]">Client</span>
-                <span className="font-bold text-black dark:text-white">{sale.memberName || t('shop_receipt_walkin')}</span>
+        renderBody={(sale, tab) => {
+          if (tab === 'items') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0} title={`${sale.items.length} ${isAr ? 'أصناف' : 'articles encaissés'}`}>
+                  <InspectorCard>
+                    {sale.items.map((it, idx) => (
+                      <InspectorListItem
+                        key={idx}
+                        title={it.productName}
+                        subtitle={`${it.quantity} × ${formatMoney(it.unitPrice)}`}
+                        metaRight={formatMoney(it.totalPrice)}
+                        isLast={idx === sale.items.length - 1}
+                      />
+                    ))}
+                  </InspectorCard>
+                </InspectorSection>
               </div>
-              <div>
-                <span className="text-black/60 dark:text-white/65 block text-[11px]">Caissier</span>
-                <span className="font-bold text-black dark:text-white">{sale.cashierName || currentUser?.fullName || 'Caisse'}</span>
-              </div>
-              <div>
-                <span className="text-black/60 dark:text-white/65 block text-[11px]">Mode de règlement</span>
-                <span className="font-bold text-black dark:text-white">{sale.paymentMethod}</span>
-              </div>
-              <div>
-                <span className="text-black/60 dark:text-white/65 block text-[11px]">Montant Payé</span>
-                <span className="font-mono font-black text-[#d4522f]">{formatMoney(sale.totalAmount)}</span>
-              </div>
-            </div>
+            );
+          }
 
-            <div className="space-y-2">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-black/60 dark:text-white/65">
-                Détail des Articles ({sale.items.length})
+          if (tab === 'actions') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0}>
+                  <InspectorQuickActions
+                    actions={[
+                      {
+                        id: 'print',
+                        label: isAr ? 'وصل 80 مم' : 'Ticket 80mm',
+                        icon: <Printer size={16} />,
+                        primary: true,
+                        onClick: () => setSelectedSaleForReceipt(sale),
+                      },
+                      ...(sale.status !== 'Refunded'
+                        ? [
+                            {
+                              id: 'refund',
+                              label: isAr ? 'استرجاع' : 'Avoir / Remb.',
+                              icon: <RotateCcw size={16} />,
+                              onClick: () => {
+                                setInspectingSale(null);
+                                setSelectedSaleForRefund(sale);
+                              },
+                            },
+                          ]
+                        : []),
+                    ]}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label={isAr ? 'معاينة وطباعة وصل 80 مم' : 'Imprimer Ticket Thermique 80mm'}
+                    icon={<Printer size={15} />}
+                    onClick={() => setSelectedSaleForReceipt(sale)}
+                  />
+                </InspectorSection>
               </div>
-              <div className="divide-y divide-[#E6DED6] dark:divide-[#3A3734] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] bg-white dark:bg-[#1E1C1A] px-3.5">
-                {sale.items.map((it, idx) => (
-                  <div key={idx} className="py-2.5 flex items-center justify-between gap-2">
-                    <div>
-                      <span className="font-semibold text-black dark:text-white">{it.productName}</span>
-                      <span className="text-[11px] text-black/55 dark:text-white/55 block font-mono">
-                        {it.quantity} × {formatMoney(it.unitPrice)}
-                      </span>
-                    </div>
-                    <span className="font-mono font-bold text-black dark:text-white">{formatMoney(it.totalPrice)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            );
+          }
 
-            <div className="flex flex-col gap-2 pt-2">
-              <AtriumButton
-                type="button"
-                variant="primary"
-                icon={<Printer size={14} />}
-                className="w-full justify-center"
-                onClick={() => setSelectedSaleForReceipt(sale)}
-              >
-                {isAr ? 'معاينة وطباعة وصل 80 مم' : 'Imprimer Ticket 80mm'}
-              </AtriumButton>
-              {sale.status !== 'Refunded' && (
-                <AtriumButton
-                  type="button"
-                  variant="secondary"
-                  icon={<RotateCcw size={14} />}
-                  className="w-full justify-center"
-                  onClick={() => {
-                    setInspectingSale(null);
-                    setSelectedSaleForRefund(sale);
-                  }}
-                >
-                  {isAr ? 'استرجاع الوصل (Avoir)' : 'Émettre un Avoir / Rembourser'}
-                </AtriumButton>
-              )}
+          return (
+            <div className="space-y-4">
+              <InspectorSection index={0}>
+                <InspectorBigStat
+                  value={formatMoney(sale.totalAmount)}
+                  tone={sale.status === 'Refunded' ? 'danger' : 'accent'}
+                  caption={`${sale.paymentMethod} · ${sale.items.length} article(s)`}
+                />
+              </InspectorSection>
+              <InspectorSection index={1} title={isAr ? 'معلومات الدفع' : 'Détails Transaction'}>
+                <InspectorCard>
+                  <InspectorKeyValue label={isAr ? 'الزبون' : 'Client'} value={sale.memberName || t('shop_receipt_walkin')} mono={false} />
+                  {sale.customerPhone && (
+                    <InspectorKeyValue label={isAr ? 'الهاتف' : 'Téléphone'} value={sale.customerPhone} copyText={sale.customerPhone} />
+                  )}
+                  <InspectorKeyValue label={isAr ? 'أمين الصندوق' : 'Caissier'} value={sale.cashierName || currentUser?.fullName || 'Caisse'} mono={false} />
+                  <InspectorKeyValue label={isAr ? 'طريقة الدفع' : 'Règlement'} value={sale.paymentMethod} />
+                  <InspectorKeyValue label={isAr ? 'المبلغ الإجمالي' : 'Total Net'} value={formatMoney(sale.totalAmount)} tone="accent" isLast />
+                </InspectorCard>
+              </InspectorSection>
+              <InspectorSection index={2}>
+                <InspectorWideButton
+                  label={isAr ? 'طباعة الوصل' : 'Imprimer Ticket 80mm'}
+                  icon={<Printer size={15} />}
+                  onClick={() => setSelectedSaleForReceipt(sale)}
+                />
+              </InspectorSection>
             </div>
-          </div>
-        )}
+          );
+        }}
       />
 
       <KineticSlideOverInspector<ParkedOrder>
@@ -1079,46 +1233,115 @@ export const PosOrdersView: React.FC = () => {
         language={language}
         title={inspectingParked?.referenceName || ''}
         subtitle={inspectingParked ? new Date(inspectingParked.createdAt).toLocaleString() : undefined}
+        avatarText={inspectingParked ? getInitials2(inspectingParked.referenceName) : 'PK'}
+        avatarColor="#d4522f"
         branchName={inspectingParked ? resolveRecordBranch(inspectingParked, branchesById, currentBranch, language).name : undefined}
-        statusLabel="En pause"
-        statusClassName="bg-amber-50 text-amber-700 border border-amber-200"
+        statusLabel={isAr ? 'في الانتظار' : 'En pause'}
+        statusClassName={MEMBER_PILL_WARN}
+        tabs={[
+          { id: 'overview', label: isAr ? 'الملخص' : isEn ? 'Overview' : 'Résumé' },
+          { id: 'items', label: isAr ? 'المحتويات' : isEn ? 'Items' : 'Articles' },
+          { id: 'actions', label: isAr ? 'إجراءات' : isEn ? 'Actions' : 'Actions' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={setInspectorTab}
         onClose={() => setInspectingParked(null)}
-        onSelectItem={(po) => setInspectingParked(po)}
+        onSelectItem={(po) => {
+          setInspectorTab('overview');
+          setInspectingParked(po);
+        }}
         holdToDelete
         deleteLabel={isAr ? 'حذف' : 'Supprimer'}
         onDelete={(po) => {
           deleteParkedOrder(po.id);
           setInspectingParked(null);
         }}
-        renderBody={(po) => (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-between">
-              <span className="font-semibold text-black/70 dark:text-white/75">Total panier en attente</span>
-              <span className="font-mono font-black text-base text-[#d4522f]">{formatMoney(po.totalAmount)}</span>
+        renderBody={(po, tab) => {
+          if (tab === 'items') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0} title={`${po.items.length} article(s)`}>
+                  <InspectorCard>
+                    {po.items.map((it, idx) => (
+                      <InspectorListItem
+                        key={idx}
+                        title={it.productName}
+                        subtitle={`${it.quantity} × ${formatMoney(it.unitPrice)}`}
+                        metaRight={formatMoney(it.totalPrice)}
+                        isLast={idx === po.items.length - 1}
+                      />
+                    ))}
+                  </InspectorCard>
+                </InspectorSection>
+              </div>
+            );
+          }
+
+          if (tab === 'actions') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0}>
+                  <InspectorQuickActions
+                    actions={[
+                      {
+                        id: 'resume',
+                        label: isAr ? 'استئناف' : 'Reprendre',
+                        icon: <PlayCircle size={16} />,
+                        primary: true,
+                        onClick: () => {
+                          resumeParkedOrder(po.id);
+                          setInspectingParked(null);
+                          setScreen('shop');
+                        },
+                      },
+                    ]}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label={isAr ? 'استئناف في نقطة البيع' : 'Reprendre en Caisse'}
+                    icon={<PlayCircle size={15} />}
+                    onClick={() => {
+                      resumeParkedOrder(po.id);
+                      setInspectingParked(null);
+                      setScreen('shop');
+                    }}
+                  />
+                </InspectorSection>
+              </div>
+            );
+          }
+
+          return (
+            <div className="space-y-4">
+              <InspectorSection index={0}>
+                <InspectorBigStat
+                  value={formatMoney(po.totalAmount)}
+                  tone="accent"
+                  caption={`${po.items.length} article(s) en attente`}
+                />
+              </InspectorSection>
+              <InspectorSection index={1} title={isAr ? 'تفاصيل التذكرة' : 'Informations'}>
+                <InspectorCard>
+                  <InspectorKeyValue label={isAr ? 'المرجع' : 'Référence'} value={po.referenceName} mono={false} />
+                  <InspectorKeyValue label={isAr ? 'التاريخ' : 'Créée le'} value={new Date(po.createdAt).toLocaleString()} isLast={!po.notes} />
+                  {po.notes && <InspectorKeyValue label="Notes" value={po.notes} mono={false} isLast />}
+                </InspectorCard>
+              </InspectorSection>
+              <InspectorSection index={2}>
+                <InspectorWideButton
+                  label={isAr ? 'استئناف في نقطة البيع' : 'Reprendre en Caisse'}
+                  icon={<PlayCircle size={15} />}
+                  onClick={() => {
+                    resumeParkedOrder(po.id);
+                    setInspectingParked(null);
+                    setScreen('shop');
+                  }}
+                />
+              </InspectorSection>
             </div>
-            <div className="space-y-1.5">
-              {po.items.map((it, idx) => (
-                <div key={idx} className="p-3 rounded-xl border border-[#E6DED6] dark:border-[#3A3734] flex justify-between">
-                  <span>{it.quantity}× {it.productName}</span>
-                  <span className="font-mono font-bold">{formatMoney(it.totalPrice)}</span>
-                </div>
-              ))}
-            </div>
-            <AtriumButton
-              type="button"
-              variant="primary"
-              icon={<PlayCircle size={14} />}
-              className="w-full justify-center"
-              onClick={() => {
-                resumeParkedOrder(po.id);
-                setInspectingParked(null);
-                setScreen('shop');
-              }}
-            >
-              {isAr ? 'استئناف في نقطة البيع' : 'Reprendre en Caisse'}
-            </AtriumButton>
-          </div>
-        )}
+          );
+        }}
       />
 
       {selectedSaleForReceipt && (

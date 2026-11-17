@@ -5,16 +5,15 @@ import {
   CheckCircle2,
   Edit,
   Pin,
-  Save,
-  Check,
   Send,
   MapPin,
+  Eye,
+  Trash2,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { LogisticsShipment } from '../../../types';
 import { useLogisticsData } from './logisticsData';
-import { AtriumButton } from '../../ui/AtriumButton';
 import { LogisticsShipmentModal } from './LogisticsShipmentModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { StopDeskHandoverModal } from './StopDeskHandoverModal';
@@ -29,6 +28,16 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorNotesField,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -72,7 +81,6 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [activeTab, setActiveTab] = useState<string>('fiche');
   const [inspectorNotes, setInspectorNotes] = useState('');
-  const [noteSaved, setNoteSaved] = useState(false);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -214,7 +222,6 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
       setInspectorNotes(
         `Colis ${s.trackingCode}. Consignes: Appeler le destinataire 15 min avant livraison. Remise contre signature et montant exact.`
       );
-      setNoteSaved(false);
     },
     []
   );
@@ -239,11 +246,81 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
     [updateShipmentStatus, selectedShipment, isAr]
   );
 
-  const handleSaveNotes = useCallback(() => {
-    setNoteSaved(true);
-    setTimeout(() => setNoteSaved(false), 2000);
-    showToast(isAr ? 'تم حفظ تعليمات التسليم' : 'Consignes de livraison enregistrées', 'success');
-  }, [isAr]);
+  const getShipmentRowMeta = useCallback(
+    (s: LogisticsShipment): KineticRowMeta => {
+      const isDelivered = s.status === 'Delivered';
+      const isOut = s.status === 'OutForDelivery';
+      return {
+        avatarText: (s.recipientName || 'AW').slice(0, 2).toUpperCase(),
+        subtitle: `${s.trackingCode} · ${s.destinationWilaya.split('-')[0].trim()}`,
+        categoryLabel: s.deliveryMode === 'StopDesk' ? 'Stop-Desk' : isAr ? 'منزلي' : 'Domicile',
+        statusTone: isDelivered ? 'ok' : isOut ? 'warn' : 'neutral',
+        statusLabel: isDelivered
+          ? isAr ? 'تم التوصيل' : 'Livré'
+          : isOut
+          ? isAr ? 'في التوزيع' : 'En Tournée'
+          : isAr ? 'في المستودع' : 'Au Hub',
+        metricPrimary: formatMoney(s.codAmountDzd, language),
+        metricSecondary: s.assignedDriverName || (isAr ? 'بانتظار التعيين' : 'Au Hub'),
+      };
+    },
+    [isAr, language]
+  );
+
+  const getShipmentFanActions = useCallback(
+    (s: LogisticsShipment): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'تفاصيل' : 'Détails',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => handleSelectShipment(s, e.currentTarget),
+      },
+      {
+        id: 'deliver',
+        label: isAr ? 'تحديث' : 'Statut',
+        icon: <Send className="w-[15px] h-[15px]" />,
+        onClick: () => handleToggleDeliveryStatus(s),
+      },
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : 'Supprimer',
+        icon: <Trash2 className="w-[15px] h-[15px]" />,
+        isDanger: true,
+        onClick: () => handleDelete(s),
+      },
+    ],
+    [isAr, handleSelectShipment, handleToggleDeliveryStatus, handleDelete]
+  );
+
+  const getShipmentDetailActions = useCallback(
+    (s: LogisticsShipment): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'فتح البيان' : 'Ouvrir Bordereau',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => handleSelectShipment(s),
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : 'Modifier',
+        icon: <Edit className="w-3.5 h-3.5" />,
+        onClick: () => handleOpenEdit(s),
+      },
+      {
+        id: 'deliver',
+        label: isAr ? 'تغيير الحالة' : 'Statut Suivant',
+        icon: <Send className="w-3.5 h-3.5" />,
+        onClick: () => handleToggleDeliveryStatus(s),
+      },
+      {
+        id: 'delete',
+        label: isAr ? 'حذف' : 'Supprimer',
+        icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+        onClick: () => handleDelete(s),
+      },
+    ],
+    [isAr, handleSelectShipment, handleOpenEdit, handleToggleDeliveryStatus, handleDelete]
+  );
 
   const handleExportCSV = useCallback(() => {
     const headers = [
@@ -517,13 +594,6 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<Truck size={22} />}
         title={isAr ? 'الطرود' : isEn ? 'Shipments' : 'Colis'}
-        subtitle={
-          isAr
-            ? `${shipments.length} طرد مسجل · ${activeInDelivery} في التوزيع`
-            : isEn
-            ? `${shipments.length} shipments · ${activeInDelivery} out for delivery`
-            : `${shipments.length} colis enregistrés · ${activeInDelivery} en tournée active`
-        }
         primaryAction={{
           label: isAr ? 'طرد جديد' : isEn ? 'New Shipment' : 'Nouveau Colis',
           onClick: handleOpenAdd,
@@ -610,9 +680,10 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
 
         <UniversalDataCollection<LogisticsShipment>
           hideToolbar
-          data={sortedShipments}
+          items={sortedShipments}
           keyExtractor={(s) => s.id}
-          defaultViewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
           columns={columns}
           sortBy={sortBy}
           sortDirection={sortDir}
@@ -645,6 +716,9 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
           openItemId={activeShipment?.id || null}
           onItemClick={handleSelectShipment}
           onViewDetails={handleSelectShipment}
+          getRowMeta={getShipmentRowMeta}
+          getFanActions={getShipmentFanActions}
+          getDetailActions={getShipmentDetailActions}
           onEdit={handleOpenEdit}
           onDelete={handleDelete}
           customActions={(s) => [
@@ -672,39 +746,6 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
               onClick: () => handleToggleDeliveryStatus(s),
             },
           ]}
-          renderCard={(s) => {
-            const isPinned = pinnedIds.has(s.id);
-            const isDelivered = s.status === 'Delivered';
-            return (
-              <div className="flex flex-col items-center justify-center w-full">
-                <div className="w-16 h-16 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
-                  <Package size={28} />
-                </div>
-                <div className="flex items-center gap-1.5 max-w-[210px] mb-0.5">
-                  <h3 className="text-base font-bold text-black dark:text-white truncate tracking-tight">
-                    {s.recipientName}
-                  </h3>
-                  {isPinned && <Pin size={12} className="text-amber-500 shrink-0" />}
-                </div>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 mb-3 border border-neutral-200 dark:border-neutral-700">
-                  {s.trackingCode}
-                </span>
-                <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1 text-center">
-                  <div className="text-black dark:text-white font-mono font-bold text-[13px]">
-                    {formatMoney(s.codAmountDzd)}
-                  </div>
-                  <div className="flex items-center justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800 text-[10px]">
-                    <span className="text-black/55 dark:text-white/55 truncate max-w-[130px]">
-                      {s.destinationWilaya}
-                    </span>
-                    <span className={isDelivered ? 'text-emerald-600 font-bold' : 'text-amber-600 font-bold'}>
-                      {isDelivered ? (isAr ? 'تم التوصيل' : 'Livré') : isAr ? 'في التوزيع' : 'En Tournée'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            );
-          }}
           emptyTitle={isAr ? 'لا توجد شحنات مطابقة' : 'Aucun colis trouvé'}
           emptyDescription={
             isAr
@@ -743,7 +784,10 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
             ? `${activeShipment.recipientName} · ${formatMoney(activeShipment.codAmountDzd)}`
             : undefined
         }
-        avatarText={(activeShipment?.recipientName || 'AWB').slice(0, 2).toUpperCase()}
+        categoryLabel={
+          activeShipment?.deliveryMode === 'StopDesk' ? 'Stop-Desk' : isAr ? 'توصيل منزلي' : 'Domicile'
+        }
+        avatarText={(activeShipment?.recipientName || 'AW').slice(0, 2).toUpperCase()}
         branchName={
           activeShipment
             ? resolveRecordBranch(activeShipment, branchesById, currentBranch, language).name
@@ -756,11 +800,17 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
             ? isAr ? 'في التوزيع' : 'En Tournée'
             : isAr ? 'في المستودع' : 'Au Hub'
         }
+        statusClassName={
+          activeShipment?.status === 'Delivered'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : activeShipment?.status === 'OutForDelivery'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+        }
         tabs={[
           { id: 'fiche', label: isAr ? 'بيانات الطرد' : 'Bordereau' },
           { id: 'cod', label: isAr ? 'التحصيل COD' : 'Finance COD' },
           { id: 'dispatch', label: isAr ? 'السائق والتوزيع' : 'Livreur' },
-          { id: 'notes', label: isAr ? 'التعليمات' : 'Consignes' },
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -768,164 +818,147 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
         onClose={() => setSelectedShipment(null)}
         onDelete={handleDelete}
         holdToDelete
-        renderBody={(s, tab) => (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 flex-wrap">
-              <AtriumButton
-                variant="primary"
-                size="sm"
-                icon={<Send size={13} />}
-                onClick={() => handleToggleDeliveryStatus(s)}
-              >
-                {isAr ? 'تحديث التوصيل' : 'Changer Statut'}
-              </AtriumButton>
-              {s.deliveryMode === 'StopDesk' && s.status !== 'Delivered' && (
-                <AtriumButton
-                  variant="secondary"
-                  size="sm"
-                  icon={<CheckCircle2 size={13} />}
-                  onClick={() => {
-                    setShipmentForHandover(s);
-                    setIsHandoverModalOpen(true);
-                  }}
-                >
-                  {isAr ? 'تسليم OTP' : 'Retrait Stop-Desk'}
-                </AtriumButton>
-              )}
-              <AtriumButton
-                variant="outline"
-                size="sm"
-                icon={<Edit size={13} />}
-                onClick={() => handleOpenEdit(s)}
-              >
-                {isAr ? 'تعديل' : 'Modifier'}
-              </AtriumButton>
-              <AtriumButton
-                variant="ghost"
-                size="sm"
-                icon={<Pin size={13} />}
-                onClick={() => handleTogglePin(s)}
-              >
-                {pinnedIds.has(s.id) ? (isAr ? 'إلغاء التثبيت' : 'Désépingler') : isAr ? 'تثبيت' : 'Épingler'}
-              </AtriumButton>
-            </div>
-
-            {tab === 'fiche' && (
-              <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2 text-xs">
-                <div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">
-                  {isAr ? 'تفاصيل الإرسالية' : 'Destinataire & Acheminement'}
-                </div>
-                <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                  <span className="text-black/55 dark:text-white/55">{isAr ? 'المستلم' : 'Destinataire'}</span>
-                  <span className="font-bold text-black dark:text-white">{s.recipientName}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                  <span className="text-black/55 dark:text-white/55">{isAr ? 'الهاتف' : 'Téléphone'}</span>
-                  <span className="font-semibold text-black dark:text-white font-mono">{s.recipientPhone}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                  <span className="text-black/55 dark:text-white/55">{isAr ? 'الولاية' : 'Wilaya de livraison'}</span>
-                  <span className="font-semibold text-black dark:text-white">{s.destinationWilaya}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                  <span className="text-black/55 dark:text-white/55">{isAr ? 'العنوان التفصيلي' : 'Adresse'}</span>
-                  <span className="font-medium text-black dark:text-white text-right max-w-[200px] truncate">
-                    {s.destinationAddress}
-                  </span>
-                </div>
-                <div className="flex justify-between py-1">
-                  <span className="text-black/55 dark:text-white/55">{isAr ? 'الوزن التقريبي' : 'Poids'}</span>
-                  <span className="font-mono font-semibold text-black dark:text-white">{s.weightKg} kg</span>
-                </div>
-              </div>
-            )}
-
-            {tab === 'cod' && (
-              <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2 text-xs">
-                <div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">
-                  {isAr ? 'المبالغ النقدية للتحصيل' : 'Règlement & Encaissement COD'}
-                </div>
-                <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                  <span className="text-black/55 dark:text-white/55">{isAr ? 'مبلغ السلعة' : 'Prix marchandise'}</span>
-                  <span className="font-mono font-bold text-black dark:text-white">
-                    {formatMoney(s.codAmountDzd)}
-                  </span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                  <span className="text-black/55 dark:text-white/55">{isAr ? 'رسوم التوصيل' : "Frais d'expédition"}</span>
-                  <span className="font-mono font-semibold text-black dark:text-white">
-                    {formatMoney(s.shippingFeeDzd)}
-                  </span>
-                </div>
-                <div className="flex justify-between py-1.5 font-bold text-black dark:text-white text-[13px]">
-                  <span>{isAr ? 'المبلغ الإجمالي للتحصيل' : 'Total Cash à Récupérer'}</span>
-                  <span className="font-mono text-[#d4522f]">
-                    {formatMoney(s.codAmountDzd + s.shippingFeeDzd)}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {tab === 'dispatch' && (
-              <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2 text-xs">
-                <div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">
-                  {isAr ? 'معلومات التوزيع والموزع' : 'Affectation & Véhicule'}
-                </div>
-                <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                  <span className="text-black/55 dark:text-white/55">{isAr ? 'السائق المكلف' : 'Livreur'}</span>
-                  <span className="font-bold text-black dark:text-white">
-                    {s.assignedDriverName || 'Non assigné'}
-                  </span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                  <span className="text-black/55 dark:text-white/55">{isAr ? 'التاجر / المرسل' : 'Marchand'}</span>
-                  <span className="font-semibold text-black dark:text-white">{s.merchantName || 'Comptoir'}</span>
-                </div>
-                <div className="flex justify-between py-1">
-                  <span className="text-black/55 dark:text-white/55">{isAr ? 'نمط التسليم' : 'Mode'}</span>
-                  <span className="font-semibold text-[#d4522f]">{s.deliveryMode}</span>
-                </div>
-              </div>
-            )}
-
-            {tab === 'notes' && (
-              <div className="space-y-3 text-xs">
-                <label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase">
-                  {isAr ? 'تعليمات وإرشادات التوصيل' : 'Consignes & Remarques Livreur'}
-                </label>
-                <textarea
-                  value={inspectorNotes}
-                  onChange={(e) => setInspectorNotes(e.target.value)}
-                  rows={6}
-                  placeholder={
-                    isAr
-                      ? 'أدخل تعليمات التوصيل...'
-                      : "Précisions d'accès, créneau de livraison, consignes spéciales..."
-                  }
-                  className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-2 focus:ring-[#d4522f] outline-hidden"
+        renderBody={(s, tab) => {
+          if (tab === 'cod') {
+            return (
+              <>
+                <InspectorSection index={0}>
+                  <InspectorBigStat
+                    value={formatMoney(s.codAmountDzd + s.shippingFeeDzd, language)}
+                    tone="accent"
+                    caption={isAr ? 'المبلغ الإجمالي للتحصيل' : 'Total Cash à Récupérer'}
+                    action={{
+                      label: isAr ? 'تحديث التوصيل والتحصيل' : 'Passer au Statut Suivant',
+                      onClick: () => handleToggleDeliveryStatus(s),
+                    }}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'تفاصيل المبلغ النقدي' : 'Règlement & Encaissement COD'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'مبلغ السلعة' : 'Prix marchandise'}
+                      value={formatMoney(s.codAmountDzd, language)}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'رسوم التوصيل' : "Frais d'expédition"}
+                      value={formatMoney(s.shippingFeeDzd, language)}
+                      tone="accent"
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
+          if (tab === 'dispatch') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'معلومات التوزيع والموزع' : 'Affectation & Véhicule'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'السائق المكلف' : 'Livreur'}
+                      value={s.assignedDriverName || 'Non assigné'}
+                      mono={false}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'التاجر / المرسل' : 'Marchand'}
+                      value={s.merchantName || 'Comptoir'}
+                      mono={false}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'نمط التسليم' : 'Mode'}
+                      value={s.deliveryMode === 'StopDesk' ? 'Stop-Desk' : 'À Domicile'}
+                      tone="accent"
+                      mono={false}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+                {s.deliveryMode === 'StopDesk' && s.status !== 'Delivered' && (
+                  <InspectorSection index={1}>
+                    <InspectorWideButton
+                      label={isAr ? 'تسليم في الشباك (OTP)' : 'Valider Retrait Stop-Desk OTP'}
+                      icon={<CheckCircle2 size={14} />}
+                      tone="dark"
+                      onClick={() => {
+                        setShipmentForHandover(s);
+                        setIsHandoverModalOpen(true);
+                      }}
+                    />
+                  </InspectorSection>
+                )}
+              </>
+            );
+          }
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : 'Actions Rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'status',
+                      label: isAr ? 'تحديث الحالة' : 'Statut Suivant',
+                      icon: <Send size={16} />,
+                      primary: true,
+                      onClick: () => handleToggleDeliveryStatus(s),
+                    },
+                    ...(s.deliveryMode === 'StopDesk' && s.status !== 'Delivered'
+                      ? [
+                          {
+                            id: 'stopdesk',
+                            label: 'Stop-Desk OTP',
+                            icon: <CheckCircle2 size={16} />,
+                            onClick: () => {
+                              setShipmentForHandover(s);
+                              setIsHandoverModalOpen(true);
+                            },
+                          },
+                        ]
+                      : []),
+                    {
+                      id: 'edit',
+                      label: isAr ? 'تعديل' : 'Modifier',
+                      icon: <Edit size={16} />,
+                      onClick: () => handleOpenEdit(s),
+                    },
+                    {
+                      id: 'pin',
+                      label: pinnedIds.has(s.id) ? (isAr ? 'إلغاء' : 'Désépingler') : isAr ? 'تثبيت' : 'Épingler',
+                      icon: <Pin size={16} />,
+                      onClick: () => handleTogglePin(s),
+                    },
+                  ]}
                 />
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-[11px] text-black/55 dark:text-white/55">
-                    {noteSaved && (
-                      <span className="text-emerald-600 font-bold flex items-center gap-1">
-                        <Check size={12} /> {isAr ? 'تم الحفظ' : 'Enregistré'}
-                      </span>
-                    )}
-                  </span>
-                  <AtriumButton
-                    type="button"
-                    variant="primary"
-                    size="sm"
-                    icon={<Save size={13} />}
-                    onClick={handleSaveNotes}
-                  >
-                    {isAr ? 'حفظ التعليمات' : 'Enregistrer'}
-                  </AtriumButton>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+              </InspectorSection>
+
+              <InspectorSection index={1} title={isAr ? 'تفاصيل الإرسالية' : 'Destinataire & Acheminement'}>
+                <InspectorCard>
+                  <InspectorKeyValue label={isAr ? 'المستلم' : 'Destinataire'} value={s.recipientName} mono={false} />
+                  <InspectorKeyValue
+                    label={isAr ? 'الهاتف' : 'Téléphone'}
+                    value={s.recipientPhone}
+                    copyText={s.recipientPhone}
+                    onCopied={() => showToast('Téléphone copié', 'info')}
+                  />
+                  <InspectorKeyValue label={isAr ? 'الولاية' : 'Wilaya'} value={s.destinationWilaya} mono={false} />
+                  <InspectorKeyValue label={isAr ? 'العنوان' : 'Adresse'} value={s.destinationAddress} mono={false} />
+                  <InspectorKeyValue label={isAr ? 'الوزن' : 'Poids'} value={`${s.weightKg} kg`} isLast />
+                </InspectorCard>
+              </InspectorSection>
+
+              <InspectorSection index={2} title={isAr ? 'تعليمات التوصيل' : 'Consignes Livreur'}>
+                <InspectorNotesField
+                  value={inspectorNotes}
+                  onSave={(next) => {
+                    setInspectorNotes(next);
+                    showToast(isAr ? 'تم حفظ تعليمات التسليم' : 'Consignes de livraison enregistrées', 'success');
+                  }}
+                  placeholder={isAr ? 'أدخل تعليمات التوصيل...' : "Précisions d'accès, créneau de livraison..."}
+                />
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       {isShipmentModalOpen && (

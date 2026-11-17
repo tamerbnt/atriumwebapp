@@ -9,8 +9,15 @@ import {
   Tag,
   Thermometer,
   FileText,
+  Pin,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { useAgricultureData } from './agricultureData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
@@ -32,6 +39,16 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorNotesField,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -55,9 +72,21 @@ export const AgricultureLivestockView: React.FC = () => {
     currentUser,
     isSyncing,
     networkMode,
-    retryCloudSync,
     lastSyncedAt,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBusiness: s.currentBusiness,
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      currentUser: s.currentUser,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -106,6 +135,9 @@ export const AgricultureLivestockView: React.FC = () => {
   const [selectedAnimal, setSelectedAnimal] = useState<AgriLivestock | null>(null);
   const [selectedMilking, setSelectedMilking] = useState<AgriMilkingRecord | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [animalTab, setAnimalTab] = useState<string>('overview');
+  const [milkingTab, setMilkingTab] = useState<string>('overview');
+  const [animalNotesDraft, setAnimalNotesDraft] = useState<string>('');
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -744,6 +776,177 @@ export const AgricultureLivestockView: React.FC = () => {
     [isAr, isEn, branchesById, currentBranch, language]
   );
 
+  const getAnimalRowMeta = useCallback(
+    (a: AgriLivestock): Partial<KineticRowData> => {
+      const hs = a.healthStatus || (a.isInWithholdingLockout ? 'InTreatment' : 'Healthy');
+      const isLocked = hs === 'InTreatment' || hs === 'Quarantine' || a.isInWithholdingLockout;
+      const prod = a.dailyProductionLiters ?? a.dailyAvgLiters ?? 0;
+      const branchName = resolveRecordBranch(a, branchesById, currentBranch, language).name;
+      return {
+        subline: `${a.earTagNumber} · ${a.breed}`,
+        categoryLabel: `${a.species || 'Bovine'} (${a.reproStatus || 'Lactation'})`,
+        statusLabel:
+          hs === 'Healthy'
+            ? isAr ? 'سليم' : isEn ? 'Healthy' : 'Sain / Conforme'
+            : hs === 'Quarantine'
+            ? isAr ? 'حجر صحي' : 'Quarantaine'
+            : isAr ? 'سحب دوائي' : 'Retrait Lait',
+        statusVariant: hs === 'Quarantine' ? 'danger' : isLocked ? 'warning' : 'active',
+        metricPrimary: `${prod} L/j`,
+        metricSecondary: `Lact. N°${a.lactationNumber || 1}`,
+        detailCol1: {
+          heading: isAr ? 'التعريف والسلالة' : isEn ? 'Identification' : 'Identification DZ-16',
+          primaryText: a.earTagNumber,
+          secondaryText: `${a.nameOrNumber || a.species || 'Bovine'} · ${a.breed}`,
+          tertiaryText: branchName,
+        },
+        detailCol2: {
+          heading: isAr ? 'الإنتاج والحلب' : isEn ? 'Dairy Output' : 'Production laitière',
+          primaryText: `${prod} L/jour`,
+          secondaryText: `${a.reproStatus || 'Lactation'} (N° ${a.lactationNumber || 1})`,
+          tertiaryText: `Né(e): ${a.birthDate}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'الحالة البيطرية' : isEn ? 'Biosecurity' : 'Suivi sanitaire',
+          primaryText: isLocked ? 'Exclusion Tank ONIL' : 'Lait Conforme ONIL',
+          secondaryText: a.notes || 'Prophylaxie à jour',
+        },
+      };
+    },
+    [branchesById, currentBranch, language, isAr, isEn]
+  );
+
+  const getAnimalFanActions = useCallback(
+    (a: AgriLivestock): KineticRowFanAction[] => [
+      {
+        id: 'health',
+        label: isAr ? 'تبديل الصحة' : 'Statut santé',
+        icon: <AlertTriangle className="w-[15px] h-[15px]" />,
+        onClick: () => handleToggleHealth(a),
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+        icon: <Edit className="w-[15px] h-[15px]" />,
+        onClick: () => openEditModal(a),
+      },
+      {
+        id: 'open',
+        label: isAr ? 'تفاصيل' : isEn ? 'Details' : 'Détails',
+        icon: <Tag className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedMilking(null);
+          setSelectedAnimal(a);
+          setAnimalNotesDraft(a.notes || '');
+          setAnimalTab('overview');
+        },
+      },
+    ],
+    [handleToggleHealth, openEditModal, isAr, isEn]
+  );
+
+  const getAnimalDetailActions = useCallback(
+    (a: AgriLivestock): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'بطاقة الحيوان' : isEn ? 'View Profile' : 'Ouvrir fiche',
+        icon: <Tag className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedMilking(null);
+          setSelectedAnimal(a);
+          setAnimalNotesDraft(a.notes || '');
+          setAnimalTab('overview');
+        },
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+        icon: <Edit className="w-3.5 h-3.5" />,
+        onClick: () => openEditModal(a),
+      },
+    ],
+    [openEditModal, isAr, isEn]
+  );
+
+  const getMilkingRowMeta = useCallback(
+    (m: AgriMilkingRecord): Partial<KineticRowData> => {
+      const branchName = resolveRecordBranch(m, branchesById, currentBranch, language).name;
+      const tempOk = m.tankTemperatureCelsius <= 4;
+      return {
+        subline: `${m.sessionDate} · ${m.sessionPeriod === 'morning' ? 'Matin' : 'Soir'}`,
+        categoryLabel: m.destinationDairy,
+        statusLabel: `+${m.tankTemperatureCelsius}°C`,
+        statusVariant: tempOk ? 'active' : 'warning',
+        metricPrimary: `${m.conformingLiters.toLocaleString()} L`,
+        metricSecondary: `+${formatMoney(m.onilTotalSubsidyDzd, language)}`,
+        detailCol1: {
+          heading: isAr ? 'الملبنة والوصل' : isEn ? 'Dairy & Slip' : 'Laiterie & BL',
+          primaryText: m.destinationDairy,
+          secondaryText: m.dairyDeliverySlipNo || 'BL en attente',
+          tertiaryText: branchName,
+        },
+        detailCol2: {
+          heading: isAr ? 'الكمية المطابقة' : isEn ? 'Conforming Milk' : 'Volume conforme',
+          primaryText: `${m.conformingLiters.toLocaleString()} L`,
+          secondaryText: `Total ${m.totalTankLiters} L (-${m.rejectedWithholdingLiters} L écartés)`,
+          tertiaryText: `Tank +${m.tankTemperatureCelsius}°C`,
+        },
+        detailCol3: {
+          heading: isAr ? 'دعم الدولة ONIL' : isEn ? 'ONIL Subsidy' : 'Prime ONIL (12 DA/L)',
+          primaryText: `+${formatMoney(m.onilTotalSubsidyDzd, language)}`,
+          secondaryText: m.sessionPeriod === 'morning' ? 'Collecte du Matin' : 'Collecte du Soir',
+        },
+      };
+    },
+    [branchesById, currentBranch, language, isAr, isEn]
+  );
+
+  const getMilkingFanActions = useCallback(
+    (m: AgriMilkingRecord): KineticRowFanAction[] => [
+      {
+        id: 'onil',
+        label: 'ONIL',
+        icon: <FileText className="w-[15px] h-[15px]" />,
+        onClick: () => setIsOnilModalOpen(true),
+      },
+      {
+        id: 'open',
+        label: isAr ? 'تفاصيل' : isEn ? 'Details' : 'Détails',
+        icon: <Milk className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedAnimal(null);
+          setSelectedMilking(m);
+          setMilkingTab('overview');
+        },
+      },
+    ],
+    [isAr, isEn]
+  );
+
+  const getMilkingDetailActions = useCallback(
+    (m: AgriMilkingRecord): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'تفاصيل الجلسة' : isEn ? 'Inspect Session' : 'Ouvrir session',
+        icon: <Milk className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedAnimal(null);
+          setSelectedMilking(m);
+          setMilkingTab('overview');
+        },
+      },
+      {
+        id: 'onil',
+        label: 'Bordereau ONIL',
+        icon: <FileText className="w-3.5 h-3.5" />,
+        onClick: () => setIsOnilModalOpen(true),
+      },
+    ],
+    [isAr, isEn]
+  );
+
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: livestock.length > 0 || milkingRecords.length > 0,
@@ -778,13 +981,6 @@ export const AgricultureLivestockView: React.FC = () => {
       <ScreenHeaderBar
         icon={<Layers size={22} />}
         title={isAr ? 'المواشي' : isEn ? 'Livestock' : 'Cheptel'}
-        subtitle={
-          isAr
-            ? `${livestock.length} رأس ماشية · ${totalMilkProduction.toFixed(1)} ل/يوم`
-            : isEn
-            ? `${livestock.length} head · ${totalMilkProduction.toFixed(1)} L/day`
-            : `${livestock.length} têtes · ${totalMilkProduction.toFixed(1)} L/jour`
-        }
         secondaryActions={
           <AtriumButton
             variant="outline"
@@ -910,6 +1106,25 @@ export const AgricultureLivestockView: React.FC = () => {
               ? 'بحث بالملبنة، رقم الوصل...'
               : 'Rechercher laiterie, N° BL, date...'
           }
+          statusOptions={
+            activeTabMode === 'cheptel'
+              ? [
+                  { value: 'All', label: isAr ? 'الكل' : 'Tous', count: livestock.length },
+                  {
+                    value: 'Healthy',
+                    label: isAr ? 'سليم' : 'Sains',
+                    count: Math.max(0, livestock.length - treatmentCount),
+                  },
+                  {
+                    value: 'Withholding',
+                    label: isAr ? 'سحب دوائي' : 'Retrait Lait',
+                    count: treatmentCount,
+                  },
+                ]
+              : undefined
+          }
+          statusValue={activeTabMode === 'cheptel' ? healthFilter : undefined}
+          onStatusChange={activeTabMode === 'cheptel' ? setHealthFilter : undefined}
           extraTrailingControls={
             <LiveSegmentedControl
               value={activeTabMode}
@@ -949,9 +1164,10 @@ export const AgricultureLivestockView: React.FC = () => {
         {activeTabMode === 'cheptel' ? (
           <UniversalDataCollection<AgriLivestock>
             hideToolbar
-            data={sortedAnimals}
+            items={sortedAnimals}
             columns={animalColumns}
             keyExtractor={(a) => a.id}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
             defaultViewMode={viewMode}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
@@ -974,12 +1190,19 @@ export const AgricultureLivestockView: React.FC = () => {
               if (el) setDrawerOpenerEl(el);
               setSelectedMilking(null);
               setSelectedAnimal(a);
+              setAnimalNotesDraft(a.notes || '');
+              setAnimalTab('overview');
             }}
             onViewDetails={(a, el) => {
               if (el) setDrawerOpenerEl(el);
               setSelectedMilking(null);
               setSelectedAnimal(a);
+              setAnimalNotesDraft(a.notes || '');
+              setAnimalTab('overview');
             }}
+            getRowMeta={getAnimalRowMeta}
+            getFanActions={getAnimalFanActions}
+            getDetailActions={getAnimalDetailActions}
             onEdit={openEditModal}
             onDelete={handleDelete}
             emptyTitle={isAr ? 'لا توجد مواشي مسجلة' : 'Aucun animal enregistré'}
@@ -1002,46 +1225,14 @@ export const AgricultureLivestockView: React.FC = () => {
                 onClick: () => handleToggleHealth(a),
               },
             ]}
-            renderCard={(a) => {
-              const hs =
-                a.healthStatus || (a.isInWithholdingLockout ? 'InTreatment' : 'Healthy');
-              return (
-                <div className="space-y-2.5 w-full">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="font-mono font-bold text-xs text-[#d4522f]">
-                        {a.earTagNumber}
-                      </div>
-                      <div className="text-xs font-bold text-black dark:text-white mt-0.5">
-                        {a.nameOrNumber || a.breed}
-                      </div>
-                    </div>
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        hs === 'Healthy'
-                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                          : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                      }`}
-                    >
-                      {hs}
-                    </span>
-                  </div>
-                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-                    <span className="text-black/55 dark:text-white/55">{a.reproStatus}</span>
-                    <span className="font-mono font-bold text-black dark:text-white">
-                      {a.dailyProductionLiters ?? a.dailyAvgLiters ?? 0} L/j
-                    </span>
-                  </div>
-                </div>
-              );
-            }}
           />
         ) : (
           <UniversalDataCollection<AgriMilkingRecord>
             hideToolbar
-            data={sortedMilking}
+            items={sortedMilking}
             columns={milkingColumns}
             keyExtractor={(m) => m.id}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
             defaultViewMode={viewMode}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
@@ -1064,12 +1255,17 @@ export const AgricultureLivestockView: React.FC = () => {
               if (el) setDrawerOpenerEl(el);
               setSelectedAnimal(null);
               setSelectedMilking(m);
+              setMilkingTab('overview');
             }}
             onViewDetails={(m, el) => {
               if (el) setDrawerOpenerEl(el);
               setSelectedAnimal(null);
               setSelectedMilking(m);
+              setMilkingTab('overview');
             }}
+            getRowMeta={getMilkingRowMeta}
+            getFanActions={getMilkingFanActions}
+            getDetailActions={getMilkingDetailActions}
             onDelete={(m) => {
               deleteMilkingRecord(m.id);
               if (selectedMilking?.id === m.id) setSelectedMilking(null);
@@ -1082,31 +1278,6 @@ export const AgricultureLivestockView: React.FC = () => {
             onAddFirstItem={() => setIsMilkingModalOpen(true)}
             onResetFilters={resetAllFilters}
             hasActiveFilters={searchQuery.length > 0 || activeFiltersCount > 0}
-            renderCard={(m) => (
-              <div className="space-y-2.5 w-full">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="font-mono font-bold text-xs text-black dark:text-white">
-                      {m.sessionDate}
-                    </div>
-                    <div className="text-[11px] text-black/55 dark:text-white/55">
-                      {m.sessionPeriod === 'morning' ? 'Matin' : 'Soir'} • {m.destinationDairy}
-                    </div>
-                  </div>
-                  <span className="font-mono font-bold text-xs text-[#d4522f]">
-                    +{formatMoney(m.onilTotalSubsidyDzd, language)}
-                  </span>
-                </div>
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-                  <span className="font-mono font-bold text-emerald-600">
-                    {m.conformingLiters} L conformes
-                  </span>
-                  <span className="font-mono text-black/65 dark:text-white/65">
-                    +{m.tankTemperatureCelsius}°C
-                  </span>
-                </div>
-              </div>
-            )}
           />
         )}
       </ScreenPod>
@@ -1132,8 +1303,9 @@ export const AgricultureLivestockView: React.FC = () => {
         language={language}
         title={activeAnimal?.earTagNumber || ''}
         subtitle={
-          activeAnimal ? `${activeAnimal.nameOrNumber} • ${activeAnimal.breed}` : undefined
+          activeAnimal ? `${activeAnimal.nameOrNumber} · ${activeAnimal.breed}` : undefined
         }
+        categoryLabel={activeAnimal?.species || 'Bovine'}
         avatarText={(activeAnimal?.nameOrNumber || 'DZ').slice(0, 2).toUpperCase()}
         branchName={
           activeAnimal
@@ -1148,85 +1320,137 @@ export const AgricultureLivestockView: React.FC = () => {
         }
         statusClassName={
           activeAnimal?.isInWithholdingLockout || activeAnimal?.healthStatus === 'InTreatment'
-            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-            : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            : activeAnimal?.healthStatus === 'Quarantine' || activeAnimal?.healthStatus === 'Sick'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
         }
-        onSelectItem={(a) => setSelectedAnimal(a)}
+        tabs={[
+          { id: 'overview', label: isAr ? 'نظرة عامة' : isEn ? 'Overview' : 'Fiche Bovine' },
+          { id: 'health', label: isAr ? 'الصحة' : isEn ? 'Biosecurity' : 'Sanitaire' },
+          { id: 'notes', label: isAr ? 'ملاحظات' : isEn ? 'Notes' : 'Prophylaxie' },
+        ]}
+        activeTab={animalTab}
+        onTabChange={setAnimalTab}
+        onSelectItem={(a) => {
+          setSelectedAnimal(a);
+          setAnimalNotesDraft(a.notes || '');
+        }}
         onClose={() => setSelectedAnimal(null)}
         onDelete={handleDelete}
         holdToDelete
-        renderBody={(animal) => {
+        renderBody={(animal, tab) => {
           const isLocked =
             animal.isInWithholdingLockout ||
             animal.healthStatus === 'InTreatment' ||
             animal.healthStatus === 'Quarantine';
+          const dailyLiters = animal.dailyProductionLiters ?? animal.dailyAvgLiters ?? 0;
+
+          if (tab === 'health') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'الرقابة الصحية' : isEn ? 'Milk Exclusion' : 'Statut laitier ONIL'}>
+                  <InspectorBigStat
+                    value={isLocked ? (isAr ? 'موقوف' : 'Retrait Actif') : isAr ? 'مطابق' : 'Lait Conforme'}
+                    tone={isLocked ? 'warn' : 'ok'}
+                    caption={
+                      isLocked
+                        ? "Interdiction d'incorporation dans le tank collectif Giplait/Soummam"
+                        : 'Éligible à la collecte laiterie & prime ONIL 12 DA/L'
+                    }
+                  />
+                </InspectorSection>
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label={!isLocked ? 'Mettre en retrait antibiotique' : 'Rétablir animal sain'}
+                    onClick={() => handleToggleHealth(animal)}
+                  />
+                </InspectorSection>
+              </>
+            );
+          }
+
+          if (tab === 'notes') {
+            return (
+              <InspectorSection index={0} title={isAr ? 'الملاحظات البيطرية' : isEn ? 'Veterinary Notes' : 'Observations & Prophylaxie'}>
+                <InspectorNotesField
+                  value={animalNotesDraft}
+                  onChange={setAnimalNotesDraft}
+                  onSave={() => {
+                    const updated: AgriLivestock = { ...animal, notes: animalNotesDraft };
+                    updateLivestock(updated);
+                    setSelectedAnimal(updated);
+                    showToast(isAr ? 'تم حفظ الملاحظات البيطرية' : 'Carnet sanitaire enregistré', 'success');
+                  }}
+                  placeholder="Vaccinations, vermifuges, dates d'insémination..."
+                />
+              </InspectorSection>
+            );
+          }
+
           return (
-            <div className="space-y-4 text-xs">
-              <div className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Espèce &amp; Sexe:</span>
-                  <span className="font-semibold">
-                    {animal.species || 'Bovine'} ({animal.gender || 'Female'})
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Race:</span>
-                  <span className="font-semibold">{animal.breed}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Date de Naissance:</span>
-                  <span className="font-mono">{animal.birthDate}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Statut Reproduction:</span>
-                  <span className="font-semibold text-black dark:text-white">
-                    {animal.reproStatus || 'Lactation'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">N° de Lactation:</span>
-                  <span className="font-mono font-bold">
-                    Lactation {animal.lactationNumber || 1}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Production L/jour:</span>
-                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                    {animal.dailyProductionLiters ?? animal.dailyAvgLiters ?? 0} L/j
-                  </span>
-                </div>
-              </div>
-              {isLocked && (
-                <div className="p-3 bg-amber-500/10 border border-amber-500/25 rounded-xl text-amber-800 dark:text-amber-300 flex items-start gap-2">
-                  <AlertTriangle size={15} className="text-amber-600 shrink-0 mt-0.5" />
-                  <div>
-                    <div className="font-bold">Retrait laitier actif</div>
-                    <div className="text-[11px] opacity-80 mt-0.5">
-                      Interdiction d&apos;incorporation dans le tank collectif Giplait/Soummam.
-                    </div>
-                  </div>
-                </div>
-              )}
-              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex gap-2">
-                <AtriumButton
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 justify-center"
-                  onClick={() => openEditModal(animal)}
-                  icon={<Edit size={13} />}
-                >
-                  {isAr ? 'تعديل البيانات' : 'Modifier Fiche'}
-                </AtriumButton>
-                <AtriumButton
-                  variant="ghost"
-                  size="sm"
-                  className="flex-1 justify-center"
-                  onClick={() => handleToggleHealth(animal)}
-                >
-                  {!isLocked ? 'Mettre en Soins' : 'Rétablir Sain'}
-                </AtriumButton>
-              </div>
-            </div>
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : isEn ? 'Quick Actions' : 'Actions rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'edit',
+                      label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+                      icon: <Edit className="w-[18px] h-[18px]" />,
+                      primary: true,
+                      onClick: () => openEditModal(animal),
+                    },
+                    {
+                      id: 'health',
+                      label: !isLocked ? 'Soins / Retrait' : 'Rétablir Sain',
+                      icon: <AlertTriangle className="w-[18px] h-[18px]" />,
+                      onClick: () => handleToggleHealth(animal),
+                    },
+                    {
+                      id: 'pin',
+                      label: pinnedIds.has(animal.id)
+                        ? isAr ? 'إلغاء تثبيت' : 'Désépingler'
+                        : isAr ? 'تثبيت' : 'Épingler',
+                      icon: <Pin className="w-[18px] h-[18px]" />,
+                      onClick: () => handlePin(animal),
+                    },
+                  ]}
+                />
+              </InspectorSection>
+
+              <InspectorSection index={1}>
+                <InspectorBigStat
+                  value={`${dailyLiters} L/j`}
+                  tone={isLocked ? 'warn' : 'ok'}
+                  caption={`${animal.reproStatus || 'Lactation'} · Lactation N° ${animal.lactationNumber || 1}`}
+                />
+              </InspectorSection>
+
+              <InspectorSection index={2} title={isAr ? 'بطاقة الحيوان' : isEn ? 'Animal Record' : 'Identité & Cheptel'}>
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={isAr ? 'النوع والجنس' : isEn ? 'Species & Sex' : 'Espèce & Sexe'}
+                    value={`${animal.species || 'Bovine'} (${animal.gender || 'Female'})`}
+                    mono={false}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'السلالة' : isEn ? 'Breed' : 'Race'}
+                    value={String(animal.breed)}
+                    mono={false}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'تاريخ الميلاد' : isEn ? 'Birth Date' : 'Date de naissance'}
+                    value={animal.birthDate}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'الإنتاج اليومي' : isEn ? 'Daily Output' : 'Production moyenne'}
+                    value={`${dailyLiters} L/j`}
+                    tone="ok"
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+            </>
           );
         }}
       />
@@ -1246,6 +1470,7 @@ export const AgricultureLivestockView: React.FC = () => {
               : 'Traite du Soir'
             : undefined
         }
+        categoryLabel={activeMilking?.destinationDairy}
         avatarText="ML"
         branchName={
           activeMilking
@@ -1255,7 +1480,14 @@ export const AgricultureLivestockView: React.FC = () => {
         statusLabel={
           activeMilking ? `+${formatMoney(activeMilking.onilTotalSubsidyDzd, language)}` : undefined
         }
-        statusClassName="bg-[#d4522f]/15 text-[#d4522f]"
+        statusClassName="bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]"
+        tabs={[
+          { id: 'overview', label: isAr ? 'نظرة عامة' : isEn ? 'Overview' : 'Traite' },
+          { id: 'tank', label: isAr ? 'خزان التبريد' : isEn ? 'Cooling Tank' : 'Tank & Qualité' },
+          { id: 'onil', label: isAr ? 'دعم ONIL' : isEn ? 'ONIL Subsidy' : 'Prime ONIL' },
+        ]}
+        activeTab={milkingTab}
+        onTabChange={setMilkingTab}
         onSelectItem={(m) => setSelectedMilking(m)}
         onClose={() => setSelectedMilking(null)}
         onDelete={(m) => {
@@ -1264,47 +1496,80 @@ export const AgricultureLivestockView: React.FC = () => {
           showToast(isAr ? 'تم حذف جلسة الحلب' : 'Session de traite retirée', 'info');
         }}
         holdToDelete
-        renderBody={(milk) => (
-          <div className="space-y-4 text-xs">
-            <div className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-2">
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">Volume Total Trait:</span>
-                <span className="font-mono font-semibold">{milk.totalTankLiters} L</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">Volume Écarté (Retrait):</span>
-                <span className="font-mono text-amber-600">-{milk.rejectedWithholdingLiters} L</span>
-              </div>
-              <div className="flex justify-between pt-1.5 border-t border-neutral-200 dark:border-neutral-700 font-bold">
-                <span>Volume Conforme Livré:</span>
-                <span className="font-mono text-emerald-600">{milk.conformingLiters} L</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">Température Tank:</span>
-                <span className="font-mono font-bold">+{milk.tankTemperatureCelsius}°C</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">Laiterie Destinataire:</span>
-                <span className="font-medium text-black dark:text-white">
-                  {milk.destinationDairy}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">N° Bon Livraison (BL):</span>
-                <span className="font-mono">{milk.dairyDeliverySlipNo || 'N/A'}</span>
-              </div>
-            </div>
-            <AtriumButton
-              variant="primary"
-              size="sm"
-              className="w-full justify-center"
-              onClick={() => setIsOnilModalOpen(true)}
-              icon={<FileText size={13} />}
-            >
-              {isAr ? 'طباعة كشف دعم ONIL' : 'Imprimer Bordereau ONIL'}
-            </AtriumButton>
-          </div>
-        )}
+        renderBody={(milk, tab) => {
+          if (tab === 'tank') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'تبريد الحليب' : isEn ? 'Tank Temp' : 'Température tank'}>
+                  <InspectorBigStat
+                    value={`+${milk.tankTemperatureCelsius}°C`}
+                    tone={milk.tankTemperatureCelsius <= 4 ? 'ok' : 'warn'}
+                    caption={`Norme chaîne du froid ≤ 4.0°C · BL ${milk.dairyDeliverySlipNo || 'En attente'}`}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'موازنة الكميات' : isEn ? 'Volume Audit' : 'Bilan des volumes'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label="Volume total trait" value={`${milk.totalTankLiters} L`} />
+                    <InspectorKeyValue label="Écarté (retrait antibio)" value={`-${milk.rejectedWithholdingLiters} L`} tone="warn" />
+                    <InspectorKeyValue label="Volume conforme livré" value={`${milk.conformingLiters} L`} tone="ok" isLast />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
+
+          if (tab === 'onil') {
+            return (
+              <>
+                <InspectorSection index={0} title="Subvention ONIL (12 DA/L)">
+                  <InspectorBigStat
+                    value={`+${formatMoney(milk.onilTotalSubsidyDzd, language)}`}
+                    tone="accent"
+                    caption={`${milk.conformingLiters} L conformes · ${milk.destinationDairy}`}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label={isAr ? 'طباعة كشف دعم ONIL' : 'Imprimer Bordereau ONIL'}
+                    onClick={() => setIsOnilModalOpen(true)}
+                  />
+                </InspectorSection>
+              </>
+            );
+          }
+
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : isEn ? 'Quick Actions' : 'Actions rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'onil',
+                      label: isAr ? 'كشف ONIL' : 'Bordereau ONIL',
+                      icon: <FileText className="w-[18px] h-[18px]" />,
+                      primary: true,
+                      onClick: () => setIsOnilModalOpen(true),
+                    },
+                    {
+                      id: 'export',
+                      label: 'CSV',
+                      icon: <Milk className="w-[18px] h-[18px]" />,
+                      onClick: handleExportCsv,
+                    },
+                  ]}
+                />
+              </InspectorSection>
+              <InspectorSection index={1} title={isAr ? 'تفاصيل الجلسة' : isEn ? 'Delivery Summary' : 'Livraison laiterie'}>
+                <InspectorCard>
+                  <InspectorKeyValue label="Volume conforme livré" value={`${milk.conformingLiters} L`} tone="ok" />
+                  <InspectorKeyValue label="Température tank" value={`+${milk.tankTemperatureCelsius}°C`} />
+                  <InspectorKeyValue label="Laiterie destinataire" value={milk.destinationDairy} mono={false} />
+                  <InspectorKeyValue label="N° Bon Livraison (BL)" value={milk.dairyDeliverySlipNo || 'N/A'} isLast />
+                </InspectorCard>
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       {isAnimalModalOpen && (

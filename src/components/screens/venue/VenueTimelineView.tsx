@@ -4,12 +4,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
-  Clock,
   Cloud,
   LogIn,
   LogOut,
   Edit2,
-  Users,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { RentableUnit, RentalBooking } from '../../../types/index';
@@ -17,7 +15,6 @@ import { formatCurrencyAmount, localizeStatus } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
 import { VenueCloudSyncModal } from './VenueCloudSyncModal';
-import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCalendarTimeline } from '../../ui/skeleton/StructuralSkeletons';
@@ -30,10 +27,24 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
+
+const STATUS_PILL_OK =
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+const STATUS_PILL_WARN =
+  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
+const STATUS_PILL_INFO =
+  'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]';
+
+type DrawerTab = 'session' | 'client' | 'finances';
 
 const HOURS = Array.from({ length: 16 }, (_, i) => i + 8);
 
@@ -72,6 +83,7 @@ export const VenueTimelineView: React.FC = () => {
   const [modalInitialHour, setModalInitialHour] = useState<string | undefined>(undefined);
 
   const [inspectedBooking, setInspectedBooking] = useState<RentalBooking | null>(null);
+  const [drawerTab, setDrawerTab] = useState<DrawerTab>('session');
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
 
   const [selectedBookingIds, setSelectedBookingIds] = useState<Set<string>>(() => new Set<string>());
@@ -650,13 +662,6 @@ export const VenueTimelineView: React.FC = () => {
       <ScreenHeaderBar
         icon={<CalendarIcon size={22} />}
         title={t('venue_timeline_matrix_title')}
-        subtitle={
-          isAr
-            ? 'المخطط الزمني الساعي وإشغال القاعات'
-            : isFr
-            ? 'Matrice horaire & disponibilité des espaces'
-            : 'Hourly space availability & utilization matrix'
-        }
         secondaryActions={
           <button
             type="button"
@@ -774,11 +779,12 @@ export const VenueTimelineView: React.FC = () => {
           onResetAllFilters={handleResetFilters}
         />
 
-        <UniversalDataCollection
+        <UniversalDataCollection<RentalBooking>
           hideToolbar
-          data={sortedBookings}
+          items={sortedBookings}
           keyExtractor={(b) => b.id}
           viewMode={viewMode}
+          defaultViewMode="calendar"
           renderCalendarView={renderCalendarMatrix}
           columns={timelineColumns}
           sortBy={bookingSortBy}
@@ -800,47 +806,107 @@ export const VenueTimelineView: React.FC = () => {
             setBookingToEdit(b);
             setIsBookingModalOpen(true);
           }}
-          isPinned={(b) => pinnedBookingIds.has(b.id)}
-          onPinToggle={(b) => {
+          pinnedIds={pinnedBookingIds}
+          onPinToggle={(idOrItem) => {
+            const id = typeof idOrItem === 'string' ? idOrItem : idOrItem.id;
             setPinnedBookingIds((prev) => {
               const next = new Set(prev);
-              if (next.has(b.id)) next.delete(b.id);
-              else next.add(b.id);
+              if (next.has(id)) next.delete(id);
+              else next.add(id);
               return next;
             });
           }}
           selectedIds={selectedBookingIds}
           onSelectionChange={setSelectedBookingIds}
-          renderCard={(b) => (
-            <div className="flex flex-col justify-between w-full h-full">
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <span className="text-xs font-bold text-black dark:text-white truncate">
-                    {b.unitName}
-                  </span>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75">
-                    {b.status}
-                  </span>
-                </div>
-                <h3 className="font-bold text-sm text-black dark:text-white line-clamp-1 mb-1">
-                  {b.purpose}
-                </h3>
-                <p className="text-[11px] text-black/55 dark:text-white/75 mb-2">{b.renterName}</p>
-                <div className="flex items-center gap-1.5 text-xs font-mono text-black/70 dark:text-white/75">
-                  <Clock size={12} />
-                  <span>{b.startDateTime.replace('T', ' ').slice(0, 16)}</span>
-                </div>
-              </div>
-              <div className="mt-3 pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
-                <span className="font-bold font-mono text-xs text-black dark:text-white">
-                  {formatCurrencyAmount(b.totalAmount, b.currency)}
-                </span>
-                <span className="text-[11px] text-black/55 dark:text-white/55">
-                  {b.durationHours}h
-                </span>
-              </div>
-            </div>
-          )}
+          getRowMeta={(b) => {
+            const bInfo = resolveRecordBranch(b, branchesById, currentBranch, language);
+            return {
+              title: b.purpose,
+              subline: `${b.unitName} · ${b.renterName}`,
+              avatarText: (b.renterName || 'TL').slice(0, 2).toUpperCase(),
+              avatarColor: '#d4522f',
+              categoryLabel: b.unitName,
+              statusLabel: localizeStatus(b.status, language),
+              statusVariant:
+                b.status === 'Confirmed' || b.status === 'CheckedIn'
+                  ? 'active'
+                  : b.status === 'Tentative'
+                  ? 'warning'
+                  : b.status === 'Completed'
+                  ? 'info'
+                  : 'neutral',
+              metricPrimary: formatCurrencyAmount(b.totalAmount, b.currency),
+              metricSecondary: `${b.startDateTime.replace('T', ' ').slice(0, 16)} (${b.durationHours}h)`,
+              branchName: bInfo.name,
+              isPinned: pinnedBookingIds.has(b.id),
+              detailCol1: { label: t('venue_voucher_renter_name'), value: b.renterName },
+              detailCol2: { label: t('venue_col_space'), value: b.unitName },
+              detailCol3: {
+                label: t('venue_col_schedule'),
+                value: `${b.startDateTime.replace('T', ' ').slice(0, 16)} (${b.durationHours}h)`,
+              },
+            };
+          }}
+          getFanActions={(b) => [
+            ...(b.status === 'Confirmed'
+              ? [
+                  {
+                    id: 'checkin',
+                    label: t('venue_btn_checkin_guest'),
+                    icon: <LogIn size={14} />,
+                    onClick: () => checkInBooking(b.id),
+                  },
+                ]
+              : b.status === 'CheckedIn'
+              ? [
+                  {
+                    id: 'checkout',
+                    label: t('venue_btn_checkout_space'),
+                    icon: <LogOut size={14} />,
+                    onClick: () => checkOutBooking(b.id),
+                  },
+                ]
+              : []),
+            {
+              id: 'edit',
+              label: isAr ? 'تعديل' : isFr ? 'Modifier' : 'Edit',
+              icon: <Edit2 size={14} />,
+              onClick: () => {
+                setBookingToEdit(b);
+                setIsBookingModalOpen(true);
+              },
+            },
+          ]}
+          getDetailActions={(b) => [
+            ...(b.status === 'Confirmed'
+              ? [
+                  {
+                    id: 'checkin',
+                    label: t('venue_btn_checkin_guest'),
+                    icon: <LogIn size={13} />,
+                    onClick: () => checkInBooking(b.id),
+                  },
+                ]
+              : b.status === 'CheckedIn'
+              ? [
+                  {
+                    id: 'checkout',
+                    label: t('venue_btn_checkout_space'),
+                    icon: <LogOut size={13} />,
+                    onClick: () => checkOutBooking(b.id),
+                  },
+                ]
+              : []),
+            {
+              id: 'edit',
+              label: isAr ? 'تعديل' : isFr ? 'Modifier' : 'Edit',
+              icon: <Edit2 size={13} />,
+              onClick: () => {
+                setBookingToEdit(b);
+                setIsBookingModalOpen(true);
+              },
+            },
+          ]}
           emptyTitle={t('venue_no_bookings_match')}
           primaryActionLabel={t('venue_btn_new_booking')}
           onAddFirstItem={() => {
@@ -876,7 +942,7 @@ export const VenueTimelineView: React.FC = () => {
         sections={filterSections}
       />
 
-      <KineticSlideOverInspector
+      <KineticSlideOverInspector<RentalBooking>
         isOpen={Boolean(activeBooking)}
         item={activeBooking}
         allItems={sortedBookings}
@@ -889,7 +955,7 @@ export const VenueTimelineView: React.FC = () => {
             ? `${activeBooking.unitName} · ${activeBooking.startDateTime.replace('T', ' ').slice(0, 16)}`
             : ''
         }
-        avatarText={(activeBooking?.renterName || 'V').slice(0, 2).toUpperCase()}
+        avatarText={(activeBooking?.renterName || 'TL').slice(0, 2).toUpperCase()}
         avatarColor="#d4522f"
         branchName={
           activeBooking
@@ -897,83 +963,160 @@ export const VenueTimelineView: React.FC = () => {
             : undefined
         }
         statusLabel={activeBooking ? localizeStatus(activeBooking.status, language) : undefined}
+        statusClassName={
+          activeBooking?.status === 'Confirmed' || activeBooking?.status === 'CheckedIn'
+            ? STATUS_PILL_OK
+            : activeBooking?.status === 'Tentative'
+            ? STATUS_PILL_WARN
+            : STATUS_PILL_INFO
+        }
+        tabs={[
+          { id: 'session', label: isAr ? 'الجلسة' : isFr ? 'Créneau' : 'Session' },
+          { id: 'client', label: isAr ? 'المنظم' : isFr ? 'Organisateur' : 'Organizer' },
+          { id: 'finances', label: isAr ? 'المالية والضمان' : isFr ? 'Finances' : 'Financials' },
+        ]}
+        activeTab={drawerTab}
+        onTabChange={(tab) => setDrawerTab(tab as DrawerTab)}
         onSelectItem={(b) => setInspectedBooking(b)}
         onClose={() => setInspectedBooking(null)}
         onDelete={(b) => deleteRentalBooking(b.id)}
         holdToDelete
-        renderBody={(booking) => (
-          <div className="space-y-4 text-xs">
-            <div className="flex flex-wrap gap-2">
-              {booking.status === 'Confirmed' && (
-                <AtriumButton
-                  variant="primary"
-                  size="sm"
-                  icon={<LogIn size={14} />}
-                  onClick={() => checkInBooking(booking.id)}
+        renderBody={(booking, tab) => {
+          if (tab === 'client') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection
+                  index={0}
+                  title={isAr ? 'بيانات المنظم' : 'Coordonnées locataire'}
                 >
-                  {t('venue_btn_checkin_guest')}
-                </AtriumButton>
-              )}
-              {booking.status === 'CheckedIn' && (
-                <AtriumButton
-                  variant="primary"
-                  size="sm"
-                  icon={<LogOut size={14} />}
-                  onClick={() => checkOutBooking(booking.id)}
-                >
-                  {t('venue_btn_checkout_space')}
-                </AtriumButton>
-              )}
-              <AtriumButton
-                variant="secondary"
-                size="sm"
-                icon={<Edit2 size={14} />}
-                onClick={() => {
-                  setBookingToEdit(booking);
-                  setIsBookingModalOpen(true);
-                }}
-              >
-                {isAr ? 'تعديل' : isFr ? 'Modifier' : 'Edit'}
-              </AtriumButton>
-            </div>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={t('venue_voucher_renter_name')}
+                      value={booking.renterName}
+                    />
+                    {booking.renterCompany && (
+                      <InspectorKeyValue
+                        label={t('venue_voucher_company')}
+                        value={booking.renterCompany}
+                      />
+                    )}
+                    <InspectorKeyValue
+                      label={t('venue_voucher_phone')}
+                      value={booking.renterPhone}
+                      mono
+                      copyText={booking.renterPhone}
+                    />
+                    <InspectorKeyValue
+                      label={t('venue_inv_capacity')}
+                      value={`${booking.attendeeCount}`}
+                      mono
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+              </div>
+            );
+          }
 
-            <div className="p-4 bg-[#F3EDE7]/60 dark:bg-neutral-800/40 rounded-2xl border border-[#E6DED6] dark:border-neutral-700 space-y-2.5">
-              <div className="flex justify-between">
-                <span className="text-black/60 dark:text-white/60">
-                  {t('venue_voucher_renter_name')}
-                </span>
-                <span className="font-bold text-black dark:text-white">{booking.renterName}</span>
+          if (tab === 'finances') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection
+                  index={0}
+                  title={isAr ? 'التسعير والضمان' : 'Tarification & Caution'}
+                >
+                  <InspectorBigStat
+                    value={formatCurrencyAmount(booking.totalAmount, booking.currency)}
+                    tone="accent"
+                    caption={t('venue_voucher_total_hire')}
+                  />
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={t('venue_voucher_caution_held')}
+                      value={`${formatCurrencyAmount(booking.depositAmount, booking.currency)} (${booking.depositStatus})`}
+                      mono
+                      tone="ok"
+                    />
+                    <InspectorKeyValue
+                      label={t('venue_modal_field_paid_amount')}
+                      value={formatCurrencyAmount(booking.paidAmount, booking.currency)}
+                      mono
+                    />
+                    <InspectorKeyValue
+                      label={t('venue_voucher_balance_due')}
+                      value={formatCurrencyAmount(booking.balanceDue, booking.currency)}
+                      mono
+                      tone={booking.balanceDue > 0 ? 'danger' : 'ok'}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
               </div>
-              <div className="flex justify-between">
-                <span className="text-black/60 dark:text-white/60">{t('venue_voucher_phone')}</span>
-                <span className="font-mono text-black dark:text-white">{booking.renterPhone}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/60 dark:text-white/60">{t('venue_inv_capacity')}</span>
-                <span className="font-semibold text-black dark:text-white flex items-center gap-1">
-                  <Users size={12} /> {booking.attendeeCount}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/60 dark:text-white/60">
-                  {t('venue_col_financials')}
-                </span>
-                <span className="font-bold text-black dark:text-white tabular-nums font-mono">
-                  {formatCurrencyAmount(booking.totalAmount, booking.currency)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/60 dark:text-white/60">
-                  {t('venue_voucher_caution_held')}
-                </span>
-                <span className="font-semibold text-emerald-600 tabular-nums font-mono">
-                  {formatCurrencyAmount(booking.depositAmount, booking.currency)} (
-                  {booking.depositStatus})
-                </span>
-              </div>
+            );
+          }
+
+          return (
+            <div className="space-y-4">
+              <InspectorQuickActions
+                actions={[
+                  ...(booking.status === 'Confirmed'
+                    ? [
+                        {
+                          id: 'checkin',
+                          label: t('venue_btn_checkin_guest'),
+                          icon: <LogIn size={15} />,
+                          primary: true,
+                          onClick: () => checkInBooking(booking.id),
+                        },
+                      ]
+                    : booking.status === 'CheckedIn'
+                    ? [
+                        {
+                          id: 'checkout',
+                          label: t('venue_btn_checkout_space'),
+                          icon: <LogOut size={15} />,
+                          primary: true,
+                          onClick: () => checkOutBooking(booking.id),
+                        },
+                      ]
+                    : []),
+                  {
+                    id: 'edit',
+                    label: isAr ? 'تعديل' : isFr ? 'Modifier' : 'Edit',
+                    icon: <Edit2 size={15} />,
+                    primary: booking.status !== 'Confirmed' && booking.status !== 'CheckedIn',
+                    onClick: () => {
+                      setBookingToEdit(booking);
+                      setIsBookingModalOpen(true);
+                    },
+                  },
+                ]}
+              />
+
+              <InspectorSection index={0} title={isAr ? 'ملخص الحجز' : 'Détails du créneau'}>
+                <InspectorCard>
+                  <InspectorKeyValue label={t('venue_col_space')} value={booking.unitName} />
+                  <InspectorKeyValue
+                    label={t('venue_col_schedule')}
+                    value={`${booking.startDateTime.replace('T', ' ').slice(0, 16)} (${booking.durationHours}h)`}
+                    mono
+                  />
+                  <InspectorKeyValue
+                    label={t('venue_voucher_renter_name')}
+                    value={booking.renterName}
+                  />
+                  <InspectorKeyValue
+                    label={t('venue_col_financials')}
+                    value={formatCurrencyAmount(booking.totalAmount, booking.currency)}
+                    mono
+                    tone="accent"
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
             </div>
-          </div>
-        )}
+          );
+        }}
       />
 
       <BookingModal

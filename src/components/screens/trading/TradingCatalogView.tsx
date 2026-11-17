@@ -1,14 +1,9 @@
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   ShoppingBag,
   Plus,
   Edit,
   Trash2,
-  Tag,
-  Sparkles,
-  TrendingUp,
-  Percent,
-  Check,
   PackagePlus,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
@@ -30,13 +25,28 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorProgressBar,
+  InspectorBigStat,
+  InspectorNotesField,
+  InspectorWideButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
 
+const STATUS_PILL_OK =
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+const STATUS_PILL_WARN =
+  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
+const STATUS_PILL_INFO =
+  'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]';
+
 type CatalogTab = 'products' | 'services';
-type DrawerTab = 'fiche' | 'stock' | 'marge' | 'notes';
+type DrawerTab = 'fiche' | 'stock' | 'marge';
 
 export const TradingCatalogView: React.FC = () => {
   const { t, isRtl, language } = useTranslation();
@@ -74,9 +84,6 @@ export const TradingCatalogView: React.FC = () => {
   const [sortBy, setSortBy] = useState<string>('name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [drawerTab, setDrawerTab] = useState<DrawerTab>('fiche');
-  const [productNotes, setProductNotes] = useState('');
-  const [isSavingNotes, setIsSavingNotes] = useState(false);
-  const [notesSavedNotice, setNotesSavedNotice] = useState(false);
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -96,21 +103,18 @@ export const TradingCatalogView: React.FC = () => {
     return products.find((p) => p.id === selectedProduct.id) || selectedProduct;
   }, [selectedProduct, products]);
 
-  useEffect(() => {
-    if (activeProduct) setProductNotes(activeProduct.description || '');
-  }, [activeProduct?.id]);
-
-  const handleNotesChange = (val: string) => {
-    setProductNotes(val);
-    if (!activeProduct) return;
-    setIsSavingNotes(true);
-    updateProduct(activeProduct.id, { description: val });
-    setTimeout(() => {
-      setIsSavingNotes(false);
-      setNotesSavedNotice(true);
-      setTimeout(() => setNotesSavedNotice(false), 2000);
-    }, 400);
-  };
+  const handleSaveNotes = useCallback(
+    (val: string) => {
+      if (!activeProduct) return;
+      updateProduct(activeProduct.id, { description: val });
+      showToast({
+        type: 'success',
+        title: isAr ? 'تم حفظ الملاحظات' : isEn ? 'Notes saved' : 'Spécifications enregistrées',
+        message: activeProduct.name,
+      });
+    },
+    [activeProduct, updateProduct, isAr, isEn]
+  );
 
   const handleReplenishStock = useCallback(
     (prod: Product, delta = 10) => {
@@ -520,7 +524,6 @@ export const TradingCatalogView: React.FC = () => {
       <ScreenHeaderBar
         icon={<ShoppingBag size={22} />}
         title={t('trading_catalog_title', 'Catalogue')}
-        subtitle={`${products.length} ${isAr ? 'عنصر' : isEn ? 'catalog items' : 'références'}`}
         primaryAction={{
           label:
             activeTab === 'products'
@@ -605,9 +608,10 @@ export const TradingCatalogView: React.FC = () => {
 
         <UniversalDataCollection<Product>
           hideToolbar
-          data={sortedItems}
+          items={sortedItems}
           keyExtractor={(p) => p.id}
-          viewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode="list"
           columns={columns}
           sortBy={sortBy}
           sortDirection={sortDir}
@@ -652,80 +656,83 @@ export const TradingCatalogView: React.FC = () => {
             deleteProduct(p.id);
             if (selectedProduct?.id === p.id) setSelectedProduct(null);
           }}
-          customActions={(p) =>
-            p.unit !== 'forfait'
-              ? [
-                  {
-                    id: 'replenish',
-                    label: '+10 Stock',
-                    icon: <PackagePlus size={13} />,
-                    variant: 'primary',
-                    onClick: () => handleReplenishStock(p, 10),
-                  },
-                ]
-              : []
-          }
-          renderCard={(p) => {
-            const marginPercent =
-              (p.price?.amount || 0) > 0
-                ? Math.round(
-                    (((p.price?.amount || 0) - (p.cost?.amount || p.costPrice || 0)) / (p.price?.amount || 1)) * 100
-                  )
-                : 0;
-            const isLowStock = (p.stockQuantity || 0) <= (p.reorderLevel || 10);
-            return (
-              <div className="p-4 border border-[#E6DED6] dark:border-neutral-700/70 bg-white dark:bg-neutral-800/80 rounded-2xl flex flex-col justify-between h-full">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800">
-                      {p.sku || 'N/A'}
-                    </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#d4522f]/10 text-[#d4522f]">
-                      {p.category || 'Général'}
-                    </span>
-                  </div>
-                  <h3 className="font-bold text-sm text-black dark:text-white line-clamp-1 mb-1">{p.name}</h3>
-                  <div className="mt-2 p-2.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-1 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-black/55 dark:text-white/55">Prix Vente HT :</span>
-                      <span className="font-mono font-bold text-[#d4522f] tabular-nums">
-                        {formatMoney(p.price?.amount || 0)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-[11px]">
-                      <span className="text-black/55 dark:text-white/55">Marge Brute :</span>
-                      <span className={`font-mono font-semibold ${marginPercent >= 25 ? 'text-emerald-600' : 'text-amber-600'}`}>
-                        {marginPercent}%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-3 pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-                  {p.unit !== 'forfait' ? (
-                    <>
-                      <span className={`font-mono font-semibold ${isLowStock ? 'text-amber-600' : 'text-emerald-600'}`}>
-                        {p.stockQuantity || 0} {p.unit || 'u'}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleReplenishStock(p, 10);
-                        }}
-                        className="px-2.5 py-1 rounded-lg bg-[#d4522f]/10 hover:bg-[#d4522f]/20 text-[#d4522f] text-[11px] font-bold cursor-pointer"
-                      >
-                        +10 Stock
-                      </button>
-                    </>
-                  ) : (
-                    <div className="flex items-center gap-1.5 text-black/55 dark:text-white/55">
-                      <Sparkles size={13} className="text-[#d4522f]" />
-                      <span>Prestation au Forfait</span>
-                    </div>
-                  )}
-                </div>
-              </div>
+          getRowMeta={(p) => {
+            const isSrv = p.unit === 'forfait' || p.category?.toLowerCase().includes('service');
+            const isLow = !isSrv && (p.stockQuantity || 0) <= (p.reorderLevel || 10);
+            const sale = p.price?.amount || 0;
+            const cost = p.cost?.amount || p.costPrice || 0;
+            const marginPct = sale > 0 ? Math.round(((sale - cost) / sale) * 100) : 0;
+            const branchInfo = resolveRecordBranch(p, branchesById, currentBranch, language);
+            return {
+              title: p.name,
+              subline: `${p.sku || 'SANS SKU'} · ${p.category || 'Général'}`,
+              avatarText: p.name.slice(0, 2).toUpperCase(),
+              avatarColor: '#d4522f',
+              categoryLabel: p.category || (isSrv ? 'Service' : 'Article'),
+              statusLabel: isSrv
+                ? 'Service'
+                : isLow
+                ? `${p.stockQuantity || 0} ${p.unit || 'u'} · Bas`
+                : `${p.stockQuantity || 0} ${p.unit || 'u'}`,
+              statusVariant: isSrv ? 'info' : isLow ? 'warning' : 'active',
+              metricPrimary: formatMoney(sale),
+              metricSecondary: `Marge ${marginPct}%`,
+              branchName: branchInfo.name,
+              isPinned: pinnedIds.has(p.id),
+              notes: p.description,
+              detailCol1: { label: 'Coût Achat HT', value: formatMoney(cost) },
+              detailCol2: { label: 'TVA', value: `${p.taxRate ?? 19}%` },
+              detailCol3: { label: 'Unité', value: p.unit || 'u' },
+            };
+          }}
+          getFanActions={(p) => {
+            const actions = [];
+            if (p.unit !== 'forfait') {
+              actions.push({
+                id: 'replenish',
+                label: '+10 Stock',
+                icon: <PackagePlus size={14} />,
+                onClick: () => handleReplenishStock(p, 10),
+              });
+            }
+            actions.push(
+              {
+                id: 'edit',
+                label: t('action_edit', 'Modifier'),
+                icon: <Edit size={14} />,
+                onClick: () => handleEdit(p),
+              },
+              {
+                id: 'delete',
+                label: t('action_delete', 'Supprimer'),
+                icon: <Trash2 size={14} />,
+                isDanger: true,
+                onClick: () => {
+                  deleteProduct(p.id);
+                  if (selectedProduct?.id === p.id) setSelectedProduct(null);
+                },
+              }
             );
+            return actions;
+          }}
+          getDetailActions={(p) => {
+            const actions = [
+              {
+                id: 'edit',
+                label: t('action_edit', 'Modifier'),
+                icon: <Edit size={13} />,
+                onClick: () => handleEdit(p),
+              },
+            ];
+            if (p.unit !== 'forfait') {
+              actions.unshift({
+                id: 'replenish',
+                label: '+10 Stock',
+                icon: <PackagePlus size={13} />,
+                onClick: () => handleReplenishStock(p, 10),
+              });
+            }
+            return actions;
           }}
           emptyTitle="Aucun article trouvé"
         />
@@ -755,16 +762,27 @@ export const TradingCatalogView: React.FC = () => {
         language={language}
         title={activeProduct?.name || ''}
         subtitle={activeProduct ? `${activeProduct.sku || 'SANS SKU'} · ${activeProduct.category || 'Général'}` : undefined}
-        avatarText={activeProduct ? activeProduct.name.charAt(0).toUpperCase() : 'P'}
+        avatarText={activeProduct ? activeProduct.name.slice(0, 2).toUpperCase() : 'PR'}
+        avatarColor="#d4522f"
         branchName={
           activeProduct ? resolveRecordBranch(activeProduct, branchesById, currentBranch, language).name : undefined
         }
-        statusLabel={activeProduct?.unit === 'forfait' ? 'Service' : `${activeProduct?.stockQuantity || 0} ${activeProduct?.unit || 'u'}`}
+        statusLabel={
+          activeProduct?.unit === 'forfait'
+            ? 'Service'
+            : `${activeProduct?.stockQuantity || 0} ${activeProduct?.unit || 'u'}`
+        }
+        statusClassName={
+          activeProduct?.unit === 'forfait'
+            ? STATUS_PILL_INFO
+            : (activeProduct?.stockQuantity || 0) <= (activeProduct?.reorderLevel || 10)
+            ? STATUS_PILL_WARN
+            : STATUS_PILL_OK
+        }
         tabs={[
-          { id: 'fiche', label: 'Fiche' },
-          { id: 'stock', label: 'Stock' },
-          { id: 'marge', label: 'Marge' },
-          { id: 'notes', label: 'Notes' },
+          { id: 'fiche', label: isAr ? 'البطاقة' : isEn ? 'Profile' : 'Fiche' },
+          { id: 'stock', label: isAr ? 'المخزون' : isEn ? 'Stock' : 'Stock' },
+          { id: 'marge', label: isAr ? 'الهامش' : isEn ? 'Margin' : 'Marge' },
         ]}
         activeTab={drawerTab}
         onTabChange={(tab) => setDrawerTab(tab as DrawerTab)}
@@ -775,118 +793,130 @@ export const TradingCatalogView: React.FC = () => {
           setSelectedProduct(null);
         }}
         holdToDelete
-        renderBody={(prod, tab) => (
-          <div className="space-y-4 text-xs">
-            <div className="flex items-center gap-2">
-              {prod.unit !== 'forfait' && (
-                <button
-                  type="button"
-                  onClick={() => handleReplenishStock(prod, 10)}
-                  className="flex-1 py-2 px-3 rounded-xl bg-[#d4522f] hover:bg-[#b83f1f] text-white font-semibold flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <PackagePlus size={13} />
-                  <span>+10 Stock</span>
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => handleEdit(prod)}
-                className="flex-1 py-2 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 text-black dark:text-white font-semibold flex items-center justify-center gap-1 cursor-pointer"
-              >
-                <Edit size={13} />
-                <span>Modifier</span>
-              </button>
-            </div>
+        renderBody={(prod, tab) => {
+          const salePrice = prod.price?.amount || 0;
+          const costPrice = prod.cost?.amount || prod.costPrice || 0;
+          const unitMargin = salePrice - costPrice;
+          const marginPercent = salePrice > 0 ? Math.round((unitMargin / salePrice) * 100) : 0;
+          const isSrv = prod.unit === 'forfait';
+          const stockQty = prod.stockQuantity || 0;
+          const reorderLvl = prod.reorderLevel || 10;
+          const stockRatio = reorderLvl > 0 ? Math.min(100, Math.round((stockQty / (reorderLvl * 3)) * 100)) : 100;
 
-            {tab === 'fiche' && (
-              <div className="p-3.5 bg-[#FBF8F5] dark:bg-neutral-800/50 rounded-xl space-y-2 border border-[#E6DED6] dark:border-neutral-800">
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Référence SKU :</span>
-                  <span className="font-mono font-bold">{prod.sku || 'SANS SKU'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Catégorie :</span>
-                  <span className="font-semibold">{prod.category || 'Général'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Unité :</span>
-                  <span className="font-mono">{prod.unit || 'u'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">TVA :</span>
-                  <span className="font-mono font-bold text-emerald-600">{prod.taxRate ?? 19}%</span>
-                </div>
+          if (tab === 'stock') {
+            return (
+              <div className="space-y-4">
+                {isSrv ? (
+                  <InspectorSection index={0} title={isAr ? 'طبيعة الخدمة' : 'Prestation immatérielle'}>
+                    <InspectorCard>
+                      <InspectorKeyValue label="Unité de facturation" value="Forfait" isLast />
+                    </InspectorCard>
+                  </InspectorSection>
+                ) : (
+                  <>
+                    <InspectorSection index={0} title={isAr ? 'مستوى المخزون' : 'Niveau de stock'}>
+                      <InspectorBigStat
+                        value={`${stockQty} ${prod.unit || 'u'}`}
+                        tone={stockQty <= reorderLvl ? 'danger' : 'ok'}
+                        caption={`Seuil d'alerte : ${reorderLvl} ${prod.unit || 'u'}`}
+                      />
+                      <InspectorCard>
+                        <InspectorProgressBar
+                          percent={stockRatio}
+                          tone={stockQty <= reorderLvl ? 'warn' : 'ok'}
+                          animateKey={prod.id}
+                        />
+                        <InspectorKeyValue
+                          label="Valorisation stock (HT)"
+                          value={formatMoney(stockQty * costPrice)}
+                          mono
+                          tone="accent"
+                          isLast
+                        />
+                      </InspectorCard>
+                    </InspectorSection>
+                    <InspectorSection index={1} title={isAr ? 'تزويد سريع' : 'Réapprovisionnement rapide'}>
+                      <InspectorWideButton
+                        label="+10 Stock immédiat"
+                        icon={<PackagePlus size={14} />}
+                        tone="accent"
+                        onClick={() => handleReplenishStock(prod, 10)}
+                      />
+                    </InspectorSection>
+                  </>
+                )}
               </div>
-            )}
+            );
+          }
 
-            {tab === 'stock' &&
-              (prod.unit === 'forfait' ? (
-                <div className="p-4 text-center text-black/55 dark:text-white/55 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl">
-                  Cet article est un service immatériel.
-                </div>
-              ) : (
-                <div className="p-3.5 bg-[#FBF8F5] dark:bg-neutral-800/50 rounded-xl space-y-2 border border-[#E6DED6] dark:border-neutral-800">
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Stock Réel :</span>
-                    <span className="font-mono font-bold">
-                      {prod.stockQuantity || 0} {prod.unit || 'u'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Seuil Alerte :</span>
-                    <span className="font-mono">{prod.reorderLevel || 10}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Valorisation HT :</span>
-                    <span className="font-mono font-bold text-[#d4522f]">
-                      {formatMoney((prod.stockQuantity || 0) * (prod.cost?.amount || prod.costPrice || 0))}
-                    </span>
-                  </div>
-                </div>
-              ))}
-
-            {tab === 'marge' && (
-              <div className="p-3.5 bg-[#FBF8F5] dark:bg-neutral-800/50 rounded-xl space-y-2 border border-[#E6DED6] dark:border-neutral-800">
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Prix de Vente HT :</span>
-                  <span className="font-mono font-bold">{formatMoney(prod.price?.amount || 0)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Coût d'Achat HT :</span>
-                  <span className="font-mono">{formatMoney(prod.cost?.amount || prod.costPrice || 0)}</span>
-                </div>
-                <div className="flex justify-between pt-2 border-t border-neutral-200 dark:border-neutral-700">
-                  <span className="text-black/55 dark:text-white/55">Marge Unitaire :</span>
-                  <span className="font-mono font-bold text-emerald-600">
-                    {formatMoney((prod.price?.amount || 0) - (prod.cost?.amount || prod.costPrice || 0))}
-                  </span>
-                </div>
+          if (tab === 'marge') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0} title={isAr ? 'تحليل الربحية' : 'Rentabilité unitaire'}>
+                  <InspectorBigStat
+                    value={formatMoney(unitMargin)}
+                    tone={marginPercent >= 25 ? 'ok' : 'accent'}
+                    caption={`Marge brute commerciale : ${marginPercent}%`}
+                  />
+                  <InspectorCard>
+                    <InspectorKeyValue label="Prix de Vente HT" value={formatMoney(salePrice)} mono />
+                    <InspectorKeyValue label="Coût d'Achat HT" value={formatMoney(costPrice)} mono />
+                    <InspectorKeyValue label="Taux TVA" value={`${prod.taxRate ?? 19}%`} mono isLast />
+                  </InspectorCard>
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'الملاحظات الفنية' : 'Spécifications techniques'}>
+                  <InspectorNotesField
+                    value={prod.description || ''}
+                    onSave={handleSaveNotes}
+                    placeholder="Spécifications techniques..."
+                  />
+                </InspectorSection>
               </div>
-            )}
+            );
+          }
 
-            {tab === 'notes' && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-black/55 dark:text-white/55 font-medium">Spécifications :</label>
-                  {isSavingNotes ? (
-                    <span className="text-[10px] animate-pulse">Sauvegarde...</span>
-                  ) : notesSavedNotice ? (
-                    <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
-                      <Check size={11} /> Sauvegardé
-                    </span>
-                  ) : null}
-                </div>
-                <textarea
-                  rows={5}
-                  value={productNotes}
-                  onChange={(e) => handleNotesChange(e.target.value)}
+          return (
+            <div className="space-y-4">
+              <InspectorQuickActions
+                actions={[
+                  ...(isSrv
+                    ? []
+                    : [
+                        {
+                          id: 'replenish',
+                          label: '+10 Stock',
+                          icon: <PackagePlus size={15} />,
+                          primary: true,
+                          onClick: () => handleReplenishStock(prod, 10),
+                        },
+                      ]),
+                  {
+                    id: 'edit',
+                    label: t('action_edit', 'Modifier'),
+                    icon: <Edit size={15} />,
+                    onClick: () => handleEdit(prod),
+                  },
+                ]}
+              />
+              <InspectorSection index={0} title={isAr ? 'معلومات المادة' : 'Identité & Tarification'}>
+                <InspectorCard>
+                  <InspectorKeyValue label="Référence SKU" value={prod.sku || 'SANS SKU'} mono copyText={prod.sku} />
+                  <InspectorKeyValue label="Catégorie" value={prod.category || 'Général'} />
+                  <InspectorKeyValue label="Unité" value={prod.unit || 'u'} mono />
+                  <InspectorKeyValue label="Prix Vente HT" value={formatMoney(salePrice)} mono tone="accent" />
+                  <InspectorKeyValue label="TVA applicable" value={`${prod.taxRate ?? 19}%`} mono isLast />
+                </InspectorCard>
+              </InspectorSection>
+              <InspectorSection index={1} title={isAr ? 'الملاحظات الفنية' : 'Spécifications'}>
+                <InspectorNotesField
+                  value={prod.description || ''}
+                  onSave={handleSaveNotes}
                   placeholder="Spécifications techniques..."
-                  className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/60 text-xs text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
                 />
-              </div>
-            )}
-          </div>
-        )}
+              </InspectorSection>
+            </div>
+          );
+        }}
       />
 
       {modalOpen && (

@@ -3,17 +3,15 @@ import {
   Key,
   Plus,
   Pin,
-  Save,
-  Check,
   FileText,
   ArrowRight,
   MapPin,
+  Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { RealEstateLease } from '../../../types';
 import { useRealEstateData } from './realEstateData';
-import { AtriumButton } from '../../ui/AtriumButton';
 import { RealEstateLeaseModal } from './RealEstateLeaseModal';
 import { QuittanceModal } from './QuittanceModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -28,6 +26,17 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorNotesField,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -69,7 +78,6 @@ export const RealEstateLeasesView: React.FC<any> = () => {
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [activeTab, setActiveTab] = useState<string>('bail');
   const [inspectorNotes, setInspectorNotes] = useState('');
-  const [noteSaved, setNoteSaved] = useState(false);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -277,10 +285,8 @@ export const RealEstateLeasesView: React.FC<any> = () => {
     showToast(isAr ? 'تم تصدير عقود الكراء CSV' : 'Export CSV des baux généré', 'info');
   }, [sortedLeases, branchesById, currentBranch, language, isAr]);
 
-  const handleSaveNotes = () => {
-    if (!activeLease) return;
-    setNoteSaved(true);
-    setTimeout(() => setNoteSaved(false), 2000);
+  const handleSaveNotes = (val: string) => {
+    setInspectorNotes(val);
     showToast(isAr ? 'تم حفظ بنود العقد' : 'Clauses particulières enregistrées', 'success');
   };
 
@@ -464,11 +470,6 @@ export const RealEstateLeasesView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<Key size={22} />}
         title={isAr ? 'العقود' : isEn ? 'Leases' : 'Baux Locatifs'}
-        subtitle={
-          isAr
-            ? `${leases.length} عقد كراء · ${leaseCounts.active} سارٍ`
-            : `${leases.length} contrats enregistrés · ${leaseCounts.active} baux actifs`
-        }
         primaryAction={{
           label: isAr ? 'تحرير عقد كراء' : isEn ? 'New Lease' : 'Nouveau Bail',
           onClick: () => setIsLeaseModalOpen(true),
@@ -538,10 +539,11 @@ export const RealEstateLeasesView: React.FC<any> = () => {
 
         <UniversalDataCollection
           hideToolbar
-          data={sortedLeases}
+          items={sortedLeases}
           columns={columns}
           keyExtractor={(l) => l.id}
-          defaultViewMode={viewMode}
+          defaultViewMode="list"
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
           selectedIds={selectedIds}
           onSelectionChange={setSelectedIds}
           onBulkDelete={handleBulkDelete}
@@ -557,7 +559,57 @@ export const RealEstateLeasesView: React.FC<any> = () => {
           onItemClick={handleSelectLease}
           onViewDetails={handleSelectLease}
           onDelete={handleDelete}
-          customActions={(l) => [
+          getRowMeta={(l): Partial<KineticRowData> => {
+            const bInfo = resolveRecordBranch(l, branchesById, currentBranch, language);
+            const isAct = l.status === 'Active';
+            return {
+              title: l.propertyTitle,
+              subline: `${l.tenantName} · ${l.tenantPhone}`,
+              avatarText: (l.tenantName || 'BL').slice(0, 2).toUpperCase(),
+              avatarColor: '#d4522f',
+              categoryLabel: l.paymentFrequency || l.paymentCycle || 'Monthly',
+              branchName: bInfo.name,
+              branchCode: bInfo.code,
+              isPinned: pinnedIds.has(l.id),
+              statusLabel: isAct ? (isAr ? 'سارٍ' : 'Actif') : (isAr ? 'منتهي' : 'Clôturé'),
+              statusVariant: isAct ? 'active' : 'neutral',
+              metricPrimary: formatMoney(l.monthlyRentDzd, language),
+              metricSecondary: `${l.startDate} → ${l.endDate}`,
+              detailCol1: { label: isAr ? 'المستأجر' : 'Locataire', value: l.tenantName },
+              detailCol2: { label: isAr ? 'الوديعة' : 'Caution', value: formatMoney(l.securityDepositDzd, language) },
+              detailCol3: { label: isAr ? 'الانتهاء' : 'Échéance', value: l.endDate },
+            };
+          }}
+          getFanActions={(l): KineticRowFanAction[] => [
+            {
+              id: 'receipt',
+              label: isAr ? 'مخالصة' : 'Quittance',
+              icon: <FileText size={14} />,
+              onClick: (e) => {
+                e.stopPropagation();
+                handleEmitReceipt(l);
+              },
+            },
+            {
+              id: 'renew',
+              label: isAr ? 'تجديد/إنهاء' : 'Statut',
+              icon: <ArrowRight size={14} />,
+              onClick: (e) => {
+                e.stopPropagation();
+                handleRenewLease(l);
+              },
+            },
+            {
+              id: 'inspect',
+              label: isAr ? 'عرض' : 'Détails',
+              icon: <Eye size={14} />,
+              onClick: (e) => {
+                e.stopPropagation();
+                handleSelectLease(l, e.currentTarget);
+              },
+            },
+          ]}
+          getDetailActions={(l): KineticDetailAction[] => [
             {
               id: 'receipt',
               label: isAr ? 'إصدار مخالصة' : 'Quittance de Loyer',
@@ -571,38 +623,6 @@ export const RealEstateLeasesView: React.FC<any> = () => {
               onClick: () => handleRenewLease(l),
             },
           ]}
-          renderCard={(l) => (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg border border-[#d4522f]/20">
-                  {formatMoney(l.monthlyRentDzd, language)} /mois
-                </span>
-                <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    l.status === 'Active'
-                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                      : 'bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75'
-                  }`}
-                >
-                  {l.status === 'Active' ? 'Actif' : 'Clôturé'}
-                </span>
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">{l.propertyTitle}</h3>
-                <div className="text-xs text-black/55 dark:text-white/55 font-medium mt-0.5">
-                  Locataire: {l.tenantName} ({l.tenantPhone})
-                </div>
-              </div>
-              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-black/55 dark:text-white/55">
-                <span>
-                  {l.startDate} → {l.endDate}
-                </span>
-                <span className="font-mono text-black/70 dark:text-white/75">
-                  Caution: {formatMoney(l.securityDepositDzd, language)}
-                </span>
-              </div>
-            </div>
-          )}
           emptyTitle={isAr ? 'لا توجد عقود كراء' : 'Aucun bail trouvé'}
           emptyDescription={
             searchQuery
@@ -641,18 +661,18 @@ export const RealEstateLeasesView: React.FC<any> = () => {
         title={activeLease?.propertyTitle || ''}
         subtitle={activeLease ? `${activeLease.tenantName} · ${formatMoney(activeLease.monthlyRentDzd, language)}/mois` : ''}
         avatarText={activeLease?.tenantName?.slice(0, 2).toUpperCase() || 'BL'}
+        avatarColor="#d4522f"
         branchName={activeBranchInfo?.name}
         statusLabel={activeLease?.status === 'Active' ? (isAr ? 'سارٍ' : 'Actif') : (isAr ? 'مغلق' : 'Clôturé')}
         statusClassName={
           activeLease?.status === 'Active'
-            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
-            : 'bg-neutral-100 text-black/70 border border-neutral-200 dark:bg-neutral-800 dark:text-white/75'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
         }
         tabs={[
           { id: 'bail', label: isAr ? 'العقد' : 'Dossier Bail' },
           { id: 'finance', label: isAr ? 'المالية' : 'Finances' },
           { id: 'quittances', label: isAr ? 'المخالصات' : 'Quittances' },
-          { id: 'notes', label: isAr ? 'البنود' : 'Clauses' },
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -660,152 +680,114 @@ export const RealEstateLeasesView: React.FC<any> = () => {
         onClose={() => setSelectedLease(null)}
         onDelete={handleDelete}
         holdToDelete
-        renderBody={(lease, tab) => (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 flex-wrap">
-              <AtriumButton
-                type="button"
-                variant="primary"
-                size="sm"
-                icon={<FileText size={13} />}
-                onClick={() => handleEmitReceipt(lease)}
-              >
-                {isAr ? 'مخالصة' : 'Émettre Quittance'}
-              </AtriumButton>
-              <AtriumButton
-                type="button"
-                variant="outline"
-                size="sm"
-                icon={<ArrowRight size={13} />}
-                onClick={() => handleRenewLease(lease)}
-              >
-                {lease.status === 'Active' ? 'Clôturer' : 'Réactiver'}
-              </AtriumButton>
-            </div>
-
-            {tab === 'bail' && (
-              <div className="space-y-3.5 text-xs">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Bien loué:</span>
-                    <span className="font-semibold text-black dark:text-white truncate max-w-[230px]">{lease.propertyTitle}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Locataire:</span>
-                    <span className="font-semibold text-black dark:text-white">{lease.tenantName}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Téléphone:</span>
-                    <span className="font-mono text-black dark:text-white">{lease.tenantPhone}</span>
-                  </div>
-                </div>
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Date d&apos;effet:</span>
-                    <span className="font-mono text-black dark:text-white">{lease.startDate}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Échéance de fin:</span>
-                    <span className="font-mono text-black dark:text-white">{lease.endDate}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Périodicité:</span>
-                    <span className="font-semibold text-[#d4522f]">{lease.paymentFrequency || lease.paymentCycle}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {tab === 'finance' && (
-              <div className="space-y-3.5 text-xs">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Loyer mensuel:</span>
-                    <span className="font-mono font-bold text-black dark:text-white">{formatMoney(lease.monthlyRentDzd, language)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Caution de garantie:</span>
-                    <span className="font-mono text-black dark:text-white font-semibold">{formatMoney(lease.securityDepositDzd, language)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Honoraires d&apos;agence:</span>
-                    <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">
-                      {formatMoney(lease.agencyCommissionDzd || 0, language)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {tab === 'quittances' && (
-              <div className="space-y-3 text-xs">
-                {quittances
-                  .filter((q) => q.leaseId === lease.id)
-                  .map((q) => (
-                    <div
-                      key={q.id}
-                      className="p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1.5"
-                    >
-                      <div className="flex items-center justify-between font-semibold text-[11px]">
-                        <span className="font-mono text-[#d4522f] font-bold">{q.quittanceNumber}</span>
-                        <span className="text-emerald-600 font-mono text-[10px]">Paiement {q.paymentMethod}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-black/70 dark:text-white/75">
-                        <span>
-                          Période: Mois {q.periodMonth}/{q.periodYear}
-                        </span>
-                        <span className="font-mono font-bold text-black dark:text-white">{formatMoney(q.totalCollectedDzd, language)}</span>
-                      </div>
-                      <div className="flex justify-between text-[10px] text-black/55 dark:text-white/55">
-                        <span>Timbre fiscal: {formatMoney(q.timbreFiscalDzd, language)}</span>
-                        <span>Date: {q.paymentDate}</span>
-                      </div>
-                    </div>
-                  ))}
-                {quittances.filter((q) => q.leaseId === lease.id).length === 0 && (
-                  <div className="text-center py-4 text-black/55 dark:text-white/55 text-xs">
-                    Aucune quittance émise pour ce bail.
-                  </div>
-                )}
-                <AtriumButton
-                  type="button"
-                  variant="primary"
-                  size="sm"
-                  className="w-full justify-center"
-                  icon={<FileText size={13} />}
-                  onClick={() => handleEmitReceipt(lease)}
-                >
-                  Encaisser Loyer & Émettre Quittance
-                </AtriumButton>
-              </div>
-            )}
-
-            {tab === 'notes' && (
-              <div className="space-y-3 text-xs">
-                <p className="text-black/55 dark:text-white/55 text-[11px]">
-                  Clauses particulières, état des lieux d&apos;entrée et interdictions (sous-location, animaux) :
-                </p>
-                <textarea
-                  rows={6}
-                  value={inspectorNotes}
-                  onChange={(e) => setInspectorNotes(e.target.value)}
-                  placeholder="Noter les conditions spécifiques d'entretien chaudière, taxe d'habitation..."
-                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none"
+        renderBody={(lease, tab) => {
+          const leaseReceipts = quittances.filter((q) => q.leaseId === lease.id);
+          return (
+            <div className="space-y-4">
+              <InspectorSection index={0}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'receipt',
+                      label: isAr ? 'مخالصة' : 'Quittance',
+                      icon: <FileText size={16} />,
+                      primary: true,
+                      onClick: () => handleEmitReceipt(lease),
+                    },
+                    {
+                      id: 'renew',
+                      label: lease.status === 'Active' ? 'Clôturer' : 'Réactiver',
+                      icon: <ArrowRight size={16} />,
+                      onClick: () => handleRenewLease(lease),
+                    },
+                    {
+                      id: 'pin',
+                      label: pinnedIds.has(lease.id) ? (isAr ? 'مثبت' : 'Épinglé') : (isAr ? 'تثبيت' : 'Épingler'),
+                      icon: <Pin size={16} />,
+                      onClick: () => handleTogglePin(lease),
+                    },
+                  ]}
                 />
-                <AtriumButton
-                  type="button"
-                  variant="primary"
-                  size="sm"
-                  className="w-full justify-center"
-                  icon={noteSaved ? <Check size={14} /> : <Save size={14} />}
-                  onClick={handleSaveNotes}
-                >
-                  {noteSaved ? (isAr ? 'تم الحفظ' : 'Clauses enregistrées') : isAr ? 'حفظ' : 'Enregistrer'}
-                </AtriumButton>
-              </div>
-            )}
-          </div>
-        )}
+              </InspectorSection>
+
+              {tab === 'bail' && (
+                <>
+                  <InspectorSection index={1} title={isAr ? 'بيانات العقد' : 'Parties & Contrat'}>
+                    <InspectorCard>
+                      <InspectorKeyValue label={isAr ? 'العقار' : 'Bien loué'} value={lease.propertyTitle} mono={false} />
+                      <InspectorKeyValue label={isAr ? 'المستأجر' : 'Locataire'} value={lease.tenantName} mono={false} />
+                      <InspectorKeyValue label={isAr ? 'الهاتف' : 'Téléphone'} value={lease.tenantPhone} copyText={lease.tenantPhone} />
+                      <InspectorKeyValue label={isAr ? 'بداية العقد' : "Date d'effet"} value={lease.startDate} />
+                      <InspectorKeyValue label={isAr ? 'انتهاء العقد' : 'Échéance fin'} value={lease.endDate} />
+                      <InspectorKeyValue label={isAr ? 'الدورية' : 'Périodicité'} value={lease.paymentFrequency || lease.paymentCycle} tone="accent" mono={false} isLast />
+                    </InspectorCard>
+                  </InspectorSection>
+                  <InspectorSection index={2} title={isAr ? 'بنود خاصة' : 'Clauses particulières'}>
+                    <InspectorNotesField
+                      value={inspectorNotes}
+                      onSave={handleSaveNotes}
+                      placeholder={isAr ? 'ملاحظات وشروط العقد...' : "Clauses particulières, état des lieux d'entrée..."}
+                    />
+                  </InspectorSection>
+                </>
+              )}
+
+              {tab === 'finance' && (
+                <>
+                  <InspectorSection index={1} title={isAr ? 'الإيجار الشهري' : 'Loyer Mensuel'}>
+                    <InspectorBigStat
+                      value={formatMoney(lease.monthlyRentDzd, language)}
+                      tone="accent"
+                      caption={`${lease.paymentFrequency || lease.paymentCycle} · ${lease.status === 'Active' ? 'Actif' : 'Clôturé'}`}
+                    />
+                  </InspectorSection>
+                  <InspectorSection index={2} title={isAr ? 'الضمان والأتعاب' : 'Caution & Honoraires'}>
+                    <InspectorCard>
+                      <InspectorKeyValue label={isAr ? 'الوديعة الضامنة' : 'Caution déposée'} value={formatMoney(lease.securityDepositDzd, language)} />
+                      <InspectorKeyValue
+                        label={isAr ? 'أتعاب الوكالة' : 'Honoraires agence'}
+                        value={formatMoney(lease.agencyCommissionDzd || 0, language)}
+                        tone="ok"
+                        isLast
+                      />
+                    </InspectorCard>
+                  </InspectorSection>
+                </>
+              )}
+
+              {tab === 'quittances' && (
+                <>
+                  <InspectorSection index={1} title={isAr ? 'سجل المخالصات' : 'Quittances émises'}>
+                    <InspectorCard>
+                      {leaseReceipts.length === 0 ? (
+                        <InspectorListItem title={isAr ? 'لا توجد مخالصات' : 'Aucune quittance émise'} subtitle="Émettez la première quittance ci-dessous" isLast />
+                      ) : (
+                        leaseReceipts.map((q, idx) => (
+                          <InspectorListItem
+                            key={q.id}
+                            title={`${q.quittanceNumber} · Mois ${q.periodMonth}/${q.periodYear}`}
+                            subtitle={`${q.paymentDate} · Timbre ${formatMoney(q.timbreFiscalDzd, language)}`}
+                            metaRight={formatMoney(q.totalCollectedDzd, language)}
+                            badge={{ label: q.paymentMethod, tone: 'ok' }}
+                            isLast={idx === leaseReceipts.length - 1}
+                          />
+                        ))
+                      )}
+                    </InspectorCard>
+                  </InspectorSection>
+                  <InspectorSection index={2}>
+                    <InspectorWideButton
+                      label={isAr ? 'تحصيل وإصدار مخالصة' : 'Encaisser Loyer & Émettre Quittance'}
+                      icon={<FileText size={15} />}
+                      tone="accent"
+                      onClick={() => handleEmitReceipt(lease)}
+                    />
+                  </InspectorSection>
+                </>
+              )}
+            </div>
+          );
+        }}
       />
 
       <RealEstateLeaseModal

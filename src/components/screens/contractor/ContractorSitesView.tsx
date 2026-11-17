@@ -9,17 +9,19 @@ import {
   Download,
   Edit,
   Pin,
-  Save,
-  Check,
   TrendingUp,
-  AlertTriangle,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { ContractorProject, ContractorDailyLog } from '../../../types';
 import { useContractorData } from './contractorData';
 import { ContractorProjectModal } from './ContractorProjectModal';
-import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -32,6 +34,18 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorProgressBar,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorNotesField,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -44,8 +58,19 @@ export const ContractorSitesView: React.FC = () => {
     branches,
     isSyncing,
     networkMode,
-    retryCloudSync,
-  } = useAtriumStore();
+    lastSyncedAt,
+  } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -81,7 +106,6 @@ export const ContractorSitesView: React.FC = () => {
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [activeTab, setActiveTab] = useState<string>('dossier');
   const [inspectorNotes, setInspectorNotes] = useState<string>('');
-  const [noteSaved, setNoteSaved] = useState(false);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -333,12 +357,14 @@ export const ContractorSitesView: React.FC = () => {
     showToast(isAr ? 'تم تصدير ملف الورشات CSV' : 'Export CSV des chantiers généré', 'info');
   }, [sortedProjects, branchesById, currentBranch, language, isAr]);
 
-  const handleSaveNotes = useCallback(() => {
-    if (!activeProject) return;
-    setNoteSaved(true);
-    setTimeout(() => setNoteSaved(false), 2000);
-    showToast(isAr ? 'تم حفظ توجيهات الورشة' : 'Consignes de chantier enregistrées', 'success');
-  }, [activeProject, isAr]);
+  const handleSaveNotes = useCallback(
+    (next: string) => {
+      if (!activeProject) return;
+      setInspectorNotes(next);
+      showToast(isAr ? 'تم حفظ توجيهات الورشة' : 'Consignes de chantier enregistrées', 'success');
+    },
+    [activeProject, isAr]
+  );
 
   const handleSelectProject = useCallback(
     (p: ContractorProject, originEl?: HTMLElement | null) => {
@@ -346,7 +372,6 @@ export const ContractorSitesView: React.FC = () => {
       setSelectedProject(p);
       setSelectedProjectId(p.id);
       setActiveTab('dossier');
-      setNoteSaved(false);
     },
     [setSelectedProjectId]
   );
@@ -417,6 +442,73 @@ export const ContractorSitesView: React.FC = () => {
       },
     ],
     [isAr, isEn, filterStatus, branchFilter, projects, activeCount, branchOptions]
+  );
+
+  const getRowMeta = useCallback(
+    (p: ContractorProject): KineticRowData => {
+      const br = resolveRecordBranch(p, branchesById, currentBranch, language);
+      const badgeTone =
+        p.status === 'DefinitiveHandover'
+          ? ('ok' as const)
+          : p.status === 'ProvisionalHandover'
+          ? ('warn' as const)
+          : ('info' as const);
+      const badgeLabel =
+        p.status === 'DefinitiveHandover'
+          ? isAr ? 'استلام نهائي' : 'Réception Déf.'
+          : p.status === 'ProvisionalHandover'
+          ? isAr ? 'استلام مؤقت' : 'Réception Prov.'
+          : isAr ? 'جاري' : 'En Cours';
+      return {
+        primary: p.projectName,
+        secondary: `${p.projectCode} · ${p.progressPercent}% · ${formatMoney(p.contractAmountDzd, language)}`,
+        meta: `${p.clientName} · ${br.name}`,
+        badge: { label: badgeLabel, tone: badgeTone },
+      };
+    },
+    [branchesById, currentBranch, language, isAr]
+  );
+
+  const getFanActions = useCallback(
+    (p: ContractorProject): KineticRowFanAction[] => [
+      {
+        id: 'progress',
+        label: '+5%',
+        icon: <TrendingUp size={14} />,
+        onClick: () => handleQuickProgress(p),
+      },
+      {
+        id: 'dailyLog',
+        label: isAr ? 'يومية' : 'Journal',
+        icon: <BookOpen size={14} />,
+        onClick: () => handleCreateDailyLogQuick(p),
+      },
+    ],
+    [handleQuickProgress, handleCreateDailyLogQuick, isAr]
+  );
+
+  const getDetailActions = useCallback(
+    (p: ContractorProject): KineticDetailAction[] => [
+      {
+        id: 'progress',
+        label: isAr ? 'تقديم +5%' : 'Avancer +5%',
+        icon: <TrendingUp size={14} />,
+        onClick: () => handleQuickProgress(p),
+      },
+      {
+        id: 'dailyLog',
+        label: isAr ? 'تقرير يومي' : 'Journal Chantier',
+        icon: <BookOpen size={14} />,
+        onClick: () => handleCreateDailyLogQuick(p),
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : 'Modifier',
+        icon: <Edit size={14} />,
+        onClick: () => handleEdit(p),
+      },
+    ],
+    [handleQuickProgress, handleCreateDailyLogQuick, handleEdit, isAr]
   );
 
   const columns: ColumnDefinition<ContractorProject>[] = useMemo(
@@ -564,6 +656,7 @@ export const ContractorSitesView: React.FC = () => {
         viewMode={viewMode === 'grid' ? 'grid' : 'list'}
         isOffline={isOffline}
         isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
         onRetry={retryCloudSync || retry}
       />
     );
@@ -574,13 +667,6 @@ export const ContractorSitesView: React.FC = () => {
       <ScreenHeaderBar
         icon={<HardHat size={22} />}
         title={isAr ? 'الورشات' : isEn ? 'Sites' : 'Chantiers'}
-        subtitle={
-          isAr
-            ? `${projects.length} ورشة مسجلة · ${activeCount} نشطة`
-            : isEn
-            ? `${projects.length} construction sites · ${activeCount} active`
-            : `${projects.length} chantiers enregistrés · ${activeCount} en cours d'exécution`
-        }
         primaryAction={{
           label: isAr ? 'ورشة جديدة' : isEn ? 'New Site' : 'Nouveau Chantier',
           onClick: handleOpenAdd,
@@ -651,16 +737,11 @@ export const ContractorSitesView: React.FC = () => {
           }
           statusOptions={[
             { value: 'All', label: isAr ? 'الكل' : 'Tous', count: projects.length },
-            { value: 'InProgress', label: isAr ? 'جاري' : 'Cours', count: activeCount },
+            { value: 'InProgress', label: isAr ? 'جاري' : 'En Cours', count: activeCount },
             {
               value: 'ProvisionalHandover',
-              label: isAr ? 'مؤقت' : 'Provisoire',
-              count: projects.filter((p) => p.status === 'ProvisionalHandover').length,
-            },
-            {
-              value: 'DefinitiveHandover',
-              label: isAr ? 'نهائي' : 'Définitive',
-              count: projects.filter((p) => p.status === 'DefinitiveHandover').length,
+              label: isAr ? 'استلام' : 'Réceptions',
+              count: handoverCount,
             },
           ]}
           statusValue={filterStatus}
@@ -679,9 +760,10 @@ export const ContractorSitesView: React.FC = () => {
 
         <UniversalDataCollection<ContractorProject>
           hideToolbar
-          data={sortedProjects}
+          items={sortedProjects}
           columns={columns}
           keyExtractor={(p) => p.id}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
           defaultViewMode={viewMode}
           selectedIds={selectedIds}
           onSelectionChange={setSelectedIds}
@@ -710,6 +792,9 @@ export const ContractorSitesView: React.FC = () => {
           openItemId={activeProject?.id || null}
           onItemClick={handleSelectProject}
           onViewDetails={handleSelectProject}
+          getRowMeta={getRowMeta}
+          getFanActions={getFanActions}
+          getDetailActions={getDetailActions}
           onEdit={handleEdit}
           onDelete={handleDelete}
           emptyTitle={isAr ? 'لا توجد ورشات' : 'Aucun chantier trouvé'}
@@ -736,71 +821,6 @@ export const ContractorSitesView: React.FC = () => {
               onClick: () => handleQuickProgress(p),
             },
           ]}
-          renderCard={(p) => (
-            <div className="space-y-3 w-full">
-              <div className="flex items-center justify-between">
-                <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg border border-[#d4522f]/20">
-                  {p.projectCode}
-                </span>
-                <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    p.status === 'InProgress'
-                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
-                      : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                  }`}
-                >
-                  {p.status === 'InProgress' ? 'En Cours' : p.status}
-                </span>
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">
-                  {p.projectName}
-                </h3>
-                <div className="text-xs text-black/70 dark:text-white/75 font-medium mt-0.5 flex items-center gap-1">
-                  <Building size={12} className="text-black/55 dark:text-white/55 shrink-0" />
-                  <span className="truncate">{p.clientName}</span>
-                </div>
-              </div>
-              <div className="text-xs text-black/70 dark:text-white/70 flex items-center gap-1.5 bg-neutral-50 dark:bg-neutral-800/50 p-2 rounded-xl">
-                <MapPin size={13} className="shrink-0 text-[#d4522f]" />
-                <span className="truncate text-[11px]">{p.siteLocation}</span>
-              </div>
-              <div className="space-y-1 pt-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-black/70 dark:text-white/75 font-medium text-[11px]">
-                    {isAr ? 'الإنجاز:' : 'Avancement:'}
-                  </span>
-                  <span className="font-mono font-bold text-[#d4522f] text-xs">
-                    {p.progressPercent}%
-                  </span>
-                </div>
-                <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
-                  <div
-                    className="h-full bg-[#d4522f] rounded-full transition-all duration-300"
-                    style={{ width: `${p.progressPercent}%` }}
-                  />
-                </div>
-              </div>
-              <div className="pt-2.5 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-                <div>
-                  <div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">
-                    Montant Marché
-                  </div>
-                  <div className="font-mono font-bold text-black dark:text-white mt-0.5 text-xs">
-                    {formatMoney(p.contractAmountDzd, language)}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">
-                    Conducteur
-                  </div>
-                  <div className="font-medium text-black dark:text-white mt-0.5 truncate max-w-[110px] text-xs">
-                    {p.supervisorName}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         />
       </ScreenPod>
 
@@ -825,7 +845,8 @@ export const ContractorSitesView: React.FC = () => {
         language={language}
         title={activeProject?.projectCode || ''}
         subtitle={activeProject?.projectName}
-        avatarText={(activeProject?.projectName || 'BTP').slice(0, 2).toUpperCase()}
+        categoryLabel={activeProject?.clientName || 'Marché BTP'}
+        avatarText={(activeProject?.projectName || 'BT').slice(0, 2).toUpperCase()}
         branchName={
           activeProject
             ? resolveRecordBranch(activeProject, branchesById, currentBranch, language).name
@@ -840,11 +861,17 @@ export const ContractorSitesView: React.FC = () => {
             ? isAr ? 'جاري' : isEn ? 'In Progress' : 'En Cours'
             : activeProject?.status
         }
+        statusClassName={
+          activeProject?.status === 'DefinitiveHandover'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : activeProject?.status === 'ProvisionalHandover'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+        }
         tabs={[
-          { id: 'dossier', label: isAr ? 'المشروع' : 'Dossier' },
-          { id: 'boq', label: isAr ? 'المقايسة' : 'BOQ' },
+          { id: 'dossier', label: isAr ? 'المشروع' : 'Dossier & Consignes' },
+          { id: 'boq', label: isAr ? 'المقايسة' : 'Bordereau BOQ' },
           { id: 'logs', label: isAr ? 'التقارير' : 'Journaux' },
-          { id: 'notes', label: isAr ? 'التوجيهات' : 'Consignes' },
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -855,201 +882,140 @@ export const ContractorSitesView: React.FC = () => {
         renderBody={(p, tab) => {
           const currentBoqItems = boqItems.filter((b) => b.projectId === p.id);
           const currentDailyLogs = dailyLogs.filter((l) => l.projectId === p.id);
-          return (
-            <div className="space-y-4">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <AtriumButton
-                  variant="primary"
-                  size="sm"
-                  icon={<TrendingUp size={13} />}
-                  onClick={() => handleQuickProgress(p)}
-                >
-                  {isAr ? '+5% إنجاز' : '+5% Avancement'}
-                </AtriumButton>
-                <AtriumButton
-                  variant="secondary"
-                  size="sm"
-                  icon={<BookOpen size={13} />}
-                  onClick={() => handleCreateDailyLogQuick(p)}
-                >
-                  {isAr ? 'تقرير يومي' : 'Journal'}
-                </AtriumButton>
-                <AtriumButton
-                  variant="outline"
-                  size="sm"
-                  icon={<Edit size={13} />}
-                  onClick={() => handleEdit(p)}
-                >
-                  {isAr ? 'تعديل' : 'Modifier'}
-                </AtriumButton>
-              </div>
 
-              {tab === 'dossier' && (
-                <div className="space-y-3 text-xs">
-                  <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2 border border-neutral-100 dark:border-neutral-800">
-                    <div className="flex justify-between items-center">
-                      <span className="text-black/70 dark:text-white/75">
-                        {isAr ? 'صاحب المشروع:' : 'Maître d’Ouvrage:'}
-                      </span>
-                      <span className="font-semibold text-black dark:text-white truncate max-w-[190px]">
-                        {p.clientName}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-black/70 dark:text-white/75">
-                        {isAr ? 'موقع الورشة:' : 'Localisation:'}
-                      </span>
-                      <span className="font-semibold text-black dark:text-white truncate max-w-[190px]">
-                        {p.siteLocation}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-black/70 dark:text-white/75">
-                        {isAr ? 'المهندس المشرف:' : 'Conducteur Travaux:'}
-                      </span>
-                      <span className="font-semibold text-black dark:text-white">
-                        {p.supervisorName}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2 border border-neutral-100 dark:border-neutral-800">
-                    <div className="flex justify-between items-center">
-                      <span className="text-black/70 dark:text-white/75">
-                        {isAr ? 'قيمة الصفقة:' : 'Montant Total Marché:'}
-                      </span>
-                      <span className="font-mono font-bold text-black dark:text-white">
-                        {formatMoney(p.contractAmountDzd, language)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-black/70 dark:text-white/75">
-                        {isAr ? 'الضمان المالي:' : 'Garantie Financière:'}
-                      </span>
-                      {p.hasBankCautionReplacement ? (
-                        <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <CheckCircle2 size={11} /> Caution ({p.bankCautionReference || 'Active'})
-                        </span>
-                      ) : (
-                        <span className="font-mono font-semibold text-amber-600 dark:text-amber-400">
-                          Retenue 5% ({formatMoney(p.retentionAmountDzd, language)})
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-black/70 dark:text-white/75">ODS / Échéance:</span>
-                      <span className="font-mono text-black dark:text-white">
-                        {p.startDate || '—'} → {p.targetEndDate || '—'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {tab === 'boq' && (
-                <div className="space-y-2.5 text-xs">
-                  {currentBoqItems.length === 0 ? (
-                    <div className="text-center py-8 text-black/55 dark:text-white/55">
-                      <FileSpreadsheet size={28} className="mx-auto mb-2 opacity-40" />
-                      <p>
-                        {isAr
-                          ? 'لا توجد مقايسة مسجلة لهذه الورشة'
-                          : 'Aucun article BOQ lié à ce chantier'}
-                      </p>
-                    </div>
-                  ) : (
-                    currentBoqItems.map((item) => (
-                      <div
+          if (tab === 'boq') {
+            return (
+              <InspectorSection index={0} title={isAr ? 'بنود المقايسة' : `Postes BOQ (${currentBoqItems.length})`}>
+                {currentBoqItems.length === 0 ? (
+                  <InspectorCard>
+                    <InspectorListItem
+                      title={isAr ? 'لا توجد مقايسة مسجلة' : 'Aucun article BOQ lié à ce chantier'}
+                      badge={{ label: 'Vide', tone: 'neutral' }}
+                      isLast
+                    />
+                  </InspectorCard>
+                ) : (
+                  <InspectorCard>
+                    {currentBoqItems.map((item, idx) => (
+                      <InspectorListItem
                         key={item.id}
-                        className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1.5"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-mono font-bold text-[10px] bg-neutral-200 dark:bg-neutral-700 px-1.5 py-0.5 rounded text-black dark:text-white">
-                            {item.itemCode}
-                          </span>
-                          <span className="font-mono text-black dark:text-white font-bold">
-                            {formatMoney(item.totalPlannedDzd, language)}
-                          </span>
-                        </div>
-                        <p className="text-[11px] font-medium text-black dark:text-white line-clamp-2">
-                          {item.designation}
-                        </p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
+                        title={item.designation}
+                        subtitle={`${item.itemCode} · ${item.executedQty}/${item.plannedQty} ${item.unit}`}
+                        metaRight={formatMoney(item.totalPlannedDzd, language)}
+                        isLast={idx === currentBoqItems.length - 1}
+                      />
+                    ))}
+                  </InspectorCard>
+                )}
+              </InspectorSection>
+            );
+          }
 
-              {tab === 'logs' && (
-                <div className="space-y-2.5 text-xs">
+          if (tab === 'logs') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'التقارير اليومية' : `Journaux de chantier (${currentDailyLogs.length})`}>
                   {currentDailyLogs.length === 0 ? (
-                    <div className="text-center py-8 text-black/55 dark:text-white/55">
-                      <BookOpen size={28} className="mx-auto mb-2 opacity-40" />
-                      <p>
-                        {isAr ? 'لا توجد تقارير يومية مسجلة' : 'Aucun journal quotidien consigné'}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => handleCreateDailyLogQuick(p)}
-                        className="mt-3 text-[#d4522f] hover:underline text-xs font-semibold cursor-pointer"
-                      >
-                        {isAr ? '+ إنشاء أول تقرير يومي' : '+ Créer le premier journal'}
-                      </button>
-                    </div>
+                    <InspectorCard>
+                      <InspectorListItem
+                        title={isAr ? 'لا توجد تقارير مسجلة' : 'Aucun journal quotidien consigné'}
+                        badge={{ label: 'Vide', tone: 'neutral' }}
+                        isLast
+                      />
+                    </InspectorCard>
                   ) : (
-                    currentDailyLogs.map((log) => (
-                      <div
-                        key={log.id}
-                        className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1.5"
-                      >
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="font-mono font-bold text-[#d4522f]">
-                            {log.logDate || log.date}
-                          </span>
-                          <span className="text-[10px] text-black/70 dark:text-white/75">
-                            {log.workforceCount ?? log.headcountWorkers} ouvriers
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-black dark:text-white">
-                          {log.worksSummary || log.tasksAccomplished}
-                        </p>
-                        {log.incidentsOrDelays && (
-                          <div className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                            <AlertTriangle size={11} className="shrink-0" />
-                            <span className="truncate">{log.incidentsOrDelays}</span>
-                          </div>
-                        )}
-                      </div>
-                    ))
+                    <InspectorCard>
+                      {currentDailyLogs.map((log, idx) => (
+                        <InspectorListItem
+                          key={log.id}
+                          title={log.worksSummary || log.tasksAccomplished}
+                          subtitle={`${log.logDate || log.date} · ${log.workforceCount ?? log.headcountWorkers} ouvriers`}
+                          badge={log.incidentsOrDelays ? { label: 'HSE', tone: 'warn' } : { label: 'RAS', tone: 'ok' }}
+                          isLast={idx === currentDailyLogs.length - 1}
+                        />
+                      ))}
+                    </InspectorCard>
                   )}
-                </div>
-              )}
-
-              {tab === 'notes' && (
-                <div className="space-y-3 text-xs">
-                  <textarea
-                    rows={6}
-                    value={inspectorNotes}
-                    onChange={(e) => setInspectorNotes(e.target.value)}
-                    placeholder={
-                      isAr
-                        ? 'سجل ملاحظات الورشة...'
-                        : 'Noter les consignes de ferraillage, contrôles de résistance béton...'
-                    }
-                    className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none"
+                </InspectorSection>
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label={isAr ? '+ إنشاء تقرير يومي' : '+ Consigner un journal quotidien'}
+                    onClick={() => handleCreateDailyLogQuick(p)}
                   />
-                  <AtriumButton
-                    variant="primary"
-                    size="sm"
-                    icon={noteSaved ? <Check size={14} /> : <Save size={14} />}
-                    onClick={handleSaveNotes}
-                  >
-                    {noteSaved
-                      ? isAr ? 'تم الحفظ بنجاح' : 'Consignes enregistrées'
-                      : isAr ? 'حفظ التوجيهات' : 'Enregistrer les consignes'}
-                  </AtriumButton>
-                </div>
-              )}
-            </div>
+                </InspectorSection>
+              </>
+            );
+          }
+
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : 'Actions rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'progress',
+                      label: '+5% Avancement',
+                      icon: <TrendingUp className="w-[18px] h-[18px]" />,
+                      primary: true,
+                      onClick: () => handleQuickProgress(p),
+                    },
+                    {
+                      id: 'journal',
+                      label: 'Journal +',
+                      icon: <BookOpen className="w-[18px] h-[18px]" />,
+                      onClick: () => handleCreateDailyLogQuick(p),
+                    },
+                    {
+                      id: 'edit',
+                      label: isAr ? 'تعديل' : 'Modifier',
+                      icon: <Edit className="w-[18px] h-[18px]" />,
+                      onClick: () => handleEdit(p),
+                    },
+                    {
+                      id: 'pin',
+                      label: pinnedIds.has(p.id) ? 'Désépingler' : 'Épingler',
+                      icon: <Pin className="w-[18px] h-[18px]" />,
+                      onClick: () => handleTogglePin(p),
+                    },
+                  ]}
+                />
+              </InspectorSection>
+
+              <InspectorSection index={1}>
+                <InspectorBigStat
+                  value={formatMoney(p.contractAmountDzd, language)}
+                  tone="accent"
+                  caption={
+                    p.hasBankCautionReplacement
+                      ? `Caution bancaire (${p.bankCautionReference || 'Active'})`
+                      : `Retenue garantie 5%: ${formatMoney(p.retentionAmountDzd, language)}`
+                  }
+                />
+              </InspectorSection>
+
+              <InspectorSection index={2} title={isAr ? 'تفاصيل الورشة' : 'Dossier Technique & Délais'}>
+                <InspectorCard>
+                  <InspectorKeyValue label="Maître d’Ouvrage" value={p.clientName} mono={false} />
+                  <InspectorKeyValue label="Localisation" value={p.siteLocation} mono={false} />
+                  <InspectorKeyValue label="Conducteur Travaux" value={p.supervisorName} mono={false} />
+                  <InspectorKeyValue label="ODS / Échéance" value={`${p.startDate || '—'} → ${p.targetEndDate || '—'}`} />
+                  <InspectorKeyValue label="Avancement physique" value={`${p.progressPercent}%`} tone="ok" isLast />
+                  <InspectorProgressBar percent={p.progressPercent} tone="ok" animateKey={p.id} />
+                </InspectorCard>
+              </InspectorSection>
+
+              <InspectorSection index={3} title={isAr ? 'التوجيهات' : 'Consignes de chantier'}>
+                <InspectorNotesField
+                  value={inspectorNotes}
+                  onSave={handleSaveNotes}
+                  placeholder={
+                    isAr
+                      ? 'سجل ملاحظات الورشة...'
+                      : 'Noter les consignes de ferraillage, contrôles de résistance béton...'
+                  }
+                />
+              </InspectorSection>
+            </>
           );
         }}
       />

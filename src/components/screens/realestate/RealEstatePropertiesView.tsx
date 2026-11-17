@@ -5,16 +5,13 @@ import {
   Key,
   Edit,
   Pin,
-  Save,
-  Check,
-  ShieldCheck,
   MapPin,
+  Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { RealEstateProperty } from '../../../types';
 import { useRealEstateData } from './realEstateData';
-import { AtriumButton } from '../../ui/AtriumButton';
 import { RealEstatePropertyModal } from './RealEstatePropertyModal';
 import { RealEstateLeaseModal } from './RealEstateLeaseModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -29,6 +26,16 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorNotesField,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -72,7 +79,6 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [activeTab, setActiveTab] = useState<string>('fiche');
   const [inspectorNotes, setInspectorNotes] = useState<string>('');
-  const [noteSaved, setNoteSaved] = useState(false);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -210,8 +216,7 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
     setSelectedProperty(p);
     setDrawerOpenerEl(openerEl || null);
     setActiveTab('fiche');
-    setInspectorNotes('Bien sous mandat d\'agence. Clés disponibles pour visites. État des lieux initial conforme.');
-    setNoteSaved(false);
+    setInspectorNotes("Bien sous mandat d'agence. Clés disponibles pour visites. État des lieux initial conforme.");
   }, []);
 
   const handleOpenNewLease = useCallback((p: RealEstateProperty) => {
@@ -219,9 +224,8 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
     setIsLeaseModalOpen(true);
   }, []);
 
-  const handleSaveNotes = () => {
-    setNoteSaved(true);
-    setTimeout(() => setNoteSaved(false), 2000);
+  const handleSaveNotes = (val: string) => {
+    setInspectorNotes(val);
     showToast(isAr ? 'تم حفظ ملاحظات العقار' : 'Observations de gestion enregistrées', 'success');
   };
 
@@ -482,11 +486,6 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<Building2 size={22} />}
         title={isAr ? 'العقارات' : isEn ? 'Properties' : 'Biens Immobiliers'}
-        subtitle={
-          isAr
-            ? `${properties.length} عقار مسجل · ${occupancyRate}% نسبة الإشغال`
-            : `${properties.length} lots sous gestion · ${occupancyRate}% taux d'occupation`
-        }
         primaryAction={{
           label: isAr ? 'إضافة عقار' : isEn ? 'New Property' : 'Nouveau Bien',
           onClick: handleOpenAdd,
@@ -554,9 +553,10 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
 
         <UniversalDataCollection
           hideToolbar
-          data={sortedProperties}
+          items={sortedProperties}
           keyExtractor={(p) => p.id}
-          defaultViewMode={viewMode}
+          defaultViewMode="list"
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
           columns={columns}
           sortBy={sortBy}
           sortDirection={sortDir}
@@ -574,50 +574,70 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
           onViewDetails={handleSelectProperty}
           onEdit={handleOpenEdit}
           onDelete={handleDelete}
-          customActions={(p) => [
+          getRowMeta={(p): Partial<KineticRowData> => {
+            const bInfo = resolveRecordBranch(p, branchesById, currentBranch, language);
+            const isRented = p.status === 'Rented';
+            return {
+              title: p.title,
+              subline: `${p.cityWilaya} · ${p.surfaceM2} m² · ${p.roomsCount} ${isAr ? 'غرف' : 'pièces'}`,
+              avatarText: (p.title || 'RE').slice(0, 2).toUpperCase(),
+              avatarColor: '#d4522f',
+              categoryLabel: p.propertyType,
+              branchName: bInfo.name,
+              branchCode: bInfo.code,
+              isPinned: pinnedIds.has(p.id),
+              statusLabel: isRented ? (isAr ? 'مؤجر' : 'Loué') : isAr ? 'شاغر' : 'Disponible',
+              statusVariant: isRented ? 'info' : 'active',
+              metricPrimary: formatMoney(p.priceDzd, language),
+              metricSecondary: p.listingType === 'Rental' ? '/ mois' : 'Vente',
+              detailCol1: { label: isAr ? 'المالك' : 'Bailleur', value: p.ownerName },
+              detailCol2: { label: isAr ? 'المساحة' : 'Surface', value: `${p.surfaceM2} m²` },
+              detailCol3: { label: isAr ? 'العملية' : 'Opération', value: p.listingType === 'Rental' ? 'Location' : 'Vente' },
+            };
+          }}
+          getFanActions={(p): KineticRowFanAction[] => [
             {
               id: 'lease',
               label: isAr ? 'عقد إيجار' : 'Nouveau Bail',
-              tooltip: isAr ? 'تحرير عقد إيجار' : 'Créer un Bail Locatif',
-              icon: <Key size={13} />,
-              variant: 'primary',
-              onClick: () => handleOpenNewLease(p),
+              icon: <Key size={14} />,
+              onClick: (e) => {
+                e.stopPropagation();
+                handleOpenNewLease(p);
+              },
+            },
+            {
+              id: 'edit',
+              label: isAr ? 'تعديل' : 'Modifier',
+              icon: <Edit size={14} />,
+              onClick: (e) => {
+                e.stopPropagation();
+                handleOpenEdit(p);
+              },
+            },
+            {
+              id: 'inspect',
+              label: isAr ? 'عرض' : 'Détails',
+              icon: <Eye size={14} />,
+              onClick: (e) => {
+                e.stopPropagation();
+                handleSelectProperty(p, e.currentTarget);
+              },
             },
           ]}
-          renderCard={(p) => {
-            const isPinned = pinnedIds.has(p.id);
-            const isRented = p.status === 'Rented';
-            return (
-              <div className="flex flex-col items-center justify-center w-full">
-                <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
-                  <Building2 size={32} />
-                </div>
-                <div className="flex items-center gap-1.5 max-w-[210px] mb-0.5">
-                  <h3 className="text-base font-bold text-black dark:text-white truncate tracking-tight">{p.title}</h3>
-                  {isPinned && <span className="text-xs text-amber-500">📌</span>}
-                </div>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 mb-3 truncate max-w-[200px]">
-                  {p.cityWilaya} · {p.surfaceM2} m²
-                </span>
-                <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1 text-center">
-                  <div className="text-[#d4522f] font-mono font-bold text-[13px]">
-                    {formatMoney(p.priceDzd, language)}{' '}
-                    <span className="text-[10px] text-black/55 dark:text-white/55 font-normal">
-                      {p.listingType === 'Rental' ? '/ mois' : 'Vente'}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800 text-[10px]">
-                    <span className="text-black/55 dark:text-white/55 truncate max-w-[120px]">{p.ownerName}</span>
-                    {isRented ? (
-                      <span className="text-blue-600 font-bold">{isAr ? 'مؤجر' : 'Loué'}</span>
-                    ) : (
-                      <span className="text-emerald-600 font-bold">{isAr ? 'شاغر' : 'Disponible'}</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          }}
+          getDetailActions={(p): KineticDetailAction[] => [
+            {
+              id: 'lease',
+              label: isAr ? 'عقد إيجار' : 'Nouveau Bail',
+              icon: <Key size={14} />,
+              onClick: () => handleOpenNewLease(p),
+            },
+            {
+              id: 'edit',
+              label: isAr ? 'تعديل' : 'Modifier',
+              icon: <Edit size={14} />,
+              onClick: () => handleOpenEdit(p),
+            },
+          ]}
           emptyTitle={isAr ? 'لا توجد عقارات مطابقة' : 'Aucun bien immobilier'}
           emptyDescription={
             isAr
@@ -657,6 +677,7 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
         title={activeProperty?.title || ''}
         subtitle={activeProperty ? `${activeProperty.propertyType} · ${formatMoney(activeProperty.priceDzd, language)}` : ''}
         avatarText={activeProperty?.title?.slice(0, 2).toUpperCase() || 'RE'}
+        avatarColor="#d4522f"
         branchName={activeBranchInfo?.name}
         statusLabel={
           activeProperty?.status === 'Rented'
@@ -665,14 +686,13 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
         }
         statusClassName={
           activeProperty?.status === 'Rented'
-            ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800'
-            : 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
+            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
         }
         tabs={[
           { id: 'fiche', label: isAr ? 'بيانات العقار' : 'Fiche & Cadastre' },
           { id: 'owner', label: isAr ? 'المالك' : 'Bailleur' },
-          { id: 'leases', label: isAr ? 'عقود الإيجار' : 'Baux' },
-          { id: 'notes', label: isAr ? 'الملاحظات' : 'Gestion' },
+          { id: 'leases', label: isAr ? 'عقود الإيجار' : 'Baux & Gestion' },
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -680,195 +700,123 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
         onClose={() => setSelectedProperty(null)}
         onDelete={handleDelete}
         holdToDelete
-        renderBody={(prop, tab) => (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 flex-wrap">
-              <AtriumButton
-                type="button"
-                variant="primary"
-                size="sm"
-                icon={<Key size={13} />}
-                onClick={() => handleOpenNewLease(prop)}
-              >
-                {isAr ? 'عقد إيجار' : 'Nouveau Bail'}
-              </AtriumButton>
-              <AtriumButton
-                type="button"
-                variant="outline"
-                size="sm"
-                icon={<Edit size={13} />}
-                onClick={() => handleOpenEdit(prop)}
-              >
-                {isAr ? 'تعديل' : 'Modifier'}
-              </AtriumButton>
-              <AtriumButton
-                type="button"
-                variant="ghost"
-                size="sm"
-                icon={<Pin size={13} />}
-                onClick={() => handleTogglePin(prop)}
-              >
-                {pinnedIds.has(prop.id) ? (isAr ? 'مثبت' : 'Épinglé') : (isAr ? 'تثبيت' : 'Épingler')}
-              </AtriumButton>
-            </div>
-
-            {tab === 'fiche' && (
-              <div className="space-y-3 text-xs">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-                  <div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">
-                    {isAr ? 'المواصفات الفنية' : 'Caractéristiques du Lot'}
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                    <span className="text-black/55 dark:text-white/55">{isAr ? 'النوع' : 'Type de bien'}</span>
-                    <span className="font-semibold text-black dark:text-white">{prop.propertyType}</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                    <span className="text-black/55 dark:text-white/55">{isAr ? 'المساحة الإجمالية' : 'Superficie'}</span>
-                    <span className="font-bold text-black dark:text-white font-mono">{prop.surfaceM2} m²</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                    <span className="text-black/55 dark:text-white/55">{isAr ? 'عدد الغرف' : 'Nombre de pièces'}</span>
-                    <span className="font-semibold text-black dark:text-white font-mono">{prop.roomsCount}</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                    <span className="text-black/55 dark:text-white/55">{isAr ? 'العنوان' : 'Adresse'}</span>
-                    <span className="font-medium text-black dark:text-white text-right max-w-[240px] truncate">{prop.address}</span>
-                  </div>
-                  <div className="flex justify-between py-1">
-                    <span className="text-black/55 dark:text-white/55">{isAr ? 'المدينة / الولاية' : 'Ville & Wilaya'}</span>
-                    <span className="font-semibold text-black dark:text-white">{prop.cityWilaya}</span>
-                  </div>
-                </div>
-
-                {(prop.legalTitleType || prop.livretFoncierNumber) && (
-                  <div className="bg-[#FDF4F0] dark:bg-[#1C1816] p-3.5 rounded-xl border border-[#d4522f]/25 space-y-1.5">
-                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#d4522f] uppercase tracking-wider">
-                      <ShieldCheck size={13} />
-                      <span>{isAr ? 'السند العقاري والدفتر' : 'Passeport Foncier'}</span>
-                    </div>
-                    {prop.legalTitleType && (
-                      <div className="flex justify-between">
-                        <span className="text-black/55 dark:text-white/55">Nature Titre:</span>
-                        <span className="font-semibold text-black dark:text-white">{prop.legalTitleType.replace(/_/g, ' ')}</span>
-                      </div>
-                    )}
-                    {prop.livretFoncierNumber && (
-                      <div className="flex justify-between">
-                        <span className="text-black/55 dark:text-white/55">Livret Foncier:</span>
-                        <span className="font-mono font-bold text-black dark:text-white">{prop.livretFoncierNumber}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {prop.amenities && prop.amenities.length > 0 && (
-                  <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-1.5">
-                    <div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">
-                      {isAr ? 'المرافق والتجهيزات' : 'Équipements & Prestations'}
-                    </div>
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {prop.amenities.map((a, i) => (
-                        <span
-                          key={i}
-                          className="px-2 py-0.5 rounded bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 text-[11px] font-medium text-black/70 dark:text-white/75"
-                        >
-                          ✓ {a}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {tab === 'owner' && (
-              <div className="space-y-3 text-xs">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-                  <div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">
-                    {isAr ? 'بيانات المالك' : 'Coordonnées Propriétaire'}
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                    <span className="text-black/55 dark:text-white/55">{isAr ? 'الاسم الكامل' : 'Nom du bailleur'}</span>
-                    <span className="font-bold text-black dark:text-white">{prop.ownerName}</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                    <span className="text-black/55 dark:text-white/55">{isAr ? 'الهاتف' : 'Téléphone'}</span>
-                    <span className="font-semibold text-black dark:text-white font-mono">{prop.ownerPhone}</span>
-                  </div>
-                  {prop.ownerNationalId && (
-                    <div className="flex justify-between py-1">
-                      <span className="text-black/55 dark:text-white/55">CNI / NIF:</span>
-                      <span className="font-mono text-black dark:text-white">{prop.ownerNationalId}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {tab === 'leases' && (
-              <div className="space-y-2 text-xs">
-                {propertyLeaseMap.has(prop.id) ? (
-                  (() => {
-                    const l = propertyLeaseMap.get(prop.id)!;
-                    return (
-                      <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-black dark:text-white">{l.tenantName}</span>
-                          <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                            {isAr ? 'عقد سارٍ' : 'Bail Actif'}
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
-                          {l.startDate} → {l.endDate}
-                        </div>
-                        <div className="flex justify-between pt-1 border-t border-neutral-200/50 dark:border-neutral-700/50">
-                          <span className="text-black/55 dark:text-white/55">{isAr ? 'الإيجار' : 'Loyer'}:</span>
-                          <span className="font-mono font-bold text-[#d4522f]">{formatMoney(l.monthlyRentDzd, language)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-black/55 dark:text-white/55">{isAr ? 'الضمان' : 'Dépôt de garantie'}:</span>
-                          <span className="font-mono text-black dark:text-white">{formatMoney(l.securityDepositDzd, language)}</span>
-                        </div>
-                      </div>
-                    );
-                  })()
-                ) : (
-                  <div className="text-center py-8 text-black/55 dark:text-white/55">
-                    <Key size={28} className="mx-auto mb-2 opacity-40" />
-                    <p>{isAr ? 'لا يوجد عقد إيجار سارٍ لهذا العقار' : 'Aucun bail actif pour ce bien.'}</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {tab === 'notes' && (
-              <div className="space-y-3 text-xs">
-                <label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase">
-                  {isAr ? 'ملاحظات الوكالة والتفقد' : "Observations de l'Agence & Visites"}
-                </label>
-                <textarea
-                  value={inspectorNotes}
-                  onChange={(e) => setInspectorNotes(e.target.value)}
-                  rows={8}
-                  placeholder={isAr ? 'أدخل ملاحظات الوكالة...' : 'Disponibilité des clés, travaux à prévoir, profil locataire souhaité...'}
-                  className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-2 focus:ring-[#d4522f] outline-none"
+        renderBody={(prop, tab) => {
+          const activeLeaseForProp = propertyLeaseMap.get(prop.id);
+          return (
+            <div className="space-y-4">
+              <InspectorSection index={0}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'lease',
+                      label: isAr ? 'عقد إيجار' : 'Nouveau Bail',
+                      icon: <Key size={16} />,
+                      primary: true,
+                      onClick: () => handleOpenNewLease(prop),
+                    },
+                    {
+                      id: 'edit',
+                      label: isAr ? 'تعديل' : 'Modifier',
+                      icon: <Edit size={16} />,
+                      onClick: () => handleOpenEdit(prop),
+                    },
+                    {
+                      id: 'pin',
+                      label: pinnedIds.has(prop.id) ? (isAr ? 'مثبت' : 'Épinglé') : (isAr ? 'تثبيت' : 'Épingler'),
+                      icon: <Pin size={16} />,
+                      onClick: () => handleTogglePin(prop),
+                    },
+                  ]}
                 />
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-[11px] text-black/55 dark:text-white/55">
-                    {noteSaved && (
-                      <span className="text-emerald-600 font-bold flex items-center gap-1">
-                        <Check size={12} /> {isAr ? 'تم الحفظ' : 'Enregistré'}
-                      </span>
+              </InspectorSection>
+
+              {tab === 'fiche' && (
+                <>
+                  <InspectorSection index={1} title={isAr ? 'القيمة' : 'Tarification'}>
+                    <InspectorBigStat
+                      value={formatMoney(prop.priceDzd, language)}
+                      tone="accent"
+                      caption={`${prop.propertyType} · ${prop.surfaceM2} m² · ${prop.roomsCount} ${isAr ? 'غرف' : 'pièces'}`}
+                    />
+                  </InspectorSection>
+                  <InspectorSection index={2} title={isAr ? 'المواصفات الفنية' : 'Caractéristiques & Cadastre'}>
+                    <InspectorCard>
+                      <InspectorKeyValue label={isAr ? 'النوع' : 'Type de bien'} value={prop.propertyType} mono={false} />
+                      <InspectorKeyValue label={isAr ? 'المساحة' : 'Superficie'} value={`${prop.surfaceM2} m²`} />
+                      <InspectorKeyValue label={isAr ? 'الغرف' : 'Pièces'} value={String(prop.roomsCount)} />
+                      <InspectorKeyValue label={isAr ? 'العنوان' : 'Adresse'} value={prop.address} mono={false} />
+                      <InspectorKeyValue
+                        label={isAr ? 'الولاية' : 'Ville & Wilaya'}
+                        value={prop.cityWilaya}
+                        mono={false}
+                        isLast={!prop.legalTitleType && !prop.livretFoncierNumber}
+                      />
+                      {prop.legalTitleType && (
+                        <InspectorKeyValue
+                          label="Nature Titre"
+                          value={prop.legalTitleType.replace(/_/g, ' ')}
+                          mono={false}
+                          isLast={!prop.livretFoncierNumber}
+                        />
+                      )}
+                      {prop.livretFoncierNumber && (
+                        <InspectorKeyValue label="Livret Foncier" value={prop.livretFoncierNumber} copyText={prop.livretFoncierNumber} isLast />
+                      )}
+                    </InspectorCard>
+                  </InspectorSection>
+                </>
+              )}
+
+              {tab === 'owner' && (
+                <InspectorSection index={1} title={isAr ? 'بيانات المالك' : 'Coordonnées Propriétaire'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label={isAr ? 'الاسم الكامل' : 'Nom du bailleur'} value={prop.ownerName} mono={false} />
+                    <InspectorKeyValue
+                      label={isAr ? 'الهاتف' : 'Téléphone'}
+                      value={prop.ownerPhone}
+                      copyText={prop.ownerPhone}
+                      isLast={!prop.ownerNationalId}
+                    />
+                    {prop.ownerNationalId && (
+                      <InspectorKeyValue label="CNI / NIF" value={prop.ownerNationalId} copyText={prop.ownerNationalId} isLast />
                     )}
-                  </span>
-                  <AtriumButton type="button" variant="primary" size="sm" icon={<Save size={13} />} onClick={handleSaveNotes}>
-                    <span>{isAr ? 'حفظ الملاحظات' : 'Enregistrer'}</span>
-                  </AtriumButton>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+                  </InspectorCard>
+                </InspectorSection>
+              )}
+
+              {tab === 'leases' && (
+                <>
+                  <InspectorSection index={1} title={isAr ? 'عقود الإيجار' : 'Bail Locatif Associé'}>
+                    <InspectorCard>
+                      {activeLeaseForProp ? (
+                        <InspectorListItem
+                          title={activeLeaseForProp.tenantName}
+                          subtitle={`${activeLeaseForProp.startDate} → ${activeLeaseForProp.endDate}`}
+                          metaRight={formatMoney(activeLeaseForProp.monthlyRentDzd, language)}
+                          badge={{ label: isAr ? 'عقد سارٍ' : 'Bail Actif', tone: 'ok' }}
+                          isLast
+                        />
+                      ) : (
+                        <InspectorListItem
+                          title={isAr ? 'لا يوجد عقد إيجار' : 'Aucun bail actif'}
+                          subtitle={isAr ? 'يمكنك تحرير عقد جديد من الأعلى' : 'Créez un bail via les actions rapides'}
+                          isLast
+                        />
+                      )}
+                    </InspectorCard>
+                  </InspectorSection>
+                  <InspectorSection index={2} title={isAr ? 'ملاحظات الوكالة' : "Observations d'Agence"}>
+                    <InspectorNotesField
+                      value={inspectorNotes}
+                      onSave={handleSaveNotes}
+                      placeholder={isAr ? 'أدخل ملاحظات الوكالة...' : 'Disponibilité des clés, travaux à prévoir...'}
+                    />
+                  </InspectorSection>
+                </>
+              )}
+            </div>
+          );
+        }}
       />
 
       {isPropertyModalOpen && (

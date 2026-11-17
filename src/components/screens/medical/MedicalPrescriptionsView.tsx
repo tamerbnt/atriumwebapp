@@ -32,10 +32,28 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorListItem,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
+
+const getInitials2 = (name: string): string => {
+  const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+  return (name || 'RX').slice(0, 2).toUpperCase();
+};
+
+const MEMBER_PILL_OK =
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
 
 export const MedicalPrescriptionsView: React.FC<any> = () => {
   const {
@@ -257,6 +275,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
   const handleSelectRx = useCallback((rx: MedicalPrescription, opener?: HTMLElement | null) => {
     if (opener) setDrawerOpenerEl(opener);
     setInspectedRx(rx);
+    setActiveTab('posologie');
   }, []);
 
   const handlePrint = useCallback(
@@ -593,7 +612,6 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<Pill size={20} />}
         title={isAr ? 'الوصفات' : language === 'en' ? 'Prescriptions' : 'Ordonnances'}
-        subtitle={`Chifa Validated · ${prescriptions.length} ${isAr ? 'وصفة' : 'ordonnances'}`}
         secondaryActions={
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex bg-neutral-200/80 dark:bg-neutral-800 p-1 rounded-xl text-xs font-semibold">
@@ -824,9 +842,10 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 
             <UniversalDataCollection
               hideToolbar
-              data={sortedPrescriptions}
+              items={sortedPrescriptions}
               keyExtractor={(rx) => rx.id}
-              defaultViewMode={viewMode}
+              viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+              defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
               columns={columns}
               sortBy={sortBy}
               sortDirection={sortDir}
@@ -846,7 +865,17 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                 icon: <Download size={14} />,
                 onClick: handleExportCSV,
               }}
-              customActions={(rx) => [
+              getRowMeta={(rx): KineticRowMeta => ({
+                title: rx.patientName,
+                subtitle: `${rx.qrCodeHash} · ${rx.prescribingDoctorName || rx.doctorName || 'Dr. Polyclinique'}`,
+                avatarText: getInitials2(rx.patientName),
+                statusLabel: 'Certifié Chifa',
+                statusClassName: MEMBER_PILL_OK,
+                primaryStat: `${rx.items.length} ${isAr ? 'أدوية' : 'spécialités'}`,
+                secondaryStat: `${rx.items[0]?.drugName || 'Ordonnance'} · ${rx.prescriptionDate}`,
+                isPinned: pinnedIds.has(rx.id),
+              })}
+              getFanActions={(rx): KineticRowFanAction<MedicalPrescription>[] => [
                 {
                   id: 'print',
                   label: isAr ? 'طباعة' : 'Imprimer',
@@ -860,46 +889,28 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   icon: <FileText size={13} />,
                   onClick: () => handleSelectRx(rx),
                 },
+                {
+                  id: 'pin',
+                  label: pinnedIds.has(rx.id) ? 'Détacher' : 'Épingler',
+                  icon: <Pin size={13} />,
+                  onClick: () => handleTogglePin(rx.id),
+                },
               ]}
-              renderCard={(rx) => {
-                const isPinned = pinnedIds.has(rx.id);
-                return (
-                  <div className="flex flex-col w-full space-y-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-bold text-black dark:text-white truncate">
-                        {rx.patientName} {isPinned && '📌'}
-                      </span>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 shrink-0">
-                        {rx.qrCodeHash}
-                      </span>
-                    </div>
-                    <div className="bg-neutral-50 dark:bg-neutral-900/60 rounded-xl p-3 space-y-1.5 text-xs">
-                      {rx.items.slice(0, 2).map((item, idx) => (
-                        <div
-                          key={idx}
-                          className="flex justify-between items-center text-black/70 dark:text-white/75"
-                        >
-                          <span className="font-semibold truncate max-w-[170px]">
-                            {item.drugName}
-                          </span>
-                          <span className="text-black/55 dark:text-white/55 font-mono text-[11px]">
-                            {item.dosage}
-                          </span>
-                        </div>
-                      ))}
-                      {rx.items.length > 2 && (
-                        <div className="text-[10px] text-black/55 dark:text-white/55">
-                          +{rx.items.length - 2} autre(s) spécialité(s)...
-                        </div>
-                      )}
-                    </div>
-                    <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-black/55 dark:text-white/55">
-                      <span>{rx.prescriptionDate}</span>
-                      <span className="text-[#d4522f] font-medium">{rx.items.length} lignes</span>
-                    </div>
-                  </div>
-                );
-              }}
+              getDetailActions={(rx): KineticDetailAction[] => [
+                {
+                  id: 'print',
+                  label: isAr ? 'طباعة' : 'Imprimer',
+                  icon: <Printer size={14} />,
+                  variant: 'primary',
+                  onClick: () => handlePrint(rx),
+                },
+                {
+                  id: 'studio',
+                  label: 'Studio',
+                  icon: <Settings size={14} />,
+                  onClick: () => setIsPersonalizerOpen(true),
+                },
+              ]}
               emptyTitle={isAr ? 'لا توجد وصفات' : 'Aucune ordonnance émise'}
               emptyDescription={
                 isAr
@@ -934,8 +945,9 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
             language={language}
             title={activeRx?.patientName || ''}
             subtitle={activeRx ? `Réf: ${activeRx.qrCodeHash} · ${activeRx.prescriptionDate}` : ''}
-            avatarText={activeRx?.patientName?.charAt(0).toUpperCase() || 'O'}
+            avatarText={activeRx ? getInitials2(activeRx.patientName) : 'RX'}
             avatarColor="#d4522f"
+            categoryLabel={isAr ? 'وصفة طبية' : isFr ? 'ORDONNANCE CHIFA' : 'PRESCRIPTION'}
             branchName={
               activeRx
                 ? resolveRecordBranch(activeRx, branchesById, currentBranch, language).name
@@ -944,86 +956,115 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
             statusLabel={
               activeRx ? `${activeRx.items.length} ${isAr ? 'أدوية' : 'spécialités'}` : ''
             }
+            statusClassName={MEMBER_PILL_OK}
             tabs={[
-              { id: 'posologie', label: isAr ? 'الجرعات' : 'Posologie' },
-              { id: 'apercu', label: isAr ? 'الورق/الطباعة' : 'Papier / Studio' },
-              { id: 'securite', label: isAr ? 'الأمان QR' : 'Sécurité QR' },
-              { id: 'actions', label: isAr ? 'الإجراءات' : 'Actions' },
+              { id: 'posologie', label: isAr ? 'الجرعات' : isFr ? 'Posologie' : 'Dosage' },
+              { id: 'apercu', label: isAr ? 'الورق/الطباعة' : isFr ? 'Papier / Studio' : 'Studio' },
+              { id: 'actions', label: isAr ? 'الأمان والإجراءات' : isFr ? 'QR & Actions' : 'QR & Actions' },
             ]}
             activeTab={activeTab}
             onTabChange={setActiveTab}
             onSelectItem={(rx) => handleSelectRx(rx)}
             onClose={() => setInspectedRx(null)}
             renderBody={(rx, tab) => (
-              <div className="space-y-4 text-xs">
+              <div className="space-y-5">
                 {tab === 'posologie' && (
-                  <div className="space-y-3 animate-in fade-in duration-150">
-                    <div className="text-[11px] font-semibold text-black/55 dark:text-white/55">
-                      LISTE DES SPÉCIALITÉS DÉLIVRÉES ({rx.items.length})
-                    </div>
-                    {rx.items.map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-1.5"
-                      >
-                        <div className="flex justify-between items-center">
-                          <span className="font-bold text-black dark:text-white text-xs">
-                            {idx + 1}. {item.drugName}
-                          </span>
-                          <span className="px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-mono text-[10px]">
-                            {item.durationDays}j
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-[#d4522f] font-medium">
-                          {item.dosage} · {item.frequency}
-                        </div>
-                        {item.instructions && (
-                          <div className="text-[11px] text-black/55 dark:text-white/55 italic">
-                            &ldquo;{item.instructions}&rdquo;
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                  <>
+                    <InspectorSection
+                      title={isAr ? 'إجراءات سريعة' : 'Actions rapides'}
+                      delayIndex={0}
+                      animateKey={rx.id}
+                    >
+                      <InspectorQuickActions
+                        actions={[
+                          {
+                            id: 'print',
+                            label: isAr ? 'طباعة' : 'Imprimer PDF',
+                            icon: <Printer size={15} />,
+                            onClick: () => handlePrint(rx),
+                          },
+                          {
+                            id: 'pin',
+                            label: pinnedIds.has(rx.id) ? 'Détacher' : 'Épingler',
+                            icon: <Pin size={15} />,
+                            onClick: () => handleTogglePin(rx.id),
+                          },
+                          {
+                            id: 'studio',
+                            label: 'Studio',
+                            icon: <Settings size={15} />,
+                            onClick: () => setIsPersonalizerOpen(true),
+                          },
+                        ]}
+                      />
+                    </InspectorSection>
+
+                    <InspectorSection
+                      title={`Spécialités délivrées (${rx.items.length})`}
+                      delayIndex={1}
+                      animateKey={rx.id}
+                    >
+                      <InspectorCard>
+                        {rx.items.map((item, idx) => (
+                          <InspectorListItem
+                            key={idx}
+                            title={`${idx + 1}. ${item.drugName}`}
+                            subtitle={`${item.dosage} · ${item.frequency}${
+                              item.instructions ? ` — "${item.instructions}"` : ''
+                            }`}
+                            metaRight={`${item.durationDays}j`}
+                            isLast={idx === rx.items.length - 1}
+                          />
+                        ))}
+                      </InspectorCard>
+                    </InspectorSection>
+
                     {rx.notes && (
-                      <div className="p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 text-amber-800 dark:text-amber-300">
-                        <span className="font-bold text-[10px] block mb-0.5">
-                          RECOMMANDATION MÉDICALE:
-                        </span>
-                        {rx.notes}
-                      </div>
+                      <InspectorSection
+                        title="Recommandation Médicale"
+                        delayIndex={2}
+                        animateKey={rx.id}
+                      >
+                        <InspectorCard>
+                          <InspectorKeyValue label="Note" value={rx.notes} isLast />
+                        </InspectorCard>
+                      </InspectorSection>
                     )}
-                  </div>
+                  </>
                 )}
 
                 {tab === 'apercu' && (
-                  <div className="space-y-3 animate-in fade-in duration-150">
-                    <div className="p-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-between text-xs">
-                      <div>
-                        <span className="font-semibold block text-black dark:text-white">
-                          Format Document
-                        </span>
-                        <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
-                          {currentDoctorConfig.paperSize || currentDoctorConfig.paperFormat} ·{' '}
-                          {currentDoctorConfig.usePreprintedStationery
+                  <InspectorSection
+                    title="Aperçu Papeterie & Studio"
+                    delayIndex={0}
+                    animateKey={rx.id}
+                  >
+                    <InspectorCard>
+                      <InspectorKeyValue
+                        label="Format Document"
+                        value={`${currentDoctorConfig.paperSize || currentDoctorConfig.paperFormat} · ${
+                          currentDoctorConfig.usePreprintedStationery
                             ? 'Papier Pré-imprimé'
-                            : 'Papier Vierge'}
-                        </span>
-                      </div>
-                      <button
-                        type="button"
+                            : 'Papier Vierge'
+                        }`}
+                        mono
+                        isLast
+                      />
+                    </InspectorCard>
+                    <div className="mt-2.5">
+                      <InspectorWideButton
+                        label="Configurer le Studio Ordonnance"
+                        icon={<Settings size={14} />}
                         onClick={() => setIsPersonalizerOpen(true)}
-                        className="px-2.5 py-1 text-xs rounded bg-[#d4522f] text-white font-semibold shadow-2xs cursor-pointer"
-                      >
-                        Configurer
-                      </button>
+                      />
                     </div>
                     <div
-                      className={`p-4 rounded-xl border bg-white text-black shadow-sm relative overflow-hidden text-[11px] font-sans ${
+                      className={`mt-3 p-4 rounded-xl border bg-white text-black shadow-sm relative overflow-hidden text-[11px] font-sans ${
                         currentDoctorConfig.usePreprintedStationery
                           ? 'border-dashed border-amber-300'
                           : 'border-neutral-200'
                       }`}
-                      style={{ minHeight: '360px' }}
+                      style={{ minHeight: '340px' }}
                     >
                       {currentDoctorConfig.usePreprintedStationery ? (
                         <div className="border border-dashed border-amber-400 bg-amber-50/60 rounded p-2 text-center text-amber-800 text-[10px] mb-4">
@@ -1099,74 +1140,71 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
-
-                {tab === 'securite' && (
-                  <div className="space-y-4 animate-in fade-in duration-150 text-center">
-                    <div className="p-6 rounded-2xl bg-white dark:bg-neutral-800 border-2 border-dashed border-[#d4522f]/40 flex flex-col items-center justify-center space-y-3">
-                      <QrCode size={80} className="text-[#d4522f]" />
-                      <div>
-                        <div className="font-mono font-bold text-xs text-black dark:text-white">
-                          {rx.qrCodeHash}
-                        </div>
-                        <span className="text-[10px] text-black/55 dark:text-white/55">
-                          Signature numérique certifiée par l&apos;Ordre des Médecins
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300 text-left space-y-1">
-                      <div className="flex items-center gap-2 font-bold text-xs">
-                        <CheckCircle2 size={14} />
-                        <span>Conformité Chifa / CNAS Validée</span>
-                      </div>
-                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400">
-                        Ce code QR permet la lecture automatisée dans toutes les pharmacies
-                        conventionnées en Algérie.
-                      </p>
-                    </div>
-                  </div>
+                  </InspectorSection>
                 )}
 
                 {tab === 'actions' && (
-                  <div className="space-y-2.5 animate-in fade-in duration-150">
-                    <button
-                      type="button"
-                      onClick={() => handlePrint(rx)}
-                      className="w-full p-3 rounded-xl bg-[#d4522f] text-white font-semibold flex items-center justify-between hover:bg-[#b0674b] transition-colors cursor-pointer"
+                  <>
+                    <InspectorSection
+                      title="Certification & Code QR Chifa"
+                      delayIndex={0}
+                      animateKey={rx.id}
                     >
-                      <span className="flex items-center gap-2">
-                        <Printer size={16} />
-                        Imprimer ordonnance PDF
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleTogglePin(rx.id)}
-                      className="w-full p-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white font-semibold flex items-center justify-between hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                      <div className="p-5 rounded-2xl bg-white dark:bg-neutral-800 border-2 border-dashed border-[#d4522f]/40 flex flex-col items-center justify-center space-y-2.5 text-center mb-3">
+                        <QrCode size={72} className="text-[#d4522f]" />
+                        <div>
+                          <div className="font-mono font-bold text-xs text-black dark:text-white">
+                            {rx.qrCodeHash}
+                          </div>
+                          <span className="text-[10px] text-black/55 dark:text-white/55">
+                            Signature numérique certifiée par l&apos;Ordre des Médecins
+                          </span>
+                        </div>
+                      </div>
+                      <InspectorCard>
+                        <InspectorKeyValue
+                          label="Conformité"
+                          value="Chifa / CNAS Validée"
+                        />
+                        <InspectorKeyValue
+                          label="Praticien"
+                          value={rx.prescribingDoctorName || rx.doctorName || 'Dr. Polyclinique'}
+                          isLast
+                        />
+                      </InspectorCard>
+                    </InspectorSection>
+
+                    <InspectorSection
+                      title="Actions & Délivrance"
+                      delayIndex={1}
+                      animateKey={rx.id}
                     >
-                      <span className="flex items-center gap-2">
-                        <Pin size={16} />
-                        {pinnedIds.has(rx.id) ? 'Détacher' : 'Épingler au dossier'}
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        showToast({
-                          type: 'success',
-                          title: 'Renouvellement',
-                          message: 'Ordonnance dupliquée avec succès',
-                        })
-                      }
-                      className="w-full p-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white font-semibold flex items-center justify-between hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
-                    >
-                      <span className="flex items-center gap-2">
-                        <FileText size={16} />
-                        Renouveler / Dupliquer traitement
-                      </span>
-                    </button>
-                  </div>
+                      <div className="space-y-2.5">
+                        <InspectorWideButton
+                          label="Imprimer ordonnance PDF"
+                          icon={<Printer size={15} />}
+                          variant="primary"
+                          onClick={() => handlePrint(rx)}
+                        />
+                        <InspectorWideButton
+                          label={pinnedIds.has(rx.id) ? 'Détacher' : 'Épingler au dossier'}
+                          icon={<Pin size={15} />}
+                          onClick={() => handleTogglePin(rx.id)}
+                        />
+                        <InspectorWideButton
+                          label="Renouveler / Dupliquer traitement"
+                          icon={<FileText size={15} />}
+                          onClick={() =>
+                            showToast({
+                              type: 'success',
+                              title: 'Renouvellement',
+                              message: 'Ordonnance dupliquée avec succès',
+                            })
+                          }
+                        />
+                      </div>
+                    </InspectorSection>
+                  </>
                 )}
               </div>
             )}

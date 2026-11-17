@@ -2,19 +2,18 @@ import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   Wrench,
   Plus,
-  CheckCircle2,
   ChevronRight,
-  Trash2,
   X,
   ArrowRight,
-  Fuel,
-  Gauge,
-  Camera,
-  Boxes,
   Package,
-  Car,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { useGarageData, RepairOrder } from './garageData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -32,6 +31,16 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -65,8 +74,19 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
     isSyncing,
     networkMode,
     isSyncTimeout,
-    retryCloudSync,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      activeGarageRole: s.activeGarageRole,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode,
+      isSyncTimeout: s.isSyncTimeout,
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
   const isMechanicRole = activeGarageRole === 'mecanicien';
@@ -336,6 +356,71 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
     });
   }, [sortedOrders, isMechanicRole, branchesById, currentBranch, language, isAr]);
 
+  const getRowMeta = useCallback(
+    (o: RepairOrder): KineticRowData => {
+      const br = resolveRecordBranch(o, branchesById, currentBranch, language);
+      const tone =
+        o.status === 'ReadyForPickup' || o.status === 'Delivered'
+          ? ('ok' as const)
+          : o.status === 'WaitingParts'
+          ? ('danger' as const)
+          : o.status === 'Diagnostic' || o.status === 'WaitingApproval'
+          ? ('warn' as const)
+          : ('info' as const);
+      return {
+        primary: `${o.orderNumber} · ${o.vehiclePlate}`,
+        secondary: `${o.vehicleModel} · ${o.clientName}`,
+        meta: `${o.bayName || 'Cour'} · ${br.name}${
+          !isMechanicRole ? ` · ${formatMoney(o.finalCostDzd || o.estimatedCostDzd, language)}` : ''
+        }`,
+        badge: { label: getStatusLabel(o.status), tone },
+      };
+    },
+    [branchesById, currentBranch, language, isMechanicRole, getStatusLabel]
+  );
+
+  const getFanActions = useCallback(
+    (o: RepairOrder): KineticRowFanAction[] => [
+      {
+        id: 'next',
+        label: isAr ? 'تقديم' : 'Avancer',
+        icon: <ChevronRight size={14} />,
+        onClick: () => handleNextStatus(o),
+      },
+      {
+        id: 'req',
+        label: isAr ? 'قطع' : 'Pièces',
+        icon: <Package size={14} />,
+        onClick: () => {
+          setInspectedOrder(o);
+          setIsRequisitionModalOpen(true);
+        },
+      },
+    ],
+    [handleNextStatus, isAr]
+  );
+
+  const getDetailActions = useCallback(
+    (o: RepairOrder): KineticDetailAction[] => [
+      {
+        id: 'next',
+        label: isAr ? 'تقديم المرحلة' : 'Avancer étape',
+        icon: <ChevronRight size={14} />,
+        onClick: () => handleNextStatus(o),
+      },
+      {
+        id: 'req',
+        label: isAr ? 'صرف قطع' : 'Sortir Pièce',
+        icon: <Package size={14} />,
+        onClick: () => {
+          setInspectedOrder(o);
+          setIsRequisitionModalOpen(true);
+        },
+      },
+    ],
+    [handleNextStatus, isAr]
+  );
+
   const columns: ColumnDefinition<RepairOrder>[] = useMemo(
     () => [
       {
@@ -555,11 +640,6 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
             : activeGarageRole === 'mecanicien'
             ? 'Ponts'
             : 'Réparations'
-        }
-        subtitle={
-          isAr
-            ? `${orders.length} أوامر تصليح مسجلة · ${occupiedBaysCount}/${bays.length} جسور مشغولة`
-            : `${orders.length} ordres de réparation · ${occupiedBaysCount}/${bays.length} ponts occupés`
         }
         secondaryActions={
           <LiveSegmentedControl
@@ -812,9 +892,10 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
         ) : (
           <UniversalDataCollection
             hideToolbar
-            data={sortedOrders}
+            items={sortedOrders}
             columns={columns}
             keyExtractor={(o) => o.id}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
             defaultViewMode={viewMode}
             sortBy={sortBy}
             sortDirection={sortDir}
@@ -861,6 +942,9 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
               setDrawerOpenerEl(el || null);
               setInspectedOrder(order);
             }}
+            getRowMeta={getRowMeta}
+            getFanActions={getFanActions}
+            getDetailActions={getDetailActions}
             onDelete={handleDeleteOrder}
             customActions={(order) => [
               {
@@ -879,30 +963,6 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                 },
               },
             ]}
-            renderCard={(order) => (
-              <div className="space-y-3 text-left rtl:text-right w-full">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono text-xs font-bold text-[#d4522f]">{order.orderNumber}</span>
-                  {renderStatusBadge(order.status)}
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold font-mono text-black dark:text-white">{order.vehiclePlate}</h3>
-                  <p className="text-xs text-black/55 dark:text-white/55 truncate">{order.vehicleModel}</p>
-                </div>
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">{order.clientName}</span>
-                    <span className="font-mono text-[11px] text-black/65 dark:text-white/70">{order.bayName || 'Cour'}</span>
-                  </div>
-                  {!isMechanicRole && (
-                    <div className="flex justify-between font-mono font-bold text-black dark:text-white">
-                      <span className="text-[11px] font-normal text-black/55 dark:text-white/55">{order.technicianName}</span>
-                      <span className="text-[#d4522f]">{formatMoney(order.finalCostDzd || order.estimatedCostDzd, language)}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
           />
         )}
       </ScreenPod>
@@ -928,17 +988,23 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
         language={language}
         title={activeOrder ? `${activeOrder.vehiclePlate} · ${activeOrder.vehicleModel}` : ''}
         subtitle={activeOrder ? `${activeOrder.orderNumber} · ${activeOrder.clientName}` : ''}
-        avatarText={activeOrder?.orderNumber.slice(-3) || 'OR'}
-        avatarColor="#d4522f"
+        categoryLabel={activeOrder?.bayName || (isAr ? 'أمر تصليح' : 'Ordre Atelier')}
+        avatarText={activeOrder?.orderNumber.slice(-2) || 'OR'}
         branchName={
           activeOrder ? resolveRecordBranch(activeOrder, branchesById, currentBranch, language).name : ''
         }
         statusLabel={activeOrder ? getStatusLabel(activeOrder.status) : ''}
+        statusClassName={
+          activeOrder?.status === 'ReadyForPickup' || activeOrder?.status === 'Delivered'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : activeOrder?.status === 'WaitingParts'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+        }
         tabs={[
           { id: 'ordre', label: isAr ? 'تفاصيل الأمر' : 'Détails OR' },
           { id: 'parts', label: `${isAr ? 'القطع' : 'Pièces'} (${activeOrder?.partsUsed.length || 0})` },
           { id: 'diag', label: isAr ? 'التشخيص' : 'Diagnostic' },
-          ...(!isMechanicRole ? [{ id: 'costs', label: isAr ? 'التكاليف' : 'Coûts' }] : []),
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -946,204 +1012,161 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
         onClose={() => setInspectedOrder(null)}
         onDelete={handleDeleteOrder}
         holdToDelete
-        renderBody={(order) => (
-          <div className="space-y-4 text-xs">
-            {activeTab === 'ordre' && (
-              <div className="space-y-4">
-                <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200/60 dark:border-neutral-700/60 space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-black/55 dark:text-white/55 font-semibold">
-                      {isAr ? 'الحالة الحالية' : 'Statut actuel'}
-                    </span>
-                    {renderStatusBadge(order.status)}
-                  </div>
-                  {order.status !== 'Delivered' && (
-                    <button
-                      type="button"
-                      onClick={() => handleNextStatus(order)}
-                      className="w-full py-2 bg-[#d4522f] hover:bg-[#b03b1b] text-white font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
-                    >
-                      <span>{isAr ? 'نقل للمرحلة التالية' : "Passer à l'étape suivante"}</span>
-                      <ArrowRight size={13} />
-                    </button>
-                  )}
-                </div>
-
-                <div className="p-3 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-700/80 space-y-2">
-                  <span className="font-bold text-black dark:text-white block">
-                    {isAr ? 'جسر الرفع والتقني المكلف' : 'Affectation Pont & Technicien'}
-                  </span>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="p-2 bg-neutral-50 dark:bg-neutral-800 rounded-xl">
-                      <span className="text-[10px] text-black/55 dark:text-white/55 block">Pont / Baie</span>
-                      <span className="font-bold text-black dark:text-white truncate block">
-                        {order.bayName || 'Non assigné'}
-                      </span>
-                    </div>
-                    <div className="p-2 bg-neutral-50 dark:bg-neutral-800 rounded-xl">
-                      <span className="text-[10px] text-black/55 dark:text-white/55 block">Technicien</span>
-                      <span className="font-bold text-black dark:text-white truncate block">{order.technicianName}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-2xl border border-neutral-200/60 dark:border-neutral-700">
-                    <span className="text-[10px] text-black/55 dark:text-white/55 flex items-center gap-1">
-                      <Gauge size={12} className="text-[#d4522f]" />
-                      Kilométrage
-                    </span>
-                    <span className="font-mono font-bold text-sm text-black dark:text-white mt-1 block">
-                      {order.inOdometerKm?.toLocaleString() || '—'} km
-                    </span>
-                  </div>
-                  <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-2xl border border-neutral-200/60 dark:border-neutral-700">
-                    <span className="text-[10px] text-black/55 dark:text-white/55 flex items-center gap-1">
-                      <Fuel size={12} className="text-[#d4522f]" />
-                      Carburant
-                    </span>
-                    <span className="font-mono font-bold text-sm text-black dark:text-white mt-1 block">
-                      {order.fuelLevel || '50'}%
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/60 dark:border-neutral-700/60 space-y-1.5">
-                  <span className="font-bold text-black dark:text-white flex items-center gap-1.5">
-                    <Camera size={13} className="text-[#d4522f]" />
-                    {isAr ? 'أضرار الهيكل المسجلة عند الدخول' : 'Dommages notifiés lors du walkaround'} (
-                    {(order.damageMarkers || []).length})
-                  </span>
-                  {(order.damageMarkers || []).length === 0 ? (
-                    <p className="text-[11px] text-black/55 dark:text-white/55 italic">
-                      Véhicule admis sans dommages carrosserie notés.
-                    </p>
-                  ) : (
-                    <ul className="space-y-1">
-                      {order.damageMarkers?.map((dm, i) => (
-                        <li key={dm.id} className="text-[11px] text-black/70 dark:text-white/75 flex items-center gap-1.5">
-                          <span className="w-4 h-4 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-[10px] font-bold">
-                            {i + 1}
-                          </span>
-                          <span className="capitalize font-semibold">{dm.damageType}</span>
-                          <span className="text-black/55 dark:text-white/55">
-                            ({dm.view} · {dm.severity})
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'parts' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-bold text-black dark:text-white">
-                    {isAr ? 'قطع الغيار المصروفة' : 'Pièces Utilisées'}
-                  </span>
-                  <AtriumButton
-                    variant="secondary"
-                    size="sm"
-                    icon={<Plus size={13} />}
+        renderBody={(order, tab) => {
+          if (tab === 'parts') {
+            return (
+              <>
+                <InspectorSection index={0}>
+                  <InspectorWideButton
+                    variant="accent"
+                    icon={<Plus className="w-4 h-4" />}
                     onClick={() => setIsRequisitionModalOpen(true)}
                   >
-                    {isAr ? 'صرف قطعة' : 'Sortir Pièce'}
-                  </AtriumButton>
-                </div>
-                {order.partsUsed.length === 0 ? (
-                  <div className="p-6 text-center text-black/55 dark:text-white/55 italic border border-dashed rounded-2xl">
-                    Aucune pièce réquisitionnée pour le moment.
-                  </div>
-                ) : (
+                    {isAr ? 'صرف قطعة من المخزن' : 'Sortir une pièce magasin'}
+                  </InspectorWideButton>
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'قطع الغيار المصروفة' : 'Pièces Utilisées'}>
+                  {order.partsUsed.length === 0 ? (
+                    <InspectorCard>
+                      <InspectorKeyValue label="Réquisitions" value="Aucune pièce réquisitionnée" mono={false} isLast />
+                    </InspectorCard>
+                  ) : (
+                    <InspectorCard>
+                      {order.partsUsed.map((p, i) => (
+                        <InspectorListItem
+                          key={p.id}
+                          title={p.name}
+                          subtitle={`${p.sku} · x${p.quantity}`}
+                          value={!isMechanicRole ? formatMoney(p.totalPriceDzd, language) : undefined}
+                          tone="accent"
+                          isLast={i === order.partsUsed.length - 1}
+                        />
+                      ))}
+                    </InspectorCard>
+                  )}
+                </InspectorSection>
+              </>
+            );
+          }
+
+          if (tab === 'diag') {
+            const checklist =
+              order.technicianChecklist || [
+                { id: '1', label: 'Vérification serrage au couple des roues', done: true },
+                { id: '2', label: 'Contrôle niveau huile & liquide de refroidissement', done: true },
+                { id: '3', label: 'Test effacement défauts valise OBD-II', done: false },
+                { id: '4', label: 'Essai dynamique sur route & freinage', done: false },
+              ];
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'التشخيص الأولي' : 'Diagnostic Initial & Plaintes'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label="Constats" value={order.diagnosticNotes} mono={false} isLast />
+                  </InspectorCard>
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'مراقبة الجودة' : 'Contrôle Qualité & Clôture'}>
                   <div className="space-y-2">
-                    {order.partsUsed.map((p) => (
-                      <div
-                        key={p.id}
-                        className="p-2.5 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-neutral-200/60 dark:border-neutral-700 space-y-1"
+                    {checklist.map((item) => (
+                      <label
+                        key={item.id}
+                        className="flex items-center gap-2.5 p-2.5 bg-[#F3EDE7] dark:bg-[#1E1C1A] rounded-2xl border border-[#E6DED6] dark:border-[#33302D] cursor-pointer text-xs"
                       >
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-black dark:text-white truncate max-w-[200px]">{p.name}</span>
-                          <span className="font-mono text-black/55 dark:text-white/55 font-bold">x{p.quantity}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55 font-mono">
-                          <span>{p.sku}</span>
-                          {!isMechanicRole && (
-                            <span className="font-bold text-[#d4522f]">{formatMoney(p.totalPriceDzd, language)}</span>
-                          )}
-                        </div>
-                      </div>
+                        <input
+                          type="checkbox"
+                          checked={item.done}
+                          onChange={() => {
+                            const updated = checklist.map((c) => (c.id === item.id ? { ...c, done: !c.done } : c));
+                            updateOrder({ ...order, technicianChecklist: updated });
+                          }}
+                          className="rounded text-[#d4522f] focus:ring-[#d4522f]"
+                        />
+                        <span className={item.done ? 'line-through text-black/55 dark:text-white/55' : 'text-black dark:text-white'}>
+                          {item.label}
+                        </span>
+                      </label>
                     ))}
                   </div>
-                )}
-              </div>
-            )}
+                </InspectorSection>
+              </>
+            );
+          }
 
-            {activeTab === 'diag' && (
-              <div className="space-y-4">
-                <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 space-y-1">
-                  <span className="font-bold text-black dark:text-white block">Diagnostic Initial & Plaintes</span>
-                  <p className="text-black/70 dark:text-white/75 leading-relaxed">{order.diagnosticNotes}</p>
-                </div>
-                <div className="space-y-2">
-                  <span className="font-bold text-black dark:text-white block">Contrôle Qualité & Clôture</span>
-                  {(
-                    order.technicianChecklist || [
-                      { id: '1', label: 'Vérification serrage au couple des roues', done: true },
-                      { id: '2', label: 'Contrôle niveau huile & liquide de refroidissement', done: true },
-                      { id: '3', label: 'Test effacement défauts valise OBD-II', done: false },
-                      { id: '4', label: 'Essai dynamique sur route & freinage', done: false },
-                    ]
-                  ).map((item) => (
-                    <label
-                      key={item.id}
-                      className="flex items-center gap-2 p-2 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-neutral-200/60 dark:border-neutral-700 cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={item.done}
-                        onChange={() => {
-                          const baseList = order.technicianChecklist || [
-                            { id: '1', label: 'Vérification serrage au couple des roues', done: true },
-                            { id: '2', label: 'Contrôle niveau huile & liquide de refroidissement', done: true },
-                            { id: '3', label: 'Test effacement défauts valise OBD-II', done: false },
-                            { id: '4', label: 'Essai dynamique sur route & freinage', done: false },
-                          ];
-                          const updated = baseList.map((c) => (c.id === item.id ? { ...c, done: !c.done } : c));
-                          updateOrder({ ...order, technicianChecklist: updated });
-                        }}
-                        className="rounded text-[#d4522f] focus:ring-[#d4522f]"
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : 'Actions rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    ...(order.status !== 'Delivered'
+                      ? [
+                          {
+                            id: 'next',
+                            label: isAr ? 'المرحلة التالية' : 'Étape +',
+                            icon: <ArrowRight className="w-[18px] h-[18px]" />,
+                            primary: true,
+                            onClick: () => handleNextStatus(order),
+                          },
+                        ]
+                      : []),
+                    {
+                      id: 'part',
+                      label: isAr ? 'صرف قطعة' : 'Pièce +',
+                      icon: <Package className="w-[18px] h-[18px]" />,
+                      onClick: () => setIsRequisitionModalOpen(true),
+                    },
+                  ]}
+                />
+              </InspectorSection>
+
+              {!isMechanicRole && (
+                <InspectorSection index={1}>
+                  <InspectorBigStat
+                    value={formatMoney(order.finalCostDzd || order.estimatedCostDzd, language)}
+                    tone="accent"
+                    caption={`MO: ${formatMoney(order.laborCostDzd || 3750, language)} · Pièces: ${formatMoney(
+                      order.partsCostDzd || 15500,
+                      language
+                    )}`}
+                  />
+                </InspectorSection>
+              )}
+
+              <InspectorSection index={2} title={isAr ? 'جسر الرفع والمعطيات' : 'Affectation Pont & Compteur'}>
+                <InspectorCard>
+                  <InspectorKeyValue label="Pont / Baie" value={order.bayName || 'Non assigné'} mono={false} />
+                  <InspectorKeyValue label="Technicien" value={order.technicianName} mono={false} />
+                  <InspectorKeyValue
+                    label="Kilométrage"
+                    value={`${order.inOdometerKm?.toLocaleString() || '—'} km`}
+                  />
+                  <InspectorKeyValue label="Carburant" value={`${order.fuelLevel || '50'}%`} isLast />
+                </InspectorCard>
+              </InspectorSection>
+
+              <InspectorSection
+                index={3}
+                title={`${isAr ? 'أضرار الهيكل المسجلة' : 'Dommages Walkaround'} (${(order.damageMarkers || []).length})`}
+              >
+                {(order.damageMarkers || []).length === 0 ? (
+                  <InspectorCard>
+                    <InspectorKeyValue label="Carrosserie" value="Admis sans dommages notés" mono={false} isLast />
+                  </InspectorCard>
+                ) : (
+                  <InspectorCard>
+                    {(order.damageMarkers || []).map((dm, i) => (
+                      <InspectorListItem
+                        key={dm.id}
+                        title={dm.damageType}
+                        subtitle={`${dm.view} · ${dm.severity}`}
+                        badge={{ label: `#${i + 1}`, tone: 'warn' }}
+                        isLast={i === (order.damageMarkers || []).length - 1}
                       />
-                      <span className={`text-xs ${item.done ? 'line-through text-black/55 dark:text-white/55' : 'text-black dark:text-white'}`}>
-                        {item.label}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'costs' && !isMechanicRole && (
-              <div className="space-y-4">
-                <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700 space-y-3 font-mono">
-                  <div className="flex items-center justify-between">
-                    <span className="text-black/55 dark:text-white/55">Main d'œuvre HT :</span>
-                    <span className="font-bold">{formatMoney(order.laborCostDzd || 3750, language)}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-black/55 dark:text-white/55">Pièces détachées HT :</span>
-                    <span className="font-bold">{formatMoney(order.partsCostDzd || 15500, language)}</span>
-                  </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-neutral-200 dark:border-neutral-700 text-sm font-black text-[#d4522f]">
-                    <span>Total Facturable :</span>
-                    <span>{formatMoney(order.finalCostDzd || order.estimatedCostDzd, language)}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+                    ))}
+                  </InspectorCard>
+                )}
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       <AutoOrderModal

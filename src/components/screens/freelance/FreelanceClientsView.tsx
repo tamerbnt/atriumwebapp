@@ -13,6 +13,7 @@ import {
   Trash2,
   AlertTriangle,
   X,
+  Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatCurrencyAmount, formatDuration } from '../../../utils/rules';
@@ -33,6 +34,17 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorNotesField,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -75,6 +87,7 @@ export const FreelanceClientsView: React.FC = () => {
 
   const [selectedClient, setSelectedClient] = useState<FreelanceClient | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<string>('profile');
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [clientToEdit, setClientToEdit] = useState<FreelanceClient | null>(null);
@@ -308,6 +321,107 @@ export const FreelanceClientsView: React.FC = () => {
       }
     },
     [billUnbilledHours, setScreen, isAr, isFr]
+  );
+
+  const getClientRowMeta = useCallback(
+    (client: FreelanceClient): KineticRowMeta => {
+      const unbilled = getClientUnbilledTime(client.id);
+      return {
+        avatarText: client.name.slice(0, 2).toUpperCase(),
+        subtitle: client.company || t('free_clients_private_client', language),
+        categoryLabel: client.currency,
+        statusTone:
+          client.status === 'ActiveRetainer'
+            ? 'ok'
+            : client.status === 'ProjectBased'
+            ? 'warn'
+            : 'info',
+        statusLabel:
+          client.status === 'ActiveRetainer'
+            ? t('free_clients_status_active_retainer', language)
+            : client.status === 'ProjectBased'
+            ? t('free_clients_status_project_based', language)
+            : client.status,
+        metricPrimary: `${formatCurrencyAmount(client.hourlyRate, client.currency)}${t('free_dash_per_hour', language)}`,
+        metricSecondary: unbilled.amount > 0 ? `${unbilled.hours}h unbilled` : `${freelanceProjects.filter((p) => p.clientId === client.id).length} ${t('free_nav_deliverables', language)}`,
+      };
+    },
+    [freelanceProjects, getClientUnbilledTime, language, t]
+  );
+
+  const getClientFanActions = useCallback(
+    (client: FreelanceClient): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'تفاصيل' : isFr ? 'Détails' : 'Details',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedClient(client);
+          setInspectorTab('profile');
+        },
+      },
+      {
+        id: 'timer',
+        label: t('free_timer_start', language),
+        icon: <Play className="w-[15px] h-[15px]" />,
+        onClick: () => handleQuickStartTimer(client),
+      },
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : isFr ? 'Supprimer' : 'Delete',
+        icon: <Trash2 className="w-[15px] h-[15px]" />,
+        isDanger: true,
+        onClick: () => setClientToDelete(client),
+      },
+    ],
+    [isAr, isFr, language, t, handleQuickStartTimer]
+  );
+
+  const getClientDetailActions = useCallback(
+    (client: FreelanceClient): KineticDetailAction[] => {
+      const unbilled = getClientUnbilledTime(client.id);
+      return [
+        {
+          id: 'inspect',
+          label: isAr ? 'فتح' : isFr ? 'Ouvrir' : 'Open',
+          icon: <Eye className="w-3.5 h-3.5" />,
+          onClick: () => {
+            setSelectedClient(client);
+            setInspectorTab('profile');
+          },
+        },
+        {
+          id: 'timer',
+          label: t('free_timer_start', language),
+          icon: <Play className="w-3.5 h-3.5" />,
+          onClick: () => handleQuickStartTimer(client),
+        },
+        {
+          id: 'edit',
+          label: t('common_edit', language) || (isFr ? 'Modifier' : 'Edit'),
+          icon: <Edit2 className="w-3.5 h-3.5" />,
+          onClick: () => handleOpenEditModal(client),
+        },
+        ...(unbilled.count > 0
+          ? [
+              {
+                id: 'bill',
+                label: `${t('free_clients_quick_bill', language)} (${unbilled.hours}h)`,
+                icon: <FileText className="w-3.5 h-3.5" />,
+                onClick: () => handleQuickBill(client),
+              },
+            ]
+          : []),
+        {
+          id: 'del',
+          label: isAr ? 'حذف' : isFr ? 'Supprimer' : 'Delete',
+          icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+          onClick: () => setClientToDelete(client),
+        },
+      ];
+    },
+    [getClientUnbilledTime, isAr, isFr, language, t, handleQuickStartTimer, handleOpenEditModal, handleQuickBill]
   );
 
   const clientColumns: ColumnDefinition<FreelanceClient>[] = useMemo(
@@ -619,11 +733,6 @@ export const FreelanceClientsView: React.FC = () => {
       <ScreenHeaderBar
         icon={<Users size={22} />}
         title={t('free_clients_crm_title', language)}
-        subtitle={
-          currentBranch?.name
-            ? `${currentBranch.name} · ${totalClientsCount} ${isAr ? 'عميل' : isFr ? 'clients' : 'clients'}`
-            : undefined
-        }
         primaryAction={{
           label: t('free_clients_add_new', language),
           onClick: handleOpenAddModal,
@@ -746,9 +855,10 @@ export const FreelanceClientsView: React.FC = () => {
 
         <UniversalDataCollection<FreelanceClient>
           hideToolbar
-          data={sortedClients}
+          items={sortedClients}
           keyExtractor={(c) => c.id}
-          viewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
           columns={clientColumns}
           isLoading={isSyncing || networkMode === 'force_skeleton'}
           isOffline={networkMode === 'offline'}
@@ -762,59 +872,19 @@ export const FreelanceClientsView: React.FC = () => {
             setClientSortDir(dir);
           }}
           openItemId={activeClient?.id ?? null}
-          renderCard={(client) => {
-            const unbilled = getClientUnbilledTime(client.id);
-            const clientProjects = freelanceProjects.filter((p) => p.clientId === client.id);
-
-            return (
-              <div className="flex flex-col items-center justify-center w-full">
-                <div className="w-20 h-20 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center text-[28px] font-bold shadow-sm mb-3 select-none border border-neutral-200 dark:border-neutral-700">
-                  {client.name.charAt(0)}
-                </div>
-                <h3 className="text-[15px] font-bold text-black dark:text-white truncate max-w-[210px] mb-1 tracking-tight">
-                  {client.name}
-                </h3>
-                <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700 mb-3 truncate max-w-[200px]">
-                  {client.company || t('free_clients_private_client', language)}
-                </span>
-
-                <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1.5 text-center">
-                  <div className="flex items-center justify-between text-black/70 dark:text-white/75">
-                    <span className="text-[11px]">{t('free_clients_hourly_rate', language)}:</span>
-                    <span className="font-semibold text-black dark:text-white tabular-nums">
-                      {formatCurrencyAmount(client.hourlyRate, client.currency)}
-                      {t('free_dash_per_hour', language)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-black/70 dark:text-white/75">
-                    <span className="text-[11px]">{t('free_kpi_active_projects', language)}:</span>
-                    <span className="font-semibold text-black dark:text-white tabular-nums">
-                      {clientProjects.length}
-                    </span>
-                  </div>
-
-                  {unbilled.amount > 0 && (
-                    <div className="mt-2 p-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-center justify-between text-[11px]">
-                      <span className="text-amber-800 dark:text-amber-300 font-medium">
-                        {unbilled.hours}h unbilled
-                      </span>
-                      <span className="font-bold text-amber-900 dark:text-amber-200 tabular-nums">
-                        {formatCurrencyAmount(unbilled.amount, client.currency)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          }}
           onItemClick={(client, el) => {
             setDrawerOpenerEl(el || null);
             setSelectedClient(client);
+            setInspectorTab('profile');
           }}
           onViewDetails={(client, el) => {
             setDrawerOpenerEl(el || null);
             setSelectedClient(client);
+            setInspectorTab('profile');
           }}
+          getRowMeta={getClientRowMeta}
+          getFanActions={getClientFanActions}
+          getDetailActions={getClientDetailActions}
           onEdit={(client) => handleOpenEditModal(client)}
           onPinToggle={(idOrItem) => {
             const id = typeof idOrItem === 'string' ? idOrItem : idOrItem.id;
@@ -900,7 +970,8 @@ export const FreelanceClientsView: React.FC = () => {
         language={language}
         title={activeClient?.name || ''}
         subtitle={activeClient?.company || t('free_clients_private_client', language)}
-        avatarText={activeClient ? activeClient.name.charAt(0).toUpperCase() : 'C'}
+        categoryLabel={activeClient?.currency || 'DZD'}
+        avatarText={activeClient ? activeClient.name.slice(0, 2).toUpperCase() : 'CL'}
         avatarColor="#d4522f"
         branchName={
           activeClient
@@ -918,203 +989,226 @@ export const FreelanceClientsView: React.FC = () => {
         }
         statusClassName={
           activeClient?.status === 'ActiveRetainer'
-            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
-            : 'bg-[#FCEEE8] text-[#d4522f] border border-[#F5E2D8] dark:bg-neutral-800 dark:border-neutral-700'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : activeClient?.status === 'ProjectBased'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
         }
-        onSelectItem={(c) => setSelectedClient(c)}
+        tabs={[
+          { id: 'profile', label: isAr ? 'الملف' : isFr ? 'Profil' : 'Profile' },
+          { id: 'projects', label: isAr ? 'المشاريع' : isFr ? 'Projets' : 'Projects' },
+          { id: 'unbilled', label: isAr ? 'الفوترة' : isFr ? 'À facturer' : 'Unbilled' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={setInspectorTab}
+        onSelectItem={(c) => {
+          setSelectedClient(c);
+          setInspectorTab('profile');
+        }}
         onClose={() => setSelectedClient(null)}
         onDelete={(c) => setClientToDelete(c)}
         holdToDelete={false}
-        renderBody={(client) => {
+        renderBody={(client, tab) => {
           const clientProjects = freelanceProjects.filter((p) => p.clientId === client.id);
           const unbilled = getClientUnbilledTime(client.id);
           const clientLogs = timeLogs
             .filter((tl) => tl.clientId === client.id && !tl.isInvoiced)
-            .slice(0, 5);
+            .slice(0, 6);
 
-          return (
-            <div className="space-y-5 text-xs">
-              <div className="flex items-center gap-2 flex-wrap">
-                <AtriumButton
-                  type="button"
-                  variant="primary"
-                  size="sm"
-                  icon={<Play size={13} />}
-                  onClick={() => handleQuickStartTimer(client)}
-                >
-                  {t('free_timer_start', language)}
-                </AtriumButton>
-                <AtriumButton
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  icon={<Edit2 size={13} />}
-                  onClick={() => handleOpenEditModal(client)}
-                >
-                  {t('common_edit', language) || (isFr ? 'Modifier' : 'Edit')}
-                </AtriumButton>
-                {unbilled.count > 0 && (
-                  <AtriumButton
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    icon={<FileText size={13} />}
-                    onClick={() => handleQuickBill(client)}
-                  >
-                    {t('free_clients_gen_invoice', language)} ({unbilled.hours}h)
-                  </AtriumButton>
-                )}
-              </div>
-
-              <div className="p-4 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800 space-y-2.5">
-                <div className="flex items-center gap-2 text-black/75 dark:text-white/80">
-                  <Mail size={13} className="text-black/55 dark:text-white/55 shrink-0" />
-                  <span className="truncate">{client.email}</span>
-                </div>
-                {client.phone && (
-                  <div className="flex items-center gap-2 text-black/75 dark:text-white/80">
-                    <Phone size={13} className="text-black/55 dark:text-white/55 shrink-0" />
-                    <span>{client.phone}</span>
-                  </div>
-                )}
-                {client.country && (
-                  <div className="flex items-center gap-2 text-black/75 dark:text-white/80">
-                    <Globe size={13} className="text-black/55 dark:text-white/55 shrink-0" />
-                    <span>
-                      {client.country} · {t('free_clients_billing_in', language)} {client.currency}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <span className="font-semibold text-black dark:text-white block">
-                  {t('free_clients_contract_terms', language)}
-                </span>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900/40">
-                    <span className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider block">
-                      {t('free_clients_hourly_rate', language)}
-                    </span>
-                    <span className="text-base font-bold text-black dark:text-white tabular-nums">
-                      {formatCurrencyAmount(client.hourlyRate, client.currency)}
-                    </span>
-                  </div>
-                  <div className="p-3 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900/40">
-                    <span className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider block">
-                      {t('free_clients_monthly_retainer', language)}
-                    </span>
-                    <span className="text-base font-bold text-black dark:text-white tabular-nums">
-                      {client.monthlyRetainerHours || 0} {t('free_dash_hours_unit', language)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-black dark:text-white">
-                    {t('free_kpi_active_projects', language)} ({clientProjects.length})
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedClient(null);
-                      setScreen('scheduler');
-                    }}
-                    className="text-[#d4522f] hover:underline font-semibold cursor-pointer"
-                  >
-                    {t('free_clients_manage_deliv', language)}
-                  </button>
-                </div>
-                <div className="space-y-2">
-                  {clientProjects.map((project) => (
-                    <div
-                      key={project.id}
-                      className="p-3 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900/40"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-bold text-black dark:text-white truncate">
-                          {project.title}
-                        </span>
-                        <span className="text-[11px] text-black/55 dark:text-white/55 shrink-0">
-                          {project.stage === 'InProgress'
-                            ? t('free_stage_in_progress', language)
-                            : project.stage === 'ClientReview'
-                            ? t('free_stage_client_review', language)
-                            : project.stage === 'Approved'
-                            ? t('free_stage_approved', language)
-                            : project.stage === 'Briefing'
-                            ? t('pm_status_brief', language) || 'Briefing'
-                            : project.stage === 'Billed'
-                            ? t('free_stage_completed', language) || 'Billed'
-                            : String(project.stage)}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3 text-black/55 dark:text-white/55 mt-1 text-[11px]">
-                        <span>
-                          {t('free_dash_logged_label', language)}{' '}
-                          <strong className="text-black/75 dark:text-white/80 tabular-nums">
-                            {project.loggedHours}h
-                          </strong>{' '}
-                          / {project.estimatedHours}h
-                        </span>
-                        <span>·</span>
-                        <span>
-                          {t('free_dash_budget_label', language)}{' '}
-                          {formatCurrencyAmount(project.budget, project.currency)}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                  {clientProjects.length === 0 && (
-                    <p className="text-black/50 dark:text-white/50 text-[11px]">
-                      {isAr ? 'لا توجد مشاريع مرتبطة حالياً.' : isFr ? 'Aucun projet associé.' : 'No active projects yet.'}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-black dark:text-white">
-                    {t('free_clients_unbilled_logs', language)}
-                  </span>
-                  {unbilled.count > 0 && (
+          if (tab === 'projects') {
+            return (
+              <>
+                <InspectorSection
+                  index={0}
+                  title={`${t('free_kpi_active_projects', language)} (${clientProjects.length})`}
+                  action={
                     <button
                       type="button"
-                      onClick={() => handleQuickBill(client)}
-                      className="text-[#d4522f] hover:underline font-semibold cursor-pointer"
+                      onClick={() => {
+                        setSelectedClient(null);
+                        setScreen('scheduler');
+                      }}
+                      className="text-[#d4522f] hover:underline text-[11px] font-semibold cursor-pointer"
                     >
-                      {t('free_clients_gen_invoice', language)}
+                      {t('free_clients_manage_deliv', language)}
                     </button>
+                  }
+                >
+                  {clientProjects.length > 0 ? (
+                    <InspectorCard>
+                      {clientProjects.map((project, idx) => (
+                        <InspectorListItem
+                          key={project.id}
+                          title={project.title}
+                          subtitle={`${project.loggedHours}h / ${project.estimatedHours}h · ${formatCurrencyAmount(project.budget, project.currency)}`}
+                          badge={{
+                            label:
+                              project.stage === 'InProgress'
+                                ? t('free_stage_in_progress', language)
+                                : project.stage === 'ClientReview'
+                                ? t('free_stage_client_review', language)
+                                : project.stage === 'Approved'
+                                ? t('free_stage_approved', language)
+                                : String(project.stage),
+                            tone: project.stage === 'Approved' ? 'ok' : 'accent',
+                          }}
+                          isLast={idx === clientProjects.length - 1}
+                        />
+                      ))}
+                    </InspectorCard>
+                  ) : (
+                    <InspectorCard>
+                      <InspectorKeyValue
+                        label={t('free_kpi_active_projects', language)}
+                        value={isAr ? 'لا توجد مشاريع مرتبطة' : isFr ? 'Aucun projet associé' : 'No active projects yet'}
+                        isLast
+                      />
+                    </InspectorCard>
                   )}
-                </div>
-                <div className="space-y-2">
-                  {clientLogs.map((log) => (
-                    <div
-                      key={log.id}
-                      className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800 text-[11px] flex items-center justify-between"
-                    >
-                      <div className="min-w-0 pr-2">
-                        <p className="font-medium text-black dark:text-white truncate">
-                          {log.taskDescription}
-                        </p>
-                        <span className="text-black/55 dark:text-white/55">{log.date}</span>
-                      </div>
-                      <span className="font-bold tabular-nums text-black dark:text-white shrink-0">
-                        {formatDuration(log.durationSeconds)}
-                      </span>
-                    </div>
-                  ))}
-                  {clientLogs.length === 0 && (
-                    <p className="text-black/50 dark:text-white/50 text-[11px]">
-                      {isAr ? 'لا توجد ساعات غير مفوترة.' : isFr ? 'Aucune heure non facturée.' : 'No unbilled time entries.'}
-                    </p>
+                </InspectorSection>
+                <InspectorSection index={1} title={t('free_clients_notes', language)}>
+                  <InspectorNotesField
+                    value={client.notes || ''}
+                    onSave={(next) => updateFreelanceClient(client.id, { notes: next })}
+                  />
+                </InspectorSection>
+              </>
+            );
+          }
+
+          if (tab === 'unbilled') {
+            return (
+              <>
+                <InspectorSection index={0}>
+                  <InspectorBigStat
+                    value={formatCurrencyAmount(unbilled.amount, client.currency)}
+                    tone={unbilled.amount > 0 ? 'accent' : 'ok'}
+                    caption={`${unbilled.hours}h ${t('free_kpi_unbilled_hours', language)}`}
+                    action={
+                      unbilled.count > 0
+                        ? {
+                            label: `${t('free_clients_gen_invoice', language)} (${unbilled.hours}h)`,
+                            onClick: () => handleQuickBill(client),
+                          }
+                        : undefined
+                    }
+                  />
+                </InspectorSection>
+                <InspectorSection
+                  index={1}
+                  title={`${t('free_clients_unbilled_logs', language)} (${clientLogs.length})`}
+                >
+                  {clientLogs.length > 0 ? (
+                    <InspectorCard>
+                      {clientLogs.map((log, idx) => (
+                        <InspectorListItem
+                          key={log.id}
+                          title={log.taskDescription}
+                          subtitle={log.date}
+                          metaRight={formatDuration(log.durationSeconds)}
+                          isLast={idx === clientLogs.length - 1}
+                        />
+                      ))}
+                    </InspectorCard>
+                  ) : (
+                    <InspectorCard>
+                      <InspectorKeyValue
+                        label={t('free_clients_unbilled_logs', language)}
+                        value={isAr ? 'لا توجد ساعات غير مفوترة' : isFr ? 'Aucune heure non facturée' : 'No unbilled entries'}
+                        isLast
+                      />
+                    </InspectorCard>
                   )}
-                </div>
-              </div>
-            </div>
+                </InspectorSection>
+                {unbilled.count > 0 && (
+                  <InspectorSection index={2}>
+                    <InspectorWideButton
+                      label={`${t('free_clients_gen_invoice', language)} (${unbilled.hours}h)`}
+                      icon={<FileText size={14} />}
+                      tone="accent"
+                      onClick={() => handleQuickBill(client)}
+                    />
+                  </InspectorSection>
+                )}
+              </>
+            );
+          }
+
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : isFr ? 'Actions Rapides' : 'Quick Actions'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'timer',
+                      label: t('free_timer_start', language),
+                      icon: <Play size={16} />,
+                      primary: true,
+                      onClick: () => handleQuickStartTimer(client),
+                    },
+                    {
+                      id: 'edit',
+                      label: t('common_edit', language) || (isFr ? 'Modifier' : 'Edit'),
+                      icon: <Edit2 size={16} />,
+                      onClick: () => handleOpenEditModal(client),
+                    },
+                    ...(unbilled.count > 0
+                      ? [
+                          {
+                            id: 'bill',
+                            label: t('free_clients_quick_bill', language),
+                            icon: <FileText size={16} />,
+                            onClick: () => handleQuickBill(client),
+                          },
+                        ]
+                      : []),
+                  ]}
+                />
+              </InspectorSection>
+              <InspectorSection
+                index={1}
+                title={isAr ? 'بيانات الاتصال' : isFr ? 'Coordonnées' : 'Contact Information'}
+              >
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={t('free_clients_email', language)}
+                    value={client.email}
+                    icon={<Mail size={13} />}
+                    copyText={client.email}
+                  />
+                  {client.phone && (
+                    <InspectorKeyValue
+                      label={t('free_clients_phone', language)}
+                      value={client.phone}
+                      icon={<Phone size={13} />}
+                      copyText={client.phone}
+                    />
+                  )}
+                  <InspectorKeyValue
+                    label={isAr ? 'البلد والعملة' : isFr ? 'Pays & Devise' : 'Country & Billing'}
+                    value={`${client.country || 'Algeria'} · ${client.currency}`}
+                    icon={<Globe size={13} />}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+              <InspectorSection index={2} title={t('free_clients_contract_terms', language)}>
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={t('free_clients_hourly_rate', language)}
+                    value={`${formatCurrencyAmount(client.hourlyRate, client.currency)}${t('free_dash_per_hour', language)}`}
+                    mono
+                    tone="accent"
+                  />
+                  <InspectorKeyValue
+                    label={t('free_clients_monthly_retainer', language)}
+                    value={`${client.monthlyRetainerHours || 0} ${t('free_dash_hours_unit', language)}`}
+                    mono
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+            </>
           );
         }}
       />

@@ -29,6 +29,13 @@ import {
   ScreenHeaderBar,
   ScreenKpiBanner,
   ScreenPod,
+  KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorWideButton,
   resolveRecordBranch,
   buildBranchesByIdMap,
 } from '../../ui/kinetic';
@@ -79,6 +86,8 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
   const [newClientName, setNewClientName] = useState('');
   const [selectedServiceId, setSelectedServiceId] = useState(servicesCatalog[0]?.id || '');
   const [selectedStylistId, setSelectedStylistId] = useState(staff[0]?.id || '');
+  const [inspectedStationId, setInspectedStationId] = useState<string | null>(null);
+  const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -101,6 +110,11 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
     );
     return { occupiedCount, freeCount, activeRevenue };
   }, [workstationsList, activeStations]);
+
+  const inspectedStation = useMemo(
+    () => (inspectedStationId ? workstationsList.find((w) => w.id === inspectedStationId) || null : null),
+    [inspectedStationId, workstationsList]
+  );
 
   const visibleStations = useMemo(
     () =>
@@ -321,34 +335,43 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                       </span>
                     )}
                   </div>
-                  <h3 className="text-sm font-bold text-black dark:text-white mb-1">{ws.name}</h3>
-                  {isOccupied ? (
-                    <div className="mt-4 space-y-2 text-xs">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold shrink-0">
-                          <User size={14} />
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      setDrawerOpenerEl(e.currentTarget);
+                      setInspectedStationId(ws.id);
+                    }}
+                    className="w-full text-left rtl:text-right cursor-pointer"
+                  >
+                    <h3 className="text-sm font-bold text-black dark:text-white mb-1 hover:text-[#d4522f] transition-colors">{ws.name}</h3>
+                    {isOccupied ? (
+                      <div className="mt-4 space-y-2 text-xs">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-full bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold shrink-0">
+                            <User size={14} />
+                          </div>
+                          <span className="font-bold text-black dark:text-white truncate">{active.clientName}</span>
                         </div>
-                        <span className="font-bold text-black dark:text-white truncate">{active.clientName}</span>
+                        <div className="bg-[#F3EDE7] dark:bg-[#262422] rounded-xl p-2.5">
+                          <span className="text-[11px] text-black/62 dark:text-white/65 block">
+                            {isRtl ? 'الخدمة' : 'Prestation'}
+                          </span>
+                          <span className="font-semibold text-black dark:text-white">{active.serviceName}</span>
+                        </div>
+                        <div className="flex items-center justify-between pt-1 font-bold">
+                          <span>{isRtl ? 'السعر' : 'Tarif'} :</span>
+                          <span className="text-[#d4522f] font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums text-base">
+                            {formatMoney(active.servicePriceDzd, 'DZD')}
+                          </span>
+                        </div>
                       </div>
-                      <div className="bg-[#F3EDE7] dark:bg-[#262422] rounded-xl p-2.5">
-                        <span className="text-[11px] text-black/62 dark:text-white/65 block">
-                          {isRtl ? 'الخدمة' : 'Prestation'}
-                        </span>
-                        <span className="font-semibold text-black dark:text-white">{active.serviceName}</span>
+                    ) : (
+                      <div className="py-10 text-center text-black/55 dark:text-white/55">
+                        <Scissors size={26} className="mx-auto mb-2 opacity-30" />
+                        <p className="text-xs">{isRtl ? 'المحطة شاغرة حالياً' : 'Poste disponible'}</p>
                       </div>
-                      <div className="flex items-center justify-between pt-1 font-bold">
-                        <span>{isRtl ? 'السعر' : 'Tarif'} :</span>
-                        <span className="text-[#d4522f] font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums text-base">
-                          {formatMoney(active.servicePriceDzd, 'DZD')}
-                        </span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="py-10 text-center text-black/55 dark:text-white/55">
-                      <Scissors size={26} className="mx-auto mb-2 opacity-30" />
-                      <p className="text-xs">{isRtl ? 'المحطة شاغرة حالياً' : 'Poste disponible'}</p>
-                    </div>
-                  )}
+                    )}
+                  </button>
                 </div>
 
                 <div className="pt-4 border-t border-[#E6DED6]/60 dark:border-[#3A3734]">
@@ -400,6 +423,137 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
           })}
         </div>
       </ScreenPod>
+
+      <KineticSlideOverInspector<any>
+        isOpen={inspectedStation !== null}
+        item={inspectedStation}
+        allItems={visibleStations}
+        keyExtractor={(w) => w.id}
+        openerElement={drawerOpenerEl}
+        language={language}
+        title={inspectedStation?.name || ''}
+        subtitle={
+          inspectedStation && activeStations[inspectedStation.id]
+            ? `${activeStations[inspectedStation.id].clientName} · ${activeStations[inspectedStation.id].serviceName}`
+            : isRtl ? 'محطة شاغرة' : 'Poste libre prêt pour installation'
+        }
+        avatarText={inspectedStation ? inspectedStation.id.toUpperCase() : undefined}
+        categoryLabel={inspectedStation?.type}
+        branchName={resolveRecordBranch({}, branchesById, currentBranch, language).name}
+        statusLabel={
+          inspectedStation && activeStations[inspectedStation.id]
+            ? activeStations[inspectedStation.id].stage === 'completed'
+              ? isRtl ? 'مكتمل' : 'Terminé'
+              : activeStations[inspectedStation.id].stage === 'in_progress'
+              ? isRtl ? 'قيد الإنجاز' : 'En Cours'
+              : isRtl ? 'انتظار' : 'En Attente'
+            : isRtl ? 'شاغر' : 'Libre'
+        }
+        statusClassName={
+          inspectedStation && activeStations[inspectedStation.id]
+            ? activeStations[inspectedStation.id].stage === 'completed'
+              ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+              : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            : 'bg-[#F3EDE7] dark:bg-[#262422] text-black dark:text-white border border-[#E6DED6] dark:border-[#3A3734]'
+        }
+        tabs={[
+          { id: 'overview', label: isRtl ? 'المحطة' : 'Poste & Statut' },
+          { id: 'service', label: isRtl ? 'الخدمة' : 'Prestation' },
+          { id: 'checkout', label: isRtl ? 'التحصيل' : 'Encaissement' },
+        ]}
+        onClose={() => setInspectedStationId(null)}
+        onSelectItem={(w) => setInspectedStationId(w.id)}
+        renderBody={(ws, activeTab) => {
+          const st = activeStations[ws.id];
+          if (activeTab === 'service') {
+            return (
+              <InspectorSection index={0} title={isRtl ? 'تفاصيل الجلسة' : 'Détails prestation'}>
+                <InspectorCard>
+                  <InspectorKeyValue label="Client" value={st?.clientName || 'Aucun client installé'} mono={false} />
+                  <InspectorKeyValue label="Prestation" value={st?.serviceName || '—'} tone="accent" mono={false} />
+                  <InspectorKeyValue label="Styliste" value={st?.stylistName || '—'} mono={false} isLast />
+                </InspectorCard>
+              </InspectorSection>
+            );
+          }
+
+          if (activeTab === 'checkout') {
+            return (
+              <InspectorSection index={0} title={isRtl ? 'قيمة الفاتورة' : 'Encaissement poste'}>
+                <InspectorBigStat
+                  value={st ? formatMoney(st.servicePriceDzd, 'DZD') : '0 DA'}
+                  tone={st ? 'accent' : 'ok'}
+                  actionLabel={st ? (isRtl ? 'تحصيل الآن' : 'Passer en caisse') : undefined}
+                  onAction={
+                    st
+                      ? () => {
+                          setInspectedStationId(null);
+                          setCheckoutModalStationKey(ws.id);
+                        }
+                      : undefined
+                  }
+                />
+              </InspectorSection>
+            );
+          }
+
+          return (
+            <>
+              <InspectorSection index={0} title={isRtl ? 'إجراءات المحطة' : 'Actions rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    st
+                      ? {
+                          id: 'advance',
+                          label:
+                            st.stage === 'waiting'
+                              ? 'Démarrer'
+                              : st.stage === 'in_progress'
+                              ? 'Terminer'
+                              : 'Encaisser',
+                          icon: <Play className="w-[18px] h-[18px]" />,
+                          primary: true,
+                          onClick: () => handleAdvanceStage(ws.id),
+                        }
+                      : {
+                          id: 'assign',
+                          label: 'Assigner Client',
+                          icon: <Plus className="w-[18px] h-[18px]" />,
+                          primary: true,
+                          onClick: () => {
+                            setInspectedStationId(null);
+                            setTargetStationId(ws.id);
+                            setIsAddClientModalOpen(true);
+                          },
+                        },
+                  ]}
+                />
+              </InspectorSection>
+              <InspectorSection index={1} title="Synthèse Poste">
+                <InspectorCard>
+                  <InspectorKeyValue label="Poste" value={ws.name} mono={false} />
+                  <InspectorKeyValue label="Client actif" value={st?.clientName || 'Libre'} mono={false} />
+                  <InspectorKeyValue label="Montant en cours" value={st ? formatMoney(st.servicePriceDzd, 'DZD') : '—'} tone="accent" isLast />
+                </InspectorCard>
+              </InspectorSection>
+              {!st && (
+                <InspectorSection index={2}>
+                  <InspectorWideButton
+                    label="Installer un Client au Fauteuil"
+                    icon={<Plus className="w-4 h-4" />}
+                    tone="accent"
+                    onClick={() => {
+                      setInspectedStationId(null);
+                      setTargetStationId(ws.id);
+                      setIsAddClientModalOpen(true);
+                    }}
+                  />
+                </InspectorSection>
+              )}
+            </>
+          );
+        }}
+      />
 
       {checkoutModalStationKey && activeStations[checkoutModalStationKey] && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1F1D1B]/45 backdrop-blur-xs p-4">

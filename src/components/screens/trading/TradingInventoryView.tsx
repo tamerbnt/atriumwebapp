@@ -3,9 +3,6 @@ import {
   Boxes,
   Plus,
   Building2,
-  AlertTriangle,
-  ShieldCheck,
-  Clock,
   Warehouse,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
@@ -27,12 +24,29 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorProgressBar,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorWideButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
 
+const STATUS_PILL_OK =
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+const STATUS_PILL_WARN =
+  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
+const STATUS_PILL_INFO =
+  'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]';
+
 type InventoryViewTab = 'stock_state' | 'vouchers';
+type ProductDrawerTab = 'stock' | 'valorisation' | 'mouvements';
+type VoucherDrawerTab = 'bon' | 'trajet' | 'articles';
 
 export const TradingInventoryView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -73,7 +87,9 @@ export const TradingInventoryView: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
   const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>());
   const [inspectingProduct, setInspectingProduct] = useState<Product | null>(null);
+  const [productDrawerTab, setProductDrawerTab] = useState<ProductDrawerTab>('stock');
   const [inspectingVoucher, setInspectingVoucher] = useState<StockMovementVoucher | null>(null);
+  const [voucherDrawerTab, setVoucherDrawerTab] = useState<VoucherDrawerTab>('bon');
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -511,7 +527,6 @@ export const TradingInventoryView: React.FC = () => {
       <ScreenHeaderBar
         icon={<Boxes size={22} />}
         title={t('trading_inventory_title', 'Stocks')}
-        subtitle={`${warehouses.length} ${isAr ? 'مستودعات نشطة' : isEn ? 'active depots' : 'dépôts actifs'}`}
         primaryAction={{
           label: t('trading_inventory_new_movement', 'Nouveau Bon de Mouvement'),
           icon: <Plus size={15} />,
@@ -674,9 +689,10 @@ export const TradingInventoryView: React.FC = () => {
         {subTab === 'stock_state' ? (
           <UniversalDataCollection<Product>
             hideToolbar
-            data={sortedProducts}
+            items={sortedProducts}
             keyExtractor={(p) => p.id}
-            viewMode={viewMode}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+            defaultViewMode="list"
             columns={stockColumns}
             sortBy={sortBy}
             sortDirection={sortDir}
@@ -710,24 +726,44 @@ export const TradingInventoryView: React.FC = () => {
               setDrawerOpenerEl(el || null);
               setInspectingProduct(p);
             }}
-            renderCard={(p) => {
-              const b = resolveRecordBranch(p, branchesById, currentBranch, language);
-              return (
-                <div className="p-4 border border-[#E6DED6] dark:border-neutral-700/70 bg-white dark:bg-neutral-800/80 rounded-2xl space-y-2 flex flex-col justify-between h-full">
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="font-mono text-xs text-black/60 dark:text-white/60">{p.sku || 'SKU'}</span>
-                      <span className="text-[10px] font-medium text-[#d4522f]">{b.name}</span>
-                    </div>
-                    <p className="font-bold text-xs text-black dark:text-white">{p.name}</p>
-                  </div>
-                  <div className="flex justify-between text-xs pt-2 border-t border-neutral-100 dark:border-neutral-700 font-mono">
-                    <span>Stock : {p.stockQuantity || 0}</span>
-                    <span className="font-bold text-[#d4522f] tabular-nums">{formatMoney(p.price?.amount || 0)}</span>
-                  </div>
-                </div>
-              );
+            getRowMeta={(p) => {
+              const isLow = (p.stockQuantity || 0) <= (p.reorderLevel || 10);
+              const cost = p.cost?.amount || p.costPrice || 0;
+              const val = (p.stockQuantity || 0) * cost;
+              const branchInfo = resolveRecordBranch(p, branchesById, currentBranch, language);
+              return {
+                title: p.name,
+                subline: `${p.sku || 'SKU'} · ${p.category || 'Général'}`,
+                avatarText: p.name.slice(0, 2).toUpperCase(),
+                avatarColor: '#d4522f',
+                categoryLabel: p.category || 'Article',
+                statusLabel: isLow ? 'Alerte Réappro' : `${p.stockQuantity || 0} ${p.unit || 'u'}`,
+                statusVariant: isLow ? 'warning' : 'active',
+                metricPrimary: formatMoney(val),
+                metricSecondary: `PMP ${formatMoney(cost)}`,
+                branchName: branchInfo.name,
+                isPinned: pinnedIds.has(p.id),
+                detailCol1: { label: 'Stock Réel', value: `${p.stockQuantity || 0} ${p.unit || 'u'}` },
+                detailCol2: { label: 'Seuil Alerte', value: `${p.reorderLevel || 10}` },
+                detailCol3: { label: 'Prix Vente HT', value: formatMoney(p.price?.amount || 0) },
+              };
             }}
+            getFanActions={() => [
+              {
+                id: 'move',
+                label: 'Mouvement Stock',
+                icon: <Boxes size={14} />,
+                onClick: () => setMovementModalOpen(true),
+              },
+            ]}
+            getDetailActions={() => [
+              {
+                id: 'move',
+                label: 'Mouvement',
+                icon: <Boxes size={13} />,
+                onClick: () => setMovementModalOpen(true),
+              },
+            ]}
             emptyTitle={isAr ? 'لا توجد مقالات في هذا المستودع' : 'Aucun article dans ce dépôt'}
             emptyDescription={
               isAr
@@ -738,9 +774,10 @@ export const TradingInventoryView: React.FC = () => {
         ) : (
           <UniversalDataCollection<StockMovementVoucher>
             hideToolbar
-            data={filteredVouchers}
+            items={filteredVouchers}
             keyExtractor={(v) => v.id}
-            viewMode={viewMode}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+            defaultViewMode="list"
             columns={voucherColumns}
             isLoading={isSyncing || networkMode === 'force_skeleton'}
             isOffline={networkMode === 'offline'}
@@ -756,16 +793,24 @@ export const TradingInventoryView: React.FC = () => {
               setDrawerOpenerEl(el || null);
               setInspectingVoucher(v);
             }}
-            renderCard={(v) => (
-              <div className="p-4 border border-[#E6DED6] dark:border-neutral-700/70 bg-white dark:bg-neutral-800/80 rounded-2xl space-y-1.5">
-                <span className="font-mono text-xs font-bold">{v.voucherNumber}</span>
-                <p className="font-bold text-xs">{v.reason}</p>
-                <div className="flex justify-between text-xs pt-2 border-t border-neutral-100 dark:border-neutral-700">
-                  <span>{v.date}</span>
-                  <span className="font-bold text-[#d4522f] font-mono">{formatMoney(v.totalValuationDzd)}</span>
-                </div>
-              </div>
-            )}
+            getRowMeta={(v) => {
+              const branchInfo = resolveRecordBranch(v, branchesById, currentBranch, language);
+              return {
+                title: v.voucherNumber,
+                subline: `${v.date} · ${v.depotSourceName}${v.depotTargetName ? ` → ${v.depotTargetName}` : ''}`,
+                avatarText: v.type === 'entree' ? 'BE' : v.type === 'sortie' ? 'BS' : 'BT',
+                avatarColor: '#d4522f',
+                categoryLabel: v.reason.replace('_', ' '),
+                statusLabel: v.type.toUpperCase(),
+                statusVariant: v.type === 'entree' ? 'active' : v.type === 'sortie' ? 'blocked' : 'info',
+                metricPrimary: formatMoney(v.totalValuationDzd),
+                metricSecondary: v.date,
+                branchName: branchInfo.name,
+                detailCol1: { label: 'Source', value: v.depotSourceName },
+                detailCol2: { label: 'Destination', value: v.depotTargetName || '—' },
+                detailCol3: { label: 'Motif', value: v.reason.replace('_', ' ') },
+              };
+            }}
             emptyTitle={isAr ? 'لا توجد حركات مخزون مسجلة' : 'Aucun mouvement de stock enregistré'}
             emptyDescription={
               isAr ? 'أنشئ أول سند حركة.' : "Créez votre premier bon d'entrée, sortie ou transfert ci-dessus."
@@ -799,47 +844,117 @@ export const TradingInventoryView: React.FC = () => {
         language={language}
         title={inspectingProduct?.name || ''}
         subtitle={inspectingProduct ? `${inspectingProduct.sku || 'SKU'} · ${inspectingProduct.category || 'Général'}` : undefined}
-        avatarText="SKU"
+        avatarText={inspectingProduct ? inspectingProduct.name.slice(0, 2).toUpperCase() : 'SK'}
+        avatarColor="#d4522f"
         branchName={
           inspectingProduct ? resolveRecordBranch(inspectingProduct, branchesById, currentBranch, language).name : undefined
         }
         statusLabel={`${inspectingProduct?.stockQuantity || 0} ${inspectingProduct?.unit || 'u'}`}
+        statusClassName={
+          (inspectingProduct?.stockQuantity || 0) <= (inspectingProduct?.reorderLevel || 10)
+            ? STATUS_PILL_WARN
+            : STATUS_PILL_OK
+        }
+        tabs={[
+          { id: 'stock', label: isAr ? 'المخزون' : isEn ? 'Stock' : 'Stock' },
+          { id: 'valorisation', label: isAr ? 'التقييم' : isEn ? 'Valuation' : 'Valorisation' },
+          { id: 'mouvements', label: isAr ? 'الحركات' : isEn ? 'Movements' : 'Mouvements' },
+        ]}
+        activeTab={productDrawerTab}
+        onTabChange={(tab) => setProductDrawerTab(tab as ProductDrawerTab)}
         onClose={() => setInspectingProduct(null)}
         onSelectItem={(p) => setInspectingProduct(p)}
-        renderBody={(p) => (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-neutral-800/50 border border-[#E6DED6] dark:border-neutral-700/60 space-y-2">
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/60">Stock disponible :</span>
-                <span className="font-mono font-bold text-black dark:text-white">
-                  {p.stockQuantity || 0} {p.unit || 'u'}
-                </span>
+        renderBody={(p, tab) => {
+          const qty = p.stockQuantity || 0;
+          const reorder = p.reorderLevel || 10;
+          const cost = p.cost?.amount || p.costPrice || 0;
+          const val = qty * cost;
+          const pct = reorder > 0 ? Math.min(100, Math.round((qty / (reorder * 3)) * 100)) : 100;
+          const relatedVouchers = stockVouchers.slice(0, 5);
+
+          if (tab === 'valorisation') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0} title="Valorisation PMP">
+                  <InspectorBigStat
+                    value={formatMoney(val)}
+                    tone="accent"
+                    caption={`Actif en stock (${qty} ${p.unit || 'u'})`}
+                  />
+                  <InspectorCard>
+                    <InspectorKeyValue label="Coût PMP (HT)" value={formatMoney(cost)} mono />
+                    <InspectorKeyValue label="Prix Vente HT" value={formatMoney(p.price?.amount || 0)} mono isLast />
+                  </InspectorCard>
+                </InspectorSection>
               </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/60">Seuil réapprovisionnement :</span>
-                <span className="font-mono">{p.reorderLevel || 10}</span>
+            );
+          }
+
+          if (tab === 'mouvements') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0} title="Derniers bons enregistrés">
+                  <InspectorCard>
+                    {relatedVouchers.length === 0 ? (
+                      <InspectorKeyValue label="Journal" value="Aucun bon enregistré" isLast />
+                    ) : (
+                      relatedVouchers.map((v, idx) => (
+                        <InspectorListItem
+                          key={v.id}
+                          title={v.voucherNumber}
+                          subtitle={`${v.date} · ${v.depotSourceName}`}
+                          metaRight={formatMoney(v.totalValuationDzd)}
+                          isLast={idx === relatedVouchers.length - 1}
+                        />
+                      ))
+                    )}
+                  </InspectorCard>
+                </InspectorSection>
+                <InspectorWideButton
+                  label="Enregistrer un mouvement de stock"
+                  icon={<Boxes size={14} />}
+                  tone="accent"
+                  onClick={() => {
+                    setInspectingProduct(null);
+                    setMovementModalOpen(true);
+                  }}
+                />
               </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/60">Coût PMP (HT) :</span>
-                <span className="font-mono">{formatMoney(p.cost?.amount || p.costPrice || 0)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/60">Prix vente HT :</span>
-                <span className="font-mono font-bold text-[#d4522f]">{formatMoney(p.price?.amount || 0)}</span>
-              </div>
+            );
+          }
+
+          return (
+            <div className="space-y-4">
+              <InspectorQuickActions
+                actions={[
+                  {
+                    id: 'move',
+                    label: 'Mouvement',
+                    icon: <Boxes size={15} />,
+                    primary: true,
+                    onClick: () => {
+                      setInspectingProduct(null);
+                      setMovementModalOpen(true);
+                    },
+                  },
+                ]}
+              />
+              <InspectorSection index={0} title="Disponibilité & Seuil">
+                <InspectorBigStat
+                  value={`${qty} ${p.unit || 'u'}`}
+                  tone={qty <= reorder ? 'danger' : 'ok'}
+                  caption={`Seuil réapprovisionnement : ${reorder}`}
+                />
+                <InspectorCard>
+                  <InspectorProgressBar percent={pct} tone={qty <= reorder ? 'warn' : 'ok'} animateKey={p.id} />
+                  <InspectorKeyValue label="Code SKU" value={p.sku || 'SKU'} mono copyText={p.sku} />
+                  <InspectorKeyValue label="Coût PMP (HT)" value={formatMoney(cost)} mono />
+                  <InspectorKeyValue label="Prix vente HT" value={formatMoney(p.price?.amount || 0)} mono tone="accent" isLast />
+                </InspectorCard>
+              </InspectorSection>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                setInspectingProduct(null);
-                setMovementModalOpen(true);
-              }}
-              className="w-full py-2.5 rounded-xl bg-[#d4522f] hover:bg-[#b83f1f] text-white font-bold text-xs cursor-pointer"
-            >
-              Enregistrer un mouvement de stock
-            </button>
-          </div>
-        )}
+          );
+        }}
       />
 
       <KineticSlideOverInspector<StockMovementVoucher>
@@ -852,34 +967,84 @@ export const TradingInventoryView: React.FC = () => {
         title={inspectingVoucher?.voucherNumber || ''}
         subtitle={inspectingVoucher ? `${inspectingVoucher.date} · ${inspectingVoucher.depotSourceName}` : undefined}
         avatarText={inspectingVoucher ? inspectingVoucher.type.slice(0, 2).toUpperCase() : 'MV'}
+        avatarColor="#d4522f"
         branchName={
           inspectingVoucher ? resolveRecordBranch(inspectingVoucher, branchesById, currentBranch, language).name : undefined
         }
         statusLabel={inspectingVoucher?.type.toUpperCase()}
+        statusClassName={
+          inspectingVoucher?.type === 'entree'
+            ? STATUS_PILL_OK
+            : inspectingVoucher?.type === 'sortie'
+            ? STATUS_PILL_WARN
+            : STATUS_PILL_INFO
+        }
+        tabs={[
+          { id: 'bon', label: isAr ? 'السند' : isEn ? 'Voucher' : 'Bon' },
+          { id: 'trajet', label: isAr ? 'المسار' : isEn ? 'Route' : 'Trajet' },
+          { id: 'articles', label: isAr ? 'المواد' : isEn ? 'Items' : 'Articles' },
+        ]}
+        activeTab={voucherDrawerTab}
+        onTabChange={(tab) => setVoucherDrawerTab(tab as VoucherDrawerTab)}
         onClose={() => setInspectingVoucher(null)}
         onSelectItem={(v) => setInspectingVoucher(v)}
-        renderBody={(v) => (
-          <div className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-neutral-800/50 border border-[#E6DED6] dark:border-neutral-700/60 space-y-2 text-xs">
-            <div className="flex justify-between">
-              <span className="text-black/55 dark:text-white/60">Source :</span>
-              <span className="font-semibold">{v.depotSourceName}</span>
-            </div>
-            {v.depotTargetName && (
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/60">Destination :</span>
-                <span className="font-semibold">{v.depotTargetName}</span>
+        renderBody={(v, tab) => {
+          if (tab === 'trajet') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0} title="Trajet logistique">
+                  <InspectorCard>
+                    <InspectorKeyValue label="Dépôt source" value={v.depotSourceName} />
+                    <InspectorKeyValue label="Dépôt cible" value={v.depotTargetName || 'Mouvement interne'} />
+                    <InspectorKeyValue label="Opérateur" value={v.operatorName || 'Magasinier'} isLast />
+                  </InspectorCard>
+                </InspectorSection>
               </div>
-            )}
-            <div className="flex justify-between">
-              <span className="text-black/55 dark:text-white/60">Motif :</span>
-              <span className="font-mono">{v.reason}</span>
+            );
+          }
+
+          if (tab === 'articles') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0} title={`Lignes du bon (${v.items?.length || 0})`}>
+                  <InspectorCard>
+                    {!v.items || v.items.length === 0 ? (
+                      <InspectorKeyValue label="Valorisation globale" value={formatMoney(v.totalValuationDzd)} mono isLast />
+                    ) : (
+                      v.items.map((it, idx) => (
+                        <InspectorListItem
+                          key={`${it.productId}-${idx}`}
+                          title={it.productName}
+                          subtitle={`${it.quantity} ${it.unit}`}
+                          metaRight={formatMoney(it.quantity * it.unitCostDzd)}
+                          isLast={idx === v.items.length - 1}
+                        />
+                      ))
+                    )}
+                  </InspectorCard>
+                </InspectorSection>
+              </div>
+            );
+          }
+
+          return (
+            <div className="space-y-4">
+              <InspectorSection index={0} title="Synthèse Mouvement">
+                <InspectorBigStat
+                  value={formatMoney(v.totalValuationDzd)}
+                  tone="accent"
+                  caption={`Motif : ${v.reason.replace('_', ' ')}`}
+                />
+                <InspectorCard>
+                  <InspectorKeyValue label="Source" value={v.depotSourceName} />
+                  {v.depotTargetName && <InspectorKeyValue label="Destination" value={v.depotTargetName} />}
+                  <InspectorKeyValue label="Date" value={v.date} mono />
+                  <InspectorKeyValue label="Motif" value={v.reason.replace('_', ' ')} isLast />
+                </InspectorCard>
+              </InspectorSection>
             </div>
-            <div className="flex justify-between pt-2 border-t border-[#E6DED6] dark:border-neutral-700">
-              <span className="text-black/55 dark:text-white/60">Valorisation :</span>
-              <span className="font-mono font-bold text-[#d4522f]">{formatMoney(v.totalValuationDzd)}</span>
-            </div>
-          </div>
-        )}
+          );
+        }}
       />
 
       <StockMovementModal isOpen={movementModalOpen} onClose={() => setMovementModalOpen(false)} />

@@ -2,7 +2,6 @@ import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   Car,
   Plus,
-  CheckCircle2,
   Wrench,
   AlertTriangle,
   Gauge,
@@ -10,7 +9,13 @@ import {
   Edit,
   Pin,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import {
   useGarageData,
@@ -18,7 +23,6 @@ import {
   RepairOrder,
   calculateEstimatedMileage,
 } from './garageData';
-import { AtriumButton } from '../../ui/AtriumButton';
 import { AutoVehicleModal } from './AutoVehicleModal';
 import { AutoOrderModal } from './AutoOrderModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -33,6 +37,16 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorProgressBar,
+  InspectorListItem,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -46,8 +60,18 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
     isSyncing,
     networkMode,
     isSyncTimeout,
-    retryCloudSync,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode,
+      isSyncTimeout: s.isSyncTimeout,
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -266,6 +290,62 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
       message: isAr ? 'تم تصدير حظيرة المركبات' : 'Export du parc automobile terminé',
     });
   }, [sortedVehicles, branchesById, currentBranch, language, isAr]);
+
+  const getRowMeta = useCallback(
+    (v: VehicleAsset): KineticRowData => {
+      const estKm = calculateEstimatedMileage(v.mileageKm, v.lastServiceDate, v.dailyAvgKm || 50);
+      const isDue = estKm - (v.lastServiceKm || v.mileageKm - 5000) >= 9500;
+      const inShop = orders.some((o) => o.vehiclePlate === v.plateNumber && o.status !== 'Delivered');
+      const br = resolveRecordBranch(v, branchesById, currentBranch, language);
+      return {
+        primary: `${v.brand} ${v.model}`,
+        secondary: `${v.plateNumber} · ${v.ownerName} · ${estKm.toLocaleString()} km`,
+        meta: `${v.isFleet ? 'Flotte B2B' : 'Particulier'} · ${br.name}`,
+        badge: inShop
+          ? { label: isAr ? 'في الورشة' : 'En Atelier', tone: 'info' }
+          : isDue
+          ? { label: isAr ? 'تغيير زيت' : 'Vidange Due', tone: 'warn' }
+          : { label: isAr ? 'جاهز' : 'Disponible', tone: 'ok' },
+      };
+    },
+    [orders, branchesById, currentBranch, language, isAr]
+  );
+
+  const getFanActions = useCallback(
+    (v: VehicleAsset): KineticRowFanAction[] => [
+      {
+        id: 'order',
+        label: 'OR +',
+        icon: <Wrench size={14} />,
+        onClick: () => handleOpenNewOrder(v),
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : 'Éditer',
+        icon: <Edit size={14} />,
+        onClick: () => handleOpenEdit(v),
+      },
+    ],
+    [handleOpenNewOrder, handleOpenEdit, isAr]
+  );
+
+  const getDetailActions = useCallback(
+    (v: VehicleAsset): KineticDetailAction[] => [
+      {
+        id: 'order',
+        label: isAr ? 'فتح أمر إصلاح' : 'Nouvel OR',
+        icon: <Wrench size={14} />,
+        onClick: () => handleOpenNewOrder(v),
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : 'Modifier',
+        icon: <Edit size={14} />,
+        onClick: () => handleOpenEdit(v),
+      },
+    ],
+    [handleOpenNewOrder, handleOpenEdit, isAr]
+  );
 
   const columns: ColumnDefinition<VehicleAsset>[] = useMemo(
     () => [
@@ -556,11 +636,6 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<Car size={26} />}
         title={isAr ? 'المركبات' : isEn ? 'Vehicles' : 'Véhicules'}
-        subtitle={
-          isAr
-            ? `${vehicles.length} مركبة مسجلة · ${fleetVehiclesCount} أساطيل B2B`
-            : `${vehicles.length} fiches techniques · ${fleetVehiclesCount} flottes B2B`
-        }
         primaryAction={{
           label: isAr ? 'تسجيل مركبة' : isEn ? 'New Vehicle' : 'Nouveau Véhicule',
           icon: <Plus size={16} strokeWidth={2.5} />,
@@ -614,7 +689,6 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
           statusOptions={[
             { value: 'All', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous', count: vehicles.length },
             { value: 'Fleet', label: isAr ? 'أساطيل' : isEn ? 'Fleets' : 'Flottes', count: fleetVehiclesCount },
-            { value: 'Individual', label: isAr ? 'أفراد' : isEn ? 'Private' : 'Particuliers', count: vehicles.length - fleetVehiclesCount },
             { value: 'VidangeDue', label: isAr ? 'صيانة' : isEn ? 'Due' : 'Vidange', count: vidangeDueCount },
           ]}
           hasActiveAdvancedFilters={hasAdvancedFilters}
@@ -632,8 +706,9 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
 
         <UniversalDataCollection
           hideToolbar
-          data={sortedVehicles}
+          items={sortedVehicles}
           keyExtractor={(v) => v.id}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
           defaultViewMode={viewMode}
           columns={columns}
           sortBy={sortBy}
@@ -665,6 +740,9 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
             setDrawerOpenerEl(el || null);
             setInspectedVehicle(v);
           }}
+          getRowMeta={getRowMeta}
+          getFanActions={getFanActions}
+          getDetailActions={getDetailActions}
           onEdit={handleOpenEdit}
           onDelete={handleDelete}
           customActions={(v) => [
@@ -677,61 +755,6 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
               onClick: () => handleOpenNewOrder(v),
             },
           ]}
-          renderCard={(v) => {
-            const isPinned = pinnedIds.has(v.id);
-            const inShop = orders.some((o) => o.vehiclePlate === v.plateNumber && o.status !== 'Delivered');
-            const estKm = calculateEstimatedMileage(v.mileageKm, v.lastServiceDate, v.dailyAvgKm || 50);
-            const isDue = estKm - (v.lastServiceKm || v.mileageKm - 5000) >= 9500;
-            return (
-              <div className="flex flex-col items-center justify-center w-full">
-                <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
-                  <Car size={32} />
-                </div>
-                <div className="flex items-center gap-1.5 max-w-[210px] mb-0.5">
-                  <h3 className="text-base font-bold text-black dark:text-white truncate tracking-tight">
-                    {v.brand} {v.model}
-                  </h3>
-                  {isPinned && <span className="text-[10px] text-amber-500 font-bold">VIP</span>}
-                </div>
-                <div className="flex items-center gap-1.5 mb-3">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 border border-neutral-200 dark:border-neutral-700">
-                    {v.plateNumber}
-                  </span>
-                  {v.isFleet && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-bold border border-blue-200">
-                      B2B
-                    </span>
-                  )}
-                </div>
-                <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1 text-center">
-                  <div className="text-black dark:text-white font-semibold text-[11px] truncate">
-                    {v.ownerName} · <span className="font-mono text-black/55 dark:text-white/55">{v.ownerPhone}</span>
-                  </div>
-                  <div className="flex items-center justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800 text-[10px] text-black/55 dark:text-white/55">
-                    <span className="font-mono font-bold text-black/70 dark:text-white/75">
-                      {estKm.toLocaleString()} km
-                    </span>
-                    {inShop ? (
-                      <span className="text-amber-600 font-bold flex items-center gap-1">
-                        <Wrench size={10} />
-                        {isAr ? 'في الورشة' : 'En Atelier'}
-                      </span>
-                    ) : isDue ? (
-                      <span className="text-amber-600 font-bold flex items-center gap-1">
-                        <AlertTriangle size={10} />
-                        Vidange Due
-                      </span>
-                    ) : (
-                      <span className="text-emerald-600 font-bold flex items-center gap-1">
-                        <CheckCircle2 size={10} />
-                        {isAr ? 'جاهز' : 'Disponible'}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          }}
         />
       </ScreenPod>
 
@@ -756,8 +779,8 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
         language={language}
         title={activeVehicle ? `${activeVehicle.brand} ${activeVehicle.model}` : ''}
         subtitle={activeVehicle ? `${activeVehicle.plateNumber} · ${activeVehicle.year}` : ''}
+        categoryLabel={activeVehicle ? `${activeVehicle.plateNumber} · ${activeVehicle.year}` : ''}
         avatarText={activeVehicle?.brand.slice(0, 2).toUpperCase() || 'VH'}
-        avatarColor="#d4522f"
         branchName={
           activeVehicle ? resolveRecordBranch(activeVehicle, branchesById, currentBranch, language).name : ''
         }
@@ -770,9 +793,13 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
             ? 'زبون فردي'
             : 'Particulier'
         }
+        statusClassName={
+          activeVehicle?.isFleet
+            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+        }
         tabs={[
-          { id: 'fiche', label: isAr ? 'البطاقة' : 'Fiche' },
-          { id: 'owner', label: activeVehicle?.isFleet ? (isAr ? 'الأسطول' : 'Flotte B2B') : isAr ? 'المالك' : 'Client' },
+          { id: 'fiche', label: isAr ? 'البطاقة' : 'Fiche & Client' },
           { id: 'orders', label: isAr ? 'أوامر OR' : 'Historique OR' },
           { id: 'maintenance', label: isAr ? 'الصيانة' : 'Entretien' },
         ]}
@@ -782,203 +809,137 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
         onClose={() => setInspectedVehicle(null)}
         onDelete={handleDelete}
         holdToDelete
-        renderBody={(v) => {
+        renderBody={(v, tab) => {
           const estKm = calculateEstimatedMileage(v.mileageKm, v.lastServiceDate, v.dailyAvgKm || 50);
           const lastKm = v.lastServiceKm || v.mileageKm - 5000;
           const kmSince = estKm - lastKm;
           const nextVidange = lastKm + 10000;
           const isOverdue = estKm >= nextVidange;
           const vehOrders = vehicleOrdersMap.get(v.plateNumber) || [];
+          const vidangePercent = Math.min(100, Math.round((kmSince / 10000) * 100));
+
+          if (tab === 'orders') {
+            return (
+              <InspectorSection index={0} title={isAr ? 'سجل أوامر التصليح' : 'Historique des Ordres de Réparation'}>
+                {vehOrders.length > 0 ? (
+                  <InspectorCard>
+                    {vehOrders.map((o, i) => (
+                      <InspectorListItem
+                        key={o.id}
+                        title={o.orderNumber}
+                        subtitle={`${new Date(o.intakeDate).toLocaleDateString()} · ${o.diagnosticNotes}`}
+                        value={formatMoney(o.finalCostDzd || o.estimatedCostDzd, language)}
+                        badge={{ label: o.status, tone: o.status === 'Delivered' ? 'ok' : 'warn' }}
+                        isLast={i === vehOrders.length - 1}
+                      />
+                    ))}
+                  </InspectorCard>
+                ) : (
+                  <InspectorCard>
+                    <InspectorKeyValue label="Historique OR" value="Aucun ordre enregistré" mono={false} isLast />
+                  </InspectorCard>
+                )}
+              </InspectorSection>
+            );
+          }
+
+          if (tab === 'maintenance') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'الصيانة التنبؤية' : 'Échéancier Vidange & Distribution'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label="Vidange (10,000 km)"
+                      value={isOverdue ? 'À effectuer d’urgence' : 'Statut Conforme'}
+                      tone={isOverdue ? 'warn' : 'ok'}
+                      mono={false}
+                    />
+                    <InspectorKeyValue label="Dernière vidange" value={`${lastKm.toLocaleString()} km`} />
+                    <InspectorKeyValue label="Prochaine échéance" value={`${nextVidange.toLocaleString()} km`} />
+                    <InspectorKeyValue label="Progression cycle" value={`${vidangePercent}%`} isLast />
+                    <InspectorProgressBar percent={vidangePercent} tone={isOverdue ? 'warn' : 'ok'} animateKey={v.id} />
+                  </InspectorCard>
+                </InspectorSection>
+                <InspectorSection index={1} title="Distribution & Préconisations">
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label="Courroie Distribution"
+                      value="60,000 km · Contrôle annuel"
+                      mono={false}
+                      isLast
+                    />
+                  </InspectorCard>
+                  <div className="mt-3">
+                    <InspectorWideButton
+                      variant="accent"
+                      icon={<Wrench className="w-4 h-4" />}
+                      onClick={() => handleOpenNewOrder(v)}
+                    >
+                      {isAr ? 'جدولة صيانة وقائية' : 'Planifier Révision Atelier'}
+                    </InspectorWideButton>
+                  </div>
+                </InspectorSection>
+              </>
+            );
+          }
 
           return (
-            <div className="space-y-4 text-xs">
-              <div className="flex items-center gap-2">
-                <AtriumButton
-                  variant="primary"
-                  size="sm"
-                  className="flex-1"
-                  icon={<Wrench size={13} />}
-                  onClick={() => handleOpenNewOrder(v)}
-                >
-                  {isAr ? 'فتح أمر إصلاح' : 'Nouvel OR'}
-                </AtriumButton>
-                <AtriumButton
-                  variant="secondary"
-                  size="sm"
-                  icon={<Edit size={13} />}
-                  onClick={() => handleOpenEdit(v)}
-                >
-                  {isAr ? 'تعديل' : 'Modifier'}
-                </AtriumButton>
-                <button
-                  type="button"
-                  onClick={() => handleTogglePin(v)}
-                  aria-label={isAr ? 'تثبيت' : 'Épingler'}
-                  className={`p-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 cursor-pointer ${
-                    pinnedIds.has(v.id) ? 'text-amber-500' : 'text-black/55 dark:text-white/55'
-                  }`}
-                >
-                  <Pin size={14} />
-                </button>
-              </div>
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : 'Actions rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'order',
+                      label: isAr ? 'أمر تصليح' : 'Nouvel OR',
+                      icon: <Wrench className="w-[18px] h-[18px]" />,
+                      primary: true,
+                      onClick: () => handleOpenNewOrder(v),
+                    },
+                    {
+                      id: 'edit',
+                      label: isAr ? 'تعديل' : 'Modifier',
+                      icon: <Edit className="w-[18px] h-[18px]" />,
+                      onClick: () => handleOpenEdit(v),
+                    },
+                    {
+                      id: 'pin',
+                      label: pinnedIds.has(v.id) ? 'Désépingler' : 'Épingler',
+                      icon: <Pin className="w-[18px] h-[18px]" />,
+                      onClick: () => handleTogglePin(v),
+                    },
+                  ]}
+                />
+              </InspectorSection>
 
-              {activeTab === 'fiche' && (
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-                  <div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">
-                    {isAr ? 'المواصفات الفنية' : 'Données Constructeur'}
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                    <span className="text-black/55 dark:text-white/55">N° Châssis (VIN)</span>
-                    <span className="font-semibold text-black dark:text-white font-mono">{v.vin}</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                    <span className="text-black/55 dark:text-white/55">Immatriculation</span>
-                    <span className="font-bold text-[#d4522f] font-mono">{v.plateNumber}</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                    <span className="text-black/55 dark:text-white/55">Motorisation / Carburant</span>
-                    <span className="font-semibold text-black dark:text-white">{v.fuelType || 'Diesel'}</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                    <span className="text-black/55 dark:text-white/55">Année modèle</span>
-                    <span className="font-semibold text-black dark:text-white font-mono">{v.year}</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                    <span className="text-black/55 dark:text-white/55">Compteur Enregistré</span>
-                    <span className="font-bold text-black dark:text-white font-mono">{v.mileageKm.toLocaleString()} km</span>
-                  </div>
-                  <div className="flex justify-between py-1">
-                    <span className="text-black/55 dark:text-white/55">Compteur Estimé</span>
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">
-                      {estKm.toLocaleString()} km
-                    </span>
-                  </div>
-                </div>
-              )}
+              <InspectorSection index={1} title={isAr ? 'المواصفات الفنية' : 'Données Constructeur'}>
+                <InspectorCard>
+                  <InspectorKeyValue label="N° Châssis (VIN)" value={v.vin} />
+                  <InspectorKeyValue label="Immatriculation" value={v.plateNumber} tone="accent" />
+                  <InspectorKeyValue label="Motorisation" value={v.fuelType || 'Diesel'} mono={false} />
+                  <InspectorKeyValue label="Année modèle" value={String(v.year)} />
+                  <InspectorKeyValue label="Compteur Enregistré" value={`${v.mileageKm.toLocaleString()} km`} />
+                  <InspectorKeyValue label="Compteur Estimé" value={`${estKm.toLocaleString()} km`} tone="ok" isLast />
+                </InspectorCard>
+              </InspectorSection>
 
-              {activeTab === 'owner' && (
-                <div className="space-y-3">
-                  {v.isFleet ? (
-                    <div className="p-3.5 rounded-xl bg-orange-50/60 dark:bg-orange-950/30 border border-orange-200/70 space-y-2">
-                      <div className="flex items-center gap-2 font-bold text-[#d4522f]">
-                        <Building2 size={16} />
-                        <span>{v.fleetName || 'Compte Entreprise B2B'}</span>
-                      </div>
-                      <div className="text-[11px] text-black/70 dark:text-white/75">
-                        {isAr
-                          ? 'مركبة مرتبطة بأسطول اتفاقية صيانة معتمدة'
-                          : 'Véhicule rattaché à une flotte conventionnée avec facturation mensuelle DGI groupée.'}
-                      </div>
-                      <div className="pt-2 border-t border-orange-200/50 space-y-1">
-                        <div className="flex justify-between">
-                          <span className="text-black/55 dark:text-white/55">Contact Flotte:</span>
-                          <span className="font-bold text-black dark:text-white">{v.ownerName}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-black/55 dark:text-white/55">Téléphone:</span>
-                          <span className="font-mono text-black dark:text-white">{v.ownerPhone}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-                      <div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">
-                        Coordonnées Client
-                      </div>
-                      <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                        <span className="text-black/55 dark:text-white/55">Nom & Prénom</span>
-                        <span className="font-bold text-black dark:text-white">{v.ownerName}</span>
-                      </div>
-                      <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                        <span className="text-black/55 dark:text-white/55">Téléphone</span>
-                        <span className="font-semibold text-black dark:text-white font-mono">{v.ownerPhone}</span>
-                      </div>
-                      <div className="flex justify-between py-1">
-                        <span className="text-black/55 dark:text-white/55">Carte Grise</span>
-                        <span className="font-mono text-black/70 dark:text-white/75">
-                          {v.carteGriseNumber || 'Non renseignée'}
-                        </span>
-                      </div>
-                    </div>
+              <InspectorSection
+                index={2}
+                title={v.isFleet ? (isAr ? 'حساب الأسطول B2B' : 'Flotte Conventionnée B2B') : 'Coordonnées Client'}
+              >
+                <InspectorCard>
+                  {v.isFleet && (
+                    <InspectorKeyValue label="Flotte B2B" value={v.fleetName || 'Compte Entreprise'} mono={false} tone="accent" />
                   )}
-                </div>
-              )}
-
-              {activeTab === 'orders' && (
-                <div className="space-y-2">
-                  {vehOrders.length > 0 ? (
-                    vehOrders.map((o) => (
-                      <div
-                        key={o.id}
-                        className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-1.5"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-black dark:text-white">{o.orderNumber}</span>
-                          <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
-                            {new Date(o.intakeDate).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-black/55 dark:text-white/75">{o.diagnosticNotes}</p>
-                        <div className="flex items-center justify-between pt-1 border-t border-neutral-200/50 dark:border-neutral-700/50">
-                          <span className="text-[10px] font-semibold text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded">
-                            {o.status}
-                          </span>
-                          <span className="font-mono font-bold text-[#d4522f]">
-                            {formatMoney(o.finalCostDzd || o.estimatedCostDzd, language)}
-                          </span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8 text-black/55 dark:text-white/55">
-                      <Wrench size={28} className="mx-auto mb-2 opacity-40" />
-                      <p>{isAr ? 'لا توجد أوامر إصلاح سابقة لهذه المركبة' : 'Aucun ordre de réparation enregistré.'}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {activeTab === 'maintenance' && (
-                <div className="space-y-3">
-                  <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700 space-y-2">
-                    <div className="flex items-center justify-between font-bold">
-                      <span>Vidange Huile Moteur (10,000 km)</span>
-                      <span className={isOverdue ? 'text-amber-600' : 'text-emerald-600'}>
-                        {isOverdue ? 'À effectuer d’urgence' : 'Statut Conforme'}
-                      </span>
-                    </div>
-                    <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2 overflow-hidden">
-                      <div
-                        className={`h-full ${isOverdue ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                        style={{ width: `${Math.min(100, Math.round((kmSince / 10000) * 100))}%` }}
-                      />
-                    </div>
-                    <div className="flex justify-between text-[11px] text-black/55 dark:text-white/55 font-mono">
-                      <span>Effectuée: {lastKm.toLocaleString()} km</span>
-                      <span>Échéance: {nextVidange.toLocaleString()} km</span>
-                    </div>
-                  </div>
-                  <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700 space-y-1.5">
-                    <div className="flex justify-between font-bold">
-                      <span>Courroie de Distribution (60,000 km)</span>
-                      <span className="text-black/55 dark:text-white/55">Contrôle annuel</span>
-                    </div>
-                    <div className="text-[11px] text-black/55 dark:text-white/55">
-                      Prochaine vérification tension & craquelures préconisée au prochain OR.
-                    </div>
-                  </div>
-                  <AtriumButton
-                    variant="primary"
-                    size="sm"
-                    className="w-full"
-                    icon={<Wrench size={13} />}
-                    onClick={() => handleOpenNewOrder(v)}
-                  >
-                    {isAr ? 'جدولة صيانة وقائية' : 'Planifier Révision Atelier'}
-                  </AtriumButton>
-                </div>
-              )}
-            </div>
+                  <InspectorKeyValue label="Contact / Titulaire" value={v.ownerName} mono={false} />
+                  <InspectorKeyValue label="Téléphone" value={v.ownerPhone} />
+                  <InspectorKeyValue
+                    label="Carte Grise"
+                    value={v.carteGriseNumber || 'Non renseignée'}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+            </>
           );
         }}
       />

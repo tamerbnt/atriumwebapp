@@ -6,6 +6,7 @@ import {
   XCircle,
   Plus,
   X,
+  Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { RollCallModal } from './RollCallModal';
@@ -28,6 +29,17 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorProgressBar,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -74,6 +86,7 @@ export const EducationAttendanceView: React.FC = () => {
 
   const [selectedStudent, setSelectedStudent] = useState<EduStudent | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<'overview' | 'attendance' | 'grades'>('overview');
 
   const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(() => new Set<string>());
   const [pinnedStudentIds, setPinnedStudentIds] = useState<Set<string>>(() => new Set<string>());
@@ -344,6 +357,86 @@ export const EducationAttendanceView: React.FC = () => {
 
   const activeFiltersCount = (branchFilter !== 'All' ? 1 : 0) + (selectedCohortId !== 'all' ? 1 : 0);
 
+  const getStudentRowMeta = useCallback(
+    (st: EduStudent): KineticRowMeta => {
+      const studentRecords = cohortAttendance.filter((a) => a.studentId === st.id);
+      const presents = studentRecords.filter((a) => a.status === 'Present' || a.status === 'Late').length;
+      const total = studentRecords.length;
+      const rate = total > 0 ? Math.round((presents / total) * 100) : st.attendanceRatePercent ?? 95;
+      return {
+        avatarText: st.fullName.slice(0, 2).toUpperCase(),
+        subtitle: st.phone || st.email || st.schoolGrade || 'Enrolled',
+        categoryLabel: st.schoolGrade || 'Standard',
+        statusTone: rate >= 85 ? 'ok' : rate >= 70 ? 'warn' : 'danger',
+        statusLabel: localizeStatus(st.status, language),
+        metricPrimary: `${rate}%`,
+        metricSecondary: `${total} ${isAr ? 'جلسات' : 'séances'}`,
+      };
+    },
+    [cohortAttendance, isAr, language]
+  );
+
+  const getStudentFanActions = useCallback(
+    (st: EduStudent): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'تفاصيل' : isEn ? 'Details' : 'Détails',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedStudent(st);
+          setInspectorTab('overview');
+        },
+      },
+      {
+        id: 'rollcall',
+        label: t('edu_btn_roll_call'),
+        icon: <CheckCircle2 className="w-[15px] h-[15px]" />,
+        onClick: () => setIsRollCallOpen(true),
+      },
+      {
+        id: 'grade',
+        label: t('edu_btn_record_grade'),
+        icon: <Award className="w-[15px] h-[15px]" />,
+        onClick: () => {
+          setGradeForm((prev) => ({ ...prev, studentId: st.id }));
+          setIsGradeModalOpen(true);
+        },
+      },
+    ],
+    [isAr, isEn, t]
+  );
+
+  const getStudentDetailActions = useCallback(
+    (st: EduStudent): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'فتح' : isEn ? 'Open' : 'Ouvrir',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedStudent(st);
+          setInspectorTab('overview');
+        },
+      },
+      {
+        id: 'rollcall',
+        label: t('edu_btn_roll_call'),
+        icon: <CheckCircle2 className="w-3.5 h-3.5 text-[#d4522f]" />,
+        onClick: () => setIsRollCallOpen(true),
+      },
+      {
+        id: 'grade',
+        label: t('edu_btn_record_grade'),
+        icon: <Award className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setGradeForm((prev) => ({ ...prev, studentId: st.id }));
+          setIsGradeModalOpen(true);
+        },
+      },
+    ],
+    [isAr, isEn, t]
+  );
+
   const studentColumns: ColumnDefinition<EduStudent>[] = useMemo(
     () => [
       {
@@ -482,82 +575,6 @@ export const EducationAttendanceView: React.FC = () => {
     [t, cohortAttendance, isAr, isEn, branchesById, currentBranch, language]
   );
 
-  const renderStudentCard = (st: EduStudent) => {
-    const studentRecords = cohortAttendance.filter((a) => a.studentId === st.id);
-    const presents = studentRecords.filter((a) => a.status === 'Present' || a.status === 'Late').length;
-    const total = studentRecords.length;
-    const rate = total > 0 ? Math.round((presents / total) * 100) : st.attendanceRatePercent ?? 95;
-    const b = resolveRecordBranch(st, branchesById, currentBranch, language);
-
-    return (
-      <div className="space-y-3.5 w-full">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-sm shrink-0 border border-neutral-200 dark:border-neutral-700">
-              {st.fullName.charAt(0)}
-            </div>
-            <div>
-              <h3 className="font-bold text-black dark:text-white text-sm">{st.fullName}</h3>
-              <p className="text-[11px] text-black/70 dark:text-white/70">{b.name}</p>
-            </div>
-          </div>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white">
-            {st.schoolGrade || 'Enrolled'}
-          </span>
-        </div>
-
-        <div className="space-y-1">
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-black/70 dark:text-white/70 font-medium">{t('edu_col_attendance')}</span>
-            <span className="font-bold text-black dark:text-white tabular-nums">{rate}%</span>
-          </div>
-          <div className="w-full h-2 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all ${
-                rate >= 85 ? 'bg-emerald-500' : rate >= 70 ? 'bg-amber-500' : 'bg-rose-500'
-              }`}
-              style={{ width: `${rate}%` }}
-            />
-          </div>
-        </div>
-
-        <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            {studentRecords.slice(0, 3).map((rec) => (
-              <span
-                key={rec.id}
-                className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center ${
-                  rec.status === 'Present'
-                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300'
-                    : rec.status === 'Late'
-                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300'
-                    : 'bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300'
-                }`}
-                title={rec.status}
-              >
-                {rec.status.charAt(0)}
-              </span>
-            ))}
-            {studentRecords.length === 0 && (
-              <span className="text-[10px] text-black/55 dark:text-white/55 italic">No logs yet</span>
-            )}
-          </div>
-
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsRollCallOpen(true);
-            }}
-            className="px-2.5 py-1 rounded-lg bg-[#d4522f] text-white text-[11px] font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-2xs"
-          >
-            {t('edu_btn_roll_call')}
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: (cohortStudents || []).length > 0 || (eduCohorts || []).length > 0,
@@ -590,7 +607,6 @@ export const EducationAttendanceView: React.FC = () => {
       <ScreenHeaderBar
         icon={<Award size={22} />}
         title={t('edu_attendance_title')}
-        subtitle={`${cohortStudents.length} ${isAr ? 'متعلم في السجل' : isEn ? 'learners tracked' : 'apprenants suivis'}`}
         primaryAction={
           activeTab === 'attendance'
             ? {
@@ -727,11 +743,11 @@ export const EducationAttendanceView: React.FC = () => {
         {activeTab === 'attendance' ? (
           <UniversalDataCollection<EduStudent>
             hideToolbar
-            data={sortedStudents}
+            items={sortedStudents}
             columns={studentColumns}
-            renderCard={renderStudentCard}
             keyExtractor={(st) => st.id}
-            viewMode={viewMode}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+            defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
             isLoading={isSyncing || networkMode === 'force_skeleton'}
             isOffline={networkMode === 'offline'}
             isTimedOut={isSyncTimeout}
@@ -759,11 +775,16 @@ export const EducationAttendanceView: React.FC = () => {
             onItemClick={(st, el) => {
               setDrawerOpenerEl(el || null);
               setSelectedStudent(st);
+              setInspectorTab('overview');
             }}
             onViewDetails={(st, el) => {
               setDrawerOpenerEl(el || null);
               setSelectedStudent(st);
+              setInspectorTab('overview');
             }}
+            getRowMeta={getStudentRowMeta}
+            getFanActions={getStudentFanActions}
+            getDetailActions={getStudentDetailActions}
             emptyTitle="No learners in cohort"
             emptyDescription="No student records match the search criteria for this cohort"
             primaryActionLabel={t('edu_btn_roll_call')}
@@ -883,65 +904,136 @@ export const EducationAttendanceView: React.FC = () => {
         language={language}
         title={activeStudent?.fullName || ''}
         subtitle={activeStudent?.phone || activeStudent?.email || ''}
-        avatarText={(activeStudent?.fullName || 'S').charAt(0).toUpperCase()}
+        categoryLabel={activeStudent?.schoolGrade || 'Standard'}
+        avatarText={(activeStudent?.fullName || 'ST').slice(0, 2).toUpperCase()}
         avatarColor="#d4522f"
         branchName={
           activeStudent ? resolveRecordBranch(activeStudent, branchesById, currentBranch, language).name : undefined
         }
         statusLabel={activeStudent ? localizeStatus(activeStudent.status, language) : undefined}
-        onSelectItem={(s) => setSelectedStudent(s)}
+        statusClassName={
+          activeStudent?.status === 'Active'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+        }
+        tabs={[
+          { id: 'overview', label: isAr ? 'الملخص' : isEn ? 'Summary' : 'Synthèse' },
+          { id: 'attendance', label: t('edu_tab_rollcall') },
+          { id: 'grades', label: t('edu_tab_gradebook') },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={(id) => setInspectorTab(id as 'overview' | 'attendance' | 'grades')}
+        onSelectItem={(s) => {
+          setSelectedStudent(s);
+          setInspectorTab('overview');
+        }}
         onClose={() => setSelectedStudent(null)}
-        renderBody={(st) => {
+        renderBody={(st, tab) => {
           const stAtt = cohortAttendance.filter((a) => a.studentId === st.id);
           const stGrades = cohortGrades.filter((g) => g.studentId === st.id);
-          return (
-            <div className="space-y-4 text-xs">
-              <div>
-                <h4 className="font-bold uppercase tracking-wider text-black/55 dark:text-white/55 mb-2">
-                  {t('edu_tab_rollcall')}
-                </h4>
-                {stAtt.length === 0 ? (
-                  <p className="italic text-black/55 dark:text-white/55">{t('edu_no_sessions')}</p>
-                ) : (
-                  <div className="space-y-1.5">
-                    {stAtt.slice(0, 6).map((a) => (
-                      <div
-                        key={a.id}
-                        className="flex items-center justify-between p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60"
-                      >
-                        <span className="font-mono text-black/70 dark:text-white/75">
-                          {a.recordedAt ? a.recordedAt.split('T')[0] : 'Session'}
-                        </span>
-                        <span className="font-bold text-black dark:text-white">{a.status}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+          const presents = stAtt.filter((a) => a.status === 'Present' || a.status === 'Late').length;
+          const rate = stAtt.length > 0 ? Math.round((presents / stAtt.length) * 100) : st.attendanceRatePercent ?? 95;
 
-              <div>
-                <h4 className="font-bold uppercase tracking-wider text-black/55 dark:text-white/55 mb-2">
-                  {t('edu_tab_gradebook')}
-                </h4>
-                {stGrades.length === 0 ? (
-                  <p className="italic text-black/55 dark:text-white/55">No grades recorded yet.</p>
-                ) : (
-                  <div className="space-y-1.5">
-                    {stGrades.map((g) => (
-                      <div
-                        key={g.id}
-                        className="flex items-center justify-between p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"
-                      >
-                        <span className="font-semibold text-black dark:text-white">{g.assessmentTitle}</span>
-                        <span className="font-bold text-[#d4522f] tabular-nums">
-                          {g.score} / {g.maxScore}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
+          if (tab === 'attendance') {
+            return (
+              <InspectorSection index={0} title={t('edu_tab_rollcall')}>
+                <InspectorCard>
+                  {stAtt.length === 0 ? (
+                    <InspectorListItem title={t('edu_no_sessions')} isLast />
+                  ) : (
+                    stAtt.slice(0, 8).map((a, idx) => (
+                      <InspectorListItem
+                        key={a.id}
+                        title={a.recordedAt ? a.recordedAt.split('T')[0] : 'Session'}
+                        subtitle={a.minutesLate ? `+${a.minutesLate}m` : undefined}
+                        badge={{
+                          label: a.status,
+                          tone: a.status === 'Present' ? 'ok' : a.status === 'Late' ? 'warn' : 'danger',
+                        }}
+                        isLast={idx === Math.min(7, stAtt.length - 1)}
+                      />
+                    ))
+                  )}
+                </InspectorCard>
+              </InspectorSection>
+            );
+          }
+
+          if (tab === 'grades') {
+            return (
+              <>
+                <InspectorSection index={0} title={t('edu_tab_gradebook')}>
+                  <InspectorCard>
+                    {stGrades.length === 0 ? (
+                      <InspectorListItem title="No grades recorded yet." isLast />
+                    ) : (
+                      stGrades.map((g, idx) => (
+                        <InspectorListItem
+                          key={g.id}
+                          title={g.assessmentTitle}
+                          subtitle={g.teacherRemarks}
+                          metaRight={`${g.score} / ${g.maxScore}`}
+                          isLast={idx === stGrades.length - 1}
+                        />
+                      ))
+                    )}
+                  </InspectorCard>
+                </InspectorSection>
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label={t('edu_btn_record_grade')}
+                    icon={<Plus size={15} />}
+                    tone="accent"
+                    onClick={() => {
+                      setGradeForm((prev) => ({ ...prev, studentId: st.id }));
+                      setIsGradeModalOpen(true);
+                    }}
+                  />
+                </InspectorSection>
+              </>
+            );
+          }
+
+          return (
+            <>
+              <InspectorSection index={0}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'rollcall',
+                      label: t('edu_btn_roll_call'),
+                      icon: <CheckCircle2 size={16} />,
+                      primary: true,
+                      onClick: () => setIsRollCallOpen(true),
+                    },
+                    {
+                      id: 'grade',
+                      label: t('edu_btn_record_grade'),
+                      icon: <Award size={16} />,
+                      onClick: () => {
+                        setGradeForm((prev) => ({ ...prev, studentId: st.id }));
+                        setIsGradeModalOpen(true);
+                      },
+                    },
+                  ]}
+                />
+              </InspectorSection>
+              <InspectorSection index={1}>
+                <InspectorBigStat
+                  value={`${rate}%`}
+                  tone={rate >= 85 ? 'ok' : rate >= 70 ? 'default' : 'danger'}
+                  caption={t('edu_col_attendance')}
+                />
+              </InspectorSection>
+              <InspectorSection index={2} title={t('edu_col_student')}>
+                <InspectorCard>
+                  <InspectorKeyValue label={t('edu_col_attendance')} value={`${rate}%`} tone={rate >= 85 ? 'ok' : 'danger'} />
+                  <InspectorProgressBar percent={rate} tone={rate >= 85 ? 'ok' : rate >= 70 ? 'warn' : 'danger'} animateKey={st.id} />
+                  <InspectorKeyValue label="Grade / Level" value={st.schoolGrade || 'Standard'} mono={false} />
+                  <InspectorKeyValue label="RFID" value={st.rfidBadgeCode || '—'} isLast />
+                </InspectorCard>
+              </InspectorSection>
+            </>
           );
         }}
       />

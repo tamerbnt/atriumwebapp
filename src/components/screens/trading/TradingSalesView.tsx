@@ -5,12 +5,9 @@ import {
   Printer,
   Edit,
   Trash2,
-  CheckCircle2,
-  Clock,
   Truck,
   Download,
   ArrowRight,
-  Building2,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { CommercialDocument, CommercialDocType } from '../../../types';
@@ -32,13 +29,28 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorWideButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
 
+const STATUS_PILL_OK =
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+const STATUS_PILL_WARN =
+  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
+const STATUS_PILL_INFO =
+  'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]';
+
 type TabKey = 'all' | 'devis' | 'commande' | 'bl' | 'facture' | 'avoir';
 type StatusFilterKey = 'all' | 'Draft' | 'Validated' | 'Delivered' | 'Paid';
+type DrawerTab = 'overview' | 'items' | 'reglement';
 
 export const TradingSalesView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -75,6 +87,7 @@ export const TradingSalesView: React.FC = () => {
   const [deleteTarget, setDeleteTarget] = useState<CommercialDocument | null>(null);
 
   const [inspectingDoc, setInspectingDoc] = useState<CommercialDocument | null>(null);
+  const [drawerTab, setDrawerTab] = useState<DrawerTab>('overview');
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -501,7 +514,6 @@ export const TradingSalesView: React.FC = () => {
       <ScreenHeaderBar
         icon={<FileText size={22} />}
         title={t('trading_sales_title', 'Ventes')}
-        subtitle={`${commercialDocs.length} ${isAr ? 'معاملة تجارية' : isEn ? 'commercial documents' : 'pièces commerciales'}`}
         primaryAction={{
           label: t('trading_sales_new_invoice', 'Nouvelle Facture'),
           icon: <Plus size={15} />,
@@ -601,9 +613,10 @@ export const TradingSalesView: React.FC = () => {
 
         <UniversalDataCollection<CommercialDocument>
           hideToolbar
-          data={sortedDocs}
+          items={sortedDocs}
           keyExtractor={(d) => d.id}
-          viewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode="list"
           columns={columns}
           sortBy={sortBy}
           sortDirection={sortDir}
@@ -649,7 +662,6 @@ export const TradingSalesView: React.FC = () => {
                 message: `${ids.size} pièces sélectionnées exportées.`,
               });
             },
-            variant: 'primary',
           }}
           onBulkDelete={(ids) => {
             ids.forEach((id) => deleteCommercialDoc(id));
@@ -660,29 +672,88 @@ export const TradingSalesView: React.FC = () => {
               message: `${ids.size} documents retirés.`,
             });
           }}
-          renderCard={(doc) => {
+          getRowMeta={(doc) => {
             const branchInfo = resolveRecordBranch(doc, branchesById, currentBranch, language);
-            return (
-              <div className="p-4 border border-[#E6DED6] dark:border-neutral-700/70 bg-white dark:bg-neutral-800/80 rounded-2xl space-y-2.5 flex flex-col justify-between h-full">
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <span className="font-mono font-bold text-xs text-black dark:text-white">{doc.docNumber}</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-[#d4522f]/10 text-[#d4522f]">
-                      {doc.type.toUpperCase()}
-                    </span>
-                  </div>
-                  <p className="text-xs font-bold text-black dark:text-white truncate">{doc.clientName}</p>
-                  <p className="text-[11px] text-black/55 dark:text-white/60 mt-0.5 flex items-center gap-1.5">
-                    <Building2 size={11} className="text-[#d4522f]" />
-                    <span>{branchInfo.name}</span>
-                  </p>
-                </div>
-                <div className="flex justify-between items-center text-xs font-mono pt-2.5 border-t border-neutral-100 dark:border-neutral-700">
-                  <span className="text-black/55 dark:text-white/55">{doc.status}</span>
-                  <span className="font-bold text-[#d4522f] tabular-nums">{formatMoney(doc.netToPay)}</span>
-                </div>
-              </div>
-            );
+            return {
+              title: doc.docNumber,
+              subline: `${doc.clientName} · ${doc.date}`,
+              avatarText: doc.type.slice(0, 2).toUpperCase(),
+              avatarColor: '#d4522f',
+              categoryLabel: doc.type.toUpperCase(),
+              statusLabel: localizeStatus(doc.status, language),
+              statusVariant:
+                doc.status === 'Paid'
+                  ? 'active'
+                  : doc.status === 'Delivered'
+                  ? 'info'
+                  : doc.status === 'Validated'
+                  ? 'warning'
+                  : 'neutral',
+              metricPrimary: formatMoney(doc.netToPay),
+              metricSecondary: `HT ${formatMoney(doc.totalHtFinal || doc.totalHtRaw || 0)}`,
+              branchName: branchInfo.name,
+              isPinned: pinnedDocIds.has(doc.id),
+              detailCol1: { label: 'Client', value: doc.clientName },
+              detailCol2: { label: 'NIF', value: doc.clientNif || 'Non renseigné' },
+              detailCol3: { label: 'Date', value: doc.date },
+            };
+          }}
+          getFanActions={(doc) => {
+            const actions = [
+              {
+                id: 'print',
+                label: t('action_print', 'Imprimer'),
+                icon: <Printer size={14} />,
+                onClick: () => setPrintDoc(doc),
+              },
+              {
+                id: 'edit',
+                label: t('action_edit', 'Modifier'),
+                icon: <Edit size={14} />,
+                onClick: () => handleEdit(doc),
+              },
+            ];
+            if (doc.type === 'devis' || (doc.type === 'bl' && doc.status === 'Delivered')) {
+              actions.push({
+                id: 'convert',
+                label: doc.type === 'devis' ? 'Convertir BL' : 'Facturer',
+                icon: <ArrowRight size={14} />,
+                onClick: () => handleConvert(doc),
+              });
+            }
+            actions.push({
+              id: 'delete',
+              label: t('action_delete', 'Supprimer'),
+              icon: <Trash2 size={14} />,
+              isDanger: true,
+              onClick: () => setDeleteTarget(doc),
+            });
+            return actions;
+          }}
+          getDetailActions={(doc) => {
+            const actions = [
+              {
+                id: 'print',
+                label: t('action_print', 'Imprimer'),
+                icon: <Printer size={13} />,
+                onClick: () => setPrintDoc(doc),
+              },
+              {
+                id: 'edit',
+                label: t('action_edit', 'Modifier'),
+                icon: <Edit size={13} />,
+                onClick: () => handleEdit(doc),
+              },
+            ];
+            if (doc.type === 'devis' || (doc.type === 'bl' && doc.status === 'Delivered')) {
+              actions.push({
+                id: 'convert',
+                label: doc.type === 'devis' ? 'BL →' : 'Facturer →',
+                icon: <ArrowRight size={13} />,
+                onClick: () => handleConvert(doc),
+              });
+            }
+            return actions;
           }}
           emptyTitle={isAr ? 'لا توجد معاملات مسجلة' : 'Aucun document commercial trouvé'}
           emptyDescription={
@@ -717,11 +788,19 @@ export const TradingSalesView: React.FC = () => {
         language={language}
         title={inspectingDoc?.docNumber || ''}
         subtitle={inspectingDoc ? `${inspectingDoc.clientName} · ${inspectingDoc.date}` : undefined}
-        avatarText={inspectingDoc ? inspectingDoc.type.slice(0, 2).toUpperCase() : 'DOC'}
+        avatarText={inspectingDoc ? inspectingDoc.type.slice(0, 2).toUpperCase() : 'DO'}
+        avatarColor="#d4522f"
         branchName={
           inspectingDoc ? resolveRecordBranch(inspectingDoc, branchesById, currentBranch, language).name : undefined
         }
         statusLabel={inspectingDoc ? localizeStatus(inspectingDoc.status, language) : undefined}
+        statusClassName={
+          inspectingDoc?.status === 'Paid'
+            ? STATUS_PILL_OK
+            : inspectingDoc?.status === 'Delivered'
+            ? STATUS_PILL_INFO
+            : STATUS_PILL_WARN
+        }
         onClose={() => setInspectingDoc(null)}
         onSelectItem={(doc) => setInspectingDoc(doc)}
         onDelete={(doc) => setDeleteTarget(doc)}
@@ -729,88 +808,96 @@ export const TradingSalesView: React.FC = () => {
         tabs={[
           { id: 'overview', label: isAr ? 'الملخص' : isEn ? 'Overview' : 'Résumé' },
           { id: 'items', label: isAr ? 'البنود' : isEn ? 'Line Items' : 'Articles' },
+          { id: 'reglement', label: isAr ? 'التفاصيل' : isEn ? 'Billing' : 'Fiscalité' },
         ]}
+        activeTab={drawerTab}
+        onTabChange={(tab) => setDrawerTab(tab as DrawerTab)}
         renderBody={(doc, tab) => {
           if (tab === 'items') {
             return (
-              <div className="space-y-2.5">
-                {doc.items.map((it) => (
-                  <div
-                    key={it.id}
-                    className="p-3 rounded-xl bg-[#FBF8F5] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-between text-xs"
-                  >
-                    <div className="min-w-0 pr-3">
-                      <p className="font-semibold text-black dark:text-white truncate">{it.description}</p>
-                      <span className="text-[11px] font-mono text-black/55 dark:text-white/60">
-                        {it.quantity} {it.unit} × {formatMoney(it.unitPriceHt)}
-                      </span>
-                    </div>
-                    <span className="font-mono font-bold text-black dark:text-white tabular-nums">
-                      {formatMoney(it.totalHt)}
-                    </span>
-                  </div>
-                ))}
+              <div className="space-y-4">
+                <InspectorSection index={0} title={`Articles (${doc.items.length})`}>
+                  <InspectorCard>
+                    {doc.items.map((it, idx) => (
+                      <InspectorListItem
+                        key={it.id}
+                        title={it.description}
+                        subtitle={`${it.quantity} ${it.unit} × ${formatMoney(it.unitPriceHt)}`}
+                        metaRight={formatMoney(it.totalHt)}
+                        isLast={idx === doc.items.length - 1}
+                      />
+                    ))}
+                  </InspectorCard>
+                </InspectorSection>
+              </div>
+            );
+          }
+
+          if (tab === 'reglement') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0} title="Détails fiscaux & règlement">
+                  <InspectorCard>
+                    <InspectorKeyValue label="Total HT" value={formatMoney(doc.totalHtFinal)} mono />
+                    <InspectorKeyValue label="TVA" value={formatMoney(doc.totalTva)} mono />
+                    <InspectorKeyValue label="Timbre fiscal" value={formatMoney(doc.timbreFiscal || 0)} mono />
+                    <InspectorKeyValue label="Net à Payer" value={formatMoney(doc.netToPay)} mono tone="accent" />
+                    <InspectorKeyValue label="Mode règlement" value={doc.paymentMethod} isLast />
+                  </InspectorCard>
+                </InspectorSection>
+                {(doc.type === 'devis' || (doc.type === 'bl' && doc.status === 'Delivered')) && (
+                  <InspectorWideButton
+                    label={doc.type === 'devis' ? 'Convertir en BL' : 'Facturer ce BL'}
+                    icon={<ArrowRight size={14} />}
+                    tone="accent"
+                    onClick={() => handleConvert(doc)}
+                  />
+                )}
               </div>
             );
           }
 
           return (
             <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-neutral-800/50 border border-[#E6DED6] dark:border-neutral-700/60 space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/60">Client :</span>
-                  <span className="font-bold text-black dark:text-white">{doc.clientName}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/60">NIF :</span>
-                  <span className="font-mono text-black dark:text-white">{doc.clientNif || 'Non renseigné'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/60">Mode règlement :</span>
-                  <span className="font-medium text-black dark:text-white">{doc.paymentMethod}</span>
-                </div>
-                <div className="flex justify-between pt-2 border-t border-[#E6DED6] dark:border-neutral-700">
-                  <span className="text-black/55 dark:text-white/60">Total HT :</span>
-                  <span className="font-mono font-semibold tabular-nums">{formatMoney(doc.totalHtFinal)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/60">TVA :</span>
-                  <span className="font-mono tabular-nums">{formatMoney(doc.totalTva)}</span>
-                </div>
-                <div className="flex justify-between text-sm font-bold text-[#d4522f] pt-1">
-                  <span>Net à Payer :</span>
-                  <span className="font-mono tabular-nums">{formatMoney(doc.netToPay)}</span>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPrintDoc(doc)}
-                  className="flex-1 py-2.5 px-3 rounded-xl bg-[#d4522f]/10 text-[#d4522f] hover:bg-[#d4522f]/20 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <Printer size={14} />
-                  <span>{t('action_print', 'Imprimer')}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleEdit(doc)}
-                  className="flex-1 py-2.5 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-700 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <Edit size={14} />
-                  <span>{t('action_edit', 'Modifier')}</span>
-                </button>
-                {(doc.type === 'devis' || (doc.type === 'bl' && doc.status === 'Delivered')) && (
-                  <button
-                    type="button"
-                    onClick={() => handleConvert(doc)}
-                    className="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <ArrowRight size={14} />
-                    <span>{doc.type === 'devis' ? 'Convertir en BL' : 'Facturer ce BL'}</span>
-                  </button>
-                )}
-              </div>
+              <InspectorQuickActions
+                actions={[
+                  {
+                    id: 'print',
+                    label: t('action_print', 'Imprimer'),
+                    icon: <Printer size={15} />,
+                    primary: true,
+                    onClick: () => setPrintDoc(doc),
+                  },
+                  {
+                    id: 'edit',
+                    label: t('action_edit', 'Modifier'),
+                    icon: <Edit size={15} />,
+                    onClick: () => handleEdit(doc),
+                  },
+                ]}
+              />
+              <InspectorSection index={0} title="Synthèse Document">
+                <InspectorBigStat
+                  value={formatMoney(doc.netToPay)}
+                  tone="accent"
+                  caption={`Net à Payer · ${doc.clientName}`}
+                />
+                <InspectorCard>
+                  <InspectorKeyValue label="Client" value={doc.clientName} />
+                  <InspectorKeyValue label="NIF" value={doc.clientNif || 'Non renseigné'} mono copyText={doc.clientNif} />
+                  <InspectorKeyValue label="Mode règlement" value={doc.paymentMethod} />
+                  <InspectorKeyValue label="Total HT" value={formatMoney(doc.totalHtFinal)} mono />
+                  <InspectorKeyValue label="TVA" value={formatMoney(doc.totalTva)} mono isLast />
+                </InspectorCard>
+              </InspectorSection>
+              {(doc.type === 'devis' || (doc.type === 'bl' && doc.status === 'Delivered')) && (
+                <InspectorWideButton
+                  label={doc.type === 'devis' ? 'Convertir en BL' : 'Facturer ce BL'}
+                  icon={<ArrowRight size={14} />}
+                  tone="accent"
+                  onClick={() => handleConvert(doc)}
+                />
+              )}
             </div>
           );
         }}

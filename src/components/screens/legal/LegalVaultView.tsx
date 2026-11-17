@@ -1,21 +1,18 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   Lock,
-  ShieldCheck,
   Printer,
-  CheckCircle2,
   Edit,
   Pin,
   X,
-  Save,
-  Check,
   FileCheck,
-  Stamp,
   Scroll,
   Download,
   MapPin,
+  Eye,
+  Trash2,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import { useAtriumSelector, showToast } from '../../../services/store';
 import { localizeStatus } from '../../../utils/rules';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
@@ -32,6 +29,15 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorNotesField,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -63,15 +69,13 @@ const extractStr = (v: unknown): string => {
 };
 
 export const LegalVaultView: React.FC<any> = () => {
-  const {
-    language,
-    activeLegalRole,
-    currentBranch,
-    branches,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-  } = useAtriumStore();
+  const language = useAtriumSelector((s) => s.language);
+  const activeLegalRole = useAtriumSelector((s) => s.activeLegalRole);
+  const currentBranch = useAtriumSelector((s) => s.currentBranch);
+  const branches = useAtriumSelector((s) => s.branches);
+  const isSyncing = useAtriumSelector((s) => s.isSyncing);
+  const networkMode = useAtriumSelector((s) => s.networkMode);
+  const retryCloudSync = useAtriumSelector((s) => s.retryCloudSync);
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -109,7 +113,6 @@ export const LegalVaultView: React.FC<any> = () => {
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [activeTab, setActiveTab] = useState<string>('piece');
   const [inspectorNotes, setInspectorNotes] = useState('');
-  const [noteSaved, setNoteSaved] = useState(false);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -338,6 +341,81 @@ export const LegalVaultView: React.FC<any> = () => {
       if (selectedItem?.id === item.id) setActiveTab('hash');
     },
     [isAr, selectedItem]
+  );
+
+  const getRowMeta = useCallback(
+    (item: VaultItem): KineticRowMeta => ({
+      avatarText: item.roleScope === 'notaire' ? 'MN' : 'VL',
+      subtitle: `${item.code} · Dossier ${item.matterReference}`,
+      categoryLabel: item.category,
+      statusTone: item.status === 'Confidential' ? 'danger' : 'ok',
+      statusLabel: localizeStatus(item.status, language),
+      metricPrimary: item.depositDate,
+      metricSecondary: item.officialSealNumber || undefined,
+    }),
+    [language]
+  );
+
+  const getFanActions = useCallback(
+    (item: VaultItem): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'معاينة' : 'Inspecter',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedItem(item);
+          setActiveTab('piece');
+        },
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : 'Modifier',
+        icon: <Edit className="w-[15px] h-[15px]" />,
+        onClick: () => openEditModal(item),
+      },
+      {
+        id: 'del',
+        label: isAr ? 'سحب' : 'Retirer',
+        icon: <Trash2 className="w-[15px] h-[15px]" />,
+        isDanger: true,
+        onClick: () => handleDelete(item),
+      },
+    ],
+    [isAr, openEditModal, handleDelete]
+  );
+
+  const getDetailActions = useCallback(
+    (item: VaultItem): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'بطاقة الوثيقة' : 'Fiche Pièce',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedItem(item);
+          setActiveTab('piece');
+        },
+      },
+      {
+        id: 'certify',
+        label: isAr ? 'فحص SHA-256' : 'Empreinte SHA-256',
+        icon: <FileCheck className="w-3.5 h-3.5 text-[#096b40]" />,
+        onClick: () => handleCertifyHash(item),
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : 'Modifier',
+        icon: <Edit className="w-3.5 h-3.5" />,
+        onClick: () => openEditModal(item),
+      },
+      {
+        id: 'delete',
+        label: isAr ? 'سحب' : 'Retirer',
+        icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+        onClick: () => handleDelete(item),
+      },
+    ],
+    [isAr, handleCertifyHash, openEditModal, handleDelete]
   );
 
   const handleExportBordereau = () => {
@@ -617,7 +695,6 @@ export const LegalVaultView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={targetScope === 'notaire' ? <Scroll size={22} /> : <Lock size={22} />}
         title={roleMetadata.title}
-        subtitle={`${roleMetadata.badge} · ${roleMetadata.subtitle}`}
         secondaryActions={
           <AtriumButton
             variant="ghost"
@@ -729,10 +806,11 @@ export const LegalVaultView: React.FC<any> = () => {
 
         <UniversalDataCollection<VaultItem>
           hideToolbar
-          data={filteredItems}
+          items={filteredItems}
           columns={columns}
           keyExtractor={(i) => i.id}
-          defaultViewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
           selectedIds={selectedIds}
           onSelectionChange={setSelectedIds}
           onBulkDelete={(ids) => {
@@ -761,6 +839,9 @@ export const LegalVaultView: React.FC<any> = () => {
             setSelectedItem(item);
             setDrawerOpenerEl(el || null);
           }}
+          getRowMeta={getRowMeta}
+          getFanActions={getFanActions}
+          getDetailActions={getDetailActions}
           onEdit={openEditModal}
           onDelete={handleDelete}
           customActions={(item) => [
@@ -771,26 +852,6 @@ export const LegalVaultView: React.FC<any> = () => {
               onClick: () => handleCertifyHash(item),
             },
           ]}
-          renderCard={(item) => (
-            <div className="space-y-3 text-left rtl:text-right">
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg border border-[#d4522f]/20">
-                  {item.code}
-                </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                  {item.status}
-                </span>
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">
-                  {item.title}
-                </h3>
-                <div className="text-xs text-black/55 dark:text-white/55 font-mono mt-0.5">
-                  Dossier: {item.matterReference}
-                </div>
-              </div>
-            </div>
-          )}
           emptyTitle={isAr ? 'الخزينة فارغة حالياً' : 'Aucune pièce au coffre'}
           emptyDescription={
             isAr
@@ -825,6 +886,7 @@ export const LegalVaultView: React.FC<any> = () => {
         language={language}
         title={activeItem?.title || ''}
         subtitle={`${activeItem?.code || ''} · Dossier ${activeItem?.matterReference || ''}`}
+        categoryLabel={activeItem?.category || 'Document'}
         avatarText={targetScope === 'notaire' ? 'MN' : 'VL'}
         branchName={
           activeItem
@@ -832,11 +894,17 @@ export const LegalVaultView: React.FC<any> = () => {
             : ''
         }
         statusLabel={activeItem ? localizeStatus(activeItem.status, language) : undefined}
+        statusClassName={
+          activeItem?.status === 'Confidential'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            : activeItem?.status === 'DossierAudit'
+            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+        }
         tabs={[
           { id: 'piece', label: isAr ? 'الوثيقة' : 'Fiche' },
           { id: 'sceau', label: isAr ? 'الختم الرسمي' : 'Cachet & Sceau' },
           { id: 'hash', label: isAr ? 'التشفير' : 'SHA-256' },
-          { id: 'notes', label: isAr ? 'الملاحظات' : 'Bordereau' },
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -847,162 +915,155 @@ export const LegalVaultView: React.FC<any> = () => {
         renderBody={(item, tab) => {
           if (tab === 'sceau') {
             return (
-              <div className="p-4 bg-white dark:bg-neutral-900 border-2 border-dashed border-[#d4522f]/40 rounded-2xl text-center space-y-3 text-xs">
-                <div className="w-12 h-12 rounded-full bg-[#d4522f]/15 text-[#d4522f] mx-auto flex items-center justify-center font-bold">
-                  <Stamp size={24} />
-                </div>
-                <div>
-                  <span className="font-bold text-sm text-black dark:text-white block uppercase tracking-wider">
-                    الجمهورية الجزائرية الديمقراطية الشعبية
-                  </span>
-                  <span className="text-[10px] text-black/55 dark:text-white/55 block">
-                    RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE
-                  </span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 font-mono text-[11px] text-black/75 dark:text-white/80 space-y-1">
-                  <div>
-                    Sceau N° : <strong>{item.officialSealNumber || 'DZ-SEAL-2026-99'}</strong>
-                  </div>
-                  <div>Horodatage légal : {item.depositDate} à 11:42:00</div>
-                  <div>Juridiction / Étude : Wilaya d'Alger</div>
-                </div>
-                <div className="flex items-center justify-center gap-1.5 text-emerald-600 font-bold text-[11px]">
-                  <CheckCircle2 size={13} />
-                  <span>Original Scellé et Inaltérable</span>
-                </div>
-                <button
-                  type="button"
-                  data-no-liquid="true"
-                  onClick={() => {
-                    showToast(
-                      isAr ? 'طباعة شهادة المطابقة والختم' : "Certificat d'authenticité imprimé",
-                      'success'
-                    );
-                    window.print();
-                  }}
-                  className="w-full py-2 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
-                >
-                  <Printer size={13} />
-                  {isAr ? 'طباعة نسخة مع الختم الرسمي' : 'Imprimer avec Cachet Légal'}
-                </button>
-              </div>
+              <>
+                <InspectorSection index={0} title={isAr ? 'الختم والوسم الرسمي' : 'Sceau Officiel & Horodatage'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'الجهة' : 'Autorité'}
+                      value="RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE"
+                      mono={false}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'رقم الختم' : 'Sceau N°'}
+                      value={item.officialSealNumber || 'DZ-SEAL-2026-99'}
+                      tone="accent"
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'الطابع الزمني' : 'Horodatage Légal'}
+                      value={`${item.depositDate} à 11:42:00`}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'الحالة' : 'Intégrité'}
+                      value={isAr ? 'أصل مختوم وغير قابل للتغيير' : 'Original Scellé et Inaltérable'}
+                      tone="ok"
+                      mono={false}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label={isAr ? 'طباعة نسخة مع الختم الرسمي' : 'Imprimer avec Cachet Légal'}
+                    icon={<Printer size={14} />}
+                    onClick={() => {
+                      showToast(
+                        isAr ? 'طباعة شهادة المطابقة والختم' : "Certificat d'authenticité imprimé",
+                        'success'
+                      );
+                      window.print();
+                    }}
+                  />
+                </InspectorSection>
+              </>
             );
           }
 
           if (tab === 'hash') {
             return (
-              <div className="space-y-3 text-xs">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-                  <span className="font-semibold text-black dark:text-white block">
-                    Empreinte Numérique Cryptographique :
-                  </span>
-                  <div className="font-mono text-[10px] break-all bg-white dark:bg-neutral-900 p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800 text-black/75 dark:text-white/80">
-                    e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-                  </div>
-                  <p className="text-[10px] text-emerald-600 font-medium">
-                    ✓ Horodatage certifié conforme aux exigences de recevabilité judiciaire.
-                  </p>
-                </div>
-              </div>
-            );
-          }
+              <>
+                <InspectorSection index={0} title="SHA-256 Cryptographique">
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label="Algorithme"
+                      value="AES-256 + SHA-256"
+                      tone="ok"
+                    />
+                    <InspectorKeyValue
+                      label="Empreinte"
+                      value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                      copyText="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                      onCopied={() => showToast('Empreinte SHA-256 copiée', 'info')}
+                    />
+                    <InspectorKeyValue
+                      label="Recevabilité"
+                      value="Certifié conforme"
+                      tone="ok"
+                      mono={false}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
 
-          if (tab === 'notes') {
-            return (
-              <div className="space-y-3 text-xs">
-                <p className="text-black/60 dark:text-white/60 text-[11px]">
-                  Bordereau de communication de pièces contradictoire et réserves :
-                </p>
-                <textarea
-                  rows={6}
-                  value={inspectorNotes}
-                  onChange={(e) => setInspectorNotes(e.target.value)}
-                  placeholder="Mentionner la notification aux parties, récépissé de dépôt..."
-                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none"
-                />
-                <button
-                  type="button"
-                  data-no-liquid="true"
-                  onClick={() => {
-                    setNoteSaved(true);
-                    setTimeout(() => setNoteSaved(false), 2000);
-                    showToast(
-                      isAr ? 'تم حفظ الملاحظات' : 'Bordereau enregistré',
-                      'success'
-                    );
-                  }}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#d4522f] text-white hover:bg-[#b03b1b] transition-colors font-medium text-xs shadow-xs cursor-pointer"
-                >
-                  {noteSaved ? (
-                    <>
-                      <Check size={14} />
-                      {isAr ? 'تم الحفظ' : 'Bordereau enregistré'}
-                    </>
-                  ) : (
-                    <>
-                      <Save size={14} />
-                      {isAr ? 'حفظ' : 'Enregistrer'}
-                    </>
-                  )}
-                </button>
-              </div>
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label={isAr ? 'فحص البصمة الرقمية' : 'Vérifier Empreinte SHA-256'}
+                    icon={<FileCheck size={14} />}
+                    tone="dark"
+                    onClick={() => handleCertifyHash(item)}
+                  />
+                </InspectorSection>
+              </>
             );
           }
 
           return (
-            <div className="space-y-3.5 text-xs">
-              <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-black/55 dark:text-white/55">Numéro de pièce:</span>
-                  <span className="font-mono font-bold text-black dark:text-white">
-                    {item.code}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-black/55 dark:text-white/55">Dossier:</span>
-                  <span className="font-mono font-semibold text-[#d4522f]">
-                    {item.matterReference}
-                  </span>
-                </div>
-                {item.cadastralVolume && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">
-                      Conservation Foncière:
-                    </span>
-                    <span className="font-mono font-bold text-emerald-600">
-                      {item.cadastralVolume} {item.cadastralNumber}
-                    </span>
-                  </div>
-                )}
-                <div className="flex justify-between items-center">
-                  <span className="text-black/55 dark:text-white/55">Date d'archivage:</span>
-                  <span className="font-mono text-black dark:text-white">
-                    {item.depositDate}
-                  </span>
-                </div>
-              </div>
+            <>
+              <InspectorSection index={0}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'hash',
+                      label: isAr ? 'فحص البصمة' : 'Vérifier SHA-256',
+                      icon: <FileCheck size={16} />,
+                      primary: true,
+                      onClick: () => handleCertifyHash(item),
+                    },
+                    {
+                      id: 'edit',
+                      label: isAr ? 'تعديل' : 'Modifier',
+                      icon: <Edit size={16} />,
+                      onClick: () => openEditModal(item),
+                    },
+                    {
+                      id: 'seal',
+                      label: isAr ? 'الختم الرسمي' : 'Sceau Légal',
+                      icon: <Printer size={16} />,
+                      onClick: () => setActiveTab('sceau'),
+                    },
+                  ]}
+                />
+              </InspectorSection>
 
-              <div className="flex items-center gap-2">
-                <AtriumButton
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 justify-center"
-                  icon={<FileCheck size={13} />}
-                  onClick={() => handleCertifyHash(item)}
-                >
-                  {isAr ? 'فحص البصمة' : 'Vérifier SHA-256'}
-                </AtriumButton>
-                <AtriumButton
-                  variant="secondary"
-                  size="sm"
-                  className="flex-1 justify-center"
-                  icon={<Edit size={13} />}
-                  onClick={() => openEditModal(item)}
-                >
-                  {isAr ? 'تعديل' : 'Modifier'}
-                </AtriumButton>
-              </div>
-            </div>
+              <InspectorSection index={1} title={isAr ? 'معلومات الوثيقة' : 'Informations Pièce'}>
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={isAr ? 'رمز الوثيقة' : 'Code Pièce'}
+                    value={item.code}
+                    copyText={item.code}
+                    onCopied={() => showToast('Code copié', 'info')}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'رقم الملف' : 'Dossier'}
+                    value={item.matterReference}
+                    tone="accent"
+                  />
+                  {item.cadastralVolume && (
+                    <InspectorKeyValue
+                      label="Conservation Foncière"
+                      value={`${item.cadastralVolume} ${item.cadastralNumber || ''}`}
+                      tone="ok"
+                    />
+                  )}
+                  <InspectorKeyValue
+                    label={isAr ? 'تاريخ الأرشفة' : "Date d'archivage"}
+                    value={item.depositDate}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+
+              <InspectorSection index={2} title={isAr ? 'جدول الإرسال والملاحظات' : 'Bordereau & Notes'}>
+                <InspectorNotesField
+                  value={inspectorNotes}
+                  placeholder="Mentionner la notification aux parties, récépissé de dépôt..."
+                  onSave={(next) => {
+                    setInspectorNotes(next);
+                    showToast(isAr ? 'تم حفظ الملاحظات' : 'Bordereau enregistré', 'success');
+                  }}
+                />
+              </InspectorSection>
+            </>
           );
         }}
       />

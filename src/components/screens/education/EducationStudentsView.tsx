@@ -7,6 +7,10 @@ import {
   X,
   Edit2,
   Check,
+  Eye,
+  Trash2,
+  Phone,
+  Mail,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { EduStudent, StudentStatus } from '../../../types';
@@ -27,6 +31,18 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorProgressBar,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorNotesField,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -351,6 +367,102 @@ export const EducationStudentsView: React.FC = () => {
 
   const activeFiltersCount = (branchFilter !== 'All' ? 1 : 0) + (filterKey !== 'all' ? 1 : 0);
 
+  const getStudentRowMeta = useCallback(
+    (student: EduStudent): KineticRowMeta => {
+      const enrollment = eduEnrollments.find((e) => e.studentId === student.id && e.status === 'Active');
+      const rate = student.attendanceRatePercent ?? 100;
+      return {
+        avatarText: student.fullName.slice(0, 2).toUpperCase(),
+        subtitle: `${student.phone}${student.email ? ` · ${student.email}` : ''}`,
+        categoryLabel: enrollment ? enrollment.cohortName : student.schoolGrade || (isAr ? 'طالب' : 'Étudiant'),
+        statusTone:
+          student.status === 'Active'
+            ? 'ok'
+            : student.status === 'Graduated'
+            ? 'info'
+            : student.status === 'Applicant'
+            ? 'warn'
+            : 'danger',
+        statusLabel: localizeStatus(student.status, language),
+        metricPrimary: `${rate}%`,
+        metricSecondary: enrollment ? formatMoney(enrollment.paidAmount) : student.guardianName || undefined,
+      };
+    },
+    [eduEnrollments, isAr, language]
+  );
+
+  const getStudentFanActions = useCallback(
+    (student: EduStudent): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'تفاصيل' : isEn ? 'Details' : 'Détails',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedStudent(student);
+          setActiveDrawerTab('academic');
+        },
+      },
+      {
+        id: 'edit',
+        label: t('action_edit', 'Modifier'),
+        icon: <Edit2 className="w-[15px] h-[15px]" />,
+        onClick: () => handleOpenEdit(student),
+      },
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer',
+        icon: <Trash2 className="w-[15px] h-[15px]" />,
+        isDanger: true,
+        onClick: () => {
+          deleteEduStudent(student.id);
+          if (selectedStudent?.id === student.id) setSelectedStudent(null);
+        },
+      },
+    ],
+    [isAr, isEn, t, handleOpenEdit, deleteEduStudent, selectedStudent?.id]
+  );
+
+  const getStudentDetailActions = useCallback(
+    (student: EduStudent): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'فتح' : isEn ? 'Open' : 'Ouvrir',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedStudent(student);
+          setActiveDrawerTab('academic');
+        },
+      },
+      {
+        id: 'cert',
+        label: t('edu_drawer_issue_certificate'),
+        icon: <Award className="w-3.5 h-3.5 text-[#d4522f]" />,
+        onClick: () => {
+          setSelectedStudent(student);
+          setActiveDrawerTab('certificates');
+          setIsCertModalOpen(true);
+        },
+      },
+      {
+        id: 'edit',
+        label: t('action_edit', 'Modifier'),
+        icon: <Edit2 className="w-3.5 h-3.5" />,
+        onClick: () => handleOpenEdit(student),
+      },
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer',
+        icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+        onClick: () => {
+          deleteEduStudent(student.id);
+          if (selectedStudent?.id === student.id) setSelectedStudent(null);
+        },
+      },
+    ],
+    [isAr, isEn, t, handleOpenEdit, deleteEduStudent, selectedStudent?.id]
+  );
+
   const studentColumns: ColumnDefinition<EduStudent>[] = useMemo(() => {
     const cols: ColumnDefinition<EduStudent>[] = [
       {
@@ -507,7 +619,6 @@ export const EducationStudentsView: React.FC = () => {
       <ScreenHeaderBar
         icon={<Users size={22} />}
         title={t('edu_students_title')}
-        subtitle={`${totalStudentsCount} ${isAr ? 'طالب مسجل' : isEn ? 'enrolled students' : 'étudiants inscrits'}`}
         primaryAction={{
           label: t('edu_modal_add_student'),
           icon: <Plus size={15} />,
@@ -597,9 +708,10 @@ export const EducationStudentsView: React.FC = () => {
 
         <UniversalDataCollection<EduStudent>
           hideToolbar
-          data={sortedStudents}
+          items={sortedStudents}
           keyExtractor={(s) => s.id}
-          viewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
           columns={studentColumns}
           isLoading={isSyncing || networkMode === 'force_skeleton'}
           isOffline={networkMode === 'offline'}
@@ -628,11 +740,16 @@ export const EducationStudentsView: React.FC = () => {
           onItemClick={(st, el) => {
             setDrawerOpenerEl(el || null);
             setSelectedStudent(st);
+            setActiveDrawerTab('academic');
           }}
           onViewDetails={(st, el) => {
             setDrawerOpenerEl(el || null);
             setSelectedStudent(st);
+            setActiveDrawerTab('academic');
           }}
+          getRowMeta={getStudentRowMeta}
+          getFanActions={getStudentFanActions}
+          getDetailActions={getStudentDetailActions}
           onEdit={(st) => handleOpenEdit(st)}
           onDelete={(st) => {
             deleteEduStudent(st.id);
@@ -675,33 +792,6 @@ export const EducationStudentsView: React.FC = () => {
               message: `${ids.size} étudiants supprimés.`,
             });
           }}
-          renderCard={(student) => {
-            const enrollment = eduEnrollments.find((e) => e.studentId === student.id && e.status === 'Active');
-            const rate = student.attendanceRatePercent ?? 100;
-            const b = resolveRecordBranch(student, branchesById, currentBranch, language);
-            return (
-              <div className="flex flex-col items-center justify-center w-full">
-                <div className="w-20 h-20 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center text-[28px] font-bold shadow-md mb-3 select-none border border-neutral-200 dark:border-neutral-700">
-                  {student.fullName.charAt(0)}
-                </div>
-                <h3 className="text-[16px] font-bold text-black dark:text-white truncate max-w-[210px] mb-1 tracking-tight">
-                  {student.fullName}
-                </h3>
-                <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700 mb-3 truncate max-w-[200px]">
-                  {enrollment ? enrollment.cohortName : b.name}
-                </span>
-                <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-2 text-center">
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-black/55 dark:text-white/55">{t('edu_col_attendance')}</span>
-                    <span className="font-bold tabular-nums text-black/70 dark:text-white/75">{rate}%</span>
-                  </div>
-                  <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
-                    <div className={`h-full rounded-full ${rate >= 85 ? 'bg-emerald-500' : 'bg-rose-500'}`} style={{ width: `${rate}%` }} />
-                  </div>
-                </div>
-              </div>
-            );
-          }}
           emptyTitle={t('edu_no_students_enrolled')}
           emptyDescription={t('edu_no_students_enrolled')}
           primaryActionLabel={t('edu_modal_add_student')}
@@ -733,12 +823,22 @@ export const EducationStudentsView: React.FC = () => {
         language={language}
         title={activeStudent?.fullName || ''}
         subtitle={`${activeStudent?.schoolGrade || 'Adult Learner'} · ${activeStudent?.phone || ''}`}
-        avatarText={(activeStudent?.fullName || 'S').charAt(0).toUpperCase()}
+        categoryLabel={activeStudent?.schoolGrade || (isAr ? 'طالب' : isEn ? 'Student' : 'Étudiant')}
+        avatarText={(activeStudent?.fullName || 'ST').slice(0, 2).toUpperCase()}
         avatarColor="#d4522f"
         branchName={
           activeStudent ? resolveRecordBranch(activeStudent, branchesById, currentBranch, language).name : undefined
         }
         statusLabel={activeStudent ? localizeStatus(activeStudent.status, language) : undefined}
+        statusClassName={
+          activeStudent?.status === 'Active'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : activeStudent?.status === 'Graduated'
+            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+            : activeStudent?.status === 'Applicant'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            : 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+        }
         tabs={[
           { id: 'academic', label: t('edu_drawer_academic') },
           ...(!isStaff ? [{ id: 'financial', label: t('edu_drawer_financial') }] : []),
@@ -747,237 +847,267 @@ export const EducationStudentsView: React.FC = () => {
         ]}
         activeTab={activeDrawerTab}
         onTabChange={(id) => setActiveDrawerTab(id as StudentDrawerTab)}
-        onSelectItem={(s) => setSelectedStudent(s)}
+        onSelectItem={(s) => {
+          setSelectedStudent(s);
+          setActiveDrawerTab('academic');
+        }}
         onClose={() => setSelectedStudent(null)}
         onDelete={(s) => {
           deleteEduStudent(s.id);
           setSelectedStudent(null);
         }}
-        renderBody={(st, tab) => (
-          <div className="space-y-4 text-xs">
-            <div className="flex items-center justify-end">
-              <button
-                type="button"
-                onClick={() => handleOpenEdit(st)}
-                className="px-3 py-1.5 rounded-lg border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 font-semibold flex items-center gap-1.5 cursor-pointer hover:bg-[#F3EDE7]"
-              >
-                <Edit2 size={13} />
-                <span>{t('action_edit', 'Modifier')}</span>
-              </button>
-            </div>
+        renderBody={(st, tab) => {
+          const attRate = st.attendanceRatePercent ?? 100;
+          if (!isStaff && tab === 'financial') {
+            const totalDue = studentEnrollments.reduce((acc, e) => acc + (e.balanceDue || 0), 0);
+            return (
+              <>
+                <InspectorSection index={0}>
+                  <InspectorBigStat
+                    value={formatMoney(totalDue)}
+                    tone={totalDue > 0 ? 'danger' : 'ok'}
+                    caption={`${studentEnrollments.length} ${t('edu_cohorts_title')}`}
+                  />
+                </InspectorSection>
+                {studentEnrollments.map((enr, idx) => (
+                  <InspectorSection key={enr.id} index={idx + 1} title={enr.cohortName}>
+                    <InspectorCard>
+                      <InspectorKeyValue
+                        label={t('edu_field_tuition_fee')}
+                        value={formatMoney(enr.agreedTuition)}
+                      />
+                      <InspectorKeyValue
+                        label={isAr ? 'المدفوع' : isEn ? 'Paid' : 'Payé'}
+                        value={formatMoney(enr.paidAmount)}
+                        tone="ok"
+                      />
+                      <InspectorKeyValue
+                        label={t('edu_fin_receivables')}
+                        value={formatMoney(enr.balanceDue)}
+                        tone={enr.balanceDue > 0 ? 'danger' : 'ok'}
+                        isLast
+                      />
+                    </InspectorCard>
+                  </InspectorSection>
+                ))}
+                <InspectorSection index={studentEnrollments.length + 1}>
+                  <InspectorWideButton
+                    label={t('edu_btn_log_payment')}
+                    tone="accent"
+                    onClick={() => {
+                      setSelectedStudent(null);
+                      setScreen('finance');
+                    }}
+                  />
+                </InspectorSection>
+              </>
+            );
+          }
 
-            {(tab === 'academic' || (isStaff && tab === 'financial')) && (
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider mb-2">
-                    {t('edu_cohorts_title')}
-                  </h3>
-                  {studentEnrollments.length === 0 ? (
-                    <p className="text-black/55 dark:text-white/55 italic">No current enrollments.</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {studentEnrollments.map((enr) => (
-                        <div
-                          key={enr.id}
-                          className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60"
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-bold text-black dark:text-white">{enr.cohortName}</span>
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-                              {enr.status}
-                            </span>
-                          </div>
-                          {!isStaff && (
-                            <div className="text-[11px] text-black/55 dark:text-white/55">
-                              Agreed Tuition: {formatMoney(enr.agreedTuition)} · Paid: {formatMoney(enr.paidAmount)}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+          if (tab === 'guardian') {
+            return (
+              <>
+                <InspectorSection index={0} title={t('edu_drawer_guardian')}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={t('edu_field_fullname')}
+                      value={st.fullName}
+                      mono={false}
+                    />
+                    <InspectorKeyValue
+                      label={t('edu_field_phone')}
+                      value={st.phone}
+                      icon={<Phone size={13} />}
+                      copyText={st.phone}
+                    />
+                    {st.email && (
+                      <InspectorKeyValue
+                        label={t('edu_field_email')}
+                        value={st.email}
+                        icon={<Mail size={13} />}
+                        mono={false}
+                        copyText={st.email}
+                        isLast={!st.guardianName}
+                      />
+                    )}
+                    {st.guardianName && (
+                      <>
+                        <InspectorKeyValue
+                          label={t('edu_field_guardian_name')}
+                          value={st.guardianName}
+                          icon={<Shield size={13} />}
+                          mono={false}
+                        />
+                        <InspectorKeyValue
+                          label={t('edu_field_guardian_relation')}
+                          value={st.guardianRelation || 'Parent'}
+                          mono={false}
+                        />
+                        <InspectorKeyValue
+                          label={t('edu_field_guardian_phone')}
+                          value={st.guardianPhone || '—'}
+                          tone="accent"
+                          copyText={st.guardianPhone}
+                          isLast
+                        />
+                      </>
+                    )}
+                  </InspectorCard>
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'ملاحظات' : 'Notes'}>
+                  <InspectorNotesField
+                    value={st.notes || ''}
+                    onSave={(next) => {
+                      updateEduStudent(st.id, { notes: next });
+                      showToast({
+                        type: 'success',
+                        title: isAr ? 'تم الحفظ' : 'Note enregistrée',
+                        message: st.fullName,
+                      });
+                    }}
+                  />
+                </InspectorSection>
+              </>
+            );
+          }
 
-                <div>
-                  <h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider mb-2">
-                    {t('edu_tab_rollcall')}
-                  </h3>
-                  {studentAttendance.length === 0 ? (
-                    <p className="text-black/55 dark:text-white/55 italic">{t('edu_no_sessions')}</p>
-                  ) : (
-                    <div className="space-y-1.5">
-                      {studentAttendance.slice(0, 5).map((att) => (
-                        <div
-                          key={att.id}
-                          className="flex items-center justify-between p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900"
-                        >
-                          <span className="text-black/70 dark:text-white/75">
-                            {att.recordedAt ? att.recordedAt.split('T')[0] : 'Recent Session'}
-                          </span>
-                          <span
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase ${
-                              att.status === 'Present'
-                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
-                                : att.status === 'Late'
-                                ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
-                                : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
-                            }`}
-                          >
-                            {att.status} {att.minutesLate ? `(+${att.minutesLate}m)` : ''}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider mb-2">
-                    {t('edu_tab_gradebook')}
-                  </h3>
-                  {studentGrades.length === 0 ? (
-                    <p className="text-black/55 dark:text-white/55 italic">No grades recorded yet.</p>
-                  ) : (
-                    <div className="space-y-1.5">
-                      {studentGrades.map((g) => (
-                        <div
-                          key={g.id}
-                          className="flex items-center justify-between p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900"
-                        >
-                          <div>
-                            <div className="font-semibold text-black dark:text-white">{g.assessmentTitle}</div>
-                            {g.teacherRemarks && (
-                              <div className="text-[10px] text-black/55 dark:text-white/55">"{g.teacherRemarks}"</div>
-                            )}
-                          </div>
-                          <span className="font-bold text-[#d4522f] tabular-nums">
-                            {g.score} / {g.maxScore}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {!isStaff && tab === 'financial' && (
-              <div className="space-y-4">
-                {studentEnrollments.map((enr) => (
-                  <div
-                    key={enr.id}
-                    className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-3"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-black dark:text-white">{enr.cohortName}</span>
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
-                        {enr.paymentStatus}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="p-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
-                        <span className="text-black/55 dark:text-white/55 block text-[10px]">
-                          {t('edu_field_tuition_fee')}
-                        </span>
-                        <span className="font-bold text-black dark:text-white">{formatMoney(enr.agreedTuition)}</span>
-                      </div>
-                      <div className="p-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
-                        <span className="text-black/55 dark:text-white/55 block text-[10px]">
-                          {t('edu_fin_receivables')}
-                        </span>
-                        <span className="font-bold text-rose-600 dark:text-rose-400">
-                          {formatMoney(enr.balanceDue)}
-                        </span>
-                      </div>
-                    </div>
+          if (tab === 'certificates') {
+            return (
+              <>
+                <InspectorSection
+                  index={0}
+                  title={t('edu_drawer_certificates')}
+                  action={
                     <button
                       type="button"
-                      onClick={() => {
-                        setSelectedStudent(null);
-                        setScreen('finance');
-                      }}
-                      className="w-full py-2 text-xs font-semibold text-center text-[#d4522f] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 rounded-xl transition-colors cursor-pointer"
+                      onClick={() => setIsCertModalOpen(true)}
+                      className="px-2.5 py-1 rounded-lg bg-[#d4522f] text-white text-[11px] font-semibold flex items-center gap-1 cursor-pointer hover:opacity-90"
                     >
-                      {t('edu_btn_log_payment')} →
+                      <Plus size={12} />
+                      <span>{t('edu_btn_issue_certificate')}</span>
                     </button>
-                  </div>
-                ))}
-              </div>
-            )}
+                  }
+                >
+                  <InspectorCard>
+                    {studentCerts.length === 0 ? (
+                      <InspectorListItem
+                        title={isAr ? 'لا توجد شهادات بعد' : isEn ? 'No certificates issued yet' : 'Aucun certificat délivré'}
+                        isLast
+                      />
+                    ) : (
+                      studentCerts.map((c, idx) => (
+                        <InspectorListItem
+                          key={c.id}
+                          title={c.courseTitle}
+                          subtitle={`${c.issueDate} · ${c.honors || 'Completion'}`}
+                          badge={{ label: 'Verified', tone: 'ok' }}
+                          isLast={idx === studentCerts.length - 1}
+                        />
+                      ))
+                    )}
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
 
-            {tab === 'guardian' && (
-              <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-black dark:text-white">{t('edu_drawer_guardian')}</span>
-                  <Shield size={16} className="text-[#d4522f]" />
-                </div>
-                {st.guardianName ? (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-black/55 dark:text-white/55">{t('edu_field_guardian_name')}:</span>
-                      <span className="font-semibold text-black dark:text-white">{st.guardianName}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-black/55 dark:text-white/55">{t('edu_field_guardian_relation')}:</span>
-                      <span className="font-semibold text-black dark:text-white">{st.guardianRelation || 'Parent'}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-black/55 dark:text-white/55">{t('edu_field_guardian_phone')}:</span>
-                      <a href={`tel:${st.guardianPhone}`} className="font-semibold text-[#d4522f] hover:underline">
-                        {st.guardianPhone}
-                      </a>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-black/55 dark:text-white/55 italic">
-                    No linked guardian recorded. Student is registered as an independent adult.
-                  </p>
-                )}
-              </div>
-            )}
+          return (
+            <>
+              <InspectorSection index={0}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'edit',
+                      label: t('action_edit', 'Modifier'),
+                      icon: <Edit2 size={16} />,
+                      primary: true,
+                      onClick: () => handleOpenEdit(st),
+                    },
+                    {
+                      id: 'cert',
+                      label: t('edu_btn_issue_certificate'),
+                      icon: <Award size={16} />,
+                      onClick: () => setIsCertModalOpen(true),
+                    },
+                  ]}
+                />
+              </InspectorSection>
 
-            {tab === 'certificates' && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-black dark:text-white">{t('edu_drawer_certificates')}</span>
-                  <button
-                    type="button"
-                    onClick={() => setIsCertModalOpen(true)}
-                    className="px-2.5 py-1.5 rounded-lg bg-[#d4522f] text-white text-xs font-semibold flex items-center gap-1 cursor-pointer hover:opacity-90"
-                  >
-                    <Plus size={12} />
-                    <span>{t('edu_btn_issue_certificate')}</span>
-                  </button>
-                </div>
-                {studentCerts.length === 0 ? (
-                  <div className="p-8 text-center rounded-xl border border-dashed border-neutral-200 dark:border-neutral-800">
-                    <Award size={32} className="mx-auto text-black/55 dark:text-white/55 mb-2" />
-                    <p className="text-black/55 dark:text-white/55 italic">No certificates issued yet.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {studentCerts.map((c) => (
-                      <div
-                        key={c.id}
-                        className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-1.5"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-black dark:text-white">{c.courseTitle}</span>
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700">
-                            Verified
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-black/55 dark:text-white/55">
-                          Issued: {c.issueDate} · Honors: {c.honors || 'Certificate of Completion'}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+              <InspectorSection index={1} title={t('edu_col_attendance')}>
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={t('edu_col_attendance')}
+                    value={`${attRate}%`}
+                    tone={attRate >= 85 ? 'ok' : 'danger'}
+                    isLast
+                  />
+                  <InspectorProgressBar
+                    percent={attRate}
+                    tone={attRate >= 85 ? 'ok' : 'danger'}
+                    animateKey={st.id}
+                  />
+                </InspectorCard>
+              </InspectorSection>
+
+              <InspectorSection index={2} title={t('edu_cohorts_title')}>
+                <InspectorCard>
+                  {studentEnrollments.length === 0 ? (
+                    <InspectorListItem title={isAr ? 'لا يوجد تسجيل نشط' : 'No current enrollments'} isLast />
+                  ) : (
+                    studentEnrollments.map((enr, idx) => (
+                      <InspectorListItem
+                        key={enr.id}
+                        title={enr.cohortName}
+                        subtitle={!isStaff ? `${formatMoney(enr.paidAmount)} / ${formatMoney(enr.agreedTuition)}` : undefined}
+                        badge={{ label: enr.status, tone: 'ok' }}
+                        isLast={idx === studentEnrollments.length - 1}
+                      />
+                    ))
+                  )}
+                </InspectorCard>
+              </InspectorSection>
+
+              <InspectorSection index={3} title={t('edu_tab_rollcall')}>
+                <InspectorCard>
+                  {studentAttendance.length === 0 ? (
+                    <InspectorListItem title={t('edu_no_sessions')} isLast />
+                  ) : (
+                    studentAttendance.slice(0, 5).map((att, idx) => (
+                      <InspectorListItem
+                        key={att.id}
+                        title={att.recordedAt ? att.recordedAt.split('T')[0] : 'Recent Session'}
+                        subtitle={att.minutesLate ? `+${att.minutesLate}m` : undefined}
+                        badge={{
+                          label: att.status,
+                          tone: att.status === 'Present' ? 'ok' : att.status === 'Late' ? 'warn' : 'danger',
+                        }}
+                        isLast={idx === Math.min(4, studentAttendance.length - 1)}
+                      />
+                    ))
+                  )}
+                </InspectorCard>
+              </InspectorSection>
+
+              <InspectorSection index={4} title={t('edu_tab_gradebook')}>
+                <InspectorCard>
+                  {studentGrades.length === 0 ? (
+                    <InspectorListItem title={isAr ? 'لا توجد درجات مسجلة' : 'No grades recorded yet'} isLast />
+                  ) : (
+                    studentGrades.map((g, idx) => (
+                      <InspectorListItem
+                        key={g.id}
+                        title={g.assessmentTitle}
+                        subtitle={g.teacherRemarks}
+                        metaRight={`${g.score} / ${g.maxScore}`}
+                        isLast={idx === studentGrades.length - 1}
+                      />
+                    ))
+                  )}
+                </InspectorCard>
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       {isAddModalOpen && (

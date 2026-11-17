@@ -9,6 +9,7 @@ import {
   Trash2,
   AlertTriangle,
   XCircle,
+  Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatCurrencyAmount } from '../../../utils/rules';
@@ -29,6 +30,17 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorNotesField,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -73,6 +85,7 @@ export const FreelanceProposalsView: React.FC = () => {
 
   const [selectedProposal, setSelectedProposal] = useState<FreelanceProposal | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<string>('summary');
 
   const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
   const [proposalToEdit, setProposalToEdit] = useState<FreelanceProposal | null>(null);
@@ -320,6 +333,103 @@ export const FreelanceProposalsView: React.FC = () => {
       }
     },
     [convertProposalToProject, setScreen, isAr, isFr]
+  );
+
+  const getProposalRowMeta = useCallback(
+    (proposal: FreelanceProposal): KineticRowMeta => ({
+      avatarText: proposal.clientName.slice(0, 2).toUpperCase(),
+      subtitle: `${proposal.clientName}${proposal.clientCompany ? ` · ${proposal.clientCompany}` : ''}`,
+      categoryLabel: proposal.pricingModel,
+      statusTone:
+        proposal.status === 'Accepted'
+          ? 'ok'
+          : proposal.status === 'Declined'
+          ? 'danger'
+          : 'warn',
+      statusLabel:
+        proposal.status === 'Accepted'
+          ? isAr
+            ? 'موقّع ونشط'
+            : isFr
+            ? 'Signé & Actif'
+            : 'Signed & Active'
+          : proposal.status === 'Declined'
+          ? t('free_prop_status_rejected', language)
+          : isAr
+          ? 'بانتظار المراجعة'
+          : isFr
+          ? 'En attente'
+          : 'Pending',
+      metricPrimary: formatCurrencyAmount(proposal.proposedBudget, proposal.currency),
+      metricSecondary: `${proposal.estimatedTimelineWeeks}w · ${proposal.validUntil}`,
+    }),
+    [isAr, isFr, language, t]
+  );
+
+  const getProposalFanActions = useCallback(
+    (proposal: FreelanceProposal): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'تفاصيل' : isFr ? 'Détails' : 'Details',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedProposal(proposal);
+          setInspectorTab('summary');
+        },
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : isFr ? 'Modifier' : 'Edit',
+        icon: <Edit2 className="w-[15px] h-[15px]" />,
+        onClick: () => handleOpenEditModal(proposal),
+      },
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : isFr ? 'Supprimer' : 'Delete',
+        icon: <Trash2 className="w-[15px] h-[15px]" />,
+        isDanger: true,
+        onClick: () => setProposalToDelete(proposal),
+      },
+    ],
+    [isAr, isFr, handleOpenEditModal]
+  );
+
+  const getProposalDetailActions = useCallback(
+    (proposal: FreelanceProposal): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'فتح' : isFr ? 'Ouvrir' : 'Open',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedProposal(proposal);
+          setInspectorTab('summary');
+        },
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : isFr ? 'Modifier' : 'Edit',
+        icon: <Edit2 className="w-3.5 h-3.5" />,
+        onClick: () => handleOpenEditModal(proposal),
+      },
+      ...(proposal.status === 'Pending'
+        ? [
+            {
+              id: 'convert',
+              label: t('free_prop_btn_convert', language),
+              icon: <CheckCircle className="w-3.5 h-3.5" />,
+              onClick: () => handleConvert(proposal.id),
+            },
+          ]
+        : []),
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : isFr ? 'Supprimer' : 'Delete',
+        icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+        onClick: () => setProposalToDelete(proposal),
+      },
+    ],
+    [isAr, isFr, language, t, handleOpenEditModal, handleConvert]
   );
 
   const proposalColumns: ColumnDefinition<FreelanceProposal>[] = useMemo(
@@ -627,7 +737,6 @@ export const FreelanceProposalsView: React.FC = () => {
       <ScreenHeaderBar
         icon={<FileText size={22} />}
         title={t('free_prop_title', language)}
-        subtitle={`${freelanceProposals.length} ${isAr ? 'عروض' : isFr ? 'devis' : 'proposals'}`}
         primaryAction={{
           label: t('free_prop_btn_new', language),
           onClick: () => setIsDraftModalOpen(true),
@@ -777,9 +886,10 @@ export const FreelanceProposalsView: React.FC = () => {
 
         <UniversalDataCollection<FreelanceProposal>
           hideToolbar
-          data={sortedProposals}
+          items={sortedProposals}
           keyExtractor={(p) => p.id}
-          viewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
           columns={proposalColumns}
           isLoading={isSyncing || networkMode === 'force_skeleton'}
           isOffline={networkMode === 'offline'}
@@ -793,101 +903,19 @@ export const FreelanceProposalsView: React.FC = () => {
             setProposalSortDir(dir);
           }}
           openItemId={activeProposal?.id ?? null}
-          renderCard={(proposal) => (
-            <div className="flex flex-col justify-between w-full h-full space-y-4">
-              <div>
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <span className="text-[11px] font-bold text-black/55 dark:text-white/75 uppercase tracking-wider block">
-                      {proposal.clientCompany || proposal.clientName}
-                    </span>
-                    <h3 className="text-sm font-bold text-black dark:text-white mt-0.5 leading-snug">
-                      {proposal.title}
-                    </h3>
-                  </div>
-                  <span
-                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
-                      proposal.status === 'Accepted'
-                        ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200'
-                        : proposal.status === 'Declined'
-                        ? 'text-rose-700 bg-rose-50 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200'
-                        : 'text-amber-700 bg-amber-50 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-200'
-                    }`}
-                  >
-                    {proposal.status === 'Accepted'
-                      ? isAr
-                        ? 'موقّع ونشط'
-                        : isFr
-                        ? 'Signé & Actif'
-                        : 'Signed & Active'
-                      : proposal.status === 'Declined'
-                      ? t('free_prop_status_rejected', language)
-                      : isAr
-                      ? 'بانتظار المراجعة'
-                      : isFr
-                      ? 'En attente'
-                      : 'Awaiting Review'}
-                  </span>
-                </div>
-                <p className="text-xs text-black/70 dark:text-white/75 mt-2 line-clamp-2 leading-relaxed">
-                  {proposal.overview}
-                </p>
-                <div className="mt-3 pt-2.5 border-t border-neutral-100 dark:border-neutral-800/80 space-y-1 text-[11px]">
-                  <span className="text-[10px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider block">
-                    {t('free_prop_scope', language)} ({proposal.scopeItems.length})
-                  </span>
-                  {proposal.scopeItems.slice(0, 3).map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-start gap-1.5 text-black/70 dark:text-white/75 truncate"
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] mt-1 shrink-0" />
-                      <span className="truncate">{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800/80 flex items-center justify-between gap-2">
-                <div>
-                  <span className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider block">
-                    {t('free_prop_total_quote', language)}
-                  </span>
-                  <span className="text-base font-black text-[#d4522f] tabular-nums block">
-                    {formatCurrencyAmount(proposal.proposedBudget, proposal.currency)}
-                  </span>
-                  <span className="text-[10px] text-black/55 dark:text-white/55">
-                    {proposal.estimatedTimelineWeeks}w · {proposal.validUntil}
-                  </span>
-                </div>
-                {proposal.status === 'Pending' ? (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleConvert(proposal.id);
-                    }}
-                    className="h-8 px-3 rounded-lg bg-emerald-600 text-white text-xs font-semibold flex items-center gap-1 hover:bg-emerald-700 transition-colors cursor-pointer shadow-xs"
-                  >
-                    <CheckCircle size={12} />
-                    <span>{t('free_prop_btn_convert', language)}</span>
-                  </button>
-                ) : (
-                  <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                    <CheckCircle size={12} />
-                    <span>{isAr ? 'مشروع نشط' : 'Active Project'}</span>
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
           onItemClick={(proposal, el) => {
             setDrawerOpenerEl(el || null);
             setSelectedProposal(proposal);
+            setInspectorTab('summary');
           }}
           onViewDetails={(proposal, el) => {
             setDrawerOpenerEl(el || null);
             setSelectedProposal(proposal);
+            setInspectorTab('summary');
           }}
+          getRowMeta={getProposalRowMeta}
+          getFanActions={getProposalFanActions}
+          getDetailActions={getProposalDetailActions}
           onEdit={(proposal) => handleOpenEditModal(proposal)}
           onPinToggle={(idOrItem) => {
             const id = typeof idOrItem === 'string' ? idOrItem : idOrItem.id;
@@ -966,7 +994,8 @@ export const FreelanceProposalsView: React.FC = () => {
               }`
             : ''
         }
-        avatarText="P"
+        categoryLabel={activeProposal?.pricingModel || 'Fixed'}
+        avatarText={activeProposal ? activeProposal.clientName.slice(0, 2).toUpperCase() : 'PR'}
         avatarColor="#d4522f"
         branchName={
           activeProposal
@@ -976,88 +1005,185 @@ export const FreelanceProposalsView: React.FC = () => {
         statusLabel={
           activeProposal
             ? activeProposal.status === 'Accepted'
-              ? isFr
+              ? isAr
+                ? 'موقّع ونشط'
+                : isFr
                 ? 'Signé & Actif'
                 : 'Accepted'
               : activeProposal.status === 'Declined'
               ? t('free_prop_status_rejected', language)
+              : isAr
+              ? 'بانتظار المراجعة'
               : isFr
               ? 'En attente'
               : 'Pending'
             : undefined
         }
-        onSelectItem={(p) => setSelectedProposal(p)}
+        statusClassName={
+          activeProposal?.status === 'Accepted'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : activeProposal?.status === 'Declined'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+        }
+        tabs={[
+          { id: 'summary', label: isAr ? 'الملخص' : isFr ? 'Synthèse' : 'Summary' },
+          { id: 'scope', label: isAr ? 'النطاق' : isFr ? 'Périmètre' : 'Scope' },
+          { id: 'terms', label: isAr ? 'الشروط' : isFr ? 'Conditions' : 'Terms & Actions' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={setInspectorTab}
+        onSelectItem={(p) => {
+          setSelectedProposal(p);
+          setInspectorTab('summary');
+        }}
         onClose={() => setSelectedProposal(null)}
         onDelete={(p) => setProposalToDelete(p)}
         holdToDelete={false}
-        renderBody={(proposal) => (
-          <div className="space-y-5 text-xs">
-            <div className="flex items-center gap-2 flex-wrap">
-              <AtriumButton
-                type="button"
-                variant="secondary"
-                size="sm"
-                icon={<Edit2 size={13} />}
-                onClick={() => handleOpenEditModal(proposal)}
-              >
-                {t('common_edit', language) || (isFr ? 'Modifier' : 'Edit')}
-              </AtriumButton>
-              {proposal.status === 'Pending' && (
-                <AtriumButton
-                  type="button"
-                  variant="primary"
-                  size="sm"
-                  icon={<CheckCircle size={13} />}
-                  onClick={() => handleConvert(proposal.id)}
+        renderBody={(proposal, tab) => {
+          if (tab === 'scope') {
+            return (
+              <>
+                <InspectorSection
+                  index={0}
+                  title={`${t('free_prop_scope', language)} (${proposal.scopeItems.length})`}
                 >
-                  {t('free_prop_btn_convert', language)}
-                </AtriumButton>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900/40">
-                <span className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider block">
-                  {t('free_prop_total_quote', language)}
-                </span>
-                <span className="text-lg font-mono font-bold text-[#d4522f] tabular-nums">
-                  {formatCurrencyAmount(proposal.proposedBudget, proposal.currency)}
-                </span>
-              </div>
-              <div className="p-3 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900/40">
-                <span className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider block">
-                  {t('free_prop_valid_until', language)}
-                </span>
-                <span className="text-base font-bold text-black dark:text-white tabular-nums">
-                  {proposal.validUntil} ({proposal.estimatedTimelineWeeks}w)
-                </span>
-              </div>
-            </div>
-
-            {proposal.overview && (
-              <div className="p-4 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800 text-black/80 dark:text-white/80 leading-relaxed">
-                {proposal.overview}
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <span className="font-semibold text-black dark:text-white block">
-                {t('free_prop_scope', language)} ({proposal.scopeItems.length})
-              </span>
-              <div className="space-y-1.5">
-                {proposal.scopeItems.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="p-2.5 rounded-xl bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 flex items-center gap-2"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
-                    <span className="text-black dark:text-white">{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+                  <InspectorCard>
+                    {proposal.scopeItems.map((item, idx) => (
+                      <InspectorListItem
+                        key={idx}
+                        title={item}
+                        metaRight={`#${idx + 1}`}
+                        isLast={idx === proposal.scopeItems.length - 1}
+                      />
+                    ))}
+                  </InspectorCard>
+                </InspectorSection>
+                <InspectorSection
+                  index={1}
+                  title={isAr ? 'نظرة عامة على العرض' : isFr ? 'Présentation du Devis' : 'Proposal Overview'}
+                >
+                  <InspectorNotesField
+                    value={proposal.overview || ''}
+                    onSave={(next) => updateFreelanceProposal(proposal.id, { overview: next })}
+                  />
+                </InspectorSection>
+              </>
+            );
+          }
+          if (tab === 'terms') {
+            return (
+              <>
+                <InspectorSection
+                  index={0}
+                  title={isAr ? 'شروط العرض والتسليم' : isFr ? 'Termes & Délais' : 'Commercial Terms'}
+                >
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={t('free_prop_total_quote', language)}
+                      value={formatCurrencyAmount(proposal.proposedBudget, proposal.currency)}
+                      mono
+                      tone="accent"
+                    />
+                    <InspectorKeyValue
+                      label={t('free_deliv_field_pricing', language)}
+                      value={proposal.pricingModel}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'الجدول الزمني' : isFr ? 'Durée estimée' : 'Timeline'}
+                      value={`${proposal.estimatedTimelineWeeks} ${isAr ? 'أسابيع' : 'weeks'}`}
+                      mono
+                    />
+                    <InspectorKeyValue
+                      label={t('free_prop_valid_until', language)}
+                      value={proposal.validUntil}
+                      mono
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+                {proposal.status === 'Pending' && (
+                  <InspectorSection index={1}>
+                    <InspectorWideButton
+                      label={t('free_prop_btn_convert', language)}
+                      icon={<CheckCircle size={14} />}
+                      tone="accent"
+                      onClick={() => handleConvert(proposal.id)}
+                    />
+                  </InspectorSection>
+                )}
+              </>
+            );
+          }
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : isFr ? 'Actions Rapides' : 'Quick Actions'}>
+                <InspectorQuickActions
+                  actions={[
+                    ...(proposal.status === 'Pending'
+                      ? [
+                          {
+                            id: 'convert',
+                            label: t('free_prop_btn_convert', language),
+                            icon: <CheckCircle size={16} />,
+                            primary: true,
+                            onClick: () => handleConvert(proposal.id),
+                          },
+                        ]
+                      : []),
+                    {
+                      id: 'edit',
+                      label: t('common_edit', language) || (isFr ? 'Modifier' : 'Edit'),
+                      icon: <Edit2 size={16} />,
+                      primary: proposal.status !== 'Pending',
+                      onClick: () => handleOpenEditModal(proposal),
+                    },
+                    ...(proposal.status === 'Pending'
+                      ? [
+                          {
+                            id: 'decline',
+                            label: t('free_prop_status_rejected', language),
+                            icon: <XCircle size={16} />,
+                            onClick: () => updateFreelanceProposal(proposal.id, { status: 'Declined' }),
+                          },
+                        ]
+                      : []),
+                  ]}
+                />
+              </InspectorSection>
+              <InspectorSection index={1}>
+                <InspectorBigStat
+                  value={formatCurrencyAmount(proposal.proposedBudget, proposal.currency)}
+                  tone={proposal.status === 'Accepted' ? 'ok' : proposal.status === 'Declined' ? 'danger' : 'accent'}
+                  caption={`${proposal.pricingModel} · ${proposal.estimatedTimelineWeeks}w · ${t('free_prop_valid_until', language)} ${proposal.validUntil}`}
+                />
+              </InspectorSection>
+              <InspectorSection
+                index={2}
+                title={isAr ? 'تفاصيل العميل' : isFr ? 'Coordonnées Client' : 'Client & Contact'}
+              >
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={t('free_clients_field_contact', language)}
+                    value={proposal.clientName}
+                  />
+                  {proposal.clientCompany && (
+                    <InspectorKeyValue
+                      label={t('free_clients_field_company', language)}
+                      value={proposal.clientCompany}
+                    />
+                  )}
+                  <InspectorKeyValue
+                    label={t('free_clients_email', language)}
+                    value={proposal.clientEmail || '—'}
+                    copyText={proposal.clientEmail}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       {/* Draft Proposal Modal */}

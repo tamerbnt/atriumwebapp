@@ -1,12 +1,16 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
-  Calendar,
   Plus,
   Clock,
   Users,
   MapPin,
   Maximize2,
   UserPlus,
+  Calendar,
+  Eye,
+  Trash2,
+  Copy,
+  CheckCircle2,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -33,6 +37,16 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorProgressBar,
+  InspectorListItem,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -436,6 +450,115 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
     return chips;
   }, [branchFilter, dayFilter, categoryFilter, getDayName]);
 
+  const handleDeleteEvent = useCallback(
+    (ev: ScheduleEvent) => {
+      setLocalAddedEvents((prev) => prev.filter((item) => item.id !== ev.id));
+      batchDeleteScheduleEvents([ev.id]);
+      if (selectedEvent?.id === ev.id) setSelectedEvent(null);
+      showToast?.({
+        type: 'info',
+        title: isAr ? 'تم حذف الحصة' : isEn ? 'Session Removed' : 'Créneau supprimé',
+        message: ev.title,
+      });
+    },
+    [batchDeleteScheduleEvents, selectedEvent?.id, isAr, isEn]
+  );
+
+  const getRowMeta = useCallback(
+    (ev: ScheduleEvent): Partial<KineticRowData> => {
+      const isFull = ev.enrolledCount >= ev.capacity;
+      const pct = ev.capacity > 0 ? Math.round((ev.enrolledCount / ev.capacity) * 100) : 0;
+      const branch = resolveRecordBranch(ev, branchesById, currentBranch, language);
+      return {
+        subline: `${getDayName(ev.dayOfWeek)} · ${ev.startTime}-${ev.endTime} · ${ev.roomOrArea}`,
+        categoryLabel: ev.category,
+        statusLabel: isFull
+          ? isAr ? 'مكتمل' : isEn ? 'Full' : 'Complet'
+          : pct >= 80
+          ? isAr ? 'شبه ممتلئ' : isEn ? 'Filling' : 'Presque plein'
+          : isAr ? 'متاح' : isEn ? 'Open' : 'Ouvert',
+        statusVariant: isFull ? 'blocked' : pct >= 80 ? 'warning' : 'active',
+        metricPrimary: `${ev.enrolledCount}/${ev.capacity}`,
+        metricSecondary: `${pct}% ${isAr ? 'امتلاء' : isEn ? 'fill' : 'taux'}`,
+        detailCol1: {
+          heading: isAr ? 'التوقيت والقاعة' : isEn ? 'Slot & Studio' : 'Créneau & Salle',
+          primaryText: `${ev.startTime} – ${ev.endTime}`,
+          secondaryText: `${getDayName(ev.dayOfWeek)} · ${ev.roomOrArea}`,
+          tertiaryText: branch.name,
+        },
+        detailCol2: {
+          heading: isAr ? 'التأطير والمدرب' : isEn ? 'Coaching Staff' : 'Encadrement',
+          primaryText: ev.trainerOrStaff,
+          secondaryText: ev.category,
+        },
+        detailCol3: {
+          heading: isAr ? 'الطاقة الاستيعابية' : isEn ? 'Capacity' : 'Places & Remplissage',
+          primaryText: `${ev.enrolledCount} / ${ev.capacity}`,
+          secondaryText: `${Math.max(0, ev.capacity - ev.enrolledCount)} ${
+            isAr ? 'أماكن متاحة' : isEn ? 'spots left' : 'places libres'
+          }`,
+        },
+      };
+    },
+    [branchesById, currentBranch, language, getDayName, isAr, isEn]
+  );
+
+  const getFanActions = useCallback(
+    (ev: ScheduleEvent): KineticRowFanAction[] => [
+      {
+        id: 'enroll',
+        label: isAr ? 'تسجيل حضور' : isEn ? 'Enroll +1' : 'Inscrire +1',
+        icon: <UserPlus className="w-[15px] h-[15px]" />,
+        onClick: () =>
+          showToast?.({
+            type: 'success',
+            title: isAr ? 'تم تسجيل الحضور' : 'Check-In Recorded',
+            message: `${ev.title} (+1)`,
+          }),
+      },
+      {
+        id: 'view',
+        label: isAr ? 'معاينة' : isEn ? 'Inspect' : 'Fiche',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedEvent(ev);
+        },
+      },
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer',
+        icon: <Trash2 className="w-[15px] h-[15px]" />,
+        isDanger: true,
+        onClick: () => handleDeleteEvent(ev),
+      },
+    ],
+    [isAr, isEn, handleDeleteEvent]
+  );
+
+  const getDetailActions = useCallback(
+    (ev: ScheduleEvent): KineticDetailAction[] => [
+      {
+        id: 'view',
+        label: isAr ? 'فتح البطاقة' : isEn ? 'Inspect Session' : 'Fiche complète',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => setSelectedEvent(ev),
+      },
+      {
+        id: 'enroll',
+        label: isAr ? 'تسجيل مشترك' : isEn ? 'Enroll Member' : 'Inscrire adhérent',
+        icon: <UserPlus className="w-3.5 h-3.5 text-[#096b40]" />,
+        onClick: () =>
+          showToast?.({
+            type: 'success',
+            title: isAr ? 'تم تسجيل الحضور' : 'Check-In Recorded',
+            message: `${ev.title} (+1)`,
+          }),
+      },
+    ],
+    [isAr, isEn]
+  );
+
   if (showSkeleton && (allScheduleEvents.length === 0 || networkMode === 'force_skeleton')) {
     return (
       <SkeletonSchedulerView
@@ -640,6 +763,9 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
           openItemId={selectedEvent?.id ?? null}
           renderCalendarView={renderTimetableView}
           columns={eventColumns}
+          getRowMeta={getRowMeta}
+          getFanActions={getFanActions}
+          getDetailActions={getDetailActions}
           selectedIds={selectedEventIds}
           onSelectionChange={setSelectedEventIds}
           pinnedIds={pinnedEventIds}
@@ -666,6 +792,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
             setDrawerOpenerEl(opener || null);
             setSelectedEvent(ev);
           }}
+          onDelete={handleDeleteEvent}
           bulkSecondaryAction={{
             label: isAr ? 'نسخ للأسبوع المقبل' : 'Dupliquer semaine',
             icon: <Plus size={13} />,
@@ -718,7 +845,8 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
             ? `${getDayName(selectedEvent.dayOfWeek)} · ${selectedEvent.startTime} - ${selectedEvent.endTime}`
             : undefined
         }
-        avatarText={selectedEvent ? selectedEvent.title.charAt(0).toUpperCase() : undefined}
+        avatarText={selectedEvent ? selectedEvent.title.slice(0, 2).toUpperCase() : undefined}
+        categoryLabel={selectedEvent?.category}
         branchName={
           selectedEvent
             ? resolveRecordBranch(selectedEvent, branchesById, currentBranch, language).name
@@ -727,63 +855,200 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
         statusLabel={
           selectedEvent
             ? selectedEvent.enrolledCount >= selectedEvent.capacity
-              ? isAr ? 'مكتمل' : 'Complet'
-              : isAr ? 'متاح' : 'Ouvert'
+              ? isAr ? 'مكتمل' : isEn ? 'Full' : 'Complet'
+              : isAr ? 'متاح' : isEn ? 'Open' : 'Ouvert'
             : undefined
         }
         statusClassName={
           selectedEvent && selectedEvent.enrolledCount >= selectedEvent.capacity
-            ? 'bg-rose-50 text-rose-700 border border-rose-200'
-            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
         }
+        tabs={[
+          { id: 'overview', label: isAr ? 'الحصة والتوقيت' : isEn ? 'Overview' : 'Aperçu & Créneau' },
+          { id: 'attendance', label: isAr ? 'المسجلون' : isEn ? 'Roster' : 'Inscrits & Capacité' },
+          { id: 'room', label: isAr ? 'القاعة والمدرب' : isEn ? 'Coach & Room' : 'Salle & Coach' },
+        ]}
+        holdToDelete
         onClose={() => setSelectedEvent(null)}
         onSelectItem={(ev) => setSelectedEvent(ev)}
-        renderBody={(ev) => (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex justify-between items-center">
-              <div>
-                <span className="text-[11px] font-semibold uppercase text-[#d4522f]">{ev.category}</span>
-                <div className="text-base font-bold text-black dark:text-white mt-0.5">
-                  {ev.startTime} - {ev.endTime}
-                </div>
-              </div>
-              <span className="font-mono font-bold text-sm text-[#d4522f] tabular-nums">
-                {ev.enrolledCount}/{ev.capacity}
-              </span>
-            </div>
+        onDelete={handleDeleteEvent}
+        renderBody={(ev, activeTab) => {
+          const isFull = ev.enrolledCount >= ev.capacity;
+          const pct = ev.capacity > 0 ? Math.round((ev.enrolledCount / ev.capacity) * 100) : 0;
+          const spotsLeft = Math.max(0, ev.capacity - ev.enrolledCount);
+          const branchName = resolveRecordBranch(ev, branchesById, currentBranch, language).name;
 
-            <div className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-2.5">
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">{isAr ? 'المدرب:' : 'Coach :'}</span>
-                <span className="font-bold text-black dark:text-white">{ev.trainerOrStaff}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">{isAr ? 'القاعة:' : 'Salle / Studio :'}</span>
-                <span className="font-semibold text-black dark:text-white">{ev.roomOrArea}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">{isAr ? 'اليوم:' : 'Jour :'}</span>
-                <span className="font-semibold text-black dark:text-white">{getDayName(ev.dayOfWeek)}</span>
-              </div>
-            </div>
+          if (activeTab === 'attendance') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'معدل الامتلاء' : isEn ? 'Capacity Fill' : 'Taux de remplissage'}>
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'المسجلون حالياً' : isEn ? 'Enrolled' : 'Participants inscrits'}
+                      value={`${ev.enrolledCount} / ${ev.capacity}`}
+                      tone={isFull ? 'danger' : 'ok'}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'الأماكن المتاحة' : isEn ? 'Spots Left' : 'Places restantes'}
+                      value={`${spotsLeft}`}
+                      tone={spotsLeft === 0 ? 'danger' : 'accent'}
+                      isLast
+                    />
+                    <InspectorProgressBar
+                      percent={pct}
+                      tone={isFull ? 'danger' : pct >= 80 ? 'accent' : 'ok'}
+                    />
+                  </InspectorCard>
+                </InspectorSection>
 
-            <AtriumButton
-              type="button"
-              variant="primary"
-              className="w-full justify-center"
-              icon={<UserPlus size={14} />}
-              onClick={() =>
-                showToast?.({
-                  type: 'success',
-                  title: isAr ? 'تم تسجيل الحضور' : 'Check-In Recorded',
-                  message: `${ev.title} (+1)`,
-                })
-              }
-            >
-              {isAr ? 'تسجيل مشترك في الحصة' : isEn ? 'Enroll Member in Session' : 'Inscrire un adhérent'}
-            </AtriumButton>
-          </div>
-        )}
+                <InspectorSection index={1} title={isAr ? 'الحضور السريع' : isEn ? 'Session Check-ins' : 'Liste de présence'}>
+                  <InspectorCard>
+                    <InspectorListItem
+                      title={ev.trainerOrStaff}
+                      subtitle={isAr ? 'المدرب المشرف' : isEn ? 'Lead Instructor' : 'Coach référent'}
+                      badge={{ label: isAr ? 'مؤكد' : 'Confirmé', tone: 'ok' }}
+                    />
+                    <InspectorListItem
+                      title={`${ev.enrolledCount} ${isAr ? 'مشترك مسجل' : isEn ? 'registered members' : 'adhérents inscrits'}`}
+                      subtitle={`${ev.roomOrArea} · ${ev.startTime}-${ev.endTime}`}
+                      badge={{ label: `${pct}%`, tone: isFull ? 'danger' : 'ok' }}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+
+                <InspectorSection index={2}>
+                  <InspectorWideButton
+                    label={isAr ? 'تسجيل مشترك في الحصة' : isEn ? 'Enroll Member in Session' : 'Inscrire un adhérent'}
+                    icon={<UserPlus className="w-4 h-4" />}
+                    tone="accent"
+                    onClick={() =>
+                      showToast?.({
+                        type: 'success',
+                        title: isAr ? 'تم تسجيل الحضور' : 'Check-In Recorded',
+                        message: `${ev.title} (+1)`,
+                      })
+                    }
+                  />
+                </InspectorSection>
+              </>
+            );
+          }
+
+          if (activeTab === 'room') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'القاعة والموقع' : isEn ? 'Studio & Branch' : 'Infrastructure'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label={isAr ? 'القاعة' : 'Salle / Studio'} value={ev.roomOrArea} mono={false} />
+                    <InspectorKeyValue label={isAr ? 'المدرب' : 'Coach'} value={ev.trainerOrStaff} mono={false} />
+                    <InspectorKeyValue label={isAr ? 'الفرع' : 'Branche'} value={branchName} mono={false} isLast />
+                  </InspectorCard>
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'جدولة الصيانة' : isEn ? 'Readiness' : 'Disponibilité salle'}>
+                  <InspectorCard>
+                    <InspectorListItem
+                      title={`${ev.roomOrArea} · ${isAr ? 'جاهز للاستقبال' : 'Prêt pour séance'}`}
+                      subtitle={`${getDayName(ev.dayOfWeek)} · ${ev.startTime} - ${ev.endTime}`}
+                      badge={{ label: isAr ? 'جاهز' : 'Prêt', tone: 'ok' }}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
+
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : isEn ? 'Quick Actions' : 'Actions rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'enroll',
+                      label: isAr ? 'تسجيل مشترك' : isEn ? 'Enroll +1' : 'Inscrire adhérent',
+                      icon: <UserPlus className="w-[18px] h-[18px]" />,
+                      primary: true,
+                      onClick: () =>
+                        showToast?.({
+                          type: 'success',
+                          title: isAr ? 'تم تسجيل الحضور' : 'Check-In Recorded',
+                          message: `${ev.title} (+1)`,
+                        }),
+                    },
+                    {
+                      id: 'duplicate',
+                      label: isAr ? 'نسخ الحصة' : isEn ? 'Duplicate' : 'Dupliquer',
+                      icon: <Plus className="w-[18px] h-[18px]" />,
+                      onClick: () => {
+                        const clone: ScheduleEvent = {
+                          ...ev,
+                          id: `sch_copy_${Date.now()}`,
+                          enrolledCount: 0,
+                        };
+                        setLocalAddedEvents((prev) => [clone, ...prev]);
+                        showToast?.({
+                          type: 'success',
+                          title: isAr ? 'تم النسخ' : 'Séance dupliquée',
+                          message: ev.title,
+                        });
+                      },
+                    },
+                    {
+                      id: 'copy-slot',
+                      label: isAr ? 'نسخ التوقيت' : isEn ? 'Copy Slot' : 'Copier créneau',
+                      icon: <Copy className="w-[18px] h-[18px]" />,
+                      onClick: () => {
+                        const txt = `${ev.title} · ${getDayName(ev.dayOfWeek)} ${ev.startTime}-${ev.endTime}`;
+                        navigator.clipboard?.writeText(txt);
+                        showToast?.({ type: 'success', title: 'Copié', message: txt });
+                      },
+                    },
+                    {
+                      id: 'confirm',
+                      label: isAr ? 'تأكيد الحصة' : isEn ? 'Confirm' : 'Confirmer coach',
+                      icon: <CheckCircle2 className="w-[18px] h-[18px] text-[#096b40]" />,
+                      onClick: () =>
+                        showToast?.({
+                          type: 'success',
+                          title: isAr ? 'تم التأكيد' : 'Coach confirmé',
+                          message: ev.trainerOrStaff,
+                        }),
+                    },
+                  ]}
+                />
+              </InspectorSection>
+
+              <InspectorSection index={1} title={isAr ? 'تفاصيل التوقيت' : isEn ? 'Session Schedule' : 'Détails du créneau'}>
+                <InspectorCard>
+                  <InspectorKeyValue label={isAr ? 'التخصص' : 'Discipline'} value={ev.category} tone="accent" mono={false} />
+                  <InspectorKeyValue label={isAr ? 'اليوم' : 'Jour'} value={getDayName(ev.dayOfWeek)} mono={false} />
+                  <InspectorKeyValue
+                    label={isAr ? 'التوقيت' : 'Horaire'}
+                    icon={<Clock className="w-[15px] h-[15px]" />}
+                    value={`${ev.startTime} - ${ev.endTime}`}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'الامتلاء' : 'Capacité'}
+                    value={`${ev.enrolledCount}/${ev.capacity} (${pct}%)`}
+                    tone={isFull ? 'danger' : 'ok'}
+                    isLast
+                  />
+                  <InspectorProgressBar percent={pct} tone={isFull ? 'danger' : 'ok'} />
+                </InspectorCard>
+              </InspectorSection>
+
+              <InspectorSection index={2} title={isAr ? 'التأطير والمكان' : isEn ? 'Staff & Location' : 'Encadrement & Lieu'}>
+                <InspectorCard>
+                  <InspectorKeyValue label={isAr ? 'المدرب' : 'Coach'} value={ev.trainerOrStaff} mono={false} />
+                  <InspectorKeyValue label={isAr ? 'القاعة' : 'Studio'} value={ev.roomOrArea} mono={false} />
+                  <InspectorKeyValue label={isAr ? 'الفرع' : 'Branche'} value={branchName} mono={false} isLast />
+                </InspectorCard>
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       <Modal

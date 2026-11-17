@@ -36,6 +36,15 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorListItem,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -462,6 +471,107 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
     return chips;
   }, [branchFilter, planFilter, plans, statusFilter, language]);
 
+  const getRowMeta = useCallback(
+    (lead: RegistrationLead): Partial<KineticRowData> => {
+      const planLabel = lead.preferredPlanName || plans[0]?.name || 'Standard Package';
+      const branch = resolveRecordBranch(lead, branchesById, currentBranch, language);
+      const statusVariant: KineticRowData['statusVariant'] =
+        lead.status === 'Approved' ? 'active' : lead.status === 'Declined' ? 'blocked' : 'warning';
+      return {
+        subline: lead.phoneNumber || lead.email,
+        categoryLabel: planLabel,
+        statusLabel: localizeStatus(lead.status, language),
+        statusVariant,
+        metricPrimary: new Date(lead.createdAt).toLocaleDateString(),
+        metricSecondary: lead.source || 'Direct',
+        detailCol1: {
+          heading: language === 'ar' ? 'بيانات المتقدم' : language === 'fr' ? 'Coordonnées' : 'Applicant Info',
+          primaryText: lead.phoneNumber || '—',
+          secondaryText: lead.email || '—',
+          tertiaryText: branch.name,
+        },
+        detailCol2: {
+          heading: language === 'ar' ? 'الاشتراك المطلوب' : language === 'fr' ? 'Formule & Canal' : 'Requested Plan',
+          primaryText: planLabel,
+          secondaryText: `${language === 'ar' ? 'القناة:' : language === 'fr' ? 'Source :' : 'Source:'} ${lead.source}`,
+          tertiaryText: `${language === 'ar' ? 'البدء:' : language === 'fr' ? 'Début :' : 'Start:'} ${
+            lead.preferredStartDate || (language === 'ar' ? 'فوري' : 'Immédiat')
+          }`,
+        },
+        detailCol3: {
+          heading: language === 'ar' ? 'ملاحظات الطلب' : language === 'fr' ? 'Notes du prospect' : 'Notes',
+          primaryText: localizeStatus(lead.status, language),
+          secondaryText: lead.notes || (language === 'ar' ? 'طلب جاهز للمراجعة' : 'Dossier prêt pour validation'),
+        },
+      };
+    },
+    [plans, branchesById, currentBranch, language]
+  );
+
+  const getFanActions = useCallback(
+    (lead: RegistrationLead): KineticRowFanAction[] => [
+      ...(lead.status === 'Pending'
+        ? [
+            {
+              id: 'convert',
+              label: language === 'ar' ? 'اعتماد' : language === 'fr' ? 'Valider & Inscrire' : 'Convert',
+              icon: <UserCheck className="w-[15px] h-[15px]" />,
+              onClick: () => handleStartConversion(lead),
+            },
+          ]
+        : [
+            {
+              id: 'view',
+              label: language === 'ar' ? 'عرض' : language === 'fr' ? 'Fiche' : 'View',
+              icon: <Eye className="w-[15px] h-[15px]" />,
+              onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
+                setDrawerOpenerEl(e.currentTarget);
+                setSelectedLead(lead);
+              },
+            },
+          ]),
+      {
+        id: 'del',
+        label: language === 'ar' ? 'حذف' : language === 'fr' ? 'Supprimer' : 'Delete',
+        icon: <X className="w-[15px] h-[15px]" />,
+        isDanger: true,
+        onClick: () => {
+          if (deleteLead) deleteLead(lead.id);
+          else updateLeadStatus(lead.id, 'Declined');
+        },
+      },
+    ],
+    [language, handleStartConversion, deleteLead, updateLeadStatus]
+  );
+
+  const getDetailActions = useCallback(
+    (lead: RegistrationLead): KineticDetailAction[] => [
+      {
+        id: 'view',
+        label: language === 'ar' ? 'معاينة' : language === 'fr' ? 'Fiche complète' : 'Details',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => setSelectedLead(lead),
+      },
+      ...(lead.status === 'Pending'
+        ? [
+            {
+              id: 'convert',
+              label: language === 'ar' ? 'اعتماد' : language === 'fr' ? 'Convertir' : 'Convert',
+              icon: <UserCheck className="w-3.5 h-3.5 text-[#096b40]" />,
+              onClick: () => handleStartConversion(lead),
+            },
+            {
+              id: 'decline',
+              label: language === 'ar' ? 'رفض' : language === 'fr' ? 'Refuser' : 'Decline',
+              icon: <X className="w-3.5 h-3.5 text-[#c0283d]" />,
+              onClick: () => updateLeadStatus(lead.id, 'Declined'),
+            },
+          ]
+        : []),
+    ],
+    [language, handleStartConversion, updateLeadStatus]
+  );
+
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: leads.length > 0,
@@ -573,6 +683,9 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
           hideToolbar
           openItemId={selectedLead?.id ?? null}
           columns={leadColumns}
+          getRowMeta={getRowMeta}
+          getFanActions={getFanActions}
+          getDetailActions={getDetailActions}
           isLoading={isSyncing || networkMode === 'force_skeleton'}
           isOffline={networkMode === 'offline'}
           isTimedOut={isSyncTimeout}
@@ -673,11 +786,17 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
         statusLabel={selectedLead ? localizeStatus(selectedLead.status, language) : undefined}
         statusClassName={
           selectedLead?.status === 'Approved'
-            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
             : selectedLead?.status === 'Declined'
-            ? 'bg-rose-50 text-rose-700 border border-rose-200'
-            : 'bg-amber-50 text-amber-700 border border-amber-200'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
         }
+        tabs={[
+          { id: 'overview', label: language === 'ar' ? 'المرشح' : language === 'fr' ? 'Aperçu candidat' : 'Overview' },
+          { id: 'plan', label: language === 'ar' ? 'الباقة المفضلة' : language === 'fr' ? 'Formule & Canal' : 'Preferred Plan' },
+          { id: 'tracking', label: language === 'ar' ? 'المتابعة' : language === 'fr' ? 'Historique' : 'Tracking' },
+        ]}
+        holdToDelete={Boolean(deleteLead)}
         onClose={() => setSelectedLead(null)}
         onSelectItem={(lead) => setSelectedLead(lead)}
         onDelete={
@@ -688,82 +807,134 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
               }
             : undefined
         }
-        renderBody={(lead) => (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-2.5">
-              <div className="flex items-center gap-2.5">
-                <Phone size={14} className="text-[#d4522f]" />
-                <span className="font-semibold text-black dark:text-white tabular-nums">{lead.phoneNumber}</span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <Mail size={14} className="text-[#d4522f]" />
-                <span className="font-semibold text-black dark:text-white">{lead.email}</span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <Calendar size={14} className="text-[#d4522f]" />
-                <span className="text-black dark:text-white">
-                  {language === 'ar' ? 'تاريخ البدء المطلوب:' : language === 'fr' ? 'Début souhaité :' : 'Requested start:'}{' '}
-                  <strong className="tabular-nums">
-                    {lead.preferredStartDate || (language === 'ar' ? 'فوري' : language === 'fr' ? 'Immédiat' : 'Immediate')}
-                  </strong>
-                </span>
-              </div>
-              {lead.notes && (
-                <div className="pt-2 border-t border-[#E6DED6]/60 dark:border-[#3A3734] text-black/62 dark:text-white/65">
-                  <span className="font-semibold text-black/75 dark:text-white/80">
-                    {language === 'ar' ? 'الملاحظات:' : language === 'fr' ? 'Remarques :' : 'Notes:'}
-                  </span>{' '}
-                  {lead.notes}
-                </div>
-              )}
-            </div>
+        renderBody={(lead, activeTab) => {
+          const planLabel = lead.preferredPlanName || plans[0]?.name || 'Standard Package';
+          if (activeTab === 'plan') {
+            return (
+              <>
+                <InspectorSection index={0} title={language === 'ar' ? 'الاشتراك المطلوب' : language === 'fr' ? 'Formule choisie' : 'Selected Plan'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label={t('member_field_plan_package', language)} value={planLabel} mono={false} tone="accent" />
+                    <InspectorKeyValue label={language === 'ar' ? 'قناة الاستقطاب' : 'Source'} value={lead.source} mono={false} />
+                    <InspectorKeyValue
+                      label={language === 'ar' ? 'تاريخ البدء' : 'Début souhaité'}
+                      value={lead.preferredStartDate || (language === 'ar' ? 'فوري' : 'Immédiat')}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+                {lead.status === 'Pending' && (
+                  <InspectorSection index={1}>
+                    <InspectorWideButton
+                      label={language === 'ar' ? 'تحويل إلى مشترك الآن' : language === 'fr' ? "Valider l'adhésion & Créer" : 'Convert to Active Member'}
+                      icon={<UserCheck className="w-4 h-4" />}
+                      tone="accent"
+                      onClick={() => handleStartConversion(lead)}
+                    />
+                  </InspectorSection>
+                )}
+              </>
+            );
+          }
 
-            <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex justify-between items-center">
-              <div>
-                <span className="text-[11.5px] font-semibold text-[#d4522f]">
-                  {language === 'ar' ? 'الباقة المفضلة' : language === 'fr' ? 'Formule préférée' : 'Preferred Plan'}
-                </span>
-                <div className="text-sm font-bold text-black dark:text-white mt-0.5">
-                  {lead.preferredPlanName || plans[0]?.name || 'Standard Package'}
-                </div>
-              </div>
-              <span className="text-sm font-bold text-[#d4522f] tabular-nums">{lead.source}</span>
-            </div>
+          if (activeTab === 'tracking') {
+            return (
+              <InspectorSection index={0} title={language === 'ar' ? 'سجل الطلب' : language === 'fr' ? 'Journal d’admission' : 'Intake Log'}>
+                <InspectorCard>
+                  <InspectorListItem
+                    title={language === 'ar' ? 'تقديم الطلب' : 'Demande soumise'}
+                    subtitle={`${new Date(lead.createdAt).toLocaleDateString()} · ${lead.source}`}
+                    badge={{ label: localizeStatus(lead.status, language), tone: lead.status === 'Approved' ? 'ok' : lead.status === 'Declined' ? 'danger' : 'warn' }}
+                    isLast={!lead.notes}
+                  />
+                  {lead.notes && (
+                    <InspectorListItem title={lead.notes} subtitle={language === 'ar' ? 'ملاحظات المتقدم' : 'Remarques'} isLast />
+                  )}
+                </InspectorCard>
+              </InspectorSection>
+            );
+          }
 
-            {lead.status === 'Pending' && (
-              <div className="space-y-2 pt-2">
-                <AtriumButton
-                  type="button"
-                  variant="primary"
-                  onClick={() => handleStartConversion(lead)}
-                  icon={<UserCheck size={16} />}
-                  className="w-full justify-center"
-                >
-                  <span>
-                    {language === 'ar'
-                      ? 'اعتماد العضوية وتسجيل الاشتراك'
-                      : language === 'fr'
-                      ? "Valider l'adhésion & Inscrire"
-                      : 'Approve & Convert to Member'}
-                  </span>
-                </AtriumButton>
-                <AtriumButton
-                  type="button"
-                  variant="danger"
-                  onClick={() => {
-                    updateLeadStatus(lead.id, 'Declined');
-                    setSelectedLead(null);
-                  }}
-                  className="w-full justify-center"
-                >
-                  <span>
-                    {language === 'ar' ? 'رفض الطلب' : language === 'fr' ? 'Refuser la demande' : 'Decline Registration'}
-                  </span>
-                </AtriumButton>
-              </div>
-            )}
-          </div>
-        )}
+          return (
+            <>
+              <InspectorSection index={0} title={language === 'ar' ? 'إجراءات سريعة' : language === 'fr' ? 'Actions rapides' : 'Quick Actions'}>
+                <InspectorQuickActions
+                  actions={[
+                    ...(lead.status === 'Pending'
+                      ? [
+                          {
+                            id: 'convert',
+                            label: language === 'ar' ? 'اعتماد وتحويل' : language === 'fr' ? 'Valider adhésion' : 'Convert',
+                            icon: <UserCheck className="w-[18px] h-[18px]" />,
+                            primary: true,
+                            onClick: () => handleStartConversion(lead),
+                          },
+                          {
+                            id: 'decline',
+                            label: language === 'ar' ? 'رفض الطلب' : language === 'fr' ? 'Refuser dossier' : 'Decline',
+                            icon: <X className="w-[18px] h-[18px] text-[#c0283d]" />,
+                            onClick: () => {
+                              updateLeadStatus(lead.id, 'Declined');
+                              setSelectedLead(null);
+                            },
+                          },
+                        ]
+                      : []),
+                    {
+                      id: 'call',
+                      label: language === 'ar' ? 'نسخ الهاتف' : language === 'fr' ? 'Copier Tél.' : 'Copy Phone',
+                      icon: <Phone className="w-[18px] h-[18px]" />,
+                      onClick: () => {
+                        navigator.clipboard?.writeText(lead.phoneNumber);
+                        showToast?.({ type: 'success', title: 'Copié', message: lead.phoneNumber });
+                      },
+                    },
+                    {
+                      id: 'mail',
+                      label: language === 'ar' ? 'نسخ الإيميل' : language === 'fr' ? 'Copier E-mail' : 'Copy Email',
+                      icon: <Mail className="w-[18px] h-[18px]" />,
+                      onClick: () => {
+                        navigator.clipboard?.writeText(lead.email);
+                        showToast?.({ type: 'success', title: 'Copié', message: lead.email });
+                      },
+                    },
+                  ]}
+                />
+              </InspectorSection>
+
+              <InspectorSection index={1} title={language === 'ar' ? 'بيانات الاتصال' : language === 'fr' ? 'Contact & Préférences' : 'Contact Info'}>
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={language === 'ar' ? 'الهاتف' : 'Téléphone'}
+                    icon={<Phone className="w-[15px] h-[15px]" />}
+                    value={lead.phoneNumber || '—'}
+                    copyText={lead.phoneNumber}
+                    onCopied={(v) => showToast?.({ type: 'success', title: 'Copié', message: v })}
+                  />
+                  <InspectorKeyValue
+                    label="E-mail"
+                    icon={<Mail className="w-[15px] h-[15px]" />}
+                    value={lead.email || '—'}
+                    copyText={lead.email}
+                    onCopied={(v) => showToast?.({ type: 'success', title: 'Copié', message: v })}
+                  />
+                  <InspectorKeyValue
+                    label={language === 'ar' ? 'الباقة المطلوبة' : 'Formule souhaitée'}
+                    value={planLabel}
+                    tone="accent"
+                    mono={false}
+                  />
+                  <InspectorKeyValue
+                    label={language === 'ar' ? 'تاريخ البدء' : 'Début souhaité'}
+                    icon={<Calendar className="w-[15px] h-[15px]" />}
+                    value={lead.preferredStartDate || (language === 'ar' ? 'فوري' : 'Immédiat')}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       <Modal

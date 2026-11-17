@@ -58,11 +58,6 @@ export const ScreenHeaderBar: React.FC<ScreenHeaderBarProps> = React.memo(({
           <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase rtl:normal-case leading-[0.98] rtl:leading-tight tracking-[0.012em] rtl:tracking-normal text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans truncate">
             {title}
           </h1>
-          {subtitle && (
-            <p className="text-[12.5px] font-medium text-black/62 dark:text-white/68 mt-1 truncate">
-              {subtitle}
-            </p>
-          )}
         </div>
       </div>
 

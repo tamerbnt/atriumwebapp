@@ -1,11 +1,9 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   Calendar,
-  Clock,
   Plus,
   ChevronLeft,
   ChevronRight,
-  Phone,
   CheckCircle2,
   Stethoscope,
   UserCheck,
@@ -27,10 +25,39 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
+
+const getInitials2 = (name: string): string => {
+  const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+  return (name || 'RD').slice(0, 2).toUpperCase();
+};
+
+const getAptStatusClassName = (status: string): string => {
+  switch (status) {
+    case 'InRoom':
+    case 'Completed':
+      return 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+    case 'Arrived':
+      return 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
+    case 'Cancelled':
+    case 'NoShow':
+      return 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]';
+    default:
+      return 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]';
+  }
+};
 
 export const MedicalAgendaView: React.FC<any> = () => {
   const { language, currentBranch, branches, isSyncing, networkMode, retryCloudSync } =
@@ -133,6 +160,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
     (apt: MedicalAppointmentSlot, opener?: HTMLElement | null) => {
       if (opener) setDrawerOpenerEl(opener);
       setInspectedApt(apt);
+      setInspectorTab('details');
     },
     []
   );
@@ -489,7 +517,6 @@ export const MedicalAgendaView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<Calendar size={22} />}
         title={isAr ? 'الأجندة' : 'Agenda'}
-        subtitle={`Polyclinique · ${selectedDate}`}
         secondaryActions={
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-1 shadow-2xs">
@@ -607,9 +634,10 @@ export const MedicalAgendaView: React.FC<any> = () => {
 
         <UniversalDataCollection
           hideToolbar
-          data={sortedAppointments}
+          items={sortedAppointments}
           keyExtractor={(a) => a.id}
-          defaultViewMode={viewMode}
+          viewMode={viewMode}
+          defaultViewMode="calendar"
           columns={columns}
           sortBy={sortBy}
           sortDirection={sortDir}
@@ -622,7 +650,16 @@ export const MedicalAgendaView: React.FC<any> = () => {
           openItemId={activeApt?.id ?? null}
           onItemClick={handleInspectApt}
           onViewDetails={handleInspectApt}
-          customActions={(apt) => {
+          getRowMeta={(a): KineticRowMeta => ({
+            title: a.patientName,
+            subtitle: `${a.reason} · ${getAptBranchName(a)}`,
+            avatarText: getInitials2(a.patientName),
+            statusLabel: a.status,
+            statusClassName: getAptStatusClassName(a.status),
+            primaryStat: `${a.startTime} (${a.durationMinutes}m)`,
+            secondaryStat: `${a.doctorName} · ${a.date}`,
+          })}
+          getFanActions={(apt): KineticRowFanAction<MedicalAppointmentSlot>[] => {
             if (apt.status === 'Booked') {
               return [
                 {
@@ -645,34 +682,44 @@ export const MedicalAgendaView: React.FC<any> = () => {
                 },
               ];
             }
+            if (apt.status === 'InRoom') {
+              return [
+                {
+                  id: 'complete',
+                  label: isAr ? 'إنهاء' : 'Terminer',
+                  icon: <CheckCircle2 size={13} />,
+                  variant: 'primary',
+                  onClick: () => handleStatusChange(apt, 'Completed'),
+                },
+              ];
+            }
             return [];
           }}
-          renderCard={(a) => (
-            <div className="flex flex-col w-full space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-mono font-bold text-xs text-[#d4522f]">
-                  {a.startTime} · {a.durationMinutes}m
-                </span>
-                <span
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${getStatusBadge(
-                    a.status
-                  )}`}
-                >
-                  {a.status}
-                </span>
-              </div>
-              <div>
-                <h4 className="font-bold text-sm text-black dark:text-white truncate">
-                  {a.patientName}
-                </h4>
-                <p className="text-xs text-black/55 dark:text-white/55 truncate">{a.reason}</p>
-              </div>
-              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
-                <span className="truncate">{a.doctorName}</span>
-                <span className="font-mono">{a.date}</span>
-              </div>
-            </div>
-          )}
+          getDetailActions={(apt): KineticDetailAction[] => {
+            if (apt.status === 'Booked') {
+              return [
+                {
+                  id: 'arrived',
+                  label: isAr ? 'تسجيل الوصول' : 'Marquer Arrivé',
+                  icon: <UserCheck size={14} />,
+                  variant: 'primary',
+                  onClick: () => handleStatusChange(apt, 'Arrived'),
+                },
+              ];
+            }
+            if (apt.status === 'Arrived') {
+              return [
+                {
+                  id: 'inroom',
+                  label: isAr ? 'إدخال الغرفة' : 'Entrée en Salle',
+                  icon: <Stethoscope size={14} />,
+                  variant: 'primary',
+                  onClick: () => handleStatusChange(apt, 'InRoom'),
+                },
+              ];
+            }
+            return [];
+          }}
           renderCalendarView={() => (
             <div className="bg-white dark:bg-neutral-900 rounded-[24px] border border-neutral-200 dark:border-neutral-800 overflow-hidden shadow-2xs">
               <div className="grid grid-cols-12 bg-[#F3EDE7] dark:bg-neutral-800/60 border-b border-neutral-200 dark:border-neutral-800">
@@ -863,93 +910,161 @@ export const MedicalAgendaView: React.FC<any> = () => {
         subtitle={
           activeApt ? `${activeApt.date} · ${activeApt.startTime} (${activeApt.durationMinutes}m)` : ''
         }
-        avatarText={activeApt?.patientName?.charAt(0).toUpperCase() || 'R'}
-        avatarColor="#0D9488"
+        avatarText={activeApt ? getInitials2(activeApt.patientName) : 'RD'}
+        avatarColor="#d4522f"
+        categoryLabel={isAr ? 'موعد طبي' : isFr ? 'RENDEZ-VOUS CLINIQUE' : 'APPOINTMENT'}
         branchName={activeApt ? getAptBranchName(activeApt) : ''}
         statusLabel={activeApt?.status || ''}
+        statusClassName={activeApt ? getAptStatusClassName(activeApt.status) : undefined}
         tabs={[
-          { id: 'details', label: isAr ? 'التفاصيل' : 'Détails RDV' },
-          { id: 'actions', label: isAr ? 'تحديث الحالة' : 'Workflow' },
+          { id: 'details', label: isAr ? 'التفاصيل' : isFr ? 'Détails RDV' : 'Details' },
+          { id: 'patient', label: isAr ? 'ملف المريض' : isFr ? 'Dossier' : 'Patient' },
+          { id: 'actions', label: isAr ? 'تحديث الحالة' : isFr ? 'Workflow' : 'Actions' },
         ]}
         activeTab={inspectorTab}
         onTabChange={setInspectorTab}
         onSelectItem={(apt) => handleInspectApt(apt)}
         onClose={() => setInspectedApt(null)}
-        renderBody={(apt, tab) => (
-          <div className="space-y-4 text-xs">
-            {tab === 'details' && (
-              <div className="space-y-3">
-                <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Praticien :</span>
-                    <span className="font-bold text-black dark:text-white">{apt.doctorName}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Motif :</span>
-                    <span className="font-semibold text-black dark:text-white">{apt.reason}</span>
-                  </div>
-                  {apt.patientPhone && (
-                    <div className="flex justify-between">
-                      <span className="text-black/55 dark:text-white/55 flex items-center gap-1">
-                        <Phone size={11} /> Téléphone :
-                      </span>
-                      <span className="font-mono font-semibold text-black dark:text-white">
-                        {apt.patientPhone}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55 flex items-center gap-1">
-                      <Clock size={11} /> Créneau :
-                    </span>
-                    <span className="font-mono font-bold text-[#d4522f]">
-                      {apt.date} · {apt.startTime} ({apt.durationMinutes} min)
-                    </span>
-                  </div>
-                </div>
-                {apt.notes && (
-                  <div className="p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 text-amber-800 dark:text-amber-300">
-                    {apt.notes}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {tab === 'actions' && (
-              <div className="space-y-2.5">
-                {(['Arrived', 'InRoom', 'Completed', 'Cancelled'] as const).map((nextSt) => (
-                  <button
-                    key={nextSt}
-                    type="button"
-                    disabled={apt.status === nextSt}
-                    onClick={() => handleStatusChange(apt, nextSt)}
-                    className={`w-full p-3 rounded-xl font-semibold flex items-center justify-between transition-colors cursor-pointer ${
-                      apt.status === nextSt
-                        ? 'bg-neutral-200 dark:bg-neutral-800 text-black/45 dark:text-white/45 cursor-not-allowed'
-                        : nextSt === 'Cancelled'
-                        ? 'bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 hover:bg-rose-100'
-                        : 'bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white hover:bg-[#d4522f] hover:text-white'
-                    }`}
+        renderBody={(apt, tab) => {
+          const patientRecord = patients.find((p) => p.id === apt.patientId);
+          return (
+            <div className="space-y-5">
+              {tab === 'details' && (
+                <>
+                  <InspectorSection
+                    title={isAr ? 'إجراءات سريعة' : 'Actions rapides'}
+                    delayIndex={0}
+                    animateKey={apt.id}
                   >
-                    <span className="flex items-center gap-2">
-                      {nextSt === 'Cancelled' ? <XCircle size={15} /> : <CheckCircle2 size={15} />}
-                      <span>
-                        {nextSt === 'Arrived'
-                          ? 'Marquer Arrivé (Salle d’attente)'
-                          : nextSt === 'InRoom'
-                          ? 'Entrée en Salle de Consultation'
-                          : nextSt === 'Completed'
-                          ? 'Clôturer Consultation'
-                          : 'Annuler le Rendez-vous'}
-                      </span>
-                    </span>
-                    <span className="font-mono text-[10px] uppercase">{nextSt}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                    <InspectorQuickActions
+                      actions={[
+                        {
+                          id: 'arrived',
+                          label: isAr ? 'وصل' : 'Marquer Arrivé',
+                          icon: <UserCheck size={15} />,
+                          onClick: () => handleStatusChange(apt, 'Arrived'),
+                        },
+                        {
+                          id: 'inroom',
+                          label: isAr ? 'في الغرفة' : 'En Salle',
+                          icon: <Stethoscope size={15} />,
+                          onClick: () => handleStatusChange(apt, 'InRoom'),
+                        },
+                        {
+                          id: 'new',
+                          label: isAr ? 'حجز جديد' : 'Nouveau RDV',
+                          icon: <Plus size={15} />,
+                          onClick: () => handleOpenBooking(apt.doctorId, undefined),
+                        },
+                      ]}
+                    />
+                  </InspectorSection>
+
+                  <InspectorSection
+                    title={isAr ? 'تفاصيل الموعد' : 'Créneau & Praticien'}
+                    delayIndex={1}
+                    animateKey={apt.id}
+                  >
+                    <InspectorCard>
+                      <InspectorKeyValue label={isAr ? 'الطبيب' : 'Praticien'} value={apt.doctorName} />
+                      <InspectorKeyValue label={isAr ? 'السبب' : 'Motif'} value={apt.reason} />
+                      <InspectorKeyValue
+                        label={isAr ? 'التوقيت' : 'Créneau'}
+                        value={`${apt.date} · ${apt.startTime} (${apt.durationMinutes} min)`}
+                        mono
+                        isLast={!apt.patientPhone && !apt.notes}
+                      />
+                      {apt.patientPhone && (
+                        <InspectorKeyValue
+                          label={isAr ? 'الهاتف' : 'Téléphone'}
+                          value={apt.patientPhone}
+                          mono
+                          isLast={!apt.notes}
+                        />
+                      )}
+                      {apt.notes && (
+                        <InspectorKeyValue
+                          label={isAr ? 'ملاحظات' : 'Notes'}
+                          value={apt.notes}
+                          isLast
+                        />
+                      )}
+                    </InspectorCard>
+                  </InspectorSection>
+                </>
+              )}
+
+              {tab === 'patient' && (
+                <InspectorSection
+                  title={isAr ? 'ملف المريض المرتبط' : 'Fiche Patient Associée'}
+                  delayIndex={0}
+                  animateKey={apt.id}
+                >
+                  <InspectorCard>
+                    <InspectorKeyValue label={isAr ? 'الاسم' : 'Patient'} value={apt.patientName} />
+                    <InspectorKeyValue
+                      label={isAr ? 'الهاتف' : 'Téléphone'}
+                      value={patientRecord?.phone || apt.patientPhone || '—'}
+                      mono
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'فصيلة الدم' : 'Groupe Sanguin'}
+                      value={patientRecord?.bloodGroup || 'O+'}
+                      mono
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'بطاقة الشفاء' : 'NSS / Chifa'}
+                      value={patientRecord?.nationalId || patientRecord?.chifaCardNumber || 'CHIFA-OK'}
+                      mono
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'الحساسيات' : 'Allergies'}
+                      value={
+                        patientRecord?.allergies?.length
+                          ? patientRecord.allergies.join(', ')
+                          : isAr
+                          ? 'لا توجد'
+                          : 'Aucune déclarée'
+                      }
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+              )}
+
+              {tab === 'actions' && (
+                <InspectorSection
+                  title={isAr ? 'سير العمل' : "Workflow Salle d'Attente"}
+                  delayIndex={0}
+                  animateKey={apt.id}
+                >
+                  <div className="space-y-2.5">
+                    {(['Arrived', 'InRoom', 'Completed', 'Cancelled'] as const).map((nextSt) => (
+                      <InspectorWideButton
+                        key={nextSt}
+                        label={
+                          nextSt === 'Arrived'
+                            ? 'Marquer Arrivé (Salle d’attente)'
+                            : nextSt === 'InRoom'
+                            ? 'Entrée en Salle de Consultation'
+                            : nextSt === 'Completed'
+                            ? 'Clôturer Consultation'
+                            : 'Annuler le Rendez-vous'
+                        }
+                        icon={nextSt === 'Cancelled' ? <XCircle size={15} /> : <CheckCircle2 size={15} />}
+                        variant={
+                          nextSt === 'Cancelled' ? 'danger' : nextSt === 'InRoom' ? 'primary' : 'default'
+                        }
+                        disabled={apt.status === nextSt}
+                        onClick={() => handleStatusChange(apt, nextSt)}
+                      />
+                    ))}
+                  </div>
+                </InspectorSection>
+              )}
+            </div>
+          );
+        }}
       />
 
       <MedicalAppointmentModal

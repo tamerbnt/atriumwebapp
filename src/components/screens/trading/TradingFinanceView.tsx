@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   Wallet,
-  Clock,
   CheckCircle,
   X,
 } from 'lucide-react';
@@ -24,13 +23,26 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorWideButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
 
+const STATUS_PILL_OK =
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+const STATUS_PILL_DANGER =
+  'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]';
+
 type FinanceFilter = 'all' | 'unpaid' | 'paid';
 type AgingBucketFilter = 'all' | '0_30' | '31_60' | '61_90' | '90_plus';
+type DrawerTab = 'facture' | 'lignes' | 'reglement';
 
 export const TradingFinanceView: React.FC = () => {
   const { t, isRtl, language } = useTranslation();
@@ -66,6 +78,7 @@ export const TradingFinanceView: React.FC = () => {
 
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [inspectingDoc, setInspectingDoc] = useState<CommercialDocument | null>(null);
+  const [drawerTab, setDrawerTab] = useState<DrawerTab>('facture');
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -377,7 +390,6 @@ export const TradingFinanceView: React.FC = () => {
       <ScreenHeaderBar
         icon={<Wallet size={22} />}
         title={t('trading_finance_title', 'Finances')}
-        subtitle={isAr ? 'تحصيل الشركات' : 'Recouvrement & Balance Âgée B2B'}
       />
 
       <ScreenKpiBanner
@@ -540,9 +552,10 @@ export const TradingFinanceView: React.FC = () => {
 
         <UniversalDataCollection<CommercialDocument>
           hideToolbar
-          data={filteredInvoices}
+          items={filteredInvoices}
           keyExtractor={(inv) => inv.id}
-          viewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode="list"
           columns={columns}
           sortBy={sortBy}
           sortDirection={sortDir}
@@ -564,16 +577,49 @@ export const TradingFinanceView: React.FC = () => {
             setDrawerOpenerEl(el || null);
             setInspectingDoc(inv);
           }}
-          renderCard={(inv) => (
-            <div className="p-4 border border-[#E6DED6] dark:border-neutral-700/70 bg-white dark:bg-neutral-800/80 rounded-2xl space-y-1.5">
-              <span className="font-mono text-xs font-bold">{inv.docNumber}</span>
-              <p className="font-bold text-xs">{inv.clientName}</p>
-              <div className="flex justify-between text-xs pt-2 border-t border-neutral-100 dark:border-neutral-700">
-                <span className="text-black/55 dark:text-white/55">Net TTC:</span>
-                <span className="font-bold font-mono text-[#d4522f]">{formatMoney(inv.netToPay)}</span>
-              </div>
-            </div>
-          )}
+          getRowMeta={(inv) => {
+            const isPaid = inv.status === 'Paid';
+            const branchInfo = resolveRecordBranch(inv, branchesById, currentBranch, language);
+            return {
+              title: inv.docNumber,
+              subline: `${inv.clientName} · ${inv.date}`,
+              avatarText: 'FA',
+              avatarColor: '#d4522f',
+              categoryLabel: inv.paymentMethod || 'Virement',
+              statusLabel: isPaid ? 'Soldée' : 'Non Encaissée',
+              statusVariant: isPaid ? 'active' : 'blocked',
+              metricPrimary: formatMoney(inv.netToPay),
+              metricSecondary: `Éch: ${inv.dueDate || '30j'}`,
+              branchName: branchInfo.name,
+              detailCol1: { label: 'Client B2B', value: inv.clientName },
+              detailCol2: { label: 'Date', value: inv.date },
+              detailCol3: { label: 'Mode', value: inv.paymentMethod || 'Virement' },
+            };
+          }}
+          getFanActions={(inv) =>
+            inv.status !== 'Paid'
+              ? [
+                  {
+                    id: 'settle',
+                    label: t('trading_finance_settle_invoice', 'Encaisser'),
+                    icon: <CheckCircle size={14} />,
+                    onClick: () => setSettlementDoc(inv),
+                  },
+                ]
+              : undefined
+          }
+          getDetailActions={(inv) =>
+            inv.status !== 'Paid'
+              ? [
+                  {
+                    id: 'settle',
+                    label: t('trading_finance_settle_invoice', 'Encaisser'),
+                    icon: <CheckCircle size={13} />,
+                    onClick: () => setSettlementDoc(inv),
+                  },
+                ]
+              : []
+          }
           emptyTitle={isAr ? 'لا توجد فواتير مطابقة' : 'Aucune facture trouvée'}
           emptyDescription={
             isAr
@@ -607,48 +653,111 @@ export const TradingFinanceView: React.FC = () => {
         language={language}
         title={inspectingDoc?.docNumber || ''}
         subtitle={inspectingDoc ? `${inspectingDoc.clientName} · ${inspectingDoc.date}` : undefined}
-        avatarText="FAC"
+        avatarText="FA"
+        avatarColor="#d4522f"
         branchName={
           inspectingDoc ? resolveRecordBranch(inspectingDoc, branchesById, currentBranch, language).name : undefined
         }
         statusLabel={inspectingDoc?.status === 'Paid' ? 'Soldée' : 'Non Encaissée'}
+        statusClassName={inspectingDoc?.status === 'Paid' ? STATUS_PILL_OK : STATUS_PILL_DANGER}
+        tabs={[
+          { id: 'facture', label: isAr ? 'الفاتورة' : isEn ? 'Invoice' : 'Facture' },
+          { id: 'lignes', label: isAr ? 'البنود' : isEn ? 'Lines' : 'Lignes' },
+          { id: 'reglement', label: isAr ? 'التحصيل' : isEn ? 'Settlement' : 'Règlement' },
+        ]}
+        activeTab={drawerTab}
+        onTabChange={(tab) => setDrawerTab(tab as DrawerTab)}
         onClose={() => setInspectingDoc(null)}
         onSelectItem={(doc) => setInspectingDoc(doc)}
-        renderBody={(doc) => (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-2xl bg-[#FBF8F5] dark:bg-neutral-800/50 border border-[#E6DED6] dark:border-neutral-700/60 space-y-2">
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/60">Client B2B :</span>
-                <span className="font-bold">{doc.clientName}</span>
+        renderBody={(doc, tab) => {
+          if (tab === 'lignes') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0} title={`Lignes facturées (${doc.items?.length || 0})`}>
+                  <InspectorCard>
+                    {!doc.items || doc.items.length === 0 ? (
+                      <InspectorKeyValue label="Détail" value="Facture globale" isLast />
+                    ) : (
+                      doc.items.map((it, idx) => (
+                        <InspectorListItem
+                          key={it.id}
+                          title={it.description}
+                          subtitle={`${it.quantity} ${it.unit} × ${formatMoney(it.unitPriceHt)}`}
+                          metaRight={formatMoney(it.totalHt)}
+                          isLast={idx === doc.items.length - 1}
+                        />
+                      ))
+                    )}
+                  </InspectorCard>
+                </InspectorSection>
               </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/60">Date d'émission :</span>
-                <span className="font-mono">{doc.date}</span>
+            );
+          }
+
+          if (tab === 'reglement') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0} title="Statut d'encaissement">
+                  <InspectorBigStat
+                    value={formatMoney(doc.netToPay)}
+                    tone={doc.status === 'Paid' ? 'ok' : 'danger'}
+                    caption={doc.status === 'Paid' ? 'Facture intégralement soldée' : `Échéance : ${doc.dueDate || '30 jours'}`}
+                  />
+                  <InspectorCard>
+                    <InspectorKeyValue label="Mode règlement" value={doc.paymentMethod || 'Virement bancaire'} />
+                    <InspectorKeyValue label="Conditions" value={doc.paymentTerms || '30 jours'} isLast />
+                  </InspectorCard>
+                </InspectorSection>
+                {doc.status !== 'Paid' && (
+                  <InspectorWideButton
+                    label={t('trading_finance_settle_invoice', 'Encaisser cette facture')}
+                    icon={<CheckCircle size={14} />}
+                    tone="accent"
+                    onClick={() => {
+                      setInspectingDoc(null);
+                      setSettlementDoc(doc);
+                    }}
+                  />
+                )}
               </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/60">Mode règlement :</span>
-                <span>{doc.paymentMethod}</span>
-              </div>
-              <div className="flex justify-between pt-2 border-t border-[#E6DED6] dark:border-neutral-700 font-bold text-sm text-[#d4522f]">
-                <span>Net TTC :</span>
-                <span className="font-mono">{formatMoney(doc.netToPay)}</span>
-              </div>
+            );
+          }
+
+          return (
+            <div className="space-y-4">
+              {doc.status !== 'Paid' && (
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'settle',
+                      label: t('trading_finance_settle_invoice', 'Encaisser'),
+                      icon: <CheckCircle size={15} />,
+                      primary: true,
+                      onClick: () => {
+                        setInspectingDoc(null);
+                        setSettlementDoc(doc);
+                      },
+                    },
+                  ]}
+                />
+              )}
+              <InspectorSection index={0} title="Synthèse Facture">
+                <InspectorBigStat
+                  value={formatMoney(doc.netToPay)}
+                  tone={doc.status === 'Paid' ? 'ok' : 'accent'}
+                  caption={`Net TTC · Émise le ${doc.date}`}
+                />
+                <InspectorCard>
+                  <InspectorKeyValue label="Client B2B" value={doc.clientName} />
+                  <InspectorKeyValue label="Date d'émission" value={doc.date} mono />
+                  <InspectorKeyValue label="Total HT" value={formatMoney(doc.totalHtFinal || 0)} mono />
+                  <InspectorKeyValue label="TVA" value={formatMoney(doc.totalTva || 0)} mono />
+                  <InspectorKeyValue label="Mode règlement" value={doc.paymentMethod || 'Virement bancaire'} isLast />
+                </InspectorCard>
+              </InspectorSection>
             </div>
-            {doc.status !== 'Paid' && (
-              <button
-                type="button"
-                onClick={() => {
-                  setInspectingDoc(null);
-                  setSettlementDoc(doc);
-                }}
-                className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <CheckCircle size={14} />
-                <span>{t('trading_finance_settle_invoice', 'Encaisser cette facture')}</span>
-              </button>
-            )}
-          </div>
-        )}
+          );
+        }}
       />
 
       {settlementDoc && (

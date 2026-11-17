@@ -9,7 +9,6 @@ import {
   Printer,
   Tv,
   Calendar,
-  ArrowRight,
   LayoutGrid,
   List,
 } from 'lucide-react';
@@ -33,10 +32,35 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorNotesField,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
+
+const getInitials2 = (name: string): string => {
+  const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+  return (name || 'TR').slice(0, 2).toUpperCase();
+};
+
+const getQueueStatusClassName = (status: MedicalConsultation['status']): string => {
+  if (status === 'InWaitingQueue') {
+    return 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
+  }
+  if (status === 'InConsultation') {
+    return 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]';
+  }
+  return 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+};
 
 export const MedicalQueueView: React.FC<any> = () => {
   const {
@@ -81,7 +105,6 @@ export const MedicalQueueView: React.FC<any> = () => {
   const [activeInspectorTab, setActiveInspectorTab] = useState<string>('fiche');
   const [isConsultModalOpen, setIsConsultModalOpen] = useState(false);
   const [quickNote, setQuickNote] = useState('');
-  const [noteSaved, setNoteSaved] = useState(false);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -229,16 +252,14 @@ export const MedicalQueueView: React.FC<any> = () => {
     [updateConsultationStatus, activeConsultation, isAr]
   );
 
-  const handleSaveNote = () => {
-    if (!quickNote.trim()) return;
-    setNoteSaved(true);
-    setTimeout(() => setNoteSaved(false), 2000);
-    showToast({
-      type: 'success',
-      title: isAr ? 'تم الحفظ' : 'Observation enregistrée',
-      message: isAr ? 'تم حفظ الملاحظة السريرية' : 'Observation clinique enregistrée',
-    });
-  };
+  const handleSelectConsultation = useCallback(
+    (c: MedicalConsultation, el?: HTMLElement | null) => {
+      if (el) setDrawerOpenerEl(el);
+      setInspectedConsultation(c);
+      setActiveInspectorTab('fiche');
+    },
+    []
+  );
 
   const handleExportCsv = useCallback(() => {
     const headers = [
@@ -507,7 +528,6 @@ export const MedicalQueueView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<Clock size={22} />}
         title={isAr ? 'الانتظار' : language === 'en' ? 'Queue' : 'Attente'}
-        subtitle={`${queueCounts.waiting} ${isAr ? 'في الانتظار' : 'en attente'}`}
         secondaryActions={
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center bg-white/80 dark:bg-neutral-800 p-0.5 rounded-xl border border-[#E6DED6] dark:border-neutral-700/60">
@@ -671,9 +691,10 @@ export const MedicalQueueView: React.FC<any> = () => {
             {displayLayout === 'collection' ? (
               <UniversalDataCollection
                 hideToolbar
-                data={sortedConsultations}
+                items={sortedConsultations}
                 keyExtractor={(c) => c.id}
-                defaultViewMode={viewMode}
+                viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+                defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
                 columns={columns}
                 sortBy={sortBy}
                 sortDirection={sortDir}
@@ -686,15 +707,30 @@ export const MedicalQueueView: React.FC<any> = () => {
                 openItemId={activeConsultation?.id ?? null}
                 isPinned={(c) => pinnedIds.has(c.id)}
                 onTogglePin={(c) => handleTogglePin(c.id)}
-                onItemClick={(c, el) => {
-                  if (el) setDrawerOpenerEl(el);
-                  setInspectedConsultation(c);
-                }}
-                onViewDetails={(c, el) => {
-                  if (el) setDrawerOpenerEl(el);
-                  setInspectedConsultation(c);
-                }}
-                customActions={(c) => [
+                onItemClick={handleSelectConsultation}
+                onViewDetails={handleSelectConsultation}
+                getRowMeta={(c): KineticRowMeta => ({
+                  title: c.patientName,
+                  subtitle: `${c.chiefComplaint} · ${c.vitals?.bloodPressure || '120/80'}`,
+                  avatarText: getInitials2(c.patientName),
+                  statusLabel:
+                    c.status === 'InWaitingQueue'
+                      ? isAr
+                        ? 'في الانتظار'
+                        : 'En attente'
+                      : c.status === 'InConsultation'
+                      ? isAr
+                        ? 'في الفحص'
+                        : 'En consultation'
+                      : isAr
+                      ? 'مكتمل'
+                      : 'Terminé',
+                  statusClassName: getQueueStatusClassName(c.status),
+                  primaryStat: formatMoney(c.consultationFeeDzd, 'DZD'),
+                  secondaryStat: `${c.ticketNumber || c.id} · ${c.consultationDate.split('T')[0]}`,
+                  isPinned: pinnedIds.has(c.id),
+                })}
+                getFanActions={(c): KineticRowFanAction<MedicalConsultation>[] => [
                   {
                     id: 'exam',
                     label:
@@ -712,65 +748,32 @@ export const MedicalQueueView: React.FC<any> = () => {
                       else handleFinishExam(c);
                     },
                   },
+                  {
+                    id: 'pin',
+                    label: pinnedIds.has(c.id) ? 'Détacher' : 'Prioriser',
+                    icon: <Pin size={13} />,
+                    onClick: () => handleTogglePin(c.id),
+                  },
                 ]}
-                renderCard={(c) => {
-                  const isPinned = pinnedIds.has(c.id);
-                  return (
-                    <div className="flex flex-col w-full space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-black dark:text-white truncate">
-                          {c.patientName} {isPinned && '· VIP'}
-                        </span>
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            c.status === 'InWaitingQueue'
-                              ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                              : c.status === 'InConsultation'
-                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
-                              : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                          }`}
-                        >
-                          {c.status === 'InWaitingQueue'
-                            ? 'Attente'
-                            : c.status === 'InConsultation'
-                            ? 'En cours'
-                            : 'Terminé'}
-                        </span>
-                      </div>
-                      <div className="bg-neutral-50 dark:bg-neutral-900/60 rounded-xl p-2.5 grid grid-cols-3 gap-1 text-center text-xs font-mono">
-                        <div>
-                          <div className="text-[10px] text-black/55 dark:text-white/55">TA</div>
-                          <div className="font-bold text-black dark:text-white">
-                            {c.vitals?.bloodPressure || 'N/A'}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-[10px] text-black/55 dark:text-white/55">Temp</div>
-                          <div className="font-bold text-black dark:text-white">
-                            {c.vitals?.temperatureCelsius ? `${c.vitals.temperatureCelsius}°` : '37°'}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-[10px] text-black/55 dark:text-white/55">Poids</div>
-                          <div className="font-bold text-black dark:text-white">
-                            {c.vitals?.weightKg ? `${c.vitals.weightKg}kg` : 'N/A'}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-xs text-black/55 dark:text-white/55 line-clamp-1">
-                        {c.chiefComplaint}
-                      </div>
-                      <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
-                        <span className="font-mono font-bold text-xs text-[#d4522f]">
-                          {formatMoney(c.consultationFeeDzd, 'DZD')}
-                        </span>
-                        <span className="text-[11px] text-black/55 dark:text-white/55">
-                          {c.consultationDate.split('T')[0]}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                }}
+                getDetailActions={(c): KineticDetailAction[] => [
+                  {
+                    id: 'exam',
+                    label:
+                      c.status === 'InWaitingQueue'
+                        ? isAr
+                          ? 'استدعاء'
+                          : 'Appeler'
+                        : isAr
+                        ? 'إنهاء'
+                        : 'Clôturer',
+                    icon: <Stethoscope size={14} />,
+                    variant: 'primary',
+                    onClick: () => {
+                      if (c.status === 'InWaitingQueue') handleStartExam(c);
+                      else handleFinishExam(c);
+                    },
+                  },
+                ]}
                 emptyTitle={isAr ? 'لا توجد استشارات مطابقة' : 'Aucune consultation trouvée'}
                 emptyDescription={
                   isAr ? 'قم بقبول مريض جديد للبدء' : "Admettez un premier patient en salle d'attente"
@@ -907,8 +910,9 @@ export const MedicalQueueView: React.FC<any> = () => {
                   }`
                 : ''
             }
-            avatarText={activeConsultation?.patientName?.charAt(0).toUpperCase() || 'C'}
+            avatarText={activeConsultation ? getInitials2(activeConsultation.patientName) : 'TR'}
             avatarColor="#d4522f"
+            categoryLabel={isAr ? 'الفرز والانتظار' : isFr ? 'TRIAGE & CONSULTATION' : 'TRIAGE QUEUE'}
             branchName={
               activeConsultation
                 ? resolveRecordBranch(activeConsultation, branchesById, currentBranch, language).name
@@ -927,209 +931,233 @@ export const MedicalQueueView: React.FC<any> = () => {
                 ? 'مكتمل'
                 : 'Terminé'
             }
+            statusClassName={
+              activeConsultation ? getQueueStatusClassName(activeConsultation.status) : undefined
+            }
             tabs={[
-              { id: 'fiche', label: isAr ? 'الفحص' : 'Fiche' },
-              { id: 'vitals', label: isAr ? 'العلامات' : 'Constantes' },
-              { id: 'finance', label: isAr ? 'الأتعاب' : 'Honoraires' },
-              { id: 'actions', label: isAr ? 'الإجراءات' : 'Actions' },
+              { id: 'fiche', label: isAr ? 'الفحص' : isFr ? 'Fiche' : 'Overview' },
+              { id: 'vitals', label: isAr ? 'العلامات' : isFr ? 'Constantes' : 'Vitals' },
+              { id: 'finance', label: isAr ? 'الأتعاب والملف' : isFr ? 'Honoraires & Actions' : 'Billing' },
             ]}
             activeTab={activeInspectorTab}
             onTabChange={setActiveInspectorTab}
-            onSelectItem={(c) => setInspectedConsultation(c)}
+            onSelectItem={(c) => handleSelectConsultation(c)}
             onClose={() => setInspectedConsultation(null)}
             renderBody={(cons, tab) => (
-              <div className="space-y-4 text-xs">
+              <div className="space-y-5">
                 {tab === 'fiche' && (
-                  <div className="space-y-4">
-                    <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-1">
-                      <span className="text-[10px] font-bold text-black/55 dark:text-white/55">
-                        MOTIF DE CONSULTATION
-                      </span>
-                      <p className="text-black dark:text-white font-medium text-xs">
-                        {cons.chiefComplaint}
-                      </p>
-                    </div>
-                    <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-1">
-                      <span className="text-[10px] font-bold text-black/55 dark:text-white/55">
-                        DIAGNOSTIC / EXAMEN CLINIQUE
-                      </span>
-                      <p className="text-black dark:text-white">
-                        {cons.diagnosis ||
-                          cons.clinicalExam ||
-                          'Examen clinique en cours de documentation.'}
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[11px] font-semibold text-black/70 dark:text-white/75">
-                        {isAr ? 'ملاحظة الطبيب الفورية' : "Note d'observation immédiate"}
-                      </label>
-                      <textarea
-                        rows={3}
-                        value={quickNote}
-                        onChange={(e) => setQuickNote(e.target.value)}
-                        placeholder="Ajouter une consigne ou observation..."
-                        className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-1 focus:ring-[#d4522f]"
+                  <>
+                    <InspectorSection
+                      title={isAr ? 'إجراءات سريعة' : 'Actions rapides'}
+                      delayIndex={0}
+                      animateKey={cons.id}
+                    >
+                      <InspectorQuickActions
+                        actions={[
+                          ...(cons.status === 'InWaitingQueue'
+                            ? [
+                                {
+                                  id: 'call',
+                                  label: isAr ? 'استدعاء' : 'Appeler en salle',
+                                  icon: <Stethoscope size={15} />,
+                                  onClick: () => handleStartExam(cons),
+                                },
+                              ]
+                            : cons.status === 'InConsultation'
+                            ? [
+                                {
+                                  id: 'finish',
+                                  label: isAr ? 'إنهاء الفحص' : 'Clôturer',
+                                  icon: <CheckCircle2 size={15} />,
+                                  onClick: () => handleFinishExam(cons),
+                                },
+                              ]
+                            : []),
+                          {
+                            id: 'pin',
+                            label: pinnedIds.has(cons.id) ? 'Détacher' : 'Prioriser',
+                            icon: <Pin size={15} />,
+                            onClick: () => handleTogglePin(cons.id),
+                          },
+                          {
+                            id: 'ticket',
+                            label: isAr ? 'تذكرة' : 'Ticket',
+                            icon: <Printer size={15} />,
+                            onClick: () =>
+                              showToast({
+                                type: 'info',
+                                title: 'Impression Ticket',
+                                message: `Impression du ticket ${cons.ticketNumber || cons.id}...`,
+                              }),
+                          },
+                        ]}
                       />
-                      <div className="flex justify-end">
-                        <AtriumButton size="xs" variant="primary" onClick={handleSaveNote}>
-                          {noteSaved ? 'Enregistré ✓' : 'Sauvegarder note'}
-                        </AtriumButton>
-                      </div>
-                    </div>
-                  </div>
+                    </InspectorSection>
+
+                    <InspectorSection
+                      title="Motif & Examen Clinique"
+                      delayIndex={1}
+                      animateKey={cons.id}
+                    >
+                      <InspectorCard>
+                        <InspectorKeyValue label="Motif" value={cons.chiefComplaint} />
+                        <InspectorKeyValue
+                          label="Diagnostic / Examen"
+                          value={
+                            cons.diagnosis ||
+                            cons.clinicalExam ||
+                            'Examen clinique en cours de documentation.'
+                          }
+                          isLast
+                        />
+                      </InspectorCard>
+                    </InspectorSection>
+
+                    <InspectorSection
+                      title={isAr ? 'ملاحظة الطبيب الفورية' : "Note d'observation immédiate"}
+                      delayIndex={2}
+                      animateKey={cons.id}
+                    >
+                      <InspectorNotesField
+                        value={quickNote}
+                        onSave={(next) => {
+                          setQuickNote(next);
+                          showToast({
+                            type: 'success',
+                            title: isAr ? 'تم الحفظ' : 'Observation enregistrée',
+                            message: isAr ? 'تم حفظ الملاحظة السريرية' : 'Observation clinique enregistrée',
+                          });
+                        }}
+                        placeholder="Ajouter une consigne ou observation..."
+                        ariaLabel="Note d'observation immédiate"
+                      />
+                    </InspectorSection>
+                  </>
                 )}
 
                 {tab === 'vitals' && (
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800">
-                      <span className="text-[10px] text-black/55 dark:text-white/55 font-bold">
-                        TENSION ARTÉRIELLE
-                      </span>
-                      <div className="font-mono text-base font-bold text-black dark:text-white mt-0.5">
-                        {cons.vitals?.bloodPressure || '120/80'}
-                      </div>
-                      <span className="text-[10px] text-emerald-600 font-medium">Normotendu</span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800">
-                      <span className="text-[10px] text-black/55 dark:text-white/55 font-bold">
-                        TEMPÉRATURE
-                      </span>
-                      <div className="font-mono text-base font-bold text-black dark:text-white mt-0.5">
-                        {cons.vitals?.temperatureCelsius
-                          ? `${cons.vitals.temperatureCelsius}°C`
-                          : '37.0°C'}
-                      </div>
-                      <span className="text-[10px] text-black/55 dark:text-white/55">Apyrétique</span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800">
-                      <span className="text-[10px] text-black/55 dark:text-white/55 font-bold">
-                        POIDS / TAILLE
-                      </span>
-                      <div className="font-mono text-base font-bold text-black dark:text-white mt-0.5">
-                        {cons.vitals?.weightKg ? `${cons.vitals.weightKg} kg` : '72 kg'}
-                      </div>
-                      <span className="text-[10px] text-black/55 dark:text-white/55">
-                        IMC: {cons.vitals?.bmi || '23.5'}
-                      </span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800">
-                      <span className="text-[10px] text-black/55 dark:text-white/55 font-bold">
-                        FRÉQUENCE CARDIAQUE
-                      </span>
-                      <div className="font-mono text-base font-bold text-black dark:text-white mt-0.5">
-                        {cons.vitals?.heartRateBpm ? `${cons.vitals.heartRateBpm} bpm` : '74 bpm'}
-                      </div>
-                      <span className="text-[10px] text-black/55 dark:text-white/55">Pouls régulier</span>
-                    </div>
-                  </div>
+                  <InspectorSection
+                    title={isAr ? 'العلامات الحيوية المسجلة' : 'Constantes Vitales de Triage'}
+                    delayIndex={0}
+                    animateKey={cons.id}
+                  >
+                    <InspectorCard>
+                      <InspectorKeyValue
+                        label="Tension artérielle"
+                        value={`${cons.vitals?.bloodPressure || '120/80'} mmHg`}
+                        mono
+                      />
+                      <InspectorKeyValue
+                        label="Température"
+                        value={
+                          cons.vitals?.temperatureCelsius
+                            ? `${cons.vitals.temperatureCelsius}°C`
+                            : '37.0°C'
+                        }
+                        mono
+                      />
+                      <InspectorKeyValue
+                        label="Poids / IMC"
+                        value={`${cons.vitals?.weightKg ? `${cons.vitals.weightKg} kg` : '72 kg'} (IMC ${
+                          cons.vitals?.bmi || '23.5'
+                        })`}
+                        mono
+                      />
+                      <InspectorKeyValue
+                        label="Fréquence cardiaque"
+                        value={`${
+                          cons.vitals?.heartRateBpm ? `${cons.vitals.heartRateBpm} bpm` : '74 bpm'
+                        }`}
+                        mono
+                        isLast
+                      />
+                    </InspectorCard>
+                  </InspectorSection>
                 )}
 
                 {tab === 'finance' && (
-                  <div className="space-y-3">
-                    <div className="p-4 rounded-xl bg-orange-50/60 dark:bg-neutral-800 border border-orange-100 dark:border-neutral-700 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-black/55 dark:text-white/55">Honoraires conventionnés:</span>
-                        <span className="font-mono font-bold text-sm text-[#d4522f]">
-                          {formatMoney(cons.consultationFeeDzd, 'DZD')}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-black/70 dark:text-white/75">
-                        <span>Ticket modérateur patient:</span>
-                        <span className="font-mono font-semibold">
-                          {formatMoney(cons.copayAmountDzd || 600, 'DZD')}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-blue-600 dark:text-blue-400">
-                        <span>Prise en charge CNAS/Chifa:</span>
-                        <span className="font-mono font-semibold">
-                          {formatMoney(cons.insuranceShareDzd || 2400, 'DZD')}
-                        </span>
-                      </div>
-                      <div className="pt-2 border-t border-orange-200/60 dark:border-neutral-700 flex items-center justify-between font-bold">
-                        <span>Statut encaissement:</span>
-                        <span className={cons.isPaid ? 'text-emerald-600' : 'text-amber-600'}>
-                          {cons.isPaid ? 'Réglé ✓' : 'En attente de paiement'}
-                        </span>
-                      </div>
-                    </div>
-                    {!cons.isPaid && (
-                      <AtriumButton
-                        variant="primary"
-                        onClick={() => {
-                          markConsultationPaid(cons.id);
-                          setInspectedConsultation({ ...cons, isPaid: true });
-                          showToast({
-                            type: 'success',
-                            title: 'Encaissement validé',
-                            message: 'Paiement enregistré avec succès',
-                          });
-                        }}
-                        className="w-full justify-center"
-                        icon={<CreditCard size={14} />}
-                      >
-                        Encaisser la consultation
-                      </AtriumButton>
-                    )}
-                  </div>
-                )}
+                  <>
+                    <InspectorSection
+                      title="Honoraires & Convention CNAS"
+                      delayIndex={0}
+                      animateKey={cons.id}
+                    >
+                      <InspectorCard>
+                        <InspectorKeyValue
+                          label="Honoraires conventionnés"
+                          value={formatMoney(cons.consultationFeeDzd, 'DZD')}
+                          mono
+                        />
+                        <InspectorKeyValue
+                          label="Ticket modérateur patient"
+                          value={formatMoney(cons.copayAmountDzd || 600, 'DZD')}
+                          mono
+                        />
+                        <InspectorKeyValue
+                          label="Prise en charge CNAS/Chifa"
+                          value={formatMoney(cons.insuranceShareDzd || 2400, 'DZD')}
+                          mono
+                        />
+                        <InspectorKeyValue
+                          label="Statut encaissement"
+                          value={cons.isPaid ? 'Réglé ✓' : 'En attente de paiement'}
+                          isLast
+                        />
+                      </InspectorCard>
+                    </InspectorSection>
 
-                {tab === 'actions' && (
-                  <div className="space-y-2.5">
-                    {cons.status === 'InWaitingQueue' && (
-                      <button
-                        type="button"
-                        onClick={() => handleStartExam(cons)}
-                        className="w-full p-3 rounded-xl bg-[#d4522f] text-white font-semibold flex items-center justify-between hover:bg-[#b0674b] transition-colors cursor-pointer"
-                      >
-                        <span className="flex items-center gap-2">
-                          <Stethoscope size={16} />
-                          Faire entrer le patient
-                        </span>
-                        <ArrowRight size={14} />
-                      </button>
-                    )}
-                    {cons.status === 'InConsultation' && (
-                      <button
-                        type="button"
-                        onClick={() => handleFinishExam(cons)}
-                        className="w-full p-3 rounded-xl bg-emerald-600 text-white font-semibold flex items-center justify-between hover:bg-emerald-700 transition-colors cursor-pointer"
-                      >
-                        <span className="flex items-center gap-2">
-                          <CheckCircle2 size={16} />
-                          Clôturer la consultation
-                        </span>
-                        <ArrowRight size={14} />
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => handleTogglePin(cons.id)}
-                      className="w-full p-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white font-semibold flex items-center justify-between hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                    <InspectorSection
+                      title="Actions & Règlement"
+                      delayIndex={1}
+                      animateKey={cons.id}
                     >
-                      <span className="flex items-center gap-2">
-                        <Pin size={16} />
-                        {pinnedIds.has(cons.id)
-                          ? 'Détacher priorité'
-                          : 'Prioriser en tête de file'}
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        showToast({
-                          type: 'info',
-                          title: 'Impression Ticket',
-                          message: `Impression du ticket ${cons.ticketNumber || cons.id}...`,
-                        })
-                      }
-                      className="w-full p-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white font-semibold flex items-center justify-between hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
-                    >
-                      <span className="flex items-center gap-2">
-                        <Printer size={16} />
-                        Imprimer ticket d'attente
-                      </span>
-                    </button>
-                  </div>
+                      <div className="space-y-2.5">
+                        {!cons.isPaid && (
+                          <InspectorWideButton
+                            label="Encaisser la consultation"
+                            icon={<CreditCard size={15} />}
+                            variant="primary"
+                            onClick={() => {
+                              markConsultationPaid(cons.id);
+                              setInspectedConsultation({ ...cons, isPaid: true });
+                              showToast({
+                                type: 'success',
+                                title: 'Encaissement validé',
+                                message: 'Paiement enregistré avec succès',
+                              });
+                            }}
+                          />
+                        )}
+                        {cons.status === 'InWaitingQueue' && (
+                          <InspectorWideButton
+                            label="Faire entrer le patient"
+                            icon={<Stethoscope size={15} />}
+                            variant="primary"
+                            onClick={() => handleStartExam(cons)}
+                          />
+                        )}
+                        {cons.status === 'InConsultation' && (
+                          <InspectorWideButton
+                            label="Clôturer la consultation"
+                            icon={<CheckCircle2 size={15} />}
+                            variant="primary"
+                            onClick={() => handleFinishExam(cons)}
+                          />
+                        )}
+                        <InspectorWideButton
+                          label="Imprimer ticket d'attente"
+                          icon={<Printer size={15} />}
+                          onClick={() =>
+                            showToast({
+                              type: 'info',
+                              title: 'Impression Ticket',
+                              message: `Impression du ticket ${cons.ticketNumber || cons.id}...`,
+                            })
+                          }
+                        />
+                      </div>
+                    </InspectorSection>
+                  </>
                 )}
               </div>
             )}

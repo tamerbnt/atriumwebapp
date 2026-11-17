@@ -7,6 +7,8 @@ import {
   X,
   Bell,
   Receipt,
+  Eye,
+  CreditCard,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
@@ -27,6 +29,17 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorProgressBar,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -70,6 +83,7 @@ export const EducationFinanceView: React.FC = () => {
   const [selectedEnrollmentForPayment, setSelectedEnrollmentForPayment] = useState<EduEnrollment | null>(null);
   const [detailEnrollment, setDetailEnrollment] = useState<EduEnrollment | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<'summary' | 'installments' | 'actions'>('summary');
   const [selectedInstallmentIndex, setSelectedInstallmentIndex] = useState<number>(0);
   const [paymentAmount, setPaymentAmount] = useState<number>(15000);
   const [paymentMethod, setPaymentMethod] = useState<string>('Cash');
@@ -309,6 +323,109 @@ export const EducationFinanceView: React.FC = () => {
 
   const activeFiltersCount = (branchFilter !== 'All' ? 1 : 0) + (filterKey !== 'all' ? 1 : 0);
 
+  const getEnrollmentRowMeta = useCallback(
+    (enr: EduEnrollment): KineticRowMeta => ({
+      avatarText: enr.studentName.slice(0, 2).toUpperCase(),
+      subtitle: `${enr.cohortName} · ID ${enr.studentId}`,
+      categoryLabel: `${enr.installments?.length || 1} ${isAr ? 'أقساط' : 'échéances'}`,
+      statusTone:
+        enr.paymentStatus === 'Paid'
+          ? 'ok'
+          : enr.paymentStatus === 'Overdue'
+          ? 'danger'
+          : 'warn',
+      statusLabel:
+        enr.paymentStatus === 'Paid'
+          ? t('edu_tuition_paid')
+          : enr.paymentStatus === 'Overdue'
+          ? t('edu_tuition_overdue')
+          : t('edu_tuition_partial'),
+      metricPrimary: formatMoney(enr.paidAmount),
+      metricSecondary: enr.balanceDue > 0 ? `${formatMoney(enr.balanceDue)} dû` : formatMoney(enr.agreedTuition),
+    }),
+    [isAr, t]
+  );
+
+  const getEnrollmentFanActions = useCallback(
+    (enr: EduEnrollment): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'تفاصيل' : isEn ? 'Details' : 'Détails',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setDetailEnrollment(enr);
+          setInspectorTab('summary');
+        },
+      },
+      ...(enr.balanceDue > 0
+        ? [
+            {
+              id: 'pay',
+              label: isAr ? 'تحصيل' : isEn ? 'Collect' : 'Encaisser',
+              icon: <CreditCard className="w-[15px] h-[15px]" />,
+              onClick: () => handleOpenPayment(enr, 0),
+            },
+          ]
+        : [
+            {
+              id: 'receipt',
+              label: isAr ? 'وصل' : isEn ? 'Receipt' : 'Reçu',
+              icon: <Printer className="w-[15px] h-[15px]" />,
+              onClick: () =>
+                setReceiptToPrint({
+                  studentName: enr.studentName,
+                  cohortName: enr.cohortName,
+                  amount: enr.paidAmount,
+                  method: 'Comptant / Virement',
+                  date: enr.enrolledAt ? enr.enrolledAt.split('T')[0] : new Date().toISOString().split('T')[0],
+                  receiptNumber: `REC-${enr.id.slice(-6)}`,
+                }),
+            },
+          ]),
+    ],
+    [isAr, isEn, handleOpenPayment]
+  );
+
+  const getEnrollmentDetailActions = useCallback(
+    (enr: EduEnrollment): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'فتح' : isEn ? 'Open' : 'Ouvrir',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setDetailEnrollment(enr);
+          setInspectorTab('summary');
+        },
+      },
+      ...(enr.balanceDue > 0
+        ? [
+            {
+              id: 'pay',
+              label: t('edu_btn_log_payment'),
+              icon: <CreditCard className="w-3.5 h-3.5 text-[#d4522f]" />,
+              onClick: () => handleOpenPayment(enr, 0),
+            },
+          ]
+        : []),
+      {
+        id: 'receipt',
+        label: 'Reçu',
+        icon: <Printer className="w-3.5 h-3.5" />,
+        onClick: () =>
+          setReceiptToPrint({
+            studentName: enr.studentName,
+            cohortName: enr.cohortName,
+            amount: enr.paidAmount,
+            method: 'Comptant / Virement',
+            date: enr.enrolledAt ? enr.enrolledAt.split('T')[0] : new Date().toISOString().split('T')[0],
+            receiptNumber: `REC-${enr.id.slice(-6)}`,
+          }),
+      },
+    ],
+    [isAr, isEn, t, handleOpenPayment]
+  );
+
   const columns: ColumnDefinition<EduEnrollment>[] = useMemo(
     () => [
       {
@@ -497,7 +614,6 @@ export const EducationFinanceView: React.FC = () => {
       <ScreenHeaderBar
         icon={<Wallet size={22} />}
         title={t('edu_finance_title')}
-        subtitle={`${eduEnrollments.length} ${isAr ? 'عقد تسجيل مالي' : isEn ? 'tuition accounts' : 'comptes de scolarité'}`}
         secondaryActions={
           <AtriumButton variant="outline" size="sm" icon={<Printer size={14} />} onClick={() => window.print()}>
             <span>{isAr ? 'طباعة كشف الحساب' : isEn ? 'Print Ledger' : 'Grand Livre'}</span>
@@ -624,7 +740,7 @@ export const EducationFinanceView: React.FC = () => {
 
         <UniversalDataCollection<EduEnrollment>
           hideToolbar
-          data={sortedEnrollments}
+          items={sortedEnrollments}
           keyExtractor={(enr) => enr.id}
           selectedIds={selectedEnrollmentIds}
           onSelectionChange={setSelectedEnrollmentIds}
@@ -638,7 +754,8 @@ export const EducationFinanceView: React.FC = () => {
               return next;
             });
           }}
-          viewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
           columns={columns}
           isLoading={isSyncing || networkMode === 'force_skeleton'}
           isOffline={networkMode === 'offline'}
@@ -655,71 +772,17 @@ export const EducationFinanceView: React.FC = () => {
           onItemClick={(enr, el) => {
             setDrawerOpenerEl(el || null);
             setDetailEnrollment(enr);
+            setInspectorTab('summary');
           }}
           onViewDetails={(enr, el) => {
             setDrawerOpenerEl(el || null);
             setDetailEnrollment(enr);
+            setInspectorTab('summary');
           }}
+          getRowMeta={getEnrollmentRowMeta}
+          getFanActions={getEnrollmentFanActions}
+          getDetailActions={getEnrollmentDetailActions}
           onEdit={(enr) => handleOpenPayment(enr, 0)}
-          renderCard={(enr) => {
-            const percent = enr.agreedTuition > 0 ? Math.round((enr.paidAmount / enr.agreedTuition) * 100) : 0;
-            return (
-              <div className="flex flex-col items-center justify-center w-full">
-                <div className="w-16 h-16 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center text-xl font-bold shadow-xs mb-3 select-none border border-neutral-200 dark:border-neutral-700">
-                  {enr.studentName.charAt(0)}
-                </div>
-                <h3 className="text-sm font-bold text-black dark:text-white truncate max-w-[210px] mb-0.5 tracking-tight">
-                  {enr.studentName}
-                </h3>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700 mb-3 truncate max-w-[200px]">
-                  {enr.cohortName}
-                </span>
-                <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-2">
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-black/55 dark:text-white/55">Contrat Total</span>
-                    <span className="font-bold text-black dark:text-white tabular-nums">
-                      {formatMoney(enr.agreedTuition)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-emerald-600 font-semibold">{formatMoney(enr.paidAmount)}</span>
-                    <span className="text-rose-600 font-semibold">{formatMoney(enr.balanceDue)} dû</span>
-                  </div>
-                  <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${percent >= 100 ? 'bg-emerald-500' : 'bg-[#d4522f]'}`}
-                      style={{ width: `${Math.min(100, percent)}%` }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between pt-1">
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${
-                        enr.paymentStatus === 'Paid'
-                          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
-                          : enr.paymentStatus === 'Overdue'
-                          ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
-                          : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
-                      }`}
-                    >
-                      {enr.paymentStatus}
-                    </span>
-                    {enr.balanceDue > 0 && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenPayment(enr, 0);
-                        }}
-                        className="px-2 py-1 bg-[#d4522f] text-white rounded-lg text-[10px] font-semibold hover:opacity-90 cursor-pointer"
-                      >
-                        Encaisser
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          }}
         />
       </ScreenPod>
 
@@ -747,102 +810,155 @@ export const EducationFinanceView: React.FC = () => {
         language={language}
         title={activeEnrollment?.studentName || ''}
         subtitle={activeEnrollment?.cohortName || ''}
-        avatarText={(activeEnrollment?.studentName || 'F').charAt(0).toUpperCase()}
+        categoryLabel={activeEnrollment?.cohortName || (isAr ? 'رسوم' : 'Scolarité')}
+        avatarText={(activeEnrollment?.studentName || 'FN').slice(0, 2).toUpperCase()}
         avatarColor="#d4522f"
         branchName={
           activeEnrollment
             ? resolveRecordBranch(activeEnrollment, branchesById, currentBranch, language).name
             : undefined
         }
-        statusLabel={activeEnrollment?.paymentStatus}
-        onSelectItem={(e) => setDetailEnrollment(e)}
+        statusLabel={
+          activeEnrollment
+            ? activeEnrollment.paymentStatus === 'Paid'
+              ? t('edu_tuition_paid')
+              : activeEnrollment.paymentStatus === 'Overdue'
+              ? t('edu_tuition_overdue')
+              : t('edu_tuition_partial')
+            : undefined
+        }
+        statusClassName={
+          activeEnrollment?.paymentStatus === 'Paid'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : activeEnrollment?.paymentStatus === 'Overdue'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+        }
+        tabs={[
+          { id: 'summary', label: isAr ? 'الملخص' : isEn ? 'Summary' : 'Synthèse' },
+          { id: 'installments', label: isAr ? 'الأقساط' : isEn ? 'Installments' : 'Échéancier' },
+          { id: 'actions', label: isAr ? 'التسوية' : isEn ? 'Settlement' : 'Règlement' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={(id) => setInspectorTab(id as 'summary' | 'installments' | 'actions')}
+        onSelectItem={(e) => {
+          setDetailEnrollment(e);
+          setInspectorTab('summary');
+        }}
         onClose={() => setDetailEnrollment(null)}
-        renderBody={(enr) => (
-          <div className="space-y-5 text-xs">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-[#141312] border border-[#E6DED6] dark:border-[#33302D]">
-                <span className="text-[11px] text-black/55 dark:text-white/55 block mb-0.5">Frais de Scolarité</span>
-                <span className="text-lg font-bold text-black dark:text-white tabular-nums">
-                  {formatMoney(enr.agreedTuition)}
-                </span>
-              </div>
-              <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-[#141312] border border-[#E6DED6] dark:border-[#33302D]">
-                <span className="text-[11px] text-black/55 dark:text-white/55 block mb-0.5">Solde Restant</span>
-                <span className="text-lg font-bold text-rose-600 dark:text-rose-400 tabular-nums">
-                  {formatMoney(enr.balanceDue)}
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-2.5">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-black/55 dark:text-white/55">
-                Échéancier des versements
-              </h3>
-              <div className="space-y-2">
-                {enr.installments?.map((inst, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between"
-                  >
-                    <div>
-                      <div className="font-semibold text-black dark:text-white">Versement #{idx + 1}</div>
-                      <div className="text-[11px] text-black/55 dark:text-white/55">
-                        Échéance : {inst.dueDate} {inst.paidAt && `· Payé le ${inst.paidAt.split('T')[0]}`}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-black dark:text-white tabular-nums">
-                        {formatMoney(inst.amount)}
-                      </div>
-                      <span
-                        className={`text-[10px] font-semibold ${
-                          inst.isPaid ? 'text-emerald-600' : 'text-amber-600'
-                        }`}
-                      >
-                        {inst.isPaid ? '✓ Soldé' : 'En attente'}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 flex gap-2">
-              {enr.balanceDue > 0 && (
-                <AtriumButton
-                  variant="primary"
-                  size="sm"
-                  glow
-                  icon={<Plus size={14} />}
-                  className="flex-1 justify-center"
-                  onClick={() => {
-                    handleOpenPayment(enr, 0);
-                    setDetailEnrollment(null);
-                  }}
-                >
-                  Encaisser un versement
-                </AtriumButton>
-              )}
-              <AtriumButton
-                variant="outline"
-                size="sm"
-                icon={<Printer size={14} />}
-                onClick={() => {
-                  setReceiptToPrint({
-                    studentName: enr.studentName,
-                    cohortName: enr.cohortName,
-                    amount: enr.paidAmount,
-                    method: 'Comptant / Virement',
-                    date: new Date().toISOString().split('T')[0],
-                    receiptNumber: `REC-${enr.id.slice(-6)}`,
-                  });
-                }}
+        renderBody={(enr, tab) => {
+          const pct = enr.agreedTuition > 0 ? Math.round((enr.paidAmount / enr.agreedTuition) * 100) : 0;
+          if (tab === 'installments') {
+            return (
+              <InspectorSection
+                index={0}
+                title={isAr ? 'جدول الأقساط' : isEn ? 'Installments Schedule' : 'Échéancier des versements'}
               >
-                Reçu
-              </AtriumButton>
-            </div>
-          </div>
-        )}
+                <InspectorCard>
+                  {!enr.installments || enr.installments.length === 0 ? (
+                    <InspectorListItem title={isAr ? 'دفعة واحدة' : 'Single installment'} isLast />
+                  ) : (
+                    enr.installments.map((inst, idx) => (
+                      <InspectorListItem
+                        key={idx}
+                        title={`${isAr ? 'القسط' : 'Versement'} #${idx + 1}`}
+                        subtitle={`${inst.dueDate}${inst.paidAt ? ` · ${inst.paidAt.split('T')[0]}` : ''}`}
+                        metaRight={formatMoney(inst.amount)}
+                        badge={{ label: inst.isPaid ? 'Soldé' : 'En attente', tone: inst.isPaid ? 'ok' : 'warn' }}
+                        isLast={idx === enr.installments!.length - 1}
+                      />
+                    ))
+                  )}
+                </InspectorCard>
+              </InspectorSection>
+            );
+          }
+
+          if (tab === 'actions') {
+            return (
+              <>
+                <InspectorSection index={0}>
+                  <InspectorQuickActions
+                    actions={[
+                      ...(enr.balanceDue > 0
+                        ? [
+                            {
+                              id: 'pay',
+                              label: t('edu_btn_log_payment'),
+                              icon: <Plus size={16} />,
+                              primary: true,
+                              onClick: () => {
+                                handleOpenPayment(enr, 0);
+                                setDetailEnrollment(null);
+                              },
+                            },
+                          ]
+                        : []),
+                      {
+                        id: 'print',
+                        label: isAr ? 'طباعة الوصل' : isEn ? 'Print Receipt' : 'Imprimer Reçu',
+                        icon: <Printer size={16} />,
+                        primary: enr.balanceDue <= 0,
+                        onClick: () =>
+                          setReceiptToPrint({
+                            studentName: enr.studentName,
+                            cohortName: enr.cohortName,
+                            amount: enr.paidAmount,
+                            method: 'Comptant / Virement',
+                            date: new Date().toISOString().split('T')[0],
+                            receiptNumber: `REC-${enr.id.slice(-6)}`,
+                          }),
+                      },
+                    ]}
+                  />
+                </InspectorSection>
+                {enr.balanceDue > 0 && (
+                  <InspectorSection index={1}>
+                    <InspectorWideButton
+                      label={t('edu_btn_log_payment')}
+                      icon={<CreditCard size={15} />}
+                      tone="accent"
+                      onClick={() => {
+                        handleOpenPayment(enr, 0);
+                        setDetailEnrollment(null);
+                      }}
+                    />
+                  </InspectorSection>
+                )}
+              </>
+            );
+          }
+
+          return (
+            <>
+              <InspectorSection index={0}>
+                <InspectorBigStat
+                  value={formatMoney(enr.balanceDue)}
+                  tone={enr.balanceDue > 0 ? 'danger' : 'ok'}
+                  caption={isAr ? 'الرصيد المتبقي' : isEn ? 'Remaining Balance' : 'Solde Restant'}
+                />
+              </InspectorSection>
+              <InspectorSection index={1} title={isAr ? 'نسبة التحصيل' : isEn ? 'Collection Progress' : 'Recouvrement'}>
+                <InspectorCard>
+                  <InspectorKeyValue label={t('edu_field_tuition_fee')} value={formatMoney(enr.agreedTuition)} />
+                  <InspectorKeyValue
+                    label={isAr ? 'المبلغ المدفوع' : isEn ? 'Paid Amount' : 'Montant Payé'}
+                    value={formatMoney(enr.paidAmount)}
+                    tone="ok"
+                  />
+                  <InspectorKeyValue label={isAr ? 'النسبة' : 'Taux'} value={`${pct}%`} isLast />
+                  <InspectorProgressBar percent={pct} tone={pct >= 100 ? 'ok' : 'accent'} animateKey={enr.id} />
+                </InspectorCard>
+              </InspectorSection>
+              <InspectorSection index={2} title={isAr ? 'معلومات العقد' : isEn ? 'Contract Info' : 'Contrat'}>
+                <InspectorCard>
+                  <InspectorKeyValue label={t('edu_col_student')} value={enr.studentName} mono={false} />
+                  <InspectorKeyValue label={t('edu_col_cohort')} value={enr.cohortName} mono={false} isLast />
+                </InspectorCard>
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       {selectedEnrollmentForPayment && (

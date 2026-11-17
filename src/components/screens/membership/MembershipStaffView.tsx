@@ -1,10 +1,13 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
   Users,
   Clock,
   DollarSign,
   History,
   MapPin,
+  Fingerprint,
+  Edit3,
+  Trash2,
 } from 'lucide-react';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useStaffFoundation } from '../../common/staff/useStaffFoundation';
@@ -14,18 +17,146 @@ import { QuickPointageModal } from '../../common/staff/QuickPointageModal';
 import { StaffModal } from '../../modals/StaffModal';
 import { StaffInspectorDrawer } from '../../common/StaffInspectorDrawer';
 import { StaffMember } from '../../../types/index';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumSelector, selectCurrentBranchFromState } from '../../../services/store';
 import { StaffAttendanceSubView } from '../../common/staff/StaffAttendanceSubView';
 import { StaffPayrollSubView } from '../../common/staff/StaffPayrollSubView';
 import { StaffHistorySubView } from '../../common/staff/StaffHistorySubView';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
-import { ScreenPod, buildBranchesByIdMap, resolveRecordBranch } from '../../ui/kinetic';
+import {
+  ScreenPod,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
+  buildBranchesByIdMap,
+  resolveRecordBranch,
+} from '../../ui/kinetic';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const MembershipStaffView: React.FC<any> = () => {
   const foundation = useStaffFoundation({ category: 'membership_session' });
   const { isAr, isEn, language } = foundation;
-  const currentBranch = useAtriumStore((s) => s.currentBranch);
+  const currentBranch = useAtriumSelector(selectCurrentBranchFromState);
   const branchesById = useMemo(() => buildBranchesByIdMap(foundation.branches), [foundation.branches]);
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: foundation.isSyncing || foundation.networkMode === 'force_skeleton',
+    hasCachedData: foundation.facilityStaff.length > 0,
+  });
+
+  const getRowMeta = useCallback(
+    (member: StaffMember): Partial<KineticRowData> => {
+      const today = new Date().toISOString().slice(0, 10);
+      const isPresent =
+        member.isClockedInToday ||
+        member.attendanceLogs?.some((l) => (l.timestamp || '').slice(0, 10) === today && l.type === 'in');
+      const statusVariant: KineticRowData['statusVariant'] =
+        member.status === 'frozen'
+          ? 'blocked'
+          : member.status === 'on_leave' || member.status === 'vacation'
+          ? 'warning'
+          : 'active';
+      const statusLabel =
+        member.status === 'active'
+          ? isPresent
+            ? isAr ? 'متواجد بالصالة' : isEn ? 'In Gym' : 'Présent en Salle'
+            : isAr ? 'نشط' : isEn ? 'Active' : 'En Poste'
+          : member.status === 'on_leave' || member.status === 'vacation'
+          ? isAr ? 'عطلة' : isEn ? 'On Leave' : 'En Congé'
+          : member.status === 'frozen'
+          ? isAr ? 'موقوف' : isEn ? 'Suspended' : 'Suspendu'
+          : isAr ? 'منتهي' : isEn ? 'Ended' : 'Fin Contrat';
+      const branch = resolveRecordBranch(member, branchesById, currentBranch, language);
+      return {
+        subline: member.chairOrStudio ? `${member.role} · ${member.chairOrStudio}` : member.role,
+        categoryLabel: member.contractType || member.recruitmentType || 'CDI',
+        statusLabel,
+        statusVariant,
+        metricPrimary: member.salary ? `${member.salary.toLocaleString()} DZD` : '—',
+        metricSecondary: member.badgeToken || member.cardId || branch.name,
+        detailCol1: {
+          heading: isAr ? 'بيانات الاتصال والفرع' : isEn ? 'Contact & Branch' : 'Contact & Agence',
+          primaryText: member.phoneNumber || '—',
+          secondaryText: member.email || '—',
+          tertiaryText: branch.name,
+        },
+        detailCol2: {
+          heading: isAr ? 'المنصب والشارة' : isEn ? 'Role & Access' : 'Poste & Badge',
+          primaryText: member.role,
+          secondaryText: member.badgeToken || member.cardId || 'RFID Non assigné',
+          tertiaryText: member.chairOrStudio || undefined,
+        },
+        detailCol3: {
+          heading: isAr ? 'الراتب والحضور' : isEn ? 'Payroll & Shift' : 'Paie & Présence',
+          primaryText: member.salary ? `${member.salary.toLocaleString()} DZD` : 'Non défini',
+          secondaryText: `${member.contractType || 'CDI'} · ${isPresent ? (isAr ? 'حاضر اليوم' : 'Pointé auj.') : (isAr ? 'غير موقع' : 'Non pointé')}`,
+        },
+      };
+    },
+    [isAr, isEn, branchesById, currentBranch, language]
+  );
+
+  const getFanActions = useCallback(
+    (member: StaffMember): KineticRowFanAction[] => [
+      {
+        id: 'punch',
+        label: isAr ? 'حضور' : isEn ? 'Punch In' : 'Pointer',
+        icon: <Fingerprint className="w-[15px] h-[15px]" />,
+        onClick: () => foundation.handlePunchPointage(member, 'in'),
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+        icon: <Edit3 className="w-[15px] h-[15px]" />,
+        onClick: () => foundation.handleOpenEdit(member),
+      },
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer',
+        icon: <Trash2 className="w-[15px] h-[15px]" />,
+        isDanger: true,
+        onClick: () => foundation.handleDeleteStaff(member),
+      },
+    ],
+    [isAr, isEn, foundation]
+  );
+
+  const getDetailActions = useCallback(
+    (member: StaffMember): KineticDetailAction[] => [
+      {
+        id: 'punch',
+        label: isAr ? 'تسجيل حضور' : isEn ? 'Clock In' : 'Pointer',
+        icon: <Fingerprint className="w-3.5 h-3.5 text-[#096b40]" />,
+        onClick: () => foundation.handlePunchPointage(member, 'in'),
+      },
+      {
+        id: 'edit',
+        label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+        icon: <Edit3 className="w-3.5 h-3.5" />,
+        onClick: () => foundation.handleOpenEdit(member),
+      },
+    ],
+    [isAr, isEn, foundation]
+  );
+
+  if (showSkeleton && (foundation.facilityStaff.length === 0 || foundation.networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.3*', minWidth: '110px' },
+          { width: '1.3*', minWidth: '110px' },
+          { width: '1.3*', minWidth: '110px' },
+          { width: '1.2*', minWidth: '100px' },
+        ]}
+        viewMode={foundation.viewMode}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={foundation.retryCloudSync || retry}
+      />
+    );
+  }
 
   const columns: ColumnDefinition<StaffMember>[] = [
     {
@@ -280,8 +411,11 @@ export const MembershipStaffView: React.FC<any> = () => {
           />
 
           <UniversalDataCollection
-            data={foundation.filteredStaff}
+            items={foundation.filteredStaff}
             columns={columns}
+            getRowMeta={getRowMeta}
+            getFanActions={getFanActions}
+            getDetailActions={getDetailActions}
             keyExtractor={(item) => item.id}
             viewMode={foundation.viewMode}
             hideToolbar
@@ -291,7 +425,7 @@ export const MembershipStaffView: React.FC<any> = () => {
             pinnedIds={foundation.pinnedStaffIds}
             onPinToggle={(id: any) => {
               const key = typeof id === 'string' ? id : id?.id;
-              const next = new Set(foundation.pinnedStaffIds);
+              const next = new Set<string>(foundation.pinnedStaffIds);
               if (next.has(key)) next.delete(key);
               else next.add(key);
               foundation.setPinnedStaffIds(next);

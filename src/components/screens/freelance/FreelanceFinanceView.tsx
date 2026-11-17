@@ -7,6 +7,7 @@ import {
   Trash2,
   Pin,
   CheckCircle2,
+  Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatCurrencyAmount } from '../../../utils/rules';
@@ -27,6 +28,15 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -69,6 +79,7 @@ export const FreelanceFinanceView: React.FC = () => {
 
   const [selectedExpense, setSelectedExpense] = useState<FreelanceExpense | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<string>('overview');
 
   const [selectedExpenseIds, setSelectedExpenseIds] = useState<Set<string>>(() => new Set<string>());
   const [pinnedExpenseIds, setPinnedExpenseIds] = useState<Set<string>>(() => new Set<string>());
@@ -264,6 +275,79 @@ export const FreelanceFinanceView: React.FC = () => {
     setDescription('');
     setIsAddExpenseModalOpen(false);
   };
+
+  const getExpenseRowMeta = useCallback(
+    (exp: FreelanceExpense): KineticRowMeta => ({
+      avatarText: exp.vendor.slice(0, 2).toUpperCase(),
+      subtitle: exp.description,
+      categoryLabel: exp.category,
+      statusTone: exp.isTaxDeductible ? 'ok' : 'warn',
+      statusLabel: exp.isTaxDeductible
+        ? isAr
+          ? 'معفى ضريبياً'
+          : isFr
+          ? 'Déductible'
+          : 'Deductible'
+        : isAr
+        ? 'قياسي'
+        : isFr
+        ? 'Standard'
+        : 'Standard',
+      metricPrimary: formatCurrencyAmount(exp.amount, exp.currency),
+      metricSecondary: exp.date || '2026-02-15',
+    }),
+    [isAr, isFr]
+  );
+
+  const getExpenseFanActions = useCallback(
+    (exp: FreelanceExpense): KineticRowFanAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'تفاصيل' : isFr ? 'Détails' : 'Details',
+        icon: <Eye className="w-[15px] h-[15px]" />,
+        onClick: (e) => {
+          setDrawerOpenerEl(e.currentTarget);
+          setSelectedExpense(exp);
+          setInspectorTab('overview');
+        },
+      },
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : isFr ? 'Supprimer' : 'Delete',
+        icon: <Trash2 className="w-[15px] h-[15px]" />,
+        isDanger: true,
+        onClick: () => {
+          deleteFreelanceExpense(exp.id);
+          if (selectedExpense?.id === exp.id) setSelectedExpense(null);
+        },
+      },
+    ],
+    [isAr, isFr, deleteFreelanceExpense, selectedExpense]
+  );
+
+  const getExpenseDetailActions = useCallback(
+    (exp: FreelanceExpense): KineticDetailAction[] => [
+      {
+        id: 'inspect',
+        label: isAr ? 'عرض' : isFr ? 'Inspecter' : 'Inspect',
+        icon: <Eye className="w-3.5 h-3.5" />,
+        onClick: () => {
+          setSelectedExpense(exp);
+          setInspectorTab('overview');
+        },
+      },
+      {
+        id: 'del',
+        label: isAr ? 'حذف' : isFr ? 'Supprimer' : 'Delete',
+        icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+        onClick: () => {
+          deleteFreelanceExpense(exp.id);
+          if (selectedExpense?.id === exp.id) setSelectedExpense(null);
+        },
+      },
+    ],
+    [isAr, isFr, deleteFreelanceExpense, selectedExpense]
+  );
 
   const expenseColumns: ColumnDefinition<FreelanceExpense>[] = useMemo(
     () => [
@@ -518,9 +602,6 @@ export const FreelanceFinanceView: React.FC = () => {
       <ScreenHeaderBar
         icon={<Wallet size={22} />}
         title={t('free_fin_title', language)}
-        subtitle={`€${currencyTotals.totalEurEquiv.toLocaleString()} ${
-          isAr ? 'إجمالي الدخل' : 'total'
-        } · $${currencyTotals.usd.toLocaleString()} · ${currencyTotals.dzd.toLocaleString()} DZD`}
         primaryAction={{
           label: t('free_fin_btn_add_expense', language),
           onClick: () => setIsAddExpenseModalOpen(true),
@@ -580,91 +661,93 @@ export const FreelanceFinanceView: React.FC = () => {
       />
 
       {/* Tax Reserve & Net Earnings Simulation Pod */}
-      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <ShieldCheck size={16} className="text-[#d4522f]" />
-            <h3 className="text-sm font-bold text-black dark:text-white">
-              {isAr
-                ? 'الاحتياطي الضريبي ومحاكاة الأرباح الصافية'
-                : isFr
-                ? 'Provision Fiscale & Simulation du Bénéfice Net'
-                : 'Tax Reserve & Net Earnings Simulation'}
-            </h3>
-          </div>
-          <div className="flex items-center gap-2 text-xs font-mono">
-            <span className="text-black/55 dark:text-white/55">
-              {t('free_fin_tax_reserve', language)}:
-            </span>
-            <span className="font-bold text-amber-600 dark:text-amber-400">
-              €{taxReserveAmount.toLocaleString()} ({taxRate}%)
-            </span>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3">
-          <div className="flex items-center justify-between text-xs text-black/70 dark:text-white/75">
-            <span className="font-medium">
-              {isAr
-                ? 'معدل الضريبة التقديري والاشتراكات الاجتماعية'
-                : isFr
-                ? "Curseur de taux d'imposition estimé"
-                : 'Tax Rate & Social Contributions Slider'}
-            </span>
-            <span className="font-bold font-mono text-[#d4522f] text-sm tabular-nums">
-              {taxRate}%
-            </span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="35"
-            step="1"
-            value={taxRate}
-            onChange={(e) => setTaxRate(Number(e.target.value))}
-            aria-label="Tax Rate Slider"
-            className="w-full accent-[#d4522f] h-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg cursor-pointer"
-          />
-          <div className="flex justify-between text-[10px] text-black/55 dark:text-white/55 font-mono">
-            <span>0% ({t('free_fin_tax_exempt_label', language)})</span>
-            <span>10% ({t('free_fin_tax_auto_entrepreneur_label', language)})</span>
-            <span>20% ({t('free_fin_tax_standard_solo_label', language)})</span>
-            <span>35% ({t('free_fin_tax_high_bracket_label', language)})</span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-neutral-100 dark:border-neutral-700 text-xs">
-            <div>
-              <span className="text-black/55 dark:text-white/55 block">
-                {t('free_fin_gross_revenue_equiv', language)}
+      <ScreenPod>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <ShieldCheck size={16} className="text-[#d4522f]" />
+              <h3 className="text-sm font-bold text-black dark:text-white">
+                {isAr
+                  ? 'الاحتياطي الضريبي ومحاكاة الأرباح الصافية'
+                  : isFr
+                  ? 'Provision Fiscale & Simulation du Bénéfice Net'
+                  : 'Tax Reserve & Net Earnings Simulation'}
+              </h3>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-mono">
+              <span className="text-black/55 dark:text-white/55">
+                {t('free_fin_tax_reserve', language)}:
               </span>
-              <span className="text-base font-bold font-mono text-black dark:text-white tabular-nums">
-                €{currencyTotals.totalEurEquiv.toLocaleString()}
+              <span className="font-bold text-amber-600 dark:text-amber-400">
+                €{taxReserveAmount.toLocaleString()} ({taxRate}%)
               </span>
             </div>
-            <div>
-              <span className="text-black/55 dark:text-white/55 block">
-                {t('free_fin_expenses_total', language)}
+          </div>
+
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3">
+            <div className="flex items-center justify-between text-xs text-black/70 dark:text-white/75">
+              <span className="font-medium">
+                {isAr
+                  ? 'معدل الضريبة التقديري والاشتراكات الاجتماعية'
+                  : isFr
+                  ? "Curseur de taux d'imposition estimé"
+                  : 'Tax Rate & Social Contributions Slider'}
               </span>
-              <span className="text-base font-bold font-mono text-rose-600 dark:text-rose-400 tabular-nums">
-                -€{totalExpensesEurEquiv.toLocaleString()}
+              <span className="font-bold font-mono text-[#d4522f] text-sm tabular-nums">
+                {taxRate}%
               </span>
             </div>
-            <div>
-              <span className="text-black/55 dark:text-white/55 block">
-                {t('free_fin_net_hourly_yield', language)}
-              </span>
-              <span className="text-base font-bold font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">
-                €{netEhr}
-                {t('free_dash_per_hour', language)}{' '}
-                <span className="text-xs font-normal text-black/55 dark:text-white/55">
-                  ({t('free_fin_gross_label', language)} €{grossEhr}
-                  {t('free_dash_per_hour', language)})
+            <input
+              type="range"
+              min="0"
+              max="35"
+              step="1"
+              value={taxRate}
+              onChange={(e) => setTaxRate(Number(e.target.value))}
+              aria-label="Tax Rate Slider"
+              className="w-full accent-[#d4522f] h-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg cursor-pointer"
+            />
+            <div className="flex justify-between text-[10px] text-black/55 dark:text-white/55 font-mono">
+              <span>0% ({t('free_fin_tax_exempt_label', language)})</span>
+              <span>10% ({t('free_fin_tax_auto_entrepreneur_label', language)})</span>
+              <span>20% ({t('free_fin_tax_standard_solo_label', language)})</span>
+              <span>35% ({t('free_fin_tax_high_bracket_label', language)})</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-neutral-100 dark:border-neutral-700 text-xs">
+              <div>
+                <span className="text-black/55 dark:text-white/55 block">
+                  {t('free_fin_gross_revenue_equiv', language)}
                 </span>
-              </span>
+                <span className="text-base font-bold font-mono text-black dark:text-white tabular-nums">
+                  €{currencyTotals.totalEurEquiv.toLocaleString()}
+                </span>
+              </div>
+              <div>
+                <span className="text-black/55 dark:text-white/55 block">
+                  {t('free_fin_expenses_total', language)}
+                </span>
+                <span className="text-base font-bold font-mono text-rose-600 dark:text-rose-400 tabular-nums">
+                  -€{totalExpensesEurEquiv.toLocaleString()}
+                </span>
+              </div>
+              <div>
+                <span className="text-black/55 dark:text-white/55 block">
+                  {t('free_fin_net_hourly_yield', language)}
+                </span>
+                <span className="text-base font-bold font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">
+                  €{netEhr}
+                  {t('free_dash_per_hour', language)}{' '}
+                  <span className="text-xs font-normal text-black/55 dark:text-white/55">
+                    ({t('free_fin_gross_label', language)} €{grossEhr}
+                    {t('free_dash_per_hour', language)})
+                  </span>
+                </span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </ScreenPod>
 
       <ScreenPod>
         <ScreenCollectionToolbar
@@ -730,9 +813,10 @@ export const FreelanceFinanceView: React.FC = () => {
 
         <UniversalDataCollection<FreelanceExpense>
           hideToolbar
-          data={sortedExpenses}
+          items={sortedExpenses}
           keyExtractor={(exp) => exp.id}
-          viewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
           columns={expenseColumns}
           isLoading={isSyncing || networkMode === 'force_skeleton'}
           isOffline={networkMode === 'offline'}
@@ -754,11 +838,16 @@ export const FreelanceFinanceView: React.FC = () => {
           onItemClick={(exp, el) => {
             setDrawerOpenerEl(el || null);
             setSelectedExpense(exp);
+            setInspectorTab('overview');
           }}
           onViewDetails={(exp, el) => {
             setDrawerOpenerEl(el || null);
             setSelectedExpense(exp);
+            setInspectorTab('overview');
           }}
+          getRowMeta={getExpenseRowMeta}
+          getFanActions={getExpenseFanActions}
+          getDetailActions={getExpenseDetailActions}
           onDelete={(exp) => {
             deleteFreelanceExpense(exp.id);
             if (selectedExpense?.id === exp.id) setSelectedExpense(null);
@@ -774,57 +863,6 @@ export const FreelanceFinanceView: React.FC = () => {
           emptyDescription={t('free_fin_empty_expenses_desc', language)}
           primaryActionLabel={t('free_fin_btn_add_expense', language)}
           onAddFirstItem={() => setIsAddExpenseModalOpen(true)}
-          renderCard={(exp) => {
-            const isPinned = pinnedExpenseIds.has(exp.id);
-            return (
-              <div className="p-4 rounded-[20px] border border-[#E6DED6] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 shadow-2xs relative space-y-3 w-full">
-                {isPinned && (
-                  <div className="absolute top-3 left-3 text-[#d4522f]">
-                    <Pin size={12} className="fill-[#d4522f]" />
-                  </div>
-                )}
-                <div className="flex items-center justify-between pl-4">
-                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75">
-                    {exp.category}
-                  </span>
-                  <span className="text-xs text-black/55 dark:text-white/55 tabular-nums">
-                    {exp.date || '2026-02-15'}
-                  </span>
-                </div>
-                <div>
-                  <h4 className="text-base font-bold text-black dark:text-white">
-                    {exp.vendor}
-                  </h4>
-                  <p className="text-xs text-black/55 dark:text-white/55 mt-0.5 line-clamp-2">
-                    {exp.description}
-                  </p>
-                </div>
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
-                  <span className="font-mono text-base font-black text-[#d4522f] tabular-nums">
-                    {formatCurrencyAmount(exp.amount, exp.currency)}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    {exp.isTaxDeductible && (
-                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                        Deductible
-                      </span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteFreelanceExpense(exp.id);
-                      }}
-                      aria-label={t('common_delete', language)}
-                      className="p-1 text-black/55 dark:text-white/55 hover:text-rose-500 transition-colors cursor-pointer"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          }}
         />
       </ScreenPod>
 
@@ -853,67 +891,182 @@ export const FreelanceFinanceView: React.FC = () => {
         language={language}
         title={activeExpense?.vendor || ''}
         subtitle={activeExpense?.description || ''}
-        avatarText={activeExpense ? activeExpense.vendor.charAt(0).toUpperCase() : 'E'}
+        categoryLabel={activeExpense?.category || 'Charge'}
+        avatarText={activeExpense ? activeExpense.vendor.slice(0, 2).toUpperCase() : 'EX'}
         avatarColor="#d4522f"
         branchName={
           activeExpense
             ? resolveRecordBranch(activeExpense, branchesById, currentBranch, language).name
             : undefined
         }
-        statusLabel={activeExpense?.category}
-        onSelectItem={(exp) => setSelectedExpense(exp)}
+        statusLabel={
+          activeExpense?.isTaxDeductible
+            ? isAr
+              ? 'معفى ضريبياً'
+              : isFr
+              ? 'Déductible'
+              : 'Deductible'
+            : isAr
+            ? 'قياسي'
+            : isFr
+            ? 'Standard'
+            : 'Standard'
+        }
+        statusClassName={
+          activeExpense?.isTaxDeductible
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+        }
+        tabs={[
+          { id: 'overview', label: isAr ? 'نظرة عامة' : isFr ? 'Aperçu' : 'Overview' },
+          { id: 'tax', label: isAr ? 'الضريبة' : isFr ? 'Fiscalité' : 'Tax & Ledger' },
+          { id: 'actions', label: isAr ? 'إجراءات' : 'Actions' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={setInspectorTab}
+        onSelectItem={(exp) => {
+          setSelectedExpense(exp);
+          setInspectorTab('overview');
+        }}
         onClose={() => setSelectedExpense(null)}
         onDelete={(exp) => {
           deleteFreelanceExpense(exp.id);
           setSelectedExpense(null);
         }}
         holdToDelete={true}
-        renderBody={(exp) => (
-          <div className="space-y-4 text-xs">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900/40">
-                <span className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider block">
-                  {t('common_amount', language)}
-                </span>
-                <span className="text-lg font-mono font-bold text-[#d4522f] tabular-nums">
-                  {formatCurrencyAmount(exp.amount, exp.currency)}
-                </span>
-              </div>
-              <div className="p-3 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900/40">
-                <span className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider block">
-                  {isAr ? 'التاريخ' : 'Date'}
-                </span>
-                <span className="text-base font-bold text-black dark:text-white tabular-nums">
-                  {exp.date || '2026-02-15'}
-                </span>
-              </div>
-            </div>
-            <div className="p-4 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-[#E6DED6] dark:border-neutral-800 space-y-2">
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">
-                  {t('free_fin_expense_category', language)}:
-                </span>
-                <span className="font-semibold text-black dark:text-white">{exp.category}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-black/55 dark:text-white/55">
-                  {t('free_fin_deductible', language)}:
-                </span>
-                <span className="font-semibold text-black dark:text-white">
-                  {exp.isTaxDeductible
-                    ? isAr
-                      ? 'نعم (معفى)'
-                      : isFr
-                      ? 'Oui'
-                      : 'Yes'
-                    : isAr
-                    ? 'لا'
-                    : 'No'}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
+        renderBody={(exp, tab) => {
+          const eurEquiv =
+            exp.currency === 'EUR'
+              ? exp.amount
+              : exp.currency === 'USD'
+              ? Math.round(exp.amount / 1.08)
+              : Math.round(exp.amount / 230);
+          if (tab === 'tax') {
+            return (
+              <>
+                <InspectorSection index={0}>
+                  <InspectorBigStat
+                    value={formatCurrencyAmount(exp.amount, exp.currency)}
+                    tone={exp.isTaxDeductible ? 'ok' : 'accent'}
+                    caption={`${isAr ? 'المعادل باليورو' : isFr ? 'Équivalent EUR' : 'EUR Equivalent'}: €${eurEquiv.toLocaleString()}`}
+                  />
+                </InspectorSection>
+                <InspectorSection
+                  index={1}
+                  title={isAr ? 'التصنيف الضريبي' : isFr ? 'Traitement Fiscal' : 'Fiscal Classification'}
+                >
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={t('free_fin_deductible', language)}
+                      value={
+                        exp.isTaxDeductible
+                          ? isAr
+                            ? 'نعم (قابل للخصم)'
+                            : isFr
+                            ? 'Oui — Charge déductible'
+                            : 'Yes — Tax Deductible'
+                          : isAr
+                          ? 'لا'
+                          : 'No'
+                      }
+                      tone={exp.isTaxDeductible ? 'ok' : 'warn'}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'الأثر على الاحتياطي الضريبي' : isFr ? 'Impact provision fiscale' : 'Tax Provision Impact'}
+                      value={exp.isTaxDeductible ? `-€${Math.round(eurEquiv * (taxRate / 100)).toLocaleString()}` : '€0'}
+                      mono
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
+          if (tab === 'actions') {
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : isFr ? 'Actions Rapides' : 'Quick Actions'}>
+                  <InspectorQuickActions
+                    actions={[
+                      {
+                        id: 'pin',
+                        label: pinnedExpenseIds.has(exp.id)
+                          ? isAr
+                            ? 'إلغاء التثبيت'
+                            : 'Unpin'
+                          : isAr
+                          ? 'تثبيت'
+                          : 'Pin',
+                        icon: <Pin size={16} />,
+                        primary: true,
+                        onClick: () =>
+                          setPinnedExpenseIds((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(exp.id)) next.delete(exp.id);
+                            else next.add(exp.id);
+                            return next;
+                          }),
+                      },
+                      {
+                        id: 'export',
+                        label: 'CSV',
+                        icon: <Wallet size={16} />,
+                        onClick: handleExportCSV,
+                      },
+                    ]}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label={t('common_delete', language)}
+                    icon={<Trash2 size={14} />}
+                    tone="neutral"
+                    onClick={() => {
+                      deleteFreelanceExpense(exp.id);
+                      setSelectedExpense(null);
+                    }}
+                  />
+                </InspectorSection>
+              </>
+            );
+          }
+          return (
+            <>
+              <InspectorSection index={0}>
+                <InspectorBigStat
+                  value={formatCurrencyAmount(exp.amount, exp.currency)}
+                  tone="accent"
+                  caption={exp.description}
+                />
+              </InspectorSection>
+              <InspectorSection
+                index={1}
+                title={isAr ? 'تفاصيل المصروف' : isFr ? 'Détails de la Dépense' : 'Expense Details'}
+              >
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={t('free_fin_vendor_label', language)}
+                    value={exp.vendor}
+                  />
+                  <InspectorKeyValue
+                    label={t('free_fin_expense_category', language)}
+                    value={exp.category}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'التاريخ' : 'Date'}
+                    value={exp.date || '2026-02-15'}
+                    mono
+                  />
+                  <InspectorKeyValue
+                    label={t('common_currency', language)}
+                    value={exp.currency}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       {/* Add Expense Modal */}

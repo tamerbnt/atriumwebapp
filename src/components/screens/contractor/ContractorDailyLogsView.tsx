@@ -18,7 +18,13 @@ import {
   Minus,
   MapPin,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { useContractorData } from './contractorData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { FilterSelect } from '../../ui/FilterSelect';
@@ -41,6 +47,15 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -62,8 +77,21 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
     currentUser,
     isSyncing,
     networkMode,
-    retryCloudSync,
-  } = useAtriumStore();
+    lastSyncedAt,
+  } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBusiness: s.currentBusiness,
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      currentUser: s.currentUser,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -462,6 +490,89 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
     [isAr, isEn, weatherFilter, branchFilter, projectLogs, branchOptions]
   );
 
+  const getRowMeta = useCallback(
+    (log: ContractorDailyLog): KineticRowData => {
+      const isSunny = log.weather.toLowerCase().includes('ensoleill');
+      const br = resolveRecordBranch(log, branchesById, currentBranch, language);
+      return {
+        primary: log.date,
+        secondary: `${log.headcountWorkers} ${isAr ? 'عمال' : 'ouvriers'} · ${log.supervisorSignature || 'Chef chantier'}`,
+        meta: br.name,
+        badge: isSunny
+          ? {
+              label: isAr ? 'مشمس' : 'Ensoleillé',
+              tone: 'ok',
+            }
+          : {
+              label: isAr ? 'تقلبات' : 'Intempéries',
+              tone: 'warn',
+            },
+      };
+    },
+    [branchesById, currentBranch, language, isAr]
+  );
+
+  const getFanActions = useCallback(
+    (log: ContractorDailyLog): KineticRowFanAction[] => [
+      {
+        id: 'print',
+        label: isAr ? 'طباعة' : 'PV',
+        icon: <Printer size={14} />,
+        onClick: () =>
+          showToast(
+            isAr ? `جاري طباعة محضر ${log.date}` : `PV contradictoire (${log.date}) généré`,
+            'info'
+          ),
+      },
+      {
+        id: 'hse',
+        label: 'HSE',
+        icon: <ShieldCheck size={14} />,
+        onClick: () =>
+          showToast(
+            isAr ? `تأكيد السلامة ${log.date}` : `Audit HSE validé (${log.date})`,
+            'success'
+          ),
+      },
+    ],
+    [isAr]
+  );
+
+  const getDetailActions = useCallback(
+    (log: ContractorDailyLog): KineticDetailAction[] => [
+      {
+        id: 'print',
+        label: isAr ? 'طباعة PV' : 'Imprimer PV',
+        icon: <Printer size={14} />,
+        onClick: () =>
+          showToast(
+            isAr ? `جاري طباعة محضر ${log.date}` : `PV contradictoire (${log.date}) généré`,
+            'info'
+          ),
+      },
+      {
+        id: 'duplicate',
+        label: isAr ? 'تكرار' : 'Dupliquer',
+        icon: <Copy size={14} />,
+        onClick: () => {
+          const dup: ContractorDailyLog = {
+            ...log,
+            id: `log_${Date.now()}`,
+            date: new Date().toISOString().split('T')[0],
+            createdAt: new Date().toISOString(),
+          };
+          addDailyLog(dup);
+          setSelectedLog(dup);
+          showToast(
+            isAr ? 'تم تكرار المحضر' : 'Journal dupliqué pour aujourd’hui',
+            'success'
+          );
+        },
+      },
+    ],
+    [isAr, addDailyLog]
+  );
+
   const columns: ColumnDefinition<ContractorDailyLog>[] = useMemo(
     () => [
       {
@@ -558,6 +669,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
         viewMode="list"
         isOffline={isOffline}
         isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
         onRetry={retryCloudSync || retry}
       />
     );
@@ -568,11 +680,6 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<Calendar size={22} />}
         title={isAr ? 'اليومية' : isEn ? 'Site Log' : 'Journal'}
-        subtitle={
-          selectedProject
-            ? `${selectedProject.projectCode} · ${selectedProject.projectName}`
-            : undefined
-        }
         primaryAction={{
           label:
             activeSection === 'logs'
@@ -724,8 +831,9 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 
           <UniversalDataCollection<ContractorDailyLog>
             hideToolbar
-            data={sortedLogs}
+            items={sortedLogs}
             keyExtractor={(log) => log.id}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
             defaultViewMode={viewMode}
             columns={columns}
             sortBy={sortBy}
@@ -747,6 +855,9 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
               setSelectedLog(log);
               setInspectorTab('fiche');
             }}
+            getRowMeta={getRowMeta}
+            getFanActions={getFanActions}
+            getDetailActions={getDetailActions}
             customActions={(log) => [
               {
                 id: 'print',
@@ -1042,6 +1153,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
         language={language}
         title={activeLog?.date || ''}
         subtitle={selectedProject ? selectedProject.projectName : 'Chantier BTP'}
+        categoryLabel={selectedProject?.projectCode || 'Journal BTP'}
         avatarText="PV"
         branchName={
           activeLog
@@ -1057,154 +1169,142 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
               : isAr ? 'تقلبات جوية' : isEn ? 'Adverse Weather' : activeLog.weather
             : undefined
         }
+        statusClassName={
+          activeLog?.weather.toLowerCase().includes('ensoleill')
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+        }
         tabs={[
           { id: 'fiche', label: isAr ? 'محضر الأشغال' : 'Fiche Chantier' },
-          { id: 'rollcall', label: isAr ? 'تعداد المهن' : 'Pointage Métiers' },
-          { id: 'engins', label: isAr ? 'العتاد' : 'Engins' },
+          { id: 'rollcall', label: isAr ? 'تعداد المهن' : 'Effectifs & Engins' },
           { id: 'hse', label: isAr ? 'الأمان' : 'Sécurité HSE' },
         ]}
         activeTab={inspectorTab}
         onTabChange={setInspectorTab}
         onSelectItem={(log) => setSelectedLog(log)}
         onClose={() => setSelectedLog(null)}
-        renderBody={(log, tab) => (
-          <div className="space-y-4 text-xs">
-            <div className="flex items-center gap-2 flex-wrap">
-              <AtriumButton
-                variant="primary"
-                size="sm"
-                icon={<Printer size={13} />}
-                onClick={() =>
-                  showToast(
-                    isAr ? 'جاري طباعة محضر الورشة' : 'Impression du PV de chantier en cours',
-                    'success'
-                  )
-                }
-              >
-                {isAr ? 'طباعة محضر الورشة' : 'Imprimer PV'}
-              </AtriumButton>
-              <AtriumButton
-                variant="outline"
-                size="sm"
-                icon={<Copy size={13} />}
-                onClick={() => {
-                  const dup: ContractorDailyLog = {
-                    ...log,
-                    id: `log_${Date.now()}`,
-                    date: new Date().toISOString().split('T')[0],
-                    createdAt: new Date().toISOString(),
-                  };
-                  addDailyLog(dup);
-                  setSelectedLog(dup);
-                  showToast(
-                    isAr ? 'تم تكرار محضر الورشة' : 'Rapport dupliqué pour aujourd’hui',
-                    'success'
-                  );
-                }}
-              >
-                {isAr ? 'تكرار' : 'Dupliquer'}
-              </AtriumButton>
-            </div>
+        renderBody={(log, tab) => {
+          if (tab === 'rollcall') {
+            return (
+              <>
+                <InspectorSection index={0}>
+                  <InspectorBigStat
+                    value={`${log.headcountWorkers} ouvriers`}
+                    tone="ok"
+                    caption={`Ingénieurs: ${log.workersPresent?.engineers ?? 2} · Spécialistes: ${log.workersPresent?.specializedCrafts ?? 12} · Manœuvres: ${log.workersPresent?.laborers ?? 8}`}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1} title={isAr ? 'العتاد المجند' : 'Engins mobilisés sur site'}>
+                  <InspectorCard>
+                    {log.equipmentOnSite.map((eq, i) => (
+                      <InspectorListItem
+                        key={i}
+                        title={eq}
+                        subtitle={log.date}
+                        badge={{ label: 'Opérationnel', tone: 'ok' }}
+                        isLast={i === log.equipmentOnSite.length - 1}
+                      />
+                    ))}
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
 
-            {tab === 'fiche' && (
-              <div className="space-y-3">
-                <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-black/70 dark:text-white/75">Date d'exécution:</span>
-                    <span className="font-mono font-bold text-black dark:text-white">{log.date}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-black/70 dark:text-white/75">Météo constatée:</span>
-                    <span className="px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-semibold text-[10px]">
-                      {log.weather}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-black/70 dark:text-white/75">Superviseur:</span>
-                    <span className="font-medium text-black dark:text-white">
-                      {log.supervisorSignature}
-                    </span>
-                  </div>
-                </div>
-                <div className="p-3 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 leading-relaxed text-black dark:text-white">
-                  {log.tasksAccomplished}
-                </div>
-              </div>
-            )}
+          if (tab === 'hse') {
+            const checklist = [
+              'Port du casque et chaussures de sécurité 100%',
+              'Harnais pour travaux en hauteur vérifiés',
+              'Balisage périmètre grue à tour conforme',
+              'Trousse de premiers secours approvisionnée',
+            ];
+            return (
+              <>
+                <InspectorSection index={0} title={isAr ? 'ملاحظات السلامة' : 'Incidents & Constats HSE'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label="Rapport HSE" value={log.incidentsSafety || 'R.A.S. Aucun incident'} mono={false} />
+                    <InspectorKeyValue label="Visa Superviseur" value={log.supervisorSignature} mono={false} isLast />
+                  </InspectorCard>
+                </InspectorSection>
+                <InspectorSection index={1} title="Contrôles réglementaires">
+                  <InspectorCard>
+                    {checklist.map((item, i) => (
+                      <InspectorListItem
+                        key={i}
+                        title={item}
+                        badge={{ label: 'Conforme', tone: 'ok' }}
+                        isLast={i === checklist.length - 1}
+                      />
+                    ))}
+                  </InspectorCard>
+                </InspectorSection>
+              </>
+            );
+          }
 
-            {tab === 'rollcall' && (
-              <div className="space-y-3">
-                <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
-                  <span className="font-semibold text-black/70 dark:text-white/75">
-                    Total Ouvriers Pointés
-                  </span>
-                  <span className="text-sm font-bold font-mono text-blue-600 dark:text-blue-400">
-                    {log.headcountWorkers} présents
-                  </span>
-                </div>
-                <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-1.5">
-                  <div className="flex justify-between">
-                    <span>Ingénieurs / Encadrement</span>
-                    <span className="font-mono font-bold">{log.workersPresent?.engineers ?? 2}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Maçons / Ferrailleurs</span>
-                    <span className="font-mono font-bold">
-                      {log.workersPresent?.specializedCrafts ?? 12}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Manœuvres</span>
-                    <span className="font-mono font-bold">{log.workersPresent?.laborers ?? 8}</span>
-                  </div>
-                </div>
-              </div>
-            )}
+          return (
+            <>
+              <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : 'Actions rapides'}>
+                <InspectorQuickActions
+                  actions={[
+                    {
+                      id: 'print',
+                      label: isAr ? 'طباعة' : 'Imprimer PV',
+                      icon: <Printer className="w-[18px] h-[18px]" />,
+                      primary: true,
+                      onClick: () =>
+                        showToast(
+                          isAr ? 'جاري طباعة محضر الورشة' : 'Impression du PV de chantier en cours',
+                          'success'
+                        ),
+                    },
+                    {
+                      id: 'duplicate',
+                      label: isAr ? 'تكرار' : 'Dupliquer',
+                      icon: <Copy className="w-[18px] h-[18px]" />,
+                      onClick: () => {
+                        const dup: ContractorDailyLog = {
+                          ...log,
+                          id: `log_${Date.now()}`,
+                          date: new Date().toISOString().split('T')[0],
+                          createdAt: new Date().toISOString(),
+                        };
+                        addDailyLog(dup);
+                        setSelectedLog(dup);
+                        showToast(
+                          isAr ? 'تم تكرار محضر الورشة' : 'Rapport dupliqué pour aujourd’hui',
+                          'success'
+                        );
+                      },
+                    },
+                    {
+                      id: 'hse',
+                      label: 'Audit HSE',
+                      icon: <ShieldCheck className="w-[18px] h-[18px]" />,
+                      onClick: () =>
+                        showToast(`Contrôle sécurité validé pour le ${log.date}`, 'success'),
+                    },
+                  ]}
+                />
+              </InspectorSection>
 
-            {tab === 'engins' && (
-              <div className="space-y-2">
-                {log.equipmentOnSite.map((eq, i) => (
-                  <div
-                    key={i}
-                    className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Truck size={14} className="text-[#d4522f]" />
-                      <span className="font-medium text-black dark:text-white">{eq}</span>
-                    </div>
-                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                      Opérationnel
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+              <InspectorSection index={1} title={isAr ? 'معلومات المحضر' : 'Détails du Rapport'}>
+                <InspectorCard>
+                  <InspectorKeyValue label="Date d’exécution" value={log.date} />
+                  <InspectorKeyValue label="Météo constatée" value={log.weather} mono={false} />
+                  <InspectorKeyValue label="Effectif pointé" value={`${log.headcountWorkers} ouvriers`} tone="ok" />
+                  <InspectorKeyValue label="Superviseur" value={log.supervisorSignature} mono={false} isLast />
+                </InspectorCard>
+              </InspectorSection>
 
-            {tab === 'hse' && (
-              <div className="space-y-3">
-                <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800">
-                  {log.incidentsSafety || 'R.A.S. Aucun incident ou blessure à signaler.'}
-                </div>
-                <div className="space-y-1.5">
-                  {[
-                    'Port du casque et chaussures de sécurité 100%',
-                    'Harnais pour travaux en hauteur vérifiés',
-                    'Balisage périmètre grue à tour conforme',
-                    'Trousse de premiers secours approvisionnée',
-                  ].map((item, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-2 p-2 rounded-lg bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-100 dark:border-neutral-800"
-                    >
-                      <Check size={13} className="text-emerald-500 shrink-0" />
-                      <span className="text-black/70 dark:text-white/75 text-[11px]">{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+              <InspectorSection index={2} title={isAr ? 'الأعمال المنجزة' : 'Travaux accomplis'}>
+                <InspectorCard>
+                  <InspectorKeyValue label="Synthèse chantier" value={log.tasksAccomplished} mono={false} isLast />
+                </InspectorCard>
+              </InspectorSection>
+            </>
+          );
+        }}
       />
 
       {isLogModalOpen && (

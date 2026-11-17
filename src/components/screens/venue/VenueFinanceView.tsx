@@ -3,7 +3,6 @@ import {
   ShieldCheck,
   AlertTriangle,
   X,
-  Eye,
   Printer,
   Unlock,
 } from 'lucide-react';
@@ -25,10 +24,25 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorWideButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
+
+const STATUS_PILL_OK =
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+const STATUS_PILL_INFO =
+  'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]';
+const STATUS_PILL_DANGER =
+  'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]';
+
+type DrawerTab = 'caution' | 'degradations' | 'restitution';
 
 const extractStr = (val: any): string =>
   typeof val === 'string' ? val : val?.target?.value ?? String(val ?? '');
@@ -64,6 +78,7 @@ export const VenueFinanceView: React.FC = () => {
   const [deductionAmount, setDeductionAmount] = useState(0);
 
   const [selectedDeposit, setSelectedDeposit] = useState<SecurityDepositRecord | null>(null);
+  const [drawerTab, setDrawerTab] = useState<DrawerTab>('caution');
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
@@ -439,13 +454,6 @@ export const VenueFinanceView: React.FC = () => {
       <ScreenHeaderBar
         icon={<ShieldCheck size={22} />}
         title={t('venue_fin_page_title')}
-        subtitle={
-          isAr
-            ? 'إدارة أموال الضمان والودائع المحجوزة'
-            : isFr
-            ? 'Fonds séquestrés, dégradations constatées et déblocages après événement'
-            : 'Escrow deposits, damage inspections, and post-event releases'
-        }
       />
 
       <ScreenKpiBanner
@@ -541,11 +549,12 @@ export const VenueFinanceView: React.FC = () => {
           onResetAllFilters={handleResetFilters}
         />
 
-        <UniversalDataCollection
+        <UniversalDataCollection<SecurityDepositRecord>
           hideToolbar
-          data={sortedDeposits}
+          items={sortedDeposits}
           keyExtractor={(d) => d.id}
           viewMode={viewMode}
+          defaultViewMode="list"
           columns={depositColumns}
           sortBy={sortBy}
           sortDirection={sortDir}
@@ -562,52 +571,77 @@ export const VenueFinanceView: React.FC = () => {
             setDrawerOpenerEl(el || null);
             setSelectedDeposit(d);
           }}
-          isPinned={(d) => pinnedIds.has(d.id)}
-          onPinToggle={(d) => {
+          pinnedIds={pinnedIds}
+          onPinToggle={(idOrItem) => {
+            const id = typeof idOrItem === 'string' ? idOrItem : idOrItem.id;
             setPinnedIds((prev) => {
               const next = new Set(prev);
-              if (next.has(d.id)) next.delete(d.id);
-              else next.add(d.id);
+              if (next.has(id)) next.delete(id);
+              else next.add(id);
               return next;
             });
           }}
           selectedIds={selectedIds}
           onSelectionChange={setSelectedIds}
-          customActions={(dep) => [
-            {
-              id: 'inspect',
-              tooltip: isAr ? 'معاينة الضمان' : 'Consulter Caution',
-              icon: <Eye size={14} />,
-              onClick: () => setSelectedDeposit(dep),
-            },
+          getRowMeta={(dep) => {
+            const bInfo = resolveRecordBranch(dep, branchesById, currentBranch, language);
+            const statusText =
+              dep.status === 'Held'
+                ? t('venue_held_status')
+                : dep.status === 'Released'
+                ? t('venue_refunded_status')
+                : t('venue_deducted_status');
+            return {
+              title: dep.renterName,
+              subline: `${dep.unitName} · ${dep.collectedAt}`,
+              avatarText: (dep.renterName || 'CA').slice(0, 2).toUpperCase(),
+              avatarColor: '#d4522f',
+              categoryLabel: dep.paymentMethod,
+              statusLabel: statusText,
+              statusVariant:
+                dep.status === 'Held'
+                  ? 'active'
+                  : dep.status === 'Released'
+                  ? 'info'
+                  : 'blocked',
+              metricPrimary: formatCurrencyAmount(dep.amount, dep.currency),
+              metricSecondary: dep.paymentMethod,
+              branchName: bInfo.name,
+              isPinned: pinnedIds.has(dep.id),
+              detailCol1: { label: t('venue_voucher_space'), value: dep.unitName },
+              detailCol2: {
+                label: isAr ? 'طريقة الدفع' : 'Mode Paiement',
+                value: dep.paymentMethod,
+              },
+              detailCol3: {
+                label: isAr ? 'تاريخ التحصيل' : 'Encaissement',
+                value: dep.collectedAt,
+              },
+            };
+          }}
+          getFanActions={(dep) => [
             ...(dep.status === 'Held'
               ? [
                   {
                     id: 'release',
-                    tooltip: isAr ? 'استرجاع الوديعة' : 'Restituer Caution',
+                    label: isAr ? 'استرجاع' : 'Restituer',
                     icon: <Unlock size={14} />,
-                    onClick: (e?: React.MouseEvent) => {
-                      e?.stopPropagation();
-                      releaseSecurityDeposit(dep.id);
-                    },
+                    onClick: () => releaseSecurityDeposit(dep.id),
                   },
                   {
                     id: 'deduct',
-                    tooltip: isAr ? 'اقتطاع ضرر' : 'Retenue Dégâts',
+                    label: isAr ? 'اقتطاع' : 'Retenue',
                     icon: <AlertTriangle size={14} />,
-                    onClick: (e?: React.MouseEvent) => {
-                      e?.stopPropagation();
-                      handleOpenDeduct(dep);
-                    },
+                    isDanger: true,
+                    onClick: () => handleOpenDeduct(dep),
                   },
                 ]
               : []),
             {
               id: 'receipt',
-              tooltip: isAr ? 'وصل الضمان' : 'Reçu Caution',
+              label: isAr ? 'وصل' : 'Reçu',
               icon: <Printer size={14} />,
-              onClick: (e?: React.MouseEvent) => {
-                e?.stopPropagation();
+              onClick: () => {
                 showToast({
                   type: 'info',
                   title: 'Reçu Caution',
@@ -617,42 +651,37 @@ export const VenueFinanceView: React.FC = () => {
               },
             },
           ]}
-          renderCard={(d) => (
-            <div className="p-4 flex flex-col justify-between h-full space-y-3">
-              <div className="flex items-start justify-between gap-2">
-                <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded">
-                  {formatCurrencyAmount(d.amount, d.currency)}
-                </span>
-                <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    d.status === 'Held'
-                      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                      : d.status === 'Released'
-                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-                      : 'bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-300'
-                  }`}
-                >
-                  {d.status === 'Held'
-                    ? 'Bloquée'
-                    : d.status === 'Released'
-                    ? 'Restituée'
-                    : 'Retenue'}
-                </span>
-              </div>
-              <div>
-                <h4 className="font-bold text-xs text-black dark:text-white line-clamp-1">
-                  {d.renterName}
-                </h4>
-                <p className="text-[11px] text-black/55 dark:text-white/55 mt-0.5">
-                  {d.unitName} · {d.paymentMethod}
-                </p>
-              </div>
-              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-black/55 dark:text-white/55 font-mono">
-                <span>{d.collectedAt}</span>
-                <span className="font-bold text-black/70 dark:text-white/75">{d.currency}</span>
-              </div>
-            </div>
-          )}
+          getDetailActions={(dep) => [
+            ...(dep.status === 'Held'
+              ? [
+                  {
+                    id: 'release',
+                    label: isAr ? 'استرجاع الوديعة' : 'Restituer',
+                    icon: <Unlock size={13} />,
+                    onClick: () => releaseSecurityDeposit(dep.id),
+                  },
+                  {
+                    id: 'deduct',
+                    label: isAr ? 'اقتطاع ضرر' : 'Retenue',
+                    icon: <AlertTriangle size={13} />,
+                    onClick: () => handleOpenDeduct(dep),
+                  },
+                ]
+              : []),
+            {
+              id: 'receipt',
+              label: isAr ? 'وصل الضمان' : 'Reçu Caution',
+              icon: <Printer size={13} />,
+              onClick: () => {
+                showToast({
+                  type: 'info',
+                  title: 'Reçu Caution',
+                  message: `Reçu de séquestre caution émis pour ${dep.renterName}`,
+                  category: 'rental_booking',
+                });
+              },
+            },
+          ]}
           emptyTitle={isAr ? 'لا توجد ودائع' : isFr ? 'Aucune caution trouvée' : 'No deposits found'}
           hasActiveFilters={activeFiltersCount > 0 || searchQuery.trim().length > 0}
           onResetFilters={handleResetFilters}
@@ -671,7 +700,7 @@ export const VenueFinanceView: React.FC = () => {
         sections={filterSections}
       />
 
-      <KineticSlideOverInspector
+      <KineticSlideOverInspector<SecurityDepositRecord>
         isOpen={Boolean(activeDeposit)}
         item={activeDeposit}
         allItems={sortedDeposits}
@@ -680,7 +709,7 @@ export const VenueFinanceView: React.FC = () => {
         language={language}
         title={activeDeposit?.renterName || ''}
         subtitle={activeDeposit ? `${activeDeposit.unitName} · ${activeDeposit.paymentMethod}` : ''}
-        avatarText={(activeDeposit?.renterName || 'C').slice(0, 2).toUpperCase()}
+        avatarText={(activeDeposit?.renterName || 'CA').slice(0, 2).toUpperCase()}
         avatarColor="#d4522f"
         branchName={
           activeDeposit
@@ -688,138 +717,180 @@ export const VenueFinanceView: React.FC = () => {
             : undefined
         }
         statusLabel={activeDeposit ? localizeStatus(activeDeposit.status, language) : undefined}
+        statusClassName={
+          activeDeposit?.status === 'Held'
+            ? STATUS_PILL_OK
+            : activeDeposit?.status === 'Released'
+            ? STATUS_PILL_INFO
+            : STATUS_PILL_DANGER
+        }
         tabs={[
           { id: 'caution', label: isAr ? 'الضمان والوديعة' : 'Caution' },
           { id: 'degradations', label: isAr ? 'الأضرار والاقتطاع' : 'Dégradations' },
           { id: 'restitution', label: isAr ? 'تاريخ الاسترجاع' : 'Restitution' },
         ]}
+        activeTab={drawerTab}
+        onTabChange={(tab) => setDrawerTab(tab as DrawerTab)}
         onSelectItem={(d) => setSelectedDeposit(d)}
         onClose={() => setSelectedDeposit(null)}
-        renderBody={(dep, tab) => (
-          <div className="space-y-4 text-xs">
-            {tab === 'caution' && (
+        renderBody={(dep, tab) => {
+          if (tab === 'degradations') {
+            return (
               <div className="space-y-4">
-                <div className="p-4 bg-[#1F1D1B] rounded-2xl text-white space-y-2 shadow-sm">
-                  <div className="flex items-center justify-between text-white/80 text-[11px]">
-                    <span>Montant Caution Sous Séquestre</span>
-                    <span className="bg-[#3D2817] text-[#FB923C] text-[10px] font-bold px-2 py-0.5 rounded-full">
-                      {localizeStatus(dep.status, language)}
-                    </span>
-                  </div>
-                  <div className="text-2xl font-black tracking-tight text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
-                    {formatCurrencyAmount(dep.amount, dep.currency)}
-                  </div>
-                  <p className="text-[10px] text-white/75">
-                    Bloqué sur compte séquestre de l'établissement jusqu'à l'état des lieux de sortie.
-                  </p>
-                </div>
-
-                <div className="p-3.5 bg-[#F3EDE7]/60 dark:bg-neutral-900/60 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 space-y-2">
-                  <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
-                    Détails de la Réservation
-                  </span>
-                  <div className="flex items-center justify-between">
-                    <span className="text-black/55 dark:text-white/55">Espace Loué:</span>
-                    <span className="font-bold text-black dark:text-white">{dep.unitName}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-black/55 dark:text-white/55">Client / Organisateur:</span>
-                    <span className="font-medium text-black dark:text-white">{dep.renterName}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-black/55 dark:text-white/55">Moyen de Caution:</span>
-                    <span className="font-semibold text-black dark:text-white">{dep.paymentMethod}</span>
-                  </div>
-                </div>
-
-                {dep.status === 'Held' && (
-                  <div className="p-3.5 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between gap-2">
-                    <div>
-                      <span className="font-semibold block text-black dark:text-white">
-                        Restitution Intégrale
-                      </span>
-                      <span className="text-[10px] text-black/55 dark:text-white/55">
-                        Après état des lieux sans dégradation
-                      </span>
-                    </div>
-                    <AtriumButton
-                      variant="primary"
-                      size="sm"
-                      onClick={() => releaseSecurityDeposit(dep.id)}
-                    >
-                      Restituer ✓
-                    </AtriumButton>
-                  </div>
-                )}
-
-                <AtriumButton
-                  variant="secondary"
-                  size="sm"
-                  className="w-full justify-center"
-                  icon={<Printer size={14} />}
-                  onClick={() => {
-                    showToast({
-                      type: 'info',
-                      title: 'Impression Reçu',
-                      message: `Bordereau de caution imprimé pour ${dep.renterName}`,
-                      category: 'rental_booking',
-                    });
-                  }}
+                <InspectorSection
+                  index={0}
+                  title={isAr ? 'تقرير الأضرار والاقتطاع' : 'Constat de dégradation'}
                 >
-                  {isAr ? 'طباعة وصل الوديعة' : 'Imprimer Reçu de Caution'}
-                </AtriumButton>
-              </div>
-            )}
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'حالة الضمان' : 'Statut'}
+                      value={localizeStatus(dep.status, language)}
+                      tone={
+                        dep.status === 'Held'
+                          ? 'ok'
+                          : dep.status === 'Released'
+                          ? 'default'
+                          : 'danger'
+                      }
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'ملاحظات المعاينة' : 'Motif constaté'}
+                      value={
+                        dep.deductionReason ||
+                        (isAr
+                          ? 'لم تُسجّل أي أضرار عند معاينة الخروج.'
+                          : "Aucune dégradation signalée lors de l'état des lieux.")
+                      }
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
 
-            {tab === 'degradations' && (
-              <div className="space-y-4">
-                <div className="p-3.5 bg-[#F3EDE7]/60 dark:bg-neutral-900/60 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 space-y-2">
-                  <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
-                    Constat de Dégradation & Retenue
-                  </span>
-                  <div className="p-2.5 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 text-black/75 dark:text-white/75">
-                    {dep.deductionReason || "Aucune dégradation signalée lors de l'état des lieux."}
-                  </div>
-                </div>
                 {dep.status === 'Held' && (
-                  <div className="p-3.5 rounded-2xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/50 dark:bg-amber-950/20 space-y-2">
-                    <span className="font-semibold text-amber-900 dark:text-amber-300 block">
-                      Appliquer une Retenue sur Caution
-                    </span>
-                    <p className="text-[11px] text-amber-700 dark:text-amber-400">
-                      En cas de casse, salissures anormales ou mobilier endommagé.
-                    </p>
-                    <AtriumButton
-                      variant="primary"
-                      size="sm"
+                  <InspectorSection index={1} title={isAr ? 'إجراء الاقتطاع' : 'Retenue sur caution'}>
+                    <InspectorWideButton
+                      label={
+                        isAr ? 'فتح ملف اقتطاع الأضرار' : 'Ouvrir Dossier Dégradation'
+                      }
+                      icon={<AlertTriangle size={14} />}
+                      tone="accent"
                       onClick={() => handleOpenDeduct(dep)}
-                    >
-                      Ouvrir Dossier Dégradation
-                    </AtriumButton>
-                  </div>
+                    />
+                  </InspectorSection>
                 )}
               </div>
-            )}
+            );
+          }
 
-            {tab === 'restitution' && (
-              <div className="p-4 bg-[#F3EDE7]/60 dark:bg-neutral-900/60 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 space-y-2">
-                <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
-                  Historique des Mouvements
-                </span>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Date d'encaissement:</span>
-                  <span className="font-mono text-black dark:text-white">{dep.collectedAt}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-black/55 dark:text-white/55">Date de déblocage:</span>
-                  <span className="font-mono text-black dark:text-white">
-                    {dep.releasedAt || 'Toujours en cours'}
-                  </span>
-                </div>
+          if (tab === 'restitution') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection
+                  index={0}
+                  title={isAr ? 'سجل حركات الوديعة' : 'Historique des mouvements'}
+                >
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'تاريخ التحصيل' : "Date d'encaissement"}
+                      value={dep.collectedAt}
+                      mono
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'تاريخ الاسترجاع' : 'Date de déblocage'}
+                      value={dep.releasedAt || (isAr ? 'قيد الحجز' : 'Toujours en cours')}
+                      mono
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'مرجع الحجز' : 'Réf. réservation'}
+                      value={dep.bookingId}
+                      mono
+                      copyText={dep.bookingId}
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
               </div>
-            )}
-          </div>
-        )}
+            );
+          }
+
+          return (
+            <div className="space-y-4">
+              <InspectorQuickActions
+                actions={[
+                  ...(dep.status === 'Held'
+                    ? [
+                        {
+                          id: 'release',
+                          label: isAr ? 'استرجاع الوديعة' : 'Restituer',
+                          icon: <Unlock size={15} />,
+                          primary: true,
+                          onClick: () => releaseSecurityDeposit(dep.id),
+                        },
+                        {
+                          id: 'deduct',
+                          label: isAr ? 'اقتطاع' : 'Retenue',
+                          icon: <AlertTriangle size={15} />,
+                          onClick: () => handleOpenDeduct(dep),
+                        },
+                      ]
+                    : []),
+                  {
+                    id: 'receipt',
+                    label: isAr ? 'وصل الضمان' : 'Reçu',
+                    icon: <Printer size={15} />,
+                    primary: dep.status !== 'Held',
+                    onClick: () => {
+                      showToast({
+                        type: 'info',
+                        title: 'Impression Reçu',
+                        message: `Bordereau de caution imprimé pour ${dep.renterName}`,
+                        category: 'rental_booking',
+                      });
+                    },
+                  },
+                ]}
+              />
+
+              <InspectorSection index={0} title={isAr ? 'مبلغ الضمان' : 'Caution sous séquestre'}>
+                <InspectorBigStat
+                  value={formatCurrencyAmount(dep.amount, dep.currency)}
+                  tone={dep.status === 'Held' ? 'ok' : dep.status === 'Deducted' ? 'danger' : 'accent'}
+                  caption={
+                    isAr
+                      ? 'محتجز على حساب الضمان حتى معاينة الخروج'
+                      : "Séquestre maintenu jusqu'à l'état des lieux de sortie"
+                  }
+                />
+                <InspectorCard>
+                  <InspectorKeyValue label={t('venue_voucher_space')} value={dep.unitName} />
+                  <InspectorKeyValue
+                    label={t('venue_voucher_renter_name')}
+                    value={dep.renterName}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'طريقة الدفع' : 'Moyen de caution'}
+                    value={dep.paymentMethod}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+
+              <InspectorWideButton
+                label={isAr ? 'طباعة وصل الوديعة' : 'Imprimer Reçu de Caution'}
+                icon={<Printer size={14} />}
+                tone="neutral"
+                onClick={() => {
+                  showToast({
+                    type: 'info',
+                    title: 'Impression Reçu',
+                    message: `Bordereau de caution imprimé pour ${dep.renterName}`,
+                    category: 'rental_booking',
+                  });
+                }}
+              />
+            </div>
+          );
+        }}
       />
 
       {deductionTarget && (

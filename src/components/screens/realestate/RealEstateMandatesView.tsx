@@ -8,8 +8,8 @@ import {
   Printer,
   Calendar,
   MapPin,
+  Eye,
 } from 'lucide-react';
-import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { MandateModal } from './MandateModal';
 import { useRealEstateData } from './realEstateData';
@@ -27,6 +27,14 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -450,11 +458,6 @@ export const RealEstateMandatesView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<FileText size={22} />}
         title={isAr ? 'الوكالات' : isEn ? 'Mandates' : 'Mandats Décret 09-18'}
-        subtitle={
-          isAr
-            ? `مطابق للمرسوم التنفيذي 09-18 · ${exclusiveCount} وكالة حصرية`
-            : `Registre officiel Décret 09-18 · ${exclusiveCount} mandats exclusifs`
-        }
         primaryAction={{
           label: isAr ? 'تحرير وكالة جديدة' : isEn ? 'New Mandate' : 'Nouveau Mandat',
           onClick: () => setIsMandateModalOpen(true),
@@ -523,9 +526,10 @@ export const RealEstateMandatesView: React.FC<any> = () => {
 
         <UniversalDataCollection
           hideToolbar
-          data={sortedMandates}
+          items={sortedMandates}
           keyExtractor={(m) => m.id}
-          defaultViewMode={viewMode}
+          defaultViewMode="list"
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
           columns={columns}
           sortBy={sortBy}
           sortDirection={sortDir}
@@ -542,7 +546,62 @@ export const RealEstateMandatesView: React.FC<any> = () => {
           onItemClick={handleOpenInspector}
           onViewDetails={handleOpenInspector}
           onDelete={handleDelete}
-          customActions={(item) => [
+          getRowMeta={(m): Partial<KineticRowData> => {
+            const bInfo = resolveRecordBranch(m, branchesById, currentBranch, language);
+            const isExpiring = m.status === 'Expiring';
+            return {
+              title: `${m.mandateNumber} · ${m.propertyTitle}`,
+              subline: `${m.ownerFullName} · ${m.ownerPhone}`,
+              avatarText: m.isExclusive ? 'EX' : 'MN',
+              avatarColor: '#d4522f',
+              vipBadge: m.isExclusive ? 'Exclusif' : undefined,
+              categoryLabel: m.listingType === 'Sale' ? 'Vente' : 'Location',
+              branchName: bInfo.name,
+              branchCode: bInfo.code,
+              isPinned: pinnedIds.has(m.id),
+              statusLabel: isExpiring ? 'Expire <15j' : 'Actif',
+              statusVariant: isExpiring ? 'warning' : 'active',
+              metricPrimary: formatMoney(m.askingPriceDzd, language),
+              metricSecondary: `Hon: ${formatMoney(m.commissionEstimatedTtcDzd, language)}`,
+              detailCol1: { label: isAr ? 'الموكل' : 'Mandant', value: m.ownerFullName },
+              detailCol2: { label: isAr ? 'الصلاحية' : 'Échéance', value: m.endDate },
+              detailCol3: { label: 'Décret 09-18', value: formatMoney(m.commissionEstimatedTtcDzd, language) },
+            };
+          }}
+          getFanActions={(item): KineticRowFanAction[] => [
+            {
+              id: 'proroger',
+              label: isAr ? 'تمديد 3 أشهر' : 'Proroger',
+              icon: <Clock size={14} />,
+              onClick: (e) => {
+                e.stopPropagation();
+                handleProrogation(item);
+              },
+            },
+            {
+              id: 'print',
+              label: isAr ? 'طباعة' : 'Imprimer',
+              icon: <Printer size={14} />,
+              onClick: (e) => {
+                e.stopPropagation();
+                showToast(
+                  isAr ? `جاري طباعة عقد الوكالة ${item.mandateNumber}...` : `Impression du mandat ${item.mandateNumber}...`,
+                  'info'
+                );
+                if (typeof window !== 'undefined') window.print();
+              },
+            },
+            {
+              id: 'inspect',
+              label: isAr ? 'عرض' : 'Détails',
+              icon: <Eye size={14} />,
+              onClick: (e) => {
+                e.stopPropagation();
+                handleOpenInspector(item, e.currentTarget);
+              },
+            },
+          ]}
+          getDetailActions={(item): KineticDetailAction[] => [
             {
               id: 'proroger',
               label: isAr ? 'تمديد 3 أشهر' : 'Proroger 3 mois',
@@ -562,38 +621,6 @@ export const RealEstateMandatesView: React.FC<any> = () => {
               },
             },
           ]}
-          renderCard={(m) => (
-            <div className="p-1 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="font-mono font-bold text-xs text-[#d4522f]">{m.mandateNumber}</span>
-                <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    m.status === 'Expiring'
-                      ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                      : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                  }`}
-                >
-                  {m.status}
-                </span>
-              </div>
-              <div>
-                <h4 className="font-bold text-sm text-black dark:text-white truncate">{m.propertyTitle}</h4>
-                <p className="text-xs text-black/55 dark:text-white/55 truncate">
-                  {m.ownerFullName} • {m.ownerPhone}
-                </p>
-              </div>
-              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between text-xs">
-                <div>
-                  <span className="text-[10px] text-black/55 dark:text-white/55 block">Prix Demandé</span>
-                  <span className="font-mono font-bold text-black dark:text-white">{formatMoney(m.askingPriceDzd, language)}</span>
-                </div>
-                <div className="text-right">
-                  <span className="text-[10px] text-black/55 dark:text-white/55 block">Com. TTC (09-18)</span>
-                  <span className="font-mono font-bold text-[#d4522f]">{formatMoney(m.commissionEstimatedTtcDzd, language)}</span>
-                </div>
-              </div>
-            </div>
-          )}
           emptyTitle={isAr ? 'لا توجد وكالات مطابقة' : 'Aucun mandat enregistré'}
           emptyDescription={isAr ? 'أضف وكالة جديدة أو أعد ضبط المرشحات' : 'Créez un nouveau mandat ou réinitialisez les filtres'}
           primaryActionLabel={isAr ? 'تحرير وكالة جديدة' : 'Nouveau Mandat'}
@@ -628,12 +655,13 @@ export const RealEstateMandatesView: React.FC<any> = () => {
         title={activeMandate?.mandateNumber || ''}
         subtitle={activeMandate?.propertyTitle}
         avatarText={activeMandate?.isExclusive ? 'EX' : 'MN'}
+        avatarColor="#d4522f"
         branchName={activeBranchInfo?.name}
         statusLabel={activeMandate?.status === 'Active' ? 'Actif & Conforme' : activeMandate?.status}
         statusClassName={
           activeMandate?.status === 'Expiring'
-            ? 'bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300'
-            : 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
         }
         tabs={[
           { id: 'mandat', label: isAr ? 'الوكالة' : 'Contrat & Bien' },
@@ -647,106 +675,80 @@ export const RealEstateMandatesView: React.FC<any> = () => {
         onDelete={handleDelete}
         holdToDelete
         renderBody={(m, tab) => (
-          <div className="space-y-4 text-xs">
-            <div className="flex items-center gap-2 flex-wrap">
-              <AtriumButton
-                type="button"
-                variant="primary"
-                size="sm"
-                icon={<Clock size={13} />}
-                onClick={() => handleProrogation(m)}
-              >
-                Proroger 3 Mois (Avenant 09-18)
-              </AtriumButton>
-              <AtriumButton
-                type="button"
-                variant="outline"
-                size="sm"
-                icon={<Printer size={13} />}
-                onClick={() => {
-                  if (typeof window !== 'undefined') window.print();
-                }}
-              >
-                Imprimer Mandat
-              </AtriumButton>
-            </div>
+          <div className="space-y-4">
+            <InspectorSection index={0}>
+              <InspectorQuickActions
+                actions={[
+                  {
+                    id: 'proroger',
+                    label: isAr ? 'تمديد 3 أشهر' : 'Proroger 3M',
+                    icon: <Clock size={16} />,
+                    primary: true,
+                    onClick: () => handleProrogation(m),
+                  },
+                  {
+                    id: 'print',
+                    label: isAr ? 'طباعة العقد' : 'Imprimer',
+                    icon: <Printer size={16} />,
+                    onClick: () => {
+                      if (typeof window !== 'undefined') window.print();
+                    },
+                  },
+                ]}
+              />
+            </InspectorSection>
 
             {tab === 'mandat' && (
-              <div className="space-y-4">
-                <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-black/55 dark:text-white/75">Régime:</span>
-                    <span className="font-semibold text-black dark:text-white">
-                      {m.isExclusive ? 'Exclusivité Totale (3 Mois)' : 'Mandat Simple'}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-black/55 dark:text-white/75">Validité:</span>
-                    <span className="font-mono text-black dark:text-white">
-                      {m.startDate} → {m.endDate}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-black/55 dark:text-white/75">Renouvellements:</span>
-                    <span className="font-mono">{m.renewalCount} avenant(s)</span>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-xl border border-[#E6DED6] dark:border-neutral-700/60 space-y-1.5">
-                  <div className="text-[11px] font-bold uppercase text-[#d4522f]">Bien Sous Contrat</div>
-                  <div className="font-bold text-black dark:text-white">{m.propertyTitle}</div>
-                  <div className="text-black/55 dark:text-white/75">{m.propertyAddress}</div>
-                  <div className="pt-2 flex justify-between font-mono font-bold text-sm text-black dark:text-white">
-                    <span>Prix Demandé:</span>
-                    <span>{formatMoney(m.askingPriceDzd, language)}</span>
-                  </div>
-                  <div className="flex justify-between text-black/55 dark:text-white/55 text-[11px]">
-                    <span>Seuil Minimal Négociable:</span>
-                    <span className="font-mono">{formatMoney(m.minimumAcceptablePriceDzd, language)}</span>
-                  </div>
-                </div>
-              </div>
+              <>
+                <InspectorSection index={1} title={isAr ? 'القيمة المطلوبة' : 'Prix Demandé'}>
+                  <InspectorBigStat
+                    value={formatMoney(m.askingPriceDzd, language)}
+                    tone="accent"
+                    caption={`${m.isExclusive ? 'Exclusivité Totale' : 'Mandat Simple'} · Seuil min ${formatMoney(m.minimumAcceptablePriceDzd, language)}`}
+                  />
+                </InspectorSection>
+                <InspectorSection index={2} title={isAr ? 'شروط الوكالة والعقار' : 'Validité & Bien Sous Contrat'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label={isAr ? 'العقار' : 'Bien'} value={m.propertyTitle} mono={false} />
+                    <InspectorKeyValue label={isAr ? 'العنوان' : 'Adresse'} value={m.propertyAddress} mono={false} />
+                    <InspectorKeyValue label={isAr ? 'الصلاحية' : 'Validité'} value={`${m.startDate} → ${m.endDate}`} />
+                    <InspectorKeyValue label={isAr ? 'التجديدات' : 'Avenants'} value={`${m.renewalCount} avenant(s)`} isLast />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
             )}
 
             {tab === 'mandant' && (
-              <div className="p-3.5 rounded-xl border border-[#E6DED6] dark:border-neutral-700/60 space-y-2">
-                <div className="text-[11px] font-bold uppercase text-[#d4522f]">Identité du Mandant</div>
-                <div className="font-semibold text-black dark:text-white text-sm">{m.ownerFullName}</div>
-                <div className="text-black/55 dark:text-white/75 font-mono">{m.ownerPhone}</div>
-                <div className="text-[11px] text-black/55 dark:text-white/55">
-                  CNI / Passeport: <span className="font-mono font-semibold text-black dark:text-white">{m.ownerNationalId}</span>
-                </div>
-                {m.ownerIdIssueDate && (
-                  <div className="text-[11px] text-black/55 dark:text-white/55">
-                    Délivré le {m.ownerIdIssueDate} à {m.ownerIdIssueDaira}
-                  </div>
-                )}
-                {m.notes && (
-                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 text-[11px] text-black/70 dark:text-white/75">
-                    {m.notes}
-                  </div>
-                )}
-              </div>
+              <InspectorSection index={1} title={isAr ? 'هوية الموكل' : 'Identité du Mandant'}>
+                <InspectorCard>
+                  <InspectorKeyValue label={isAr ? 'المالك' : 'Nom complet'} value={m.ownerFullName} mono={false} />
+                  <InspectorKeyValue label={isAr ? 'الهاتف' : 'Téléphone'} value={m.ownerPhone} copyText={m.ownerPhone} />
+                  <InspectorKeyValue label="CNI / Passeport" value={m.ownerNationalId} copyText={m.ownerNationalId} isLast={!m.ownerIdIssueDate && !m.notes} />
+                  {m.ownerIdIssueDate && (
+                    <InspectorKeyValue label={isAr ? 'تاريخ الإصدار' : 'Délivré le'} value={`${m.ownerIdIssueDate} (${m.ownerIdIssueDaira || ''})`} mono={false} isLast={!m.notes} />
+                  )}
+                  {m.notes && <InspectorKeyValue label={isAr ? 'ملاحظات' : 'Notes'} value={m.notes} mono={false} isLast />}
+                </InspectorCard>
+              </InspectorSection>
             )}
 
             {tab === 'honoraires' && (
-              <div className="p-4 rounded-xl bg-[#FDF4F0] dark:bg-neutral-800 border border-[#d4522f]/30 space-y-2">
-                <div className="text-[11px] font-bold uppercase text-[#d4522f]">Honoraires Réglementés (Décret 09-18)</div>
-                <div className="flex justify-between">
-                  <span>Base HT:</span>
-                  <span className="font-mono font-semibold">{formatMoney(m.commissionEstimatedHtDzd, language)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>TVA Légale (19%):</span>
-                  <span className="font-mono font-semibold">
-                    {formatMoney(Math.round(m.commissionEstimatedHtDzd * 0.19), language)}
-                  </span>
-                </div>
-                <div className="flex justify-between pt-1.5 border-t border-[#d4522f]/30 font-bold text-sm text-[#d4522f]">
-                  <span>Total TTC Estimé:</span>
-                  <span className="font-mono">{formatMoney(m.commissionEstimatedTtcDzd, language)}</span>
-                </div>
-              </div>
+              <>
+                <InspectorSection index={1} title={isAr ? 'إجمالي الأتعاب' : 'Honoraires TTC (Décret 09-18)'}>
+                  <InspectorBigStat
+                    value={formatMoney(m.commissionEstimatedTtcDzd, language)}
+                    tone="ok"
+                    caption={m.commissionCalculationMode === 'DecreeTranches' ? 'Barème Décret 09-18' : `${m.commissionRatePercent}% Négocié`}
+                  />
+                </InspectorSection>
+                <InspectorSection index={2} title={isAr ? 'التفصيل الضريبي' : 'Détail Fiscal'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label="Base HT" value={formatMoney(m.commissionEstimatedHtDzd, language)} />
+                    <InspectorKeyValue label="TVA Légale (19%)" value={formatMoney(Math.round(m.commissionEstimatedHtDzd * 0.19), language)} />
+                    <InspectorKeyValue label="Total TTC Estimé" value={formatMoney(m.commissionEstimatedTtcDzd, language)} tone="accent" isLast />
+                  </InspectorCard>
+                </InspectorSection>
+              </>
             )}
           </div>
         )}

@@ -7,6 +7,7 @@ import {
   Printer,
   Plus,
   Trash2,
+  Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
@@ -27,10 +28,28 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
+
+const getInitials2 = (name: string): string => {
+  const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+  return (name || 'DP').slice(0, 2).toUpperCase();
+};
+
+const MEMBER_PILL_DANGER =
+  'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]';
 
 interface PosExpense {
   id: string;
@@ -85,6 +104,7 @@ export const PosFinanceView: React.FC = () => {
   const [selectedExpenseIds, setSelectedExpenseIds] = useState<Set<string>>(() => new Set<string>());
   const [pinnedExpenseIds, setPinnedExpenseIds] = useState<Set<string>>(() => new Set<string>());
   const [inspectingExpense, setInspectingExpense] = useState<PosExpense | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<string>('overview');
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -615,9 +635,10 @@ export const PosFinanceView: React.FC = () => {
         />
 
         <UniversalDataCollection<PosExpense>
-          data={sortedExpenses}
+          items={sortedExpenses}
           keyExtractor={(e) => e.id}
-          viewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode="list"
           hideToolbar
           openItemId={inspectingExpense?.id ?? null}
           isLoading={isSyncing || networkMode === 'force_skeleton'}
@@ -634,39 +655,67 @@ export const PosFinanceView: React.FC = () => {
           }}
           onItemClick={(e, opener) => {
             setDrawerOpenerEl(opener || null);
+            setInspectorTab('overview');
             setInspectingExpense(e);
           }}
           onViewDetails={(e, opener) => {
             setDrawerOpenerEl(opener || null);
+            setInspectorTab('overview');
             setInspectingExpense(e);
           }}
           onDelete={(e) => handleDeleteExpense(e.id)}
-          renderCard={(e) => (
-            <div className="flex flex-col justify-between h-full space-y-3">
-              <div>
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <span className="font-mono font-bold text-xs text-black dark:text-white">
-                    {e.reference}
-                  </span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75">
-                    {e.category}
-                  </span>
-                </div>
-                <div className="font-bold text-xs text-black dark:text-white">{e.payee}</div>
-                {e.notes && (
-                  <p className="text-[11px] text-black/55 dark:text-white/55 mt-1 line-clamp-2">{e.notes}</p>
-                )}
-              </div>
-              <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                <span className="font-mono font-black text-sm text-red-600 dark:text-red-400 tabular-nums">
-                  -{formatMoney(e.amount)}
-                </span>
-                <span className="text-[10px] text-black/55 dark:text-white/55">
-                  {new Date(e.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-            </div>
-          )}
+          getRowMeta={(e): Partial<KineticRowData> => {
+            const branchInfo = resolveRecordBranch(e, branchesById, currentBranch, language);
+            return {
+              title: e.payee,
+              subline: `${e.reference} · ${new Date(e.createdAt).toLocaleString()}`,
+              avatarText: getInitials2(e.payee),
+              categoryLabel: e.category,
+              statusLabel: e.paymentMethod === 'Cash' ? 'Espèces' : e.paymentMethod,
+              statusVariant: 'warning',
+              metricPrimary: `-${formatMoney(e.amount)}`,
+              metricSecondary: e.paidBy,
+              branchName: branchInfo.name,
+              branchCode: branchInfo.code,
+              isPinned: pinnedExpenseIds.has(e.id),
+            };
+          }}
+          getFanActions={(e): KineticRowFanAction[] => [
+            {
+              id: 'inspect',
+              label: isAr ? 'معاينة' : 'Détails',
+              icon: <Eye className="w-[15px] h-[15px]" />,
+              onClick: (ev) => {
+                setDrawerOpenerEl(ev.currentTarget);
+                setInspectorTab('overview');
+                setInspectingExpense(e);
+              },
+            },
+            {
+              id: 'del',
+              label: isAr ? 'حذف' : 'Supprimer',
+              icon: <Trash2 className="w-[15px] h-[15px]" />,
+              isDanger: true,
+              onClick: () => handleDeleteExpense(e.id),
+            },
+          ]}
+          getDetailActions={(e): KineticDetailAction[] => [
+            {
+              id: 'inspect',
+              label: isAr ? 'تفاصيل' : 'Ouvrir fiche',
+              icon: <Eye className="w-3.5 h-3.5" />,
+              onClick: () => {
+                setInspectorTab('overview');
+                setInspectingExpense(e);
+              },
+            },
+            {
+              id: 'zreport',
+              label: isAr ? 'تقرير Z' : 'Rapport Z',
+              icon: <Printer className="w-3.5 h-3.5" />,
+              onClick: () => setIsZReportOpen(true),
+            },
+          ]}
           selectedIds={selectedExpenseIds}
           onSelectionChange={setSelectedExpenseIds}
           pinnedIds={pinnedExpenseIds}
@@ -709,42 +758,104 @@ export const PosFinanceView: React.FC = () => {
         language={language}
         title={inspectingExpense?.payee || ''}
         subtitle={inspectingExpense ? `${inspectingExpense.reference} · ${new Date(inspectingExpense.createdAt).toLocaleString()}` : undefined}
+        avatarText={inspectingExpense ? getInitials2(inspectingExpense.payee) : 'DP'}
+        avatarColor="#d4522f"
         branchName={inspectingExpense ? resolveRecordBranch(inspectingExpense, branchesById, currentBranch, language).name : undefined}
         statusLabel={inspectingExpense?.category}
-        statusClassName="bg-rose-50 text-rose-700 border border-rose-200"
+        statusClassName={MEMBER_PILL_DANGER}
+        tabs={[
+          { id: 'overview', label: isAr ? 'الملخص' : isEn ? 'Overview' : 'Sortie' },
+          { id: 'details', label: isAr ? 'التدقيق' : isEn ? 'Details' : 'Contrôle' },
+          { id: 'actions', label: isAr ? 'إجراءات' : isEn ? 'Actions' : 'Actions' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={setInspectorTab}
         onClose={() => setInspectingExpense(null)}
-        onSelectItem={(e) => setInspectingExpense(e)}
+        onSelectItem={(e) => {
+          setInspectorTab('overview');
+          setInspectingExpense(e);
+        }}
         holdToDelete
         deleteLabel={isAr ? 'حذف' : 'Supprimer'}
         onDelete={(e) => handleDeleteExpense(e.id)}
-        renderBody={(exp) => (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] grid grid-cols-2 gap-3">
-              <div>
-                <span className="text-black/60 dark:text-white/65 block text-[11px]">Montant</span>
-                <span className="font-mono font-black text-base text-rose-600">-{formatMoney(exp.amount)}</span>
+        renderBody={(exp, tab) => {
+          if (tab === 'details') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0} title={isAr ? 'بيانات الخزينة' : 'Traçabilité Caisse'}>
+                  <InspectorCard>
+                    <InspectorKeyValue label={isAr ? 'المرجع' : 'Référence'} value={exp.reference} copyText={exp.reference} />
+                    <InspectorKeyValue label={isAr ? 'التصنيف' : 'Catégorie'} value={exp.category} mono={false} />
+                    <InspectorKeyValue label={isAr ? 'التاريخ' : 'Horodatage'} value={new Date(exp.createdAt).toLocaleString()} />
+                    <InspectorKeyValue label={isAr ? 'الملاحظات' : 'Motif'} value={exp.notes || 'Sortie caisse standard'} mono={false} isLast />
+                  </InspectorCard>
+                </InspectorSection>
               </div>
-              <div>
-                <span className="text-black/60 dark:text-white/65 block text-[11px]">Mode</span>
-                <span className="font-bold text-black dark:text-white">{exp.paymentMethod}</span>
+            );
+          }
+
+          if (tab === 'actions') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0}>
+                  <InspectorQuickActions
+                    actions={[
+                      {
+                        id: 'zreport',
+                        label: isAr ? 'تقرير Z' : 'Rapport Z',
+                        icon: <Printer size={16} />,
+                        primary: true,
+                        onClick: () => {
+                          setInspectingExpense(null);
+                          setIsZReportOpen(true);
+                        },
+                      },
+                      {
+                        id: 'new',
+                        label: isAr ? 'سحب جديد' : 'Nouvelle sortie',
+                        icon: <Plus size={16} />,
+                        onClick: () => {
+                          setInspectingExpense(null);
+                          setIsExpenseModalOpen(true);
+                        },
+                      },
+                    ]}
+                  />
+                </InspectorSection>
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label={isAr ? 'إصدار تقرير Z اليومي' : 'Éditer le Rapport Z de Clôture'}
+                    icon={<Printer size={15} />}
+                    onClick={() => {
+                      setInspectingExpense(null);
+                      setIsZReportOpen(true);
+                    }}
+                  />
+                </InspectorSection>
               </div>
-              <div>
-                <span className="text-black/60 dark:text-white/65 block text-[11px]">Caissier</span>
-                <span className="font-semibold text-black dark:text-white">{exp.paidBy}</span>
-              </div>
-              <div>
-                <span className="text-black/60 dark:text-white/65 block text-[11px]">Référence</span>
-                <span className="font-mono font-bold text-black dark:text-white">{exp.reference}</span>
-              </div>
+            );
+          }
+
+          return (
+            <div className="space-y-4">
+              <InspectorSection index={0}>
+                <InspectorBigStat
+                  value={`-${formatMoney(exp.amount)}`}
+                  tone="danger"
+                  caption={`${exp.paymentMethod} · ${exp.paidBy}`}
+                />
+              </InspectorSection>
+              <InspectorSection index={1} title={isAr ? 'تفاصيل المصروف' : 'Détails Sortie'}>
+                <InspectorCard>
+                  <InspectorKeyValue label={isAr ? 'المستفيد' : 'Bénéficiaire'} value={exp.payee} mono={false} />
+                  <InspectorKeyValue label={isAr ? 'الوسيلة' : 'Mode'} value={exp.paymentMethod} />
+                  <InspectorKeyValue label={isAr ? 'المسؤول' : 'Caissier'} value={exp.paidBy} mono={false} />
+                  <InspectorKeyValue label={isAr ? 'المرجع' : 'Référence'} value={exp.reference} copyText={exp.reference} isLast />
+                </InspectorCard>
+              </InspectorSection>
             </div>
-            {exp.notes && (
-              <div className="p-4 rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] bg-white dark:bg-[#1E1C1A]">
-                <span className="text-black/60 dark:text-white/65 block text-[11px] mb-1">Notes</span>
-                <p className="text-black dark:text-white">{exp.notes}</p>
-              </div>
-            )}
-          </div>
-        )}
+          );
+        }}
       />
 
       <Modal

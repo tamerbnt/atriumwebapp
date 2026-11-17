@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   Users,
   Plus,
@@ -28,10 +28,25 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorNotesField,
+  InspectorWideButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
+
+const STATUS_PILL_OK =
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+const STATUS_PILL_INFO =
+  'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]';
+
+type DrawerTab = 'dossier' | 'bookings' | 'finances';
 
 const extractStr = (val: any): string =>
   typeof val === 'string' ? val : val?.target?.value ?? String(val ?? '');
@@ -70,10 +85,8 @@ export const VenueRentersView: React.FC = () => {
   const [renterSortDir, setRenterSortDir] = useState<'asc' | 'desc'>('asc');
 
   const [selectedRenter, setSelectedRenter] = useState<RentalRenter | null>(null);
+  const [drawerTab, setDrawerTab] = useState<DrawerTab>('dossier');
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
-  const [renterNotes, setRenterNotes] = useState('');
-  const [isSavingNotes, setIsSavingNotes] = useState(false);
-  const [notesSavedNotice, setNotesSavedNotice] = useState(false);
 
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [bookingRenterId, setBookingRenterId] = useState<string | undefined>(undefined);
@@ -100,24 +113,6 @@ export const VenueRentersView: React.FC = () => {
     if (!selectedRenter) return null;
     return rentalRenters.find((r) => r.id === selectedRenter.id) || null;
   }, [selectedRenter, rentalRenters]);
-
-  useEffect(() => {
-    if (activeRenter) {
-      setRenterNotes(activeRenter.notes || '');
-    }
-  }, [activeRenter?.id]);
-
-  const handleNotesChange = (val: string) => {
-    setRenterNotes(val);
-    if (!activeRenter) return;
-    setIsSavingNotes(true);
-    updateRentalRenter(activeRenter.id, { notes: val });
-    setTimeout(() => {
-      setIsSavingNotes(false);
-      setNotesSavedNotice(true);
-      setTimeout(() => setNotesSavedNotice(false), 2000);
-    }, 400);
-  };
 
   const filteredRenters = useMemo(() => {
     return rentalRenters.filter((r) => {
@@ -503,13 +498,6 @@ export const VenueRentersView: React.FC = () => {
       <ScreenHeaderBar
         icon={<Users size={22} />}
         title={t('venue_renters_page_title')}
-        subtitle={
-          isAr
-            ? 'دليل المنظمين والشركات والجهات المستأجرة'
-            : isFr
-            ? 'Répertoire des organisateurs, entreprises & particuliers'
-            : 'Directory of organizers, corporate clients & private renters'
-        }
         primaryAction={{
           label: t('venue_renters_btn_add'),
           onClick: handleOpenAdd,
@@ -605,11 +593,12 @@ export const VenueRentersView: React.FC = () => {
           onResetAllFilters={handleResetFilters}
         />
 
-        <UniversalDataCollection
+        <UniversalDataCollection<RentalRenter>
           hideToolbar
-          data={sortedRenters}
+          items={sortedRenters}
           keyExtractor={(r) => r.id}
           viewMode={viewMode}
+          defaultViewMode="list"
           columns={renterColumns}
           sortBy={renterSortBy}
           sortDirection={renterSortDir}
@@ -627,12 +616,13 @@ export const VenueRentersView: React.FC = () => {
             setSelectedRenter(r);
           }}
           onEdit={handleOpenEdit}
-          isPinned={(r) => pinnedRenterIds.has(r.id)}
-          onPinToggle={(r) => {
+          pinnedIds={pinnedRenterIds}
+          onPinToggle={(idOrItem) => {
+            const id = typeof idOrItem === 'string' ? idOrItem : idOrItem.id;
             setPinnedRenterIds((prev) => {
               const next = new Set(prev);
-              if (next.has(r.id)) next.delete(r.id);
-              else next.add(r.id);
+              if (next.has(id)) next.delete(id);
+              else next.add(id);
               return next;
             });
           }}
@@ -656,48 +646,74 @@ export const VenueRentersView: React.FC = () => {
               message: `${ids.size} ${isFr ? 'locataires supprimés.' : 'renters deleted.'}`,
             });
           }}
-          customActions={(r) => [
+          getRowMeta={(renter) => {
+            const bInfo = resolveRecordBranch(renter, branchesById, currentBranch, language);
+            const segmentLabel = renter.companyName
+              ? isAr
+                ? 'شركة'
+                : isFr
+                ? 'Entreprise'
+                : 'Corporate'
+              : isAr
+              ? 'فرد'
+              : isFr
+              ? 'Particulier'
+              : 'Private';
+            return {
+              title: renter.fullName,
+              subline: renter.companyName || renter.phone,
+              avatarText: (renter.fullName || 'LO').slice(0, 2).toUpperCase(),
+              avatarColor: '#d4522f',
+              categoryLabel: segmentLabel,
+              statusLabel: segmentLabel,
+              statusVariant: renter.companyName ? 'info' : 'active',
+              metricPrimary: formatCurrencyAmount(renter.totalSpent, renter.currency),
+              metricSecondary: `${renter.totalBookings} ${isAr ? 'حجز' : isFr ? 'rés.' : 'bookings'}`,
+              branchName: bInfo.name,
+              isPinned: pinnedRenterIds.has(renter.id),
+              notes: renter.notes,
+              detailCol1: { label: isAr ? 'الهاتف' : 'Téléphone', value: renter.phone },
+              detailCol2: { label: isAr ? 'البريد' : 'E-mail', value: renter.email },
+              detailCol3: {
+                label: isAr ? 'الهوية / NIF' : 'Pièce / NIF',
+                value: renter.idDocNumber || '--',
+              },
+            };
+          }}
+          getFanActions={(r) => [
             {
               id: 'book',
               label: isAr ? 'حجز قاعة' : isFr ? 'Réserver' : 'Book',
-              icon: <Calendar size={13} />,
-              variant: 'primary',
+              icon: <Calendar size={14} />,
               onClick: () => {
                 setBookingRenterId(r.id);
                 setIsBookingModalOpen(true);
               },
             },
+            {
+              id: 'edit',
+              label: isAr ? 'تعديل' : isFr ? 'Modifier' : 'Edit',
+              icon: <Edit2 size={14} />,
+              onClick: () => handleOpenEdit(r),
+            },
           ]}
-          renderCard={(renter) => (
-            <div className="flex flex-col items-center justify-center w-full">
-              <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
-                {renter.fullName.charAt(0).toUpperCase()}
-              </div>
-              <h3 className="text-base font-bold text-black dark:text-white truncate max-w-[210px] mb-0.5 tracking-tight">
-                {renter.fullName}
-              </h3>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 mb-3 truncate max-w-[200px]">
-                {renter.companyName ||
-                  (isAr ? 'مستأجر خاص' : isFr ? 'Locataire Particulier' : 'Private Renter')}
-              </span>
-              <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1 text-center">
-                <div className="font-mono text-black/70 dark:text-white/75 text-[11px]">
-                  {renter.phone}
-                </div>
-                <div className="truncate text-black/55 dark:text-white/55 text-[11px]">
-                  {renter.email}
-                </div>
-                <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                  <span className="text-[11px] text-black/55 dark:text-white/55 uppercase font-medium">
-                    {renter.totalBookings} {isAr ? 'حجز' : 'bookings'}
-                  </span>
-                  <span className="font-bold text-[#d4522f] tabular-nums font-mono">
-                    {formatCurrencyAmount(renter.totalSpent, renter.currency)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
+          getDetailActions={(r) => [
+            {
+              id: 'book',
+              label: isAr ? 'حجز قاعة' : isFr ? 'Réserver' : 'Book',
+              icon: <Calendar size={13} />,
+              onClick: () => {
+                setBookingRenterId(r.id);
+                setIsBookingModalOpen(true);
+              },
+            },
+            {
+              id: 'edit',
+              label: isAr ? 'تعديل' : isFr ? 'Modifier' : 'Edit',
+              icon: <Edit2 size={13} />,
+              onClick: () => handleOpenEdit(r),
+            },
+          ]}
           emptyTitle={isAr ? 'لا يوجد مستأجرون' : isFr ? 'Aucun locataire trouvé' : 'No renters found'}
           primaryActionLabel={t('venue_renters_btn_add')}
           onAddFirstItem={handleOpenAdd}
@@ -718,7 +734,7 @@ export const VenueRentersView: React.FC = () => {
         sections={filterSections}
       />
 
-      <KineticSlideOverInspector
+      <KineticSlideOverInspector<RentalRenter>
         isOpen={Boolean(activeRenter)}
         item={activeRenter}
         allItems={sortedRenters}
@@ -730,7 +746,7 @@ export const VenueRentersView: React.FC = () => {
           activeRenter?.companyName ||
           (isAr ? 'مستأجر خاص' : isFr ? 'Particulier' : 'Private Renter')
         }
-        avatarText={(activeRenter?.fullName || 'R').slice(0, 2).toUpperCase()}
+        avatarText={(activeRenter?.fullName || 'RE').slice(0, 2).toUpperCase()}
         avatarColor="#d4522f"
         branchName={
           activeRenter
@@ -746,180 +762,170 @@ export const VenueRentersView: React.FC = () => {
             ? 'Particulier'
             : 'Private'
         }
+        statusClassName={activeRenter?.companyName ? STATUS_PILL_INFO : STATUS_PILL_OK}
         tabs={[
           { id: 'dossier', label: isFr ? 'Dossier' : 'Profile' },
           { id: 'bookings', label: isFr ? 'Réservations' : 'Bookings' },
           { id: 'finances', label: 'Finances' },
-          { id: 'notes', label: 'Notes' },
         ]}
+        activeTab={drawerTab}
+        onTabChange={(tab) => setDrawerTab(tab as DrawerTab)}
         onSelectItem={(r) => setSelectedRenter(r)}
         onClose={() => setSelectedRenter(null)}
         onDelete={(r) => deleteRentalRenter(r.id)}
         holdToDelete
         renderBody={(renter, tab) => {
           const renterBookings = rentalBookings.filter((b) => b.renterId === renter.id);
-          return (
-            <div className="space-y-4 text-xs">
-              <div className="flex flex-wrap gap-2">
-                <AtriumButton
-                  variant="primary"
-                  size="sm"
-                  icon={<Calendar size={13} />}
+
+          if (tab === 'bookings') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection
+                  index={0}
+                  title={`${isAr ? 'الحجوزات' : 'Historique & Prévues'} (${renterBookings.length})`}
+                >
+                  <InspectorCard>
+                    {renterBookings.length === 0 ? (
+                      <InspectorListItem
+                        title={
+                          isAr
+                            ? 'لا توجد حجوزات حالياً'
+                            : 'Aucune réservation active pour le moment.'
+                        }
+                        isLast
+                      />
+                    ) : (
+                      renterBookings.map((b, idx) => (
+                        <InspectorListItem
+                          key={b.id}
+                          title={b.purpose || 'Séance de réservation'}
+                          subtitle={new Date(b.startDateTime).toLocaleDateString()}
+                          metaRight={formatCurrencyAmount(b.totalAmount, b.currency)}
+                          badge={{
+                            label: b.status,
+                            tone: b.status === 'Confirmed' || b.status === 'CheckedIn' ? 'ok' : 'neutral',
+                          }}
+                          isLast={idx === renterBookings.length - 1}
+                        />
+                      ))
+                    )}
+                  </InspectorCard>
+                </InspectorSection>
+
+                <InspectorWideButton
+                  label={isAr ? 'حجز قاعة جديدة' : isFr ? 'Nouvelle réservation' : 'New Booking'}
+                  icon={<Calendar size={14} />}
+                  tone="accent"
                   onClick={() => {
                     setBookingRenterId(renter.id);
                     setIsBookingModalOpen(true);
                   }}
-                >
-                  {isAr ? 'حجز قاعة' : isFr ? 'Réserver' : 'Book'}
-                </AtriumButton>
-                <AtriumButton
-                  variant="secondary"
-                  size="sm"
-                  icon={<Edit2 size={13} />}
-                  onClick={() => handleOpenEdit(renter)}
-                >
-                  {isAr ? 'تعديل' : isFr ? 'Modifier' : 'Edit'}
-                </AtriumButton>
+                />
               </div>
+            );
+          }
 
-              {tab === 'dossier' && (
-                <div className="p-4 bg-[#F3EDE7]/60 dark:bg-neutral-800/50 rounded-2xl space-y-2.5 border border-[#E6DED6] dark:border-neutral-800">
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55 font-medium">Téléphone :</span>
-                    <a
-                      href={`tel:${renter.phone}`}
-                      className="font-mono font-semibold text-black dark:text-white hover:underline"
-                    >
-                      {renter.phone}
-                    </a>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55 font-medium">E-mail :</span>
-                    <a
-                      href={`mailto:${renter.email}`}
-                      className="text-black dark:text-white truncate max-w-[200px] hover:underline"
-                    >
-                      {renter.email}
-                    </a>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55 font-medium">
-                      Organisme / Entité :
-                    </span>
-                    <span className="font-semibold text-black dark:text-white">
-                      {renter.companyName || 'Particulier'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55 font-medium">
-                      N° Pièce / NIF :
-                    </span>
-                    <span className="font-mono text-black/70 dark:text-white/75">
-                      {renter.idDocNumber || 'Non renseigné'}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {tab === 'bookings' && (
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-black/55 dark:text-white/55 font-medium">
-                      Historique & Prévues
-                    </span>
-                    <span className="font-bold text-[#d4522f]">
-                      {renterBookings.length} réservations
-                    </span>
-                  </div>
-                  <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-                    {renterBookings.length === 0 ? (
-                      <div className="p-4 text-center text-black/55 dark:text-white/55 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl">
-                        Aucune réservation active pour le moment.
-                      </div>
-                    ) : (
-                      renterBookings.map((b) => (
-                        <div
-                          key={b.id}
-                          className="p-3 bg-neutral-50 dark:bg-neutral-800/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-1"
-                        >
-                          <div className="flex items-center justify-between font-semibold">
-                            <span className="text-black dark:text-white truncate max-w-[190px]">
-                              {b.purpose || 'Séance de réservation'}
-                            </span>
-                            <span className="font-mono text-[#d4522f]">
-                              {formatCurrencyAmount(b.totalAmount, b.currency)}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
-                            <span>{new Date(b.startDateTime).toLocaleDateString()}</span>
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600">
-                              {b.status}
-                            </span>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {tab === 'finances' && (
-                <div className="p-4 bg-[#F3EDE7]/60 dark:bg-neutral-800/50 rounded-2xl space-y-3 border border-[#E6DED6] dark:border-neutral-800">
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">
-                      Chiffre d'affaires cumulé :
-                    </span>
-                    <span className="font-mono font-bold text-base text-black dark:text-white">
-                      {formatCurrencyAmount(renter.totalSpent, renter.currency)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">
-                      Volume total de contrats :
-                    </span>
-                    <span className="font-bold text-black dark:text-white">
-                      {renter.totalBookings} créneaux
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-black/55 dark:text-white/55">Panier moyen :</span>
-                    <span className="font-mono font-semibold text-black dark:text-white">
-                      {renter.totalBookings > 0
-                        ? formatCurrencyAmount(
-                            Math.round(renter.totalSpent / renter.totalBookings),
-                            renter.currency
-                          )
-                        : '--'}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {tab === 'notes' && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-black/55 dark:text-white/55 font-medium">
-                      Consignes & Exigences :
-                    </label>
-                    {isSavingNotes ? (
-                      <span className="text-[10px] text-black/55 dark:text-white/55 animate-pulse">
-                        Sauvegarde...
-                      </span>
-                    ) : notesSavedNotice ? (
-                      <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
-                        <Check size={11} /> Sauvegardé
-                      </span>
-                    ) : null}
-                  </div>
-                  <textarea
-                    rows={6}
-                    value={renterNotes}
-                    onChange={(e) => handleNotesChange(e.target.value)}
-                    placeholder="Exigences techniques, sonorisation, badges sécurité, consignes traiteur..."
-                    className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/60 text-xs text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
+          if (tab === 'finances') {
+            const avgBasket =
+              renter.totalBookings > 0 ? Math.round(renter.totalSpent / renter.totalBookings) : 0;
+            return (
+              <div className="space-y-4">
+                <InspectorSection
+                  index={0}
+                  title={isAr ? 'ملخص التعاملات المالية' : 'Performance locative'}
+                >
+                  <InspectorBigStat
+                    value={formatCurrencyAmount(renter.totalSpent, renter.currency)}
+                    tone="accent"
+                    caption={
+                      isAr
+                        ? 'إجمالي المداخيل التراكمية'
+                        : "Chiffre d'affaires cumulé"
+                    }
                   />
-                </div>
-              )}
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'عدد الحجوزات' : 'Volume de contrats'}
+                      value={`${renter.totalBookings} ${isAr ? 'حجوزات' : 'créneaux'}`}
+                      mono
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'متوسط الفاتورة' : 'Panier moyen'}
+                      value={
+                        renter.totalBookings > 0
+                          ? formatCurrencyAmount(avgBasket, renter.currency)
+                          : '--'
+                      }
+                      mono
+                      isLast
+                    />
+                  </InspectorCard>
+                </InspectorSection>
+              </div>
+            );
+          }
+
+          return (
+            <div className="space-y-4">
+              <InspectorQuickActions
+                actions={[
+                  {
+                    id: 'book',
+                    label: isAr ? 'حجز قاعة' : isFr ? 'Réserver' : 'Book',
+                    icon: <Calendar size={15} />,
+                    primary: true,
+                    onClick: () => {
+                      setBookingRenterId(renter.id);
+                      setIsBookingModalOpen(true);
+                    },
+                  },
+                  {
+                    id: 'edit',
+                    label: isAr ? 'تعديل' : isFr ? 'Modifier' : 'Edit',
+                    icon: <Edit2 size={15} />,
+                    onClick: () => handleOpenEdit(renter),
+                  },
+                ]}
+              />
+
+              <InspectorSection index={0} title={isAr ? 'بيانات المستأجر' : 'Coordonnées & Dossier'}>
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={isAr ? 'الهاتف' : 'Téléphone'}
+                    value={renter.phone}
+                    mono
+                    copyText={renter.phone}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'البريد الإلكتروني' : 'E-mail'}
+                    value={renter.email}
+                    copyText={renter.email}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'الهيئة / المؤسسة' : 'Organisme / Entité'}
+                    value={renter.companyName || (isFr ? 'Particulier' : 'Private')}
+                  />
+                  <InspectorKeyValue
+                    label={isAr ? 'وثيقة الهوية / NIF' : 'N° Pièce / NIF'}
+                    value={renter.idDocNumber || (isFr ? 'Non renseigné' : '--')}
+                    mono
+                    copyText={renter.idDocNumber}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
+
+              <InspectorSection index={1} title={isAr ? 'التعليمات والملاحظات' : 'Consignes & Notes'}>
+                <InspectorNotesField
+                  value={renter.notes || ''}
+                  onSave={(val) => updateRentalRenter(renter.id, { notes: val })}
+                  placeholder={
+                    isAr
+                      ? 'متطلبات تقنية، صوتيات، شارات الدخول...'
+                      : 'Exigences techniques, sonorisation, badges sécurité, consignes traiteur...'
+                  }
+                />
+              </InspectorSection>
             </div>
           );
         }}

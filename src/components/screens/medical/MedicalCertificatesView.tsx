@@ -27,10 +27,29 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorWideButton,
+  KineticRowMeta,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
 } from '../../ui/kinetic';
+
+const getInitials2 = (name: string): string => {
+  const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+  return (name || 'CM').slice(0, 2).toUpperCase();
+};
+
+const MEMBER_PILL_OK =
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+const MEMBER_PILL_WARN =
+  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
 
 const extractStr = (val: any): string =>
   typeof val === 'string' ? val : val?.target?.value ?? String(val ?? '');
@@ -164,6 +183,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
     (cert: MedicalCertificateRecord, opener?: HTMLElement | null) => {
       if (opener) setDrawerOpenerEl(opener);
       setInspectedCert(cert);
+      setInspectorTab('overview');
     },
     []
   );
@@ -449,7 +469,6 @@ export const MedicalCertificatesView: React.FC<any> = () => {
       <ScreenHeaderBar
         icon={<FileBadge size={22} />}
         title={isAr ? 'الشهادات' : language === 'en' ? 'Certificates' : 'Certificats'}
-        subtitle={`Conforme CNAS · ${certificates.length} ${isAr ? 'وثيقة' : 'certificats émis'}`}
         primaryAction={{
           label: isAr ? 'إصدار شهادة' : 'Établir un Certificat',
           icon: <Plus size={15} strokeWidth={2.5} />,
@@ -526,9 +545,10 @@ export const MedicalCertificatesView: React.FC<any> = () => {
 
         <UniversalDataCollection
           hideToolbar
-          data={sortedCertificates}
+          items={sortedCertificates}
           keyExtractor={(c) => c.id}
-          defaultViewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
           columns={columns}
           sortBy={sortBy}
           sortDirection={sortDir}
@@ -546,7 +566,21 @@ export const MedicalCertificatesView: React.FC<any> = () => {
             icon: <Download size={14} />,
             onClick: handleExportCSV,
           }}
-          customActions={(cert) => [
+          getRowMeta={(cert): KineticRowMeta => ({
+            title: cert.patientName,
+            subtitle: `${getCertTypeLabel(cert.certificateType)} · ${cert.qrHash}`,
+            avatarText: getInitials2(cert.patientName),
+            statusLabel: cert.isSigned ? (isAr ? 'موقّع' : 'Signé QR') : isAr ? 'مسودة' : 'Brouillon',
+            statusClassName: cert.isSigned ? MEMBER_PILL_OK : MEMBER_PILL_WARN,
+            primaryStat:
+              cert.certificateType === 'ArretDeTravail'
+                ? `${cert.durationDays}j (${cert.startDate})`
+                : cert.certificateType === 'CertificatDescriptifITT'
+                ? `${cert.ittDays}j ITT`
+                : cert.purpose || 'Aptitude',
+            secondaryStat: `${cert.doctorName} · ${cert.issueDate}`,
+          })}
+          getFanActions={(cert): KineticRowFanAction<MedicalCertificateRecord>[] => [
             {
               id: 'print',
               label: isAr ? 'طباعة' : 'Imprimer',
@@ -555,48 +589,15 @@ export const MedicalCertificatesView: React.FC<any> = () => {
               onClick: () => setActivePrintCert(cert),
             },
           ]}
-          renderCard={(cert) => (
-            <div className="flex flex-col w-full space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[11px] font-bold text-[#d4522f] truncate">
-                  {getCertTypeLabel(cert.certificateType)}
-                </span>
-                <span className="font-mono text-[10px] text-black/55 dark:text-white/55">
-                  {cert.issueDate}
-                </span>
-              </div>
-              <div>
-                <h4 className="font-bold text-sm text-black dark:text-white truncate">
-                  {cert.patientName}
-                </h4>
-                <p className="text-[11px] text-black/55 dark:text-white/55 truncate">
-                  {cert.doctorName} · {cert.doctorSpecialty}
-                </p>
-              </div>
-              <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/60 text-xs">
-                {cert.certificateType === 'ArretDeTravail' && (
-                  <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">
-                    {cert.durationDays} jours ({cert.startDate} → {cert.endDate})
-                  </span>
-                )}
-                {cert.certificateType === 'CertificatDescriptifITT' && (
-                  <span className="font-mono text-amber-600 font-bold">
-                    ITT: {cert.ittDays} jours
-                  </span>
-                )}
-                {(cert.certificateType === 'AptitudePhysique' ||
-                  cert.certificateType === 'LettreOrientation') && (
-                  <span className="text-black/70 dark:text-white/75 truncate block">
-                    Objet: {cert.purpose}
-                  </span>
-                )}
-              </div>
-              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-[10px] font-mono text-black/55 dark:text-white/55">
-                <span>{cert.qrHash}</span>
-                <span className="text-emerald-600 font-bold">Signé ✓</span>
-              </div>
-            </div>
-          )}
+          getDetailActions={(cert): KineticDetailAction[] => [
+            {
+              id: 'print',
+              label: isAr ? 'طباعة الشهادة' : 'Imprimer',
+              icon: <Printer size={14} />,
+              variant: 'primary',
+              onClick: () => setActivePrintCert(cert),
+            },
+          ]}
           emptyTitle={isAr ? 'لا توجد شهادات' : 'Aucun certificat émis'}
           emptyDescription="Établissez un nouveau certificat médical conforme CNAS"
           primaryActionLabel="Établir un Certificat"
@@ -629,73 +630,167 @@ export const MedicalCertificatesView: React.FC<any> = () => {
         subtitle={
           activeCert ? `${getCertTypeLabel(activeCert.certificateType)} · ${activeCert.issueDate}` : ''
         }
-        avatarText={activeCert?.patientName?.charAt(0).toUpperCase() || 'C'}
-        avatarColor="#0D9488"
+        avatarText={activeCert ? getInitials2(activeCert.patientName) : 'CM'}
+        avatarColor="#d4522f"
+        categoryLabel={isAr ? 'شهادة طبية' : isFr ? 'CERTIFICAT MÉDICAL' : 'MEDICAL CERTIFICATE'}
         branchName={activeCert ? getCertBranchName(activeCert) : ''}
         statusLabel={activeCert?.isSigned ? 'Signé QR' : 'Brouillon'}
+        statusClassName={activeCert?.isSigned ? MEMBER_PILL_OK : MEMBER_PILL_WARN}
         tabs={[
-          { id: 'overview', label: isAr ? 'التفاصيل' : 'Contenu' },
-          { id: 'actions', label: isAr ? 'الطباعة' : 'Impression' },
+          { id: 'overview', label: isAr ? 'التفاصيل' : isFr ? 'Contenu' : 'Overview' },
+          { id: 'findings', label: isAr ? 'المعاينة السريرية' : isFr ? 'Constatations' : 'Clinical' },
+          { id: 'actions', label: isAr ? 'الطباعة' : isFr ? 'Impression' : 'Print' },
         ]}
         activeTab={inspectorTab}
         onTabChange={setInspectorTab}
         onSelectItem={(cert) => handleSelectCert(cert)}
         onClose={() => setInspectedCert(null)}
         renderBody={(cert, tab) => (
-          <div className="space-y-4 text-xs">
+          <div className="space-y-5">
             {tab === 'overview' && (
-              <div className="space-y-3">
-                <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Médecin Signataire :</span>
-                    <span className="font-bold text-black dark:text-white">{cert.doctorName}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Spécialité :</span>
-                    <span className="font-semibold text-black dark:text-white">
-                      {cert.doctorSpecialty}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-black/55 dark:text-white/55">Référence QR :</span>
-                    <span className="font-mono font-bold text-[#d4522f]">{cert.qrHash}</span>
-                  </div>
-                  {cert.patientEmployer && (
-                    <div className="flex justify-between">
-                      <span className="text-black/55 dark:text-white/55">Employeur :</span>
-                      <span className="font-semibold text-black dark:text-white">
-                        {cert.patientEmployer}
-                      </span>
-                    </div>
-                  )}
-                </div>
+              <>
+                <InspectorSection
+                  title={isAr ? 'إجراءات سريعة' : 'Actions rapides'}
+                  delayIndex={0}
+                  animateKey={cert.id}
+                >
+                  <InspectorQuickActions
+                    actions={[
+                      {
+                        id: 'print',
+                        label: isAr ? 'طباعة' : 'Imprimer PDF',
+                        icon: <Printer size={15} />,
+                        onClick: () => setActivePrintCert(cert),
+                      },
+                      {
+                        id: 'export',
+                        label: isAr ? 'تصدير CSV' : 'Exporter CSV',
+                        icon: <Download size={15} />,
+                        onClick: handleExportCSV,
+                      },
+                    ]}
+                  />
+                </InspectorSection>
+
+                <InspectorSection
+                  title={isAr ? 'الوثيقة الطبية' : 'Identification du Document'}
+                  delayIndex={1}
+                  animateKey={cert.id}
+                >
+                  <InspectorCard>
+                    <InspectorKeyValue
+                      label={isAr ? 'نوع الشهادة' : 'Type'}
+                      value={getCertTypeLabel(cert.certificateType)}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'الطبيب الموقع' : 'Médecin Signataire'}
+                      value={`${cert.doctorName} (${cert.doctorSpecialty})`}
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'تاريخ الإصدار' : 'Date d’émission'}
+                      value={cert.issueDate}
+                      mono
+                    />
+                    <InspectorKeyValue
+                      label={isAr ? 'رمز التحقق QR' : 'Référence QR'}
+                      value={cert.qrHash}
+                      mono
+                      isLast={!cert.patientEmployer}
+                    />
+                    {cert.patientEmployer && (
+                      <InspectorKeyValue
+                        label={isAr ? 'المستخدم' : 'Employeur'}
+                        value={cert.patientEmployer}
+                        isLast
+                      />
+                    )}
+                  </InspectorCard>
+                </InspectorSection>
 
                 {cert.certificateType === 'ArretDeTravail' && (
-                  <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 text-emerald-800 dark:text-emerald-300 space-y-1">
-                    <div className="font-bold">Arrêt de travail : {cert.durationDays} jours</div>
-                    <div className="font-mono text-[11px]">
-                      Du {cert.startDate} au {cert.endDate} · Reprise : {cert.resumptionDate}
-                    </div>
-                  </div>
+                  <InspectorSection
+                    title={isAr ? 'فترة التوقف عن العمل' : "Période d'Arrêt CNAS"}
+                    delayIndex={2}
+                    animateKey={cert.id}
+                  >
+                    <InspectorCard>
+                      <InspectorKeyValue
+                        label={isAr ? 'المدة' : 'Durée'}
+                        value={`${cert.durationDays} jours`}
+                        mono
+                      />
+                      <InspectorKeyValue
+                        label={isAr ? 'الفترة' : 'Période'}
+                        value={`${cert.startDate} → ${cert.endDate}`}
+                        mono
+                      />
+                      <InspectorKeyValue
+                        label={isAr ? 'تاريخ الاستئناف' : 'Reprise effective'}
+                        value={cert.resumptionDate || '—'}
+                        mono
+                        isLast
+                      />
+                    </InspectorCard>
+                  </InspectorSection>
                 )}
 
-                <div className="p-3 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 italic text-black/80 dark:text-white/80">
-                  &ldquo;{cert.clinicalFindings}&rdquo;
-                </div>
-              </div>
+                {cert.certificateType === 'CertificatDescriptifITT' && (
+                  <InspectorSection
+                    title="Incapacité Totale de Travail"
+                    delayIndex={2}
+                    animateKey={cert.id}
+                  >
+                    <InspectorCard>
+                      <InspectorKeyValue label="Durée ITT" value={`${cert.ittDays} jours`} mono isLast />
+                    </InspectorCard>
+                  </InspectorSection>
+                )}
+              </>
+            )}
+
+            {tab === 'findings' && (
+              <InspectorSection
+                title={isAr ? 'الملاحظات الطبية والختم الرقمي' : 'Constatations Cliniques & QR'}
+                delayIndex={0}
+                animateKey={cert.id}
+              >
+                <InspectorCard>
+                  <InspectorKeyValue
+                    label={isAr ? 'البيان السريري' : 'Constatations'}
+                    value={`"${cert.clinicalFindings}"`}
+                  />
+                  {cert.purpose && (
+                    <InspectorKeyValue label={isAr ? 'الغرض' : 'Objet'} value={cert.purpose} />
+                  )}
+                  <InspectorKeyValue
+                    label={isAr ? 'الحالة القانونية' : 'Validité CNAS / MSPRH'}
+                    value={cert.isSigned ? 'Signé, horodatée & QR vérifiable' : 'Brouillon'}
+                    isLast
+                  />
+                </InspectorCard>
+              </InspectorSection>
             )}
 
             {tab === 'actions' && (
-              <div className="space-y-3">
-                <button
-                  type="button"
-                  onClick={() => setActivePrintCert(cert)}
-                  className="w-full p-3.5 rounded-xl bg-[#d4522f] text-white font-semibold flex items-center justify-center gap-2 hover:bg-[#b0674b] transition-colors cursor-pointer"
-                >
-                  <Printer size={16} />
-                  <span>Ouvrir &amp; Imprimer Certificat Officiel</span>
-                </button>
-              </div>
+              <InspectorSection
+                title={isAr ? 'الطباعة الرسمية' : 'Impression & Archivage'}
+                delayIndex={0}
+                animateKey={cert.id}
+              >
+                <div className="space-y-2.5">
+                  <InspectorWideButton
+                    label={isAr ? 'فتح وطباعة الشهادة الرسمية' : 'Ouvrir & Imprimer Certificat Officiel'}
+                    icon={<Printer size={15} />}
+                    variant="primary"
+                    onClick={() => setActivePrintCert(cert)}
+                  />
+                  <InspectorWideButton
+                    label={isAr ? 'تصدير السجل CSV' : 'Exporter le Registre CSV'}
+                    icon={<Download size={15} />}
+                    onClick={handleExportCSV}
+                  />
+                </div>
+              </InspectorSection>
             )}
           </div>
         )}
